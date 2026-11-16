@@ -41,7 +41,7 @@
         "laravel/pint": "^1.27",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^12.5.12",
+        "phpunit/phpunit": "^13.4.7",
         "reliese/laravel": "^1.4",
         "saft/ch-pruefungen": "^1.0",
         "saft/lager-tafel": "^1.0",
