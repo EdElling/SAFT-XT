@@ -27,11 +27,15 @@ final readonly class FieldRule
      * @param  string  $label  Bezeichnung in der aktuellen Sprache
      * @param  list<string>  $types  Feldtypen, für die sie wählbar ist: string, text, integer, decimal
      * @param  Closure(mixed): ?string  $check  Fehlermeldung oder null, wenn der Wert passt
+     * @param  string|null  $description  Was die Regel verlangt, in der aktuellen Sprache, z. B. „Ein Buchstabe, Bindestrich,
+     *                                    vier Ziffern (A-1234)“ – erscheint im Table-Designer, im Datenmodell für den
+     *                                    Hilfe-Assistenten und im Entwickler-Kontext (seit API 1.6)
      */
     public function __construct(
         public string $name,
         public string $label,
         public array $types,
         public Closure $check,
+        public ?string $description = null,
     ) {}
 }

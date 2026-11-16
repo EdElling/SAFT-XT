@@ -26,7 +26,7 @@ final class ManualSource implements KnowledgeSource
 
     public function label(): string
     {
-        return __('documentation.docs.'.$this->doc);
+        return Documentation::label($this->doc);
     }
 
     public function visibleFor(User $user): bool

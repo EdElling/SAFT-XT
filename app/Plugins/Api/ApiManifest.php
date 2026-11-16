@@ -35,6 +35,8 @@ final class ApiManifest
         DashboardWidget::class,
         FormulaFunction::class,
         FieldRule::class,
+        // Handbücher aus Plugins (SaftPlugin::manuals()), seit API 1.6.
+        Manual::class,
         RecordListener::class,
         RecordRejected::class,
         Events\RecordEvent::class,

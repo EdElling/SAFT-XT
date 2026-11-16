@@ -104,7 +104,7 @@ class ConfigTransferTest extends DynamicDataTestCase
         $before = $this->exportAll();
 
         $this->assertSame(ConfigExporter::FORMAT, $before['format']);
-        $this->assertSame(['lager-umbuchung' => '1.3.0'], $before['requires']['plugins']);
+        $this->assertSame(['lager-umbuchung' => '1.4.0'], $before['requires']['plugins']);
         $this->assertContains('Über Verknüpfung', array_column($before['reports'], 'name'));
         $this->assertSame('lager_artikel', $before['reports'][array_search('Über Verknüpfung', array_column($before['reports'], 'name'), true)]['definition']['base']);
         $this->assertSame([['label' => ['de' => 'Zur Gruppe', 'en' => 'To group'], 'source' => 'lager_artikel.artikelnummer', 'target_table' => 'lager_artikelgruppen', 'target_field' => 'lager_artikelgruppen.bezeichnung']], $before['report_links']);

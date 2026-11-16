@@ -8,6 +8,7 @@ use App\DynamicData\Rules\CopySource;
 use App\DynamicData\Rules\NowDefault;
 use App\DynamicData\Rules\SequenceSuggester;
 use App\DynamicData\Validation\FieldRuleCheck;
+use App\Plugins\PluginRegistry;
 
 /** schema.md des Entwickler-Kontexts: das Schema aus SchemaExporter kompakt und lesbar (Englisch). */
 final class SchemaMarkdown
@@ -126,7 +127,11 @@ final class SchemaMarkdown
         }
 
         if (! empty($rules[FieldRuleCheck::OPTION])) {
-            $parts[] = 'plugin checks: '.implode(', ', (array) $rules[FieldRuleCheck::OPTION]);
+            // Mit der Beschreibung aus dem Plugin, damit Leser (auch der Hilfe-Assistent) wissen, was geprüft wird.
+            $available = app(PluginRegistry::class)->fieldRules();
+            $parts[] = 'plugin checks: '.implode(', ', array_map(static fn (mixed $key): string => filled($available[(string) $key]->description ?? null)
+                ? $key.' ('.$available[(string) $key]->description.')'
+                : (string) $key, (array) $rules[FieldRuleCheck::OPTION]));
         }
 
         if (! empty($options[CopySource::OPTION])) {

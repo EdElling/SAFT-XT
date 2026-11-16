@@ -10,6 +10,7 @@ use App\Plugins\Api\Events\RecordDeleted;
 use App\Plugins\Api\Events\RecordDeleting;
 use App\Plugins\Api\Events\RecordSaved;
 use App\Plugins\Api\Events\RecordSaving;
+use App\Plugins\Api\Manual;
 use App\Plugins\Api\RecordListener;
 use App\Plugins\MenuSuggestion;
 use App\Plugins\SaftPlugin;
@@ -87,6 +88,17 @@ final class LagerUmbuchungPlugin extends SaftPlugin
                 'artikel' => $record->getAttribute('artikel_id'),
                 'von' => $record->getAttribute('lagerort_id'),
             ])))];
+    }
+
+    /** Benutzerhandbuch (docs/manual/<sprache>.md): für alle, die umbuchen oder Bewegungen bzw. Bestände sehen dürfen. */
+    public function manuals(): array
+    {
+        return [new Manual(
+            id: 'manual',
+            title: ['de' => 'Lager-Umbuchung', 'en' => 'Stock transfer', 'fr' => 'Transfert de stock', 'it' => 'Trasferimento di magazzino'],
+            path: 'docs/manual',
+            permissions: [$this->permissionName('execute'), 'data.'.StockTransfer::MOVEMENTS.'.view', 'data.'.StockTransfer::STOCKS.'.view'],
+        )];
     }
 
     public function menuSuggestions(): array

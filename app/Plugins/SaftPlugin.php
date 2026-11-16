@@ -8,6 +8,7 @@ use App\Plugins\Api\ApiManifest;
 use App\Plugins\Api\DataAction;
 use App\Plugins\Api\FieldRule;
 use App\Plugins\Api\FormulaFunction;
+use App\Plugins\Api\Manual;
 use App\Plugins\Api\RecordListener;
 use App\Tasks\TaskType;
 use Composer\InstalledVersions;
@@ -113,6 +114,12 @@ abstract class SaftPlugin implements Plugin
 
     /** @return list<FormulaFunction> zusätzliche Funktionen für berechnete Felder */
     public function formulaFunctions(): array
+    {
+        return [];
+    }
+
+    /** @return list<Manual> Handbücher für Online-Hilfe und Hilfe-Assistent (seit API 1.6) */
+    public function manuals(): array
     {
         return [];
     }

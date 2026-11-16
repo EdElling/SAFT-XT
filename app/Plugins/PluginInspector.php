@@ -13,6 +13,7 @@ use App\Plugins\Api\ApiManifest;
 use App\Plugins\Api\DashboardWidget;
 use App\Plugins\Api\FieldRule;
 use App\Plugins\Api\FormulaFunction;
+use App\Plugins\Api\Manual;
 use Closure;
 use Composer\InstalledVersions;
 use Filament\Widgets\Widget;
@@ -103,6 +104,8 @@ final readonly class PluginInspector
             $add(self::OK, 'extensions_ok', $counts);
         }
 
+        $this->inspectManuals($plugin, $add);
+
         $missing = $plugin->missingDependencies();
         $missing === []
             ? $add(self::OK, 'dependencies_ok')
@@ -114,6 +117,33 @@ final readonly class PluginInspector
             : array_map(static fn (string $violation) => $add(self::ERROR, 'api_usage', ['use' => $violation]), $violations);
 
         return $results;
+    }
+
+    /** Handbücher: gültige Kennung, Titel auf Deutsch und Englisch, Datei auf Englisch, fehlende Sprachen als Hinweis. */
+    private function inspectManuals(SaftPlugin $plugin, Closure $add): void
+    {
+        foreach ($plugin->manuals() as $manual) {
+            if (preg_match(Manual::ID_PATTERN, $manual->id) !== 1) {
+                $add(self::ERROR, 'manual_id_invalid', ['id' => $manual->id]);
+
+                continue;
+            }
+
+            $folder = $plugin->basePath().'/'.trim($manual->path, '/');
+            $languages = array_values(array_filter(Manual::LANGUAGES, static fn (string $l): bool => is_file($folder.'/'.$l.'.md')));
+
+            if (! in_array('en', $languages, true)) {
+                $add(self::ERROR, 'manual_missing', ['id' => $manual->id, 'file' => trim($manual->path, '/').'/en.md']);
+
+                continue;
+            }
+
+            if (! isset($manual->title['de'], $manual->title['en'])) {
+                $add(self::WARNING, 'manual_title', ['id' => $manual->id]);
+            }
+
+            $add(self::OK, 'manual_ok', ['id' => $manual->id, 'languages' => implode(', ', $languages)]);
+        }
     }
 
     /** Widgets, Formelfunktionen und Prüfregeln: Namen, Konflikte, Bezeichnungen. */

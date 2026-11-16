@@ -1012,6 +1012,12 @@ plugin. Etichette, obbligatorietà, visualizzazione e regole restano modificabil
 esempio perché è stato installato prima della demo magazzino –, la pagina segnala **Plugin a riposo**: i pulsanti e i
 controlli del plugin non si applicano e le sue pagine mostrano cosa manca.
 
+**Manuali dei plugin:** un plugin può fornire una propria guida utente. Compare in **Documentazione** come scheda
+aggiuntiva – per le persone con uno dei diritti indicati dal plugin – ed è conoscenza per l’assistente di aiuto. Se il
+plugin è inattivo o disattivato, il manuale scompare. I plugin di esempio *Trasferimento di magazzino* e *Tabellone delle
+giacenze* ne forniscono uno ciascuno in quattro lingue. Le regole di verifica dei plugin indicano inoltre, nel Designer
+di tabelle sotto **Ulteriori verifiche**, che cosa richiedono.
+
 **Disattivare plugin** (diritto *Plugin: gestire*): **Disattiva** nella riga del plugin lo ferma senza rimuoverlo –
 ad esempio per i test o quando due plugin si sovrappongono nelle funzioni. La finestra di dialogo mostra prima cosa
 viene meno. Finché un plugin è disattivato,

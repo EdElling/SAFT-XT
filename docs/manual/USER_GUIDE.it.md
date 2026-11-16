@@ -108,7 +108,8 @@ dall’account aziendale.
   ricomparire. Il browser ricorda la scelta. Il menu è largo quanto la sua voce più lunga.
 - **Documentazione** (nel menu, subito sotto la dashboard) mostra questa guida e le domande frequenti
   nell’applicazione, con indice e un campo di ricerca che cerca in tutte le guide durante la digitazione. Chi ha un
-  diritto nell’area Amministrazione vede anche la guida all’amministrazione. **Informazioni su SAFT XT** indica la
+  diritto nell’area Amministrazione vede anche la guida all’amministrazione. Se dei plugin forniscono propri manuali (ad
+  es. *Trasferimento di magazzino*), compaiono come schede aggiuntive quando puoi usare quelle funzioni. **Informazioni su SAFT XT** indica la
   versione, le condizioni di licenza e i componenti di terze parti con le relative licenze.
 - **Assistente di aiuto:** se è configurato e hai il diritto, il pulsante **?** in alto a destra apre una finestra in
   cui fai domande sull’uso, ad es. «Come esporto questa tabella?». La risposta si basa sui manuali che puoi vedere e

@@ -19,6 +19,7 @@ return [
     'rules' => [
         'article_number' => 'Item number (warehouse demo)',
         'article_number_invalid' => 'Item number expected in the format A-1234 (one letter, hyphen, four digits).',
+        'article_number_description' => 'One capital letter, hyphen, four digits (A-1234). Lower case and spaces are allowed; the number is stored in capitals without spaces.',
     ],
     'errors' => [
         'number_locked' => 'Item number :number is used in stock movements and can no longer be changed.',

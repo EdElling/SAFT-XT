@@ -1035,6 +1035,12 @@ l’indication nomme le plugin. Libellés, obligation, affichage et règles rest
 à un plugin – par exemple parce qu’il a été installé avant la démo entrepôt –, la page signale **Plugins en veille** :
 les boutons et contrôles du plugin ne s’appliquent pas, et ses pages indiquent ce qui manque.
 
+**Manuels des plugins :** un plugin peut fournir son propre guide utilisateur. Il apparaît sous **Documentation** comme
+onglet supplémentaire – pour les personnes ayant l’un des droits que le plugin indique – et sert de connaissance à
+l’assistant d’aide. Si le plugin est en veille ou désactivé, le manuel disparaît. Les plugins d’exemple *Transfert de
+stock* et *Tableau des stocks* en fournissent chacun un en quatre langues. Les règles de validation des plugins
+indiquent en plus, dans le concepteur de tables sous **Contrôles supplémentaires**, ce qu’elles exigent.
+
 **Désactiver des plugins** (droit *Plugins : gérer*) : **Désactiver** dans la ligne du plugin le met à l’arrêt sans
 le supprimer – par exemple pour des tests ou lorsque deux plugins se recoupent. La boîte de dialogue indique d’abord ce
 qui disparaît. Tant qu’un plugin est désactivé,

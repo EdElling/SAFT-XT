@@ -57,7 +57,7 @@ A plugin is an ordinary **Composer package** with a plugin class and a service p
 | Kinds of scheduled tasks | classes implementing `App\Tasks\TaskType` |
 
 **What is guaranteed:** the programming interface for plugins (plugin API) has its **own version number**,
-independent of SAFT – currently **1.5**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
+independent of SAFT – currently **1.6**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, all classes under `App\Plugins\Api` (except
 `ApiManifest`), the test base `App\Plugins\Testing\PluginTestCase`, for kinds of scheduled tasks
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` and `App\Tasks\TaskSkipped`, and the trait
@@ -286,6 +286,7 @@ final class LagerUmbuchungPlugin extends SaftPlugin
 | `dataActions()` | no | buttons in data views, see [chapter 11](#11-actions-in-data-views) |
 | `formulaFunctions()` | no | formula functions for computed fields, see [chapter 12](#12-formula-functions-and-validation-rules) |
 | `fieldRules()` | no | validation rules for fields, see [chapter 12](#12-formula-functions-and-validation-rules) |
+| `manuals()` | no | manuals for online help and help assistant, see [appendix A.9](#a9-shipping-a-manual) |
 | `register(Panel)` | no | Default: pages, resources and widgets from the subfolders; override only for special cases and then call `parent::register($panel)` |
 
 ## 6. Pages, resources and widgets
@@ -574,6 +575,7 @@ public function fieldRules(): array
         types: ['string'],                                    // string, text, integer, decimal
         check: static fn (mixed $value): ?string => SwissChecks::iban((string) $value)
             ? null : __('ch-pruefungen::pruefungen.invalid.iban'),
+        description: __('ch-pruefungen::pruefungen.descriptions.iban'),   // what the rule requires (since API 1.6)
     )];
 }
 ```
@@ -582,6 +584,8 @@ public function fieldRules(): array
   `<plugin-id>.<name>`, e.g. `ch-pruefungen.iban`. Name: lowercase letters, digits and hyphens.
 - `check` returns the error message or `null`. Empty values are not checked (that is what "required" is for).
 - The rule applies when entering data, when importing and through `Saft::table(…)`.
+- `description` (optional) says in one sentence what the rule requires. It appears in the table designer as help text
+  for the selected rule, in the data model for the help assistant and in the developer context.
 - Step by step: [appendix A.6](#a6-validation-rules).
 
 **If the plugin is missing or resting:** validation rules are skipped, formulas using its functions return empty. The
@@ -770,14 +774,15 @@ production with `--no-dev`). It shows every building block on the warehouse demo
 | Dependencies | `LagerUmbuchungPlugin::requiredTables()` | four tables of the warehouse demo with ten fields; without them the form shows what is missing |
 
 **Permissions:** the page needs the plugin permission *Stock transfer: Perform transfers* and the data permissions
-*view* on items, locations and stock levels and *create* on stock movements. The listener books stock levels without a
-permission check – whoever may record movements does not need the right to edit stock levels.
+*view* on items and locations, *view*, *create* and *update* on stock levels and *create* on stock movements. The
+listener books stock levels without a permission check – whoever only records movements in the data view needs no
+permissions on stock levels.
 
 To try it: load the warehouse demo (`php artisan db:seed --class=LagerDemoSeeder`), choose “Create menu entries” under
 **Administration › Plugins**, then **Warehouse (demo) › Transfer** or the “Transfer” button in **Warehouse (demo) ›
 Stock levels**. A stock movement “Issue” shows how the stock is booked and – below the minimum stock – the notification
 in the bell. The tile **Warehouse: minimum stock** (`src/Widgets/MinimumStockWidget.php`) on the dashboard shows the
-items below minimum stock.
+items below minimum stock. The user guide (`docs/manual/`) appears as the tab *Stock transfer* in the online help.
 
 ### 17.2 Stock board
 
@@ -794,6 +799,7 @@ through whose procedure it books.
 | Listeners | `src/Listeners/` | store the item number in one spelling; locked once stock movements exist |
 | Validation rule | `src/ArticleNumber.php`, `LagerTafelPlugin::fieldRules()` | “Item number (warehouse demo)”: one letter, hyphen, four digits |
 | Menu suggestions | `LagerTafelPlugin::menuSuggestions()` | stock matrix and stock board in the group *Warehouse (demo)* |
+| User guide | `docs/manual/{de,en,fr,it}.md`, `LagerTafelPlugin::manuals()` | tab *Stock board* in the online help, knowledge for the help assistant |
 | Scheduled tasks | `src/Tasks/` | “Warehouse: stocktaking reminder” (stock not counted for N days) and “Warehouse: report minimum stock” (bell) |
 
 **Permissions:** *Stock board: View stock matrix* for the stock matrix and the tile, *Stock board: Transfer on the stock
@@ -818,7 +824,7 @@ with the formula `rappen(amount * 1.081)`.
 
 ## 18. API versions and change log
 
-The plugin API has its own version number **major.minor** (currently **1.5**). It is set in `config/saft.php`
+The plugin API has its own version number **major.minor** (currently **1.6**). It is set in `config/saft.php`
 (`api_versions`) and shown under **Documentation › About SAFT XT** and on the **Plugins** page.
 
 | Change | Version | Effect on plugins |
@@ -846,6 +852,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 | API | SAFT | Changes |
 |---|---|---|
+| **1.6** | 0.1 | `FieldRule` with optional `description`; `SaftPlugin::manuals()` and `Manual` – manuals from plugins in online help and help assistant; `saft:plugins --check` checks them |
 | **1.5** | 0.1 | `App\Tasks\TaskType`, `TaskResult` and `TaskSkipped` belong to the API – kinds of scheduled tasks from plugins (`SaftPlugin::taskTypes()`) thus pass `saft:plugins --check` |
 | **1.4** | 0.1 | `SaftPlugin::isEnabled()`, `PluginTestCase::withoutPlugin()`. Plugins can be switched off (**Plugins** page, `saft:plugins --disable`); plugins in `require` of `composer.json` count as required – if one is resting or missing, the dependent plugin rests as well |
 | **1.3** | 0.1 | `PluginTestCase::createTablesFromSchema()`. Tools (not part of the API): developer context (`saft:plugin-context`, download in plugin administration), `AGENTS.md` in the scaffold |
@@ -855,7 +862,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 ## Appendix A – Step-by-step guides
 
-Chapters 1–18 describe each building block on its own. This appendix takes the eight most common tasks from an empty
+Chapters 1–18 describe each building block on its own. This appendix takes the nine most common tasks from an empty
 file to a tested result. All examples come from the example plugin **Lager-Tafel** (stock board, `plugins/lager-tafel`).
 Its code is covered by tests on PostgreSQL, MySQL and MariaDB, so the excerpts here run as shown. Table and field names
 are those of the warehouse demo (German, e.g. `lager_artikel` = items, `menge` = quantity).
@@ -870,6 +877,7 @@ are those of the warehouse demo (German, e.g. `lager_artikel` = items, `menge` =
 | [A.6 Validation rules](#a6-validation-rules) | “Item number (warehouse demo)” | `src/ArticleNumber.php`, `LagerTafelPlugin::fieldRules()` |
 | [A.7 Menu suggestions](#a7-menu-suggestions) | Stock matrix and stock board in the menu | `LagerTafelPlugin::menuSuggestions()` |
 | [A.8 Scheduled tasks](#a8-scheduled-tasks) | Stocktaking reminder, report minimum stock | `src/Tasks/` |
+| [A.9 Shipping a manual](#a9-shipping-a-manual) | User guide in four languages | `docs/manual/`, `LagerTafelPlugin::manuals()` |
 
 **To try it:** load the warehouse demo (`php artisan db:seed --class=LagerDemoSeeder`), choose “Create menu entries”
 for *Stock board* under **Administration › Plugins**, then **Warehouse (demo) › Stock matrix** or **Stock board**. The
@@ -1561,6 +1569,7 @@ public function fieldRules(): array
         check: static fn (mixed $value): ?string => ArticleNumber::isValid((string) $value)
             ? null
             : __(self::T.'rules.article_number_invalid'),
+        description: __(self::T.'rules.article_number_description'),   // appears in the table designer
     )];
 }
 ```
@@ -1814,3 +1823,77 @@ $this->expectException(TaskSkipped::class);                // e.g. without the w
 - **No person's permissions:** `Saft::table(…)` without `withoutAuthorization()` fails in `run()`. In turn, what the task
   writes to the log or sends is seen by someone who may not be allowed to see the data – choose recipients deliberately.
 - **Long runs:** a run has no time limit. Process large amounts of data in chunks and keep the result short.
+
+### A.9 Shipping a manual
+
+**What for:** a plugin brings functions that are not in SAFT's manuals. A shipped **user guide** appears as a tab of its
+own in the **online help** (with contents and search) and is knowledge for the **help assistant** – it then also answers
+questions like “How do I correct a stock level?” from your text and refers to its sections. Lager-Umbuchung and
+Lager-Tafel each ship a manual.
+
+**Step 1 – create the files:** one Markdown file per language in a folder of the plugin, here `docs/manual/`:
+
+```
+plugins/lager-tafel/docs/manual/
+  de.md
+  en.md        required – if the interface language is missing, English is shown
+  fr.md
+  it.md
+```
+
+Structure of a file:
+
+```markdown
+# Stock board – user guide              ← omitted in the display (the tab carries the title)
+
+## Overview                             ← levels 2 and 3: contents and anchors
+…
+## Stock matrix
+…
+```
+
+- Write for the **users**, in the terms of the interface (menu entries, buttons, fields as in the respective language),
+  with procedures as numbered steps.
+- Name the **permissions** a function needs – the help assistant passes them on.
+- Links within the manual point to the anchors of its headings, links to SAFT's manuals to their file and anchor – as
+  in SAFT's own manuals.
+
+**Step 2 – register in the plugin class:**
+
+```php
+public function manuals(): array
+{
+    return [new Manual(
+        id: 'manual',
+        title: ['de' => 'Lager-Tafel', 'en' => 'Stock board', 'fr' => 'Tableau des stocks', 'it' => 'Tabellone delle giacenze'],
+        path: 'docs/manual',
+        permissions: $this->permissionNames(),      // visible with one of these permissions; [] = for everyone
+    )];
+}
+```
+
+- **`id`**: lowercase letters, digits, hyphens; part of the anchors (`plugin-lager-tafel-manual-stock-matrix`) – do not
+  change it after the first delivery, otherwise references in stored answers of the assistant break.
+- **`permissions`**: whoever has one of these permissions sees the manual. Lager-Umbuchung lists, besides its own
+  permission, the data permissions *view* on stock movements and stock levels – so the manual is also visible to people
+  who only record movements.
+- If the plugin is resting or switched off, its manual disappears from online help and assistant.
+
+**Step 3 – check:** `php artisan saft:plugins --check lager-tafel` reports “Manual “manual” in de, en, fr, it” or missing
+files. Then look at the tab under **Documentation**.
+
+**Testing:**
+
+```php
+$this->actingWithPermissions(['lager-tafel.view']);
+$this->get(route('filament.admin.pages.documentation'))->assertSee('data-doc-tab="plugin-lager-tafel-manual"', false);
+```
+
+**Pitfalls:**
+
+- **Only levels 2 and 3** form the contents; another level 1 in the text appears as a normal heading.
+- **Size:** the help assistant sends the manuals a person sees in full. Keep the manual concise and factual – background
+  for developers belongs in the plugin's `README.md`.
+- **Validation rules** are additionally described with `description:` on `FieldRule`
+  ([chapter 12](#12-formula-functions-and-validation-rules)): the description appears in the table designer and in the
+  data model, even without a manual.

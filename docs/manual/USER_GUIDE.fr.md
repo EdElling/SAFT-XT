@@ -110,7 +110,9 @@ déconnecté du compte de l’entreprise.
   le fait réapparaître. Votre navigateur retient ce choix. Le menu est aussi large que son entrée la plus longue.
 - **Documentation** (dans le menu, juste sous le tableau de bord) affiche ce guide et les questions fréquentes dans
   l’application, avec un sommaire et un champ de recherche qui cherche dans tous les guides pendant la frappe. Les
-  personnes ayant un droit dans le domaine Administration voient en plus le guide d’administration. **À propos de
+  personnes ayant un droit dans le domaine Administration voient en plus le guide d’administration. Si des plugins
+  fournissent leurs propres manuels (p. ex. *Transfert de stock*), ils apparaissent comme onglets supplémentaires lorsque
+  vous pouvez utiliser ces fonctions. **À propos de
   SAFT** indique la version, les conditions de licence et les composants tiers avec leurs licences.
 - **Assistant d’aide :** s’il est configuré et que vous en avez le droit, le bouton **?** en haut à droite ouvre une
   fenêtre où vous posez des questions sur l’utilisation, p. ex. « Comment exporter cette table ? ». La réponse s’appuie

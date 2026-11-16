@@ -8,6 +8,7 @@ use App\Models\DynamicRecord;
 use App\Plugins\Api\DataAction;
 use App\Plugins\Api\Events\RecordSaving;
 use App\Plugins\Api\FieldRule;
+use App\Plugins\Api\Manual;
 use App\Plugins\Api\RecordListener;
 use App\Plugins\MenuSuggestion;
 use App\Plugins\SaftPlugin;
@@ -61,6 +62,17 @@ final class LagerTafelPlugin extends SaftPlugin
             Warehouse::LOCATIONS => ['bezeichnung'],
             Warehouse::STOCKS => ['artikel_id', 'lagerort_id', 'menge'],
         ];
+    }
+
+    /** A.9 – Benutzerhandbuch (docs/manual/<sprache>.md) für Personen mit einem der beiden Rechte des Plugins. */
+    public function manuals(): array
+    {
+        return [new Manual(
+            id: 'manual',
+            title: ['de' => 'Lager-Tafel', 'en' => 'Stock board', 'fr' => 'Tableau des stocks', 'it' => 'Tabellone delle giacenze'],
+            path: 'docs/manual',
+            permissions: $this->permissionNames(),
+        )];
     }
 
     /** A.7 – zwei Einträge in der Gruppe der Lager-Demo, hinter „Umbuchung“ (5) des Plugins lager-umbuchung. */
@@ -133,6 +145,7 @@ final class LagerTafelPlugin extends SaftPlugin
             check: static fn (mixed $value): ?string => ArticleNumber::isValid((string) $value)
                 ? null
                 : __(self::T.'rules.article_number_invalid'),
+            description: __(self::T.'rules.article_number_description'),
         )];
     }
 }

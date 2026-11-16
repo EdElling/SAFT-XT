@@ -19,6 +19,7 @@ return [
     'rules' => [
         'article_number' => 'Artikelnummer (Lager-Demo)',
         'article_number_invalid' => 'Artikelnummer im Format A-1234 erwartet (ein Buchstabe, Bindestrich, vier Ziffern).',
+        'article_number_description' => 'Ein Grossbuchstabe, Bindestrich, vier Ziffern (A-1234). Kleinschreibung und Leerzeichen sind erlaubt; gespeichert wird die Nummer in Grossbuchstaben ohne Leerzeichen.',
     ],
     'errors' => [
         'number_locked' => 'Die Artikelnummer :number ist in Lagerbewegungen verwendet und kann nicht mehr geändert werden.',

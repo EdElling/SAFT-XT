@@ -993,6 +993,12 @@ Bezeichnungen, Pflicht, Anzeige und Regeln bleiben änderbar. Fehlt einem Plugin
 installiert wurde –, meldet die Seite **Plugins ruhen**: Knöpfe und Prüfungen des Plugins wirken dann nicht, und seine
 Seiten zeigen, was fehlt.
 
+**Handbücher aus Plugins:** Ein Plugin kann ein eigenes Benutzerhandbuch mitbringen. Es erscheint unter
+**Dokumentation** als weiterer Reiter – für Personen mit einem der Rechte, die das Plugin dafür nennt – und ist Wissen
+für den Hilfe-Assistenten. Ruht das Plugin oder ist es ausgeschaltet, verschwindet das Handbuch. Die Beispiel-Plugins
+*Lager-Umbuchung* und *Lager-Tafel* bringen je eines in vier Sprachen mit. Prüfregeln aus Plugins zeigen im
+Table-Designer unter **Weitere Prüfungen** zusätzlich, was sie verlangen.
+
 **Plugins ausschalten** (Recht *Plugins: verwalten*): **Ausschalten** in der Zeile des Plugins legt es still, ohne es
 zu entfernen – etwa für Tests oder wenn sich zwei Plugins in ihrer Funktion überschneiden. Der Dialog zeigt vorher, was
 wegfällt. Solange ein Plugin ausgeschaltet ist,

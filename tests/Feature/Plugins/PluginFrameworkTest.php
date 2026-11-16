@@ -59,8 +59,8 @@ class PluginFrameworkTest extends TestCase
 
         $plugin = $this->plugin();
         $this->assertSame('saft/lager-umbuchung', $plugin->packageName());
-        $this->assertSame('1.3.0', $plugin->version());
-        $this->assertSame('^1.2', $plugin->requiresApi());
+        $this->assertSame('1.4.0', $plugin->version());
+        $this->assertSame('^1.6', $plugin->requiresApi());
         $this->assertSame([self::PERMISSION], $plugin->permissionNames());
     }
 

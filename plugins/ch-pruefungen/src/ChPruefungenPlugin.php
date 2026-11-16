@@ -40,6 +40,7 @@ final class ChPruefungenPlugin extends SaftPlugin
             label: __(self::T.'rules.'.$name),
             types: $types,
             check: static fn (mixed $value): ?string => $valid((string) $value) ? null : __(self::T.'invalid.'.$name),
+            description: __(self::T.'descriptions.'.$name),
         );
 
         return [

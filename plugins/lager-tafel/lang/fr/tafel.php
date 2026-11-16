@@ -19,6 +19,7 @@ return [
     'rules' => [
         'article_number' => 'Numéro d’article (démo entrepôt)',
         'article_number_invalid' => 'Numéro d’article attendu au format A-1234 (une lettre, un tiret, quatre chiffres).',
+        'article_number_description' => 'Une lettre majuscule, un tiret, quatre chiffres (A-1234). Minuscules et espaces sont admis ; le numéro est enregistré en majuscules sans espaces.',
     ],
     'errors' => [
         'number_locked' => 'Le numéro d’article :number est utilisé dans des mouvements de stock et ne peut plus être modifié.',

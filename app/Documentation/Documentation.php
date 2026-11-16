@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace App\Documentation;
 
 use App\Models\User;
+use App\Plugins\Api\Manual;
+use App\Plugins\PluginDependencies;
+use App\Plugins\PluginRegistry;
+use App\Plugins\SaftPlugin;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
@@ -34,10 +38,75 @@ final class Documentation
         return $user !== null && collect(self::ADMIN_PERMISSIONS)->contains(fn (string $p): bool => $user->can($p));
     }
 
-    /** @return list<string> sichtbare Handbücher in Reihenfolge */
+    /** @return list<string> sichtbare Handbücher in Reihenfolge: die von SAFT, dann die der Plugins */
     public static function visibleFor(?User $user): array
     {
-        return array_values(array_filter(array_keys(self::DOCS), fn (string $doc): bool => $doc !== 'admin' || self::isAdmin($user)));
+        $core = array_filter(array_keys(self::DOCS), fn (string $doc): bool => $doc !== 'admin' || self::isAdmin($user));
+        $plugins = array_filter(self::pluginManuals(), static fn (array $entry): bool => $user !== null && (
+            $entry['manual']->permissions === []
+            || array_filter($entry['manual']->permissions, static fn (string $permission): bool => $user->can($permission)) !== []
+        ));
+
+        return [...array_values($core), ...array_keys($plugins)];
+    }
+
+    /** Alle Handbücher, auch nicht sichtbare (Kennungen). @return list<string> */
+    public static function keys(): array
+    {
+        return [...array_keys(self::DOCS), ...array_keys(self::pluginManuals())];
+    }
+
+    /** Titel eines Handbuchs in der Sprache der Oberfläche. */
+    public static function label(string $doc): string
+    {
+        $entry = self::pluginManuals()[$doc] ?? null;
+
+        if ($entry === null) {
+            return __('documentation.docs.'.$doc);
+        }
+
+        $title = $entry['manual']->title;
+
+        return (string) ($title[app()->getLocale()] ?? $title['en'] ?? reset($title));
+    }
+
+    /**
+     * Handbücher der Plugins, die wirken (eingeschaltet, nicht ruhend), mit vorhandenen Dateien. Kennung
+     * „plugin-<plugin-id>-<handbuch-id>“, zugleich Präfix der Anker.
+     *
+     * @return array<string, array{plugin: SaftPlugin, manual: Manual}>
+     */
+    public static function pluginManuals(): array
+    {
+        $manuals = [];
+
+        foreach (app(PluginRegistry::class)->all() as $plugin) {
+            if ($plugin->manuals() === [] || ! app(PluginDependencies::class)->satisfied($plugin)) {
+                continue;
+            }
+
+            foreach ($plugin->manuals() as $manual) {
+                if (preg_match(Manual::ID_PATTERN, $manual->id) === 1 && self::pluginFile($plugin, $manual, 'en') !== null) {
+                    $manuals['plugin-'.$plugin->id().'-'.$manual->id] = ['plugin' => $plugin, 'manual' => $manual];
+                }
+            }
+        }
+
+        return $manuals;
+    }
+
+    /** Datei eines Plugin-Handbuchs in dieser Sprache, sonst Englisch, sonst die erste vorhandene; null = keine. */
+    private static function pluginFile(SaftPlugin $plugin, Manual $manual, string $language): ?string
+    {
+        foreach (array_unique([$language, 'en', ...Manual::LANGUAGES]) as $candidate) {
+            $file = $plugin->basePath().'/'.trim($manual->path, '/').'/'.$candidate.'.md';
+
+            if (is_file($file)) {
+                return $file;
+            }
+        }
+
+        return null;
     }
 
     /** Sprachen, in denen Handbücher erscheinen können; Englisch ist die Grundfassung (ohne Kürzel im Dateinamen). */
@@ -51,6 +120,10 @@ final class Documentation
     {
         $locale = app()->getLocale();
 
+        if ($doc !== null && ($entry = self::pluginManuals()[$doc] ?? null) !== null) {
+            return basename((string) self::pluginFile($entry['plugin'], $entry['manual'], $locale), '.md');
+        }
+
         if (! in_array($locale, self::LANGUAGES, true)) {
             return 'en';
         }
@@ -60,6 +133,15 @@ final class Documentation
 
     private static function path(string $doc, string $language): string
     {
+        if (($entry = self::pluginManuals()[$doc] ?? null) !== null) {
+            return (string) self::pluginFile($entry['plugin'], $entry['manual'], $language);
+        }
+
+        // Unbekannt oder Handbuch eines ruhenden Plugins: keine Datei.
+        if (! isset(self::DOCS[$doc])) {
+            return '';
+        }
+
         return base_path('docs/manual/'.self::DOCS[$doc].($language === 'en' ? '' : '.'.$language).'.md');
     }
 
@@ -143,6 +225,12 @@ final class Documentation
     private static function body(string $doc): string
     {
         $file = self::path($doc, self::language($doc));
+
+        // Handbücher aus Plugins: ganze Datei, ohne eine Überschrift der Ebene 1 am Anfang (der Reiter trägt den Titel).
+        if (isset(self::pluginManuals()[$doc])) {
+            return (string) preg_replace('/\A\s*# [^\n]*\n/', '', (string) file_get_contents($file));
+        }
+
         $parts = preg_split('/^---$/m', (string) file_get_contents($file), 3);
 
         return count($parts) === 3 ? $parts[2] : (string) end($parts);

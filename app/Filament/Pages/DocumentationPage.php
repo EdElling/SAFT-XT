@@ -41,7 +41,7 @@ class DocumentationPage extends Page
 
         return [
             'docs' => collect($visible)->mapWithKeys(fn (string $doc): array => [$doc => [
-                'label' => __('documentation.docs.'.$doc),
+                'label' => Documentation::label($doc),
                 'language' => Documentation::language($doc),
                 'sections' => Documentation::sections($doc, $visible),
             ]])->all(),

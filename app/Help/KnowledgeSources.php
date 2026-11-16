@@ -16,7 +16,8 @@ final class KnowledgeSources
     /** @return list<KnowledgeSource> */
     public function all(): array
     {
-        return array_map(static fn (string $doc): KnowledgeSource => new ManualSource($doc), array_keys(Documentation::DOCS));
+        // Handbücher von SAFT und der Plugins (Documentation::keys()); weitere Arten von Quellen kommen hier hinzu.
+        return array_map(static fn (string $doc): KnowledgeSource => new ManualSource($doc), Documentation::keys());
     }
 
     /** @return list<KnowledgeSource> was diese Person sehen darf, in fester Reihenfolge */

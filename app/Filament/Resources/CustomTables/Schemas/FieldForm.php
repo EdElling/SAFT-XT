@@ -546,8 +546,19 @@ final class FieldForm
     /** @param  array<mixed>  $selected */
     private static function pluginCheckHint(string $type, array $selected): ?string
     {
-        $unavailable = array_diff(array_map('strval', $selected), array_keys(app(PluginRegistry::class)->fieldRules($type)));
+        $rules = app(PluginRegistry::class)->fieldRules($type);
+        $unavailable = array_diff(array_map('strval', $selected), array_keys($rules));
 
-        return $unavailable === [] ? __('tables.fields.plugin_checks_help') : __('tables.fields.plugin_checks_missing', ['rules' => implode(', ', $unavailable)]);
+        if ($unavailable !== []) {
+            return __('tables.fields.plugin_checks_missing', ['rules' => implode(', ', $unavailable)]);
+        }
+
+        // Was die gewählten Regeln verlangen (Beschreibung aus dem Plugin), sonst der allgemeine Hinweis.
+        $described = array_filter(array_map(
+            static fn (string $key): ?string => filled($rules[$key]->description ?? null) ? $rules[$key]->label.': '.$rules[$key]->description : null,
+            array_map('strval', $selected),
+        ));
+
+        return $described === [] ? __('tables.fields.plugin_checks_help') : implode(' · ', $described);
     }
 }

@@ -963,6 +963,12 @@ rules remain editable. If a plugin lacks something – for example because it wa
 the page reports **Plugins are resting**: the plugin's buttons and checks do not apply, and its pages show what is
 missing.
 
+**Manuals from plugins:** a plugin can ship its own user guide. It appears under **Documentation** as a further tab –
+for people with one of the permissions the plugin names for it – and is knowledge for the help assistant. If the plugin
+is resting or switched off, the manual disappears. The example plugins *Stock transfer* and *Stock board* each ship one
+in four languages. Validation rules from plugins also show in the table designer under **Further checks** what they
+require.
+
 **Switching plugins off** (permission *Plugins: manage*): **Switch off** in the plugin's row shuts it down without
 removing it – for example for tests or when two plugins overlap in function. The dialog shows beforehand what goes
 away. While a plugin is switched off,

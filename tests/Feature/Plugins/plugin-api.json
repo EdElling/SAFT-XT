@@ -1,5 +1,5 @@
 {
-    "version": "1.5",
+    "version": "1.6",
     "surface": {
         "App\\Filament\\Concerns\\LimitsFormWidth": [
             "trait",
@@ -88,7 +88,8 @@
             "class",
             "const NAME_PATTERN = \"/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/\"",
             "const TYPES = [\"string\",\"text\",\"integer\",\"decimal\"]",
-            "function __construct(string $name, string $label, array $types, Closure $check)",
+            "function __construct(string $name, string $label, array $types, Closure $check, ?string $description = null)",
+            "property ?string $description",
             "property Closure $check",
             "property array $types",
             "property string $label",
@@ -103,6 +104,16 @@
             "property int $minArguments",
             "property string $description",
             "property string $name"
+        ],
+        "App\\Plugins\\Api\\Manual": [
+            "class",
+            "const ID_PATTERN = \"/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/\"",
+            "const LANGUAGES = [\"de\",\"en\",\"fr\",\"it\"]",
+            "function __construct(string $id, array $title, string $path, array $permissions = [])",
+            "property array $permissions",
+            "property array $title",
+            "property string $id",
+            "property string $path"
         ],
         "App\\Plugins\\Api\\RecordListener": [
             "class",
@@ -163,6 +174,7 @@
             "function fieldRules(): array",
             "function formulaFunctions(): array",
             "function getId(): string",
+            "function manuals(): array",
             "function menuSuggestions(): array",
             "function permissions(): array",
             "function recordListeners(): array",

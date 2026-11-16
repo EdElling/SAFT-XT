@@ -19,6 +19,7 @@ return [
     'rules' => [
         'article_number' => 'Codice articolo (demo magazzino)',
         'article_number_invalid' => 'Codice articolo atteso nel formato A-1234 (una lettera, un trattino, quattro cifre).',
+        'article_number_description' => 'Una lettera maiuscola, un trattino, quattro cifre (A-1234). Minuscole e spazi sono ammessi; il codice viene salvato in maiuscolo senza spazi.',
     ],
     'errors' => [
         'number_locked' => 'Il codice articolo :number è usato nei movimenti di magazzino e non può più essere modificato.',

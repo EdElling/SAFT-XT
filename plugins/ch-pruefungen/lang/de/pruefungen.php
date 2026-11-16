@@ -11,6 +11,12 @@ return [
         'uid' => 'UID (CHE-Nummer)',
         'plz' => 'Postleitzahl Schweiz',
     ],
+    'descriptions' => [
+        'ahv' => '13 Ziffern, beginnend mit 756, mit Prüfziffer (EAN-13); Punkte und Leerzeichen sind erlaubt, z. B. 756.1234.5678.97.',
+        'iban' => 'Länderkürzel, zwei Prüfziffern und Kontonummer; Prüfsumme nach ISO 13616, für CH und LI genau 21 Zeichen; Leerzeichen sind erlaubt.',
+        'uid' => 'CHE, dann neun Ziffern mit Prüfziffer, z. B. CHE-123.456.789; Bindestrich und Punkte dürfen fehlen.',
+        'plz' => 'Vier Ziffern von 1000 bis 9999.',
+    ],
     'invalid' => [
         'ahv' => 'Keine gültige AHV-Nummer (756.xxxx.xxxx.xx, Prüfziffer).',
         'iban' => 'Keine gültige IBAN (Prüfsumme oder Länge).',

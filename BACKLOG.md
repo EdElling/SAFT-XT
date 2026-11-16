@@ -8,10 +8,8 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-1. **B-038** Beschreibung für Prüfregeln aus Plugins und **B-037** Handbücher aus Plugins (mit Benutzerhandbuch der
-   Lager-Demo)
-2. **B-027** Filter und Sortierung je Person und Tabelle merken
-3. **B-021** Feldtyp Datei/Bild
+1. **B-027** Filter und Sortierung je Person und Tabelle merken
+2. **B-021** Feldtyp Datei/Bild
 
 ## Konfiguration übertragen
 
@@ -52,8 +50,8 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 | B-034 | Anonymisierte Beispieldaten im Kontext | Optional einige anonymisierte Beispielzeilen je Tabelle im Entwickler-Kontext. | zurückgestellt | Entscheid 2026-11-15: vorerst keine Beispieldaten (Datenschutz) |
 | B-035 | Aufgaben-Ergebnis mit Hinweis | Eine Aufgabe kann im `TaskResult` angeben, dass ihr Ergebnis Aufmerksamkeit braucht (z. B. „12 Bestände nicht gezählt“): Meldung nach „Jetzt ausführen“ orange statt grün, Markierung im Laufprotokoll. Erweiterung der Plugin-API (Minor). | offen | – |
 | B-036 | Arten geplanter Aufgaben in Plugins | `TaskType`, `TaskResult`, `TaskSkipped` in der Plugin-API; Beispiele „Inventur-Erinnerung“ und „Mindestbestand melden“ in Lager-Tafel, Anhang A.8 im Entwicklerhandbuch. | umgesetzt | API 1.5 |
-| B-037 | Handbücher aus Plugins | Wissensquelle für Online-Hilfe und Hilfe-Assistent (`KnowledgeSource`): ein Plugin liefert Markdown-Handbücher je Sprache mit dem Recht, das sie sichtbar macht (z. B. `SaftPlugin::manuals()`); ruht und ist aus mit dem Plugin. Plugin-API (Minor). **Anmerkung:** als erstes Beispiel ein Benutzerhandbuch für die Lager-Demo (Bestände, Bewegungen, Umbuchen, Lagertafel, Inventur, Mindestbestand, Artikelnummer) in vier Sprachen. | geplant | baut auf B-050 auf |
-| B-038 | Beschreibung für Prüfregeln aus Plugins | Optionale Beschreibung bei `FieldRule` (z. B. „ein Buchstabe, Bindestrich, vier Ziffern“): im Table-Designer, im Datenmodell für den Hilfe-Assistenten und im Entwickler-Kontext. Anlass: Der Assistent kannte die Regel für die Artikelnummer nur dem Namen nach. | geplant | – |
+| B-037 | Handbücher aus Plugins | Wissensquelle für Online-Hilfe und Hilfe-Assistent (`KnowledgeSource`): ein Plugin liefert Markdown-Handbücher je Sprache mit dem Recht, das sie sichtbar macht (z. B. `SaftPlugin::manuals()`); ruht und ist aus mit dem Plugin. Plugin-API (Minor). **Anmerkung:** als erstes Beispiel ein Benutzerhandbuch für die Lager-Demo (Bestände, Bewegungen, Umbuchen, Lagertafel, Inventur, Mindestbestand, Artikelnummer) in vier Sprachen. | umgesetzt | API 1.6 |
+| B-038 | Beschreibung für Prüfregeln aus Plugins | Optionale Beschreibung bei `FieldRule` (z. B. „ein Buchstabe, Bindestrich, vier Ziffern“): im Table-Designer, im Datenmodell für den Hilfe-Assistenten und im Entwickler-Kontext. Anlass: Der Assistent kannte die Regel für die Artikelnummer nur dem Namen nach. | umgesetzt | API 1.6 |
 | B-039 | Handbuchseiten ohne Plugin | In der Administration gepflegte Seiten als Wissensquelle (für Anwendungen nur aus Konfiguration), per Konfigurationstransfer übertragbar. | offen | baut auf B-037 auf |
 
 ## KI-Assistenz

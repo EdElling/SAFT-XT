@@ -58,7 +58,7 @@ mitbringen:
 | Arten geplanter Aufgaben | Klassen, die `App\Tasks\TaskType` umsetzen |
 
 **Was zugesichert ist:** Die Programmierschnittstelle für Plugins (Plugin-API) hat eine **eigene Versionsnummer**,
-unabhängig von SAFT – derzeit **1.5**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
+unabhängig von SAFT – derzeit **1.6**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, alle Klassen unter `App\Plugins\Api` (ausser
 `ApiManifest`), die Test-Basis `App\Plugins\Testing\PluginTestCase`, für Arten geplanter Aufgaben
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` und `App\Tasks\TaskSkipped` sowie das Trait
@@ -292,6 +292,7 @@ final class LagerUmbuchungPlugin extends SaftPlugin
 | `dataActions()` | nein | Knöpfe in Datenansichten, siehe [Kapitel 11](#11-aktionen-in-datenansichten) |
 | `formulaFunctions()` | nein | Formelfunktionen für berechnete Felder, siehe [Kapitel 12](#12-formelfunktionen-und-prüfregeln) |
 | `fieldRules()` | nein | Prüfregeln für Felder, siehe [Kapitel 12](#12-formelfunktionen-und-prüfregeln) |
+| `manuals()` | nein | Handbücher für Online-Hilfe und Hilfe-Assistent, siehe [Anhang A.9](#a9-handbuch-mitliefern) |
 | `register(Panel)` | nein | Standard: Seiten, Ressourcen und Widgets aus den Unterordnern; überschreiben Sie die Methode nur für Sonderfälle und rufen Sie dann `parent::register($panel)` auf |
 
 ## 6. Seiten, Ressourcen und Widgets
@@ -584,6 +585,7 @@ public function fieldRules(): array
         types: ['string'],                                    // string, text, integer, decimal
         check: static fn (mixed $value): ?string => SwissChecks::iban((string) $value)
             ? null : __('ch-pruefungen::pruefungen.invalid.iban'),
+        description: __('ch-pruefungen::pruefungen.descriptions.iban'),   // was die Regel verlangt (seit API 1.6)
     )];
 }
 ```
@@ -592,6 +594,8 @@ public function fieldRules(): array
   `<plugin-id>.<name>`, z. B. `ch-pruefungen.iban`. Name: Kleinbuchstaben, Ziffern und Bindestriche.
 - `check` gibt die Fehlermeldung zurück oder `null`. Leere Werte werden nicht geprüft (dafür gibt es „Pflichtfeld“).
 - Die Regel gilt bei der Erfassung, beim Import und über `Saft::table(…)`.
+- `description` (optional) sagt in einem Satz, was die Regel verlangt. Sie erscheint im Table-Designer als Hilfetext
+  zur gewählten Regel, im Datenmodell für den Hilfe-Assistenten und im Entwickler-Kontext.
 - Schritt für Schritt: [Anhang A.6](#a6-prüfregeln).
 
 **Wenn das Plugin fehlt oder ruht:** Prüfregeln werden übersprungen, Formeln mit seinen Funktionen ergeben leer. Der
@@ -785,14 +789,16 @@ der Produktion mit `--no-dev` nicht). Es zeigt alle Bausteine an der Lager-Demo:
 | Abhängigkeiten | `LagerUmbuchungPlugin::requiredTables()` | vier Tabellen der Lager-Demo mit zehn Feldern; ohne sie zeigt die Maske, was fehlt |
 
 **Rechte:** Die Seite braucht das Plugin-Recht *Lager-Umbuchung: Umbuchungen ausführen* und die Datenrechte
-*anzeigen* auf Artikel, Lagerorte und Bestände sowie *anlegen* auf Lagerbewegungen. Die Bestände bucht der Listener
-ohne Rechteprüfung nach – wer Bewegungen erfassen darf, braucht kein Recht zum Bearbeiten der Bestände.
+*anzeigen* auf Artikel und Lagerorte, *anzeigen*, *anlegen* und *bearbeiten* auf Bestände sowie *anlegen* auf
+Lagerbewegungen. Die Bestände bucht der Listener ohne Rechteprüfung nach – wer nur Bewegungen in der Datenansicht
+erfasst, braucht keine Rechte auf die Bestände.
 
 So probieren Sie es aus: Lager-Demo einspielen (`php artisan db:seed --class=LagerDemoSeeder`), unter
 **Administration › Plugins** „Menüeinträge anlegen“, dann **Lager (Demo) › Umbuchung** oder der Knopf „Umbuchen“ in
 **Lager (Demo) › Bestände**. Eine Lagerbewegung „Ausgang“ zeigt die Buchung des Bestands und – unter dem
 Mindestbestand – die Meldung in der Glocke. Die Kachel **Lager: Mindestbestand** (`src/Widgets/MinimumStockWidget.php`)
-auf dem Dashboard zeigt die Artikel unter dem Mindestbestand.
+auf dem Dashboard zeigt die Artikel unter dem Mindestbestand. Das Benutzerhandbuch (`docs/manual/`) erscheint als Reiter
+*Lager-Umbuchung* in der Online-Hilfe.
 
 ### 17.2 Lager-Tafel
 
@@ -809,6 +815,7 @@ Das Plugin `plugins/lager-tafel` (nur in Entwicklungs- und Demo-Installationen) 
 | Listener | `src/Listeners/` | Artikelnummer in einer Schreibweise speichern; gesperrt, sobald es Lagerbewegungen gibt |
 | Prüfregel | `src/ArticleNumber.php`, `LagerTafelPlugin::fieldRules()` | „Artikelnummer (Lager-Demo)“: ein Buchstabe, Bindestrich, vier Ziffern |
 | Menüvorschläge | `LagerTafelPlugin::menuSuggestions()` | Lagerspiegel und Lagertafel in der Gruppe *Lager (Demo)* |
+| Benutzerhandbuch | `docs/manual/{de,en,fr,it}.md`, `LagerTafelPlugin::manuals()` | Reiter *Lager-Tafel* in der Online-Hilfe, Wissen für den Hilfe-Assistenten |
 | Geplante Aufgaben | `src/Tasks/` | „Lager: Inventur-Erinnerung“ (Bestände ohne Zählung seit N Tagen) und „Lager: Mindestbestand melden“ (Glocke) |
 
 **Rechte:** *Lager-Tafel: Lagerspiegel anzeigen* für Lagerspiegel und Kachel, *Lager-Tafel: Auf der Lagertafel umbuchen*
@@ -832,7 +839,7 @@ berechnetes Feld mit der Formel `rappen(betrag * 1.081)` anlegen.
 
 ## 18. API-Versionen und Änderungsprotokoll
 
-Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.5**). Sie steht in `config/saft.php`
+Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.6**). Sie steht in `config/saft.php`
 (`api_versions`) und erscheint unter **Dokumentation › Über SAFT XT** sowie auf der Seite **Plugins**.
 
 | Änderung | Version | Wirkung für Plugins |
@@ -861,6 +868,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 | API | SAFT | Änderungen |
 |---|---|---|
+| **1.6** | 0.1 | `FieldRule` mit optionaler `description`; `SaftPlugin::manuals()` und `Manual` – Handbücher aus Plugins in Online-Hilfe und Hilfe-Assistent; `saft:plugins --check` prüft sie |
 | **1.5** | 0.1 | `App\Tasks\TaskType`, `TaskResult` und `TaskSkipped` gehören zur API – Arten geplanter Aufgaben aus Plugins (`SaftPlugin::taskTypes()`) bestehen damit `saft:plugins --check` |
 | **1.4** | 0.1 | `SaftPlugin::isEnabled()`, `PluginTestCase::withoutPlugin()`. Plugins lassen sich ausschalten (Seite **Plugins**, `saft:plugins --disable`); Plugins aus `require` der `composer.json` gelten als benötigt – ruht oder fehlt eines, ruht das abhängige Plugin mit |
 | **1.3** | 0.1 | `PluginTestCase::createTablesFromSchema()`. Werkzeuge (nicht Teil der API): Entwickler-Kontext (`saft:plugin-context`, Download in der Plugin-Verwaltung), `AGENTS.md` im Gerüst |
@@ -870,7 +878,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 ## Anhang A – Schritt-für-Schritt-Anleitungen
 
-Die Kapitel 1–18 beschreiben jeden Baustein für sich. Dieser Anhang führt für die acht häufigsten Aufgaben von der
+Die Kapitel 1–18 beschreiben jeden Baustein für sich. Dieser Anhang führt für die neun häufigsten Aufgaben von der
 leeren Datei bis zum getesteten Ergebnis. Alle Beispiele stammen aus dem Beispiel-Plugin **Lager-Tafel**
 (`plugins/lager-tafel`). Sein Code ist mit Tests auf PostgreSQL, MySQL und MariaDB abgesichert, die Ausschnitte hier
 laufen also so, wie sie dastehen.
@@ -885,6 +893,7 @@ laufen also so, wie sie dastehen.
 | [A.6 Prüfregeln](#a6-prüfregeln) | „Artikelnummer (Lager-Demo)“ | `src/ArticleNumber.php`, `LagerTafelPlugin::fieldRules()` |
 | [A.7 Menüvorschläge](#a7-menüvorschläge) | Lagerspiegel und Lagertafel im Menü | `LagerTafelPlugin::menuSuggestions()` |
 | [A.8 Geplante Aufgaben](#a8-geplante-aufgaben) | Inventur-Erinnerung, Mindestbestand melden | `src/Tasks/` |
+| [A.9 Handbuch mitliefern](#a9-handbuch-mitliefern) | Benutzerhandbuch in vier Sprachen | `docs/manual/`, `LagerTafelPlugin::manuals()` |
 
 **Ausprobieren:** Lager-Demo einspielen (`php artisan db:seed --class=LagerDemoSeeder`), unter
 **Administration › Plugins** bei *Lager-Tafel* „Menüeinträge anlegen“, dann **Lager (Demo) › Lagerspiegel** bzw.
@@ -1583,6 +1592,7 @@ public function fieldRules(): array
         check: static fn (mixed $value): ?string => ArticleNumber::isValid((string) $value)
             ? null
             : __(self::T.'rules.article_number_invalid'),
+        description: __(self::T.'rules.article_number_description'),   // erscheint im Table-Designer
     )];
 }
 ```
@@ -1841,3 +1851,76 @@ $this->expectException(TaskSkipped::class);                // z. B. ohne Lager-D
   bewusst wählen.
 - **Lange Läufe:** Ein Lauf hat keine Zeitbegrenzung. Viele Daten in Stücken verarbeiten und das Ergebnis knapp
   halten.
+
+### A.9 Handbuch mitliefern
+
+**Wozu:** Ein Plugin bringt Funktionen, die in den Handbüchern von SAFT nicht stehen. Ein mitgeliefertes
+**Benutzerhandbuch** erscheint als eigener Reiter in der **Online-Hilfe** (mit Inhaltsverzeichnis und Suche) und ist
+Wissen für den **Hilfe-Assistenten** – er beantwortet dann auch Fragen wie „Wie korrigiere ich einen Bestand?“ aus Ihrem
+Text und verweist auf dessen Abschnitte. Lager-Umbuchung und Lager-Tafel liefern je ein Handbuch mit.
+
+**Schritt 1 – Dateien anlegen:** je Sprache eine Markdown-Datei in einem Ordner des Plugins, hier `docs/manual/`:
+
+```
+plugins/lager-tafel/docs/manual/
+  de.md
+  en.md        Pflicht – fehlt die Sprache der Oberfläche, erscheint Englisch
+  fr.md
+  it.md
+```
+
+Aufbau einer Datei:
+
+```markdown
+# Lager-Tafel – Benutzerhandbuch        ← entfällt in der Anzeige (der Reiter trägt den Titel)
+
+## Überblick                            ← Ebene 2 und 3: Inhaltsverzeichnis und Anker
+…
+## Lagerspiegel
+…
+```
+
+- Schreiben Sie für die **Anwender**, in den Begriffen der Oberfläche (Menüeinträge, Knöpfe, Felder wie in der
+  jeweiligen Sprache), mit Abläufen in nummerierten Schritten.
+- Nennen Sie die **Rechte**, die eine Funktion braucht – der Hilfe-Assistent gibt sie weiter.
+- Verweise innerhalb des Handbuchs zeigen auf die Anker seiner Überschriften, Verweise auf die Handbücher von SAFT auf
+  deren Datei und Anker – wie in den Handbüchern von SAFT selbst.
+- Deutsch in Schweizer Rechtschreibung, wie der Rest von SAFT.
+
+**Schritt 2 – in der Plugin-Klasse anmelden:**
+
+```php
+public function manuals(): array
+{
+    return [new Manual(
+        id: 'manual',
+        title: ['de' => 'Lager-Tafel', 'en' => 'Stock board', 'fr' => 'Tableau des stocks', 'it' => 'Tabellone delle giacenze'],
+        path: 'docs/manual',
+        permissions: $this->permissionNames(),      // sichtbar mit einem dieser Rechte; [] = für alle
+    )];
+}
+```
+
+- **`id`**: Kleinbuchstaben, Ziffern, Bindestriche; Teil der Anker (`plugin-lager-tafel-manual-lagerspiegel`) – nach der
+  ersten Auslieferung nicht mehr ändern, sonst brechen Verweise in gespeicherten Antworten des Assistenten.
+- **`permissions`**: Wer eines dieser Rechte hat, sieht das Handbuch. Lager-Umbuchung nennt neben seinem eigenen Recht
+  die Datenrechte *anzeigen* auf Lagerbewegungen und Bestände – so sieht das Handbuch auch, wer nur Bewegungen erfasst.
+- Ruht das Plugin oder ist es ausgeschaltet, verschwindet sein Handbuch aus Online-Hilfe und Assistent.
+
+**Schritt 3 – prüfen:** `php artisan saft:plugins --check lager-tafel` meldet „Handbuch „manual“ in de, en, fr, it“ bzw.
+fehlende Dateien. Danach unter **Dokumentation** den Reiter ansehen.
+
+**Testen:**
+
+```php
+$this->actingWithPermissions(['lager-tafel.view']);
+$this->get(route('filament.admin.pages.documentation'))->assertSee('data-doc-tab="plugin-lager-tafel-manual"', false);
+```
+
+**Stolpersteine:**
+
+- **Nur Ebenen 2 und 3** bilden das Inhaltsverzeichnis; eine weitere Ebene 1 im Text erscheint als normale Überschrift.
+- **Umfang:** Der Hilfe-Assistent schickt die Handbücher, die eine Person sieht, vollständig mit. Halten Sie das
+  Handbuch knapp und sachlich – Hintergründe für Entwickler gehören in die `README.md` des Plugins.
+- **Prüfregeln** beschreiben Sie zusätzlich mit `description:` bei `FieldRule` ([Kapitel 12](#12-formelfunktionen-und-prüfregeln)):
+  Die Beschreibung erscheint im Table-Designer und im Datenmodell, auch ohne Handbuch.
