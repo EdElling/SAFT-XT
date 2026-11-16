@@ -371,6 +371,7 @@ backup into a new database and point `PGSQL_DATABASE` or `MYSQL_DATABASE` in `.e
 | Sign-in page without styling | Run `php artisan filament:upgrade`; check that the domain points to `public`. |
 | Changes in `.env` have no effect | Run `php artisan optimize` (and `filament:optimize`) again. |
 | Links or redirects show `http://` instead of `https://`, the activity log always shows the same IP address | HTTPS ends before the server (load balancer): set `TRUSTED_PROXIES` (step 4), then `php artisan optimize`. |
+| After switching back to http, the browser still insists on HTTPS | HSTS: after one visit over HTTPS, the browser remembers this for a year. Keep HTTPS; only if there is really no other way, set `SECURITY_HSTS=false` and clear the site data in the browser ([System administration guide, chapter 3](SYSADMIN_GUIDE.md#3-updates-and-security)). |
 | "Page expired" (419) after signing in | `SESSION_SECURE_COOKIE=true` without HTTPS, or `APP_URL` does not match the address used. |
 | Emails do not arrive | Check the SMTP settings; `MAIL_FROM_ADDRESS` must be an address of your own domain. |
 | `db:backup` reports "Sicherung fehlgeschlagen" (backup failed) | The message behind it names the reason: program missing (path in `…_DUMP_BINARY`), older than the database server (`server version mismatch`, `Error in field count`) or may not connect. With MySQL and MariaDB, `DB_BACKUP_METHOD=php` helps, otherwise the provider's backup. |

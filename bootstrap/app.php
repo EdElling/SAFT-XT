@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Exceptions\BusinessRuleException;
 use App\Exceptions\ErrorPresenter;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Sicherheits-Header für alle Antworten (Seiten, Livewire, Downloads, Fehlerseiten).
+        $middleware->append(SecurityHeaders::class);
         // Auch Livewire-Anfragen laufen über "web" und brauchen die Sprache des Benutzers.
         $middleware->web(append: [SetLocale::class]);
         // Eigene Routen mit „auth“ (Bilder der Dokumentation, Theme, Rollen-Ansicht): Gäste zur Anmeldung von Filament.

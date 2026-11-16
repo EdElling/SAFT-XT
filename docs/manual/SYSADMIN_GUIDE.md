@@ -124,6 +124,14 @@ Procedure: [Appendix C, section 9](INSTALL_PRODUCTION.md#9-installing-updates).
 end of 2028; switch to the next version in good time. Reporting vulnerabilities in SAFT itself: see `SECURITY.md` in
 the program directory.
 
+**Security headers:** SAFT sends headers with every response that harden the browser: no embedding in other sites
+(`X-Frame-Options`, `frame-ancestors`), no guessing of file types (`X-Content-Type-Options`), addresses only shortened
+to other sites (`Referrer-Policy`), no camera, microphone or location (`Permissions-Policy`). Over HTTPS, **HSTS** is
+added: the browser then calls SAFT only over HTTPS for one year, even if someone types `http://` or an attacker on the
+network tries to redirect to http. HSTS can be switched off with `SECURITY_HSTS=false` in `.env`, e.g. if the address
+is to run without a certificate again in future – browsers that already know the header keep to it until it expires.
+If the web server sets the same headers itself, its values apply. Check: `curl -sI https://saft.example.ch/admin/login`.
+
 ## 4. Scheduled tasks and cron
 
 [Scheduled tasks](ADMIN_GUIDE.md#12-scheduled-tasks) (e.g. refreshing data snapshots) are run by the Laravel

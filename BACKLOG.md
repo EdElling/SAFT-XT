@@ -79,6 +79,10 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 | B-044 | Release v0.1.0 | Erstes Release von SAFT XT; Feature-Tests auf GitHub (3 Datenbanken), betroffene Browser-Tests lokal (PostgreSQL). | umgesetzt | v0.1.0 |
 | B-045 | Hoster mit einem Benutzer je Datenbank (Strato) | Zweite Datenbank (`app_data`) mit eigenem Server, Port, Benutzer und Passwort (`DB_APP_DATA_*`) und vom Hoster vergebenem Namen (`APP_DATA_SCHEMA`); `migrate` legt vorhandene Datenbanken nicht an; `db:backup` sichert in zwei Teilen. Bei Strato erprobt (BTR-08, 16.11.2026; Sicherung dort mit B-046). | umgesetzt | – |
 | B-046 | Sicherung in PHP für Webspaces | `db:backup --php` bzw. `DB_BACKUP_METHOD=php` sichert MySQL/MariaDB ohne mysqldump (SQL-Skript, berechnete Spalten ohne Werte, ungepuffert) – für Webspaces mit fehlendem oder zu altem mysqldump (Strato: 5.6, „Error in field count“ bei unsichtbaren Spalten). Verständliche Meldungen, wenn das Programm fehlt. | umgesetzt | – |
+| B-055 | Sicherheits-Header | Middleware für alle Antworten: `X-Content-Type-Options`, `X-Frame-Options` und `frame-ancestors`, `Referrer-Policy`, `Permissions-Policy`, `base-uri`/`object-src`; HSTS ein Jahr, nur über HTTPS, abschaltbar (`SECURITY_HSTS`). | umgesetzt | – |
+| B-056 | Strengere Passwortregel | Mindestens 12 Zeichen und Abgleich mit geleakten Passwörtern (k-Anonymität, abschaltbar für Server ohne Internet). | geplant | – |
+| B-057 | Zwei-Faktor-Anmeldung | Authenticator-App (Filament) mit Wiederherstellungscodes; App-Einstellung freiwillig / Pflicht für Administration (Vorgabe) / Pflicht für alle; SSO-Konten ausgenommen; Zurücksetzen durch die Administration und per Befehl. | geplant | – |
+| B-058 | Strenge Content-Security-Policy | Vollständige CSP mit Nonces für Skripte und Stile; heute nicht möglich, weil Filament und Livewire Inline-Skripte brauchen. Erst prüfen, wenn Filament CSP-Nonces unterstützt. | offen | baut auf B-055 auf |
 | B-040 | OpenSpout 5 | Erst mit Filament 6 (Filament verlangt OpenSpout ^4). | zurückgestellt | – |
 
 ## Umgesetzt (Übersicht)

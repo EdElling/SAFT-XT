@@ -124,6 +124,15 @@ Rückweg. Ablauf: [Anhang C, Abschnitt 9](INSTALL_PRODUCTION.de.md#9-updates-ein
 Ende 2028; rechtzeitig vorher auf die nächste Version wechseln. Meldung von Sicherheitslücken in SAFT selbst: siehe
 `SECURITY.md` im Programmverzeichnis.
 
+**Sicherheits-Header:** SAFT sendet mit jeder Antwort Header, die den Browser absichern: kein Einbetten in fremde
+Seiten (`X-Frame-Options`, `frame-ancestors`), kein Erraten von Dateitypen (`X-Content-Type-Options`), Adressen nur
+gekürzt an fremde Seiten (`Referrer-Policy`), keine Kamera, kein Mikrofon, kein Standort (`Permissions-Policy`). Über
+HTTPS kommt **HSTS** dazu: Der Browser ruft SAFT danach ein Jahr lang nur noch über HTTPS auf, auch wenn jemand
+`http://` eintippt oder ein Angreifer im Netz auf http umleiten will. Abschalten lässt sich HSTS mit
+`SECURITY_HSTS=false` in der `.env`, etwa wenn die Adresse künftig wieder ohne Zertifikat laufen soll – Browser, die
+den Header schon kennen, halten sich aber bis zum Ablauf daran. Setzt der Webserver dieselben Header selbst, gelten
+dessen Werte. Prüfen: `curl -sI https://saft.example.ch/admin/login`.
+
 ## 4. Geplante Aufgaben und Cron
 
 [Geplante Aufgaben](ADMIN_GUIDE.de.md#12-geplante-aufgaben) (z. B. Datenstände aktualisieren) führt der
