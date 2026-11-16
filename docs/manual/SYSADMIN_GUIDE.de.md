@@ -133,6 +133,12 @@ HTTPS kommt **HSTS** dazu: Der Browser ruft SAFT danach ein Jahr lang nur noch �
 den Header schon kennen, halten sich aber bis zum Ablauf daran. Setzt der Webserver dieselben Header selbst, gelten
 dessen Werte. Prüfen: `curl -sI https://saft.example.ch/admin/login`.
 
+**Passwörter:** Neue Passwörter brauchen mindestens 12 Zeichen und werden mit bekannten Datenlecks abgeglichen
+(*Have I Been Pwned*). Dabei verlässt nur der Anfang des SHA-1-Hashes (5 Zeichen) den Server, nie das Passwort; der
+Server braucht dafür ausgehenden HTTPS-Zugriff auf `api.pwnedpasswords.com:443`. Ist der Dienst nicht erreichbar,
+gilt das Passwort als unbedenklich. Ohne Internetzugang `PASSWORD_CHECK_LEAKED=false` setzen, sonst wartet jede
+Passwortänderung auf die Zeitüberschreitung. Dieselbe Regel gilt für `ADMIN_PASSWORD` beim ersten `db:seed`.
+
 ## 4. Geplante Aufgaben und Cron
 
 [Geplante Aufgaben](ADMIN_GUIDE.de.md#12-geplante-aufgaben) (z. B. Datenstände aktualisieren) führt der

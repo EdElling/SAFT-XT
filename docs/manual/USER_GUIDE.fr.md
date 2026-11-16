@@ -103,6 +103,8 @@ déconnecté du compte de l’entreprise.
 - **Changer le mot de passe :** également dans le menu utilisateur. Saisissez votre mot de passe actuel et deux fois
   le nouveau ; vous restez connecté. L’entrée manque si votre compte est lié par authentification unique (le mot de
   passe est alors géré par votre entreprise) ou si la connexion par mot de passe est désactivée.
+  Le nouveau mot de passe compte au moins 12 caractères ; SAFT refuse un mot de passe déjà apparu dans une fuite de
+  données connue. Conseil : plusieurs mots que vous seul associez sont longs et faciles à retenir.
 
 - **À gauche** se trouve le **menu**. Il n’affiche que les domaines pour lesquels vous avez des droits. Sous
   **Données** se trouvent les tables, sous **Administration** les fonctions de gestion. La flèche **‹** à côté du nom

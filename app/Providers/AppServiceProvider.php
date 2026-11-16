@@ -51,6 +51,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Translatable\Facades\Translatable;
 
@@ -58,6 +59,9 @@ use function Livewire\on;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /** Mindestlänge neuer Passwörter (Password::defaults()). */
+    public const int PASSWORD_MIN_LENGTH = 12;
+
     public function register(): void
     {
         // pdo_sqlsrv übernimmt beim Laden die Locale des Systems (setlocale(LC_ALL, "")). Meldungen von
@@ -91,6 +95,14 @@ class AppServiceProvider extends ServiceProvider
     {
         // In Produktion keine zerstörerischen Befehle (migrate:fresh/refresh/reset, db:wipe).
         DB::prohibitDestructiveCommands($this->app->isProduction());
+
+        // Passwörter: mindestens 12 Zeichen und – wenn eingeschaltet – nicht aus einem bekannten Datenleck. Gilt überall,
+        // wo Password::defaults() greift: Benutzerformular, Passwort ändern, Passwort zurücksetzen, ADMIN_PASSWORD.
+        Password::defaults(static function (): Password {
+            $rule = Password::min(self::PASSWORD_MIN_LENGTH)->max(255);
+
+            return config('saft.password_check_leaked') ? $rule->uncompromised() : $rule;
+        });
 
         // Abhängigkeiten der Plugins neu prüfen, sobald sich Tabellen oder Felder ändern.
         foreach ([CustomTable::class, CustomField::class] as $model) {

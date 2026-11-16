@@ -195,7 +195,7 @@ MYSQL_PASSWORD=<password from step 3>
 
 ADMIN_NAME="<your name>"
 ADMIN_EMAIL=<your@address.com>
-ADMIN_PASSWORD=<a secure password>   # leave empty = SAFT creates one and shows it once
+ADMIN_PASSWORD=<at least 12 characters>   # leave empty = SAFT creates one and shows it once
 ```
 
 > **Important:** `.env` contains passwords and never belongs in the repository or in an email. It is already listed

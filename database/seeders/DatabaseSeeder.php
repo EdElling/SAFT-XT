@@ -7,7 +7,10 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
+use RuntimeException;
 
 class DatabaseSeeder extends Seeder
 {
@@ -32,6 +35,9 @@ class DatabaseSeeder extends Seeder
 
         if ($generated) {
             $password = Str::password(20);
+        } elseif (($validator = Validator::make(['password' => $password], ['password' => Password::defaults()]))->fails()) {
+            // Gleiche Regel wie in der Oberfläche: kein schwaches erstes Admin-Passwort über die .env.
+            throw new RuntimeException('ADMIN_PASSWORD: '.implode(' ', $validator->errors()->all()));
         }
 
         $admin = User::withTrashed()->firstOrNew(['email' => $email]);

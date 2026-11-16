@@ -132,6 +132,12 @@ network tries to redirect to http. HSTS can be switched off with `SECURITY_HSTS=
 is to run without a certificate again in future – browsers that already know the header keep to it until it expires.
 If the web server sets the same headers itself, its values apply. Check: `curl -sI https://saft.example.ch/admin/login`.
 
+**Passwords:** new passwords need at least 12 characters and are checked against known data leaks (*Have I Been
+Pwned*). Only the beginning of the SHA-1 hash (5 characters) leaves the server, never the password; the server needs
+outbound HTTPS access to `api.pwnedpasswords.com:443` for this. If the service cannot be reached, the password counts
+as safe. Without internet access, set `PASSWORD_CHECK_LEAKED=false`, otherwise every password change waits for the
+timeout. The same rule applies to `ADMIN_PASSWORD` during the first `db:seed`.
+
 ## 4. Scheduled tasks and cron
 
 [Scheduled tasks](ADMIN_GUIDE.md#12-scheduled-tasks) (e.g. refreshing data snapshots) are run by the Laravel

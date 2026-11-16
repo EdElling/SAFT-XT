@@ -196,7 +196,7 @@ MYSQL_PASSWORD=<passwort aus Schritt 3>
 
 ADMIN_NAME="<Ihr Name>"
 ADMIN_EMAIL=<ihre@adresse.ch>
-ADMIN_PASSWORD=<ein sicheres Passwort>   # leer lassen = SAFT erzeugt eines und zeigt es einmal an
+ADMIN_PASSWORD=<mind. 12 Zeichen>   # leer lassen = SAFT erzeugt eines und zeigt es einmal an
 ```
 
 > **Wichtig:** `.env` enthält Passwörter und gehört nie ins Repository oder in eine E-Mail. Sie ist bereits in

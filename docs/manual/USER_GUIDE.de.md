@@ -100,6 +100,8 @@ Firmen-Login abgemeldet.
 - **Passwort ändern:** ebenfalls im Benutzermenü. Geben Sie Ihr aktuelles Passwort und zweimal das neue ein; Sie
   bleiben dabei angemeldet. Der Eintrag fehlt, wenn Ihr Konto per Single Sign-On angebunden ist (das Passwort
   verwaltet dann Ihre Firma) oder die Anmeldung mit Passwort abgeschaltet ist.
+  Das neue Passwort braucht mindestens 12 Zeichen; ein Passwort, das schon in einem bekannten Datenleck aufgetaucht
+  ist, nimmt SAFT nicht an. Tipp: mehrere Wörter, die nur Sie zusammenbringen, sind lang und gut zu merken.
 
 - **Links** befindet sich das **Menü**. Es zeigt nur die Bereiche, für die Sie Rechte haben. Unter **Daten**
   finden Sie die Tabellen, unter **Administration** die Verwaltungsfunktionen.

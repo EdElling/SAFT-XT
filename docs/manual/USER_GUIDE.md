@@ -98,6 +98,8 @@ company login.
 - **Change password:** also in the user menu. Enter your current password and the new one twice; you stay signed in.
   The entry is missing if your account is linked via single sign-on (your organisation manages the password then) or
   sign-in with a password is switched off.
+  The new password needs at least 12 characters; SAFT does not accept a password that has already appeared in a known
+  data leak. Tip: several words that only you would put together are long and easy to remember.
 
 - The **menu** is on the **left**. It only shows the areas you have permissions for. Under **Data** you find the
   tables, under **Administration** the management functions.

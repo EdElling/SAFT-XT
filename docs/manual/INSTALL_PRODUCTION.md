@@ -155,7 +155,7 @@ MAIL_FROM_ADDRESS=saft@example.com
 
 ADMIN_NAME="<name of the first administrator>"
 ADMIN_EMAIL=<address@example.com>
-ADMIN_PASSWORD=                 # leave empty: SAFT creates a password and shows it once
+ADMIN_PASSWORD=                 # leave empty: SAFT creates a password and shows it once (else at least 12 characters)
 ```
 
 **Load balancer / reverse proxy:** If HTTPS ends at the provider before your server (ask if unsure), enter the

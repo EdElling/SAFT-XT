@@ -43,6 +43,9 @@ Anche qui elenchi e tabelle sono larghi solo quanto le loro colonne (vedere [Gui
   **collegamento SSO**, utenti eliminati.
 - **Creare / modificare:** nome, e-mail, password (obbligatoria alla creazione, tranne in modalità solo SSO), attivo,
   ruoli. Il **ruolo predefinito** (vedere [capitolo 5](#5-autenticazione)) è preselezionato alla creazione.
+- **Regola delle password:** le nuove password richiedono almeno 12 caratteri. SAFT rifiuta le password presenti in
+  fughe di dati note (verifica senza trasmettere la password). Le password esistenti restano valide finché non vengono
+  modificate.
 - **Gli utenti inattivi** non possono accedere – né con password né con SSO.
 - **Collegamenti SSO:** nell’utente vedete a quali account single sign-on è collegato e potete rimuovere un
   collegamento.

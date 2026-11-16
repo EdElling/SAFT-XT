@@ -156,7 +156,7 @@ MAIL_FROM_ADDRESS=saft@example.ch
 
 ADMIN_NAME="<Name der ersten Administratorin / des ersten Administrators>"
 ADMIN_EMAIL=<adresse@example.ch>
-ADMIN_PASSWORD=                 # leer lassen: SAFT erzeugt ein Passwort und zeigt es einmal an
+ADMIN_PASSWORD=                 # leer lassen: SAFT erzeugt ein Passwort und zeigt es einmal an (sonst mind. 12 Zeichen)
 ```
 
 **Load Balancer / Reverse Proxy:** Endet HTTPS beim Hoster vor Ihrem Server (fragen Sie nach, wenn unklar), tragen

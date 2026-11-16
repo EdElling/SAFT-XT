@@ -101,6 +101,8 @@ dall’account aziendale.
 - **Cambia password:** sempre nel menu utente. Inserite la password attuale e due volte quella nuova; restate
   connessi. La voce manca se il vostro account è collegato tramite single sign-on (la password è allora gestita
   dalla vostra azienda) o se l’accesso con password è disattivato.
+  La nuova password richiede almeno 12 caratteri; SAFT non accetta una password già comparsa in una fuga di dati
+  nota. Consiglio: più parole che solo voi mettereste insieme sono lunghe e facili da ricordare.
 
 - **A sinistra** si trova il **menu**. Mostra solo le aree per le quali avete diritti. Sotto **Dati** trovate le
   tabelle, sotto **Amministrazione** le funzioni di gestione. Con la freccia **‹** accanto al nome dell’applicazione

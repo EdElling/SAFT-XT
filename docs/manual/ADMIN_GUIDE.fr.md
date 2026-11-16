@@ -43,6 +43,9 @@ correspondants. Ici aussi, les listes et les tableaux ne sont aussi larges que l
   **liaison SSO**, utilisateurs supprimés.
 - **Créer / modifier :** nom, e-mail, mot de passe (obligatoire à la création, sauf en mode SSO pur), actif, rôles.
   Le **rôle par défaut** (voir [chapitre 5](#5-authentification)) est présélectionné à la création.
+- **Règle des mots de passe :** les nouveaux mots de passe comptent au moins 12 caractères. SAFT refuse les mots de
+  passe issus de fuites de données connues (vérification sans transmettre le mot de passe). Les mots de passe existants
+  restent valables jusqu’à leur modification.
 - **Les utilisateurs inactifs** ne peuvent pas se connecter – ni par mot de passe ni par SSO.
 - **Liaisons SSO :** dans la fiche de l’utilisateur, vous voyez à quels comptes d’authentification unique il est lié
   et pouvez supprimer une liaison.

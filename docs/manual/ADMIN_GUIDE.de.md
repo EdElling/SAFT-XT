@@ -43,6 +43,8 @@ Rechten sichtbar. Auch hier sind Listen und Tabellen nur so breit wie ihre Spalt
   **SSO-Verknüpfung**, gelöschte Benutzer.
 - **Anlegen / Bearbeiten:** Name, E-Mail, Passwort (beim Anlegen Pflicht, ausser im reinen SSO-Modus), aktiv,
   Rollen. Die **Standardrolle** (siehe [Kapitel 5](#5-authentifizierung)) ist beim Anlegen vorausgewählt.
+- **Passwortregel:** Neue Passwörter brauchen mindestens 12 Zeichen. Passwörter aus bekannten Datenlecks lehnt SAFT
+  ab (Abgleich ohne Übermittlung des Passworts). Bestehende Passwörter bleiben gültig, bis sie geändert werden.
 - **Inaktive Benutzer** können sich nicht anmelden – weder per Passwort noch per SSO.
 - **SSO-Verknüpfungen:** Im Benutzer sehen Sie, mit welchen Single-Sign-On-Konten er verbunden ist, und können
   eine Verknüpfung trennen.

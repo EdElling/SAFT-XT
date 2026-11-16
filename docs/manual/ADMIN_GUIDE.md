@@ -43,6 +43,8 @@ permissions. Here, too, lists and tables are only as wide as their columns (see 
   **SSO link**, deleted users.
 - **Create / edit:** name, email, password (required when creating, except in pure SSO mode), active, roles. The
   **default role** (see [chapter 5](#5-authentication)) is preselected when creating.
+- **Password rule:** new passwords need at least 12 characters. SAFT rejects passwords from known data leaks (checked
+  without sending the password). Existing passwords stay valid until they are changed.
 - **Inactive users** cannot sign in, neither with a password nor with SSO.
 - **SSO links:** in the user you see which single sign-on accounts they are linked to, and you can remove a link.
 - **Change history:** every change to the user can be traced at the bottom of the page.
