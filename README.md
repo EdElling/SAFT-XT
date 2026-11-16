@@ -6,12 +6,12 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
 
 **Manuals:**
 
-- [overview](docs/manual/README.md) 
-- [user guide](docs/manual/USER_GUIDE.md)
-- [administrator guide](docs/manual/ADMIN_GUIDE.md)
+- [Overview](docs/manual/README.md) 
+- [User guide](docs/manual/USER_GUIDE.md)
+- [Administrator guide](docs/manual/ADMIN_GUIDE.md)
 - [FAQ](docs/manual/FAQ.md)
-- [system administration](docs/manual/SYSADMIN_GUIDE.md)
-- [developer guide: plugins](docs/manual/DEVELOPER_GUIDE.md)
+- [System administration](docs/manual/SYSADMIN_GUIDE.md)
+- [Developer guide: plugins](docs/manual/DEVELOPER_GUIDE.md)
   
 
 ## Features
