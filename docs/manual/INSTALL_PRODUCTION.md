@@ -438,3 +438,21 @@ domain to `…/saft/public`, activate the certificate and switch on **force SSL*
 **with** the development packages (`php composer.phar install --optimize-autoloader`, without `--no-dev`) and then run
 `php artisan db:seed --class=LagerDemoSeeder --force`. `APP_ENV=production` must stay – only then is the test sign-in
 of the development packages switched off. For a production system `--no-dev` remains right.
+
+**Updates** (procedure as in [section 9](#9-installing-updates), with the command-line PHP):
+
+```bash
+alias php='/opt/RZphp84/bin/php-cli'   # if not in ~/.bashrc
+cd ~/saft
+php artisan down
+php artisan db:backup
+git pull
+php composer.phar install --optimize-autoloader   # demo with example plugins: without --no-dev
+php artisan migrate --force
+php artisan optimize && php artisan filament:optimize
+php artisan up
+```
+
+If a demo with example plugins was once updated with `--no-dev`, the plugins are missing afterwards. Then do **not**
+click **Clean up** on the *Plugins* page – that deletes their menu entries and permissions, and the roles lose the
+assignment. Instead run `php composer.phar install` without `--no-dev`, then `optimize` and `filament:optimize`.

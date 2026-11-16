@@ -8,6 +8,7 @@ use App\Filament\Pages\PluginsPage;
 use App\Filament\Resources\Roles\Schemas\RoleForm;
 use App\Filament\Resources\ScheduledTasks\Pages\CreateScheduledTask;
 use App\Models\Menu;
+use App\Models\Role;
 use App\Models\ScheduledTask;
 use App\Models\User;
 use App\Navigation\MenuNavigationBuilder;
@@ -227,6 +228,11 @@ class PluginFrameworkTest extends TestCase
 
         $this->assertSame([$entry->id], array_keys($cleanup->orphanedMenus()));
         $this->assertSame([$permission->id => 'altes-plugin.execute'], $cleanup->orphanedPermissions());
+        $this->assertSame([], $cleanup->rolesOfOrphanedPermissions());
+        Role::findOrCreate('lager', 'web')->givePermissionTo($permission);
+        Role::findOrCreate('einkauf', 'web')->givePermissionTo($permission);
+        $this->assertSame([$permission->id => ['einkauf', 'lager']], $cleanup->rolesOfOrphanedPermissions(), 'Sichtbar, welche Rollen das Recht verlieren.');
+        $this->assertSame([$permission->id => 'In Rollen: einkauf, lager – wird es gelöscht, verlieren sie es'], PluginsPage::permissionRoles());
 
         $this->actingAs($this->userWithPermissions(['plugins.view']));
         Livewire::test(PluginsPage::class)->assertSee('Überbleibsel entfernter Plugins')->assertActionHidden('cleanup');

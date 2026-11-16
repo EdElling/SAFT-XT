@@ -1060,6 +1060,8 @@ aziendali – trasmettete il file solo a persone autorizzate. Ogni download vien
 **Dopo la rimozione di un plugin** restano le sue voci di menu (nascoste) e i suoi diritti. La pagina li segnala allora
 come **Residui di plugin rimossi**; **Pulisci** elimina gli elementi selezionati. Le voci di menu sono preselezionate,
 i diritti no: i ruoli perdono definitivamente i diritti eliminati, anche se il plugin viene reinstallato in seguito.
+La finestra indica per ogni diritto i ruoli che lo possiedono ancora. Se i plugin mancano solo temporaneamente – ad es.
+dopo un aggiornamento senza i pacchetti di sviluppo –, reinstallateli prima invece di fare pulizia.
 
 > **Esempio:** il plugin *Trasferimento di magazzino* (nelle installazioni di sviluppo e demo) estende la demo
 > magazzino: i movimenti aggiornano la giacenza dell’ubicazione (uscita sempre negativa, entrata positiva; un inventario

@@ -441,3 +441,22 @@ Dann weiter mit Schritt 5 (`migrate`, `db:seed`, `optimize`). Im Kundenportal da
 Abhängigkeiten **mit** den Entwicklungspaketen (`php composer.phar install --optimize-autoloader`, ohne `--no-dev`) und
 spielen danach `php artisan db:seed --class=LagerDemoSeeder --force` ein. `APP_ENV=production` muss dabei bleiben –
 nur so ist die Test-Anmeldung der Entwicklungspakete abgeschaltet. Für ein Produktivsystem bleibt `--no-dev` richtig.
+
+**Updates** (Ablauf wie in [Abschnitt 9](#9-updates-einspielen), mit dem Kommandozeilen-PHP):
+
+```bash
+alias php='/opt/RZphp84/bin/php-cli'   # falls nicht in ~/.bashrc
+cd ~/saft
+php artisan down
+php artisan db:backup
+git pull
+php composer.phar install --optimize-autoloader   # Demo mit Beispiel-Plugins: ohne --no-dev
+php artisan migrate --force
+php artisan optimize && php artisan filament:optimize
+php artisan up
+```
+
+Wurde eine Demo mit Beispiel-Plugins einmal mit `--no-dev` aktualisiert, fehlen die Plugins danach. Dann **nicht** auf
+der Seite *Plugins* **Aufräumen** klicken – das löscht ihre Menüeinträge und Rechte, und die Rollen verlieren die
+Zuweisung. Stattdessen `php composer.phar install` ohne `--no-dev` ausführen, danach `optimize` und
+`filament:optimize`.

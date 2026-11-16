@@ -1008,7 +1008,9 @@ the file on to authorised people. Every download is recorded in the activity log
 
 **After a plugin has been removed**, its menu entries (hidden) and permissions remain. The page then reports them as
 **Leftovers of removed plugins**; **Clean up** deletes the selected items. Menu entries are preselected, permissions
-are not: roles lose deleted permissions for good, even if the plugin is installed again later.
+are not: roles lose deleted permissions for good, even if the plugin is installed again later. The dialog names the
+roles that still hold each permission. If plugins are only missing temporarily – e.g. after an update without the
+development packages – install them again first instead of cleaning up.
 
 > **Example:** the plugin *Stock transfer* (in development and demo installations) extends the warehouse demo: stock
 > movements book the stock at the location (issues always negative, receipts positive; a stocktaking sets the last

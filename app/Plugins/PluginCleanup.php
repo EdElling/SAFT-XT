@@ -43,6 +43,29 @@ final readonly class PluginCleanup
             ->all();
     }
 
+    /**
+     * Rollen, die die verwaisten Rechte noch haben – damit vor dem Löschen sichtbar ist, was verloren geht.
+     *
+     * @return array<int, list<string>> Recht-id => Rollennamen (alphabetisch); Rechte ohne Rolle fehlen
+     */
+    public function rolesOfOrphanedPermissions(): array
+    {
+        $ids = array_keys($this->orphanedPermissions());
+
+        if ($ids === []) {
+            return [];
+        }
+
+        return DB::table(config('permission.table_names.role_has_permissions'))
+            ->join(config('permission.table_names.roles'), config('permission.table_names.roles').'.id', '=', config('permission.table_names.role_has_permissions').'.role_id')
+            ->whereIn('permission_id', $ids)
+            ->orderBy('name')
+            ->get(['permission_id', 'name'])
+            ->groupBy('permission_id')
+            ->mapWithKeys(static fn ($rows, int|string $id): array => [(int) $id => $rows->pluck('name')->map(strval(...))->all()])
+            ->all();
+    }
+
     public function hasOrphans(): bool
     {
         return $this->orphanedMenus() !== [] || $this->orphanedPermissions() !== [];

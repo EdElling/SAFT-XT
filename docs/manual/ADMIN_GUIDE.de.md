@@ -1040,7 +1040,8 @@ können trotzdem Geschäftsgeheimnisse verraten – geben Sie die Datei nur an B
 **Nach dem Entfernen eines Plugins** bleiben dessen Menüeinträge (ausgeblendet) und Rechte zurück. Die Seite meldet
 sie dann als **Überbleibsel entfernter Plugins**; **Aufräumen** löscht die ausgewählten Einträge. Menüeinträge sind
 vorausgewählt, Rechte nicht: Rollen verlieren gelöschte Rechte endgültig, auch wenn das Plugin später wieder
-installiert wird.
+installiert wird. Der Dialog nennt bei jedem Recht die Rollen, die es noch haben. Fehlen Plugins nur vorübergehend –
+etwa nach einem Update ohne die Entwicklungspakete –, installieren Sie sie zuerst wieder, statt aufzuräumen.
 
 > **Beispiel:** Das Plugin *Lager-Umbuchung* (in Entwicklungs- und Demo-Installationen) erweitert die Lager-Demo:
 > Lagerbewegungen buchen den Bestand am Lagerort (Ausgang immer negativ, Eingang positiv; eine Inventur setzt die letzte

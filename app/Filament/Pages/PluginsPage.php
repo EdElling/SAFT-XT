@@ -82,6 +82,19 @@ class PluginsPage extends Page implements HasTable
         ]);
     }
 
+    /** @return array<int, string> Recht-id => „In Rollen: …“ bzw. „Keiner Rolle zugewiesen“ */
+    public static function permissionRoles(): array
+    {
+        $cleanup = app(PluginCleanup::class);
+        $roles = $cleanup->rolesOfOrphanedPermissions();
+
+        return collect($cleanup->orphanedPermissions())
+            ->mapWithKeys(static fn (string $name, int $id): array => [$id => isset($roles[$id])
+                ? __('plugins.orphans.in_roles', ['roles' => implode(', ', $roles[$id])])
+                : __('plugins.orphans.no_roles')])
+            ->all();
+    }
+
     /** @return array<Action> */
     protected function getHeaderActions(): array
     {
@@ -140,6 +153,11 @@ class PluginsPage extends Page implements HasTable
                 ->modalDescription(__('plugins.orphans.help'))
                 ->modalSubmitActionLabel(__('plugins.orphans.submit'))
                 ->schema(fn (): array => [
+                    // Fehlen Plugins nur vorübergehend (z. B. Update mit „composer install --no-dev“), kostet Aufräumen
+                    // die Zuweisung der Rechte an Rollen: erst neu installieren.
+                    Callout::make(__('plugins.orphans.reinstall_first'))
+                        ->description(__('plugins.orphans.reinstall_first_help'))
+                        ->warning(),
                     CheckboxList::make('menus')
                         ->label(__('plugins.orphans.menus'))
                         ->options($menus = app(PluginCleanup::class)->orphanedMenus())
@@ -149,6 +167,7 @@ class PluginsPage extends Page implements HasTable
                         ->label(__('plugins.orphans.permissions'))
                         ->helperText(__('plugins.orphans.permissions_help'))
                         ->options($permissions = app(PluginCleanup::class)->orphanedPermissions())
+                        ->descriptions(self::permissionRoles())
                         ->visible($permissions !== []),
                 ])
                 ->action(function (array $data): void {

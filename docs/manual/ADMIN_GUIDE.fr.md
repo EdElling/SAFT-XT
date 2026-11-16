@@ -1085,7 +1085,9 @@ autorisées. Chaque téléchargement est consigné dans le journal des modificat
 **Après la suppression d’un plugin**, ses entrées de menu (masquées) et ses droits subsistent. La page les signale
 alors comme **Restes de plugins supprimés** ; **Nettoyer** supprime les éléments sélectionnés. Les entrées de menu sont
 présélectionnées, les droits non : les rôles perdent définitivement les droits supprimés, même si le plugin est
-réinstallé plus tard.
+réinstallé plus tard. La boîte de dialogue indique pour chaque droit les rôles qui le possèdent encore. Si des plugins
+ne manquent que temporairement – p. ex. après une mise à jour sans les paquets de développement –, réinstallez-les
+d’abord au lieu de nettoyer.
 
 > **Exemple :** le plugin *Transfert de stock* (dans les installations de développement et de démonstration) étend la
 > démo entrepôt : les mouvements de stock mettent à jour le stock de l’emplacement (sortie toujours négative, entrée
