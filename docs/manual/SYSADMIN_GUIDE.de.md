@@ -80,7 +80,7 @@ Die Online-Hilfe „Dokumentation“ liest das Anwenderhandbuch, die häufigen F
 aus `docs/manual` (Deutsch für deutsche Oberfläche, sonst Englisch); Änderungen an diesen Dateien erscheinen ohne
 weiteren Schritt. Dieses Handbuch und die Installationsanleitungen erscheinen dort bewusst nicht. Die unter
 „Über SAFT XT“ angezeigte Version steht in `config/saft.php` (`version`) und wird bei jedem Release angehoben; daneben steht
-die Version der Plugin-Schnittstelle (`api_versions`, siehe [Entwicklerhandbuch, Kapitel 17](DEVELOPER_GUIDE.de.md#17-api-versionen-und-änderungsprotokoll)).
+die Version der Plugin-Schnittstelle (`api_versions`, siehe [Entwicklerhandbuch, Kapitel 18](DEVELOPER_GUIDE.de.md#18-api-versionen-und-änderungsprotokoll)).
 
 ## 3. Updates und Sicherheit
 

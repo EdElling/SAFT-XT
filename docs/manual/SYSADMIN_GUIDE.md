@@ -80,7 +80,7 @@ The online help "Documentation" reads the user guide, the frequently asked quest
 directly from `docs/manual` (German for a German interface, otherwise English); changes to these files appear without
 any further step. This guide and the installation guides intentionally do not appear there. The version shown under
 "About SAFT XT" is set in `config/saft.php` (`version`) and is raised with every release; next to it is the
-version of the plugin interface (`api_versions`, see [developer guide, chapter 17](DEVELOPER_GUIDE.md#17-api-versions-and-change-log)).
+version of the plugin interface (`api_versions`, see [developer guide, chapter 18](DEVELOPER_GUIDE.md#18-api-versions-and-change-log)).
 
 ## 3. Updates and security
 

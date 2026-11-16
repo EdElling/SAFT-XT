@@ -11,22 +11,23 @@
 ## Inhalt
 
 - [1. Überblick](#1-überblick)
-- [2. Erste Schritte](#2-erste-schritte)
-- [3. Aufbau eines Plugins](#3-aufbau-eines-plugins)
-- [4. Die Plugin-Klasse](#4-die-plugin-klasse)
-- [5. Seiten, Ressourcen und Widgets](#5-seiten-ressourcen-und-widgets)
-- [6. Rechte und Menü](#6-rechte-und-menü)
-- [7. Übersetzungen, Views und eigene Tabellen](#7-übersetzungen-views-und-eigene-tabellen)
-- [8. Auf Daten zugreifen](#8-auf-daten-zugreifen)
-- [9. Auf Änderungen reagieren (Ereignisse)](#9-auf-änderungen-reagieren-ereignisse)
-- [10. Aktionen in Datenansichten](#10-aktionen-in-datenansichten)
-- [11. Formelfunktionen und Prüfregeln](#11-formelfunktionen-und-prüfregeln)
-- [12. Installieren, aktualisieren, entfernen](#12-installieren-aktualisieren-entfernen)
-- [13. Testen](#13-testen)
-- [14. Kontext für externe Entwicklung und KI-Agenten](#14-kontext-für-externe-entwicklung-und-ki-agenten)
-- [15. Sicherheit](#15-sicherheit)
-- [16. Beispiele: Lager-Umbuchung, Lager-Tafel und CH-Prüfungen](#16-beispiele-lager-umbuchung-lager-tafel-und-ch-prüfungen)
-- [17. API-Versionen und Änderungsprotokoll](#17-api-versionen-und-änderungsprotokoll)
+- [2. Eigene Anwendungen auf SAFT entwickeln](#2-eigene-anwendungen-auf-saft-entwickeln)
+- [3. Erste Schritte](#3-erste-schritte)
+- [4. Aufbau eines Plugins](#4-aufbau-eines-plugins)
+- [5. Die Plugin-Klasse](#5-die-plugin-klasse)
+- [6. Seiten, Ressourcen und Widgets](#6-seiten-ressourcen-und-widgets)
+- [7. Rechte und Menü](#7-rechte-und-menü)
+- [8. Übersetzungen, Views und eigene Tabellen](#8-übersetzungen-views-und-eigene-tabellen)
+- [9. Auf Daten zugreifen](#9-auf-daten-zugreifen)
+- [10. Auf Änderungen reagieren (Ereignisse)](#10-auf-änderungen-reagieren-ereignisse)
+- [11. Aktionen in Datenansichten](#11-aktionen-in-datenansichten)
+- [12. Formelfunktionen und Prüfregeln](#12-formelfunktionen-und-prüfregeln)
+- [13. Installieren, aktualisieren, entfernen](#13-installieren-aktualisieren-entfernen)
+- [14. Testen](#14-testen)
+- [15. Kontext für externe Entwicklung und KI-Agenten](#15-kontext-für-externe-entwicklung-und-ki-agenten)
+- [16. Sicherheit](#16-sicherheit)
+- [17. Beispiele: Lager-Umbuchung, Lager-Tafel und CH-Prüfungen](#17-beispiele-lager-umbuchung-lager-tafel-und-ch-prüfungen)
+- [18. API-Versionen und Änderungsprotokoll](#18-api-versionen-und-änderungsprotokoll)
 - [Anhang A – Schritt-für-Schritt-Anleitungen](#anhang-a--schritt-für-schritt-anleitungen)
 
 ---
@@ -64,14 +65,79 @@ unabhängig von SAFT – derzeit **1.5**. Zugesichert sind die Klassen `App\Plug
 `App\Filament\Concerns\LimitsFormWidth`; von `App\Models\DynamicRecord` (Datensätze) und
 `App\Models\User` nur die Klasse als Typ mit ihrem Eloquent-Verhalten. Innerhalb einer API-Major-Version bleibt alles
 kompatibel. Alle übrigen Klassen von SAFT sind intern – Plugins verwenden sie nicht (ein Test prüft das). Einzelheiten:
-[Kapitel 17](#17-api-versionen-und-änderungsprotokoll).
+[Kapitel 18](#18-api-versionen-und-änderungsprotokoll).
 
 **Schritt für Schritt:** [Anhang A](#anhang-a--schritt-für-schritt-anleitungen) führt für die häufigsten Aufgaben –
 eigene Tabellensicht, eigenes Formular, Widget, Knopf in einer Datenansicht, Listener, Prüfregel, Menüvorschlag,
 geplante Aufgabe – von
 der leeren Datei bis zum Test, am Beispiel-Plugin *Lager-Tafel*.
 
-## 2. Erste Schritte
+## 2. Eigene Anwendungen auf SAFT entwickeln
+
+Eine Fachanwendung auf SAFT entsteht zum grössten Teil durch **Konfiguration**; Programmcode in Form von **Plugins**
+braucht es nur für das, was sich nicht konfigurieren lässt. Diese Übersicht zeigt den Weg von der Anforderung bis zum
+Betrieb und verweist auf die Kapitel mit den Einzelheiten. Gearbeitet wird in zwei Installationen: im **Testsystem**
+wird die Anwendung aufgebaut und erprobt, im **Echtsystem** läuft sie.
+
+1. **Entwicklungs- und Testsystem aufsetzen.** Für Plugins eine Entwicklungsinstallation (Git-Klon mit Dev-Paketen,
+   siehe [Installation auf einem Entwickler-Rechner](INSTALL_DEVELOPMENT.de.md)); für die Abnahme durch die Fachabteilung
+   ein Testsystem, das wie das spätere Echtsystem eingerichtet ist
+   ([Installation auf einem Produktionsserver](INSTALL_PRODUCTION.de.md)).
+
+2. **Tabellengerüst definieren.** Aus der Anforderungsanalyse entstehen die Tabellen im
+   [Table-Designer](ADMIN_GUIDE.de.md#4-table-designer): Felder ([Feldtypen](USER_GUIDE.de.md#anhang-a--feldtypen)),
+   Verknüpfungen und Detailtabellen, Pflichtfelder und Prüfregeln, Tabellenregeln, berechnete Felder und Vorgaben beim
+   Anlegen. Vorhandene Listen lassen sich als Tabelle
+   [aus einer Datei importieren](ADMIN_GUIDE.de.md#tabelle-aus-datei-importieren). Bestehende Datenbanken werden nicht
+   nachgebaut, sondern angebunden: [Datenbankverbindungen](ADMIN_GUIDE.de.md#9-datenbankverbindungen) und
+   [Table-Connector](ADMIN_GUIDE.de.md#10-table-connector).
+
+3. **Rollen, Datenrechte und Menüs einrichten.** Rollen erhalten je Tabelle Datenrechte (anzeigen, anlegen, bearbeiten,
+   löschen, exportieren, importieren) und allgemeine Rechte ([Rollen und Rechte](ADMIN_GUIDE.de.md#2-rollen-und-rechte));
+   das [Menü](ADMIN_GUIDE.de.md#3-menüs) ordnet die Tabellen und Seiten in Gruppen.
+
+4. **Auswertungen und Dashboard konfigurieren.** Auswertungen entstehen im Auswertungs-Designer
+   ([Auswertungen](USER_GUIDE.de.md#49-auswertungen)), über mehrere Tabellen mit
+   [Tabellenverknüpfungen](ADMIN_GUIDE.de.md#11-tabellenverknüpfungen); angeheftet erscheinen sie als Kachel auf dem
+   [Dashboard](USER_GUIDE.de.md#3-oberfläche-und-dashboard). Für angebundene Tabellen halten
+   [Datenstände](ADMIN_GUIDE.de.md#datenstände-für-auswertungen) Auswertungen schnell, aktualisiert durch
+   [geplante Aufgaben](ADMIN_GUIDE.de.md#12-geplante-aufgaben). Auch das ist Konfiguration, kein Plugin.
+
+5. **Plugins für das, was Konfiguration nicht abdeckt.** Geschäftsregeln über mehrere Tabellen (Listener), eigene
+   Tabellensichten und Erfassungsmasken, Knöpfe in Datenansichten, Kacheln, Prüfregeln, Formelfunktionen und Arten
+   geplanter Aufgaben. Einstieg: [Erste Schritte](#3-erste-schritte); jeder Baustein Schritt für Schritt in
+   [Anhang A](#anhang-a--schritt-für-schritt-anleitungen). Externe Entwickler und KI-Agenten erhalten Regeln und Schema
+   der Installation als [Entwickler-Kontext](#15-kontext-für-externe-entwicklung-und-ki-agenten).
+
+6. **Im Testsystem testen und optimieren.** Mit Beispiel- oder Bestandsdaten
+   ([Daten importieren](USER_GUIDE.de.md#48-daten-importieren)) und mit Personen in den späteren Rollen. Plugins
+   werden zusätzlich automatisch geprüft: [Tests](#14-testen) auf PostgreSQL, MySQL und MariaDB sowie
+   `php artisan saft:plugins --check`.
+
+7. **Echtsystem: Plugins installieren, dann die Konfiguration einspielen.** Die Reihenfolge ist wichtig:
+   1. Plugins installieren ([Installieren, aktualisieren, entfernen](#13-installieren-aktualisieren-entfernen),
+      [Systemadministration, Kapitel 7](SYSADMIN_GUIDE.de.md#7-plugins)) – mit Sicherung und im Wartungsmodus. Danach
+      sind sie eingeschaltet; ihre Rechte gibt es ab jetzt.
+   2. Im Testsystem die [Konfiguration exportieren](ADMIN_GUIDE.de.md#15-konfiguration-übertragen) und im Echtsystem
+      einspielen: Tabellen, Auswertungen, Menüeinträge und Rollen. Die Vorschau meldet fehlende Plugins als
+      „Voraussetzung fehlt“.
+   3. Auf der Seite [Plugins](ADMIN_GUIDE.de.md#14-plugins) prüfen, dass alle *aktiv* sind, und Menüvorschläge
+      übernehmen, die nicht schon mit dem Paket kamen.
+
+8. **Echtsystem: einrichten, was nicht im Paket ist.** Datenbankverbindungen mit ihren Zugangsdaten, geplante
+   Aufgaben und App-Einstellungen; [Benutzer](ADMIN_GUIDE.de.md#1-benutzer) anlegen oder Single Sign-On einrichten
+   ([Authentifizierung](ADMIN_GUIDE.de.md#5-authentifizierung),
+   [Identity Provider](ADMIN_GUIDE.de.md#6-identity-provider-single-sign-on)); Bestandsdaten importieren. Für den
+   Betrieb: Scheduler per Cron ([Geplante Aufgaben und Cron](SYSADMIN_GUIDE.de.md#4-geplante-aufgaben-und-cron)) und
+   [Sicherungen](INSTALL_PRODUCTION.de.md#8-sicherungen).
+
+9. **Weiterentwickeln.** Änderungen entstehen wieder im Testsystem. Der Konfigurationstransfer spielt **nur Neues** ein:
+   Einträge, die es im Echtsystem schon gibt und die abweichen, werden übersprungen. Änderungen an bestehenden
+   Tabellen, Auswertungen oder Rollen ziehen Sie im Echtsystem von Hand nach. Plugins werden mit einer neuen Version
+   aktualisiert ([Kapitel 13](#13-installieren-aktualisieren-entfernen)); ob sie zu einem neuen SAFT passen, sagt die
+   [Plugin-API-Version](#18-api-versionen-und-änderungsprotokoll).
+
+## 3. Erste Schritte
 
 **Voraussetzungen:** eine Entwicklungsinstallation von SAFT (Git-Klon mit `composer install` inklusive Dev-Paketen,
 siehe [Installation auf einem Entwickler-Rechner](INSTALL_DEVELOPMENT.de.md)) mit Testdatenbank, dazu Kenntnisse in
@@ -118,9 +184,9 @@ cd plugins/kunden-portal && git init && git add . && git commit -m "Erste Fassun
 
 `composer require` trägt das Plugin in die `composer.json` und `composer.lock` von SAFT ein. In Ihrer
 Entwicklungsinstallation ist das gewollt – committen Sie diese beiden Änderungen aber nicht ins Repository von SAFT.
-Zum Ausliefern siehe [Kapitel 12](#12-installieren-aktualisieren-entfernen).
+Zum Ausliefern siehe [Kapitel 13](#13-installieren-aktualisieren-entfernen).
 
-## 3. Aufbau eines Plugins
+## 4. Aufbau eines Plugins
 
 ```
 plugins/lager-umbuchung/
@@ -153,18 +219,18 @@ Die `composer.json` nennt den ServiceProvider (Laravel findet ihn automatisch) u
 }
 ```
 
-- `extra.saft.api` ist eine Composer-Versionsbedingung für die Plugin-API (siehe [Kapitel 17](#17-api-versionen-und-änderungsprotokoll)).
+- `extra.saft.api` ist eine Composer-Versionsbedingung für die Plugin-API (siehe [Kapitel 18](#18-api-versionen-und-änderungsprotokoll)).
   Die Seite **Plugins** zeigt danach, ob das Plugin zu dieser Installation passt. Nur wenn ein Plugin auf ein Verhalten
   einer bestimmten SAFT-Version angewiesen ist, geben Sie zusätzlich `"requires"` mit der SAFT-Version an.
 - `filament/filament` in `require`: Seiten, Ressourcen und Widgets sind Filament-Klassen. Mit der Hauptversion von
   Filament verhindert Composer, dass das Plugin auf einem SAFT mit einer anderen Filament-Hauptversion installiert wird –
   das deckt die Plugin-API nicht ab.
 - `version` erscheint auf der Seite **Plugins**; bei Paketen aus einem Git-Repository kommt sie sonst aus dem Tag.
-- `autoload-dev` nennt den Namensraum der Tests; SAFT lädt ihn beim Testen (siehe [Kapitel 13](#13-testen)).
+- `autoload-dev` nennt den Namensraum der Tests; SAFT lädt ihn beim Testen (siehe [Kapitel 14](#14-testen)).
 - Pakete von SAFT selbst müssen Sie nicht in `require` aufnehmen – das Plugin läuft innerhalb von SAFT. **Andere
   Plugins**, deren Klassen Sie verwenden, gehören dagegen hinein, z. B. `"saft/lager-umbuchung": "^1.3"` im Plugin
   Lager-Tafel. SAFT liest daraus auch, welche Plugins Ihr Plugin braucht: Ist eines davon ausgeschaltet oder ruht es,
-  ruht Ihr Plugin mit (siehe [Kapitel 12](#12-installieren-aktualisieren-entfernen)).
+  ruht Ihr Plugin mit (siehe [Kapitel 13](#13-installieren-aktualisieren-entfernen)).
 
 Der ServiceProvider besteht aus einer Zeile:
 
@@ -178,7 +244,7 @@ final class LagerUmbuchungServiceProvider extends PluginServiceProvider
 }
 ```
 
-## 4. Die Plugin-Klasse
+## 5. Die Plugin-Klasse
 
 ```php
 final class LagerUmbuchungPlugin extends SaftPlugin
@@ -219,16 +285,16 @@ final class LagerUmbuchungPlugin extends SaftPlugin
 | `label()` | ja | Name in der aktuellen Sprache |
 | `description()` | nein | Kurzbeschreibung; ohne Angabe aus der `composer.json` |
 | `permissions()` | nein | Aktion => Bezeichnung; der Name des Rechts ist `<id>.<aktion>` (`permissionName('execute')`) |
-| `menuSuggestions()` | nein | Liste von `MenuSuggestion`, siehe [Kapitel 6](#6-rechte-und-menü) |
+| `menuSuggestions()` | nein | Liste von `MenuSuggestion`, siehe [Kapitel 7](#7-rechte-und-menü) |
 | `taskTypes()` | nein | Klassen zusätzlicher Arten geplanter Aufgaben, siehe [Anhang A.8](#a8-geplante-aufgaben) |
-| `requiredTables()` | nein | Tabellen und Felder des Table-Designers, die das Plugin braucht, siehe [Kapitel 8](#8-auf-daten-zugreifen) |
-| `recordListeners()` | nein | Listener für Änderungen an Tabellen, siehe [Kapitel 9](#9-auf-änderungen-reagieren-ereignisse) |
-| `dataActions()` | nein | Knöpfe in Datenansichten, siehe [Kapitel 10](#10-aktionen-in-datenansichten) |
-| `formulaFunctions()` | nein | Formelfunktionen für berechnete Felder, siehe [Kapitel 11](#11-formelfunktionen-und-prüfregeln) |
-| `fieldRules()` | nein | Prüfregeln für Felder, siehe [Kapitel 11](#11-formelfunktionen-und-prüfregeln) |
+| `requiredTables()` | nein | Tabellen und Felder des Table-Designers, die das Plugin braucht, siehe [Kapitel 9](#9-auf-daten-zugreifen) |
+| `recordListeners()` | nein | Listener für Änderungen an Tabellen, siehe [Kapitel 10](#10-auf-änderungen-reagieren-ereignisse) |
+| `dataActions()` | nein | Knöpfe in Datenansichten, siehe [Kapitel 11](#11-aktionen-in-datenansichten) |
+| `formulaFunctions()` | nein | Formelfunktionen für berechnete Felder, siehe [Kapitel 12](#12-formelfunktionen-und-prüfregeln) |
+| `fieldRules()` | nein | Prüfregeln für Felder, siehe [Kapitel 12](#12-formelfunktionen-und-prüfregeln) |
 | `register(Panel)` | nein | Standard: Seiten, Ressourcen und Widgets aus den Unterordnern; überschreiben Sie die Methode nur für Sonderfälle und rufen Sie dann `parent::register($panel)` auf |
 
-## 5. Seiten, Ressourcen und Widgets
+## 6. Seiten, Ressourcen und Widgets
 
 Seiten, Ressourcen und Widgets sind gewöhnliche Filament-Klassen (Filament 5). Drei Regeln gelten für Plugins:
 
@@ -281,14 +347,14 @@ final class MinimumStockWidget extends StatsOverviewWidget implements DashboardW
 - Schritt für Schritt mit einem Diagramm: [Anhang A.3](#a3-widget).
 
 
-## 6. Rechte und Menü
+## 7. Rechte und Menü
 
 **Rechte** heissen `<id>.<aktion>`. SAFT legt sie nach jedem `php artisan migrate` und mit `php artisan saft:plugins`
 an und löscht sie nie automatisch. In der Rollenverwaltung erscheinen sie als „<Name des Plugins>: <Bezeichnung>“.
 Rollen erhalten sie dort wie jedes andere Recht; der Super-Admin hat sie automatisch.
 
 Brauchen Sie zusätzlich **Datenrechte** auf Tabellen des Table-Designers (z. B. „Bestände: bearbeiten“), prüfen Sie diese
-in Ihrem Code (siehe [Kapitel 8](#8-auf-daten-zugreifen)) und nennen Sie sie in der Beschreibung des Plugins,
+in Ihrem Code (siehe [Kapitel 9](#9-auf-daten-zugreifen)) und nennen Sie sie in der Beschreibung des Plugins,
 damit die Administration sie mit vergibt.
 
 **Menüvorschläge** (`App\Plugins\MenuSuggestion`):
@@ -306,7 +372,7 @@ damit die Administration sie mit vergibt.
 wählt. Danach sind es gewöhnliche Menüeinträge, die sich verschieben und umbenennen lassen. Schritt für Schritt:
 [Anhang A.7](#a7-menüvorschläge).
 
-## 7. Übersetzungen, Views und eigene Tabellen
+## 8. Übersetzungen, Views und eigene Tabellen
 
 - **Übersetzungen** liegen unter `lang/<sprache>/<datei>.php` und heissen `__('<id>::<datei>.<schlüssel>')`. Liefern
   Sie Deutsch und Englisch; Französisch und Italienisch fallen sonst auf Englisch zurück. Deutsche Texte in Schweizer
@@ -321,7 +387,7 @@ wählt. Danach sind es gewöhnliche Menüeinträge, die sich verschieben und umb
     `logOnlyDirty()`; die Person, die etwas ändert, wird automatisch als Verursacher eingetragen.
   - Tabellennamen mit einem Präfix aus der id, z. B. `lager_umbuchung_…`.
 
-## 8. Auf Daten zugreifen
+## 9. Auf Daten zugreifen
 
 Tabellen aus dem Table-Designer haben kein festes Model. Plugins greifen über `App\Plugins\Api\Saft` darauf zu:
 
@@ -409,7 +475,7 @@ Fehler der Schnittstelle zeigen Sie in Masken als Meldung an, denn die Feldnamen
 **Benachrichtigungen in die Glocke** verschicken Sie mit `Saft::notify($person, Notification::make()->…)`. Filaments
 eigenes `sendToDatabase()` stellt sie in eine Warteschlange, die ohne Queue-Worker nie abgearbeitet wird.
 
-## 9. Auf Änderungen reagieren (Ereignisse)
+## 10. Auf Änderungen reagieren (Ereignisse)
 
 Bei jeder Änderung an einem Datensatz einer Tabelle des Table-Designers – über die Datenansicht, den Import, die
 Schnittstelle oder eine geplante Aufgabe – löst SAFT Ereignisse aus (`App\Plugins\Api\Events`):
@@ -452,7 +518,7 @@ angelegt oder geändert).
 - Auf der Seite **Plugins** sieht die Administration, an welchen Tabellen ein Plugin mithört.
 - Schritt für Schritt, mit Werte setzen und Ablehnen: [Anhang A.5](#a5-listener).
 
-## 10. Aktionen in Datenansichten
+## 11. Aktionen in Datenansichten
 
 Knöpfe in der Datenansicht einer Tabelle (auch in Detailtabellen) meldet die Plugin-Klasse an:
 
@@ -478,7 +544,7 @@ public function dataActions(): array
 - Zeilen ohne eigenen Schlüssel (z. B. Views) erhalten keine Zeilenaktionen.
 - Schritt für Schritt: [Anhang A.4](#a4-aktion-in-einer-bestehenden-tabellensicht).
 
-## 11. Formelfunktionen und Prüfregeln
+## 12. Formelfunktionen und Prüfregeln
 
 Zwei Bausteine erweitern den Table-Designer, ohne dass Ihr Plugin eine eigene Seite braucht.
 
@@ -532,7 +598,7 @@ public function fieldRules(): array
 Table-Designer zeigt beim Feld „nicht verfügbar“, und `php artisan saft:plugins --check` listet die betroffenen Felder
 unter **Table-Designer**.
 
-## 12. Installieren, aktualisieren, entfernen
+## 13. Installieren, aktualisieren, entfernen
 
 SAFT bindet alle Pakete unter `plugins/` als Composer-Repository ein. Installiert, aktualisiert und entfernt werden
 Plugins von der Systemadministration auf der Konsole (siehe [Systemadministration, Kapitel 7](SYSADMIN_GUIDE.de.md#7-plugins)):
@@ -565,7 +631,7 @@ ausgeblendet; zusammen mit den Rechten lassen sie sich auf der Seite **Plugins**
 das Plugin in Tabellen des Table-Designers geschrieben hat, bleiben erhalten; seine Listener und Aktionen wirken nicht
 mehr.
 
-## 13. Testen
+## 14. Testen
 
 Die Tests eines Plugins liegen in seinem Ordner `tests/` und laufen mit der Testsuite **Plugins** von SAFT – auf
 PostgreSQL, MySQL und MariaDB wie die Tests von SAFT selbst. SAFT lädt dafür den Namensraum aus `autoload-dev` der
@@ -587,7 +653,7 @@ Testdatenbank samt Rollen, Rechten und Menü.
 | `$this->createTable('kunden', 'Kunden', [...])` | legt eine Tabelle des Table-Designers an (Felder wie im Table-Designer) und gibt die `DataTable` zurück |
 | `$this->withoutPluginEvents(fn () => …)` | Testdaten anlegen, ohne dass Listener reagieren – z. B. um eigene Regeln zu umgehen |
 | `$this->withoutPlugin('lager-umbuchung', fn () => …)` | ein Plugin nur für die Dauer der Closure ausschalten, ohne Eintrag in der Datenbank – z. B. um zu prüfen, dass Ihr Plugin ruht, wenn ein benötigtes Plugin ausgeschaltet ist |
-| `$this->createTablesFromSchema($pfad, ['kunden'])` | legt Tabellen aus der `schema.json` des Entwickler-Kontexts an, siehe [Kapitel 14](#14-kontext-für-externe-entwicklung-und-ki-agenten) |
+| `$this->createTablesFromSchema($pfad, ['kunden'])` | legt Tabellen aus der `schema.json` des Entwickler-Kontexts an, siehe [Kapitel 15](#15-kontext-für-externe-entwicklung-und-ki-agenten) |
 | `$this->dataView('kunden')` | Datenansicht als Livewire-Test, z. B. für Knöpfe des Plugins (`TestAction::make('…')->table($record)`) |
 
 ```php
@@ -609,7 +675,7 @@ installierten Plugins sind in Tests aktiv.
 
 Beispiel: `plugins/lager-umbuchung/tests/LagerUmbuchungTest.php`.
 
-## 14. Kontext für externe Entwicklung und KI-Agenten
+## 15. Kontext für externe Entwicklung und KI-Agenten
 
 Wer ein Plugin für eine bestimmte Installation schreibt – eine externe Firma oder ein KI-Agent –, braucht die Regeln, die
 Plugin-API und das Schema der Fachtabellen dieser Installation. SAFT erzeugt das als **Entwickler-Kontext** (Englisch,
@@ -684,7 +750,7 @@ public function test_orders_page(): void
 }
 ```
 
-## 15. Sicherheit
+## 16. Sicherheit
 
 Ein Plugin ist Programmcode, der mit allen Rechten von SAFT läuft. Die Administration sollte nur Plugins aus
 vertrauenswürdiger Quelle installieren; prüfen Sie bei eigenen Plugins mindestens:
@@ -697,13 +763,13 @@ vertrauenswürdiger Quelle installieren; prüfen Sie bei eigenen Plugins mindest
 - Listener lehnen nur ab, was fachlich falsch ist – sie wirken in allen Datenansichten und beim Import.
 - Zugangsdaten und Schlüssel nie im Code, sondern in der `.env` bzw. in verschlüsselten Einstellungen.
 
-## 16. Beispiele: Lager-Umbuchung, Lager-Tafel und CH-Prüfungen
+## 17. Beispiele: Lager-Umbuchung, Lager-Tafel und CH-Prüfungen
 
 Drei Beispiel-Plugins liegen bei SAFT: *Lager-Umbuchung* zeigt eine Fachanwendung mit Maske, Geschäftsregeln und
 Kachel, *Lager-Tafel* ist das Beispiel zu den Anleitungen in Anhang A, *CH-Prüfungen* zeigt Formelfunktionen und
 Prüfregeln ohne eigene Seiten.
 
-### 16.1 Lager-Umbuchung
+### 17.1 Lager-Umbuchung
 
 Das Plugin `plugins/lager-umbuchung` ist mit SAFT ausgeliefert und in Entwicklungs- und Demo-Installationen aktiv (in
 der Produktion mit `--no-dev` nicht). Es zeigt alle Bausteine an der Lager-Demo:
@@ -728,7 +794,7 @@ So probieren Sie es aus: Lager-Demo einspielen (`php artisan db:seed --class=Lag
 Mindestbestand – die Meldung in der Glocke. Die Kachel **Lager: Mindestbestand** (`src/Widgets/MinimumStockWidget.php`)
 auf dem Dashboard zeigt die Artikel unter dem Mindestbestand.
 
-### 16.2 Lager-Tafel
+### 17.2 Lager-Tafel
 
 Das Plugin `plugins/lager-tafel` (nur in Entwicklungs- und Demo-Installationen) setzt jeden Baustein aus
 [Anhang A](#anhang-a--schritt-für-schritt-anleitungen) einmal an der Lager-Demo um. Es braucht das Plugin
@@ -748,7 +814,7 @@ Das Plugin `plugins/lager-tafel` (nur in Entwicklungs- und Demo-Installationen) 
 **Rechte:** *Lager-Tafel: Lagerspiegel anzeigen* für Lagerspiegel und Kachel, *Lager-Tafel: Auf der Lagertafel umbuchen*
 für die Lagertafel; dazu die Datenrechte wie bei Lager-Umbuchung.
 
-### 16.3 CH-Prüfungen
+### 17.3 CH-Prüfungen
 
 Das Plugin `plugins/ch-pruefungen` (ebenfalls nur in Entwicklungs- und Demo-Installationen) zeigt Formelfunktionen und
 Prüfregeln ohne eigene Seiten – es braucht daher weder Rechte noch Menüvorschläge, und es verlangt keine Tabellen:
@@ -764,7 +830,7 @@ Prüfregeln ohne eigene Seiten – es braucht daher weder Rechte noch Menüvorsc
 So probieren Sie es aus: im Table-Designer bei einem Textfeld unter **Weitere Prüfungen** „IBAN“ wählen, oder ein
 berechnetes Feld mit der Formel `rappen(betrag * 1.081)` anlegen.
 
-## 17. API-Versionen und Änderungsprotokoll
+## 18. API-Versionen und Änderungsprotokoll
 
 Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.5**). Sie steht in `config/saft.php`
 (`api_versions`) und erscheint unter **Dokumentation › Über SAFT XT** sowie auf der Seite **Plugins**.
@@ -804,7 +870,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 ## Anhang A – Schritt-für-Schritt-Anleitungen
 
-Die Kapitel 1–17 beschreiben jeden Baustein für sich. Dieser Anhang führt für die acht häufigsten Aufgaben von der
+Die Kapitel 1–18 beschreiben jeden Baustein für sich. Dieser Anhang führt für die acht häufigsten Aufgaben von der
 leeren Datei bis zum getesteten Ergebnis. Alle Beispiele stammen aus dem Beispiel-Plugin **Lager-Tafel**
 (`plugins/lager-tafel`). Sein Code ist mit Tests auf PostgreSQL, MySQL und MariaDB abgesichert, die Ausschnitte hier
 laufen also so, wie sie dastehen.
@@ -1176,7 +1242,7 @@ public function transferAction(): Action
 ```
 
 Die Buchung selbst übernimmt `StockTransfer` des Plugins *Lager-Umbuchung* (zwei Lagerbewegungen in
-`Saft::transaction()`, siehe [Kapitel 16.1](#161-lager-umbuchung)). Fehler zeigt die Seite als Meldung an – auch die
+`Saft::transaction()`, siehe [Kapitel 17.1](#171-lager-umbuchung)). Fehler zeigt die Seite als Meldung an – auch die
 Ablehnung eines Listeners (`RecordRejected`) und Verstösse gegen Prüfregeln (`ValidationException`):
 
 ```php
@@ -1735,7 +1801,7 @@ foreach ($recipients as $user) {
 }
 ```
 
-`Saft::notify()` stellt die Meldung sofort zu, ohne Queue-Worker (siehe [Kapitel 8](#8-auf-daten-zugreifen)).
+`Saft::notify()` stellt die Meldung sofort zu, ohne Queue-Worker (siehe [Kapitel 9](#9-auf-daten-zugreifen)).
 
 **Schritt 4 – in der Plugin-Klasse anmelden:**
 

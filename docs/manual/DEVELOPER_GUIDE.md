@@ -11,22 +11,23 @@
 ## Contents
 
 - [1. Overview](#1-overview)
-- [2. Getting started](#2-getting-started)
-- [3. Structure of a plugin](#3-structure-of-a-plugin)
-- [4. The plugin class](#4-the-plugin-class)
-- [5. Pages, resources and widgets](#5-pages-resources-and-widgets)
-- [6. Permissions and menu](#6-permissions-and-menu)
-- [7. Translations, views and own tables](#7-translations-views-and-own-tables)
-- [8. Accessing data](#8-accessing-data)
-- [9. Reacting to changes (events)](#9-reacting-to-changes-events)
-- [10. Actions in data views](#10-actions-in-data-views)
-- [11. Formula functions and validation rules](#11-formula-functions-and-validation-rules)
-- [12. Installing, updating, removing](#12-installing-updating-removing)
-- [13. Testing](#13-testing)
-- [14. Context for external development and AI agents](#14-context-for-external-development-and-ai-agents)
-- [15. Security](#15-security)
-- [16. Examples: stock transfer, stock board and Swiss checks](#16-examples-stock-transfer-stock-board-and-swiss-checks)
-- [17. API versions and change log](#17-api-versions-and-change-log)
+- [2. Developing your own applications on SAFT](#2-developing-your-own-applications-on-saft)
+- [3. Getting started](#3-getting-started)
+- [4. Structure of a plugin](#4-structure-of-a-plugin)
+- [5. The plugin class](#5-the-plugin-class)
+- [6. Pages, resources and widgets](#6-pages-resources-and-widgets)
+- [7. Permissions and menu](#7-permissions-and-menu)
+- [8. Translations, views and own tables](#8-translations-views-and-own-tables)
+- [9. Accessing data](#9-accessing-data)
+- [10. Reacting to changes (events)](#10-reacting-to-changes-events)
+- [11. Actions in data views](#11-actions-in-data-views)
+- [12. Formula functions and validation rules](#12-formula-functions-and-validation-rules)
+- [13. Installing, updating, removing](#13-installing-updating-removing)
+- [14. Testing](#14-testing)
+- [15. Context for external development and AI agents](#15-context-for-external-development-and-ai-agents)
+- [16. Security](#16-security)
+- [17. Examples: stock transfer, stock board and Swiss checks](#17-examples-stock-transfer-stock-board-and-swiss-checks)
+- [18. API versions and change log](#18-api-versions-and-change-log)
 - [Appendix A – Step-by-step guides](#appendix-a--step-by-step-guides)
 
 ---
@@ -63,14 +64,75 @@ independent of SAFT – currently **1.5**. Guaranteed are the classes `App\Plugi
 `App\Filament\Concerns\LimitsFormWidth`; of `App\Models\DynamicRecord` (records) and
 `App\Models\User` only the class as a type with its Eloquent behaviour. Everything stays compatible within an API major
 version. All other SAFT classes are internal – plugins do not use them (a test checks this). Details:
-[chapter 17](#17-api-versions-and-change-log).
+[chapter 18](#18-api-versions-and-change-log).
 
 **Step by step:** [Appendix A](#appendix-a--step-by-step-guides) takes the most common tasks – custom table view,
 custom form, widget, button in a data view, listener, validation rule, menu suggestion, scheduled task – from an empty
 file to the
 test, using the example plugin *Lager-Tafel*.
 
-## 2. Getting started
+## 2. Developing your own applications on SAFT
+
+A business application on SAFT is built mostly through **configuration**; program code in the form of **plugins** is
+only needed for what cannot be configured. This overview shows the way from the requirements to operation and links to
+the chapters with the details. Work happens in two installations: the application is built and tried out in the
+**test system** and runs in the **production system**.
+
+1. **Set up a development and test system.** For plugins a development installation (Git clone with dev packages, see
+   [Installation on a development machine](INSTALL_DEVELOPMENT.md)); for acceptance by the business department a test
+   system set up like the later production system ([Installation on a production server](INSTALL_PRODUCTION.md)).
+
+2. **Define the table structure.** The requirements analysis turns into tables in the
+   [table designer](ADMIN_GUIDE.md#4-table-designer): fields ([field types](USER_GUIDE.md#appendix-a--field-types)),
+   relations and detail tables, required fields and validation rules, table rules, computed fields and defaults when
+   creating. Existing lists can be [imported from a file](ADMIN_GUIDE.md#import-a-table-from-a-file) as a table.
+   Existing databases are not rebuilt but connected: [database connections](ADMIN_GUIDE.md#9-database-connections) and
+   [table connector](ADMIN_GUIDE.md#10-table-connector).
+
+3. **Set up roles, data permissions and menus.** Roles get data permissions per table (view, create, update, delete,
+   export, import) and general permissions ([roles and permissions](ADMIN_GUIDE.md#2-roles-and-permissions)); the
+   [menu](ADMIN_GUIDE.md#3-menus) arranges tables and pages in groups.
+
+4. **Configure reports and the dashboard.** Reports are built in the report designer ([reports](USER_GUIDE.md#49-reports)),
+   across several tables with [table links](ADMIN_GUIDE.md#11-table-links); pinned, they appear as a tile on the
+   [dashboard](USER_GUIDE.md#3-interface-and-dashboard). For connected tables,
+   [data snapshots](ADMIN_GUIDE.md#data-snapshots-for-reports) keep reports fast, refreshed by
+   [scheduled tasks](ADMIN_GUIDE.md#12-scheduled-tasks). This too is configuration, not a plugin.
+
+5. **Plugins for what configuration does not cover.** Business rules across tables (listeners), custom table views and
+   entry forms, buttons in data views, tiles, validation rules, formula functions and kinds of scheduled tasks. Start:
+   [getting started](#3-getting-started); every building block step by step in
+   [appendix A](#appendix-a--step-by-step-guides). External developers and AI agents receive the installation's rules and
+   schema as [developer context](#15-context-for-external-development-and-ai-agents).
+
+6. **Test and refine in the test system.** With sample or existing data ([importing data](USER_GUIDE.md#48-importing-data))
+   and with people in the later roles. Plugins are also checked automatically: [tests](#14-testing) on PostgreSQL, MySQL
+   and MariaDB as well as `php artisan saft:plugins --check`.
+
+7. **Production system: install plugins, then import the configuration.** The order matters:
+   1. Install the plugins ([installing, updating, removing](#13-installing-updating-removing),
+      [system administration, chapter 7](SYSADMIN_GUIDE.md#7-plugins)) – with a backup and in maintenance mode.
+      Afterwards they are switched on; their permissions exist from now on.
+   2. In the test system [export the configuration](ADMIN_GUIDE.md#15-transfer-configuration) and import it in the
+      production system: tables, reports, menu entries and roles. The preview reports missing plugins as
+      “prerequisite missing”.
+   3. On the [Plugins](ADMIN_GUIDE.md#14-plugins) page check that all are *active*, and adopt menu suggestions that did
+      not come with the package.
+
+8. **Production system: set up what is not in the package.** Database connections with their credentials, scheduled
+   tasks and app settings; create [users](ADMIN_GUIDE.md#1-users) or set up single sign-on
+   ([authentication](ADMIN_GUIDE.md#5-authentication),
+   [identity providers](ADMIN_GUIDE.md#6-identity-providers-single-sign-on)); import existing data. For operation: the
+   scheduler via cron ([scheduled tasks and cron](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)) and
+   [backups](INSTALL_PRODUCTION.md#8-backups).
+
+9. **Develop further.** Changes are again made in the test system. The configuration transfer imports **only what is
+   new**: entries that already exist in the production system and differ are skipped. Apply changes to existing tables,
+   reports or roles in the production system by hand. Plugins are updated with a new version
+   ([chapter 13](#13-installing-updating-removing)); whether they fit a new SAFT is shown by the
+   [plugin API version](#18-api-versions-and-change-log).
+
+## 3. Getting started
 
 **Requirements:** a development installation of SAFT (Git clone with `composer install` including dev packages, see
 [Installation on a development machine](INSTALL_DEVELOPMENT.md)) with a test database, plus knowledge of Laravel,
@@ -116,9 +178,9 @@ cd plugins/customer-portal && git init && git add . && git commit -m "First vers
 
 `composer require` adds the plugin to SAFT's `composer.json` and `composer.lock`. In your development installation that
 is intended – but do not commit these two changes to SAFT's repository. For delivery see
-[chapter 12](#12-installing-updating-removing).
+[chapter 13](#13-installing-updating-removing).
 
-## 3. Structure of a plugin
+## 4. Structure of a plugin
 
 ```
 plugins/lager-umbuchung/
@@ -151,18 +213,18 @@ The `composer.json` names the service provider (Laravel discovers it automatical
 }
 ```
 
-- `extra.saft.api` is a Composer version constraint for the plugin API (see [chapter 17](#17-api-versions-and-change-log)).
+- `extra.saft.api` is a Composer version constraint for the plugin API (see [chapter 18](#18-api-versions-and-change-log)).
   The **Plugins** page shows whether the plugin fits this installation. Only if a plugin relies on behaviour of a
   specific SAFT version, also state `"requires"` with the SAFT version.
 - `filament/filament` in `require`: pages, resources and widgets are Filament classes. With the Filament major version,
   Composer prevents installing the plugin on a SAFT with another Filament major version – the plugin API does not cover
   that.
 - `version` appears on the **Plugins** page; for packages from a Git repository it otherwise comes from the tag.
-- `autoload-dev` names the namespace of the tests; SAFT loads it when testing (see [chapter 13](#13-testing)).
+- `autoload-dev` names the namespace of the tests; SAFT loads it when testing (see [chapter 14](#14-testing)).
 - You do not need to add SAFT's own packages to `require` – the plugin runs inside SAFT. **Other plugins** whose
   classes you use do belong there, e.g. `"saft/lager-umbuchung": "^1.3"` in the plugin Lager-Tafel. SAFT also reads
   from it which plugins your plugin requires: if one of them is switched off or resting, your plugin rests as well (see
-  [chapter 12](#12-installing-updating-removing)).
+  [chapter 13](#13-installing-updating-removing)).
 
 The service provider is a single method:
 
@@ -176,7 +238,7 @@ final class LagerUmbuchungServiceProvider extends PluginServiceProvider
 }
 ```
 
-## 4. The plugin class
+## 5. The plugin class
 
 ```php
 final class LagerUmbuchungPlugin extends SaftPlugin
@@ -217,16 +279,16 @@ final class LagerUmbuchungPlugin extends SaftPlugin
 | `label()` | yes | Name in the current language |
 | `description()` | no | Short description; taken from `composer.json` if omitted |
 | `permissions()` | no | action => label; the permission is named `<id>.<action>` (`permissionName('execute')`) |
-| `menuSuggestions()` | no | list of `MenuSuggestion`, see [chapter 6](#6-permissions-and-menu) |
+| `menuSuggestions()` | no | list of `MenuSuggestion`, see [chapter 7](#7-permissions-and-menu) |
 | `taskTypes()` | no | classes of additional kinds of scheduled tasks, see [appendix A.8](#a8-scheduled-tasks) |
-| `requiredTables()` | no | tables and fields of the table designer the plugin needs, see [chapter 8](#8-accessing-data) |
-| `recordListeners()` | no | listeners for changes to tables, see [chapter 9](#9-reacting-to-changes-events) |
-| `dataActions()` | no | buttons in data views, see [chapter 10](#10-actions-in-data-views) |
-| `formulaFunctions()` | no | formula functions for computed fields, see [chapter 11](#11-formula-functions-and-validation-rules) |
-| `fieldRules()` | no | validation rules for fields, see [chapter 11](#11-formula-functions-and-validation-rules) |
+| `requiredTables()` | no | tables and fields of the table designer the plugin needs, see [chapter 9](#9-accessing-data) |
+| `recordListeners()` | no | listeners for changes to tables, see [chapter 10](#10-reacting-to-changes-events) |
+| `dataActions()` | no | buttons in data views, see [chapter 11](#11-actions-in-data-views) |
+| `formulaFunctions()` | no | formula functions for computed fields, see [chapter 12](#12-formula-functions-and-validation-rules) |
+| `fieldRules()` | no | validation rules for fields, see [chapter 12](#12-formula-functions-and-validation-rules) |
 | `register(Panel)` | no | Default: pages, resources and widgets from the subfolders; override only for special cases and then call `parent::register($panel)` |
 
-## 5. Pages, resources and widgets
+## 6. Pages, resources and widgets
 
 Pages, resources and widgets are ordinary Filament classes (Filament 5). Three rules apply to plugins:
 
@@ -278,14 +340,14 @@ final class MinimumStockWidget extends StatsOverviewWidget implements DashboardW
 - Step by step with a chart: [appendix A.3](#a3-widget).
 
 
-## 6. Permissions and menu
+## 7. Permissions and menu
 
 **Permissions** are named `<id>.<action>`. SAFT creates them after every `php artisan migrate` and with
 `php artisan saft:plugins` and never deletes them automatically. In role management they appear as
 “<plugin name>: <label>”. Roles receive them there like any other permission; the super admin has them automatically.
 
 If you also need **data permissions** on table designer tables (e.g. “Stock levels: edit”), check them in your code
-(see [chapter 8](#8-accessing-data)) and mention them in the plugin description so that the administration grants
+(see [chapter 9](#9-accessing-data)) and mention them in the plugin description so that the administration grants
 them as well.
 
 **Menu suggestions** (`App\Plugins\MenuSuggestion`):
@@ -303,7 +365,7 @@ The suggestions are only adopted when the administration chooses “Create menu 
 Afterwards they are ordinary menu entries that can be moved and renamed. Step by step:
 [appendix A.7](#a7-menu-suggestions).
 
-## 7. Translations, views and own tables
+## 8. Translations, views and own tables
 
 - **Translations** live under `lang/<language>/<file>.php` and are called with `__('<id>::<file>.<key>')`. Provide
   German and English; French and Italian otherwise fall back to English. German texts use Swiss spelling (ss instead
@@ -318,7 +380,7 @@ Afterwards they are ordinary menu entries that can be moved and renamed. Step by
     person making the change is recorded automatically as the causer.
   - Table names with a prefix derived from the id, e.g. `lager_umbuchung_…`.
 
-## 8. Accessing data
+## 9. Accessing data
 
 Table designer tables have no fixed model. Plugins access them through `App\Plugins\Api\Saft`:
 
@@ -404,7 +466,7 @@ Show errors of the interface in forms as a message, as the field names need not 
 **Notifications in the bell** are sent with `Saft::notify($person, Notification::make()->…)`. Filament's own
 `sendToDatabase()` puts them in a queue that is never processed without a queue worker.
 
-## 9. Reacting to changes (events)
+## 10. Reacting to changes (events)
 
 For every change to a record of a table designer table – through the data view, the import, the interface or a
 scheduled task – SAFT fires events (`App\Plugins\Api\Events`):
@@ -446,7 +508,7 @@ or changed).
 - On the **Plugins** page the administration sees which tables a plugin listens to.
 - Step by step, with setting values and rejecting: [appendix A.5](#a5-listeners).
 
-## 10. Actions in data views
+## 11. Actions in data views
 
 Buttons in the data view of a table (also in detail tables) are registered by the plugin class:
 
@@ -472,7 +534,7 @@ public function dataActions(): array
 - Rows without a key of their own (e.g. views) get no row actions.
 - Step by step: [appendix A.4](#a4-action-in-an-existing-table-view).
 
-## 11. Formula functions and validation rules
+## 12. Formula functions and validation rules
 
 Two building blocks extend the table designer without your plugin needing a page of its own.
 
@@ -526,7 +588,7 @@ public function fieldRules(): array
 table designer shows "not available" on the field, and `php artisan saft:plugins --check` lists the affected fields
 under **Table designer**.
 
-## 12. Installing, updating, removing
+## 13. Installing, updating, removing
 
 SAFT includes every package under `plugins/` as a Composer repository. Plugins are installed, updated and removed by
 the system administration on the console (see [System administration, chapter 7](SYSADMIN_GUIDE.md#7-plugins)):
@@ -557,7 +619,7 @@ well. Your plugin does not need to do anything for this. If you need another plu
 together with the permissions they can be deleted on the **Plugins** page under **Clean up**. Data the plugin wrote to
 table designer tables is kept; its listeners and actions no longer apply.
 
-## 13. Testing
+## 14. Testing
 
 A plugin's tests live in its `tests/` folder and run with SAFT's **Plugins** test suite – on PostgreSQL, MySQL and
 MariaDB like SAFT's own tests. SAFT loads the namespace from `autoload-dev` in the plugin's `composer.json`; tests of
@@ -579,7 +641,7 @@ database including roles, permissions and menu.
 | `$this->createTable('customers', 'Customers', [...])` | creates a table designer table (fields as in the table designer) and returns its `DataTable` |
 | `$this->withoutPluginEvents(fn () => …)` | creates test data without listeners reacting – e.g. to bypass your own rules |
 | `$this->withoutPlugin('lager-umbuchung', fn () => …)` | switches one plugin off only for the duration of the closure, without a database entry – e.g. to check that your plugin rests when a required plugin is switched off |
-| `$this->createTablesFromSchema($path, ['customers'])` | creates tables from the developer context's `schema.json`, see [chapter 14](#14-context-for-external-development-and-ai-agents) |
+| `$this->createTablesFromSchema($path, ['customers'])` | creates tables from the developer context's `schema.json`, see [chapter 15](#15-context-for-external-development-and-ai-agents) |
 | `$this->dataView('customers')` | data view as a Livewire test, e.g. for the plugin's buttons (`TestAction::make('…')->table($record)`) |
 
 ```php
@@ -601,7 +663,7 @@ plugin are active in tests.
 
 Example: `plugins/lager-umbuchung/tests/LagerUmbuchungTest.php`.
 
-## 14. Context for external development and AI agents
+## 15. Context for external development and AI agents
 
 Whoever writes a plugin for a specific installation – an external company or an AI agent – needs the rules, the plugin
 API and the schema of that installation's business tables. SAFT generates this as the **developer context** (in
@@ -674,7 +736,7 @@ public function test_orders_page(): void
 }
 ```
 
-## 15. Security
+## 16. Security
 
 A plugin is program code that runs with all of SAFT's rights. The administration should only install plugins from a
 trusted source; for your own plugins check at least:
@@ -686,13 +748,13 @@ trusted source; for your own plugins check at least:
 - Listeners only reject what is wrong in business terms – they apply in all data views and in imports.
 - Credentials and keys never in code, but in `.env` or encrypted settings.
 
-## 16. Examples: stock transfer, stock board and Swiss checks
+## 17. Examples: stock transfer, stock board and Swiss checks
 
 Three example plugins ship with SAFT: *Lager-Umbuchung* (stock transfer) shows a business application with a form,
 business rules and a tile, *Lager-Tafel* (stock board) is the example for the guides in appendix A, *CH-Prüfungen*
 (Swiss checks) shows formula functions and validation rules without pages of its own.
 
-### 16.1 Stock transfer
+### 17.1 Stock transfer
 
 The plugin `plugins/lager-umbuchung` ships with SAFT and is active in development and demo installations (not in
 production with `--no-dev`). It shows every building block on the warehouse demo:
@@ -717,7 +779,7 @@ Stock levels**. A stock movement “Issue” shows how the stock is booked and �
 in the bell. The tile **Warehouse: minimum stock** (`src/Widgets/MinimumStockWidget.php`) on the dashboard shows the
 items below minimum stock.
 
-### 16.2 Stock board
+### 17.2 Stock board
 
 The plugin `plugins/lager-tafel` (only in development and demo installations) implements every building block from
 [appendix A](#appendix-a--step-by-step-guides) once on the warehouse demo. It requires the plugin *Lager-Umbuchung*,
@@ -737,7 +799,7 @@ through whose procedure it books.
 **Permissions:** *Stock board: View stock matrix* for the stock matrix and the tile, *Stock board: Transfer on the stock
 board* for the stock board; plus the data permissions as for Lager-Umbuchung.
 
-### 16.3 Swiss checks
+### 17.3 Swiss checks
 
 The plugin `plugins/ch-pruefungen` (likewise only in development and demo installations) shows formula functions and
 validation rules without pages of its own – so it needs neither permissions nor menu suggestions, and requires no
@@ -754,7 +816,7 @@ tables:
 To try it: in the table designer select “IBAN” under **Further checks** on a text field, or create a computed field
 with the formula `rappen(amount * 1.081)`.
 
-## 17. API versions and change log
+## 18. API versions and change log
 
 The plugin API has its own version number **major.minor** (currently **1.5**). It is set in `config/saft.php`
 (`api_versions`) and shown under **Documentation › About SAFT XT** and on the **Plugins** page.
@@ -793,7 +855,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 ## Appendix A – Step-by-step guides
 
-Chapters 1–17 describe each building block on its own. This appendix takes the eight most common tasks from an empty
+Chapters 1–18 describe each building block on its own. This appendix takes the eight most common tasks from an empty
 file to a tested result. All examples come from the example plugin **Lager-Tafel** (stock board, `plugins/lager-tafel`).
 Its code is covered by tests on PostgreSQL, MySQL and MariaDB, so the excerpts here run as shown. Table and field names
 are those of the warehouse demo (German, e.g. `lager_artikel` = items, `menge` = quantity).
@@ -1165,7 +1227,7 @@ public function transferAction(): Action
 ```
 
 The booking itself is done by `StockTransfer` of the plugin *Lager-Umbuchung* (two stock movements in
-`Saft::transaction()`, see [chapter 16.1](#161-stock-transfer)). The page shows errors as notifications – including a
+`Saft::transaction()`, see [chapter 17.1](#171-stock-transfer)). The page shows errors as notifications – including a
 listener's rejection (`RecordRejected`) and violations of validation rules (`ValidationException`):
 
 ```php
@@ -1715,7 +1777,7 @@ foreach ($recipients as $user) {
 }
 ```
 
-`Saft::notify()` delivers the notification immediately, without a queue worker (see [chapter 8](#8-accessing-data)).
+`Saft::notify()` delivers the notification immediately, without a queue worker (see [chapter 9](#9-accessing-data)).
 
 **Step 4 – register in the plugin class:**
 
