@@ -1,0 +1,85 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'errors' => [
+        'row_not_unique' => 'L’enregistrement ne peut pas être identifié de façon unique (introuvable ou présent plusieurs fois). Rien n’a été modifié.',
+        'has_details' => 'L’enregistrement ne peut pas être supprimé tant que des enregistrements liés existent : :details.',
+    ],
+    'detail_label' => ':table (via « :field »)',
+    'detail_label_link' => ':table (via la liaison « :link »)',
+    'record' => 'enregistrement',
+    'record_deleted' => 'Cet enregistrement a été supprimé.',
+    'delete_permanently' => 'L’enregistrement est définitivement supprimé de la base de données externe et ne peut pas être restauré.',
+    'actions' => [
+        'create' => 'Nouvel enregistrement',
+        'details' => 'Détails',
+    ],
+    'import' => [
+        'label' => 'Importer',
+        'template' => 'Télécharger le modèle',
+        'template_file' => ':table-modele',
+        'file_action' => 'Importer un fichier …',
+        'heading' => 'Importer des données : :table',
+        'submit' => 'Importer',
+        'step_file' => 'Fichier',
+        'step_check' => 'Contrôle',
+        'intro' => 'Crée de nouveaux enregistrements à partir d’un fichier Excel ou CSV ; les enregistrements existants restent inchangés. La première ligne contient les en-têtes de colonnes – comme dans le modèle ou un export de cette table.',
+        'file' => 'Fichier',
+        'file_help' => 'Excel (.xlsx) ou CSV, au plus :max Mo et :rows lignes.',
+        'invalid' => 'Le fichier ne peut pas être importé ainsi – rien n’a été créé',
+        'ready' => 'Le fichier est correct : 1 nouvel enregistrement sera créé.|Le fichier est correct : :count nouveaux enregistrements seront créés.',
+        'columns' => 'Colonnes reconnues : :columns',
+        'ignored' => 'Non attribuées et ignorées : :columns',
+        'only_new' => 'Seuls de nouveaux enregistrements sont créés ; les enregistrements existants ne sont pas modifiés.',
+        'done' => '1 enregistrement importé.|:count enregistrements importés.',
+        'no_file' => 'Veuillez choisir un fichier.',
+        'missing_required' => 'Champs obligatoires sans colonne dans le fichier : :columns',
+        'no_rows' => 'Le fichier ne contient aucune ligne de données.',
+        'more' => '… et 1 autre erreur|… et :count autres erreurs',
+    ],
+    'export' => [
+        'label' => 'Exporter',
+        'too_large' => 'Export trop volumineux',
+        'too_large_body' => 'La sélection contient :rows enregistrements, au maximum :limit peuvent être exportés. Affinez la sélection avec les filtres ou la recherche.',
+    ],
+    'history' => [
+        'label' => 'Historique',
+        'when' => 'Date',
+        'who' => 'Par',
+        'what' => 'Modification',
+        'empty' => 'Aucune entrée',
+    ],
+    'filters' => [
+        'contains' => ':field contient',
+        'from' => ':field à partir de',
+        'until' => ':field jusqu’à',
+    ],
+    'preview' => [
+        'show' => 'Afficher :field',
+        'open' => 'Aller à « :field »',
+        'unavailable' => 'L’enregistrement lié n’est pas (ou plus) disponible.',
+    ],
+    'empty' => 'Aucun enregistrement pour l’instant',
+    'empty_details' => 'Aucun enregistrement lié',
+    'rules' => [
+        'compare' => [
+            '=' => 'doit être égal à :other.',
+            '<>' => 'ne doit pas être égal à :other.',
+            '<' => 'doit être inférieur à :other.',
+            '<=' => 'doit être inférieur ou égal à :other.',
+            '>' => 'doit être supérieur à :other.',
+            '>=' => 'doit être supérieur ou égal à :other.',
+        ],
+        'date' => [
+            '=' => 'doit tomber le même jour que :other.',
+            '<>' => 'ne doit pas tomber le même jour que :other.',
+            '<' => 'doit être avant :other.',
+            '<=' => 'ne doit pas être après :other.',
+            '>' => 'doit être après :other.',
+            '>=' => 'ne doit pas être avant :other.',
+        ],
+    ],
+    'computed_placeholder' => 'calculé à l’enregistrement',
+];

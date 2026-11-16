@@ -1,0 +1,24 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='960' height='390' viewBox='0 40 960 390'>
+<rect x='0' y='40' width='960' height='390' rx='0' fill='#f8fafc'/>
+<rect x='40' y='70' width='220' height='64' rx='10' fill='#ffffff' stroke='#e2e8f0' stroke-width='1'/>
+<text x='150.0' y='98' font-size='14' fill='#0f172a' font-weight='700' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Level 0: list</text>
+<text x='150.0' y='118' font-size='11' fill='#64748b' font-weight='400' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Data → Customers</text>
+<rect x='370' y='70' width='220' height='64' rx='10' fill='#eef2ff' stroke='#e2e8f0' stroke-width='1'/>
+<text x='480.0' y='98' font-size='14' fill='#0f172a' font-weight='700' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Level 1</text>
+<text x='480.0' y='118' font-size='11' fill='#64748b' font-weight='400' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Orders of the customer</text>
+<rect x='700' y='70' width='220' height='64' rx='10' fill='#eef2ff' stroke='#e2e8f0' stroke-width='1'/>
+<text x='810.0' y='98' font-size='14' fill='#0f172a' font-weight='700' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Level 2</text>
+<text x='810.0' y='118' font-size='11' fill='#64748b' font-weight='400' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Lines of the order</text>
+<line x1='260' y1='102' x2='370' y2='102' stroke='#4f46e5' stroke-width='2'/>
+<text x='315' y='92' font-size='11' fill='#4f46e5' font-weight='600' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Click row</text>
+<line x1='590' y1='102' x2='700' y2='102' stroke='#4f46e5' stroke-width='2'/>
+<text x='645' y='92' font-size='11' fill='#4f46e5' font-weight='600' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Click row</text>
+<text x='480' y='186' font-size='13' fill='#0f172a' font-weight='400' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Which level appears below a table is set in its “Details” section in the table designer –</text>
+<text x='480' y='206' font-size='13' fill='#0f172a' font-weight='400' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>regardless of the menu entry you came from.</text>
+<rect x='40' y='236' width='880' height='160' rx='10' fill='#ffffff' stroke='#e2e8f0' stroke-width='1'/>
+<text x='60' y='266' font-size='14' fill='#4f46e5' font-weight='600' text-anchor='start' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>URL:  /admin/data/kunden?sel=2,18:7</text>
+<text x='60' y='298' font-size='13' fill='#64748b' font-weight='400' text-anchor='start' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>2      = selected customer (level 0)</text>
+<text x='60' y='322' font-size='13' fill='#64748b' font-weight='400' text-anchor='start' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>18:7  = order 7 selected via relation field 18 (orders.kunde_id) (level 1)</text>
+<text x='60' y='346' font-size='13' fill='#0f172a' font-weight='400' text-anchor='start' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Every step is checked: relation configured · read permission · record really belongs to it.</text>
+<text x='60' y='370' font-size='13' fill='#0f172a' font-weight='400' text-anchor='start' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Invalid parts are cut off; reloading and Back show the same state.</text>
+</svg>

@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'model' => 'entrée de menu',
+    'plural' => 'menus',
+    'form' => [
+        'diagram_help' => 'Affiche les tables de données du groupe dans lequel se trouve cette entrée (sous-groupes compris) et leurs liaisons. Au premier niveau : toutes les tables de données.',
+        'report_help' => 'Uniquement les rapports partagés. L’entrée n’apparaît que pour les personnes autorisées à exécuter le rapport (droits sur toutes les tables concernées).',
+        'entry' => 'Entrée',
+        'invalid_position' => 'Position non valide : cycle ou plus de :max niveaux.',
+        'route' => 'Page',
+        'route_parameters' => 'Paramètres de route',
+        'parameter' => 'Paramètre',
+        'value' => 'Valeur',
+        'required_parameters' => 'Requis : :parameters',
+        'none' => 'aucun',
+        'missing_parameters' => 'Paramètres manquants : :parameters.',
+        'data_table_help' => 'Uniquement les tables du concepteur ; droits : data.<table>.* (rôles → droits sur les données).',
+        'columns' => 'Autres colonnes affichées',
+        'menu_group' => 'Entrée de menu sous',
+        'menu_group_help' => 'Groupe du menu dans lequel la table apparaît ; les sous-groupes sont en retrait.',
+        'no_menu_entry' => 'Pas d’entrée de menu',
+        'data_group' => 'Données',
+        'data_group_new' => ':group (sera créé)',
+        'invalid_group' => 'Ce groupe de menu n’existe pas (ou plus), ou une entrée en dessous dépasserait trois niveaux.',
+        'columns_help' => 'Toujours affichés (obligatoires) : :fields. Le formulaire de modification contient toujours tous les champs.',
+        'appearance' => 'Présentation et accès',
+        'icon_help' => 'Nom d’une icône Blade, p. ex. heroicon-o-users – ou à choisir avec le bouton à droite.',
+        'permission' => 'Autorisation requise',
+        'permission_all' => 'Pour tous les utilisateurs connectés',
+    ],
+    'parent' => 'Entrée parente',
+    'root' => '— Niveau principal —',
+    'types' => [
+        'group' => 'Groupe',
+        'route' => 'Page interne',
+        'url' => 'URL externe',
+        'data' => 'Table de données',
+        'diagram' => 'Modèle de données',
+        'report' => 'Rapport',
+    ],
+    'table' => [
+        'target' => 'Cible',
+        'permission' => 'Autorisation',
+        'all' => 'tous',
+    ],
+    'delete_children' => 'Les entrées enfants seront également supprimées.',
+];

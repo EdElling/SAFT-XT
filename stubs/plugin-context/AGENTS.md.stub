@@ -1,0 +1,55 @@
+# Developing SAFT plugins – context for agents and developers
+
+This folder describes one SAFT installation for building a plugin: rules, the plugin API and the business tables.
+SAFT is a metadata-driven database application (Laravel, Filament, Livewire). Business tables are defined in the
+table designer at runtime; plugins add pages, rules and functions on top – without changing SAFT's core.
+
+## Files
+
+| File | Content |
+|---|---|
+| `AGENTS.md` | this file: rules, environment, workflow |
+| `api-reference.md` | every guaranteed class and method of the plugin API (signatures are authoritative) |
+| `schema.md` | the business tables with fields, types, values, relations, formulas and rules |
+| `schema.json` | the same, exact – create the tables in tests with `$this->createTablesFromSchema(__DIR__.'/../context/schema.json')` |
+
+Full guide: `docs/manual/DEVELOPER_GUIDE.md` in the SAFT repository. Complete examples: `plugins/lager-umbuchung`
+(page, listeners, row action, dashboard widget, tests) and `plugins/ch-pruefungen` (validation rules, formula function).
+
+## Environment
+
+{{ environment }}
+
+## Rules (mandatory)
+
+1. Use only the plugin API from SAFT (`api-reference.md`). Every other `App\…` class is internal and may change.
+2. Read and write business tables only through `Saft::table('<name>')` – it applies data permissions, the table
+   designer's validation rules, computed fields and the activity log. Use `withoutAuthorization()` only where the
+   business logic requires it, with a comment.
+3. No raw SQL and nothing database-specific (PostgreSQL, MySQL and MariaDB are supported) – use Eloquent / the query
+   builder returned by `query()`.
+4. PHP files start with `declare(strict_types=1);`, follow PSR-12 and have return types.
+5. Every page checks access in `canAccess()`; every action that changes data checks the permission again.
+6. All user-facing text through translations (`__('<plugin-id>::file.key')`), at least German and English.
+7. Prefix routes, slugs, permissions and translation namespaces with the plugin ID.
+8. Pages register no navigation themselves (`$shouldRegisterNavigation = false`); offer `menuSuggestions()` instead.
+9. Declare every business table and field the plugin needs in `requiredTables()`; then the table designer protects them.
+10. Never put credentials into code; never output personal data in logs.
+
+## Workflow and definition of done
+
+```bash
+php artisan saft:make-plugin <id> --label="…"           # scaffold (once)
+composer require <vendor>/<id>                           # install into the development installation
+php artisan saft:plugins                                 # create the plugin's permissions
+vendor/bin/phpunit --testsuite Plugins --filter <Class>  # tests (PluginTestCase)
+php artisan saft:plugins --check <id>                    # must report no errors
+php artisan saft:plugin-context --output=plugins/<id>/context   # refresh this context
+```
+
+A task is done when the plugin's tests pass, `saft:plugins --check` reports no errors and new texts exist in German
+and English.
+
+## This installation
+
+{{ installation }}

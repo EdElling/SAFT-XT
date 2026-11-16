@@ -1,0 +1,88 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Auth;
+
+use App\Models\Role;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
+
+/**
+ * „Ansicht als Rolle“: Ein Super-Admin sieht SAFT mit genau den Rechten einer oder mehrerer Rollen
+ * (z. B. „benutzer“ + „forschung“, wie eine Person sie tatsächlich hat). Die Wahl steht nur in der
+ * Sitzung; je Anfrage ersetzt die Middleware die geladenen Rollen und direkten Rechte des Benutzers
+ * im Speicher (die Datenbank bleibt unverändert). Damit greifen Spatie-Rechte, Policies und die
+ * Super-Admin-Sonderregel (Gate::after) wie für die Rollen. Eigentümerschaft (eigene Auswertungen)
+ * zählt währenddessen nicht – eine andere Person mit diesen Rollen hätte sie auch nicht.
+ */
+final class RoleSimulation
+{
+    public const string SESSION_KEY = 'saft.simulated_roles';
+
+    /** @var Collection<int, Role>|null */
+    private ?Collection $active = null;
+
+    /** Darf diese Person simulieren? Maßgeblich sind die echten Rollen in der Datenbank. */
+    public function canSimulate(User $user): bool
+    {
+        return $user->roles()->where('name', User::ROLE_SUPER_ADMIN)->exists();
+    }
+
+    /** @param  iterable<Role>  $roles */
+    public function start(User $user, iterable $roles): void
+    {
+        $roles = collect($roles);
+        abort_unless($this->canSimulate($user) && $roles->isNotEmpty() && $roles->every(fn (Role $role): bool => $role->name !== User::ROLE_SUPER_ADMIN), 403);
+
+        session()->put(self::SESSION_KEY, $roles->map(fn (Role $role): int => (int) $role->getKey())->values()->all());
+        activity('auth')->causedBy($user)->event('role_simulation_started')->withProperties(['rollen' => $roles->pluck('name')->all()])->log('role_simulation_started');
+    }
+
+    public function stop(User $user): void
+    {
+        $roles = Role::query()->whereKey((array) session()->pull(self::SESSION_KEY, []))->pluck('name');
+
+        if ($roles->isNotEmpty()) {
+            activity('auth')->causedBy($user)->event('role_simulation_stopped')->withProperties(['rollen' => $roles->all()])->log('role_simulation_stopped');
+        }
+
+        // Ersetzte Rollen im Speicher verwerfen: Sie werden beim nächsten Zugriff neu geladen.
+        $user->unsetRelation('roles');
+        $user->unsetRelation('permissions');
+        $this->active = null;
+    }
+
+    /** Für die laufende Anfrage anwenden (Middleware); ungültige Wahl wird verworfen. */
+    public function apply(User $user): void
+    {
+        $ids = session(self::SESSION_KEY);
+
+        if ($ids === null) {
+            return;
+        }
+
+        $roles = Role::query()->with('permissions')->whereKey((array) $ids)->orderBy('name')->get();
+
+        if ($roles->isEmpty() || $roles->contains('name', User::ROLE_SUPER_ADMIN) || ! $this->canSimulate($user)) {
+            session()->forget(self::SESSION_KEY);
+
+            return;
+        }
+
+        $user->setRelation('roles', $roles);
+        $user->setRelation('permissions', new Collection);
+        $this->active = $roles;
+    }
+
+    /** @return Collection<int, Role>|null die simulierten Rollen oder null */
+    public function active(): ?Collection
+    {
+        return $this->active;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->active !== null;
+    }
+}

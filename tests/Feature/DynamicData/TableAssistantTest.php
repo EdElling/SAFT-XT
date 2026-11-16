@@ -1,0 +1,234 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\DynamicData;
+
+use App\Ai\AiUsage;
+use App\DynamicData\Assistant\TableAssistant;
+use App\DynamicData\Schema\FieldType;
+use App\Filament\Resources\CustomTables\Pages\CreateCustomTable;
+use App\Filament\Resources\CustomTables\Pages\EditCustomTable;
+use App\Filament\Resources\CustomTables\Schemas\CustomTableForm;
+use App\Models\CustomTable;
+use App\Models\DynamicRecord;
+use App\Models\User;
+use App\Reports\Assistant\AssistantClient;
+use App\Settings\AppSettings;
+use Filament\Actions\Testing\TestAction;
+use Livewire\Livewire;
+use Spatie\Activitylog\Models\Activity;
+use Tests\Fakes\FakeAssistantClient;
+
+/** KI-Assistent im Table-Designer (mit Modell-Attrappe, ohne Netz). */
+class TableAssistantTest extends DynamicDataTestCase
+{
+    private User $admin;
+
+    private FakeAssistantClient $fake;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        app()->setLocale('de');
+        $this->admin = $this->superAdmin();
+        $this->actingAs($this->admin);
+
+        $this->service()->createTable(['name' => 'vereine', 'label' => ['de' => 'Vereine']], [
+            ['name' => 'name', 'label' => ['de' => 'Name'], 'type' => 'string'],
+            ['name' => 'ort', 'label' => ['de' => 'Ort'], 'type' => 'string'],
+        ]);
+        DynamicRecord::forTableName('vereine')->create(['name' => 'Geheimverein Nord', 'ort' => 'Bern']);
+
+        config(['ai.provider' => 'anthropic', 'ai.daily_limit' => 50]);
+        $settings = app(AppSettings::class);
+        $settings->ai_assistant_enabled = true;
+        $settings->save();
+
+        $this->fake = new FakeAssistantClient;
+        $this->app->instance(AssistantClient::class, $this->fake);
+    }
+
+    /** @return array<string, string> */
+    private function t(string $de, ?string $en = null): array
+    {
+        return ['de' => $de, 'en' => $en ?? $de, 'fr' => $en ?? $de, 'it' => $en ?? $de];
+    }
+
+    /** @return array<string, mixed> */
+    private function field(string $name, string $type, array $overrides = []): array
+    {
+        return [...[
+            'name' => $name, 'label' => $this->t(ucfirst($name)), 'type' => $type,
+            'required' => false, 'unique' => false, 'searchable' => false, 'sortable' => false,
+            'length' => null, 'precision' => null, 'scale' => null, 'choices' => [], 'relation_table' => null, 'relation_display' => [],
+        ], ...$overrides];
+    }
+
+    /** @return array<string, mixed> */
+    private function members(array $overrides = []): array
+    {
+        return [...[
+            'kind' => 'table', 'question' => null, 'name' => 'mitglieder', 'label' => $this->t('Mitglieder', 'Members'), 'description' => null, 'menu_group' => null,
+            'fields' => [
+                $this->field('vorname', 'string', ['searchable' => true]),
+                $this->field('nachname', 'string', ['required' => true, 'searchable' => true]),
+                $this->field('eintritt', 'date', ['label' => $this->t('Eintrittsdatum', 'Entry date'), 'sortable' => true]),
+                $this->field('kategorie', 'select', ['choices' => [['value' => 'aktiv', 'label' => $this->t('Aktiv', 'Active')], ['value' => 'passiv', 'label' => $this->t('Passiv', 'Passive')]]]),
+                $this->field('verein_id', 'relation', ['label' => $this->t('Verein', 'Club'), 'relation_table' => 'vereine', 'relation_display' => ['name']]),
+            ],
+        ], ...$overrides];
+    }
+
+    public function test_new_table_fills_the_form_and_is_created_only_on_create(): void
+    {
+        $this->fake->push($this->members());
+
+        $page = Livewire::test(CreateCustomTable::class)
+            ->assertSeeHtml('data-table-assistant')
+            ->set('assistantPrompt', 'Mitglieder eines Vereins mit Eintrittsdatum und Kategorie')
+            ->call('askTableAssistant')
+            ->assertSet('assistantReplyKind', 'proposal')
+            ->assertFormSet(['name' => 'mitglieder', 'label.de' => 'Mitglieder', 'label.en' => 'Members']);
+
+        $this->assertNull(CustomTable::query()->where('name', 'mitglieder')->first(), 'Noch nichts angelegt.');
+        $fields = array_values($page->get('data.fields'));
+        $this->assertSame(['vorname', 'nachname', 'eintritt', 'kategorie', 'verein_id'], array_column($fields, 'name'));
+        $this->assertSame(['table' => 'vereine', 'display_fields' => ['name'], 'separator' => ' '], array_intersect_key($fields[4]['options'], array_flip(['table', 'display_fields', 'separator'])));
+
+        $page->call('create')->assertHasNoFormErrors();
+        $table = CustomTable::query()->where('name', 'mitglieder')->sole();
+        $this->assertSame('Entry date', $table->fields()->where('name', 'eintritt')->sole()->getTranslation('label', 'en'));
+        $this->assertSame(FieldType::Relation, $table->fields()->where('name', 'verein_id')->sole()->type);
+        $this->assertTrue($table->fields()->where('name', 'nachname')->sole()->is_required);
+
+        // Gesendet: Struktur der vorhandenen Tabellen, keine Datensätze; protokolliert wie der Auswertungs-Assistent.
+        $sent = $this->fake->sentText();
+        $this->assertStringContainsString('vereine', $sent);
+        $this->assertStringNotContainsString('Geheimverein', $sent);
+        $this->assertStringNotContainsString('Bern', $sent);
+        $log = Activity::query()->where('event', AiUsage::EVENT)->sole();
+        $this->assertSame(['tables', 'proposal'], [$log->log_name, $log->attribute_changes['attributes']['ergebnis']]);
+    }
+
+    public function test_invalid_proposal_gets_a_correction_and_follow_ups_see_the_form(): void
+    {
+        // Name schon vergeben → Korrektur.
+        $this->fake->push($this->members(['name' => 'vereine']))->push($this->members());
+        $page = Livewire::test(CreateCustomTable::class)
+            ->set('assistantPrompt', 'Mitglieder')
+            ->call('askTableAssistant')
+            ->assertFormSet(['name' => 'mitglieder']);
+        $this->assertStringContainsString('„vereine“ ist schon vergeben', end($this->fake->requests[1]['messages'])['content']);
+
+        // Nachfrage: der aktuelle Formularstand geht mit (auch von Hand geänderte Bezeichnung).
+        $this->fake->push($this->members(['fields' => [...$this->members()['fields'], $this->field('bemerkungen', 'text')]]));
+        $page->fillForm(['label.de' => 'Vereinsmitglieder'])
+            ->set('assistantPrompt', 'zusätzlich ein Feld Bemerkungen')
+            ->call('askTableAssistant');
+        $request = end($this->fake->requests[2]['messages'])['content'];
+        $this->assertStringContainsString('Vereinsmitglieder', $request);
+        $this->assertCount(5, $this->fake->requests[2]['messages'], 'Verlauf mit Korrekturrunde.');
+        $this->assertContains('bemerkungen', array_column(array_values($page->get('data.fields')), 'name'));
+
+        // Unbekannte Zieltabelle zweimal → Meldung, Formular unverändert.
+        $bad = $this->members(['fields' => [$this->field('x_id', 'relation', ['relation_table' => 'gibtsnicht', 'relation_display' => ['name']])]]);
+        $this->fake->push($bad)->push($bad);
+        $page->set('assistantPrompt', 'neu')->call('askTableAssistant')
+            ->assertSet('assistantReplyKind', 'error')
+            ->assertSee('Kein gültiger Vorschlag');
+    }
+
+    public function test_existing_table_changes_with_preview_and_partial_failure(): void
+    {
+        $this->service()->createTable(['name' => 'mitglieder', 'label' => ['de' => 'Mitglieder']], [
+            ['name' => 'email', 'label' => ['de' => 'E-Mail'], 'type' => 'string'],
+            ['name' => 'kategorie', 'label' => ['de' => 'Kategorie'], 'type' => 'select', 'options' => ['options' => [['value' => 'aktiv', 'label' => ['de' => 'Aktiv']], ['value' => 'passiv', 'label' => ['de' => 'Passiv']]]]],
+            ['name' => 'code', 'label' => ['de' => 'Code'], 'type' => 'string'],
+        ]);
+        DynamicRecord::forTableName('mitglieder')->create(['email' => 'a@example.org', 'code' => 'X']);
+        DynamicRecord::forTableName('mitglieder')->create(['email' => 'b@example.org', 'code' => 'X']);
+        $table = CustomTable::query()->where('name', 'mitglieder')->sole();
+
+        $change = fn (string $name, array $overrides): array => [...['name' => $name, 'label' => null, 'required' => null, 'unique' => null, 'searchable' => null, 'sortable' => null, 'add_choices' => [], 'relation_display' => null], ...$overrides];
+        $this->fake->push([
+            'kind' => 'changes', 'question' => null,
+            'add' => [$this->field('eintritt', 'date', ['label' => $this->t('Eintrittsdatum')]), $this->field('verein_id', 'relation', ['relation_table' => 'vereine', 'relation_display' => ['name', 'ort']])],
+            'change' => [
+                $change('email', ['unique' => true, 'required' => true]),
+                $change('kategorie', ['add_choices' => [['value' => 'junior', 'label' => $this->t('Junior')]]]),
+                // Doppelte Werte: „eindeutig“ scheitert beim Übernehmen, der Rest gilt.
+                $change('code', ['unique' => true]),
+            ],
+        ]);
+
+        Livewire::test(EditCustomTable::class, ['record' => $table->id])
+            ->callAction('aiAdjust', ['prompt' => 'Eintrittsdatum, Verein, E-Mail eindeutig, Kategorie Junior, Code eindeutig'])
+            ->assertActionMounted('aiApply')
+            ->assertSet('aiSummary', [
+                'Neu: Eintrittsdatum (Datum)',
+                'Neu: Verein_id (Verknüpfung → vereine)',
+                'Ändern: E-Mail – Pflicht an, eindeutig an',
+                'Ändern: Kategorie – 1 weitere Auswahloptionen',
+                'Ändern: Code – eindeutig an',
+            ])
+            ->callMountedAction()
+            ->assertNotified('Nicht alles übernommen:');
+
+        $table->refresh();
+        $this->assertNotNull($table->fields()->where('name', 'eintritt')->first());
+        $this->assertSame(['name', 'ort'], $table->fields()->where('name', 'verein_id')->sole()->optionsArray()['display_fields']);
+        $email = $table->fields()->where('name', 'email')->sole();
+        $this->assertTrue($email->is_unique && $email->is_required);
+        $this->assertSame(['aktiv', 'passiv', 'junior'], array_column($table->fields()->where('name', 'kategorie')->sole()->optionsArray()['options'], 'value'));
+        $this->assertFalse($table->fields()->where('name', 'code')->sole()->is_unique);
+    }
+
+    public function test_removing_a_field_from_the_list_needs_a_confirmation(): void
+    {
+        $this->fake->push($this->members());
+        $page = Livewire::test(CreateCustomTable::class)->set('assistantPrompt', 'Mitglieder')->call('askTableAssistant');
+        $key = array_key_first($page->get('data.fields'));
+
+        $page->mountAction(TestAction::make('delete')->schemaComponent('fields', 'form')->arguments(['item' => $key]))
+            ->assertActionMounted(TestAction::make('delete')->schemaComponent('fields', 'form')->arguments(['item' => $key]));
+        $this->assertCount(5, $page->get('data.fields'), 'Noch nichts entfernt.');
+
+        $page->callMountedAction();
+        $this->assertCount(4, $page->get('data.fields'));
+    }
+
+    public function test_field_list_headers_summarise_type_and_flags(): void
+    {
+        $this->assertSame('Eintrittsdatum · Datum · Pflicht, sortierbar', CustomTableForm::fieldSummary([
+            'label' => ['de' => 'Eintrittsdatum'], 'type' => 'date', 'is_required' => true, 'is_sortable' => true,
+        ]));
+        $this->assertSame('Name · Text (einzeilig)', CustomTableForm::fieldSummary(['label' => ['de' => 'Name'], 'type' => 'string']));
+        $this->assertNull(CustomTableForm::fieldSummary(['type' => 'string']), 'Ohne Bezeichnung (neues leeres Feld): Standardkopf.');
+    }
+
+    public function test_question_and_availability(): void
+    {
+        $table = CustomTable::query()->where('name', 'vereine')->sole();
+        $this->fake->push(['kind' => 'question', 'question' => 'Typänderungen bitte von Hand im Table-Designer.', 'add' => [], 'change' => []]);
+
+        // Beim Bearbeiten nur „Mit KI anpassen“, nicht das Eingabefeld der neuen Tabelle (dessen Methode hat nur die Anlegeseite).
+        Livewire::test(EditCustomTable::class, ['record' => $table->id])
+            ->assertDontSeeHtml('data-table-assistant')
+            ->assertActionVisible('aiAdjust')
+            ->callAction('aiAdjust', ['prompt' => 'Ort als Zahl'])
+            ->assertActionNotMounted('aiApply')
+            ->assertNotified('Rückfrage:');
+
+        // Ohne Recht: weder Eingabefeld noch Aktion.
+        $this->actingAs($this->userWithPermissions(['custom_tables.view', 'custom_tables.create', 'custom_tables.update']));
+        Livewire::test(CreateCustomTable::class)->assertDontSeeHtml('data-table-assistant');
+        Livewire::test(EditCustomTable::class, ['record' => $table->id])->assertActionHidden('aiAdjust');
+
+        // Tageslimit gemeinsam mit dem Auswertungs-Assistenten.
+        config(['ai.daily_limit' => 1]);
+        $this->actingAs($this->admin);
+        $this->assertSame(0, AiUsage::remainingToday($this->admin));
+        $this->assertFalse(TableAssistant::availableFor($this->userWithPermissions(['custom_tables.view'])));
+    }
+}

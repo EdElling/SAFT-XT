@@ -1,0 +1,4 @@
+/vendor/
+composer.lock
+# Entwickler-Kontext der Installation (php artisan saft:plugin-context) – kann vertrauliche Tabellennamen enthalten
+/context/

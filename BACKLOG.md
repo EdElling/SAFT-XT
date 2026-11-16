@@ -1,0 +1,84 @@
+# SAFT XT – Backlog
+
+Themen, Anforderungen und Ideen, die nicht sofort umgesetzt werden. Neue Einträge bekommen die nächste freie Nummer;
+erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
+
+**Status:** `offen` – noch nicht begonnen · `geplant` – Umsetzung beschlossen · `in Arbeit` · `umgesetzt` ·
+`zurückgestellt` – bewusst später · `verworfen` – wird nicht gemacht (mit Grund)
+
+## Als Nächstes (Prio 1)
+
+1. **B-027** Filter und Sortierung je Person und Tabelle merken
+2. **B-050** KI-Assistent für die Handbücher
+3. **B-021** Feldtyp Datei/Bild
+
+## Konfiguration übertragen
+
+| Nr. | Thema | Beschreibung | Status | Bezug |
+|---|---|---|---|---|
+| B-001 | Bestehende Einträge aktualisieren (Etappe 9) | Abweichende Tabellen, Auswertungen, Menüs und Rollen beim Einspielen aktualisieren statt überspringen; feldgenaue Vorschau der Unterschiede (z. B. „Feld *rabatt* neu“, „Regel entfernt“), Auswahl was übernommen wird; heikle Änderungen über die Schutzregeln des Table-Designers. Für den Erstaufbau einer Produktion nicht nötig, für spätere Updates in dieselbe Richtung schon – bis dahin Änderungen direkt in der Produktion. | zurückgestellt | baut auf B-105 auf |
+| B-002 | Stammdaten mitnehmen | Je Tabelle wählbar die Datensätze kleiner Nachschlagetabellen (z. B. Lagerorte, Kategorien) ins Paket aufnehmen. | offen | – |
+| B-003 | Geplante Aufgaben mitnehmen | Datenstand-Aufgaben je Tabelle im Paket (Tabelle per Name). | offen | – |
+
+## Datenmodell und Table-Designer
+
+| Nr. | Thema | Beschreibung | Status | Bezug |
+|---|---|---|---|---|
+| B-010 | Externe Datenbank als interne Tabellen übernehmen | DDL-Schema oder Datenbank-Dump bzw. angebundene Tabellen (Table-Connector) als Tabellen des Table-Designers übernehmen, mit Verknüpfungen und optional Daten. Empfohlener Weg: „Als interne Tabellen übernehmen“ aus dem Table-Connector. | offen | – |
+| B-011 | KI-Assistent für mehrere verknüpfte Tabellen | Der Assistent im Table-Designer schlägt ein ganzes Datenmodell (mehrere Tabellen mit Verknüpfungen) vor. | offen | – |
+
+## Fehlende Grundfunktionen
+
+| Nr. | Thema | Beschreibung | Status | Bezug |
+|---|---|---|---|---|
+| B-020 | Rechte auf Zeilenebene | Datensätze nur sehen bzw. bearbeiten, wenn eine Bedingung erfüllt ist (z. B. eigene Abteilung, eigene Datensätze). | offen | – |
+| B-021 | Feldtyp Datei/Bild | Anhänge wie Verträge, Fotos, PDFs an Datensätzen. Speicherort Laravel-Dateisystem (lokal privat, wahlweise S3), nie öffentlich – Herunterladen über geprüfte Adresse mit den Datenrechten des Datensatzes. Je Feld: erlaubte Typen, Höchstgrösse, eine oder mehrere Dateien. Vorschau (Vorschaubilder in Listen, Bild/PDF im Detail). Löschen: Papierkorb behält Dateien, endgültiges Löschen entfernt sie, Feld löschen warnt mit Anzahl/Grösse. Änderungsprotokoll; Excel-Export nur Dateinamen (ZIP später); Sicherung muss die Dateien einschliessen (Systemadministration); Konfiguration übertragen ohne Dateien; optional Virenprüfung. | geplant (Prio 1) | – |
+| B-022 | Gespeicherte Ansichten | Filter, Sortierung und Spalten einer Datenansicht unter einem Namen speichern, persönlich oder für eine Rolle. | offen | – |
+| B-023 | REST-API | Zugriff von aussen auf Tabellen des Table-Designers mit Token, Rechten und Prüfregeln (wie `Saft::table()`). | offen | – |
+| B-024 | Massenbearbeitung | Mehrere Datensätze auf einmal ändern (ein Feld auf einen Wert setzen). | offen | – |
+| B-025 | Ereignisregeln ohne Code | Einfache Regeln in der Oberfläche („wenn Status = erledigt, dann Datum setzen / Meldung senden“). | offen | – |
+| B-027 | Filter und Sortierung merken | Filter, Sortierung und Suchbegriff einer Datenansicht je Person und Tabelle dauerhaft speichern (heute nur für die Sitzung), ohne Weitergabe; Knopf „Filter zurücksetzen“. Spaltenauswahl wird schon je Person gespeichert (user_table_columns). Vorstufe zu B-022. | geplant (Prio 1) | – |
+| B-026 | PDF und Dokumentvorlagen | Datensätze bzw. Auswertungen als PDF nach Vorlage ausgeben (z. B. Lieferschein, Rechnung). | offen | – |
+
+## Plugins
+
+| Nr. | Thema | Beschreibung | Status | Bezug |
+|---|---|---|---|---|
+| B-030 | Plugins ein- und ausschalten | Installiertes Plugin in der Plugin-Verwaltung deaktivieren, ohne es zu entfernen. | offen | – |
+| B-031 | Installation über die Oberfläche | Plugin-Paket hochladen und vorbereitet installieren, mit Kompatibilitäts- und KI-Prüfbericht (Sicherheit, nur Plugin-API). | offen | – |
+| B-032 | Abhängigkeiten zwischen Plugins | Ein Plugin gibt an, welche anderen Plugins es braucht; Prüfung und Ruhen wie bei Tabellen. | offen | – |
+| B-033 | MCP-Server für den Entwickler-Kontext | KI-Agenten fragen Schema und API live ab statt über Dateien. | offen | baut auf B-104 auf |
+| B-034 | Anonymisierte Beispieldaten im Kontext | Optional einige anonymisierte Beispielzeilen je Tabelle im Entwickler-Kontext. | zurückgestellt | Entscheid 2026-11-15: vorerst keine Beispieldaten (Datenschutz) |
+
+## KI-Assistenz
+
+| Nr. | Thema | Beschreibung | Status | Bezug |
+|---|---|---|---|---|
+| B-050 | KI-Assistent für die Handbücher | Fragen zur Bedienung mit Antworten aus den Handbüchern, nach Rolle (Anwenderhandbuch und FAQ für alle, Administratorhandbuch mit Administrationsrechten, Systemadministration für den Betrieb), mit Links auf die Kapitel. Ohne Vektordatenbank (Datenbankunabhängigkeit): Kapitel nach Rolle/Sprache mit Prompt-Caching oder Stichwortsuche vorab. Optional Schema (Tabellen, Felder, Regeln) der Tabellen mit Datenrechten. Datensätze nur mit Schalter „KI darf Datensätze sehen“ je Anbieter in der KI-Konfiguration (für selbst betriebene Modelle). Erste Stufe von B-051. | geplant (Prio 1) | – |
+| B-051 | KI-Assistenz in der Anwendung | Stufen auf B-050 aufbauend: 2. Abfragen in Worten → Filter bzw. Auswertungsdefinition (kein SQL, Auswertungs-Engine mit Rechten); 3. Handeln: Vorschläge (z. B. Lieferschein-PDF erfassen, Massenänderung) mit Bestätigung, gespeichert über Saft::table() mit Regeln und Protokoll „via KI“; 4. Automatisieren: KI erzeugt geplante Aufgaben bzw. Ereignisregeln (B-025), Ausführung ohne KI. Nötig: Werkzeugschicht mit den Rechten der Person, Bestätigung vor dem Schreiben, Obergrenzen, Schutz vor Prompt-Injection, Kostenlimit; nach aussen über MCP (B-033) und REST-API (B-023). | offen | – |
+
+## Schnittstellen
+
+| Nr. | Thema | Beschreibung | Status | Bezug |
+|---|---|---|---|---|
+| B-060 | REST-Anbindungen (Import/Export, Webhooks) | SAFT als Client: Daten aus fremden REST-APIs holen bzw. senden – Adresse, Anmeldung (API-Schlüssel/OAuth2, verschlüsselt), Seitenweise, Zuordnung JSON → Felder mit Vorschau, Abgleich über Schlüsselfeld, von Hand oder als geplante Aufgabe mit Protokoll; Webhooks bei Ereignissen (B-025). Komplexe Anbindungen (ERP, Buchhaltung) als Plugins. SAFT als Server: B-023. | offen | – |
+
+## Technik und Betrieb
+
+| Nr. | Thema | Beschreibung | Status | Bezug |
+|---|---|---|---|---|
+| B-042 | Lizenz PolyForm Noncommercial 1.0.0 | PolyForm Noncommercial statt der EULA des Vorgängers SAFT2; kommerzielle Nutzung (auch intern in Firmen) nur mit eigener Lizenz. SAFT2 (bis 2.8.0) ist zurückgezogen (Hinweis in LICENSE und README). | umgesetzt | 0.1.0 |
+| B-043 | Neues Repository SAFT XT | Neubeginn ohne die Historie von SAFT2 (die bleibt privat als Archiv), Name SAFT XT, Version 0.1.0; technische Bezeichner (`saft:…`, `Saft::table()`, `config/saft.php`) und Datenbanknamen bleiben. Repository zunächst privat, öffentlich nach Durchsicht. | in Arbeit | 0.1.0 |
+| B-044 | Release v0.1.0 | Erstes Release von SAFT XT; vorher Feature- und Browser-Tests auf GitHub. | in Arbeit | – |
+| B-040 | OpenSpout 5 | Erst mit Filament 6 (Filament verlangt OpenSpout ^4). | zurückgestellt | – |
+
+## Umgesetzt (Übersicht)
+
+| Nr. | Thema | Status | Bezug |
+|---|---|---|---|
+| B-100 | Plugin-Mechanismus (Etappen 1–4: Rahmen, API, Abhängigkeiten, API-Versionen) | umgesetzt | in 0.1.0 enthalten |
+| B-101 | Plugins für externe Entwickler: Gerüst, Test-Basis, Prüfung (Etappe 5) | umgesetzt | in 0.1.0 enthalten |
+| B-102 | Dashboard-Kacheln, Formelfunktionen, Prüfregeln aus Plugins (Etappe 6) | umgesetzt | in 0.1.0 enthalten |
+| B-103 | Table-Designer: Reiter „Verwendet in“, Warnung beim Löschen | umgesetzt | in 0.1.0 enthalten |
+| B-104 | Entwickler-Kontext für externe Entwicklung und KI-Agenten (Etappe 7) | umgesetzt | in 0.1.0 enthalten |
+| B-105 | Konfiguration übertragen: Export und Einspielen von Neuem (Etappe 8) | umgesetzt | in 0.1.0 enthalten |

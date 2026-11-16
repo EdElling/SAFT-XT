@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'model' => 'menu entry',
+    'plural' => 'menus',
+    'form' => [
+        'diagram_help' => 'Shows the data tables of the group this entry is in (including subgroups) and their relations. At top level: all data tables.',
+        'report_help' => 'Only shared reports. The entry appears only for people allowed to run the report (data permissions on all tables involved).',
+        'entry' => 'Entry',
+        'invalid_position' => 'Invalid position: cycle or more than :max levels.',
+        'route' => 'Page',
+        'route_parameters' => 'Route parameters',
+        'parameter' => 'Parameter',
+        'value' => 'Value',
+        'required_parameters' => 'Required: :parameters',
+        'none' => 'none',
+        'missing_parameters' => 'Missing parameters: :parameters.',
+        'data_table_help' => 'Only table designer tables; permissions: data.<table>.* (roles → data permissions).',
+        'columns' => 'Further displayed columns',
+        'menu_group' => 'Menu entry under',
+        'menu_group_help' => 'Menu group in which the table appears; subgroups are indented.',
+        'no_menu_entry' => 'No menu entry',
+        'data_group' => 'Data',
+        'data_group_new' => ':group (will be created)',
+        'invalid_group' => 'This menu group does not exist (any more), or an entry below it would be deeper than three levels.',
+        'columns_help' => 'Always shown (required): :fields. The edit form always contains all fields.',
+        'appearance' => 'Appearance & access',
+        'icon_help' => 'Name of a Blade icon, e.g. heroicon-o-users – or choose one with the button on the right.',
+        'permission' => 'Required permission',
+        'permission_all' => 'For all signed-in users',
+    ],
+    'parent' => 'Parent entry',
+    'root' => '— Top level —',
+    'types' => [
+        'group' => 'Group',
+        'route' => 'Internal page',
+        'url' => 'External URL',
+        'data' => 'Data table',
+        'diagram' => 'Data model',
+        'report' => 'Report',
+    ],
+    'table' => [
+        'target' => 'Target',
+        'permission' => 'Permission',
+        'all' => 'all',
+    ],
+    'delete_children' => 'Child entries are deleted as well.',
+];

@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }}\Tests;
+
+use App\Plugins\Api\Saft;
+use App\Plugins\Testing\PluginTestCase;
+use {{ namespace }}\Pages\StartPage;
+
+/** Ausführen: vendor/bin/phpunit --testsuite Plugins --filter {{ class }}Test */
+class {{ class }}Test extends PluginTestCase
+{
+    public function test_start_page_needs_the_permission(): void
+    {
+        $this->actingWithPermissions([]);
+        $this->get(StartPage::getUrl())->assertForbidden();
+
+        $this->actingWithPermissions(['{{ id }}.use']);
+        $this->get(StartPage::getUrl())->assertOk()->assertSee(__('{{ id }}::plugin.welcome_title'));
+    }
+
+    public function test_tables_can_be_used_through_the_plugin_api(): void
+    {
+        $this->actingAsSuperAdmin();
+        $customers = $this->createTable('kunden', 'Kunden', [
+            ['name' => 'name', 'label' => 'Name', 'type' => 'string', 'options' => ['length' => 100], 'is_required' => true],
+        ]);
+
+        $customers->create(['name' => 'Muster AG']);
+
+        $this->assertSame(1, Saft::table('kunden')->query()->count());
+    }
+}

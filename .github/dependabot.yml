@@ -1,0 +1,49 @@
+# Dependabot: Versions-Updates der Abhängigkeiten als Pull-Requests, wöchentlich und gebündelt.
+# Sicherheitsupdates (bei bekannten Lücken) kommen zusätzlich sofort, sobald sie in den
+# Repository-Einstellungen eingeschaltet sind (Settings → Code security → Dependabot security updates).
+# Jeder Pull-Request wird vor dem Zusammenführen getestet (Workflow „Tests“), siehe SECURITY.md.
+version: 2
+updates:
+  - package-ecosystem: composer
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Zurich
+    open-pull-requests-limit: 5
+    labels: [dependencies, php]
+    groups:
+      # Kompatible Updates (Patch/Minor) als ein Pull-Request; Hauptversionen einzeln.
+      composer-compatible:
+        applies-to: version-updates
+        update-types: [minor, patch]
+      composer-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Zurich
+    open-pull-requests-limit: 5
+    labels: [dependencies, javascript]
+    groups:
+      npm-compatible:
+        applies-to: version-updates
+        update-types: [minor, patch]
+      npm-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    labels: [dependencies, ci]
+    groups:
+      actions:
+        patterns: ["*"]

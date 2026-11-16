@@ -1,0 +1,85 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'errors' => [
+        'row_not_unique' => 'Il record non può essere identificato in modo univoco (non trovato o presente più volte). Non è stato modificato nulla.',
+        'has_details' => 'Il record non può essere eliminato finché esistono record collegati: :details.',
+    ],
+    'detail_label' => ':table (tramite «:field»)',
+    'detail_label_link' => ':table (tramite collegamento «:link»)',
+    'record' => 'record',
+    'record_deleted' => 'Questo record è stato eliminato.',
+    'delete_permanently' => 'Il record viene eliminato definitivamente dal database esterno e non può essere ripristinato.',
+    'actions' => [
+        'create' => 'Nuovo record',
+        'details' => 'Dettagli',
+    ],
+    'import' => [
+        'label' => 'Importa',
+        'template' => 'Scarica modello',
+        'template_file' => ':table-modello',
+        'file_action' => 'Importa file …',
+        'heading' => 'Importa dati: :table',
+        'submit' => 'Importa',
+        'step_file' => 'File',
+        'step_check' => 'Controllo',
+        'intro' => 'Crea nuovi record da un file Excel o CSV; i record esistenti restano invariati. La prima riga contiene le intestazioni delle colonne – come nel modello o in un’esportazione di questa tabella.',
+        'file' => 'File',
+        'file_help' => 'Excel (.xlsx) o CSV, al massimo :max MB e :rows righe.',
+        'invalid' => 'Il file non può essere importato così – non è stato creato nulla',
+        'ready' => 'Il file è corretto: verrà creato 1 nuovo record.|Il file è corretto: verranno creati :count nuovi record.',
+        'columns' => 'Colonne riconosciute: :columns',
+        'ignored' => 'Non assegnate e ignorate: :columns',
+        'only_new' => 'Vengono creati solo nuovi record; i record esistenti non vengono modificati.',
+        'done' => '1 record importato.|:count record importati.',
+        'no_file' => 'Scegliere un file.',
+        'missing_required' => 'Campi obbligatori senza colonna nel file: :columns',
+        'no_rows' => 'Il file non contiene righe di dati.',
+        'more' => '… e 1 altro errore|… e altri :count errori',
+    ],
+    'export' => [
+        'label' => 'Esporta',
+        'too_large' => 'Esportazione troppo grande',
+        'too_large_body' => 'La selezione contiene :rows record, se ne possono esportare al massimo :limit. Restringere la selezione con filtri o ricerca.',
+    ],
+    'history' => [
+        'label' => 'Cronologia',
+        'when' => 'Data',
+        'who' => 'Da',
+        'what' => 'Modifica',
+        'empty' => 'Nessuna voce',
+    ],
+    'filters' => [
+        'contains' => ':field contiene',
+        'from' => ':field da',
+        'until' => ':field fino a',
+    ],
+    'preview' => [
+        'show' => 'Mostra :field',
+        'open' => 'Vai a «:field»',
+        'unavailable' => 'Il record collegato non è (più) disponibile.',
+    ],
+    'empty' => 'Ancora nessun record',
+    'empty_details' => 'Nessun record collegato',
+    'rules' => [
+        'compare' => [
+            '=' => 'deve essere uguale a :other.',
+            '<>' => 'non deve essere uguale a :other.',
+            '<' => 'deve essere minore di :other.',
+            '<=' => 'deve essere minore o uguale a :other.',
+            '>' => 'deve essere maggiore di :other.',
+            '>=' => 'deve essere maggiore o uguale a :other.',
+        ],
+        'date' => [
+            '=' => 'deve cadere lo stesso giorno di :other.',
+            '<>' => 'non deve cadere lo stesso giorno di :other.',
+            '<' => 'deve essere prima di :other.',
+            '<=' => 'non deve essere dopo :other.',
+            '>' => 'deve essere dopo :other.',
+            '>=' => 'non deve essere prima di :other.',
+        ],
+    ],
+    'computed_placeholder' => 'calcolato al salvataggio',
+];

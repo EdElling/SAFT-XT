@@ -1,0 +1,38 @@
+# Sicherheitsprüfung der Abhängigkeiten gegen die öffentlichen Advisory-Datenbanken
+# (composer audit, npm audit) – wöchentlich, auf Knopfdruck und bei Änderungen an den Lock-Dateien.
+# Rot heißt: ein Paket in der Produktion hat eine bekannte Sicherheitslücke. Vorgehen: SECURITY.md.
+name: Security audit
+
+on:
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+  pull_request:
+    paths: [composer.lock, package-lock.json]
+  push:
+    branches: [main]
+    paths: [composer.lock, package-lock.json]
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Abhängigkeiten prüfen
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer
+          coverage: none
+
+      - name: PHP-Pakete (composer audit, Produktion)
+        # --locked: prüft composer.lock ohne Installation; --no-dev: nur, was auf dem Server läuft.
+        run: composer audit --locked --no-dev
+
+      - name: JavaScript (npm audit, Produktion)
+        run: npm audit --package-lock-only --omit=dev --audit-level=moderate

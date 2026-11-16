@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }}\Pages;
+
+use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
+use Filament\Schemas\Schema;
+use {{ namespace }}\{{ class }}Plugin;
+
+/** Startseite des Plugins – Ausgangspunkt für eigene Masken. */
+final class StartPage extends Page
+{
+    public const string ROUTE = 'filament.admin.pages.{{ id }}';
+
+    protected static ?string $slug = '{{ id }}';
+
+    /** Ins Menü kommt die Seite über den Menüvorschlag (Administration › Plugins). */
+    protected static bool $shouldRegisterNavigation = false;
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can({{ class }}Plugin::ID.'.use') ?? false;
+    }
+
+    public function getTitle(): string
+    {
+        return __('{{ id }}::plugin.label');
+    }
+
+    public function content(Schema $schema): Schema
+    {
+        return $schema->components([
+            Section::make(__('{{ id }}::plugin.welcome_title'))
+                ->schema([Text::make(__('{{ id }}::plugin.welcome'))]),
+        ]);
+    }
+}

@@ -1,0 +1,85 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'errors' => [
+        'row_not_unique' => 'The record cannot be identified uniquely (not found or present more than once). Nothing was changed.',
+        'has_details' => 'The record cannot be deleted while related records exist: :details.',
+    ],
+    'detail_label' => ':table (via “:field”)',
+    'detail_label_link' => ':table (via table link “:link”)',
+    'record' => 'record',
+    'record_deleted' => 'This record has been deleted.',
+    'delete_permanently' => 'The record is permanently deleted from the external database and cannot be restored.',
+    'actions' => [
+        'create' => 'New record',
+        'details' => 'Details',
+    ],
+    'import' => [
+        'label' => 'Import',
+        'template' => 'Download template',
+        'template_file' => ':table-template',
+        'file_action' => 'Import file …',
+        'heading' => 'Import data: :table',
+        'submit' => 'Import',
+        'step_file' => 'File',
+        'step_check' => 'Check',
+        'intro' => 'Creates new records from an Excel or CSV file; existing records remain unchanged. The first row contains the column headings – as in the template or an export of this table.',
+        'file' => 'File',
+        'file_help' => 'Excel (.xlsx) or CSV, at most :max MB and :rows rows.',
+        'invalid' => 'The file cannot be imported like this – nothing was created',
+        'ready' => 'The file is fine: 1 new record will be created.|The file is fine: :count new records will be created.',
+        'columns' => 'Recognised columns: :columns',
+        'ignored' => 'Not assigned and skipped: :columns',
+        'only_new' => 'Only new records are created; existing records are not changed.',
+        'done' => '1 record imported.|:count records imported.',
+        'no_file' => 'Please choose a file.',
+        'missing_required' => 'Required fields without a column in the file: :columns',
+        'no_rows' => 'The file contains no data rows.',
+        'more' => '… and 1 more error|… and :count more errors',
+    ],
+    'export' => [
+        'label' => 'Export',
+        'too_large' => 'Export too large',
+        'too_large_body' => 'The selection contains :rows records, at most :limit can be exported. Narrow the selection with filters or search.',
+    ],
+    'history' => [
+        'label' => 'History',
+        'when' => 'Time',
+        'who' => 'By',
+        'what' => 'Change',
+        'empty' => 'No entries',
+    ],
+    'filters' => [
+        'contains' => ':field contains',
+        'from' => ':field from',
+        'until' => ':field until',
+    ],
+    'preview' => [
+        'show' => 'Show :field',
+        'open' => 'Go to “:field”',
+        'unavailable' => 'The related record is not available (any more).',
+    ],
+    'empty' => 'No records yet',
+    'empty_details' => 'No related records',
+    'rules' => [
+        'compare' => [
+            '=' => 'must be equal to :other.',
+            '<>' => 'must not be equal to :other.',
+            '<' => 'must be less than :other.',
+            '<=' => 'must be less than or equal to :other.',
+            '>' => 'must be greater than :other.',
+            '>=' => 'must be greater than or equal to :other.',
+        ],
+        'date' => [
+            '=' => 'must be on the same day as :other.',
+            '<>' => 'must not be on the same day as :other.',
+            '<' => 'must be before :other.',
+            '<=' => 'must not be after :other.',
+            '>' => 'must be after :other.',
+            '>=' => 'must not be before :other.',
+        ],
+    ],
+    'computed_placeholder' => 'calculated when saving',
+];

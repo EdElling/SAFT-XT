@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use App\Plugins\PluginServiceProvider;
+
+/** Meldet das Plugin an; lädt lang/, resources/views/ und database/migrations/ unter „{{ id }}::“. */
+final class {{ class }}ServiceProvider extends PluginServiceProvider
+{
+    protected function plugin(): string
+    {
+        return {{ class }}Plugin::class;
+    }
+}

@@ -1,0 +1,24 @@
+# {{ label }} – SAFT plugin
+
+Plugin ID `{{ id }}`, package `{{ package }}`, namespace `{{ namespace }}`, plugin API `{{ api }}`.
+
+Before changing code, read `context/AGENTS.md` (rules, environment, workflow), `context/api-reference.md` and
+`context/schema.md` (business tables). Create or refresh the folder in SAFT's main directory:
+
+```bash
+php artisan saft:plugin-context --output=plugins/{{ id }}/context
+```
+
+For a customer installation, ask its administration for the ZIP from Administration › Plugins › "Download developer
+context" and unpack it into `context/`. The folder is ignored by Git – table names may be confidential.
+
+## This plugin
+
+- Plugin class: `src/{{ class }}Plugin.php` (permissions, menu suggestions, required tables, listeners, actions)
+- Start page: `src/Pages/StartPage.php`
+- Translations: `lang/de`, `lang/en`
+- Tests: `tests/{{ class }}Test.php` – create the business tables with
+  `$this->createTablesFromSchema(__DIR__.'/../context/schema.json', ['<table>', …])`
+
+Done means: `vendor/bin/phpunit --testsuite Plugins --filter {{ class }}Test` passes and
+`php artisan saft:plugins --check {{ id }}` reports no errors.

@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * Created by Reliese Model.
+ */
+
+namespace App\Models\Base;
+
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Class TaskRun
+ *
+ * @property int $id
+ * @property int $scheduled_task_id
+ * @property string $trigger
+ * @property int|null $triggered_by
+ * @property string $status
+ * @property Carbon $started_at
+ * @property Carbon|null $finished_at
+ * @property string|null $message
+ * @property array|null $result
+ */
+class TaskRun extends Model
+{
+    public $timestamps = false;
+
+    protected $table = 'task_runs';
+
+    protected $casts = [
+        'scheduled_task_id' => 'int',
+        'triggered_by' => 'int',
+        'started_at' => 'datetime',
+        'finished_at' => 'datetime',
+        'result' => 'json',
+    ];
+
+    protected $fillable = [
+        'scheduled_task_id',
+        'trigger',
+        'triggered_by',
+        'status',
+        'started_at',
+        'finished_at',
+        'message',
+        'result',
+    ];
+}

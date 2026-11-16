@@ -1,0 +1,16 @@
+# {{ label }}
+
+Plugin für SAFT (Paket `{{ package }}`, Kennung `{{ id }}`, Plugin-API `{{ api }}`).
+
+## Entwickeln
+
+```bash
+composer require {{ package }}                      # im Hauptverzeichnis von SAFT
+php artisan saft:plugins                            # Rechte anlegen
+php artisan saft:plugins --check {{ id }}           # Prüfung vor der Auslieferung
+vendor/bin/phpunit --testsuite Plugins --filter {{ class }}Test
+```
+
+Danach unter **Administration › Plugins** den Menüvorschlag übernehmen und das Recht „{{ id }}.use“ einer Rolle geben.
+
+Siehe Entwicklerhandbuch von SAFT (`docs/manual/DEVELOPER_GUIDE.de.md`).

@@ -1,0 +1,184 @@
+{
+    "version": "1.3",
+    "surface": {
+        "App\\Filament\\Concerns\\LimitsFormWidth": [
+            "trait",
+            "function getExtraBodyAttributes(): array",
+            "function getMaxContentWidth(): Filament\\Support\\Enums\\Width|string|null"
+        ],
+        "App\\Models\\DynamicRecord": [
+            "type"
+        ],
+        "App\\Models\\User": [
+            "type"
+        ],
+        "App\\Plugins\\Api\\DashboardWidget": [
+            "interface",
+            "abstract static function dashboardLabel(): string"
+        ],
+        "App\\Plugins\\Api\\DataAction": [
+            "class",
+            "const RECORD = \"record\"",
+            "const TABLE = \"table\"",
+            "function __construct(string $table, string $placement, Closure $make)",
+            "property Closure $make",
+            "property string $placement",
+            "property string $table"
+        ],
+        "App\\Plugins\\Api\\DataTable": [
+            "class",
+            "function authorize(string $action): void",
+            "function can(string $action): bool",
+            "function create(array $values): App\\Models\\DynamicRecord",
+            "function delete(App\\Models\\DynamicRecord|string|int $record): void",
+            "function fieldNames(): array",
+            "function find(string|int $id): ?App\\Models\\DynamicRecord",
+            "function formFields(array $only = [], array $except = []): array",
+            "function label(): string",
+            "function name(): string",
+            "function query(): Illuminate\\Database\\Eloquent\\Builder",
+            "function transaction(Closure $callback): mixed",
+            "function update(App\\Models\\DynamicRecord|string|int $record, array $values): App\\Models\\DynamicRecord",
+            "function validate(array $values, ?App\\Models\\DynamicRecord $existing = null): void",
+            "function withoutAuthorization(): App\\Plugins\\Api\\DataTable"
+        ],
+        "App\\Plugins\\Api\\Events\\RecordDeleted": [
+            "class extends App\\Plugins\\Api\\Events\\RecordEvent",
+            "function __construct(string $table, App\\Models\\DynamicRecord $record, bool $creating = false)",
+            "function previous(string $field): mixed",
+            "function value(string $field): mixed",
+            "property App\\Models\\DynamicRecord $record",
+            "property string $table"
+        ],
+        "App\\Plugins\\Api\\Events\\RecordDeleting": [
+            "class extends App\\Plugins\\Api\\Events\\RecordEvent",
+            "function __construct(string $table, App\\Models\\DynamicRecord $record, bool $creating = false)",
+            "function previous(string $field): mixed",
+            "function value(string $field): mixed",
+            "property App\\Models\\DynamicRecord $record",
+            "property string $table"
+        ],
+        "App\\Plugins\\Api\\Events\\RecordEvent": [
+            "abstract class",
+            "function __construct(string $table, App\\Models\\DynamicRecord $record, bool $creating = false)",
+            "function previous(string $field): mixed",
+            "function value(string $field): mixed",
+            "property App\\Models\\DynamicRecord $record",
+            "property string $table"
+        ],
+        "App\\Plugins\\Api\\Events\\RecordSaved": [
+            "class extends App\\Plugins\\Api\\Events\\RecordEvent",
+            "function __construct(string $table, App\\Models\\DynamicRecord $record, bool $creating = false)",
+            "function creating(): bool",
+            "function previous(string $field): mixed",
+            "function value(string $field): mixed",
+            "property App\\Models\\DynamicRecord $record",
+            "property string $table"
+        ],
+        "App\\Plugins\\Api\\Events\\RecordSaving": [
+            "class extends App\\Plugins\\Api\\Events\\RecordEvent",
+            "function __construct(string $table, App\\Models\\DynamicRecord $record, bool $creating = false)",
+            "function creating(): bool",
+            "function previous(string $field): mixed",
+            "function value(string $field): mixed",
+            "property App\\Models\\DynamicRecord $record",
+            "property string $table"
+        ],
+        "App\\Plugins\\Api\\FieldRule": [
+            "class",
+            "const NAME_PATTERN = \"/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/\"",
+            "const TYPES = [\"string\",\"text\",\"integer\",\"decimal\"]",
+            "function __construct(string $name, string $label, array $types, Closure $check)",
+            "property Closure $check",
+            "property array $types",
+            "property string $label",
+            "property string $name"
+        ],
+        "App\\Plugins\\Api\\FormulaFunction": [
+            "class",
+            "const NAME_PATTERN = \"/^[a-z][a-z0-9_]*$/\"",
+            "function __construct(string $name, int $minArguments, ?int $maxArguments, Closure $evaluate, string $description = \"\")",
+            "property ?int $maxArguments",
+            "property Closure $evaluate",
+            "property int $minArguments",
+            "property string $description",
+            "property string $name"
+        ],
+        "App\\Plugins\\Api\\RecordListener": [
+            "class",
+            "function __construct(string $table, string $event, Closure|string $handler)",
+            "property Closure|string $handler",
+            "property string $event",
+            "property string $table"
+        ],
+        "App\\Plugins\\Api\\RecordRejected": [
+            "class extends App\\Exceptions\\BusinessRuleException",
+            "function __construct(string $message)",
+            "property ?string $title",
+            "property string $errorCode"
+        ],
+        "App\\Plugins\\Api\\Saft": [
+            "class",
+            "static function hasTable(string $name): bool",
+            "static function notify(App\\Models\\User $user, Filament\\Notifications\\Notification $notification): void",
+            "static function plugin(string $id): App\\Plugins\\SaftPlugin",
+            "static function table(string $name): App\\Plugins\\Api\\DataTable",
+            "static function transaction(Closure $callback): mixed"
+        ],
+        "App\\Plugins\\MenuSuggestion": [
+            "class",
+            "function __construct(string $route, array $label, ?string $icon = null, ?string $permission = null, ?array $group = null, int $sortOrder = 100)",
+            "property ?array $group",
+            "property ?string $icon",
+            "property ?string $permission",
+            "property array $label",
+            "property int $sortOrder",
+            "property string $route"
+        ],
+        "App\\Plugins\\PluginServiceProvider": [
+            "abstract class extends Illuminate\\Support\\ServiceProvider",
+            "function boot(): void",
+            "function register(): void",
+            "protected abstract function plugin(): string"
+        ],
+        "App\\Plugins\\SaftPlugin": [
+            "abstract class",
+            "abstract function id(): string",
+            "abstract function label(): string",
+            "const ID_PATTERN = \"/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/\"",
+            "final function basePath(): string",
+            "final function composer(): array",
+            "final function isCompatible(): ?bool",
+            "final function location(): string",
+            "final function missingDependencies(): array",
+            "final function packageName(): string",
+            "final function permissionName(string $action): string",
+            "final function permissionNames(): array",
+            "final function requires(): ?string",
+            "final function requiresApi(): ?string",
+            "function boot(Filament\\Panel $panel): void",
+            "function dataActions(): array",
+            "function description(): string",
+            "function fieldRules(): array",
+            "function formulaFunctions(): array",
+            "function getId(): string",
+            "function menuSuggestions(): array",
+            "function permissions(): array",
+            "function recordListeners(): array",
+            "function register(Filament\\Panel $panel): void",
+            "function requiredTables(): array",
+            "function taskTypes(): array",
+            "function version(): string"
+        ],
+        "App\\Plugins\\Testing\\PluginTestCase": [
+            "abstract class extends Tests\\TestCase",
+            "protected function actingAsSuperAdmin(): App\\Models\\User",
+            "protected function actingWithPermissions(array $permissions): App\\Models\\User",
+            "protected function createTable(string $name, string $label, array $fields): App\\Plugins\\Api\\DataTable",
+            "protected function createTablesFromSchema(string $path, array $only = []): array",
+            "protected function dataView(string $table): Livewire\\Features\\SupportTesting\\Testable",
+            "protected function setUp(): void",
+            "protected function withoutPluginEvents(Closure $callback): mixed"
+        ]
+    }
+}

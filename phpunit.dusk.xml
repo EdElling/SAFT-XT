@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         defaultTestSuite="Browser"
+>
+    <testsuites>
+        <testsuite name="Browser">
+            <directory>tests/Browser</directory>
+        </testsuite>
+        <!-- Screenshots für das Handbuch: composer manual:screenshots -->
+        <testsuite name="Manual">
+            <directory>tests/Manual</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <!-- Lädt .env.browser; die eigentliche Absicherung steht in DuskTestCase. -->
+        <env name="APP_ENV" value="browser" force="true"/>
+    </php>
+</phpunit>

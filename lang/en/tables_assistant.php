@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'title' => 'Describe the table (AI assistant)',
+    'privacy' => 'Your description and the structure of the table designer\'s tables (names, labels, field types) are sent to :provider – no records.',
+    'placeholder' => 'e.g. "Members of a club with entry date, fee category (active, passive, junior) and e-mail"',
+    'placeholder_followup' => 'Describe a change, e.g. "add a field for remarks" or "make category required"',
+    'applied_form' => 'Suggestion applied – please check names, fields and types. The table is only created with "Create".',
+    'edit_action' => 'Adjust with AI',
+    'edit_heading' => 'Adjust the table with the AI assistant',
+    'edit_prompt' => 'What should change?',
+    'edit_placeholder' => 'e.g. "Add entry date and exit date", "make e-mail unique and required" or "link to the clubs table"',
+    'edit_help' => 'Allowed are new fields, labels, required/unique/searchable/sortable, further choices and the display fields of relations. Changing types, renaming and deleting stay manual.',
+    'preview_heading' => 'Suggested changes',
+    'preview_intro' => 'The assistant suggests:',
+    'apply' => 'Apply',
+    'applied_all' => 'All changes applied.',
+    'applied_some' => 'Not everything was applied:',
+    'summary' => [
+        'add' => 'New: :field (:type)',
+        'change' => 'Change: :field – :what',
+        'on' => ':what on',
+        'off' => ':what off',
+        'label' => 'label ":label"',
+        'choices' => ':count further choices',
+        'display' => 'display: :fields',
+    ],
+    'flags' => [
+        'required' => 'required',
+        'unique' => 'unique',
+        'searchable' => 'searchable',
+        'sortable' => 'sortable',
+    ],
+    'applied' => [
+        'added' => 'Field :field added.',
+        'changed' => 'Field :field changed.',
+    ],
+    'errors' => [
+        'invalid' => 'No valid suggestion: :errors. Please describe it more precisely or complete it by hand.',
+        'name_taken' => 'The name ":name" is already in use (:owner).',
+        'menu_group' => 'Menu group :id does not exist.',
+        'no_fields' => 'The table needs at least one field.',
+        'duplicate_field' => 'Field ":name" appears twice.',
+        'field' => 'Field ":name": :error',
+        'no_changes' => 'No change suggested.',
+        'field_exists' => 'Field ":name" already exists.',
+        'unknown_field' => 'Field ":name" does not exist.',
+    ],
+];

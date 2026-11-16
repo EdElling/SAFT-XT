@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'model' => 'Menüeintrag',
+    'plural' => 'Menüs',
+    'form' => [
+        'diagram_help' => 'Zeigt die Datentabellen der Gruppe, in der dieser Eintrag steht (einschliesslich Untergruppen), und ihre Verknüpfungen. Auf oberster Ebene: alle Datentabellen.',
+        'report_help' => 'Nur geteilte Auswertungen. Der Eintrag erscheint nur für Personen, die die Auswertung ausführen dürfen (Datenrechte auf alle beteiligten Tabellen).',
+        'entry' => 'Eintrag',
+        'invalid_position' => 'Ungültige Position: Zyklus oder mehr als :max Ebenen.',
+        'route' => 'Seite',
+        'route_parameters' => 'Routenparameter',
+        'parameter' => 'Parameter',
+        'value' => 'Wert',
+        'required_parameters' => 'Benötigt: :parameters',
+        'none' => 'keine',
+        'missing_parameters' => 'Fehlende Parameter: :parameters.',
+        'data_table_help' => 'Nur Tabellen des Table-Designers; Rechte: data.<tabelle>.* (Rollen → Datenrechte).',
+        'columns' => 'Weitere angezeigte Spalten',
+        'menu_group' => 'Menüeintrag unter',
+        'menu_group_help' => 'Gruppe im Menü, unter der die Tabelle erscheint; Untergruppen sind eingerückt.',
+        'no_menu_entry' => 'Kein Menüeintrag',
+        'data_group' => 'Daten',
+        'data_group_new' => ':group (wird angelegt)',
+        'invalid_group' => 'Diese Menügruppe gibt es nicht (mehr), oder ein Eintrag darunter wäre tiefer als drei Ebenen.',
+        'columns_help' => 'Immer angezeigt (Pflicht): :fields. Das Bearbeitungsformular enthält stets alle Felder.',
+        'appearance' => 'Darstellung & Zugriff',
+        'icon_help' => 'Name eines Blade-Icons, z. B. heroicon-o-users – oder über die Schaltfläche rechts auswählen.',
+        'permission' => 'Erforderliche Berechtigung',
+        'permission_all' => 'Für alle angemeldeten Benutzer',
+    ],
+    'parent' => 'Übergeordneter Eintrag',
+    'root' => '— Hauptebene —',
+    'types' => [
+        'group' => 'Gruppe',
+        'route' => 'Interne Seite',
+        'url' => 'Externe URL',
+        'data' => 'Datentabelle',
+        'diagram' => 'Datenmodell',
+        'report' => 'Auswertung',
+    ],
+    'table' => [
+        'target' => 'Ziel',
+        'permission' => 'Berechtigung',
+        'all' => 'alle',
+    ],
+    'delete_children' => 'Untergeordnete Einträge werden ebenfalls gelöscht.',
+];

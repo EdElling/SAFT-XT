@@ -1,0 +1,24 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='960' height='390' viewBox='0 40 960 390'>
+<rect x='0' y='40' width='960' height='390' rx='0' fill='#f8fafc'/>
+<rect x='40' y='70' width='220' height='64' rx='10' fill='#ffffff' stroke='#e2e8f0' stroke-width='1'/>
+<text x='150.0' y='98' font-size='14' fill='#0f172a' font-weight='700' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Niveau 0 : liste</text>
+<text x='150.0' y='118' font-size='11' fill='#64748b' font-weight='400' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Données → Clients</text>
+<rect x='370' y='70' width='220' height='64' rx='10' fill='#eef2ff' stroke='#e2e8f0' stroke-width='1'/>
+<text x='480.0' y='98' font-size='14' fill='#0f172a' font-weight='700' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Niveau 1</text>
+<text x='480.0' y='118' font-size='11' fill='#64748b' font-weight='400' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Commandes du client</text>
+<rect x='700' y='70' width='220' height='64' rx='10' fill='#eef2ff' stroke='#e2e8f0' stroke-width='1'/>
+<text x='810.0' y='98' font-size='14' fill='#0f172a' font-weight='700' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Niveau 2</text>
+<text x='810.0' y='118' font-size='11' fill='#64748b' font-weight='400' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Lignes de la commande</text>
+<line x1='260' y1='102' x2='370' y2='102' stroke='#4f46e5' stroke-width='2'/>
+<text x='315' y='92' font-size='11' fill='#4f46e5' font-weight='600' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Clic sur la ligne</text>
+<line x1='590' y1='102' x2='700' y2='102' stroke='#4f46e5' stroke-width='2'/>
+<text x='645' y='92' font-size='11' fill='#4f46e5' font-weight='600' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Clic sur la ligne</text>
+<text x='480' y='186' font-size='13' fill='#0f172a' font-weight='400' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Le niveau affiché sous une table est défini dans sa section « Détails » du Concepteur de tables –</text>
+<text x='480' y='206' font-size='13' fill='#0f172a' font-weight='400' text-anchor='middle' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>quelle que soit l’entrée de menu utilisée.</text>
+<rect x='40' y='236' width='880' height='160' rx='10' fill='#ffffff' stroke='#e2e8f0' stroke-width='1'/>
+<text x='60' y='266' font-size='14' fill='#4f46e5' font-weight='600' text-anchor='start' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>URL:  /admin/data/kunden?sel=2,18:7</text>
+<text x='60' y='298' font-size='13' fill='#64748b' font-weight='400' text-anchor='start' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>2      = client sélectionné (niveau 0)</text>
+<text x='60' y='322' font-size='13' fill='#64748b' font-weight='400' text-anchor='start' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>18:7  = commande 7 sélectionnée via le champ de liaison 18 (orders.kunde_id) (niveau 1)</text>
+<text x='60' y='346' font-size='13' fill='#0f172a' font-weight='400' text-anchor='start' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Chaque étape est vérifiée : liaison configurée · droit de lecture · l’enregistrement en fait vraiment partie.</text>
+<text x='60' y='370' font-size='13' fill='#0f172a' font-weight='400' text-anchor='start' xml:space='preserve' style='white-space:pre' font-family='system-ui,-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>Les parties invalides sont coupées ; le rechargement et Retour affichent le même état.</text>
+</svg>

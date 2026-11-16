@@ -1,0 +1,31 @@
+{
+    "name": "{{ package }}",
+    "description": "{{ label }} – Plugin für SAFT",
+    "type": "library",
+    "license": "proprietary",
+    "version": "0.1.0",
+    "require": {
+        "php": "^8.4",
+        "filament/filament": "^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "{{ namespace_json }}\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "{{ namespace_json }}\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "{{ namespace_json }}\\{{ class }}ServiceProvider"
+            ]
+        },
+        "saft": {
+            "api": "{{ api }}"
+        }
+    }
+}

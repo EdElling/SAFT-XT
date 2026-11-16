@@ -1,0 +1,191 @@
+# Tests von SAFT auf GitHub Actions – auf Knopfdruck (Actions → „Tests“ → „Run workflow“
+# oder: gh workflow run tests.yml -f suites=both -f databases=all) und bei jedem Pull-Request auf main
+# (z. B. von Dependabot): dann nur die Feature-Tests, auf allen drei Datenbanken. Kein Lauf bei Push.
+#
+# Je Testart (Feature, Browser) und Datenbank von SAFT (PostgreSQL, MySQL, MariaDB) ein eigener Job,
+# alle parallel. Die Datenbanken sind Wegwerf-Container dieses Laufs; die Passwörter hier sind
+# reine Testwerte.
+name: Tests
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      suites:
+        description: 'Welche Tests'
+        type: choice
+        options: [both, feature, browser]
+        default: both
+      databases:
+        description: 'Datenbank von SAFT'
+        type: choice
+        options: [all, pgsql, mysql, mariadb]
+        default: all
+      sqlserver:
+        description: 'SQL Server als externe Quelle mittesten (großes Image, mehr Minuten)'
+        type: boolean
+        default: false
+
+# Nur lesen – auch für Pull-Requests von Dependabot oder Forks.
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PHP_VERSION: '8.5'
+  # Zugangsdaten der Service-Container (siehe .github/scripts/prepare-databases.sh).
+  PGSQL_HOST: 127.0.0.1
+  PGSQL_PORT: 5432
+  PGSQL_USERNAME: saft
+  PGSQL_PASSWORD: saft-ci
+  MYSQL_HOST: 127.0.0.1
+  MYSQL_PORT: 3306
+  MYSQL_USERNAME: saft
+  MYSQL_PASSWORD: saft-ci
+  MARIADB_HOST: 127.0.0.1
+  MARIADB_PORT: 3307
+  MARIADB_USERNAME: saft
+  MARIADB_PASSWORD: saft-ci
+  MSSQL_HOST: 127.0.0.1
+  MSSQL_PORT: 1433
+  MSSQL_USERNAME: saft
+  MSSQL_PASSWORD: saft-ci-Mssql1
+
+jobs:
+  tests:
+    name: ${{ matrix.suite == 'browser' && 'Browser' || 'Feature' }}-Tests (${{ matrix.database }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: ${{ matrix.suite == 'browser' && 90 || 30 }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Bei Pull-Requests gibt es keine Eingaben: Feature-Tests auf allen Datenbanken.
+        suite: ${{ fromJSON((inputs.suites || 'feature') == 'both' && '["feature","browser"]' || format('["{0}"]', inputs.suites || 'feature')) }}
+        database: ${{ fromJSON((inputs.databases || 'all') == 'all' && '["pgsql","mysql","mariadb"]' || format('["{0}"]', inputs.databases)) }}
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: saft
+          POSTGRES_PASSWORD: saft-ci
+          POSTGRES_DB: SAFT2_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U saft" --health-interval 5s --health-timeout 5s --health-retries 20
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot" --health-interval 5s --health-timeout 5s --health-retries 30
+      mariadb:
+        image: mariadb:lts
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports: ['3307:3306']
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized" --health-interval 5s --health-timeout 5s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SQL Server starten (optional)
+        if: inputs.sqlserver
+        run: |
+          docker run -d --name mssql -p 1433:1433 \
+            -e ACCEPT_EULA=Y -e MSSQL_PID=Express -e 'MSSQL_SA_PASSWORD=Saft-ci-2026!' \
+            mcr.microsoft.com/mssql/server:2025-latest
+          for i in $(seq 1 60); do
+            docker exec mssql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'Saft-ci-2026!' -Q 'SELECT 1' >/dev/null 2>&1 && exit 0
+            sleep 5
+          done
+          docker logs mssql | tail -20
+          exit 1
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_pgsql, pdo_mysql, intl, zip, bcmath${{ inputs.sqlserver && ', sqlsrv, pdo_sqlsrv' || '' }}
+          coverage: none
+
+      - name: Composer-Cache
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-${{ env.PHP_VERSION }}-${{ hashFiles('composer.lock') }}
+
+      - name: Pakete installieren
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Datenbanken vorbereiten
+        env:
+          PG_CONTAINER: ${{ job.services.postgres.id }}
+          MYSQL_CONTAINER: ${{ job.services.mysql.id }}
+          MARIADB_CONTAINER: ${{ job.services.mariadb.id }}
+          MSSQL_CONTAINER: ${{ inputs.sqlserver && 'mssql' || '' }}
+        run: bash .github/scripts/prepare-databases.sh
+
+      - name: Konfiguration
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+
+      - name: Feature-Tests
+        if: matrix.suite == 'feature'
+        run: |
+          case "${{ matrix.database }}" in
+            pgsql)   composer test ;;
+            mysql)   composer test:mysql ;;
+            mariadb) composer test:mariadb ;;
+          esac
+
+      - name: Node-Pakete (axe-core für die Kontrastprüfung)
+        if: matrix.suite == 'browser'
+        run: npm ci --no-audit --no-fund
+
+      - name: Deutsche Locale
+        if: matrix.suite == 'browser'
+        # Chrome deutet Datums- und Zahleneingaben nach der Systemsprache (nicht nach --lang).
+        run: sudo locale-gen de_DE.UTF-8
+
+      - name: Chrome und ChromeDriver
+        if: matrix.suite == 'browser'
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+          install-chromedriver: true
+
+      - name: Browser-Tests
+        if: matrix.suite == 'browser'
+        env:
+          DUSK_CHROME_BINARY: ${{ steps.chrome.outputs.chrome-path }}
+          DUSK_CHROMEDRIVER_BINARY: ${{ steps.chrome.outputs.chromedriver-path }}
+          LANG: de_DE.UTF-8
+          LANGUAGE: de
+          LC_ALL: de_DE.UTF-8
+        run: |
+          case "${{ matrix.database }}" in
+            pgsql)   env=browser;         script=test:browser ;;
+            mysql)   env=browser-mysql;   script=test:browser:mysql ;;
+            mariadb) env=browser-mariadb; script=test:browser:mariadb ;;
+          esac
+          cp ".env.${env}.example" ".env.${env}"
+          php artisan key:generate --env="${env}" --no-interaction
+          composer "${script}"
+
+      - name: Screenshots und Logs bei Fehlern
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.suite }}-${{ matrix.database }}
+          path: |
+            tests/Browser/screenshots/
+            tests/Browser/console/
+            storage/logs/
+          if-no-files-found: ignore
+          retention-days: 7

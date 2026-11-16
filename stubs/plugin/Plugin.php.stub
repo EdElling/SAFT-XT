@@ -1,0 +1,54 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use App\Plugins\MenuSuggestion;
+use App\Plugins\SaftPlugin;
+use {{ namespace }}\Pages\StartPage;
+
+/** {{ label }}: Seiten unter src/Pages, Ressourcen unter src/Resources und Widgets unter src/Widgets werden automatisch gefunden. */
+final class {{ class }}Plugin extends SaftPlugin
+{
+    public const string ID = '{{ id }}';
+
+    public function id(): string
+    {
+        return self::ID;
+    }
+
+    public function label(): string
+    {
+        return __('{{ id }}::plugin.label');
+    }
+
+    public function description(): string
+    {
+        return __('{{ id }}::plugin.description');
+    }
+
+    /** Rechte des Plugins; vollständiger Name „{{ id }}.<Aktion>“, vergeben in der Rollenverwaltung. */
+    public function permissions(): array
+    {
+        return ['use' => __('{{ id }}::plugin.permission')];
+    }
+
+    /** Tabellen und Felder des Table-Designers, ohne die das Plugin nicht arbeiten kann, z. B. ['kunden' => ['name']]. */
+    public function requiredTables(): array
+    {
+        return [];
+    }
+
+    public function menuSuggestions(): array
+    {
+        return [
+            new MenuSuggestion(
+                route: StartPage::ROUTE,
+                label: ['de' => '{{ label }}', 'en' => '{{ label }}'],
+                icon: 'heroicon-o-puzzle-piece',
+                permission: $this->permissionName('use'),
+            ),
+        ];
+    }
+}

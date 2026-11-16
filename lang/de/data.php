@@ -1,0 +1,85 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'errors' => [
+        'row_not_unique' => 'Der Datensatz lässt sich nicht eindeutig bestimmen (nicht gefunden oder mehrfach vorhanden). Nichts wurde geändert.',
+        'has_details' => 'Der Datensatz kann nicht gelöscht werden, solange zugeordnete Datensätze existieren: :details.',
+    ],
+    'detail_label' => ':table (über „:field“)',
+    'detail_label_link' => ':table (über Tabellenverknüpfung „:link“)',
+    'record' => 'Datensatz',
+    'record_deleted' => 'Dieser Datensatz ist gelöscht.',
+    'delete_permanently' => 'Der Datensatz wird endgültig aus der externen Datenbank gelöscht und lässt sich nicht wiederherstellen.',
+    'actions' => [
+        'create' => 'Neuer Datensatz',
+        'details' => 'Details',
+    ],
+    'import' => [
+        'label' => 'Importieren',
+        'template' => 'Vorlage herunterladen',
+        'template_file' => ':table-vorlage',
+        'file_action' => 'Datei importieren …',
+        'heading' => 'Daten importieren: :table',
+        'submit' => 'Importieren',
+        'step_file' => 'Datei',
+        'step_check' => 'Prüfung',
+        'intro' => 'Legt neue Datensätze aus einer Excel- oder CSV-Datei an; vorhandene Datensätze bleiben unverändert. Die erste Zeile enthält die Spaltenüberschriften – wie in der Vorlage oder einem Export dieser Tabelle.',
+        'file' => 'Datei',
+        'file_help' => 'Excel (.xlsx) oder CSV, höchstens :max MB und :rows Zeilen.',
+        'invalid' => 'Die Datei kann so nicht importiert werden – es wurde nichts angelegt',
+        'ready' => 'Die Datei ist in Ordnung: 1 neuer Datensatz wird angelegt.|Die Datei ist in Ordnung: :count neue Datensätze werden angelegt.',
+        'columns' => 'Erkannte Spalten: :columns',
+        'ignored' => 'Nicht zugeordnet und übergangen: :columns',
+        'only_new' => 'Es werden nur neue Datensätze angelegt; vorhandene Datensätze werden nicht geändert.',
+        'done' => '1 Datensatz importiert.|:count Datensätze importiert.',
+        'no_file' => 'Bitte eine Datei wählen.',
+        'missing_required' => 'Pflichtfelder ohne Spalte in der Datei: :columns',
+        'no_rows' => 'Die Datei enthält keine Datenzeilen.',
+        'more' => '… und 1 weiterer Fehler|… und :count weitere Fehler',
+    ],
+    'export' => [
+        'label' => 'Exportieren',
+        'too_large' => 'Export zu gross',
+        'too_large_body' => 'Die Auswahl enthält :rows Datensätze, exportiert werden können höchstens :limit. Schränken Sie die Auswahl mit Filter oder Suche ein.',
+    ],
+    'history' => [
+        'label' => 'Verlauf',
+        'when' => 'Zeitpunkt',
+        'who' => 'Durch',
+        'what' => 'Änderung',
+        'empty' => 'Keine Einträge',
+    ],
+    'filters' => [
+        'contains' => ':field enthält',
+        'from' => ':field von',
+        'until' => ':field bis',
+    ],
+    'preview' => [
+        'show' => ':field anzeigen',
+        'open' => 'Zu „:field“ wechseln',
+        'unavailable' => 'Der verknüpfte Datensatz ist nicht (mehr) verfügbar.',
+    ],
+    'empty' => 'Noch keine Datensätze',
+    'empty_details' => 'Keine zugeordneten Datensätze',
+    'rules' => [
+        'compare' => [
+            '=' => 'muss gleich :other sein.',
+            '<>' => 'darf nicht gleich :other sein.',
+            '<' => 'muss kleiner als :other sein.',
+            '<=' => 'muss kleiner oder gleich :other sein.',
+            '>' => 'muss grösser als :other sein.',
+            '>=' => 'muss grösser oder gleich :other sein.',
+        ],
+        'date' => [
+            '=' => 'muss am selben Tag wie :other liegen.',
+            '<>' => 'darf nicht am selben Tag wie :other liegen.',
+            '<' => 'muss vor :other liegen.',
+            '<=' => 'darf nicht nach :other liegen.',
+            '>' => 'muss nach :other liegen.',
+            '>=' => 'darf nicht vor :other liegen.',
+        ],
+    ],
+    'computed_placeholder' => 'wird beim Speichern berechnet',
+];

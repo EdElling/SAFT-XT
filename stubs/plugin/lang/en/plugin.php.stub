@@ -1,0 +1,11 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'label' => '{{ label }}',
+    'description' => 'Plugin for SAFT.',
+    'permission' => 'Use {{ label }}',
+    'welcome_title' => 'Welcome',
+    'welcome' => 'This page comes from the plugin “{{ label }}”. Adapt it in src/Pages/StartPage.php.',
+];

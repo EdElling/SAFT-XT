@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'model' => 'voce di menu',
+    'plural' => 'menu',
+    'form' => [
+        'diagram_help' => 'Mostra le tabelle dati del gruppo in cui si trova questa voce (sottogruppi inclusi) e i loro collegamenti. Al primo livello: tutte le tabelle dati.',
+        'report_help' => 'Solo report condivisi. La voce appare solo a chi può eseguire il report (diritti sui dati di tutte le tabelle coinvolte).',
+        'entry' => 'Voce',
+        'invalid_position' => 'Posizione non valida: ciclo o più di :max livelli.',
+        'route' => 'Pagina',
+        'route_parameters' => 'Parametri della route',
+        'parameter' => 'Parametro',
+        'value' => 'Valore',
+        'required_parameters' => 'Obbligatori: :parameters',
+        'none' => 'nessuno',
+        'missing_parameters' => 'Parametri mancanti: :parameters.',
+        'data_table_help' => 'Solo tabelle del designer; diritti: data.<tabella>.* (ruoli → diritti sui dati).',
+        'columns' => 'Altre colonne visualizzate',
+        'menu_group' => 'Voce di menu sotto',
+        'menu_group_help' => 'Gruppo del menu in cui appare la tabella; i sottogruppi sono rientrati.',
+        'no_menu_entry' => 'Nessuna voce di menu',
+        'data_group' => 'Dati',
+        'data_group_new' => ':group (verrà creato)',
+        'invalid_group' => 'Questo gruppo di menu non esiste (più), oppure una voce sotto di esso supererebbe tre livelli.',
+        'columns_help' => 'Sempre visualizzati (obbligatori): :fields. Il modulo di modifica contiene sempre tutti i campi.',
+        'appearance' => 'Aspetto e accesso',
+        'icon_help' => 'Nome di un’icona Blade, ad es. heroicon-o-users – oppure sceglierla con il pulsante a destra.',
+        'permission' => 'Autorizzazione richiesta',
+        'permission_all' => 'Per tutti gli utenti collegati',
+    ],
+    'parent' => 'Voce superiore',
+    'root' => '— Livello principale —',
+    'types' => [
+        'group' => 'Gruppo',
+        'route' => 'Pagina interna',
+        'url' => 'URL esterno',
+        'data' => 'Tabella di dati',
+        'diagram' => 'Modello dati',
+        'report' => 'Report',
+    ],
+    'table' => [
+        'target' => 'Destinazione',
+        'permission' => 'Autorizzazione',
+        'all' => 'tutti',
+    ],
+    'delete_children' => 'Anche le voci subordinate verranno eliminate.',
+];

@@ -1,0 +1,91 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'modes' => [
+        'local' => [
+            'label' => 'Lokal',
+            'description' => 'Anmeldung ausschliesslich mit E-Mail und Passwort.',
+        ],
+        'sso' => [
+            'label' => 'Single Sign-On',
+            'description' => 'Anmeldung ausschliesslich über einen Identity Provider.',
+        ],
+        'hybrid' => [
+            'label' => 'Hybrid',
+            'description' => 'Anmeldung per Passwort oder Single Sign-On.',
+        ],
+    ],
+    'types' => [
+        'entra' => 'Microsoft Entra ID',
+        'saml' => 'SAML 2.0',
+    ],
+    'login' => [
+        'sso_with' => 'Anmelden mit :name',
+        'sso_divider' => 'oder',
+        'break_glass' => 'Notfall-Anmeldung für Administratoren',
+        'break_glass_hint' => 'Nur für Super-Admins, wenn die SSO-Anmeldung nicht funktioniert.',
+        'no_method' => 'Derzeit ist keine Anmeldemethode verfügbar. Bitte wenden Sie sich an den Administrator.',
+        'sso_unavailable' => 'Die Anmeldung über diesen Anbieter ist derzeit nicht verfügbar.',
+        'sso_failed' => 'SSO-Anmeldung fehlgeschlagen',
+    ],
+    'entra' => [
+        'access_denied' => 'Die Anmeldung wurde abgebrochen oder die Zustimmung verweigert.',
+        'invalid_state' => 'Die Anmeldung ist abgelaufen oder ungültig. Bitte versuchen Sie es erneut.',
+        'multi_tenant_not_allowed' => 'Mandantenübergreifende Endpunkte (common, organizations, consumers) sind aus Sicherheitsgründen nicht erlaubt. Bitte die Tenant-ID oder Domain des eigenen Mandanten angeben.',
+    ],
+    'saml' => [
+        'invalid_state' => 'Die SAML-Anmeldung passt zu keiner laufenden Anmeldung in diesem Browser oder ist abgelaufen. Bitte starten Sie die Anmeldung erneut über die Login-Seite.',
+        'name_id_email_warning' => 'Mit dem Format „emailAddress“ ändert sich die Benutzer-ID, wenn sich die E-Mail-Adresse ändert. Verknüpfungen gehen dann verloren. Empfohlen: persistent.',
+        'metadata_refreshed' => 'IdP-Metadaten werden beim nächsten Zugriff neu geladen.',
+    ],
+    'logout' => [
+        'completed' => 'Sie wurden erfolgreich abgemeldet.',
+        'idp_unconfirmed' => 'Sie wurden abgemeldet. Die Abmeldung beim Identity Provider konnte nicht bestätigt werden.',
+    ],
+    'errors' => [
+        'not_registered' => 'Für Ihr Konto ist kein Zugang eingerichtet. Bitte wenden Sie sich an den Administrator.',
+        'inactive' => 'Ihr Benutzerkonto ist deaktiviert.',
+        'removed' => 'Ihr Benutzerkonto wurde entfernt. Bitte wenden Sie sich an den Administrator.',
+        'domain_not_allowed' => 'Ihre E-Mail-Domain ist für diese Anmeldung nicht zugelassen.',
+        'no_role_match' => 'Ihr Konto ist keiner für diese Anwendung freigegebenen Gruppe bzw. Rolle zugeordnet. Bitte wenden Sie sich an den Administrator.',
+        'last_provider' => 'Dieser Identity Provider ist der letzte aktive im SSO-Modus und kann nicht deaktiviert oder gelöscht werden. Wechseln Sie zuerst den Anmeldemodus.',
+        'sso_requires_verified_provider' => 'Der Modus „Single Sign-On“ erfordert mindestens einen aktiven Identity Provider mit erfolgreichem Verbindungstest.',
+        'forced_local' => 'AUTH_FORCE_LOCAL ist aktiv: Es gilt unabhängig von dieser Einstellung die lokale Anmeldung.',
+    ],
+    'test' => [
+        'success' => 'Verbindung erfolgreich',
+        'failure' => 'Verbindungstest fehlgeschlagen',
+        'http_error' => 'Der Endpunkt antwortete mit HTTP :status.',
+        'unreachable' => 'Der Endpunkt ist nicht erreichbar: :message',
+        'entra_ok' => 'OpenID-Konfiguration geladen und Client-Anmeldedaten gültig (Issuer: :issuer).',
+        'entra_discovery_ok' => 'OpenID-Konfiguration geladen (Issuer: :issuer). Client-Secret fehlt – Anmeldedaten nicht geprüft.',
+        'entra_credentials_invalid' => 'OpenID-Konfiguration geladen, aber Client-ID oder Secret ungültig: :message',
+        'saml_metadata_ok' => 'IdP-Metadaten gültig (Entity-ID: :entity, Zertifikat gültig bis :until).',
+        'saml_manual_ok' => 'IdP-Zertifikat gültig bis :until.',
+        'saml_invalid_metadata' => 'Die IdP-Metadaten sind ungültig: :message',
+        'saml_missing' => 'Weder Metadaten-URL noch Entity-ID, SSO-URL und Zertifikat sind vollständig angegeben.',
+        'saml_cert_invalid' => 'Das IdP-Zertifikat ist ungültig oder nicht lesbar.',
+        'saml_cert_expired' => 'Das IdP-Zertifikat ist am :date abgelaufen.',
+        'saml_sp_key_mismatch' => 'SP-Zertifikat und privater Schlüssel passen nicht zusammen.',
+    ],
+    'settings' => [
+        'title' => 'Authentifizierung',
+        'mode' => 'Anmeldemodus',
+        'options' => 'Optionen',
+        'break_glass' => 'Notfall-Anmeldung für Super-Admins',
+        'break_glass_help' => 'Erlaubt Super-Admins im SSO-Modus die Anmeldung per Passwort über :url',
+        'default_role' => 'Standardrolle für neue Benutzer',
+        'default_role_help' => 'Vorausgewählt beim Anlegen von Benutzern; bei SSO-Auto-Provisionierung verwendet, wenn der Identity Provider keine eigene Standardrolle hat.',
+        'no_default_role' => 'Keine',
+        'password_reset' => '„Passwort vergessen“ anbieten',
+        'password_reset_help' => 'Erfordert einen konfigurierten Mailversand.',
+    ],
+    'methods' => [
+        'password' => 'Passwort',
+        'local' => 'Lokal',
+        'sso' => 'SSO: :name',
+        'idp' => 'durch IdP: :name',
+    ],
+];
