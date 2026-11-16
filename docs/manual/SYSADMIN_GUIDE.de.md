@@ -284,8 +284,9 @@ Rollenverwaltung. `php artisan saft:plugins` listet die Plugins auf der Konsole 
 3. Menüeinträge des Plugins werden automatisch ausgeblendet. Auf der Seite **Plugins** löscht **Aufräumen** sie
    zusammen mit den nicht mehr benötigten Rechten.
 
-Daten, die ein Plugin in Tabellen des Table-Designers geschrieben hat, bleiben erhalten. Das Beispiel-Plugin
-`saft/lager-umbuchung` ist nur mit den Entwicklungspaketen installiert (nicht mit `composer install --no-dev`).
+Daten, die ein Plugin in Tabellen des Table-Designers geschrieben hat, bleiben erhalten. Die Beispiel-Plugins
+`saft/lager-umbuchung`, `saft/lager-tafel` und `saft/ch-pruefungen` sind nur mit den Entwicklungspaketen installiert
+(nicht mit `composer install --no-dev`).
 
 ---
 

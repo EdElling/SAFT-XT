@@ -25,8 +25,9 @@
 - [13. Testen](#13-testen)
 - [14. Kontext für externe Entwicklung und KI-Agenten](#14-kontext-für-externe-entwicklung-und-ki-agenten)
 - [15. Sicherheit](#15-sicherheit)
-- [16. Beispiele: Lager-Umbuchung und CH-Prüfungen](#16-beispiele-lager-umbuchung-und-ch-prüfungen)
+- [16. Beispiele: Lager-Umbuchung, Lager-Tafel und CH-Prüfungen](#16-beispiele-lager-umbuchung-lager-tafel-und-ch-prüfungen)
 - [17. API-Versionen und Änderungsprotokoll](#17-api-versionen-und-änderungsprotokoll)
+- [Anhang A – Schritt-für-Schritt-Anleitungen](#anhang-a--schritt-für-schritt-anleitungen)
 
 ---
 
@@ -63,6 +64,10 @@ unabhängig von SAFT – derzeit **1.3**. Zugesichert sind die Klassen `App\Plug
 `App\Models\User` nur die Klasse als Typ mit ihrem Eloquent-Verhalten. Innerhalb einer API-Major-Version bleibt alles
 kompatibel. Alle übrigen Klassen von SAFT sind intern – Plugins verwenden sie nicht (ein Test prüft das). Einzelheiten:
 [Kapitel 17](#17-api-versionen-und-änderungsprotokoll).
+
+**Schritt für Schritt:** [Anhang A](#anhang-a--schritt-für-schritt-anleitungen) führt für die häufigsten Aufgaben –
+eigene Tabellensicht, eigenes Formular, Widget, Knopf in einer Datenansicht, Listener, Prüfregel, Menüvorschlag – von
+der leeren Datei bis zum Test, am Beispiel-Plugin *Lager-Tafel*.
 
 ## 2. Erste Schritte
 
@@ -154,7 +159,9 @@ Die `composer.json` nennt den ServiceProvider (Laravel findet ihn automatisch) u
   das deckt die Plugin-API nicht ab.
 - `version` erscheint auf der Seite **Plugins**; bei Paketen aus einem Git-Repository kommt sie sonst aus dem Tag.
 - `autoload-dev` nennt den Namensraum der Tests; SAFT lädt ihn beim Testen (siehe [Kapitel 13](#13-testen)).
-- Pakete von SAFT selbst müssen Sie nicht in `require` aufnehmen – das Plugin läuft innerhalb von SAFT.
+- Pakete von SAFT selbst müssen Sie nicht in `require` aufnehmen – das Plugin läuft innerhalb von SAFT. **Andere
+  Plugins**, deren Klassen Sie verwenden, gehören dagegen hinein, z. B. `"saft/lager-umbuchung": "^1.3"` im Plugin
+  Lager-Tafel.
 
 Der ServiceProvider besteht aus einer Zeile:
 
@@ -234,6 +241,10 @@ Seiten, Ressourcen und Widgets sind gewöhnliche Filament-Klassen (Filament 5). 
 Für Formularseiten gibt es das Trait `App\Filament\Concerns\LimitsFormWidth` (1280 px, linksbündig, wie die
 Formulare von SAFT). Meldungen zeigen Sie mit `Filament\Notifications\Notification` an.
 
+Eigene Views gestalten Sie mit Filament-Komponenten und einem `<style>`-Block: Tailwind-Klassen aus Views eines Plugins
+sind im CSS von SAFT nicht enthalten. Schritt für Schritt: eigene Tabellensicht in
+[Anhang A.1](#a1-eigene-tabellensicht), eigenes Formular mit Drag and Drop in [Anhang A.2](#a2-eigenes-bearbeiten-formular).
+
 ### Widgets
 
 Ein Widget unter `src/Widgets` erscheint als Kachel auf dem **Dashboard** – neben den Kacheln von SAFT, verschieb- und
@@ -264,6 +275,7 @@ final class MinimumStockWidget extends StatsOverviewWidget implements DashboardW
 - **Breite:** `$columnSpan = 1` für eine Spalte, `'full'` für den breiten Bereich.
 - **Nur auf einer eigenen Seite statt auf dem Dashboard:** `protected static bool $isDiscovered = false;` im Widget
   und auf der Seite `getHeaderWidgets()` bzw. `getFooterWidgets()`.
+- Schritt für Schritt mit einem Diagramm: [Anhang A.3](#a3-widget).
 
 
 ## 6. Rechte und Menü
@@ -288,7 +300,8 @@ damit die Administration sie mit vergibt.
 | `sortOrder` | Reihenfolge innerhalb der Gruppe |
 
 Übernommen werden die Vorschläge erst, wenn die Administration auf der Seite **Plugins** „Menüeinträge anlegen“
-wählt. Danach sind es gewöhnliche Menüeinträge, die sich verschieben und umbenennen lassen.
+wählt. Danach sind es gewöhnliche Menüeinträge, die sich verschieben und umbenennen lassen. Schritt für Schritt:
+[Anhang A.7](#a7-menüvorschläge).
 
 ## 7. Übersetzungen, Views und eigene Tabellen
 
@@ -430,7 +443,10 @@ angelegt oder geändert).
   Endlosschleifen.
 - **Demo-Daten:** Beim Einspielen der Demo-Daten (`db:seed --class=…DemoSeeder`) sind die Ereignisse für Plugins
   ausgeschaltet – Ihre Regeln wirken dort nicht.
+- **Löschen verknüpfter Datensätze** lehnt SAFT selbst ab, solange Datensätze anderer Tabellen darauf verweisen –
+  dafür braucht es keinen Listener.
 - Auf der Seite **Plugins** sieht die Administration, an welchen Tabellen ein Plugin mithört.
+- Schritt für Schritt, mit Werte setzen und Ablehnen: [Anhang A.5](#a5-listener).
 
 ## 10. Aktionen in Datenansichten
 
@@ -456,6 +472,7 @@ public function dataActions(): array
 - Die Aktion ist eine gewöhnliche Filament-Aktion: mit `url()` öffnet sie eine Seite, mit `action()` und `schema()` ein
   Dialogfenster. Prüfen Sie Sichtbarkeit und Rechte in der Aktion selbst.
 - Zeilen ohne eigenen Schlüssel (z. B. Views) erhalten keine Zeilenaktionen.
+- Schritt für Schritt: [Anhang A.4](#a4-aktion-in-einer-bestehenden-tabellensicht).
 
 ## 11. Formelfunktionen und Prüfregeln
 
@@ -505,6 +522,7 @@ public function fieldRules(): array
   `<plugin-id>.<name>`, z. B. `ch-pruefungen.iban`. Name: Kleinbuchstaben, Ziffern und Bindestriche.
 - `check` gibt die Fehlermeldung zurück oder `null`. Leere Werte werden nicht geprüft (dafür gibt es „Pflichtfeld“).
 - Die Regel gilt bei der Erfassung, beim Import und über `Saft::table(…)`.
+- Schritt für Schritt: [Anhang A.6](#a6-prüfregeln).
 
 **Wenn das Plugin fehlt oder ruht:** Prüfregeln werden übersprungen, Formeln mit seinen Funktionen ergeben leer. Der
 Table-Designer zeigt beim Feld „nicht verfügbar“, und `php artisan saft:plugins --check` listet die betroffenen Felder
@@ -665,10 +683,11 @@ vertrauenswürdiger Quelle installieren; prüfen Sie bei eigenen Plugins mindest
 - Listener lehnen nur ab, was fachlich falsch ist – sie wirken in allen Datenansichten und beim Import.
 - Zugangsdaten und Schlüssel nie im Code, sondern in der `.env` bzw. in verschlüsselten Einstellungen.
 
-## 16. Beispiele: Lager-Umbuchung und CH-Prüfungen
+## 16. Beispiele: Lager-Umbuchung, Lager-Tafel und CH-Prüfungen
 
-Zwei Beispiel-Plugins liegen bei SAFT: *Lager-Umbuchung* zeigt eine Fachanwendung mit Maske, Geschäftsregeln und
-Kachel, *CH-Prüfungen* zeigt Formelfunktionen und Prüfregeln ohne eigene Seiten.
+Drei Beispiel-Plugins liegen bei SAFT: *Lager-Umbuchung* zeigt eine Fachanwendung mit Maske, Geschäftsregeln und
+Kachel, *Lager-Tafel* ist das Beispiel zu den Anleitungen in Anhang A, *CH-Prüfungen* zeigt Formelfunktionen und
+Prüfregeln ohne eigene Seiten.
 
 ### 16.1 Lager-Umbuchung
 
@@ -695,7 +714,26 @@ So probieren Sie es aus: Lager-Demo einspielen (`php artisan db:seed --class=Lag
 Mindestbestand – die Meldung in der Glocke. Die Kachel **Lager: Mindestbestand** (`src/Widgets/MinimumStockWidget.php`)
 auf dem Dashboard zeigt die Artikel unter dem Mindestbestand.
 
-### 16.2 CH-Prüfungen
+### 16.2 Lager-Tafel
+
+Das Plugin `plugins/lager-tafel` (nur in Entwicklungs- und Demo-Installationen) setzt jeden Baustein aus
+[Anhang A](#anhang-a--schritt-für-schritt-anleitungen) einmal an der Lager-Demo um. Es braucht das Plugin
+*Lager-Umbuchung*, über dessen Ablauf es bucht.
+
+| Baustein | Datei | Was es tut |
+|---|---|---|
+| Tabellensicht | `src/Pages/Lagerspiegel.php` | je Artikel eine Zeile, je Lagerort eine Spalte; Suche, Filter „Nur unter Mindestbestand“ |
+| Formular mit Drag and Drop | `src/Pages/Lagertafel.php`, `resources/views/lagertafel.blade.php` | Bestand auf einen anderen Lagerort ziehen, Menge im Dialog, Buchung über `StockTransfer` |
+| Kachel | `src/Widgets/StockByLocationChart.php` | Balkendiagramm: Bestand je Lagerort |
+| Knöpfe | `LagerTafelPlugin::dataActions()` | in der Datenansicht Artikel: „Lagerspiegel“ über der Tabelle, „Auf Lagertafel verteilen“ je Zeile |
+| Listener | `src/Listeners/` | Artikelnummer in einer Schreibweise speichern; gesperrt, sobald es Lagerbewegungen gibt |
+| Prüfregel | `src/ArticleNumber.php`, `LagerTafelPlugin::fieldRules()` | „Artikelnummer (Lager-Demo)“: ein Buchstabe, Bindestrich, vier Ziffern |
+| Menüvorschläge | `LagerTafelPlugin::menuSuggestions()` | Lagerspiegel und Lagertafel in der Gruppe *Lager (Demo)* |
+
+**Rechte:** *Lager-Tafel: Lagerspiegel anzeigen* für Lagerspiegel und Kachel, *Lager-Tafel: Auf der Lagertafel umbuchen*
+für die Lagertafel; dazu die Datenrechte wie bei Lager-Umbuchung.
+
+### 16.3 CH-Prüfungen
 
 Das Plugin `plugins/ch-pruefungen` (ebenfalls nur in Entwicklungs- und Demo-Installationen) zeigt Formelfunktionen und
 Prüfregeln ohne eigene Seiten – es braucht daher weder Rechte noch Menüvorschläge, und es verlangt keine Tabellen:
@@ -746,3 +784,802 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 | **1.2** | 0.1 | `DashboardWidget` (Bezeichnung der Kachel), `FormulaFunction` und `SaftPlugin::formulaFunctions()`, `FieldRule` und `SaftPlugin::fieldRules()` |
 | **1.1** | 0.1 | Test-Basis `PluginTestCase` (`actingAsSuperAdmin`, `actingWithPermissions`, `createTable`, `withoutPluginEvents`, `dataView`); geschützte Methoden gehören zum Vertrag (`PluginServiceProvider::plugin()`). Werkzeuge (nicht Teil der API): `saft:make-plugin`, `saft:plugins --check`, Testsuite „Plugins“ |
 | **1.0** | 0.1 | Erste Fassung: `SaftPlugin` (Rechte, Menüvorschläge, Aufgaben-Arten, `requiredTables()`, `recordListeners()`, `dataActions()`), `PluginServiceProvider`, `MenuSuggestion`; `Saft` (`table`, `hasTable`, `plugin`, `transaction`, `notify`), `DataTable` (Lesen, Schreiben mit Rechten und Prüfregeln, `formFields`, `withoutAuthorization`), Ereignisse `RecordSaving`, `RecordSaved`, `RecordDeleting`, `RecordDeleted`, `RecordRejected`, `RecordListener`, `DataAction`; Trait `LimitsFormWidth` |
+
+## Anhang A – Schritt-für-Schritt-Anleitungen
+
+Die Kapitel 1–17 beschreiben jeden Baustein für sich. Dieser Anhang führt für die sieben häufigsten Aufgaben von der
+leeren Datei bis zum getesteten Ergebnis. Alle Beispiele stammen aus dem Beispiel-Plugin **Lager-Tafel**
+(`plugins/lager-tafel`). Sein Code ist mit Tests auf PostgreSQL, MySQL und MariaDB abgesichert, die Ausschnitte hier
+laufen also so, wie sie dastehen.
+
+| Anleitung | Baustein im Plugin | Datei |
+|---|---|---|
+| [A.1 Eigene Tabellensicht](#a1-eigene-tabellensicht) | Lagerspiegel: je Artikel eine Zeile, je Lagerort eine Spalte | `src/Pages/Lagerspiegel.php` |
+| [A.2 Eigenes Bearbeiten-Formular](#a2-eigenes-bearbeiten-formular) | Lagertafel: Bestand per Drag and Drop umbuchen | `src/Pages/Lagertafel.php`, `resources/views/lagertafel.blade.php` |
+| [A.3 Widget](#a3-widget) | Kachel „Lager: Bestand je Lagerort“ | `src/Widgets/StockByLocationChart.php` |
+| [A.4 Aktion in einer bestehenden Tabellensicht](#a4-aktion-in-einer-bestehenden-tabellensicht) | Knöpfe in der Datenansicht Artikel | `LagerTafelPlugin::dataActions()` |
+| [A.5 Listener](#a5-listener) | Artikelnummer vereinheitlichen und sperren | `src/Listeners/` |
+| [A.6 Prüfregeln](#a6-prüfregeln) | „Artikelnummer (Lager-Demo)“ | `src/ArticleNumber.php`, `LagerTafelPlugin::fieldRules()` |
+| [A.7 Menüvorschläge](#a7-menüvorschläge) | Lagerspiegel und Lagertafel im Menü | `LagerTafelPlugin::menuSuggestions()` |
+
+**Ausprobieren:** Lager-Demo einspielen (`php artisan db:seed --class=LagerDemoSeeder`), unter
+**Administration › Plugins** bei *Lager-Tafel* „Menüeinträge anlegen“, dann **Lager (Demo) › Lagerspiegel** bzw.
+**Lagertafel**. Die Tests: `vendor/bin/phpunit --testsuite Plugins --filter LagerTafelTest`.
+
+### Typsicher programmieren
+
+Plugins laufen innerhalb von SAFT – ein Tippfehler in einem Tabellen- oder Rechtnamen fällt sonst erst in der
+Produktion auf. Alle Beispiele halten sich deshalb an dieselben Regeln:
+
+- **`declare(strict_types=1);`** in jeder Datei, Klassen **`final`**, Eigenschaften, Parameter und Rückgaben **typisiert**.
+- **Namen als Konstanten:** die id des Plugins (`LagerTafelPlugin::ID`), Routen (`Lagerspiegel::ROUTE`), Tabellen
+  (`Warehouse::ARTICLES`) und der Präfix der Übersetzungen (`private const string T = 'lager-tafel::tafel.';`). Ein
+  falscher Name ist dann ein Fehler der IDE, kein leeres Ergebnis zur Laufzeit.
+- **Array-Formen im PHPDoc**, wo PHP selbst keinen genaueren Typ kennt:
+  `@return array<int, array<int, int>>` oder `@return list<array{id: int, label: string, quantity: int}>`.
+- **Werte aus Datensätzen umwandeln:** `getAttribute()` liefert `mixed` – je nach Datenbank auch Zahlen als Text.
+  Wandeln Sie sofort um: `(int) $record->getAttribute('menge')`.
+- **Fachlogik ohne Bezug zu SAFT** in eigene Klassen (hier `ArticleNumber`): einfach zu testen, ohne Datenbank.
+- **Lesezugriffe an einer Stelle bündeln:** `Warehouse` kapselt alle Abfragen auf die Lager-Tabellen. Seiten, Kachel und
+  Listener rufen nur seine Methoden auf; ändert sich ein Feldname, ist es eine Stelle.
+
+**Abhängigkeit von einem anderen Plugin:** Die Lagertafel bucht über `StockTransfer` des Plugins *Lager-Umbuchung*,
+statt den Ablauf zu kopieren. Ein anderes Plugin gehört – anders als SAFT selbst – in `require` der `composer.json`:
+
+```json
+"require": { "php": "^8.4", "filament/filament": "^5.0", "saft/lager-umbuchung": "^1.3" }
+```
+
+### A.1 Eigene Tabellensicht
+
+**Wozu:** Die Datenansicht von SAFT zeigt eine Tabelle so, wie sie im Table-Designer steht. Eine eigene Tabellensicht
+lohnt sich, wenn Zeilen oder Spalten anders entstehen sollen – hier der *Lagerspiegel*: je Artikel eine Zeile, je
+Lagerort eine Spalte mit dem Bestand, dazu Gesamtbestand und Mindestbestand. Die Spalten der Lagerorte entstehen zur
+Laufzeit. **Nicht nötig** ist eine eigene Sicht für andere Spalten, Filter oder Sortierung derselben Tabelle – das
+richtet die Administration im Table-Designer bzw. mit einer Auswertung ein.
+
+**Schritt 1 – Seite mit Tabelle anlegen** (`src/Pages/Lagerspiegel.php`). Eine Filament-Seite mit `HasTable` und
+`InteractsWithTable`; Adresse mit der id beginnen, nicht selbst in die Navigation eintragen, Zugriff über das Recht
+des Plugins:
+
+```php
+final class Lagerspiegel extends Page implements HasTable
+{
+    use InteractsWithTable;
+
+    public const string ROUTE = 'filament.admin.pages.lager-tafel.lagerspiegel';
+
+    private const string T = 'lager-tafel::tafel.matrix.';
+
+    protected static ?string $slug = 'lager-tafel/lagerspiegel';
+
+    protected static bool $shouldRegisterNavigation = false;
+
+    /** @var array<int, array<int, int>>|null Bestände je Artikel und Lagerort, einmal je Anfrage geladen */
+    private ?array $matrix = null;
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can(LagerTafelPlugin::ID.'.view') ?? false;
+    }
+```
+
+**Schritt 2 – Hinweis statt Fehler.** Fehlen Tabellen der Lager-Demo oder Datenrechte, zeigt die Seite einen Hinweis
+und keine Tabelle. `content()` legt fest, was die Seite zeigt; `EmbeddedTable` ist die Tabelle:
+
+```php
+public function content(Schema $schema): Schema
+{
+    if (! $this->warehouse()->available()) {
+        return $schema->components([Callout::make(__('lager-tafel::tafel.unavailable_title'))
+            ->description(__('lager-tafel::tafel.unavailable').' '.implode('; ', $this->warehouse()->missing()))
+            ->warning()]);
+    }
+
+    if (! $this->warehouse()->canRead()) {
+        return $schema->components([Callout::make(__('lager-tafel::tafel.no_rights'))->danger()]);
+    }
+
+    return $schema->components([EmbeddedTable::make()]);
+}
+```
+
+**Schritt 3 – Abfrage und Spalten.** Die Zeilen kommen aus `Saft::table(…)->query()` – damit gelten die Datenrechte,
+und Datensätze im Papierkorb sind ausgenommen. Spalten, die es in der Tabelle gibt, sind gewöhnliche `TextColumn`s
+mit `searchable()` und `sortable()`. Berechnete Spalten erhalten ihren Wert über `state()`; die Bestände lädt die
+Seite **einmal** für alle Zeilen (`$this->matrix`), nicht je Zeile eine Abfrage:
+
+```php
+public function table(Table $table): Table
+{
+    $warehouse = $this->warehouse();
+
+    if (! $warehouse->available() || ! $warehouse->canRead()) {
+        return $table->records(static fn (): array => []);     // content() zeigt den Hinweis
+    }
+
+    $locationColumns = [];
+
+    foreach ($warehouse->locations() as $id => $label) {
+        $locationColumns[] = TextColumn::make('lagerort_'.$id)
+            ->label($label)
+            ->state(fn (DynamicRecord $record): int => $this->stocks($record)[$id] ?? 0)
+            ->numeric()
+            ->alignEnd()
+            ->color(static fn (int $state): ?string => $state === 0 ? 'gray' : null);
+    }
+
+    $hasMinimum = $warehouse->hasMinimum();
+
+    return $table
+        ->query(static fn (): Builder => Saft::table(Warehouse::ARTICLES)->query())
+        ->defaultSort('artikelnummer')
+        ->columns([
+            TextColumn::make('artikelnummer')->label(__(self::T.'number'))->searchable()->sortable(),
+            TextColumn::make('bezeichnung')->label(__(self::T.'article'))->searchable()->sortable()->wrap(),
+            ...$locationColumns,
+            TextColumn::make('gesamt')
+                ->label(__(self::T.'total'))
+                ->state(fn (DynamicRecord $record): int => array_sum($this->stocks($record)))
+                ->numeric()->alignEnd()->weight('bold'),
+            TextColumn::make('mindestbestand')->label(__(self::T.'minimum'))->numeric()->alignEnd()->sortable()
+                ->visible($hasMinimum),
+        ])
+        // …
+}
+```
+
+**Schritt 4 – Filter und Zeilenaktionen.** Ein Filter verändert die Abfrage; hier liefert `Warehouse` die Schlüssel der
+Artikel unter dem Mindestbestand. Die Zeilenaktion öffnet die Lagertafel (A.2) für den Artikel:
+
+```php
+        ->filters([
+            Filter::make('unter_mindestbestand')
+                ->label(__(self::T.'below_minimum'))
+                ->toggle()
+                ->visible($hasMinimum)
+                ->query(fn (Builder $query): Builder => $query->whereKey($this->warehouse()->belowMinimum())),
+        ])
+        ->recordActions([
+            Action::make('verteilen')
+                ->label(__('lager-tafel::tafel.actions.board'))
+                ->icon('heroicon-o-view-columns')
+                ->iconButton()
+                ->visible(static fn (): bool => Lagertafel::canAccess())
+                ->url(static fn (DynamicRecord $record): string => Lagertafel::getUrl(['artikel' => $record->getKey()])),
+        ]);
+```
+
+**Schritt 5 – ins Menü bringen und Rechte vergeben:** Menüvorschlag (A.7), danach in der Rollenverwaltung das Recht
+*Lager-Tafel: Lagerspiegel anzeigen* und die Datenrechte *anzeigen* auf Artikel, Lagerorte und Bestände.
+
+**Testen:**
+
+```php
+Livewire::test(Lagerspiegel::class)
+    ->assertCanSeeTableRecords([$schraube, $nagel])
+    ->assertTableColumnStateSet('lagerort_'.$nord, 10, $schraube->getKey())
+    ->searchTable('Nagel')
+    ->assertCanNotSeeTableRecords([$schraube])
+    ->searchTable('')
+    ->filterTable('unter_mindestbestand')
+    ->assertCanSeeTableRecords([$nagel]);
+```
+
+**Stolpersteine:**
+
+- **Suchen und Sortieren** gehen nur bei Spalten, die es in der Tabelle gibt. Berechnete Spalten (`state()`) lassen sich
+  weder durchsuchen noch sortieren – dafür bräuchte es die Werte in der Datenbank.
+- **Keine Abfrage je Zeile:** `state()` läuft für jede Zelle. Laden Sie Zusatzdaten einmal in eine Eigenschaft.
+- **Verknüpfungen** zeigen in der Tabelle den gespeicherten Schlüssel. Brauchen Sie die Bezeichnung, laden Sie die
+  Zuordnung Schlüssel → Bezeichnung einmal (wie `Warehouse::locations()`) und geben sie in `state()` aus.
+- `Saft::table()` wirft ohne Leserecht eine `AuthorizationException`. Prüfen Sie `can('view')` vorher und zeigen Sie
+  einen Hinweis, statt die Seite scheitern zu lassen.
+
+### A.2 Eigenes Bearbeiten-Formular
+
+**Wozu:** Das Formular von SAFT bearbeitet einen Datensatz einer Tabelle. Ein eigenes Formular braucht es, wenn ein
+Vorgang mehrere Datensätze oder Tabellen auf einmal ändert oder anders bedient werden soll. Die *Lagertafel* zeigt
+für einen Artikel je Lagerort eine Karte mit dem Bestand. Wer den Bestand auf eine andere Karte zieht, gibt im
+Dialog die Menge ein; gebucht werden zwei Lagerbewegungen in einer Transaktion.
+
+> Ein Plugin ersetzt das Standard-Formular einer Tabelle nicht. Ein eigenes Formular ist immer eine eigene Seite, die
+> ein Menüeintrag (A.7) oder ein Knopf in der Datenansicht (A.4) öffnet.
+
+**Schritt 1 – Seite mit eigener View** (`src/Pages/Lagertafel.php`). Für Drag and Drop braucht die Seite eigenes HTML,
+deshalb eine View aus dem Plugin (`view('lager-tafel::lagertafel')` liegt unter `resources/views/lagertafel.blade.php`):
+
+```php
+final class Lagertafel extends Page
+{
+    public const string ROUTE = 'filament.admin.pages.lager-tafel.lagertafel';
+
+    private const string T = 'lager-tafel::tafel.board.';
+
+    protected static ?string $slug = 'lager-tafel/lagertafel';
+
+    protected static bool $shouldRegisterNavigation = false;
+
+    protected string $view = 'lager-tafel::lagertafel';
+
+    /** @var array{artikel?: int|string|null} Zustand des Formulars (Auswahl des Artikels) */
+    public ?array $data = [];
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can(LagerTafelPlugin::ID.'.transfer') ?? false;
+    }
+
+    /** Vorbelegung aus dem Knopf „Auf Lagertafel verteilen“ (?artikel=…). */
+    public function mount(): void
+    {
+        $this->form->fill(['artikel' => request()->integer('artikel') ?: null]);
+    }
+```
+
+**Schritt 2 – Formular für die Auswahl.** Ein gewöhnliches Filament-Formular; `live()` zeichnet die Tafel neu, sobald
+ein Artikel gewählt ist:
+
+```php
+public function form(Schema $schema): Schema
+{
+    return $schema
+        ->statePath('data')
+        ->components($this->ready() ? [
+            Select::make('artikel')
+                ->label(__(self::T.'article'))
+                ->options(fn (): array => $this->warehouse()->articles())
+                ->searchable()
+                ->live(),
+        ] : []);
+}
+```
+
+**Schritt 3 – Daten für die View.** Öffentliche Methoden der Seite sind in der View als `$this->…()` aufrufbar.
+`board()` liefert je Lagerort eine Karte – auch ohne Bestand, denn dorthin soll man ziehen können:
+
+```php
+/** @return list<array{id: int, label: string, quantity: int}> */
+public function board(): array
+{
+    if (($article = $this->article()) === null) {
+        return [];
+    }
+
+    $stocks = $this->warehouse()->stocksOf($article);
+    $cards = [];
+
+    foreach ($this->warehouse()->locations() as $id => $label) {
+        $cards[] = ['id' => $id, 'label' => $label, 'quantity' => $stocks[$id] ?? 0];
+    }
+
+    return $cards;
+}
+```
+
+**Schritt 4 – Drag and Drop in der View.** Livewire 4 bringt `wire:sort` mit; zusätzliches JavaScript ist nicht nötig.
+Alle Karten bilden eine Gruppe (`wire:sort:group`), damit sich zwischen ihnen ziehen lässt. Jede Karte nennt ihre
+Kennung (`wire:sort:group-id`), das ziehbare Element seinen Schlüssel (`wire:sort:item`, hier der Quellort):
+
+```blade
+<x-filament-panels::page>
+    {{ $this->content }}
+
+    @if ($this->article() !== null)
+        <div class="lager-tafel-board">
+            @foreach ($this->board() as $card)
+                <x-filament::section :heading="$card['label']" compact wire:key="lager-tafel-card-{{ $card['id'] }}">
+                    <div class="lager-tafel-drop"
+                         wire:sort="drop"
+                         wire:sort:group="lager-tafel"
+                         wire:sort:group-id="{{ $card['id'] }}">
+                        @if ($card['quantity'] > 0)
+                            <div class="lager-tafel-item"
+                                 wire:key="lager-tafel-item-{{ $card['id'] }}-{{ $card['quantity'] }}"
+                                 wire:sort:item="{{ $card['id'] }}">
+                                <x-filament::badge size="lg" icon="heroicon-m-cube">{{ $card['quantity'] }}</x-filament::badge>
+                            </div>
+                        @else
+                            <span class="lager-tafel-empty" wire:sort:ignore>{{ __('lager-tafel::tafel.board.empty') }}</span>
+                        @endif
+                    </div>
+                </x-filament::section>
+            @endforeach
+        </div>
+    @endif
+</x-filament-panels::page>
+```
+
+**Gestaltung:** SAFT liefert die Oberfläche mit dem fertig übersetzten CSS von Filament aus. Tailwind-Klassen aus
+Views eines Plugins sind darin **nicht** enthalten und wirken nicht. Verwenden Sie Filament-Komponenten
+(`<x-filament::section>`, `<x-filament::badge>`, `<x-filament::button>` …) und für den Rest ein `<style>`-Block in der
+View, mit dem Präfix der Plugin-id und den Farbvariablen von Filament (`var(--gray-300)`, `var(--primary-500)`), damit
+der dunkle Modus passt:
+
+```css
+.lager-tafel-drop { min-height: 4.5rem; border: 2px dashed var(--gray-300); border-radius: .75rem; /* … */ }
+.dark .lager-tafel-drop { border-color: var(--gray-600); }
+```
+
+**Schritt 5 – Ablegen entgegennehmen.** Beim Ablegen ruft Livewire die Methode aus `wire:sort` mit dem Schlüssel des
+Elements, der Position und der Kennung der Zielkarte auf. Die Seite bucht noch nicht, sondern öffnet einen Dialog:
+
+```php
+public function drop(int|string $item, int $position, int|string $target): void
+{
+    abort_unless(self::canAccess(), 403);                 // Livewire-Aufrufe lassen sich auch ohne Oberfläche auslösen
+    [$from, $to] = [(int) $item, (int) $target];
+
+    if ($from === $to || $this->article() === null) {
+        return;
+    }
+
+    $this->mountAction('transfer', ['from' => $from, 'to' => $to]);
+}
+```
+
+**Schritt 6 – Dialog und Buchung.** Eine Aktion `transferAction()` gehört automatisch zur Seite. Die Argumente aus
+`mountAction()` stehen in `$arguments`; `maxValue()` verhindert schon im Dialog zu grosse Mengen:
+
+```php
+public function transferAction(): Action
+{
+    return Action::make('transfer')
+        ->modalHeading(fn (array $arguments): string => __(self::T.'modal', [
+            'from' => $this->warehouse()->locations()[(int) $arguments['from']] ?? '?',
+            'to' => $this->warehouse()->locations()[(int) $arguments['to']] ?? '?',
+        ]))
+        ->modalSubmitActionLabel(__(self::T.'submit'))
+        ->fillForm(fn (array $arguments): array => ['menge' => $this->available((int) $arguments['from'])])
+        ->schema(fn (array $arguments): array => [
+            TextInput::make('menge')
+                ->label(__(self::T.'quantity'))
+                ->integer()
+                ->required()
+                ->minValue(1)
+                ->maxValue($this->available((int) $arguments['from'])),
+        ])
+        ->action(function (array $data, array $arguments): void {
+            abort_unless(self::canAccess(), 403);
+            $this->transfer((int) $arguments['from'], (int) $arguments['to'], (int) $data['menge']);
+        });
+}
+```
+
+Die Buchung selbst übernimmt `StockTransfer` des Plugins *Lager-Umbuchung* (zwei Lagerbewegungen in
+`Saft::transaction()`, siehe [Kapitel 16.1](#161-lager-umbuchung)). Fehler zeigt die Seite als Meldung an – auch die
+Ablehnung eines Listeners (`RecordRejected`) und Verstösse gegen Prüfregeln (`ValidationException`):
+
+```php
+try {
+    $transfers->transfer((int) $this->article(), $from, $to, $quantity);
+} catch (TransferRejected|RecordRejected $e) {
+    Notification::make()->danger()->title($e->getMessage())->send();
+
+    return;
+} catch (ValidationException $e) {
+    Notification::make()->danger()->title(__(self::T.'invalid'))->body(implode("\n", Arr::flatten($e->errors())))->send();
+
+    return;
+}
+```
+
+Nach der Aktion zeichnet Livewire die Seite neu; die Tafel zeigt die neuen Bestände.
+
+**Testen:** Ziehen lässt sich im Feature-Test nicht, wohl aber der Aufruf, den Livewire beim Ablegen macht:
+
+```php
+Livewire::withQueryParams(['artikel' => $schraube])->test(Lagertafel::class)
+    ->assertSeeHtml('wire:sort:group-id="'.$sued.'"')
+    ->call('drop', (string) $nord, 0, (string) $sued)
+    ->assertActionMounted(TestAction::make('transfer')->arguments(['from' => $nord, 'to' => $sued]))
+    ->fillForm(['menge' => 11])
+    ->callMountedAction()
+    ->assertHasFormErrors(['menge' => 'max'])
+    ->fillForm(['menge' => 4])
+    ->callMountedAction()
+    ->assertNotified('4 Stück von Nord nach Süd umgebucht.');
+```
+
+**Stolpersteine:**
+
+- **`wire:key` mit dem Inhalt:** Das gezogene Element hängt der Browser in die Zielkarte. Ein Schlüssel, der die Menge
+  enthält, sorgt dafür, dass Livewire es nach der Buchung sauber neu zeichnet – auch wenn der Dialog abgebrochen wird.
+- **Rechte zweimal prüfen:** in `canAccess()` und in jeder Methode, die etwas ändert (`drop()`, `action()`).
+- **Bedienung ohne Maus:** Drag and Drop geht nicht mit der Tastatur. Bieten Sie denselben Vorgang zusätzlich als
+  Formular an – hier die Seite *Umbuchung* des Plugins Lager-Umbuchung.
+- **Eingaben mehrerer Tabellen** schreiben Sie in `Saft::transaction()`, damit nichts halb gebucht wird.
+
+### A.3 Widget
+
+**Wozu:** Eine Kachel auf dem **Dashboard** zeigt eine Kennzahl oder ein Diagramm, ohne dass man eine Seite öffnen
+muss. Die Kachel *Lager: Bestand je Lagerort* summiert die Bestände aller Artikel je Lagerort als Balkendiagramm.
+
+**Schritt 1 – Klasse unter `src/Widgets` anlegen.** SAFT findet sie dort selbst. Filament bietet als Grundlage
+`StatsOverviewWidget` (Kennzahlen), `ChartWidget` (Diagramme mit Chart.js) und `TableWidget` (Tabelle). Das Interface
+`DashboardWidget` liefert die Bezeichnung für „Dashboard anpassen“:
+
+```php
+final class StockByLocationChart extends ChartWidget implements DashboardWidget
+{
+    protected static ?int $sort = 51;                     // Reihenfolge beim ersten Anzeigen
+
+    protected int|string|array $columnSpan = 1;           // halbe Breite; 'full' = breiter Bereich unten
+
+    protected ?string $maxHeight = '16rem';
+
+    public static function dashboardLabel(): string
+    {
+        return __('lager-tafel::tafel.widget.label');
+    }
+```
+
+**Schritt 2 – wer die Kachel sieht.** `canView()` prüft das Recht des Plugins, ob die Lager-Demo da ist, und die
+Datenrechte. Ohne diese Prüfung scheitert das Dashboard für alle, denen ein Recht fehlt:
+
+```php
+public static function canView(): bool
+{
+    $warehouse = app(Warehouse::class);
+
+    return Lagerspiegel::canAccess() && $warehouse->available() && $warehouse->canRead();
+}
+```
+
+**Schritt 3 – Daten liefern.** Ein `ChartWidget` gibt Datenreihen und Beschriftungen im Format von Chart.js zurück:
+
+```php
+protected function getType(): string
+{
+    return 'bar';
+}
+
+/** @return array{datasets: list<array{label: string, data: list<int>}>, labels: list<string>} */
+protected function getData(): array
+{
+    $warehouse = app(Warehouse::class);
+    $totals = [];
+
+    foreach ($warehouse->matrix() as $stocks) {
+        foreach ($stocks as $location => $quantity) {
+            $totals[$location] = ($totals[$location] ?? 0) + $quantity;
+        }
+    }
+
+    $locations = $warehouse->locations();
+
+    return [
+        'datasets' => [[
+            'label' => __('lager-tafel::tafel.widget.quantity'),
+            'data' => array_values(array_map(static fn (int $id): int => $totals[$id] ?? 0, array_keys($locations))),
+        ]],
+        'labels' => array_values($locations),
+    ];
+}
+```
+
+**Verwenden:** Nach der Installation erscheint die Kachel auf dem Dashboard aller Personen, für die `canView()` wahr
+ist. Jede Person kann sie unter **Dashboard anpassen** verschieben oder ausblenden. Ein eigenes Recht der
+Administration für die Kachel braucht es nicht – sie folgt dem Recht des Plugins.
+
+**Testen:**
+
+```php
+$this->assertFalse(StockByLocationChart::canView(), 'Ohne Lager-Demo.');
+$data = (fn (): array => $this->getData())->call(new StockByLocationChart);
+$this->assertSame(['Nord', 'Süd'], $data['labels']);
+$key = 'plugin:Saft.LagerTafel.Widgets.StockByLocationChart';                 // Schlüssel auf dem Dashboard
+$this->assertSame('Lager: Bestand je Lagerort', Livewire::test(Dashboard::class)->instance()->cards()[$key]['label']);
+```
+
+**Stolpersteine:**
+
+- **Nur auf einer eigenen Seite:** `protected static bool $isDiscovered = false;` im Widget, auf der Seite
+  `getHeaderWidgets()` bzw. `getFooterWidgets()`.
+- **Teure Abfragen** laufen bei jedem Aufruf des Dashboards. Lesen Sie mit einer Abfrage für alle Werte, nicht je
+  Balken eine.
+
+### A.4 Aktion in einer bestehenden Tabellensicht
+
+**Wozu:** Ein Knopf in der Datenansicht einer Tabelle von SAFT führt von dort in Ihr Plugin – ohne dass die
+Administration etwas einrichten muss. Lager-Tafel setzt zwei Knöpfe in die Datenansicht **Artikel**: *Lagerspiegel*
+über der Tabelle und *Auf Lagertafel verteilen* in jeder Zeile.
+
+**Schritt 1 – Knöpfe in der Plugin-Klasse anmelden.** `DataAction` nennt die Tabelle, den Platz und eine Closure, die
+eine Filament-Aktion baut:
+
+```php
+public function dataActions(): array
+{
+    return [
+        new DataAction(Warehouse::ARTICLES, DataAction::TABLE, static fn (): Action => Action::make('lagerTafelSpiegel')
+            ->label(__(self::T.'actions.matrix'))
+            ->icon('heroicon-o-table-cells')
+            ->color('gray')
+            ->visible(static fn (): bool => Lagerspiegel::canAccess())
+            ->url(static fn (): string => Lagerspiegel::getUrl())),
+        new DataAction(Warehouse::ARTICLES, DataAction::RECORD, static fn (): Action => Action::make('lagerTafelVerteilen')
+            ->label(__(self::T.'actions.board'))
+            ->tooltip(__(self::T.'actions.board'))
+            ->icon('heroicon-o-view-columns')
+            ->iconButton()
+            ->visible(static fn (): bool => Lagertafel::canAccess())
+            ->url(static fn (DynamicRecord $record): string => Lagertafel::getUrl(['artikel' => $record->getKey()]))),
+    ];
+}
+```
+
+- `DataAction::TABLE` – über der Tabelle, neben „Neu“ und „Export“.
+- `DataAction::RECORD` – in jeder Zeile, neben „Details“; Closures erhalten den Datensatz als `DynamicRecord $record`.
+- **Namen der Aktionen** mit einem Präfix aus der id (`lagerTafel…`), damit sie nicht mit Aktionen von SAFT oder anderen
+  Plugins kollidieren.
+
+**Schritt 2 – Ziel entgegennehmen.** Die Seite liest die Vorbelegung aus der Adresse, siehe `mount()` in A.2.
+
+**Statt einer Seite einen Dialog öffnen:** Mit `schema()` und `action()` statt `url()` öffnet der Knopf ein
+Dialogfenster in der Datenansicht – z. B. für eine kurze Eingabe, die über `Saft::table(…)` gespeichert wird. Prüfen Sie
+das Recht dann auch in `action()`.
+
+**Testen** mit `dataView()` aus `PluginTestCase`:
+
+```php
+$this->dataView('lager_artikel')
+    ->assertActionVisible(TestAction::make('lagerTafelSpiegel')->table())
+    ->assertActionHasUrl(TestAction::make('lagerTafelVerteilen')->table($schraube), Lagertafel::getUrl(['artikel' => $schraube->getKey()]));
+
+$this->actingWithPermissions(['lager-tafel.view', 'data.lager_artikel.view']);
+$this->dataView('lager_artikel')->assertActionHidden(TestAction::make('lagerTafelVerteilen')->table($schraube));
+```
+
+**Stolpersteine:**
+
+- **Ausblenden oder ausgrauen:** `visible()` für Knöpfe, die eine Person nie benutzen darf; `disabled()` für Knöpfe, die
+  nur bei diesem Datensatz nicht gehen (wie „Umbuchen“ ohne Bestand im Plugin Lager-Umbuchung) – so bleiben die
+  Knöpfe der Zeilen untereinander.
+- **Zeilen ohne Schlüssel** (z. B. aus Views) erhalten keine Zeilenaktionen.
+- **Ruht das Plugin** (fehlende Tabellen oder Felder), erscheinen seine Knöpfe nicht.
+
+### A.5 Listener
+
+**Wozu:** Ein Listener setzt eine Geschäftsregel durch, die **überall** gilt, wo Datensätze einer Tabelle geändert
+werden: in der Datenansicht, beim Import, über die Schnittstelle und in geplanten Aufgaben. Eine Seite des Plugins
+kann das nicht – sie sieht nur ihre eigenen Eingaben. Typische Aufgaben:
+
+| Aufgabe | Ereignis | Beispiel |
+|---|---|---|
+| Werte vereinheitlichen oder ergänzen | `RecordSaving` | Artikelnummer in Grossbuchstaben |
+| Änderung ablehnen, die über mehrere Tabellen falsch wäre | `RecordSaving`, `RecordDeleting` | Nummer gesperrt, sobald es Lagerbewegungen gibt |
+| Folgebuchungen in anderen Tabellen | `RecordSaved`, `RecordDeleted` | Lagerbewegung bucht den Bestand (Lager-Umbuchung) |
+| Benachrichtigen | `RecordSaved` | Mindestbestand unterschritten (Lager-Umbuchung) |
+
+**Nicht nötig** ist ein Listener für Prüfungen eines einzelnen Felds (dafür eine Prüfregel, A.6, oder die Regeln des
+Table-Designers) und für das Löschen verknüpfter Datensätze – das lehnt SAFT selbst ab, solange Datensätze anderer
+Tabellen darauf verweisen.
+
+**Schritt 1 – Werte setzen** (`src/Listeners/NormalizeArticleNumber.php`). Ein Listener ist eine Klasse mit
+`__invoke()`, die das Ereignis erhält. In `RecordSaving` ändern Sie den Datensatz direkt; berechnete Felder sehen
+danach den neuen Wert:
+
+```php
+final class NormalizeArticleNumber
+{
+    public function __invoke(RecordSaving $event): void
+    {
+        $number = $event->value('artikelnummer');
+
+        if (is_string($number) && $number !== '') {
+            $event->record->setAttribute('artikelnummer', ArticleNumber::normalize($number));
+        }
+    }
+}
+```
+
+**Schritt 2 – Ablehnen** (`src/Listeners/LockArticleNumber.php`). `previous()` liefert den Wert vor der Änderung,
+`creating()` sagt, ob der Datensatz neu ist. Eine `RecordRejected` bricht das Speichern ab; SAFT zeigt die Meldung
+an, beim Import als Fehler der Zeile:
+
+```php
+final class LockArticleNumber
+{
+    private const string MOVEMENTS = 'lager_bewegungen';
+
+    public function __invoke(RecordSaving $event): void
+    {
+        if ($event->creating() || ! Saft::hasTable(self::MOVEMENTS)) {
+            return;
+        }
+
+        $before = ArticleNumber::normalize((string) $event->previous('artikelnummer'));
+        $after = ArticleNumber::normalize((string) $event->value('artikelnummer'));
+
+        if ($before === $after) {
+            return;
+        }
+
+        // Ohne Rechteprüfung lesen: Die Regel gilt auch für Personen, die Lagerbewegungen nicht sehen dürfen.
+        $used = Saft::table(self::MOVEMENTS)->withoutAuthorization()->query()
+            ->where('artikel_id', $event->record->getKey())
+            ->exists();
+
+        if ($used) {
+            throw new RecordRejected(__('lager-tafel::tafel.errors.number_locked', ['number' => $before]));
+        }
+    }
+}
+```
+
+**Schritt 3 – in der Plugin-Klasse anmelden.** Je Tabelle und Ereignis ein `RecordListener`; mehrere Listener für
+dasselbe Ereignis laufen in der angegebenen Reihenfolge:
+
+```php
+public function recordListeners(): array
+{
+    return [
+        new RecordListener(Warehouse::ARTICLES, RecordSaving::class, NormalizeArticleNumber::class),
+        new RecordListener(Warehouse::ARTICLES, RecordSaving::class, LockArticleNumber::class),
+    ];
+}
+```
+
+**Verwenden:** Nichts einzurichten – nach der Installation wirkt der Listener sofort, für alle Personen. Auf der Seite
+**Plugins** sieht die Administration, an welchen Tabellen ein Plugin mithört.
+
+**Testen:** Listener eines installierten Plugins sind in Tests aktiv. Testdaten, die die eigene Regel verletzen müssten,
+legen Sie mit `$this->withoutPluginEvents(fn () => …)` an.
+
+```php
+$artikel = Saft::table('lager_artikel')->create(['artikelnummer' => ' b-2001 ', 'bezeichnung' => 'Dübel']);
+$this->assertSame('B-2001', $artikel->fresh()->getAttribute('artikelnummer'));
+
+$this->expectException(RecordRejected::class);
+Saft::table('lager_artikel')->update($schraube, ['artikelnummer' => 'A-9999']);   // hat Lagerbewegungen
+```
+
+**Stolpersteine:**
+
+- **Rechte:** Ein Listener läuft mit den Rechten der Person, die speichert. Lesen oder schreiben Sie dort, wo die Regel
+  für alle gelten muss, mit `withoutAuthorization()` – und begründen Sie es im Kommentar.
+- **Endlosschleifen:** Schreibt ein Listener in `RecordSaved` in dieselbe Tabelle, löst er sich selbst wieder aus.
+  Merken Sie sich mit einer statischen Eigenschaft, dass Sie gerade schreiben (wie `StockLedger::$writing` im Plugin
+  Lager-Umbuchung).
+- **Nur ablehnen, was fachlich falsch ist:** Die Ablehnung trifft jede Datenansicht und jeden Import, auch einen ganzen
+  Import wegen einer Zeile.
+- **Demo-Daten:** Beim Einspielen der Demo-Daten sind die Ereignisse für Plugins ausgeschaltet.
+
+### A.6 Prüfregeln
+
+**Wozu:** Eine Prüfregel prüft den Wert **eines Felds**, z. B. eine IBAN oder das Format einer Artikelnummer. Anders als
+ein Listener wirkt sie nur dort, wo die Administration sie im Table-Designer auswählt – das Plugin liefert die Regel,
+die Administration entscheidet, wo sie gilt.
+
+**Schritt 1 – die Prüfung ohne Bezug zu SAFT** (`src/ArticleNumber.php`). So lässt sie sich ohne Datenbank testen und
+vom Listener (A.5) mitbenutzen:
+
+```php
+final class ArticleNumber
+{
+    private const string PATTERN = '/^[A-Z]-\d{4}$/';
+
+    /** Schreibweise vereinheitlichen: Leerzeichen weg, Grossbuchstaben („ a-1001 “ → „A-1001“). */
+    public static function normalize(string $value): string
+    {
+        return mb_strtoupper(preg_replace('/\s+/u', '', $value) ?? $value);
+    }
+
+    public static function isValid(string $value): bool
+    {
+        return preg_match(self::PATTERN, self::normalize($value)) === 1;
+    }
+}
+```
+
+**Schritt 2 – Regel in der Plugin-Klasse anmelden.** `check` gibt die Fehlermeldung zurück oder `null`, wenn der Wert
+in Ordnung ist. `types` bestimmt, bei welchen Feldtypen die Regel zur Auswahl steht (`string`, `text`, `integer`,
+`decimal`):
+
+```php
+public function fieldRules(): array
+{
+    return [new FieldRule(
+        name: 'artikelnummer',
+        label: __(self::T.'rules.article_number'),
+        types: ['string'],
+        check: static fn (mixed $value): ?string => ArticleNumber::isValid((string) $value)
+            ? null
+            : __(self::T.'rules.article_number_invalid'),
+    )];
+}
+```
+
+**Schritt 3 – Texte in allen Sprachen.** Bezeichnung und Meldung kommen aus `lang/{de,en,fr,it}/tafel.php`. Die
+Bezeichnung erscheint im Table-Designer, die Meldung beim Feld.
+
+**Verwenden:** Im **Table-Designer** beim Feld *Artikelnummer* unter **Weitere Prüfungen** „Artikelnummer (Lager-Demo)“
+wählen. Gespeichert wird die Regel als `lager-tafel.artikelnummer`. Sie gilt danach bei der Erfassung, beim Import und
+über `Saft::table(…)`; leere Werte prüft sie nicht (dafür gibt es „Pflichtfeld“).
+
+**Testen:** In `createTable()` wählen Sie die Regel wie der Table-Designer:
+
+```php
+$this->createTable('lager_artikel', 'Artikel', [
+    ['name' => 'artikelnummer', 'label' => 'Nummer', 'type' => 'string', 'options' => ['length' => 20],
+     'validation_rules' => ['checks' => ['lager-tafel.artikelnummer']]],
+    // …
+]);
+
+$this->expectException(ValidationException::class);
+Saft::table('lager_artikel')->create(['artikelnummer' => '1001', 'bezeichnung' => 'Falsch']);
+```
+
+**Stolpersteine:**
+
+- **Name:** Kleinbuchstaben, Ziffern und Bindestriche; nach der ersten Installation nicht mehr ändern, sonst verlieren
+  die Felder ihre Regel.
+- **Prüfen und Speichern trennen:** Die Regel ändert keinen Wert. Soll eine andere Schreibweise gespeichert werden,
+  übernimmt das ein Listener (A.5). Darum prüft `isValid()` den vereinheitlichten Wert – „a-1001“ besteht, gespeichert
+  wird „A-1001“.
+- **Fehlt das Plugin oder ruht es,** wird die Regel übersprungen; der Table-Designer zeigt beim Feld „nicht verfügbar“.
+
+### A.7 Menüvorschläge
+
+**Wozu:** Das Menü von SAFT kommt aus der Datenbank und gehört der Administration. Ein Plugin trägt sich deshalb nicht
+selbst ein, sondern **schlägt** Einträge vor; die Administration übernimmt sie mit einem Klick und kann sie danach
+verschieben, umbenennen oder löschen wie jeden anderen Eintrag.
+
+**Schritt 1 – Seiten aus der Navigation von Filament heraushalten:** in jeder Seite
+`protected static bool $shouldRegisterNavigation = false;` (siehe A.1 und A.2).
+
+**Schritt 2 – Vorschläge in der Plugin-Klasse:**
+
+```php
+public function menuSuggestions(): array
+{
+    $group = ['de' => 'Lager (Demo)', 'en' => 'Warehouse (demo)', 'fr' => 'Entrepôt (démo)', 'it' => 'Magazzino (demo)'];
+
+    return [
+        new MenuSuggestion(
+            route: Lagerspiegel::ROUTE,
+            label: ['de' => 'Lagerspiegel', 'en' => 'Stock matrix', 'fr' => 'Matrice des stocks', 'it' => 'Matrice delle giacenze'],
+            icon: 'heroicon-o-table-cells',
+            permission: $this->permissionName('view'),
+            group: $group,
+            sortOrder: 6,
+        ),
+        new MenuSuggestion(
+            route: Lagertafel::ROUTE,
+            label: ['de' => 'Lagertafel', 'en' => 'Stock board', 'fr' => 'Tableau des stocks', 'it' => 'Tabellone delle giacenze'],
+            icon: 'heroicon-o-view-columns',
+            permission: $this->permissionName('transfer'),
+            group: $group,
+            sortOrder: 7,
+        ),
+    ];
+}
+```
+
+- **`route`** als Konstante der Seite – ein Tippfehler fällt so beim Prüfen auf (`saft:plugins --check` meldet fehlende
+  Routen).
+- **`permission`** über `permissionName()` – der Eintrag erscheint nur für Personen mit diesem Recht.
+- **`group`** wird über die deutsche Bezeichnung gefunden; gibt es die Gruppe schon (hier aus der Lager-Demo und dem
+  Plugin Lager-Umbuchung), landen die Einträge darin, sonst legt SAFT sie an. `null` = oberste Ebene.
+- **`sortOrder`** ordnet innerhalb der Gruppe; hier hinter „Umbuchung“ (5).
+- **`label`** in allen vier Sprachen angeben (`de`, `en`, `fr`, `it`).
+
+**Verwenden:** Unter **Administration › Plugins** beim Plugin **Menüeinträge anlegen** wählen, danach in der
+**Rollenverwaltung** die Rechte vergeben. Ein zweites Übernehmen legt nichts doppelt an. Wird das Plugin entfernt,
+blendet SAFT seine Einträge aus; unter **Aufräumen** lassen sie sich zusammen mit den Rechten löschen.
+
+**Testen:**
+
+```php
+$vorschlaege = Saft::plugin(LagerTafelPlugin::ID)->menuSuggestions();
+$this->assertSame([Lagerspiegel::ROUTE, Lagertafel::ROUTE], array_map(static fn ($s): string => $s->route, $vorschlaege));
+$this->assertSame(['lager-tafel.view', 'lager-tafel.transfer'], array_map(static fn ($s): ?string => $s->permission, $vorschlaege));
+```
+
+**Stolpersteine:**
+
+- **Ein Recht je Zweck:** Lager-Tafel trennt *anzeigen* (Lagerspiegel, Kachel) und *umbuchen* (Lagertafel) – so kann
+  die Administration lesen erlauben, ohne Buchungen zu erlauben.
+- **Vorschläge ändern** wirkt nicht auf schon übernommene Einträge; die Administration übernimmt neue Vorschläge mit
+  einem erneuten Klick.

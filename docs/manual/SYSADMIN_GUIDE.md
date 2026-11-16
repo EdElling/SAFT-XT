@@ -282,8 +282,8 @@ version; there the administration adopts the suggested menu entries and grants t
 3. The plugin's menu entries are hidden automatically. On the **Plugins** page, **Clean up** deletes them together
    with the permissions that are no longer needed.
 
-Data a plugin wrote to table designer tables is kept. The example plugin `saft/lager-umbuchung` is only installed with
-the development packages (not with `composer install --no-dev`).
+Data a plugin wrote to table designer tables is kept. The example plugins `saft/lager-umbuchung`, `saft/lager-tafel` and
+`saft/ch-pruefungen` are only installed with the development packages (not with `composer install --no-dev`).
 
 ---
 

@@ -44,6 +44,7 @@
         "phpunit/phpunit": "^12.5.12",
         "reliese/laravel": "^1.4",
         "saft/ch-pruefungen": "^1.0",
+        "saft/lager-tafel": "^1.0",
         "saft/lager-umbuchung": "^1.0"
     },
     "autoload": {

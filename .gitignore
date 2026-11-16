@@ -37,3 +37,4 @@ Thumbs.db
 /plugins/*
 !/plugins/lager-umbuchung/
 !/plugins/ch-pruefungen/
+!/plugins/lager-tafel/

@@ -44,7 +44,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 | Nr. | Thema | Beschreibung | Status | Bezug |
 |---|---|---|---|---|
-| B-030 | Plugins ein- und ausschalten | Installiertes Plugin in der Plugin-Verwaltung deaktivieren, ohne es zu entfernen. | offen | – |
+| B-030 | Plugins ein- und ausschalten | Installiertes Plugin in der Plugin-Verwaltung deaktivieren, ohne es zu entfernen. Nächster Schritt nach den Anleitungen im Entwicklerhandbuch (Anhang A); mit dem nötigen Teil von B-032. | geplant | – |
 | B-031 | Installation über die Oberfläche | Plugin-Paket hochladen und vorbereitet installieren, mit Kompatibilitäts- und KI-Prüfbericht (Sicherheit, nur Plugin-API). | offen | – |
 | B-032 | Abhängigkeiten zwischen Plugins | Ein Plugin gibt an, welche anderen Plugins es braucht; Prüfung und Ruhen wie bei Tabellen. | offen | – |
 | B-033 | MCP-Server für den Entwickler-Kontext | KI-Agenten fragen Schema und API live ab statt über Dateien. | offen | baut auf B-104 auf |
