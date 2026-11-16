@@ -91,7 +91,7 @@ jobs:
         options: >-
           --health-cmd "healthcheck.sh --connect --innodb_initialized" --health-interval 5s --health-timeout 5s --health-retries 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: SQL Server starten (optional)
         if: inputs.sqlserver
@@ -113,7 +113,7 @@ jobs:
           coverage: none
 
       - name: Composer-Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: vendor
           key: composer-${{ runner.os }}-${{ env.PHP_VERSION }}-${{ hashFiles('composer.lock') }}
@@ -155,7 +155,7 @@ jobs:
       - name: Chrome und ChromeDriver
         if: matrix.suite == 'browser'
         id: chrome
-        uses: browser-actions/setup-chrome@v1
+        uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: stable
           install-chromedriver: true
@@ -180,7 +180,7 @@ jobs:
 
       - name: Screenshots und Logs bei Fehlern
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.suite }}-${{ matrix.database }}
           path: |
