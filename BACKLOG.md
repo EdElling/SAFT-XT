@@ -69,7 +69,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 |---|---|---|---|---|
 | B-042 | Lizenz PolyForm Noncommercial 1.0.0 | PolyForm Noncommercial statt der EULA des Vorgängers SAFT2; kommerzielle Nutzung (auch intern in Firmen) nur mit eigener Lizenz. SAFT2 (bis 2.8.0) ist zurückgezogen (Hinweis in LICENSE und README). | umgesetzt | 0.1.0 |
 | B-043 | Neues Repository SAFT XT | Neubeginn ohne die Historie von SAFT2 (die bleibt privat als Archiv), Name SAFT XT, Version 0.1.0; technische Bezeichner (`saft:…`, `Saft::table()`, `config/saft.php`) und Datenbanknamen bleiben. Repository zunächst privat, öffentlich nach Durchsicht. | in Arbeit | 0.1.0 |
-| B-044 | Release v0.1.0 | Erstes Release von SAFT XT; vorher Feature- und Browser-Tests auf GitHub. | in Arbeit | – |
+| B-044 | Release v0.1.0 | Erstes Release von SAFT XT; Feature-Tests auf GitHub (3 Datenbanken), betroffene Browser-Tests lokal (PostgreSQL). | umgesetzt | v0.1.0 |
 | B-040 | OpenSpout 5 | Erst mit Filament 6 (Filament verlangt OpenSpout ^4). | zurückgestellt | – |
 
 ## Umgesetzt (Übersicht)
