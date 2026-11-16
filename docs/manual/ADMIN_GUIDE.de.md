@@ -901,7 +901,8 @@ landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bz
 - **Hilfe-Assistent:** die Frage, die letzten sechs Nachrichten der Unterhaltung, Titel und Adresse der Seite, auf
   der die Person gerade ist, und die Handbücher, die sie in der Online-Hilfe sieht (Anwenderhandbuch, Häufige Fragen,
   mit einem Administrationsrecht das Administratorhandbuch), ihre **eigenen Rollen und Rechte** (damit der Assistent
-  sagen kann, welches Recht für etwas fehlt – in der Rollen-Simulation die der simulierten Rolle); mit dem Schalter oben
+  sagen kann, welches Recht für etwas fehlt – in der Rollen-Simulation die der simulierten Rolle) und ihr **Menü** (Pfade
+  und Adressen der Einträge, die sie sieht); mit dem Schalter oben
   zusätzlich das Datenmodell wie beim Auswertungs-Assistenten.
 - **Nie übertragen** werden Datensätze, Ergebnisse von Auswertungen, Benutzerdaten oder Zugangsdaten.
 - Über dem Eingabefeld sehen die Personen, an welchen Anbieter ihre Beschreibung geht.
@@ -935,8 +936,9 @@ hilft ein zusätzliches (berechnetes) Feld im Table-Designer, z. B. *Einkaufswer
 
 Der Hilfe-Assistent beantwortet Fragen zur Bedienung, z. B. „Wie exportiere ich eine Tabelle nach Excel?“. Er antwortet
 nur aus den Handbüchern, die die Person in der Online-Hilfe sieht, in der Sprache der Oberfläche, und verweist auf die
-Abschnitte; ein Klick öffnet den Abschnitt in der Dokumentation. Verweise auf Abschnitte, die es nicht gibt, entfernt
-SAFT. Steht etwas nicht in den Handbüchern, sagt er das und verweist an die Administration.
+Abschnitte; ein Klick öffnet den Abschnitt in der Dokumentation. Bei Fragen wie „Wo kann ich …?“ verlinkt er die
+Seite aus dem Menü der Person. Verweise auf Abschnitte oder Seiten, die es nicht gibt oder die die Person nicht sieht,
+entfernt SAFT, ebenso Links nach aussen. Steht etwas nicht in den Handbüchern, sagt er das und verweist an die Administration.
 
 - **Unterhaltungen** werden gespeichert und lassen sich wieder öffnen, fortsetzen und löschen; jede Person sieht nur
   ihre eigenen. Ans Modell gehen jeweils nur die letzten sechs Nachrichten, die Handbücher werden zwischengespeichert.

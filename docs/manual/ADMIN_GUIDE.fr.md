@@ -938,7 +938,8 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
 - **Assistant d’aide :** la question, les six derniers messages de la conversation, le titre et l’adresse de la page
   où se trouve la personne et les manuels qu’elle voit dans l’aide en ligne (guide utilisateur, questions fréquentes,
   avec un droit d’administration le guide d’administration), ses **propres rôles et droits** (pour que l’assistant puisse
-  dire quel droit manque – dans la simulation de rôle ceux du rôle simulé) ; avec l’interrupteur ci-dessus, en plus le
+  dire quel droit manque – dans la simulation de rôle ceux du rôle simulé) et son **menu** (chemins et adresses des
+  entrées qu’elle voit) ; avec l’interrupteur ci-dessus, en plus le
   modèle de données comme pour l’assistant de rapports.
 - **Ne sont jamais transmis** les enregistrements, les résultats des rapports, les données des utilisateurs ni les
   données d’accès.
@@ -975,8 +976,9 @@ dans le modèle de données – un champ (calculé) supplémentaire dans le Conc
 
 L’assistant d’aide répond aux questions sur l’utilisation, p. ex. « Comment exporter une table vers Excel ? ». Il
 répond uniquement à partir des manuels que la personne voit dans l’aide en ligne, dans la langue de l’interface, et
-renvoie aux sections ; un clic ouvre la section dans la documentation. SAFT supprime les renvois vers des sections qui
-n’existent pas. Si quelque chose ne figure pas dans les manuels, il le dit et renvoie à l’administration.
+renvoie aux sections ; un clic ouvre la section dans la documentation. Pour des questions comme « Où puis-je … ? », il
+renvoie à la page du menu de la personne. SAFT supprime les renvois vers des sections ou pages inexistantes ou que la
+personne ne voit pas, ainsi que les liens externes. Si quelque chose ne figure pas dans les manuels, il le dit et renvoie à l’administration.
 
 - **Les conversations** sont enregistrées et peuvent être rouvertes, poursuivies et supprimées ; chaque personne ne voit
   que les siennes. Seuls les six derniers messages sont envoyés au modèle, les manuels sont mis en cache.

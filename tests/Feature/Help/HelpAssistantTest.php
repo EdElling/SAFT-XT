@@ -261,6 +261,7 @@ class HelpAssistantTest extends DynamicDataTestCase
         $this->assertStringNotContainsString('Data model of this installation', $this->systemText(), 'Ohne Leserecht auf Tabellen kein Datenmodell.');
         $this->assertStringContainsString('Roles: mit-hilfe', $this->systemText(), 'Rechte der simulierten Rolle.');
         $this->assertStringContainsString('✗ Benutzer: anlegen', $this->systemText());
+        $this->assertStringNotContainsString('Administration › Benutzer', $this->systemText(), 'Menü der simulierten Rolle.');
         $this->assertSame(1, AiHelpConversation::query()->ownedBy($admin)->count(), 'Die Unterhaltung gehört der echten Person.');
     }
 
@@ -275,7 +276,8 @@ class HelpAssistantTest extends DynamicDataTestCase
 
         $this->assistant()->ask($user->fresh(), null, 'Warum kann ich keine neuen Benutzer anlegen?');
 
-        $block = end($this->fake->calls[0]['system']);
+        $find = static fn (array $system): array => collect($system)->first(static fn (array $b): bool => str_starts_with($b['text'], 'Roles and permissions'));
+        $block = $find($this->fake->calls[0]['system']);
         $this->assertFalse($block['cache'] ?? false, 'Je Person anders: nicht zwischengespeichert.');
         $this->assertStringContainsString('Roles: admin', $block['text']);
         $this->assertStringContainsString('✓ Benutzer: anzeigen', $block['text']);
@@ -284,7 +286,29 @@ class HelpAssistantTest extends DynamicDataTestCase
         $this->assertStringNotContainsString('Daten: Kunden: löschen', $block['text'], 'Nur vorhandene Datenrechte.');
 
         $this->assistant()->ask($this->superAdmin(), null, 'Frage');
-        $this->assertStringContainsString('The role super-admin has every permission.', end($this->fake->calls[1]['system'])['text']);
+        $this->assertStringContainsString('The role super-admin has every permission.', $find($this->fake->calls[1]['system'])['text']);
+    }
+
+    public function test_answers_link_pages_from_the_persons_menu_only(): void
+    {
+        $user = $this->user(['help.assistant', 'users.view']);
+        $this->actingAs($user);
+        $this->fake->push('Unter [Administration › Benutzer](/admin/users) auf **Neu** klicken; nicht [Rollen](/admin/roles), nicht [hier](https://example.com) und nicht [erfunden](/admin/gibt-es-nicht).');
+
+        $conversation = $this->assistant()->ask($user, null, 'Wo lege ich Benutzer an?');
+
+        $menu = end($this->fake->calls[0]['system'])['text'];
+        $this->assertStringStartsWith('Menu of the person asking', $menu);
+        $this->assertStringContainsString('Administration › Benutzer → /admin/users', $menu);
+        $this->assertStringNotContainsString('/admin/roles', $menu, 'Nur Einträge, die die Person sieht.');
+
+        $answer = $conversation->messages()->get()->last()->content;
+        $this->assertStringContainsString('[Administration › Benutzer](/admin/users)', $answer);
+        $this->assertStringContainsString('nicht Rollen, nicht hier und nicht erfunden.', $answer, 'Nicht sichtbare, externe und erfundene Adressen werden Text.');
+
+        $html = $this->assistant()->html($user, $answer);
+        $this->assertStringContainsString('<a href="/admin/users" data-help-page>', $html);
+        $this->assertStringNotContainsString('target="_blank"', $html);
     }
 
     public function test_question_mark_button_and_documentation_tab(): void

@@ -15,9 +15,12 @@ use App\Filament\Resources\Roles\Schemas\RoleForm;
 use App\Models\AiHelpConversation;
 use App\Models\AiHelpMessage;
 use App\Models\User;
+use App\Navigation\MenuNavigationBuilder;
 use App\Plugins\Context\SchemaExporter;
 use App\Plugins\Context\SchemaMarkdown;
 use App\Settings\AppSettings;
+use Filament\Navigation\NavigationBuilder;
+use Filament\Navigation\NavigationItem;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
@@ -101,7 +104,7 @@ final class HelpAssistant
             throw new BusinessRuleException(__('assistant.errors.refused'));
         }
 
-        [$answer, $cited] = $this->checkLinks((string) $reply->text, $sources);
+        [$answer, $cited] = $this->checkLinks((string) $reply->text, $sources, array_keys($this->menu($user)));
 
         $conversation ??= AiHelpConversation::query()->create([
             'user_id' => $user->getKey(),
@@ -144,6 +147,8 @@ final class HelpAssistant
             $href = rawurldecode(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5));
 
             return match (true) {
+                // Seite aus dem Menü (beim Speichern geprüft): im selben Fenster öffnen.
+                str_starts_with($href, '/') => '<a href="'.e($href).'" data-help-page',
                 ! isset($urls[$href]) => $m[0].' target="_blank" rel="noopener"',
                 // Auf der Seite „Dokumentation“ springt der Verweis in den Abschnitt, ohne die Seite neu zu laden.
                 $onDocumentationPage => '<a href="'.e($href).'" data-doc-link data-help-source',
@@ -182,6 +187,9 @@ final class HelpAssistant
                 '  does not work, check them first; if a permission is missing, name it exactly as listed and refer',
                 '  the person to the administration.',
                 '- The page the person is on may be given in brackets before the question; use it to resolve “here”.',
+                '- For questions like “where can I …”, link the page from the person’s menu (listed at the end) as a',
+                '  Markdown link with its path, e.g. [Administration › Users](/admin/users). Use only paths from that',
+                '  list; pages not in it (e.g. dialogs like “New”) are described in words.',
                 '',
                 ...$knowledge,
             ]),
@@ -199,6 +207,11 @@ final class HelpAssistant
         // Rollen und Rechte der fragenden Person (in der Rollen-Simulation die simulierten) – je Person anders, darum
         // zuletzt und nicht zwischengespeichert; keine anderen Personen, keine Daten.
         $system[] = ['text' => $this->permissions($user)];
+
+        if (($menu = $this->menu($user)) !== []) {
+            $system[] = ['text' => "Menu of the person asking (what they see in the sidebar; path → address):\n"
+                .implode("\n", array_map(static fn (string $url, string $label): string => $label.' → '.$url, array_keys($menu), $menu))];
+        }
 
         return $system;
     }
@@ -233,6 +246,41 @@ final class HelpAssistant
         $lines[] = $data === [] ? '–' : implode('; ', array_map(static fn (string $name): string => RoleForm::label($name), $data));
 
         return implode("\n", $lines);
+    }
+
+    /**
+     * Menü der Person, wie es die Seitenleiste zeigt (Rechte, Rollen-Simulation, ausgeschaltete Plugins): Adresse ohne
+     * Server => „Gruppe › Eintrag“.
+     *
+     * @return array<string, string>
+     */
+    private function menu(User $user): array
+    {
+        $entries = [];
+        $add = function (NavigationItem $item, string $prefix) use (&$add, &$entries): void {
+            $label = trim($prefix.strip_tags((string) $item->getLabel()));
+            $url = $item->getUrl();
+
+            if (is_string($url) && $url !== '') {
+                $parts = parse_url($url);
+                $path = ($parts['path'] ?? '/').(isset($parts['query']) ? '?'.$parts['query'] : '');
+                $entries[$path] ??= $label;
+            }
+
+            foreach ($item->getChildItems() as $child) {
+                $add($child, $label.' › ');
+            }
+        };
+
+        foreach (app(MenuNavigationBuilder::class)->build(new NavigationBuilder, $user)->getNavigation() as $group) {
+            $prefix = filled($group->getLabel()) ? strip_tags((string) $group->getLabel()).' › ' : '';
+
+            foreach ($group->getItems() as $item) {
+                $add($item, $prefix);
+            }
+        }
+
+        return $entries;
     }
 
     /** Tabellen mit Leserecht als kompakte Beschreibung; Werte von Auswahlfeldern nur, wenn freigegeben. */
@@ -276,9 +324,10 @@ final class HelpAssistant
      * Verweise auf Abschnitte prüfen: unbekannte Anker werden zu Text, bekannte als Quellen gesammelt.
      *
      * @param  list<KnowledgeSource>  $sources
+     * @param  list<string>  $menu  Adressen aus dem Menü der Person
      * @return array{0: string, 1: list<array{source: string, anchor: string, title: string}>}
      */
-    private function checkLinks(string $answer, array $sources): array
+    private function checkLinks(string $answer, array $sources, array $menu = []): array
     {
         $known = [];
 
@@ -300,6 +349,10 @@ final class HelpAssistant
 
             return '['.$m[1].'](#'.$anchor.')';
         }, $answer) ?? $answer;
+
+        // Übrige Links: nur Seiten aus dem Menü der Person bleiben Link, alles andere (erfundene Adressen, Links nach
+        // aussen) wird zu Text.
+        $answer = preg_replace_callback('/\[([^\]]+)\]\(([^#)\s][^)\s]*)\)/u', static fn (array $m): string => in_array($m[2], $menu, true) ? $m[0] : $m[1], $answer) ?? $answer;
 
         return [$answer, array_values($cited)];
     }

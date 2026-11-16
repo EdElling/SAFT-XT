@@ -872,7 +872,8 @@ in the editor or form, is checked there and only takes effect with **Save** or *
 - **Help assistant:** the question, the last six messages of the conversation, title and address of the page the
   person is on, and the manuals they see in the online help (user guide, frequently asked questions, with an
   administration permission the administrator guide), their **own roles and permissions** (so the assistant can say
-  which permission is missing for something – in role simulation those of the simulated role); with the switch above
+  which permission is missing for something – in role simulation those of the simulated role) and their **menu** (paths
+  and addresses of the entries they see); with the switch above
   also the data model as for the report assistant.
 - **Never transmitted** are records, report results, user data or credentials.
 - Above the input field people see which provider receives their description.
@@ -906,7 +907,9 @@ in the table designer helps, e.g. *purchase value* = `round(quantity * purchase_
 
 The help assistant answers questions about using SAFT, e.g. “How do I export a table to Excel?”. It answers only from
 the manuals the person sees in the online help, in the language of the interface, and refers to the sections; a click
-opens the section in the documentation. SAFT removes references to sections that do not exist. If something is not in
+opens the section in the documentation. For questions like “where can I …?” it links the page from the person's menu.
+SAFT removes references to sections or pages that do not exist or that the person does not see, as well as external
+links. If something is not in
 the manuals, it says so and refers to the administration.
 
 - **Conversations** are stored and can be reopened, continued and deleted; each person sees only their own. Only the

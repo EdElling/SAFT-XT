@@ -917,7 +917,8 @@ risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effe
 - **Assistente di aiuto:** la domanda, gli ultimi sei messaggi della conversazione, titolo e indirizzo della pagina in
   cui si trova la persona e i manuali che vede nell’aiuto in linea (guida utente, domande frequenti, con un diritto di
   amministrazione la guida per amministratori), i suoi **ruoli e diritti** (così l’assistente può dire quale diritto
-  manca – nella simulazione di ruolo quelli del ruolo simulato); con l’interruttore sopra, inoltre il modello dei dati
+  manca – nella simulazione di ruolo quelli del ruolo simulato) e il suo **menu** (percorsi e indirizzi delle voci che
+  vede); con l’interruttore sopra, inoltre il modello dei dati
   come per l’assistente dei report.
 - **Non vengono mai trasmessi** record, risultati dei report, dati degli utenti o dati di accesso.
 - Sopra il campo di inserimento le persone vedono a quale provider va la loro descrizione.
@@ -953,7 +954,8 @@ allora un campo (calcolato) aggiuntivo nel Designer di tabelle, ad es. *Einkaufs
 
 L’assistente di aiuto risponde alle domande sull’uso, ad es. «Come esporto una tabella in Excel?». Risponde solo in base
 ai manuali che la persona vede nell’aiuto in linea, nella lingua dell’interfaccia, e rimanda alle sezioni; un clic apre
-la sezione nella documentazione. SAFT rimuove i rimandi a sezioni che non esistono. Se qualcosa non è nei manuali, lo
+la sezione nella documentazione. Per domande come «Dove posso …?» rimanda alla pagina del menu della persona. SAFT
+rimuove i rimandi a sezioni o pagine inesistenti o che la persona non vede, come pure i link esterni. Se qualcosa non è nei manuali, lo
 dice e rimanda all’amministrazione.
 
 - **Le conversazioni** vengono salvate e possono essere riaperte, proseguite ed eliminate; ogni persona vede solo le
