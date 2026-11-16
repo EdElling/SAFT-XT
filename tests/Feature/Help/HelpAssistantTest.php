@@ -109,7 +109,8 @@ class HelpAssistantTest extends DynamicDataTestCase
         $this->assertSame('Wie exportiere ich eine Tabelle?', $question->content, 'Gespeichert ohne den Seitenhinweis.');
         $this->assertStringContainsString('[4.7 Daten exportieren](#user-47-daten-exportieren)', $answer->content);
         $this->assertStringContainsString('und Phantasie.', $answer->content, 'Unbekannter Anker wird zu Text.');
-        $this->assertSame([['source' => 'user', 'anchor' => 'user-47-daten-exportieren', 'title' => '4.7 Daten exportieren']], $answer->sources);
+        // assertEquals: MySQL speichert JSON mit umsortierten Schlüsseln.
+        $this->assertEquals([['source' => 'user', 'anchor' => 'user-47-daten-exportieren', 'title' => '4.7 Daten exportieren']], $answer->sources);
         $this->assertSame([1200, 150, 1000, 'fake-model'], [$answer->tokens_in, $answer->tokens_out, $answer->tokens_cache, $answer->model]);
         $this->assertStringStartsWith('[Current page: Kunden (/admin/data/kunden)]', $this->fake->calls[0]['messages'][0]['content']);
 
