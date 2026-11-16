@@ -9,6 +9,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
+use Throwable;
 
 /**
  * Sichert die gesamte Datenbank inkl. Tabellen des Table-Designers:
@@ -45,7 +46,8 @@ class DatabaseBackupCommand extends Command
 
         if ($error !== null || ! File::exists($file) || File::size($file) === 0) {
             File::delete($file);
-            $this->error('Sicherung fehlgeschlagen: '.trim((string) $error));
+            // Ohne Fehlermeldung des Programms: wenigstens sagen, dass die Datei leer blieb.
+            $this->error('Sicherung fehlgeschlagen: '.(trim((string) $error) !== '' ? trim((string) $error) : 'Die Sicherungsdatei ist leer – das Programm lieferte keine Ausgabe.'));
 
             return self::FAILURE;
         }
@@ -120,32 +122,51 @@ class DatabaseBackupCommand extends Command
     private function mysqlDump(array $connection, array $databases, $handle, string $driver): ?string
     {
         $errors = '';
-        $result = Process::timeout(self::TIMEOUT_SECONDS)
-            ->env(['MYSQL_PWD' => (string) ($connection['password'] ?? '')])
-            ->start([
-                $driver === 'mariadb' ? $this->binary('mariadb', 'mariadb-dump') : $this->binary('mysql', 'mysqldump'),
-                '--host='.$connection['host'],
-                '--port='.$connection['port'],
-                '--user='.$connection['username'],
-                '--single-transaction',
-                '--routines',
-                '--triggers',
-                '--hex-blob',
-                '--no-tablespaces',
-                // GTID-Option gibt es nur bei MySQL.
-                ...($driver === 'mysql' ? ['--set-gtid-purged=OFF'] : []),
-                '--databases',
-                ...$databases,
-            ])
-            ->wait(static function (string $type, string $output) use ($handle, &$errors): void {
-                if ($type === 'out') {
-                    fwrite($handle, $output);
-                } else {
-                    $errors .= $output;
-                }
-            });
+        $binary = $driver === 'mariadb' ? $this->binary('mariadb', 'mariadb-dump') : $this->binary('mysql', 'mysqldump');
+        $variable = $driver === 'mariadb' ? 'MARIADB_DUMP_BINARY' : 'MYSQL_DUMP_BINARY';
 
-        return $result->failed() ? ($errors !== '' ? $errors : $result->errorOutput()) : null;
+        try {
+            $process = Process::timeout(self::TIMEOUT_SECONDS)
+                ->env(['MYSQL_PWD' => (string) ($connection['password'] ?? '')])
+                ->start([
+                    $binary,
+                    '--host='.$connection['host'],
+                    '--port='.$connection['port'],
+                    '--user='.$connection['username'],
+                    '--single-transaction',
+                    '--routines',
+                    '--triggers',
+                    '--hex-blob',
+                    '--no-tablespaces',
+                    // GTID-Option gibt es nur bei MySQL.
+                    ...($driver === 'mysql' ? ['--set-gtid-purged=OFF'] : []),
+                    '--databases',
+                    ...$databases,
+                ]);
+        } catch (Throwable $e) {
+            // Programm fehlt oder darf nicht gestartet werden (z. B. proc_open gesperrt).
+            return "„{$binary}“ lässt sich nicht starten ({$e->getMessage()}). Pfad in {$variable} eintragen oder die Datenbanksicherung des Hosters verwenden.";
+        }
+
+        $result = $process->wait(static function (string $type, string $output) use ($handle, &$errors): void {
+            if ($type === 'out') {
+                fwrite($handle, $output);
+            } else {
+                $errors .= $output;
+            }
+        });
+
+        if (! $result->failed()) {
+            return null;
+        }
+
+        $message = trim($errors !== '' ? $errors : $result->errorOutput());
+
+        return match (true) {
+            $message !== '' => $message,
+            $result->exitCode() === 127 => "„{$binary}“ nicht gefunden. Pfad in {$variable} eintragen (z. B. /usr/bin/mysqldump) oder die Datenbanksicherung des Hosters verwenden.",
+            default => "„{$binary}“ endete mit Exit-Code {$result->exitCode()} ohne Fehlermeldung.",
+        };
     }
 
     /** Programmpfad aus PGSQL_DUMP_BINARY, MYSQL_DUMP_BINARY bzw. MARIADB_DUMP_BINARY, sonst der Standardname. */

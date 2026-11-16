@@ -200,4 +200,26 @@ class DatabaseBackupCommandTest extends TestCase
             && array_slice($p->command, -2) === ['--databases', 'dbs22222222'] && $p->environment['MYSQL_PWD'] === 'zwei');
         $this->assertCount(1, File::files($this->directory), 'Beide in einer Datei.');
     }
+
+    public function test_missing_dump_program_is_named_with_the_variable_to_set(): void
+    {
+        config([
+            'database.default' => 'mariadb',
+            'database.backup.binaries.mariadb' => null,
+            'dynamic_data.namespace' => 'SAFT2_app_data',
+        ]);
+        config(['database.connections.app_data' => [...config('database.connections.mariadb'), 'database' => '']]);
+        Process::fake(['*' => Process::result(exitCode: 127)]);
+
+        $this->artisan('db:backup', ['--path' => $this->directory])
+            ->expectsOutputToContain('„mariadb-dump“ nicht gefunden. Pfad in MARIADB_DUMP_BINARY eintragen')
+            ->assertFailed();
+
+        Process::fake(['*' => Process::result(exitCode: 2)]);
+        $this->artisan('db:backup', ['--path' => $this->directory])
+            ->expectsOutputToContain('„mariadb-dump“ endete mit Exit-Code 2 ohne Fehlermeldung.')
+            ->assertFailed();
+
+        $this->assertSame([], File::files($this->directory));
+    }
 }
