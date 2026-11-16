@@ -960,10 +960,11 @@ La pagina **Amministrazione › Plugin** (diritto *Plugin: visualizzare*) elenca
 |---|---|
 | **Nome**, **Identificativo** | nome e identificativo univoco; sotto la descrizione, il luogo di installazione (file della classe del plugin, ad es. `plugins/lager-umbuchung/src/LagerUmbuchungPlugin.php`) e il pacchetto Composer. I diritti del plugin iniziano con l’identificativo |
 | **Versione** | versione installata |
+| **Stato** | *attivo*; *inattivo* se al plugin manca qualcosa di cui ha bisogno (vedi **Dipendenze**); *disattivato* se l’amministrazione lo ha disattivato (vedi sotto) |
 | **Compatibile** | *Sì* se il plugin corrisponde all’interfaccia dei plugin (API) di questa installazione (o alla versione di SAFT, se ne richiede una); sotto la sua richiesta, ad es. «API ^1.0»; *No* con indicazione di ciò che richiede e di ciò che è fornito; *non indicato* se il plugin non specifica nulla. La versione dell’API fornita compare anche sotto **Documentazione › Informazioni su SAFT XT** |
 | **Diritti** | diritti forniti dal plugin |
 | **Estensioni** | su quali tabelle il plugin controlla le modifiche, dove mostra pulsanti nelle viste dei dati, nonché i suoi riquadri per la dashboard, funzioni per formule e regole di verifica |
-| **Dipendenze** | se le tabelle e i campi del Designer di tabelle necessari al plugin sono presenti (ad es. «4 tabelle presenti»), altrimenti cosa manca; il pulsante accanto apre l’elenco completo con etichette e stato (presente, mancante, disattivato) |
+| **Dipendenze** | se le tabelle e i campi del Designer di tabelle necessari al plugin sono presenti (ad es. «4 tabelle presenti»), altrimenti cosa manca; il pulsante accanto apre l’elenco completo con etichette e stato (presente, mancante, disattivato). Se il plugin richiede un altro plugin (ad es. «Richiede il plugin: Trasferimento di magazzino»), compare anch’esso qui – se quello è disattivato o inattivo, anche questo diventa inattivo |
 | **Voci di menu** | quante delle voci proposte sono già nel menu |
 
 **Mettere in funzione un nuovo plugin** (diritto *Plugin: gestire*):
@@ -980,6 +981,24 @@ campi li segnala con un’icona a forma di puzzle, *Disattiva* ed *Elimina* sono
 plugin. Etichette, obbligatorietà, visualizzazione e regole restano modificabili. Se a un plugin manca qualcosa – ad
 esempio perché è stato installato prima della demo magazzino –, la pagina segnala **Plugin a riposo**: i pulsanti e i
 controlli del plugin non si applicano e le sue pagine mostrano cosa manca.
+
+**Disattivare plugin** (diritto *Plugin: gestire*): **Disattiva** nella riga del plugin lo ferma senza rimuoverlo –
+ad esempio per i test o quando due plugin si sovrappongono nelle funzioni. La finestra di dialogo mostra prima cosa
+viene meno. Finché un plugin è disattivato,
+
+- le sue pagine non sono raggiungibili (nemmeno tramite un indirizzo salvato), i suoi riquadri spariscono dalla
+  dashboard e le sue voci di menu vengono nascoste;
+- i suoi controlli delle modifiche, i pulsanti nelle viste dei dati, le regole di verifica e le funzioni per formule non
+  si applicano, e le attività pianificate dei suoi tipi vengono saltate;
+- i plugin che ne hanno bisogno diventano inattivi (la finestra li indica);
+- diritti, voci di menu e dati vengono conservati.
+
+**Attiva** ripristina subito tutto. Attenzione ai plugin che controllano o completano le modifiche (colonna
+**Estensioni**, «Controlla le modifiche»): ciò che viene inserito nel frattempo non viene controllato o completato
+nemmeno in seguito – con l’esempio *Trasferimento di magazzino*, in questo periodo i movimenti non aggiornano la
+giacenza. Ogni disattivazione e attivazione è registrata nel registro delle modifiche. L’amministrazione di sistema può
+anche attivare o disattivare i plugin dalla console
+([Amministrazione di sistema, capitolo 7](SYSADMIN_GUIDE.md#7-plugins)).
 
 **Cosa fanno i plugin nelle viste dei dati:** un plugin può mostrare pulsanti aggiuntivi sopra una tabella o nelle
 sue righe e controllare le modifiche. Se rifiuta una modifica, compare «Azione non possibile» con il motivo indicato dal
@@ -1001,7 +1020,7 @@ i diritti no: i ruoli perdono definitivamente i diritti eliminati, anche se il p
 > registra l’ultimo conteggio), le giacenze si modificano solo tramite movimenti, la maschera *Trasferimento* e il
 > pulsante «Trasferisci» in *Giacenze* spostano merce tra ubicazioni e, se la giacenza totale di un articolo scende
 > sotto la scorta minima, compare un avviso nella campanella. Il riquadro *Magazzino: scorta minima* sulla dashboard
-> mostra gli articoli interessati. Il plugin *Verifiche svizzere* aggiunge le regole di verifica numero AVS, IBAN, IDI e
+> mostra gli articoli interessati. Il plugin *Tabellone delle giacenze* richiede *Trasferimento di magazzino* e mostra la *Matrice delle giacenze* (giacenza per articolo e ubicazione), il *Tabellone delle giacenze* (trasferire la giacenza trascinandola) e il riquadro *Magazzino: giacenza per ubicazione*. Il plugin *Verifiche svizzere* aggiunge le regole di verifica numero AVS, IBAN, IDI e
 > numero postale nonché la funzione per formule `rappen()`.
 
 ## 15. Trasferire la configurazione

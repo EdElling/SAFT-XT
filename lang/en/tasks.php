@@ -87,6 +87,7 @@ return [
     'run_now_confirm' => 'Run ":task" now? The schedule stays unchanged.',
     'runs' => 'Runs',
     'missing_table' => 'The table no longer exists.',
+    'plugin_inactive' => 'Skipped: the plugin “:plugin” is switched off or resting.',
     'already_running' => 'This task is already running.',
     'failed_generic' => 'The task failed. Details in the application log.',
     'aborted' => 'Aborted (the process was interrupted).',

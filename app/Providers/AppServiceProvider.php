@@ -24,6 +24,7 @@ use App\Models\User;
 use App\Plugins\PluginDependencies;
 use App\Plugins\PluginPermissions;
 use App\Plugins\PluginRegistry;
+use App\Plugins\PluginStates;
 use App\Policies\ActivityPolicy;
 use App\Policies\CustomFieldPolicy;
 use App\Policies\CustomTablePolicy;
@@ -51,6 +52,8 @@ use Illuminate\Support\ServiceProvider;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Translatable\Facades\Translatable;
 
+use function Livewire\on;
+
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
@@ -77,6 +80,7 @@ class AppServiceProvider extends ServiceProvider
         // Plugins melden sich in ihren ServiceProvidern an (die vor diesem laufen, daher singletonIf).
         $this->app->singletonIf(PluginRegistry::class);
         $this->app->singleton(PluginDependencies::class);
+        $this->app->scoped(PluginStates::class);
     }
 
     public function boot(): void
@@ -97,6 +101,14 @@ class AppServiceProvider extends ServiceProvider
                 app(PluginPermissions::class)->sync();
             }
         });
+
+        // Seiten, Ressourcen und Kacheln ausgeschalteter Plugins: „nicht gefunden“, auch bei direktem Aufruf der
+        // Adresse oder einer Livewire-Anfrage einer noch offenen Seite.
+        $blockDisabledPlugin = static function (object $component): void {
+            abort_if(app(PluginStates::class)->blocks($component::class), 404);
+        };
+        on('mount', $blockDisabledPlugin);
+        on('hydrate', $blockDisabledPlugin);
 
         // In boot(), damit Filaments eigene Bindung sicher überschrieben wird.
         $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);

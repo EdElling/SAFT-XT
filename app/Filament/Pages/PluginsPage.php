@@ -18,6 +18,7 @@ use App\Plugins\PluginDependencies;
 use App\Plugins\PluginInspector;
 use App\Plugins\PluginMenus;
 use App\Plugins\PluginRegistry;
+use App\Plugins\PluginStates;
 use App\Plugins\SaftPlugin;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
@@ -65,7 +66,7 @@ class PluginsPage extends Page implements HasTable
         $menus = count($cleanup->orphanedMenus());
         $permissions = count($cleanup->orphanedPermissions());
 
-        $resting = array_filter(app(PluginRegistry::class)->all(), static fn (SaftPlugin $plugin): bool => $plugin->missingDependencies() !== []);
+        $resting = array_filter(app(PluginRegistry::class)->all(), static fn (SaftPlugin $plugin): bool => app(PluginStates::class)->status($plugin) === PluginStates::RESTING);
 
         return $schema->components([
             Text::make(__('plugins.intro')),
@@ -232,6 +233,13 @@ class PluginsPage extends Page implements HasTable
                         e($record['description']).'<br><span class="font-mono text-xs">'.e($record['location']).'</span>'
                         .'<br><span class="text-xs">'.e(__('plugins.package', ['package' => $record['package']])).'</span>',
                     )),
+                TextColumn::make('status')
+                    ->label(__('plugins.fields.status'))
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => __('plugins.status.'.$state))
+                    ->color(fn (string $state): string => match ($state) {
+                        PluginStates::ACTIVE => 'success', PluginStates::RESTING => 'warning', default => 'gray'
+                    }),
                 TextColumn::make('id')->label(__('plugins.fields.id'))->fontFamily('mono'),
                 TextColumn::make('version')->label(__('plugins.fields.version'))->placeholder('–'),
                 TextColumn::make('compatibility')
@@ -261,6 +269,37 @@ class PluginsPage extends Page implements HasTable
                 TextColumn::make('menus')->label(__('plugins.fields.menus')),
             ])
             ->recordActions([
+                Action::make('disablePlugin')
+                    ->label(__('plugins.switch.disable'))
+                    ->icon('heroicon-o-power')
+                    ->color('danger')
+                    ->visible(fn (array $record): bool => $record['enabled'] && self::canManage())
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (array $record): string => __('plugins.switch.disable_heading', ['plugin' => $record['label']]))
+                    ->modalDescription(fn (array $record): HtmlString => self::disableEffects(app(PluginRegistry::class)->get($record['id'])))
+                    ->modalSubmitActionLabel(__('plugins.switch.disable'))
+                    ->action(function (array $record): void {
+                        abort_unless(self::canManage(), 403);
+                        app(PluginStates::class)->disable($record['id']);
+                        Notification::make()->success()->title(__('plugins.switch.disabled', ['plugin' => $record['label']]))->send();
+                        // Menü und Dashboard ohne das Plugin.
+                        $this->redirect(static::getUrl(), navigate: true);
+                    }),
+                Action::make('enablePlugin')
+                    ->label(__('plugins.switch.enable'))
+                    ->icon('heroicon-o-power')
+                    ->color('success')
+                    ->visible(fn (array $record): bool => ! $record['enabled'] && self::canManage())
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (array $record): string => __('plugins.switch.enable_heading', ['plugin' => $record['label']]))
+                    ->modalDescription(__('plugins.switch.enable_help'))
+                    ->modalSubmitActionLabel(__('plugins.switch.enable'))
+                    ->action(function (array $record): void {
+                        abort_unless(self::canManage(), 403);
+                        app(PluginStates::class)->enable($record['id']);
+                        Notification::make()->success()->title(__('plugins.switch.enabled', ['plugin' => $record['label']]))->send();
+                        $this->redirect(static::getUrl(), navigate: true);
+                    }),
                 Action::make('adoptMenus')
                     ->label(__('plugins.actions.adopt'))
                     ->icon('heroicon-o-bars-3-bottom-left')
@@ -317,11 +356,42 @@ class PluginsPage extends Page implements HasTable
         return $hooks;
     }
 
+    /** Was beim Ausschalten wegfällt – für den Bestätigungsdialog. */
+    public static function disableEffects(SaftPlugin $plugin): HtmlString
+    {
+        $states = app(PluginStates::class);
+        $items = [__('plugins.switch.effect_pages'), __('plugins.switch.effect_extensions'), __('plugins.switch.effect_keep')];
+        $html = '<p>'.e(__('plugins.switch.disable_intro')).'</p><ul style="list-style: disc; padding-inline-start: 1.25rem; text-align: start">';
+
+        foreach ($items as $item) {
+            $html .= '<li>'.e($item).'</li>';
+        }
+
+        $html .= '</ul>';
+
+        if (($dependents = $states->dependents($plugin)) !== []) {
+            $html .= '<p style="margin-top: .5rem">'.e(__('plugins.switch.dependents', ['plugins' => app(PluginDependencies::class)->names($dependents)])).'</p>';
+        }
+
+        if ($plugin->recordListeners() !== []) {
+            $html .= '<p style="margin-top: .5rem; font-weight: 600">'.e(__('plugins.switch.listeners_warning', [
+                'tables' => implode(', ', array_values(array_unique(array_map(
+                    static fn (RecordListener $l): string => CustomTable::labelOptions()[$l->table] ?? $l->table,
+                    $plugin->recordListeners(),
+                )))),
+            ])).'</p>';
+        }
+
+        return new HtmlString($html);
+    }
+
     /** @return array<string, mixed> */
     private static function row(SaftPlugin $plugin): array
     {
         $total = count($plugin->menuSuggestions());
         $missing = count(app(PluginMenus::class)->missing($plugin));
+        $states = app(PluginStates::class);
+        $requires = $states->requires($plugin);
 
         return [
             'id' => $plugin->id(),
@@ -334,10 +404,15 @@ class PluginsPage extends Page implements HasTable
             },
             'location' => $plugin->location(),
             'package' => $plugin->packageName(),
+            'status' => $states->status($plugin),
+            'enabled' => $states->isEnabled($plugin->id()),
             'satisfied' => ($problems = $plugin->missingDependencies()) === [],
             'required' => $plugin->requiredTables() !== [],
-            'dependencies' => $problems !== [] ? $problems
-                : [$plugin->requiredTables() === [] ? __('plugins.dependencies.none') : __('plugins.dependencies.ok', ['count' => count($plugin->requiredTables())])],
+            'dependencies' => $problems !== [] ? $problems : array_values(array_filter([
+                $plugin->requiredTables() === [] ? ($requires === [] ? __('plugins.dependencies.none') : null)
+                    : __('plugins.dependencies.ok', ['count' => count($plugin->requiredTables())]),
+                $requires === [] ? null : __('plugins.dependencies.requires_plugins', ['plugins' => app(PluginDependencies::class)->names($requires)]),
+            ])),
             'permissions' => array_values($plugin->permissions()),
             'hooks' => self::hooks($plugin),
             'menus' => $total === 0 ? __('plugins.no_menus') : __('plugins.menus_state', ['present' => $total - $missing, 'total' => $total]),

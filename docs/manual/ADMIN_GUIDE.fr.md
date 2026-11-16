@@ -983,10 +983,11 @@ La page **Administration › Plugins** (droit *Plugins : afficher*) liste les pl
 |---|---|
 | **Nom**, **Identifiant** | nom et identifiant unique ; en dessous la description, l’emplacement d’installation (fichier de la classe du plugin, p. ex. `plugins/lager-umbuchung/src/LagerUmbuchungPlugin.php`) et le paquet Composer. Les droits du plugin commencent par l’identifiant |
 | **Version** | version installée |
+| **Statut** | *actif* ; *en veille* s’il manque au plugin quelque chose dont il a besoin (voir **Dépendances**) ; *désactivé* si l’administration l’a désactivé (voir ci-dessous) |
 | **Compatible** | *Oui* si le plugin correspond à l’interface des plugins (API) de cette installation (ou à la version de SAFT, s’il en exige une) ; en dessous son exigence, p. ex. « API ^1.0 » ; *Non* avec indication de ce qu’il exige et de ce qui est fourni ; *non indiqué* si le plugin ne précise rien. La version de l’API fournie figure aussi sous **Documentation › À propos de SAFT XT** |
 | **Droits** | droits apportés par le plugin |
 | **Extensions** | tables dont le plugin contrôle les modifications, où il affiche des boutons dans les vues de données, ainsi que ses tuiles du tableau de bord, fonctions de formule et règles de validation |
-| **Dépendances** | si les tables et champs du concepteur de tables nécessaires au plugin sont présents (p. ex. « 4 tables présentes »), sinon ce qui manque ; le bouton à côté ouvre la liste complète avec libellés et état (présent, manquant, désactivé) |
+| **Dépendances** | si les tables et champs du concepteur de tables nécessaires au plugin sont présents (p. ex. « 4 tables présentes »), sinon ce qui manque ; le bouton à côté ouvre la liste complète avec libellés et état (présent, manquant, désactivé). Si le plugin nécessite un autre plugin (p. ex. « Nécessite le plugin : Transfert de stock »), celui-ci figure aussi ici – s’il est désactivé ou en veille, celui-ci passe aussi en veille |
 | **Entrées de menu** | combien des entrées proposées figurent déjà dans le menu |
 
 **Mettre en service un nouveau plugin** (droit *Plugins : gérer*) :
@@ -1003,6 +1004,24 @@ peuvent être ni supprimés, ni désactivés, ni renommés dans le concepteur de
 l’indication nomme le plugin. Libellés, obligation, affichage et règles restent modifiables. S’il manque quelque chose
 à un plugin – par exemple parce qu’il a été installé avant la démo entrepôt –, la page signale **Plugins en veille** :
 les boutons et contrôles du plugin ne s’appliquent pas, et ses pages indiquent ce qui manque.
+
+**Désactiver des plugins** (droit *Plugins : gérer*) : **Désactiver** dans la ligne du plugin le met à l’arrêt sans
+le supprimer – par exemple pour des tests ou lorsque deux plugins se recoupent. La boîte de dialogue indique d’abord ce
+qui disparaît. Tant qu’un plugin est désactivé,
+
+- ses pages ne sont pas accessibles (pas même par une adresse enregistrée), ses tuiles disparaissent du tableau de bord
+  et ses entrées de menu sont masquées ;
+- ses contrôles des modifications, ses boutons dans les vues de données, ses règles de validation et ses fonctions de
+  formule ne s’appliquent pas, et les tâches planifiées de ses types sont ignorées ;
+- les plugins qui en ont besoin passent en veille (la boîte de dialogue les nomme) ;
+- les droits, les entrées de menu et les données sont conservés.
+
+**Activer** rétablit tout immédiatement. Prudence avec les plugins qui contrôlent ou complètent des modifications
+(colonne **Extensions**, « Contrôle les modifications ») : ce qui est saisi entre-temps n’est pas non plus contrôlé ou
+complété plus tard – avec l’exemple *Transfert de stock*, les mouvements de stock ne mettent pas à jour le stock
+pendant ce temps. Chaque désactivation et activation figure dans le journal des modifications. L’administration système
+peut aussi activer ou désactiver des plugins en console
+([Administration système, chapitre 7](SYSADMIN_GUIDE.md#7-plugins)).
 
 **Ce que les plugins font dans les vues de données :** un plugin peut afficher des boutons supplémentaires au-dessus
 d’une table ou dans ses lignes et contrôler les modifications. S’il refuse une modification, « Action impossible »
@@ -1026,7 +1045,7 @@ réinstallé plus tard.
 > positive ; un inventaire enregistre le dernier comptage), les stocks ne se modifient plus que par des mouvements, le
 > masque *Transfert* et le bouton « Transférer » dans *Stocks* déplacent des marchandises entre emplacements, et si le
 > stock total d’un article passe sous son stock minimum, une notification apparaît dans la cloche. La tuile
-> *Entrepôt : stock minimum* du tableau de bord affiche les articles concernés. Le plugin *Contrôles suisses* apporte
+> *Entrepôt : stock minimum* du tableau de bord affiche les articles concernés. Le plugin *Tableau des stocks* nécessite *Transfert de stock* et affiche la *Matrice des stocks* (stock par article et emplacement), le *Tableau des stocks* (transférer le stock en le faisant glisser) et la tuile *Entrepôt : stock par emplacement*. Le plugin *Contrôles suisses* apporte
 > les règles de validation numéro AVS, IBAN, IDE et numéro postal ainsi que la fonction de formule `rappen()`.
 
 ## 15. Transférer la configuration

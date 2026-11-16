@@ -44,9 +44,9 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 | Nr. | Thema | Beschreibung | Status | Bezug |
 |---|---|---|---|---|
-| B-030 | Plugins ein- und ausschalten | Installiertes Plugin in der Plugin-Verwaltung deaktivieren, ohne es zu entfernen. Nächster Schritt nach den Anleitungen im Entwicklerhandbuch (Anhang A); mit dem nötigen Teil von B-032. | geplant | – |
+| B-030 | Plugins ein- und ausschalten | Installiertes Plugin auf der Seite „Plugins“ oder mit `saft:plugins --disable/--enable` ausschalten, ohne es zu entfernen: Seiten und Kacheln 404, Menü ausgeblendet, Listener/Knöpfe/Regeln/Formelfunktionen ruhen, Aufgaben übersprungen; protokolliert. Plugin-API 1.4 (`isEnabled()`, `withoutPlugin()`). | umgesetzt | API 1.4 |
 | B-031 | Installation über die Oberfläche | Plugin-Paket hochladen und vorbereitet installieren, mit Kompatibilitäts- und KI-Prüfbericht (Sicherheit, nur Plugin-API). | offen | – |
-| B-032 | Abhängigkeiten zwischen Plugins | Ein Plugin gibt an, welche anderen Plugins es braucht; Prüfung und Ruhen wie bei Tabellen. | offen | – |
+| B-032 | Abhängigkeiten zwischen Plugins | Benötigte Plugins aus `require` der `composer.json`; ist eines ausgeschaltet oder ruht es, ruht das abhängige Plugin mit (Anzeige unter „Abhängigkeiten“, `saft:plugins --check`). Umgesetzt mit B-030. | umgesetzt | API 1.4 |
 | B-033 | MCP-Server für den Entwickler-Kontext | KI-Agenten fragen Schema und API live ab statt über Dateien. | offen | baut auf B-104 auf |
 | B-034 | Anonymisierte Beispieldaten im Kontext | Optional einige anonymisierte Beispielzeilen je Tabelle im Entwickler-Kontext. | zurückgestellt | Entscheid 2026-11-15: vorerst keine Beispieldaten (Datenschutz) |
 
@@ -68,7 +68,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 | Nr. | Thema | Beschreibung | Status | Bezug |
 |---|---|---|---|---|
 | B-042 | Lizenz PolyForm Noncommercial 1.0.0 | PolyForm Noncommercial statt der EULA des Vorgängers SAFT2; kommerzielle Nutzung (auch intern in Firmen) nur mit eigener Lizenz. SAFT2 (bis 2.8.0) ist zurückgezogen (Hinweis in LICENSE und README). | umgesetzt | 0.1.0 |
-| B-043 | Neues Repository SAFT XT | Neubeginn ohne die Historie von SAFT2 (die bleibt privat als Archiv), Name SAFT XT, Version 0.1.0; technische Bezeichner (`saft:…`, `Saft::table()`, `config/saft.php`) und Datenbanknamen bleiben. Repository zunächst privat, öffentlich nach Durchsicht. | in Arbeit | 0.1.0 |
+| B-043 | Neues Repository SAFT XT | Neubeginn ohne die Historie von SAFT2 (die bleibt privat als Archiv), Name SAFT XT, Version 0.1.0; technische Bezeichner (`saft:…`, `Saft::table()`, `config/saft.php`) und Datenbanknamen bleiben. Repository zunächst privat, nach Durchsicht öffentlich geschaltet (Ruleset für `main`, Secret Scanning, private Meldung von Lücken). | umgesetzt | 0.1.0 |
 | B-044 | Release v0.1.0 | Erstes Release von SAFT XT; Feature-Tests auf GitHub (3 Datenbanken), betroffene Browser-Tests lokal (PostgreSQL). | umgesetzt | v0.1.0 |
 | B-040 | OpenSpout 5 | Erst mit Filament 6 (Filament verlangt OpenSpout ^4). | zurückgestellt | – |
 

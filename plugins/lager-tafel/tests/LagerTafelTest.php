@@ -169,6 +169,22 @@ class LagerTafelTest extends PluginTestCase
         $this->assertSame(10, $this->stock($this->screw, $this->north));
     }
 
+    public function test_board_rests_while_stock_transfer_is_switched_off(): void
+    {
+        $this->actingAsSuperAdmin();
+        $this->demoTables();
+        app()->setLocale('de');
+
+        // Lager-Tafel bucht über Lager-Umbuchung (composer.json): Ist es ausgeschaltet, ruht die Tafel mit.
+        $this->withoutPlugin('lager-umbuchung', function (): void {
+            Livewire::withQueryParams(['artikel' => $this->screw])->test(Lagertafel::class)
+                ->assertSee('Plugin Lager-Umbuchung ist ausgeschaltet')
+                ->assertDontSeeHtml('wire:sort:group-id');
+        });
+
+        Livewire::withQueryParams(['artikel' => $this->screw])->test(Lagertafel::class)->assertSeeHtml('wire:sort:group-id');
+    }
+
     // A.3 – Widget
 
     public function test_dashboard_chart_sums_stock_per_location(): void

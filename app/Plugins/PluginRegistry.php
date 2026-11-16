@@ -58,6 +58,23 @@ final class PluginRegistry
         return $this->plugins[$id] ?? throw new InvalidArgumentException("Plugin „{$id}“ ist nicht installiert.");
     }
 
+    /** Plugin, zu dem eine Klasse gehört (Seite, Ressource, Widget …): das mit dem längsten passenden Namensraum. */
+    public function ownerOf(string $class): ?SaftPlugin
+    {
+        $owner = null;
+        $length = 0;
+
+        foreach ($this->plugins as $plugin) {
+            $namespace = (new \ReflectionClass($plugin))->getNamespaceName().'\\';
+
+            if (str_starts_with(ltrim($class, '\\'), $namespace) && strlen($namespace) > $length) {
+                [$owner, $length] = [$plugin, strlen($namespace)];
+            }
+        }
+
+        return $owner;
+    }
+
     /** Plugin, zu dem ein Recht gehört („lager-umbuchung.execute“ → Plugin „lager-umbuchung“). */
     public function forPermission(string $permission): ?SaftPlugin
     {

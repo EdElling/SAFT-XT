@@ -90,6 +90,15 @@ abstract class SaftPlugin implements Plugin
         return app(PluginDependencies::class)->missing($this);
     }
 
+    /**
+     * Ist das Plugin eingeschaltet (Administration › Plugins)? Ein ausgeschaltetes Plugin wirkt nicht; Plugins, die es
+     * per composer.json brauchen, ruhen mit. Für ein optionales anderes Plugin: Saft::plugin('…')->isEnabled().
+     */
+    final public function isEnabled(): bool
+    {
+        return app(PluginStates::class)->isEnabled($this->id());
+    }
+
     /** @return list<RecordListener> Listener für Änderungen an Tabellen (Ereignisse RecordSaving, RecordSaved …) */
     public function recordListeners(): array
     {

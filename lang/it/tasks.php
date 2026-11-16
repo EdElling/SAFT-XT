@@ -87,6 +87,7 @@ return [
     'run_now_confirm' => 'Eseguire «:task» ora? La pianificazione resta invariata.',
     'runs' => 'Esecuzioni',
     'missing_table' => 'La tabella non esiste più.',
+    'plugin_inactive' => 'Saltata: il plugin «:plugin» è disattivato o inattivo.',
     'already_running' => 'Questa attività è già in esecuzione.',
     'failed_generic' => 'L’attività non è riuscita. Dettagli nel registro dell’applicazione.',
     'aborted' => 'Interrotta (il processo è stato interrotto).',

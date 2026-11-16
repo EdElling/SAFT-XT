@@ -273,6 +273,18 @@ Afterwards **Administration › Plugins** shows the plugin with its version and 
 version; there the administration adopts the suggested menu entries and grants the permissions in role management.
 `php artisan saft:plugins` lists the plugins on the console and creates missing permissions.
 
+**Switching off and on** without removing – e.g. for tests or with plugins that overlap in function:
+
+```bash
+php artisan saft:plugins --disable=<id>    # e.g. lager-umbuchung; reports plugins that rest as a result
+php artisan saft:plugins --enable=<id>
+```
+
+A switched-off plugin stays installed; its pages return “not found”, tiles and menu entries are hidden, listeners,
+buttons, validation rules and formula functions do not apply, scheduled tasks of its kinds are skipped. No restart or
+`optimize` is needed; the state is kept in the database (table `plugin_states`) and in the change log. The same is
+possible on the **Plugins** page (see [administrator guide, chapter 14](ADMIN_GUIDE.md#14-plugins)).
+
 **Removing:**
 
 1. If the plugin has its own tables, roll them back first: `php artisan migrate:rollback --path=plugins/<name>/database/migrations`

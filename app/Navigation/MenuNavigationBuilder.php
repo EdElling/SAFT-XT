@@ -11,6 +11,7 @@ use App\Filament\Resources\Reports\ReportResource;
 use App\Models\Menu;
 use App\Models\Report;
 use App\Models\User;
+use App\Plugins\PluginStates;
 use App\Reports\ReportRunner;
 use App\Rules\KnownIcon;
 use Filament\Navigation\NavigationBuilder;
@@ -106,6 +107,11 @@ final class MenuNavigationBuilder
      */
     private function makeItem(Menu $menu, array $byParent, int $depth, User $user): ?NavigationItem
     {
+        // Einträge ausgeschalteter Plugins bleiben gespeichert, erscheinen aber nicht.
+        if (app(PluginStates::class)->hidesMenu($menu->route, $menu->permission_name)) {
+            return null;
+        }
+
         // Ein Datenmodell ohne sichtbare Tabelle wäre leer; ohne ihn entfällt auch eine sonst leere Gruppe.
         if ($menu->route === DataModelPage::ROUTE && ! $this->dataModels->hasTables($menu, $user)) {
             return null;

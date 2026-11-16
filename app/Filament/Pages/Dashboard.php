@@ -9,6 +9,7 @@ use App\Filament\Widgets\ReportCardWidget;
 use App\Models\User;
 use App\Plugins\Api\DashboardWidget;
 use App\Plugins\PluginRegistry;
+use App\Plugins\PluginStates;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard as BaseDashboard;
@@ -164,7 +165,8 @@ class Dashboard extends BaseDashboard
         foreach ($this->getWidgets() as $widget) {
             $class = $this->normalizeWidgetClass($widget);
 
-            if (! $class::canView()) {
+            // Kacheln ausgeschalteter Plugins entfallen (ihre Livewire-Komponente wäre gesperrt).
+            if (app(PluginStates::class)->blocks($class) || ! $class::canView()) {
                 continue;
             }
 

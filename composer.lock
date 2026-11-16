@@ -13707,11 +13707,11 @@
         },
         {
             "name": "saft/lager-tafel",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "dist": {
                 "type": "path",
                 "url": "plugins/lager-tafel",
-                "reference": "0f0aa0ca833adb91a588d9a8750cfcb7b3e497f5"
+                "reference": "30c117a84bc1ba704d6adb9158cdb969b7d304e1"
             },
             "require": {
                 "filament/filament": "^5.0",
@@ -13726,7 +13726,7 @@
                     ]
                 },
                 "saft": {
-                    "api": "^1.3"
+                    "api": "^1.4"
                 }
             },
             "autoload": {

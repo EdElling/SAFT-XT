@@ -87,6 +87,7 @@ return [
     'run_now_confirm' => '„:task“ jetzt ausführen? Der Zeitplan bleibt unverändert.',
     'runs' => 'Läufe',
     'missing_table' => 'Die Tabelle gibt es nicht mehr.',
+    'plugin_inactive' => 'Übersprungen: Das Plugin „:plugin“ ist ausgeschaltet oder ruht.',
     'already_running' => 'Diese Aufgabe läuft bereits.',
     'failed_generic' => 'Die Aufgabe ist fehlgeschlagen. Details im Protokoll der Anwendung.',
     'aborted' => 'Abgebrochen (der Prozess wurde unterbrochen).',

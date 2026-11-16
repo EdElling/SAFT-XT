@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Plugins\Api\DataTable;
 use App\Plugins\Api\Saft;
 use App\Plugins\Context\SchemaImporter;
+use App\Plugins\PluginStates;
 use App\Services\DynamicSchemaService;
 use Closure;
 use Composer\InstalledVersions;
@@ -112,6 +113,20 @@ abstract class PluginTestCase extends TestCase
     protected function withoutPluginEvents(Closure $callback): mixed
     {
         return DynamicRecord::withoutPluginEvents($callback);
+    }
+
+    /**
+     * Führt $callback aus, als wäre das Plugin ausgeschaltet – ohne Eintrag in der Datenbank. Plugins, die es per
+     * composer.json brauchen, ruhen dabei mit. Z. B. um das eigene Plugin ohne die Listener eines anderen zu testen.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    protected function withoutPlugin(string $id, Closure $callback): mixed
+    {
+        return PluginStates::temporarily($id, false, $callback);
     }
 
     /** Datenansicht einer Tabelle als Livewire-Test, z. B. für die Aktionen des Plugins (TestAction::make(…)->table($record)). */

@@ -8,6 +8,8 @@ use App\Exceptions\BusinessRuleException;
 use App\Models\ScheduledTask;
 use App\Models\TaskRun;
 use App\Models\User;
+use App\Plugins\PluginDependencies;
+use App\Plugins\PluginRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -57,6 +59,7 @@ final readonly class TaskRunner
             @set_time_limit(0);
 
             try {
+                $this->assertPluginActive($task);
                 $result = $task->type()->run($task->parameterValues());
 
                 return $this->finish($task, $run, ScheduledTask::SUCCESS, $result->message, $result->data);
@@ -70,6 +73,16 @@ final readonly class TaskRunner
             }
         } finally {
             $lock->release();
+        }
+    }
+
+    /** Arten aus einem ausgeschalteten oder ruhenden Plugin laufen nicht; der Lauf gilt als übersprungen. */
+    private function assertPluginActive(ScheduledTask $task): void
+    {
+        $plugin = app(TaskRegistry::class)->has($task->type) ? app(PluginRegistry::class)->ownerOf($task->type()::class) : null;
+
+        if ($plugin !== null && ! app(PluginDependencies::class)->satisfied($plugin)) {
+            throw new TaskSkipped(__('tasks.plugin_inactive', ['plugin' => $plugin->label()]));
         }
     }
 

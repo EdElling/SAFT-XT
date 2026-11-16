@@ -941,10 +941,11 @@ Die Seite **Administration › Plugins** (Recht *Plugins: anzeigen*) listet die 
 |---|---|
 | **Name**, **Kennung** | Name und eindeutige Kennung; darunter Beschreibung, Installationsort (Datei der Plugin-Klasse, z. B. `plugins/lager-umbuchung/src/LagerUmbuchungPlugin.php`) und Composer-Paket. Rechte des Plugins beginnen mit der Kennung |
 | **Version** | installierte Version |
+| **Status** | *aktiv*; *ruht*, wenn dem Plugin etwas fehlt, das es braucht (siehe **Abhängigkeiten**); *ausgeschaltet*, wenn es die Administration ausgeschaltet hat (siehe unten) |
 | **Kompatibel** | *Ja*, wenn das Plugin zur Plugin-Schnittstelle (API) dieser Installation passt (bzw. zur SAFT-Version, falls es eine verlangt); darunter seine Angabe, z. B. „API ^1.0“; *Nein* mit Hinweis, was es verlangt und was bereitsteht; *nicht angegeben*, wenn das Plugin nichts angibt. Die bereitgestellte API-Version steht auch unter **Dokumentation › Über SAFT XT** |
 | **Rechte** | Rechte, die das Plugin mitbringt |
 | **Erweiterungen** | an welchen Tabellen das Plugin Änderungen prüft, wo es Knöpfe in Datenansichten einblendet sowie seine Kacheln fürs Dashboard, Formelfunktionen und Prüfregeln |
-| **Abhängigkeiten** | ob die Tabellen und Felder des Table-Designers vorhanden sind, die das Plugin braucht (z. B. „4 Tabellen vorhanden“), sonst was fehlt; der Knopf daneben öffnet die vollständige Aufstellung mit Bezeichnungen und Zustand (vorhanden, fehlt, deaktiviert) |
+| **Abhängigkeiten** | ob die Tabellen und Felder des Table-Designers vorhanden sind, die das Plugin braucht (z. B. „4 Tabellen vorhanden“), sonst was fehlt; der Knopf daneben öffnet die vollständige Aufstellung mit Bezeichnungen und Zustand (vorhanden, fehlt, deaktiviert). Braucht das Plugin ein anderes Plugin (z. B. „Braucht Plugin: Lager-Umbuchung“), steht es ebenfalls hier – ist jenes ausgeschaltet oder ruht es, ruht dieses mit |
 | **Menüeinträge** | wie viele der vorgeschlagenen Einträge schon im Menü sind |
 
 **Ein neues Plugin in Betrieb nehmen** (Recht *Plugins: verwalten*):
@@ -961,6 +962,23 @@ sie mit einem Puzzle-Symbol, *Deaktivieren* und *Löschen* sind ausgegraut, und 
 Bezeichnungen, Pflicht, Anzeige und Regeln bleiben änderbar. Fehlt einem Plugin etwas – etwa weil es vor der Lager-Demo
 installiert wurde –, meldet die Seite **Plugins ruhen**: Knöpfe und Prüfungen des Plugins wirken dann nicht, und seine
 Seiten zeigen, was fehlt.
+
+**Plugins ausschalten** (Recht *Plugins: verwalten*): **Ausschalten** in der Zeile des Plugins legt es still, ohne es
+zu entfernen – etwa für Tests oder wenn sich zwei Plugins in ihrer Funktion überschneiden. Der Dialog zeigt vorher, was
+wegfällt. Solange ein Plugin ausgeschaltet ist,
+
+- sind seine Seiten nicht erreichbar (auch nicht über eine gespeicherte Adresse), seine Kacheln verschwinden vom
+  Dashboard und seine Menüeinträge werden ausgeblendet;
+- wirken seine Prüfungen von Änderungen, seine Knöpfe in Datenansichten, Prüfregeln und Formelfunktionen nicht, und
+  geplante Aufgaben seiner Arten werden übersprungen;
+- ruhen Plugins, die es brauchen (der Dialog nennt sie);
+- bleiben Rechte, Menüeinträge und Daten erhalten.
+
+**Einschalten** stellt alles sofort wieder her. Vorsicht bei Plugins, die Änderungen prüfen oder ergänzen (Spalte
+**Erweiterungen**, „Prüft Änderungen“): Was in der Zwischenzeit erfasst wird, prüft und ergänzt das Plugin auch später
+nicht – beim Beispiel *Lager-Umbuchung* buchen Lagerbewegungen in dieser Zeit keinen Bestand. Jedes Aus- und
+Einschalten steht im Änderungsprotokoll. Die Systemadministration kann Plugins auch auf der Konsole schalten
+([Systemadministration, Kapitel 7](SYSADMIN_GUIDE.de.md#7-plugins)).
 
 **Was Plugins in Datenansichten bewirken:** Ein Plugin kann zusätzliche Knöpfe über einer Tabelle oder in ihren Zeilen
 einblenden und Änderungen prüfen. Lehnt es eine Änderung ab, erscheint „Aktion nicht möglich“ mit der Begründung des
@@ -984,7 +1002,7 @@ installiert wird.
 > Zählung), Bestände lassen sich nur noch über Lagerbewegungen ändern, die Maske *Umbuchung* und der Knopf „Umbuchen“ in
 > *Bestände* buchen Ware zwischen Lagerorten um, und sinkt der Gesamtbestand eines Artikels unter seinen Mindestbestand,
 > erscheint eine Meldung in der Glocke. Die Kachel *Lager: Mindestbestand* auf dem Dashboard zeigt die betroffenen
-> Artikel. Das Plugin *CH-Prüfungen* bringt die Prüfregeln AHV-Nummer, IBAN, UID und Postleitzahl sowie die
+> Artikel. Das Plugin *Lager-Tafel* braucht *Lager-Umbuchung* und zeigt den *Lagerspiegel* (Bestand je Artikel und Lagerort), die *Lagertafel* (Bestand per Ziehen umbuchen) und die Kachel *Lager: Bestand je Lagerort*. Das Plugin *CH-Prüfungen* bringt die Prüfregeln AHV-Nummer, IBAN, UID und Postleitzahl sowie die
 > Formelfunktion `rappen()` mit.
 
 ## 15. Konfiguration übertragen

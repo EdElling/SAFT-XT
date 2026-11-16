@@ -275,6 +275,19 @@ Danach zeigt **Administration › Plugins** das Plugin mit Version und der Angab
 passt; dort übernimmt die Administration die vorgeschlagenen Menüeinträge, die Rechte vergibt sie in der
 Rollenverwaltung. `php artisan saft:plugins` listet die Plugins auf der Konsole und legt fehlende Rechte an.
 
+**Aus- und einschalten**, ohne zu entfernen – z. B. für Tests oder bei Plugins mit überschneidender Funktion:
+
+```bash
+php artisan saft:plugins --disable=<id>    # z. B. lager-umbuchung; meldet Plugins, die dadurch mitruhen
+php artisan saft:plugins --enable=<id>
+```
+
+Ein ausgeschaltetes Plugin bleibt installiert; seine Seiten liefern „nicht gefunden“, Kacheln und Menüeinträge sind
+ausgeblendet, Listener, Knöpfe, Prüfregeln und Formelfunktionen wirken nicht, geplante Aufgaben seiner Arten werden
+übersprungen. Ein Neustart oder `optimize` ist nicht nötig; der Zustand steht in der Datenbank (Tabelle
+`plugin_states`) und im Änderungsprotokoll. Dasselbe geht auf der Seite **Plugins** (siehe
+[Administratorhandbuch, Kapitel 14](ADMIN_GUIDE.de.md#14-plugins)).
+
 **Entfernen:**
 
 1. Hat das Plugin eigene Tabellen, diese zuerst zurückrollen: `php artisan migrate:rollback --path=plugins/<name>/database/migrations`

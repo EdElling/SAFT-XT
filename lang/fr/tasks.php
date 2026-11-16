@@ -87,6 +87,7 @@ return [
     'run_now_confirm' => 'Exécuter « :task » maintenant ? Le planning reste inchangé.',
     'runs' => 'Exécutions',
     'missing_table' => 'La table n’existe plus.',
+    'plugin_inactive' => 'Ignorée : le plugin « :plugin » est désactivé ou en veille.',
     'already_running' => 'Cette tâche est déjà en cours.',
     'failed_generic' => 'La tâche a échoué. Détails dans le journal de l’application.',
     'aborted' => 'Interrompue (le processus a été arrêté).',

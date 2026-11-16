@@ -57,7 +57,7 @@ mitbringen:
 | Arten geplanter Aufgaben | Klassen, die `App\Tasks\TaskType` umsetzen |
 
 **Was zugesichert ist:** Die Programmierschnittstelle für Plugins (Plugin-API) hat eine **eigene Versionsnummer**,
-unabhängig von SAFT – derzeit **1.3**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
+unabhängig von SAFT – derzeit **1.4**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, alle Klassen unter `App\Plugins\Api` (ausser
 `ApiManifest`), die Test-Basis `App\Plugins\Testing\PluginTestCase` und das Trait
 `App\Filament\Concerns\LimitsFormWidth`; von `App\Models\DynamicRecord` (Datensätze) und
@@ -161,7 +161,8 @@ Die `composer.json` nennt den ServiceProvider (Laravel findet ihn automatisch) u
 - `autoload-dev` nennt den Namensraum der Tests; SAFT lädt ihn beim Testen (siehe [Kapitel 13](#13-testen)).
 - Pakete von SAFT selbst müssen Sie nicht in `require` aufnehmen – das Plugin läuft innerhalb von SAFT. **Andere
   Plugins**, deren Klassen Sie verwenden, gehören dagegen hinein, z. B. `"saft/lager-umbuchung": "^1.3"` im Plugin
-  Lager-Tafel.
+  Lager-Tafel. SAFT liest daraus auch, welche Plugins Ihr Plugin braucht: Ist eines davon ausgeschaltet oder ruht es,
+  ruht Ihr Plugin mit (siehe [Kapitel 12](#12-installieren-aktualisieren-entfernen)).
 
 Der ServiceProvider besteht aus einer Zeile:
 
@@ -387,7 +388,8 @@ public function requiredTables(): array
 - Fehlt etwas oder ist es deaktiviert (z. B. weil das Plugin vor der Lager-Demo installiert wurde), **ruht** das Plugin:
   Seine Listener und Datenaktionen wirken nicht, und die Seite **Plugins** warnt mit einer Liste dessen, was fehlt.
 - Ihre Seiten prüfen das mit `$plugin->missingDependencies()` (Liste lesbarer Meldungen, leer = alles da) und zeigen
-  sonst einen Hinweis statt eines Fehlers.
+  sonst einen Hinweis statt eines Fehlers. Die Liste nennt auch Plugins aus `require`, die ausgeschaltet sind oder
+  ruhen („Plugin Lager-Umbuchung ist ausgeschaltet“).
 - Geben Sie nur an, ohne was das Plugin nicht arbeiten kann. Optionale Felder (im Beispiel *Mindestbestand*) prüfen Sie
   beim Zugriff selbst – fehlen sie, entfällt nur die jeweilige Funktion.
 
@@ -546,6 +548,15 @@ der `composer.json` bzw. als Git-Tag erhöht.
 Nach der Installation zeigt **Administration › Plugins** das Plugin mit Version, Kompatibilität und Erweiterungen; dort
 übernimmt die Administration die Menüeinträge und vergibt anschliessend die Rechte in der Rollenverwaltung.
 
+**Ausschalten:** Die Administration kann ein installiertes Plugin auf der Seite **Plugins** ausschalten, die
+Systemadministration mit `php artisan saft:plugins --disable=<id>` (`--enable=<id>` schaltet es wieder ein). Ein
+ausgeschaltetes Plugin bleibt installiert, wirkt aber nicht: Seiten, Ressourcen und Kacheln liefern „nicht gefunden“
+(SAFT sperrt alle Livewire-Komponenten im Namensraum der Plugin-Klasse), Menüeinträge sind ausgeblendet, Listener,
+Datenaktionen, Prüfregeln und Formelfunktionen ruhen, geplante Aufgaben seiner Arten werden übersprungen. Plugins, die
+es per `require` brauchen, ruhen mit. Ihr Plugin muss dafür nichts tun. Brauchen Sie ein anderes Plugin nur optional,
+prüfen Sie es mit `Saft::plugin('…')->isEnabled()`; ist es nicht installiert, wirft `Saft::plugin()` eine
+`InvalidArgumentException`.
+
 **Entfernen:** Eigene Tabellen zuerst zurückrollen (`php artisan migrate:rollback --path=…` auf die Migrationen des
 Plugins), dann `composer remove <paket>` und `php artisan optimize`. Menüeinträge des Plugins werden danach automatisch
 ausgeblendet; zusammen mit den Rechten lassen sie sich auf der Seite **Plugins** unter **Aufräumen** löschen. Daten, die
@@ -573,6 +584,7 @@ Testdatenbank samt Rollen, Rechten und Menü.
 | `$this->actingWithPermissions(['kunden-portal.use', 'data.kunden.view'])` | meldet eine Person mit genau diesen Rechten an |
 | `$this->createTable('kunden', 'Kunden', [...])` | legt eine Tabelle des Table-Designers an (Felder wie im Table-Designer) und gibt die `DataTable` zurück |
 | `$this->withoutPluginEvents(fn () => …)` | Testdaten anlegen, ohne dass Listener reagieren – z. B. um eigene Regeln zu umgehen |
+| `$this->withoutPlugin('lager-umbuchung', fn () => …)` | ein Plugin nur für die Dauer der Closure ausschalten, ohne Eintrag in der Datenbank – z. B. um zu prüfen, dass Ihr Plugin ruht, wenn ein benötigtes Plugin ausgeschaltet ist |
 | `$this->createTablesFromSchema($pfad, ['kunden'])` | legt Tabellen aus der `schema.json` des Entwickler-Kontexts an, siehe [Kapitel 14](#14-kontext-für-externe-entwicklung-und-ki-agenten) |
 | `$this->dataView('kunden')` | Datenansicht als Livewire-Test, z. B. für Knöpfe des Plugins (`TestAction::make('…')->table($record)`) |
 
@@ -751,7 +763,7 @@ berechnetes Feld mit der Formel `rappen(betrag * 1.081)` anlegen.
 
 ## 17. API-Versionen und Änderungsprotokoll
 
-Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.3**). Sie steht in `config/saft.php`
+Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.4**). Sie steht in `config/saft.php`
 (`api_versions`) und erscheint unter **Dokumentation › Über SAFT XT** sowie auf der Seite **Plugins**.
 
 | Änderung | Version | Wirkung für Plugins |
@@ -780,6 +792,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 | API | SAFT | Änderungen |
 |---|---|---|
+| **1.4** | 0.1 | `SaftPlugin::isEnabled()`, `PluginTestCase::withoutPlugin()`. Plugins lassen sich ausschalten (Seite **Plugins**, `saft:plugins --disable`); Plugins aus `require` der `composer.json` gelten als benötigt – ruht oder fehlt eines, ruht das abhängige Plugin mit |
 | **1.3** | 0.1 | `PluginTestCase::createTablesFromSchema()`. Werkzeuge (nicht Teil der API): Entwickler-Kontext (`saft:plugin-context`, Download in der Plugin-Verwaltung), `AGENTS.md` im Gerüst |
 | **1.2** | 0.1 | `DashboardWidget` (Bezeichnung der Kachel), `FormulaFunction` und `SaftPlugin::formulaFunctions()`, `FieldRule` und `SaftPlugin::fieldRules()` |
 | **1.1** | 0.1 | Test-Basis `PluginTestCase` (`actingAsSuperAdmin`, `actingWithPermissions`, `createTable`, `withoutPluginEvents`, `dataView`); geschützte Methoden gehören zum Vertrag (`PluginServiceProvider::plugin()`). Werkzeuge (nicht Teil der API): `saft:make-plugin`, `saft:plugins --check`, Testsuite „Plugins“ |
@@ -828,6 +841,17 @@ statt den Ablauf zu kopieren. Ein anderes Plugin gehört – anders als SAFT sel
 
 ```json
 "require": { "php": "^8.4", "filament/filament": "^5.0", "saft/lager-umbuchung": "^1.3" }
+```
+
+Ist *Lager-Umbuchung* ausgeschaltet, ruht Lager-Tafel mit: `missingDependencies()` meldet „Plugin Lager-Umbuchung ist
+ausgeschaltet“, und die Seiten zeigen den Hinweis aus A.1. Der Test dazu nutzt `withoutPlugin()`:
+
+```php
+$this->withoutPlugin('lager-umbuchung', function (): void {
+    Livewire::withQueryParams(['artikel' => $this->screw])->test(Lagertafel::class)
+        ->assertSee('Plugin Lager-Umbuchung ist ausgeschaltet')
+        ->assertDontSeeHtml('wire:sort:group-id');
+});
 ```
 
 ### A.1 Eigene Tabellensicht
@@ -1425,7 +1449,8 @@ public function recordListeners(): array
 **Plugins** sieht die Administration, an welchen Tabellen ein Plugin mithört.
 
 **Testen:** Listener eines installierten Plugins sind in Tests aktiv. Testdaten, die die eigene Regel verletzen müssten,
-legen Sie mit `$this->withoutPluginEvents(fn () => …)` an.
+legen Sie mit `$this->withoutPluginEvents(fn () => …)` an. Um Ihr Plugin ohne die Listener *eines* anderen Plugins zu
+testen, schalten Sie nur dieses mit `$this->withoutPlugin('<id>', fn () => …)` aus.
 
 ```php
 $artikel = Saft::table('lager_artikel')->create(['artikelnummer' => ' b-2001 ', 'bezeichnung' => 'Dübel']);

@@ -1,5 +1,5 @@
 {
-    "version": "1.3",
+    "version": "1.4",
     "surface": {
         "App\\Filament\\Concerns\\LimitsFormWidth": [
             "trait",
@@ -149,6 +149,7 @@
             "final function basePath(): string",
             "final function composer(): array",
             "final function isCompatible(): ?bool",
+            "final function isEnabled(): bool",
             "final function location(): string",
             "final function missingDependencies(): array",
             "final function packageName(): string",
@@ -178,6 +179,7 @@
             "protected function createTablesFromSchema(string $path, array $only = []): array",
             "protected function dataView(string $table): Livewire\\Features\\SupportTesting\\Testable",
             "protected function setUp(): void",
+            "protected function withoutPlugin(string $id, Closure $callback): mixed",
             "protected function withoutPluginEvents(Closure $callback): mixed"
         ]
     }

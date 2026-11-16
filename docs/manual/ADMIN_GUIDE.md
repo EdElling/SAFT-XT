@@ -912,10 +912,11 @@ The page **Administration › Plugins** (permission *Plugins: view*) lists the i
 |---|---|
 | **Name**, **Identifier** | name and unique identifier; below it the description, the installation location (file of the plugin class, e.g. `plugins/lager-umbuchung/src/LagerUmbuchungPlugin.php`) and the Composer package. The plugin's permissions start with the identifier |
 | **Version** | installed version |
+| **Status** | *active*; *resting* if something the plugin needs is missing (see **Dependencies**); *switched off* if the administration has switched it off (see below) |
 | **Compatible** | *Yes* if the plugin fits the plugin interface (API) of this installation (or the SAFT version, if it requires one); below it its requirement, e.g. “API ^1.0”; *No* with a hint to what it requires and what is provided; *not specified* if the plugin states nothing. The provided API version is also shown under **Documentation › About SAFT XT** |
 | **Permissions** | permissions the plugin brings |
 | **Extensions** | which tables the plugin checks changes on, where it shows buttons in data views, and its dashboard tiles, formula functions and validation rules |
-| **Dependencies** | whether the tables and fields of the table designer the plugin needs are present (e.g. “4 tables present”), otherwise what is missing; the button next to it opens the complete list with labels and state (present, missing, deactivated) |
+| **Dependencies** | whether the tables and fields of the table designer the plugin needs are present (e.g. “4 tables present”), otherwise what is missing; the button next to it opens the complete list with labels and state (present, missing, deactivated). If the plugin requires another plugin (e.g. “Requires plugin: Stock transfer”), it is shown here as well – if that one is switched off or resting, this one rests too |
 | **Menu entries** | how many of the suggested entries are already in the menu |
 
 **Putting a new plugin into operation** (permission *Plugins: manage*):
@@ -932,6 +933,23 @@ puzzle icon, *Deactivate* and *Delete* are greyed out, and the hint names the pl
 rules remain editable. If a plugin lacks something – for example because it was installed before the warehouse demo –,
 the page reports **Plugins are resting**: the plugin's buttons and checks do not apply, and its pages show what is
 missing.
+
+**Switching plugins off** (permission *Plugins: manage*): **Switch off** in the plugin's row shuts it down without
+removing it – for example for tests or when two plugins overlap in function. The dialog shows beforehand what goes
+away. While a plugin is switched off,
+
+- its pages cannot be reached (not even through a saved address), its tiles disappear from the dashboard and its menu
+  entries are hidden;
+- its checks of changes, its buttons in data views, validation rules and formula functions do not apply, and scheduled
+  tasks of its kinds are skipped;
+- plugins that require it rest (the dialog names them);
+- permissions, menu entries and data are kept.
+
+**Switch on** restores everything immediately. Take care with plugins that check or complete changes (column
+**Extensions**, “Checks changes”): what is entered in the meantime is not checked or completed by the plugin later
+either – with the example *Stock transfer*, stock movements book no stock during that time. Every switching off and on
+is recorded in the change log. System administration can also switch plugins on the console
+([System administration, chapter 7](SYSADMIN_GUIDE.md#7-plugins)).
 
 **What plugins do in data views:** a plugin can show additional buttons above a table or in its rows and check
 changes. If it rejects a change, “Action not possible” appears with the plugin's reason and nothing is saved – in the
@@ -952,7 +970,7 @@ are not: roles lose deleted permissions for good, even if the plugin is installe
 > count), stock levels can only be changed through stock movements, the form *Transfer* and the “Transfer” button in
 > *Stock levels* move goods between locations, and if an item's total stock falls below its minimum stock, a
 > notification appears in the bell. The tile *Warehouse: minimum stock* on the dashboard shows the affected items.
-> The plugin *Swiss checks* brings the validation rules AHV number, IBAN, UID and postal code as well as the formula
+> The plugin *Stock board* requires *Stock transfer* and shows the *Stock matrix* (stock per item and location), the *Stock board* (transfer stock by dragging) and the tile *Warehouse: stock by location*. The plugin *Swiss checks* brings the validation rules AHV number, IBAN, UID and postal code as well as the formula
 > function `rappen()`.
 
 ## 15. Transfer configuration

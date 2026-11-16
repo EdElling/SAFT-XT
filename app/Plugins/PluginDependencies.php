@@ -27,8 +27,49 @@ final class PluginDependencies
         $this->missing = [];
     }
 
-    /** @return list<string> lesbare Meldungen, was fehlt (leer = alles da) */
+    /** @var list<string> Plugins, deren Abhängigkeiten gerade geprüft werden (Schutz vor Kreisen) */
+    private array $checking = [];
+
+    /**
+     * Lesbare Meldungen, was fehlt (leer = alles da): Tabellen und Felder aus requiredTables() sowie Plugins, die das
+     * Plugin laut composer.json braucht und die ausgeschaltet sind oder ruhen. Ob das Plugin selbst ausgeschaltet ist,
+     * gehört nicht dazu – das prüft satisfied().
+     *
+     * @return list<string>
+     */
     public function missing(SaftPlugin $plugin): array
+    {
+        return [...$this->missingTables($plugin), ...$this->missingPlugins($plugin)];
+    }
+
+    /** @return list<string> Plugins, die das Plugin braucht und die ausgeschaltet sind oder ruhen */
+    private function missingPlugins(SaftPlugin $plugin): array
+    {
+        $states = app(PluginStates::class);
+        $problems = [];
+        $this->checking[] = $plugin->id();
+
+        try {
+            foreach ($states->requires($plugin) as $required) {
+                if (in_array($required->id(), $this->checking, true)) {
+                    continue;
+                }
+
+                if (! $states->isEnabled($required->id())) {
+                    $problems[] = __('plugins.dependencies.plugin_disabled', ['plugin' => $required->label()]);
+                } elseif (! $this->satisfied($required)) {
+                    $problems[] = __('plugins.dependencies.plugin_resting', ['plugin' => $required->label()]);
+                }
+            }
+        } finally {
+            array_pop($this->checking);
+        }
+
+        return $problems;
+    }
+
+    /** @return list<string> */
+    private function missingTables(SaftPlugin $plugin): array
     {
         if (isset($this->missing[$plugin->id()])) {
             return $this->missing[$plugin->id()];
@@ -94,9 +135,10 @@ final class PluginDependencies
         return $rows;
     }
 
+    /** Wirkt das Plugin? Nein, wenn es ausgeschaltet ist oder etwas fehlt, das es braucht (es ruht). */
     public function satisfied(SaftPlugin $plugin): bool
     {
-        return $this->missing($plugin) === [];
+        return app(PluginStates::class)->isEnabled($plugin->id()) && $this->missing($plugin) === [];
     }
 
     /**

@@ -8,5 +8,5 @@ return [
 
     // Version der Programmierschnittstelle für Plugins (App\Plugins\Api, siehe Entwicklerhandbuch), unabhängig von der
     // SAFT-Version: Minor = nur Ergänzungen, Major = Breaking Changes. Jede bereitgestellte Major-Version einmal.
-    'api_versions' => ['1.3'],
+    'api_versions' => ['1.4'],
 ];

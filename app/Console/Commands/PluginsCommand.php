@@ -5,23 +5,31 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Filament\Pages\PluginsPage;
+use App\Plugins\PluginDependencies;
 use App\Plugins\PluginInspector;
 use App\Plugins\PluginPermissions;
 use App\Plugins\PluginRegistry;
+use App\Plugins\PluginStates;
 use App\Plugins\SaftPlugin;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 /** Installierte Plugins mit Version und Kompatibilität; legt fehlende Rechte an. Mit --check: Prüfung vor der Auslieferung. */
-#[Signature('saft:plugins {id? : nur dieses Plugin prüfen (mit --check)} {--check : Plugins prüfen (Angaben, Kompatibilität, nur Plugin-API)}')]
-#[Description('Listet die installierten Plugins und legt ihre Rechte an; --check prüft sie')]
+#[Signature('saft:plugins {id? : nur dieses Plugin prüfen (mit --check)} {--check : Plugins prüfen (Angaben, Kompatibilität, nur Plugin-API)} {--enable= : Plugin einschalten (Kennung)} {--disable= : Plugin ausschalten (Kennung)}')]
+#[Description('Listet die installierten Plugins und legt ihre Rechte an; --check prüft sie, --enable/--disable schaltet eines ein oder aus')]
 class PluginsCommand extends Command
 {
-    public function handle(PluginRegistry $plugins, PluginPermissions $permissions, PluginInspector $inspector): int
+    public function handle(PluginRegistry $plugins, PluginPermissions $permissions, PluginInspector $inspector, PluginStates $states): int
     {
         if ($this->option('check')) {
             return $this->check($plugins, $inspector);
+        }
+
+        foreach (['enable' => true, 'disable' => false] as $option => $enabled) {
+            if (is_string($id = $this->option($option))) {
+                return $this->switch($plugins, $states, $id, $enabled);
+            }
         }
 
         if ($plugins->all() === []) {
@@ -31,10 +39,11 @@ class PluginsCommand extends Command
         }
 
         $this->table(
-            ['ID', __('plugins.fields.name'), __('plugins.fields.version'), __('plugins.fields.requires'), __('plugins.fields.compatibility')],
+            ['ID', __('plugins.fields.name'), __('plugins.fields.status'), __('plugins.fields.version'), __('plugins.fields.requires'), __('plugins.fields.compatibility')],
             array_map(static fn (SaftPlugin $plugin): array => [
                 $plugin->id(),
                 $plugin->label(),
+                __('plugins.status.'.$states->status($plugin)),
                 $plugin->version() ?: '–',
                 PluginsPage::requirement($plugin) ?: '–',
                 __('plugins.compatibility.'.match ($plugin->isCompatible()) {
@@ -45,6 +54,26 @@ class PluginsCommand extends Command
 
         foreach ($permissions->sync() as $name) {
             $this->line(__('plugins.console.permission_created', ['name' => $name]));
+        }
+
+        return self::SUCCESS;
+    }
+
+    /** Ein- oder ausschalten; im Änderungsprotokoll ohne Person (Konsole). */
+    private function switch(PluginRegistry $plugins, PluginStates $states, string $id, bool $enabled): int
+    {
+        if (! $plugins->has($id)) {
+            $this->error(__('plugins.check.unknown', ['id' => $id]));
+
+            return self::FAILURE;
+        }
+
+        $plugin = $plugins->get($id);
+        $enabled ? $states->enable($id) : $states->disable($id);
+        $this->info(__($enabled ? 'plugins.switch.enabled' : 'plugins.switch.disabled', ['plugin' => $plugin->label()]));
+
+        if (! $enabled && ($dependents = $states->dependents($plugin)) !== []) {
+            $this->warn(__('plugins.switch.dependents_resting', ['plugins' => app(PluginDependencies::class)->names($dependents)]));
         }
 
         return self::SUCCESS;
