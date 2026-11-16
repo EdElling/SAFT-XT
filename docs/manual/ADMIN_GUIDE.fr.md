@@ -937,8 +937,9 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
   réglage ci-dessus), pour l’assistant des tables, la structure des tables du Concepteur de tables.
 - **Assistant d’aide :** la question, les six derniers messages de la conversation, le titre et l’adresse de la page
   où se trouve la personne et les manuels qu’elle voit dans l’aide en ligne (guide utilisateur, questions fréquentes,
-  avec un droit d’administration le guide d’administration) ; avec l’interrupteur ci-dessus, en plus le modèle de
-  données comme pour l’assistant de rapports.
+  avec un droit d’administration le guide d’administration), ses **propres rôles et droits** (pour que l’assistant puisse
+  dire quel droit manque – dans la simulation de rôle ceux du rôle simulé) ; avec l’interrupteur ci-dessus, en plus le
+  modèle de données comme pour l’assistant de rapports.
 - **Ne sont jamais transmis** les enregistrements, les résultats des rapports, les données des utilisateurs ni les
   données d’accès.
 - Au-dessus du champ de saisie, les personnes voient à quel fournisseur leur description est envoyée.

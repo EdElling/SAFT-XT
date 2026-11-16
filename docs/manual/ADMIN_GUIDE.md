@@ -871,8 +871,9 @@ in the editor or form, is checked there and only takes effect with **Save** or *
   the table designer's tables.
 - **Help assistant:** the question, the last six messages of the conversation, title and address of the page the
   person is on, and the manuals they see in the online help (user guide, frequently asked questions, with an
-  administration permission the administrator guide); with the switch above also the data model as for the report
-  assistant.
+  administration permission the administrator guide), their **own roles and permissions** (so the assistant can say
+  which permission is missing for something – in role simulation those of the simulated role); with the switch above
+  also the data model as for the report assistant.
 - **Never transmitted** are records, report results, user data or credentials.
 - Above the input field people see which provider receives their description.
 - The contract with the provider (data processing agreement, storage location) is the organisation's responsibility;

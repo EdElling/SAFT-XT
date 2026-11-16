@@ -11,6 +11,7 @@ use App\Ai\ChatReply;
 use App\Documentation\Documentation;
 use App\DynamicData\DataPermissions;
 use App\Exceptions\BusinessRuleException;
+use App\Filament\Resources\Roles\Schemas\RoleForm;
 use App\Models\AiHelpConversation;
 use App\Models\AiHelpMessage;
 use App\Models\User;
@@ -19,6 +20,7 @@ use App\Plugins\Context\SchemaMarkdown;
 use App\Settings\AppSettings;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
 use Throwable;
 
 /**
@@ -175,8 +177,10 @@ final class HelpAssistant
                 '  terms of the user interface as written in the documentation (bold for buttons and menu entries).',
                 '- Cite the sections you used as Markdown links to their anchor, e.g. [4.1 Title](#user-41-title). Use',
                 '  only anchors that appear as {#…} in the documentation.',
-                '- You cannot see or change any records. Some functions need permissions the person may not have; then',
-                '  name the permission from the documentation.',
+                '- You cannot see or change any records. Some functions need permissions the person may not have. The',
+                '  roles and permissions of the person asking are listed at the end: when something seems missing or',
+                '  does not work, check them first; if a permission is missing, name it exactly as listed and refer',
+                '  the person to the administration.',
                 '- The page the person is on may be given in brackets before the question; use it to resolve “here”.',
                 '',
                 ...$knowledge,
@@ -192,7 +196,43 @@ final class HelpAssistant
             ];
         }
 
+        // Rollen und Rechte der fragenden Person (in der Rollen-Simulation die simulierten) – je Person anders, darum
+        // zuletzt und nicht zwischengespeichert; keine anderen Personen, keine Daten.
+        $system[] = ['text' => $this->permissions($user)];
+
         return $system;
+    }
+
+    /**
+     * Rollen, alle allgemeinen Rechte mit „hat / hat nicht“ (Bezeichnungen wie in der Rollenverwaltung) und die
+     * vorhandenen Datenrechte – damit der Assistent sagen kann, welches Recht für etwas fehlt.
+     */
+    private function permissions(User $user): string
+    {
+        $roles = $user->roles->pluck('name')->sort()->values()->all();
+        $lines = [
+            'Roles and permissions of the person asking (labels as in the role administration; ✓ = has, ✗ = lacks):',
+            'Roles: '.($roles === [] ? '–' : implode(', ', $roles)),
+        ];
+
+        if ($user->isSuperAdmin()) {
+            return implode("\n", [...$lines, 'The role super-admin has every permission.']);
+        }
+
+        $names = Permission::query()->where('guard_name', 'web')->orderBy('name')->pluck('name')->all();
+        $general = array_filter($names, static fn (string $name): bool => ! str_starts_with($name, DataPermissions::PREFIX));
+        $data = array_filter($names, static fn (string $name): bool => str_starts_with($name, DataPermissions::PREFIX) && $user->can($name));
+
+        $lines[] = 'General permissions:';
+
+        foreach ($general as $name) {
+            $lines[] = ($user->can($name) ? '✓ ' : '✗ ').RoleForm::label($name);
+        }
+
+        $lines[] = 'Data permissions held (all others are lacking):';
+        $lines[] = $data === [] ? '–' : implode('; ', array_map(static fn (string $name): string => RoleForm::label($name), $data));
+
+        return implode("\n", $lines);
     }
 
     /** Tabellen mit Leserecht als kompakte Beschreibung; Werte von Auswahlfeldern nur, wenn freigegeben. */

@@ -900,8 +900,9 @@ landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bz
   Tabellen-Assistenten der Aufbau der Tabellen des Table-Designers.
 - **Hilfe-Assistent:** die Frage, die letzten sechs Nachrichten der Unterhaltung, Titel und Adresse der Seite, auf
   der die Person gerade ist, und die Handbücher, die sie in der Online-Hilfe sieht (Anwenderhandbuch, Häufige Fragen,
-  mit einem Administrationsrecht das Administratorhandbuch); mit dem Schalter oben zusätzlich das Datenmodell wie beim
-  Auswertungs-Assistenten.
+  mit einem Administrationsrecht das Administratorhandbuch), ihre **eigenen Rollen und Rechte** (damit der Assistent
+  sagen kann, welches Recht für etwas fehlt – in der Rollen-Simulation die der simulierten Rolle); mit dem Schalter oben
+  zusätzlich das Datenmodell wie beim Auswertungs-Assistenten.
 - **Nie übertragen** werden Datensätze, Ergebnisse von Auswertungen, Benutzerdaten oder Zugangsdaten.
 - Über dem Eingabefeld sehen die Personen, an welchen Anbieter ihre Beschreibung geht.
 - Für den Vertrag mit dem Anbieter (Auftragsverarbeitung, Speicherort) ist die Organisation zuständig; die **Region der

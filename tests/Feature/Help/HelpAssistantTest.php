@@ -150,7 +150,7 @@ class HelpAssistantTest extends DynamicDataTestCase
 
         $this->fake->push('A')->push('B')->push('C');
         $this->assistant()->ask($user, null, 'Frage');
-        $this->assertCount(1, $this->fake->calls[0]['system'], 'Ohne Schalter kein Datenmodell.');
+        $this->assertStringNotContainsString('Data model of this installation', $this->systemText(), 'Ohne Schalter kein Datenmodell.');
 
         $settings = app(AppSettings::class);
         $settings->ai_help_schema = true;
@@ -258,8 +258,33 @@ class HelpAssistantTest extends DynamicDataTestCase
         app(HelpAssistant::class)->ask($admin, null, 'Frage');
 
         $this->assertStringNotContainsString('<document id="admin"', $this->systemText());
-        $this->assertCount(1, $this->fake->calls[0]['system'], 'Ohne Leserecht auf Tabellen kein Datenmodell.');
+        $this->assertStringNotContainsString('Data model of this installation', $this->systemText(), 'Ohne Leserecht auf Tabellen kein Datenmodell.');
+        $this->assertStringContainsString('Roles: mit-hilfe', $this->systemText(), 'Rechte der simulierten Rolle.');
+        $this->assertStringContainsString('✗ Benutzer: anlegen', $this->systemText());
         $this->assertSame(1, AiHelpConversation::query()->ownedBy($admin)->count(), 'Die Unterhaltung gehört der echten Person.');
+    }
+
+    public function test_own_roles_and_permissions_go_along_uncached(): void
+    {
+        $this->service()->createTable(['name' => 'kunden', 'label' => 'Kunden'], [['name' => 'name', 'label' => 'Name', 'type' => 'string']]);
+        $role = Role::create(['name' => 'admin', 'guard_name' => 'web']);
+        $role->givePermissionTo(['help.assistant', 'users.view', 'data.kunden.view']);
+        $user = $this->user([]);
+        $user->assignRole($role);
+        $this->fake->push('A')->push('B');
+
+        $this->assistant()->ask($user->fresh(), null, 'Warum kann ich keine neuen Benutzer anlegen?');
+
+        $block = end($this->fake->calls[0]['system']);
+        $this->assertFalse($block['cache'] ?? false, 'Je Person anders: nicht zwischengespeichert.');
+        $this->assertStringContainsString('Roles: admin', $block['text']);
+        $this->assertStringContainsString('✓ Benutzer: anzeigen', $block['text']);
+        $this->assertStringContainsString('✗ Benutzer: anlegen', $block['text']);
+        $this->assertStringContainsString('Daten: Kunden: anzeigen', $block['text']);
+        $this->assertStringNotContainsString('Daten: Kunden: löschen', $block['text'], 'Nur vorhandene Datenrechte.');
+
+        $this->assistant()->ask($this->superAdmin(), null, 'Frage');
+        $this->assertStringContainsString('The role super-admin has every permission.', end($this->fake->calls[1]['system'])['text']);
     }
 
     public function test_question_mark_button_and_documentation_tab(): void

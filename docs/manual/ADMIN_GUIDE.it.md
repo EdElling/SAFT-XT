@@ -916,8 +916,9 @@ risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effe
   delle tabelle la struttura delle tabelle del Designer di tabelle.
 - **Assistente di aiuto:** la domanda, gli ultimi sei messaggi della conversazione, titolo e indirizzo della pagina in
   cui si trova la persona e i manuali che vede nell’aiuto in linea (guida utente, domande frequenti, con un diritto di
-  amministrazione la guida per amministratori); con l’interruttore sopra, inoltre il modello dei dati come per
-  l’assistente dei report.
+  amministrazione la guida per amministratori), i suoi **ruoli e diritti** (così l’assistente può dire quale diritto
+  manca – nella simulazione di ruolo quelli del ruolo simulato); con l’interruttore sopra, inoltre il modello dei dati
+  come per l’assistente dei report.
 - **Non vengono mai trasmessi** record, risultati dei report, dati degli utenti o dati di accesso.
 - Sopra il campo di inserimento le persone vedono a quale provider va la loro descrizione.
 - Il contratto con il provider (trattamento per conto terzi, luogo di archiviazione) è di competenza
