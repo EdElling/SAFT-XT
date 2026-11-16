@@ -9,6 +9,7 @@ use App\Models\DynamicRecord;
 use App\Plugins\Api\RecordRejected;
 use App\Plugins\Api\Saft;
 use App\Plugins\Testing\PluginTestCase;
+use App\Tasks\TaskSkipped;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
@@ -16,6 +17,8 @@ use Saft\LagerTafel\ArticleNumber;
 use Saft\LagerTafel\LagerTafelPlugin;
 use Saft\LagerTafel\Pages\Lagerspiegel;
 use Saft\LagerTafel\Pages\Lagertafel;
+use Saft\LagerTafel\Tasks\MinimumStockReportTask;
+use Saft\LagerTafel\Tasks\StocktakingReminderTask;
 use Saft\LagerTafel\Widgets\StockByLocationChart;
 
 /** Beispiel-Plugin „Lager-Tafel“: je Baustein aus Anhang A des Entwicklerhandbuchs ein Test. */
@@ -281,6 +284,72 @@ class LagerTafelTest extends PluginTestCase
         } catch (ValidationException $e) {
             $this->assertStringContainsString('Artikelnummer im Format A-1234 erwartet', implode(' ', $e->errors()['artikelnummer'] ?? []));
         }
+    }
+
+    // A.8 – geplante Aufgaben
+
+    public function test_stocktaking_reminder_lists_stock_not_counted_recently(): void
+    {
+        $task = new StocktakingReminderTask;
+        app()->setLocale('de');
+        $this->assertTrue($task->creatable());
+        $this->assertSame('Bestände ohne Zählung seit 90 Tagen', $task->describe([]));
+
+        try {
+            $task->run(['days' => '30']);
+            $this->fail('Ohne Lager-Demo gelaufen.');
+        } catch (TaskSkipped $e) {
+            $this->assertStringStartsWith('Lager-Demo nicht vollständig', $e->getMessage());
+        }
+
+        $this->actingAsSuperAdmin();
+        $this->demoTables();
+        auth()->logout();                                          // geplante Aufgaben laufen ohne angemeldete Person
+
+        $result = $task->run(['days' => '30']);
+        $this->assertSame('2 Bestände seit über 30 Tagen nicht gezählt: A-1001 – Schraube (Nord), A-1002 – Nagel (Süd)', $result->message);
+        $this->assertSame(['count' => 2], $result->data);
+
+        Saft::table('lager_bewegungen')->withoutAuthorization()->create([
+            'artikel_id' => $this->screw, 'lagerort_id' => $this->north, 'art' => 'Inventur', 'menge' => 0, 'zeitpunkt' => now()->subDays(5)->format('Y-m-d H:i:s'),
+        ]);
+        $this->assertSame('1 Bestand seit über 30 Tagen nicht gezählt: A-1002 – Nagel (Süd)', $task->run(['days' => '30'])->message);
+        $this->assertSame(2, $task->run(['days' => '1'])->data['count'], 'Zählung vor 5 Tagen ist älter als 1 Tag; der Nagel wurde nie gezählt.');
+    }
+
+    public function test_minimum_stock_report_notifies_people_with_the_view_permission(): void
+    {
+        $admin = $this->actingAsSuperAdmin();
+        $this->demoTables();
+        $reader = $this->actingWithPermissions(['lager-tafel.view']);
+        $other = $this->actingWithPermissions(['lager-tafel.transfer']);
+        auth()->logout();
+        app()->setLocale('de');
+
+        $result = (new MinimumStockReportTask)->run([]);
+
+        $this->assertSame('1 Artikel unter Mindestbestand, 2 Personen benachrichtigt.', $result->message, 'Nagel: 1 von 2.');
+        $this->assertSame(1, $admin->notifications()->count());
+        $this->assertSame(1, $reader->notifications()->count());
+        $this->assertSame(0, $other->notifications()->count(), 'Ohne Leserecht keine Meldung.');
+        $this->assertStringContainsString('A-1002 – Nagel', json_encode($reader->notifications()->first()->data, JSON_UNESCAPED_UNICODE));
+
+        $this->receive($this->nail, $this->south, 5);
+        $this->assertSame('Alle Artikel liegen über dem Mindestbestand; niemand benachrichtigt.', (new MinimumStockReportTask)->run([])->message);
+        $this->assertSame(1, $reader->notifications()->count());
+    }
+
+    public function test_task_can_be_created_in_the_form(): void
+    {
+        $this->actingAsSuperAdmin();
+
+        // Über die Oberfläche: Administration › Geplante Aufgaben › Neu (Seite von SAFT, Adresse aus der Route).
+        $this->get(route('filament.admin.resources.scheduled-tasks.create'))->assertOk()->assertSee('Lager: Inventur-Erinnerung');
+    }
+
+    public function test_task_types_are_registered(): void
+    {
+        $this->assertSame([StocktakingReminderTask::class, MinimumStockReportTask::class], Saft::plugin(LagerTafelPlugin::ID)->taskTypes());
     }
 
     // A.7 – Menüvorschläge und Rechte

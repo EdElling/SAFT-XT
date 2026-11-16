@@ -83,6 +83,8 @@ return [
     ],
     'inactive' => 'Inaktiv',
     'next_run_text' => 'Nächster Lauf: :time',
+    // Titel der Meldung nach „Jetzt ausführen“ bei erfolgreichem Lauf (neutral: das Ergebnis kann auch eine Warnung sein).
+    'run_finished' => 'Ausgeführt',
     'run_now' => 'Jetzt ausführen',
     'run_now_confirm' => '„:task“ jetzt ausführen? Der Zeitplan bleibt unverändert.',
     'runs' => 'Läufe',

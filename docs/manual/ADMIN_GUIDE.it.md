@@ -230,6 +230,7 @@ non esiste.
 | Impostazioni del tipo | lunghezza (testo), cifre (numero decimale), valori (elenco di selezione), tabella di destinazione, campi visualizzati e separatore (collegamento) |
 | Validazione | lunghezza min./max., minimo/massimo, e-mail, URL; **Ulteriori verifiche** dei plugin, p. es. numero AVS o IBAN (compare solo se un plugin offre regole per il tipo di campo; valgono nell’inserimento, nell’importazione e tramite l’interfaccia, i valori vuoti non vengono verificati). Se in seguito il plugin manca o è sospeso, la verifica viene ignorata e indicata come «non disponibile» sul campo |
 | Valore proposto alla creazione (numero intero) | **Proponi il numero successivo (valore massimo + 1):** nella finestra «Nuovo record» compare il valore più alto esistente + 1, che resta modificabile; se il campo resta vuoto, SAFT imposta il valore al salvataggio. Con **Conta per** (un collegamento, ad es. *Ordine*) si conta per record master: sotto un ordine con due righe viene proposto 3; nell’elenco la proposta compare appena l’ordine è scelto. I record eliminati non contano. |
+| Valore proposto alla creazione (data, data e ora) | **Precompilare con la data odierna** o **Precompilare con data e ora attuali:** nella finestra «Nuovo record» il campo mostra all’apertura la data (o data e ora al minuto) attuale e resta modificabile. In modifica, importazione e tramite l’interfaccia SAFT non imposta nulla. Non insieme a «Riprendi da». |
 | Riprendi da | riprendere un valore dal record master, ad es. *Prezzo unitario* da **Articolo → Prezzo**: appena nel modulo è scelto un articolo (o subito sotto un articolo come tabella di dettaglio), il suo prezzo compare nel campo e resta modificabile. Cambiando articolo il valore segue, finché non è stato modificato a mano; SAFT riempie i campi salvati vuoti. È una copia: le modifiche successive all’articolo non cambiano le righe esistenti. Vengono proposti solo campi compatibili (numero ← numero, data ← data, testo ← testo/selezione, sì/no ← sì/no). Un campo di origine non si può eliminare finché un campo ne riprende il valore; la ridenominazione viene seguita. |
 | Campo obbligatorio | deve essere compilato; sempre mostrato negli elenchi |
 | Univoco | può comparire una sola volta (i record eliminati non contano) |
@@ -833,6 +834,12 @@ ha un **tipo**, i relativi **parametri** e una **pianificazione**:
 | Pulire gli stati dei dati (sistema) | – | applica la conservazione di tutti gli stati dei dati, anche senza nuovo aggiornamento, e ripulisce le esecuzioni interrotte; predefinito ogni giorno alle 03:15 |
 | Pulire il registro delle esecuzioni (sistema) | conservare le esecuzioni (giorni, predefinito 90) | elimina le voci più vecchie del registro delle esecuzioni; predefinito ogni giorno alle 03:30 |
 
+I plugin possono aggiungere altri tipi; compaiono in **Nuovo** alla voce «Tipo». Il plugin di esempio *Tabellone delle
+giacenze* aggiunge **Magazzino: promemoria inventario** (segnala nel registro le giacenze non contate da un numero di
+giorni impostabile) e **Magazzino: segnalare la scorta minima** (notifica nella campanella a tutte le persone con il
+diritto *Tabellone delle giacenze: Visualizzare la matrice delle giacenze* quando ci sono articoli sotto la scorta
+minima). Le attività di un plugin disattivato o inattivo vengono saltate.
+
 Per la stessa tabella o connessione sono possibili più attività, ad es. nei giorni feriali alle 06:00 e in più la
 domenica. Le **attività di sistema** si possono adattare e disattivare, ma non eliminare; se mancano,
 `php artisan db:seed` le ricrea.
@@ -1020,7 +1027,7 @@ i diritti no: i ruoli perdono definitivamente i diritti eliminati, anche se il p
 > registra l’ultimo conteggio), le giacenze si modificano solo tramite movimenti, la maschera *Trasferimento* e il
 > pulsante «Trasferisci» in *Giacenze* spostano merce tra ubicazioni e, se la giacenza totale di un articolo scende
 > sotto la scorta minima, compare un avviso nella campanella. Il riquadro *Magazzino: scorta minima* sulla dashboard
-> mostra gli articoli interessati. Il plugin *Tabellone delle giacenze* richiede *Trasferimento di magazzino* e mostra la *Matrice delle giacenze* (giacenza per articolo e ubicazione), il *Tabellone delle giacenze* (trasferire la giacenza trascinandola) e il riquadro *Magazzino: giacenza per ubicazione*. Il plugin *Verifiche svizzere* aggiunge le regole di verifica numero AVS, IBAN, IDI e
+> mostra gli articoli interessati. Il plugin *Tabellone delle giacenze* richiede *Trasferimento di magazzino* e mostra la *Matrice delle giacenze* (giacenza per articolo e ubicazione), il *Tabellone delle giacenze* (trasferire la giacenza trascinandola) e il riquadro *Magazzino: giacenza per ubicazione* nonché due tipi di attività pianificate (vedi [capitolo 12](#12-attività-pianificate)). Il plugin *Verifiche svizzere* aggiunge le regole di verifica numero AVS, IBAN, IDI e
 > numero postale nonché la funzione per formule `rappen()`.
 
 ## 15. Trasferire la configurazione

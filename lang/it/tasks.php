@@ -83,6 +83,8 @@ return [
     ],
     'inactive' => 'Inattiva',
     'next_run_text' => 'Prossima esecuzione: :time',
+    // Titel der Meldung nach „Jetzt ausführen“ bei erfolgreichem Lauf (neutral: das Ergebnis kann auch eine Warnung sein).
+    'run_finished' => 'Eseguita',
     'run_now' => 'Esegui ora',
     'run_now_confirm' => 'Eseguire «:task» ora? La pianificazione resta invariata.',
     'runs' => 'Esecuzioni',

@@ -3,7 +3,7 @@
     "description": "Beispiel-Plugin für SAFT: Lagerspiegel, Lagertafel mit Drag and Drop, Kachel, Listener, Prüfregel (Lager-Demo)",
     "type": "library",
     "license": "PolyForm-Noncommercial-1.0.0",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "require": {
         "php": "^8.4",
         "filament/filament": "^5.0",
@@ -26,7 +26,7 @@
             ]
         },
         "saft": {
-            "api": "^1.4"
+            "api": "^1.5"
         }
     }
 }

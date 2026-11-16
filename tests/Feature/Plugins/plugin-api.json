@@ -1,5 +1,5 @@
 {
-    "version": "1.4",
+    "version": "1.5",
     "surface": {
         "App\\Filament\\Concerns\\LimitsFormWidth": [
             "trait",
@@ -181,6 +181,24 @@
             "protected function setUp(): void",
             "protected function withoutPlugin(string $id, Closure $callback): mixed",
             "protected function withoutPluginEvents(Closure $callback): mixed"
+        ],
+        "App\\Tasks\\TaskResult": [
+            "class",
+            "function __construct(string $message, array $data = [])",
+            "property array $data",
+            "property string $message"
+        ],
+        "App\\Tasks\\TaskSkipped": [
+            "class extends RuntimeException"
+        ],
+        "App\\Tasks\\TaskType": [
+            "interface",
+            "abstract function creatable(): bool",
+            "abstract function describe(array $parameters): string",
+            "abstract function key(): string",
+            "abstract function label(): string",
+            "abstract function parameterFields(): array",
+            "abstract function run(array $parameters): App\\Tasks\\TaskResult"
         ]
     }
 }

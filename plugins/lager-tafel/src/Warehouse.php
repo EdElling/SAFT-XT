@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Saft\LagerTafel;
 
 use App\Models\DynamicRecord;
+use App\Plugins\Api\DataTable;
 use App\Plugins\Api\Saft;
 
 /**
- * Lesezugriff auf die Lager-Demo für Lagerspiegel, Lagertafel und Kachel – immer über Saft::table(…), also mit den
- * Datenrechten der angemeldeten Person.
+ * Lesezugriff auf die Lager-Demo für Lagerspiegel, Lagertafel, Kachel und geplante Aufgaben – immer über
+ * Saft::table(…), also mit den Datenrechten der angemeldeten Person. Geplante Aufgaben laufen ohne angemeldete Person
+ * und lesen über Warehouse::system() ohne Rechteprüfung.
  */
 final class Warehouse
 {
@@ -18,6 +20,23 @@ final class Warehouse
     public const string LOCATIONS = 'lager_orte';
 
     public const string STOCKS = 'lager_bestaende';
+
+    /** Ohne Rechteprüfung lesen (geplante Aufgaben)? */
+    private bool $system = false;
+
+    /** Für Arbeit ohne angemeldete Person: liest ohne Datenrechte, nur für Auswertungen, die allen zustehen. */
+    public static function system(): self
+    {
+        $warehouse = new self;
+        $warehouse->system = true;
+
+        return $warehouse;
+    }
+
+    private function table(string $name): DataTable
+    {
+        return $this->system ? Saft::table($name)->withoutAuthorization() : Saft::table($name);
+    }
 
     /** Sind alle Tabellen und Felder aus requiredTables() vorhanden? */
     public function available(): bool
@@ -45,10 +64,32 @@ final class Warehouse
         return in_array('mindestbestand', Saft::table(self::ARTICLES)->fieldNames(), true);
     }
 
+    /** Gibt es das (optionale) Feld in der Tabelle? */
+    public function hasField(string $table, string $field): bool
+    {
+        return in_array($field, Saft::table($table)->fieldNames(), true);
+    }
+
+    /**
+     * Bestände mit Ware, die seit dem Stichtag nicht gezählt wurden (letzte Zählung leer oder davor).
+     *
+     * @return list<DynamicRecord>
+     */
+    public function stocksNotCountedSince(string $date): array
+    {
+        return $this->table(self::STOCKS)->query()
+            ->where('menge', '>', 0)
+            ->where(static fn ($query) => $query->whereNull('letzte_zaehlung')->orWhere('letzte_zaehlung', '<', $date))
+            ->orderBy('artikel_id')
+            ->orderBy('lagerort_id')
+            ->get()
+            ->all();
+    }
+
     /** @return array<int, string> Lagerorte: id => Bezeichnung, alphabetisch */
     public function locations(): array
     {
-        return Saft::table(self::LOCATIONS)->query()->orderBy('bezeichnung')->get()
+        return $this->table(self::LOCATIONS)->query()->orderBy('bezeichnung')->get()
             ->mapWithKeys(static fn (DynamicRecord $l): array => [(int) $l->getKey() => (string) $l->getAttribute('bezeichnung')])
             ->all();
     }
@@ -56,7 +97,7 @@ final class Warehouse
     /** @return array<int, string> Artikel: id => „Nummer – Bezeichnung“, alphabetisch */
     public function articles(): array
     {
-        return Saft::table(self::ARTICLES)->query()->orderBy('bezeichnung')->get()
+        return $this->table(self::ARTICLES)->query()->orderBy('bezeichnung')->get()
             ->mapWithKeys(static fn (DynamicRecord $a): array => [
                 (int) $a->getKey() => trim($a->getAttribute('artikelnummer').' – '.$a->getAttribute('bezeichnung'), ' –'),
             ])
@@ -72,7 +113,7 @@ final class Warehouse
     {
         $matrix = [];
 
-        foreach (Saft::table(self::STOCKS)->query()->get(['artikel_id', 'lagerort_id', 'menge']) as $stock) {
+        foreach ($this->table(self::STOCKS)->query()->get(['artikel_id', 'lagerort_id', 'menge']) as $stock) {
             $article = (int) $stock->getAttribute('artikel_id');
             $location = (int) $stock->getAttribute('lagerort_id');
             $matrix[$article][$location] = ($matrix[$article][$location] ?? 0) + (int) $stock->getAttribute('menge');
@@ -96,7 +137,7 @@ final class Warehouse
 
         $matrix = $this->matrix();
 
-        return Saft::table(self::ARTICLES)->query()->whereNotNull('mindestbestand')->get(['id', 'mindestbestand'])
+        return $this->table(self::ARTICLES)->query()->whereNotNull('mindestbestand')->get(['id', 'mindestbestand'])
             ->filter(static fn (DynamicRecord $a): bool => array_sum($matrix[(int) $a->getKey()] ?? []) < (int) $a->getAttribute('mindestbestand'))
             ->map(static fn (DynamicRecord $a): int => (int) $a->getKey())
             ->values()

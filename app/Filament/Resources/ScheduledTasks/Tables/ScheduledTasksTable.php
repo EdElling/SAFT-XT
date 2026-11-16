@@ -82,7 +82,7 @@ class ScheduledTasksTable
         $run = app(TaskRunner::class)->run($task, TaskRun::MANUAL, $user instanceof User ? $user : null);
 
         Notification::make()
-            ->title(__('tasks.status.'.$run->status).': '.$task->displayName())
+            ->title(($run->status === ScheduledTask::SUCCESS ? __('tasks.run_finished') : __('tasks.status.'.$run->status)).': '.$task->displayName())
             ->body($run->message)
             ->status(match ($run->status) {
                 ScheduledTask::SUCCESS => 'success',

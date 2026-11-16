@@ -8,6 +8,7 @@ use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Formula\Printer;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Rules\CopySource;
+use App\DynamicData\Rules\NowDefault;
 use App\DynamicData\Rules\SequenceSuggester;
 use App\DynamicData\Validation\FieldRuleCheck;
 use App\Exceptions\BusinessRuleException;
@@ -88,6 +89,8 @@ final class FieldDefinitionNormalizer
             FieldType::Relation => $this->relationOptions($options, $owner),
             // Ohne Tausendertrennzeichen nur speichern, wenn ausdrücklich gewählt (Vorgabe: mit).
             FieldType::Integer => [...$this->suggestOptions($options, $owner), ...(array_key_exists(CustomField::GROUP_DIGITS, $options) && ! filter_var($options[CustomField::GROUP_DIGITS], FILTER_VALIDATE_BOOLEAN) ? [CustomField::GROUP_DIGITS => false] : [])],
+            // Mit heute bzw. jetzt vorbelegen (nur gespeichert, wenn gewählt).
+            FieldType::Date, FieldType::DateTime => filter_var($options[NowDefault::OPTION] ?? false, FILTER_VALIDATE_BOOLEAN) ? [NowDefault::OPTION => true] : [],
             default => [],
         };
 
@@ -95,6 +98,10 @@ final class FieldDefinitionNormalizer
 
         if ($copy !== [] && isset($typed[SequenceSuggester::OPTION])) {
             $this->fail(__('tables.errors.copy_and_suggest'));
+        }
+
+        if ($copy !== [] && isset($typed[NowDefault::OPTION])) {
+            $this->fail(__('tables.errors.copy_and_now'));
         }
 
         return [...$typed, ...$copy];

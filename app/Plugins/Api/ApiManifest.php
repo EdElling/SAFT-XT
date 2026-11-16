@@ -11,6 +11,9 @@ use App\Plugins\MenuSuggestion;
 use App\Plugins\PluginServiceProvider;
 use App\Plugins\SaftPlugin;
 use App\Plugins\Testing\PluginTestCase;
+use App\Tasks\TaskResult;
+use App\Tasks\TaskSkipped;
+use App\Tasks\TaskType;
 
 /**
  * Was zur Programmierschnittstelle für Plugins gehört (intern, für Tests und Dokumentation). Die öffentlichen Methoden,
@@ -41,6 +44,10 @@ final class ApiManifest
         Events\RecordDeleted::class,
         LimitsFormWidth::class,
         PluginTestCase::class,
+        // Arten geplanter Aufgaben (SaftPlugin::taskTypes()), seit API 1.5.
+        TaskType::class,
+        TaskResult::class,
+        TaskSkipped::class,
     ];
 
     /** @var list<class-string> */

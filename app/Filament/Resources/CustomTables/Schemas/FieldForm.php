@@ -7,6 +7,7 @@ namespace App\Filament\Resources\CustomTables\Schemas;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Rules\CopySource;
+use App\DynamicData\Rules\NowDefault;
 use App\DynamicData\Rules\SequenceSuggester;
 use App\DynamicData\Schema\FieldDefinitionNormalizer;
 use App\DynamicData\Schema\FieldType;
@@ -467,7 +468,7 @@ final class FieldForm
                     ->options(fn (Get $get): array => $owner === null || ($type = FieldType::tryFrom((string) $get('type'))) === null
                         ? []
                         : CopySource::options($owner, $type))
-                    ->disabled(fn (Get $get): bool => $owner === null || (bool) $get('options.'.SequenceSuggester::OPTION))
+                    ->disabled(fn (Get $get): bool => $owner === null || (bool) $get('options.'.SequenceSuggester::OPTION) || (bool) $get('options.'.NowDefault::OPTION))
                     ->live()
                     ->columnSpanFull(),
                 Toggle::make('options.'.CustomField::GROUP_DIGITS)
@@ -479,6 +480,12 @@ final class FieldForm
                     ->label(__('tables.fields.suggest_next'))
                     ->helperText(__('tables.fields.suggest_next_help'))
                     ->visible(fn (Get $get): bool => $get('type') === FieldType::Integer->value)
+                    ->disabled(fn (Get $get): bool => filled($get('options.'.CopySource::OPTION)))
+                    ->live(),
+                Toggle::make('options.'.NowDefault::OPTION)
+                    ->label(fn (Get $get): string => $get('type') === FieldType::Date->value ? __('tables.fields.prefill_today') : __('tables.fields.prefill_now'))
+                    ->helperText(__('tables.fields.prefill_now_help'))
+                    ->visible(fn (Get $get): bool => in_array($get('type'), [FieldType::Date->value, FieldType::DateTime->value], true))
                     ->disabled(fn (Get $get): bool => filled($get('options.'.CopySource::OPTION)))
                     ->live(),
                 Select::make('options.'.SequenceSuggester::SCOPE)

@@ -231,6 +231,7 @@ Table-Connectors gibt es den Import nicht.
 | Typ-Einstellungen | Länge (Text), Stellen (Dezimalzahl), Werte (Auswahlliste), Zieltabelle, Anzeigefelder und Trennzeichen (Verknüpfung) |
 | Validierung | Mindest-/Höchstlänge, Minimum/Maximum, E-Mail, URL; **Weitere Prüfungen** aus Plugins, z. B. AHV-Nummer oder IBAN (erscheint nur, wenn ein Plugin Prüfregeln für den Feldtyp anbietet; sie gelten bei der Erfassung, beim Import und über die Schnittstelle, leere Werte werden nicht geprüft). Fehlt das Plugin später oder ruht es, wird die Prüfung übersprungen und beim Feld als „nicht verfügbar“ angezeigt |
 | Vorgabe beim Anlegen (Ganzzahl) | **Fortlaufend vorschlagen:** Im Dialog „Neuer Datensatz“ steht der höchste vorhandene Wert + 1 und bleibt änderbar; bleibt das Feld leer, setzt SAFT den Wert beim Speichern. Mit **Zählen je** (eine Verknüpfung, z. B. *Bestellung*) wird je Master-Datensatz gezählt: unter einer Bestellung mit zwei Positionen wird 3 vorgeschlagen; in der Liste erscheint der Vorschlag, sobald die Bestellung gewählt ist. Gelöschte Datensätze zählen nicht. |
+| Vorgabe beim Anlegen (Datum, Datum und Zeit) | **Mit dem heutigen Datum vorbelegen** bzw. **Mit aktuellem Datum und Uhrzeit vorbelegen:** Im Dialog „Neuer Datensatz“ steht beim Öffnen das aktuelle Datum (bzw. Datum und Uhrzeit auf die Minute) und bleibt änderbar. Beim Bearbeiten, beim Import und über die Schnittstelle setzt SAFT nichts. Nicht zusammen mit „Übernehmen aus“. |
 | Übernehmen aus | Wert aus dem Master-Datensatz übernehmen, z. B. *Einzelpreis* aus **Artikel → Preis**: Sobald im Formular ein Artikel gewählt ist (oder unter einem Artikel als Detailtabelle sofort), steht sein Preis im Feld und bleibt änderbar. Beim Wechsel des Artikels folgt der Wert, solange er nicht von Hand geändert wurde; leer gespeicherte Felder füllt SAFT. Eine Kopie: Spätere Änderungen am Artikel ändern vorhandene Positionen nicht. Angeboten werden nur passende Felder (Zahl ← Zahl, Datum ← Datum, Text ← Text/Auswahl, Ja/Nein ← Ja/Nein). Ein Quellfeld lässt sich nicht löschen, solange ein Feld daraus übernimmt; Umbenennen wird nachgeführt. |
 | Pflichtfeld | muss ausgefüllt werden; wird in Listen immer angezeigt |
 | Eindeutig | darf nur einmal vorkommen (gelöschte Datensätze zählen nicht) |
@@ -819,6 +820,12 @@ deren **Parameter** und einen **Zeitplan**:
 | Datenstände bereinigen (System) | – | setzt die Aufbewahrung aller Datenstände durch, auch ohne neue Aktualisierung, und räumt abgebrochene Läufe auf; Vorgabe täglich 03:15 |
 | Laufprotokoll bereinigen (System) | Läufe aufbewahren (Tage, Vorgabe 90) | löscht ältere Einträge im Laufprotokoll; Vorgabe täglich 03:30 |
 
+Plugins können weitere Arten mitbringen; sie erscheinen unter **Neu** bei „Art“. Das Beispiel-Plugin *Lager-Tafel* bringt
+**Lager: Inventur-Erinnerung** (meldet Bestände, die seit einer einstellbaren Zahl von Tagen nicht gezählt wurden, im
+Laufprotokoll) und **Lager: Mindestbestand melden** (Meldung in die Glocke an alle Personen mit dem Recht
+*Lager-Tafel: Lagerspiegel anzeigen*, wenn Artikel unter dem Mindestbestand liegen). Aufgaben eines ausgeschalteten oder
+ruhenden Plugins werden übersprungen.
+
 Für dieselbe Tabelle oder Verbindung sind mehrere Aufgaben möglich, z. B. werktags 06:00 und zusätzlich sonntags.
 **System-Aufgaben** lassen sich anpassen und abschalten, aber nicht löschen; fehlen sie, legt `php artisan db:seed` sie
 wieder an.
@@ -1002,7 +1009,7 @@ installiert wird.
 > Zählung), Bestände lassen sich nur noch über Lagerbewegungen ändern, die Maske *Umbuchung* und der Knopf „Umbuchen“ in
 > *Bestände* buchen Ware zwischen Lagerorten um, und sinkt der Gesamtbestand eines Artikels unter seinen Mindestbestand,
 > erscheint eine Meldung in der Glocke. Die Kachel *Lager: Mindestbestand* auf dem Dashboard zeigt die betroffenen
-> Artikel. Das Plugin *Lager-Tafel* braucht *Lager-Umbuchung* und zeigt den *Lagerspiegel* (Bestand je Artikel und Lagerort), die *Lagertafel* (Bestand per Ziehen umbuchen) und die Kachel *Lager: Bestand je Lagerort*. Das Plugin *CH-Prüfungen* bringt die Prüfregeln AHV-Nummer, IBAN, UID und Postleitzahl sowie die
+> Artikel. Das Plugin *Lager-Tafel* braucht *Lager-Umbuchung* und zeigt den *Lagerspiegel* (Bestand je Artikel und Lagerort), die *Lagertafel* (Bestand per Ziehen umbuchen) und die Kachel *Lager: Bestand je Lagerort* sowie zwei Arten geplanter Aufgaben (siehe [Kapitel 12](#12-geplante-aufgaben)). Das Plugin *CH-Prüfungen* bringt die Prüfregeln AHV-Nummer, IBAN, UID und Postleitzahl sowie die
 > Formelfunktion `rappen()` mit.
 
 ## 15. Konfiguration übertragen

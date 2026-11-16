@@ -235,6 +235,7 @@ Connecteur de tables ne peuvent pas être importées.
 | Réglages du type | longueur (texte), chiffres (nombre décimal), valeurs (liste de sélection), table cible, champs affichés et séparateur (liaison) |
 | Validation | longueur min./max., minimum/maximum, e-mail, URL ; **Contrôles supplémentaires** issus de plugins, p. ex. numéro AVS ou IBAN (affiché seulement si un plugin propose des règles pour le type de champ ; ils s’appliquent à la saisie, à l’importation et via l’interface, les valeurs vides ne sont pas contrôlées). Si le plugin manque ensuite ou est en veille, le contrôle est ignoré et indiqué « non disponible » sur le champ |
 | Valeur proposée à la création (nombre entier) | **Proposer le numéro suivant (valeur maximale + 1) :** dans la boîte « Nouvel enregistrement » figure la plus grande valeur existante + 1, qui reste modifiable ; si le champ reste vide, SAFT définit la valeur à l’enregistrement. Avec **Compter par** (une liaison, p. ex. *Commande*), le comptage se fait par enregistrement maître : sous une commande avec deux lignes, 3 est proposé ; dans la liste, la proposition apparaît dès que la commande est choisie. Les enregistrements supprimés ne comptent pas. |
+| Valeur proposée à la création (date, date et heure) | **Préremplir avec la date du jour** ou **Préremplir avec la date et l’heure actuelles :** dans la boîte de dialogue « Nouvel enregistrement », le champ affiche à l’ouverture la date (ou la date et l’heure à la minute) actuelle et reste modifiable. Lors de la modification, de l’import et via l’interface, SAFT ne remplit rien. Pas en même temps que « Reprendre de ». |
 | Reprendre de | reprendre une valeur de l’enregistrement maître, p. ex. *Prix unitaire* depuis **Article → Prix** : dès qu’un article est choisi dans le formulaire (ou immédiatement sous un article comme table de détail), son prix figure dans le champ et reste modifiable. Si l’article change, la valeur suit tant qu’elle n’a pas été modifiée à la main ; SAFT remplit les champs enregistrés vides. Il s’agit d’une copie : les modifications ultérieures de l’article ne changent pas les lignes existantes. Seuls les champs compatibles sont proposés (nombre ← nombre, date ← date, texte ← texte/sélection, oui/non ← oui/non). Un champ source ne peut pas être supprimé tant qu’un champ en reprend la valeur ; un renommage est suivi. |
 | Champ obligatoire | doit être rempli ; toujours affiché dans les listes |
 | Unique | ne peut apparaître qu’une fois (les enregistrements supprimés ne comptent pas) |
@@ -852,6 +853,12 @@ devant le libellé.
 | Nettoyer les états des données (système) | – | applique la conservation de tous les états des données, même sans nouvelle actualisation, et nettoie les exécutions interrompues ; par défaut tous les jours à 03:15 |
 | Nettoyer le journal des exécutions (système) | conserver les exécutions (jours, 90 par défaut) | supprime les entrées plus anciennes du journal des exécutions ; par défaut tous les jours à 03:30 |
 
+Les plugins peuvent apporter d’autres types ; ils apparaissent sous **Nouveau** dans « Type ». Le plugin d’exemple
+*Tableau des stocks* apporte **Entrepôt : rappel d’inventaire** (signale dans le journal les stocks non comptés depuis
+un nombre de jours réglable) et **Entrepôt : signaler le stock minimum** (notification dans la cloche à toutes les
+personnes ayant le droit *Tableau des stocks : Afficher la matrice des stocks* lorsque des articles sont sous le stock
+minimum). Les tâches d’un plugin désactivé ou en veille sont ignorées.
+
 Plusieurs tâches sont possibles pour la même table ou connexion, p. ex. les jours ouvrables à 06:00 et en plus le
 dimanche. Les **tâches système** peuvent être adaptées et désactivées, mais pas supprimées ; si elles manquent,
 `php artisan db:seed` les recrée.
@@ -1045,7 +1052,7 @@ réinstallé plus tard.
 > positive ; un inventaire enregistre le dernier comptage), les stocks ne se modifient plus que par des mouvements, le
 > masque *Transfert* et le bouton « Transférer » dans *Stocks* déplacent des marchandises entre emplacements, et si le
 > stock total d’un article passe sous son stock minimum, une notification apparaît dans la cloche. La tuile
-> *Entrepôt : stock minimum* du tableau de bord affiche les articles concernés. Le plugin *Tableau des stocks* nécessite *Transfert de stock* et affiche la *Matrice des stocks* (stock par article et emplacement), le *Tableau des stocks* (transférer le stock en le faisant glisser) et la tuile *Entrepôt : stock par emplacement*. Le plugin *Contrôles suisses* apporte
+> *Entrepôt : stock minimum* du tableau de bord affiche les articles concernés. Le plugin *Tableau des stocks* nécessite *Transfert de stock* et affiche la *Matrice des stocks* (stock par article et emplacement), le *Tableau des stocks* (transférer le stock en le faisant glisser) et la tuile *Entrepôt : stock par emplacement* ainsi que deux types de tâches planifiées (voir [chapitre 12](#12-tâches-planifiées)). Le plugin *Contrôles suisses* apporte
 > les règles de validation numéro AVS, IBAN, IDE et numéro postal ainsi que la fonction de formule `rappen()`.
 
 ## 15. Transférer la configuration

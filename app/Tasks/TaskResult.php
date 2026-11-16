@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tasks;
 
-/** Ergebnis eines erfolgreichen Laufs: Meldung für die Liste und Kennzahlen. */
+/**
+ * Ergebnis eines erfolgreichen Laufs: Meldung für die Liste und Kennzahlen.
+ *
+ * @api
+ */
 final readonly class TaskResult
 {
     /** @param  array<string, mixed>  $data */

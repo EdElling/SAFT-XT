@@ -225,6 +225,7 @@ when entering data by hand, and it is all or nothing. At most 10,000 rows per fi
 | Required | must be filled in; always shown in lists |
 | Unique | may only occur once (deleted records do not count) |
 | Default when creating (integer) | **Suggest next number:** in the "New record" dialog the highest existing value + 1 is filled in and can be changed; if the field stays empty, SAFT sets the value when saving. With **Count per** (a relation, e.g. *Order*) it counts per master record: below an order with two lines, 3 is suggested; in the list the suggestion appears as soon as the order is chosen. Deleted records do not count. |
+| Default when creating (date, date and time) | **Prefill with today's date** or **Prefill with the current date and time:** in the "New record" dialog the field shows the current date (or date and time to the minute) when it opens and stays editable. When editing, importing and through the API SAFT sets nothing. Not together with "Copy from". |
 | Copy from | Take the value from the master record, e.g. *unit price* from **Item → Price**: as soon as an item is chosen in the form (or immediately below an item as detail table), its price is filled in and can be changed. When the item changes, the value follows as long as it was not changed by hand; fields saved empty are filled by SAFT. A copy: later changes to the item do not change existing lines. Only fitting fields are offered (number ← number, date ← date, text ← text/selection, yes/no ← yes/no). A source field cannot be deleted while a field copies from it; renaming is carried over. |
 | Searchable | is included in the search |
 | Create index | speeds up sorting and filtering in large tables |
@@ -794,6 +795,11 @@ foreign key). For large connected tables the source field should have an index i
 | Clean up snapshots (system) | – | enforces the retention of all snapshots, also without a new refresh, and cleans up aborted runs; default daily 03:15 |
 | Clean up run log (system) | keep runs (days, default 90) | deletes older entries in the run log; default daily 03:30 |
 
+Plugins can bring further kinds; they appear under **New** in "Type". The example plugin *Stock board* brings
+**Warehouse: stocktaking reminder** (reports stock not counted for a configurable number of days in the run log) and
+**Warehouse: report minimum stock** (notification in the bell to everyone with the permission *Stock board: View stock
+matrix* when items are below minimum stock). Tasks of a switched-off or resting plugin are skipped.
+
 Several tasks for the same table or connection are possible, e.g. weekdays at 06:00 and additionally on Sundays.
 **System tasks** can be adjusted and switched off, but not deleted; if they are missing, `php artisan db:seed` creates
 them again.
@@ -970,7 +976,7 @@ are not: roles lose deleted permissions for good, even if the plugin is installe
 > count), stock levels can only be changed through stock movements, the form *Transfer* and the “Transfer” button in
 > *Stock levels* move goods between locations, and if an item's total stock falls below its minimum stock, a
 > notification appears in the bell. The tile *Warehouse: minimum stock* on the dashboard shows the affected items.
-> The plugin *Stock board* requires *Stock transfer* and shows the *Stock matrix* (stock per item and location), the *Stock board* (transfer stock by dragging) and the tile *Warehouse: stock by location*. The plugin *Swiss checks* brings the validation rules AHV number, IBAN, UID and postal code as well as the formula
+> The plugin *Stock board* requires *Stock transfer* and shows the *Stock matrix* (stock per item and location), the *Stock board* (transfer stock by dragging) and the tile *Warehouse: stock by location* as well as two kinds of scheduled tasks (see [chapter 12](#12-scheduled-tasks)). The plugin *Swiss checks* brings the validation rules AHV number, IBAN, UID and postal code as well as the formula
 > function `rappen()`.
 
 ## 15. Transfer configuration

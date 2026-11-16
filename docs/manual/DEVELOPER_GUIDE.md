@@ -56,16 +56,18 @@ A plugin is an ordinary **Composer package** with a plugin class and a service p
 | Kinds of scheduled tasks | classes implementing `App\Tasks\TaskType` |
 
 **What is guaranteed:** the programming interface for plugins (plugin API) has its **own version number**,
-independent of SAFT – currently **1.4**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
+independent of SAFT – currently **1.5**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, all classes under `App\Plugins\Api` (except
-`ApiManifest`), the test base `App\Plugins\Testing\PluginTestCase` and the trait
+`ApiManifest`), the test base `App\Plugins\Testing\PluginTestCase`, for kinds of scheduled tasks
+`App\Tasks\TaskType`, `App\Tasks\TaskResult` and `App\Tasks\TaskSkipped`, and the trait
 `App\Filament\Concerns\LimitsFormWidth`; of `App\Models\DynamicRecord` (records) and
 `App\Models\User` only the class as a type with its Eloquent behaviour. Everything stays compatible within an API major
 version. All other SAFT classes are internal – plugins do not use them (a test checks this). Details:
 [chapter 17](#17-api-versions-and-change-log).
 
 **Step by step:** [Appendix A](#appendix-a--step-by-step-guides) takes the most common tasks – custom table view,
-custom form, widget, button in a data view, listener, validation rule, menu suggestion – from an empty file to the
+custom form, widget, button in a data view, listener, validation rule, menu suggestion, scheduled task – from an empty
+file to the
 test, using the example plugin *Lager-Tafel*.
 
 ## 2. Getting started
@@ -216,7 +218,7 @@ final class LagerUmbuchungPlugin extends SaftPlugin
 | `description()` | no | Short description; taken from `composer.json` if omitted |
 | `permissions()` | no | action => label; the permission is named `<id>.<action>` (`permissionName('execute')`) |
 | `menuSuggestions()` | no | list of `MenuSuggestion`, see [chapter 6](#6-permissions-and-menu) |
-| `taskTypes()` | no | classes of additional kinds of scheduled tasks |
+| `taskTypes()` | no | classes of additional kinds of scheduled tasks, see [appendix A.8](#a8-scheduled-tasks) |
 | `requiredTables()` | no | tables and fields of the table designer the plugin needs, see [chapter 8](#8-accessing-data) |
 | `recordListeners()` | no | listeners for changes to tables, see [chapter 9](#9-reacting-to-changes-events) |
 | `dataActions()` | no | buttons in data views, see [chapter 10](#10-actions-in-data-views) |
@@ -730,6 +732,7 @@ through whose procedure it books.
 | Listeners | `src/Listeners/` | store the item number in one spelling; locked once stock movements exist |
 | Validation rule | `src/ArticleNumber.php`, `LagerTafelPlugin::fieldRules()` | “Item number (warehouse demo)”: one letter, hyphen, four digits |
 | Menu suggestions | `LagerTafelPlugin::menuSuggestions()` | stock matrix and stock board in the group *Warehouse (demo)* |
+| Scheduled tasks | `src/Tasks/` | “Warehouse: stocktaking reminder” (stock not counted for N days) and “Warehouse: report minimum stock” (bell) |
 
 **Permissions:** *Stock board: View stock matrix* for the stock matrix and the tile, *Stock board: Transfer on the stock
 board* for the stock board; plus the data permissions as for Lager-Umbuchung.
@@ -753,7 +756,7 @@ with the formula `rappen(amount * 1.081)`.
 
 ## 17. API versions and change log
 
-The plugin API has its own version number **major.minor** (currently **1.4**). It is set in `config/saft.php`
+The plugin API has its own version number **major.minor** (currently **1.5**). It is set in `config/saft.php`
 (`api_versions`) and shown under **Documentation › About SAFT XT** and on the **Plugins** page.
 
 | Change | Version | Effect on plugins |
@@ -781,6 +784,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 | API | SAFT | Changes |
 |---|---|---|
+| **1.5** | 0.1 | `App\Tasks\TaskType`, `TaskResult` and `TaskSkipped` belong to the API – kinds of scheduled tasks from plugins (`SaftPlugin::taskTypes()`) thus pass `saft:plugins --check` |
 | **1.4** | 0.1 | `SaftPlugin::isEnabled()`, `PluginTestCase::withoutPlugin()`. Plugins can be switched off (**Plugins** page, `saft:plugins --disable`); plugins in `require` of `composer.json` count as required – if one is resting or missing, the dependent plugin rests as well |
 | **1.3** | 0.1 | `PluginTestCase::createTablesFromSchema()`. Tools (not part of the API): developer context (`saft:plugin-context`, download in plugin administration), `AGENTS.md` in the scaffold |
 | **1.2** | 0.1 | `DashboardWidget` (tile label), `FormulaFunction` and `SaftPlugin::formulaFunctions()`, `FieldRule` and `SaftPlugin::fieldRules()` |
@@ -789,7 +793,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 ## Appendix A – Step-by-step guides
 
-Chapters 1–17 describe each building block on its own. This appendix takes the seven most common tasks from an empty
+Chapters 1–17 describe each building block on its own. This appendix takes the eight most common tasks from an empty
 file to a tested result. All examples come from the example plugin **Lager-Tafel** (stock board, `plugins/lager-tafel`).
 Its code is covered by tests on PostgreSQL, MySQL and MariaDB, so the excerpts here run as shown. Table and field names
 are those of the warehouse demo (German, e.g. `lager_artikel` = items, `menge` = quantity).
@@ -803,6 +807,7 @@ are those of the warehouse demo (German, e.g. `lager_artikel` = items, `menge` =
 | [A.5 Listeners](#a5-listeners) | Normalise and lock the item number | `src/Listeners/` |
 | [A.6 Validation rules](#a6-validation-rules) | “Item number (warehouse demo)” | `src/ArticleNumber.php`, `LagerTafelPlugin::fieldRules()` |
 | [A.7 Menu suggestions](#a7-menu-suggestions) | Stock matrix and stock board in the menu | `LagerTafelPlugin::menuSuggestions()` |
+| [A.8 Scheduled tasks](#a8-scheduled-tasks) | Stocktaking reminder, report minimum stock | `src/Tasks/` |
 
 **To try it:** load the warehouse demo (`php artisan db:seed --class=LagerDemoSeeder`), choose “Create menu entries”
 for *Stock board* under **Administration › Plugins**, then **Warehouse (demo) › Stock matrix** or **Stock board**. The
@@ -1588,3 +1593,162 @@ $this->assertSame(['lager-tafel.view', 'lager-tafel.transfer'], array_map(static
   administration can allow reading without allowing bookings.
 - **Changing suggestions** does not affect entries already adopted; the administration adopts new suggestions with
   another click.
+
+### A.8 Scheduled tasks
+
+**What for:** a scheduled task does work on a schedule without anyone opening a page – checking, reminding, notifying,
+synchronising data. The plugin provides the **kind** of task; the administration creates tasks of that kind under
+**Administration › Scheduled tasks › New**, with parameters and schedule, and can start them right away with “Run now”.
+Lager-Tafel brings two kinds:
+
+| Kind | Parameters | Result |
+|---|---|---|
+| **Warehouse: stocktaking reminder** (`StocktakingReminderTask`) | Not counted for (days), default 90 | stock with goods whose last count is older or missing, in the run log |
+| **Warehouse: report minimum stock** (`MinimumStockReportTask`) | – | notification in the bell to all active people with the permission *View stock matrix* when items are below minimum stock |
+
+You **do not need** a task to react to individual changes – that is what listeners are for (A.5).
+
+**Step 1 – create the class** (`src/Tasks/StocktakingReminderTask.php`). A kind implements `App\Tasks\TaskType` (since
+plugin API 1.5). SAFT creates the class through the container, so no data belongs in properties:
+
+```php
+final readonly class StocktakingReminderTask implements TaskType
+{
+    private const string T = 'lager-tafel::tafel.tasks.inventory.';
+
+    public const int DEFAULT_DAYS = 90;
+
+    /** Identifier, stored with every task – start it with the plugin id and never change it. */
+    public function key(): string
+    {
+        return 'lager_tafel_inventory_reminder';
+    }
+
+    public function label(): string
+    {
+        return __(self::T.'label');
+    }
+
+    /** true: the administration can create tasks of this kind under “New”. */
+    public function creatable(): bool
+    {
+        return true;
+    }
+```
+
+**Step 2 – parameters.** `parameterFields()` returns Filament fields; SAFT shows them in the task form as soon as the
+kind is selected and fills them with their defaults. `describe()` is the short description in the list:
+
+```php
+public function parameterFields(): array
+{
+    return [
+        TextInput::make('days')
+            ->label(__(self::T.'days'))
+            ->helperText(__(self::T.'days_help'))
+            ->integer()
+            ->minValue(1)
+            ->maxValue(3650)
+            ->default(self::DEFAULT_DAYS)
+            ->required(),
+    ];
+}
+
+public function describe(array $parameters): string
+{
+    return __(self::T.'describe', ['days' => $this->days($parameters)]);
+}
+
+/** @param  array<string, mixed>  $parameters  values from the form arrive as text */
+private function days(array $parameters): int
+{
+    $days = $parameters['days'] ?? self::DEFAULT_DAYS;
+
+    return is_numeric($days) ? max(1, (int) $days) : self::DEFAULT_DAYS;
+}
+```
+
+**Step 3 – run.** `run()` runs **without a logged-in person** – through the scheduler or “Run now”. So read without a
+permission check (here through `Warehouse::system()`, which uses `withoutAuthorization()`). The result is a
+`TaskResult` with a message for the run log and figures; if the task cannot run right now, it throws `TaskSkipped` – the
+run then counts as “skipped”, not as an error:
+
+```php
+public function run(array $parameters): TaskResult
+{
+    $warehouse = Warehouse::system();
+
+    if (! $warehouse->available()) {
+        throw new TaskSkipped(__('lager-tafel::tafel.tasks.unavailable', ['missing' => implode('; ', $warehouse->missing())]));
+    }
+
+    $days = $this->days($parameters);
+    $due = $warehouse->stocksNotCountedSince(now()->subDays($days)->toDateString());
+    // … build the names “item (location)”
+
+    if ($names === []) {
+        return new TaskResult(__(self::T.'none', ['days' => $days]), ['count' => 0]);
+    }
+
+    return new TaskResult(trans_choice(self::T.'found', count($names), [/* … */]), ['count' => count($names)]);
+}
+```
+
+Any other exception makes the run **fail**; the message in the log is then generic, the details are in the application
+log, and SAFT notifies the active super admins in the bell.
+
+**Notify instead of only logging** (`MinimumStockReportTask`): the task itself decides who receives a notification –
+here all active people with the plugin's read permission (super admins always have it):
+
+```php
+$recipients = User::query()->where('is_active', true)->orderBy('id')->get()
+    ->filter(static fn (User $user): bool => $user->can(LagerTafelPlugin::ID.'.view'))
+    ->values()
+    ->all();
+
+foreach ($recipients as $user) {
+    Saft::notify($user, Notification::make()
+        ->warning()
+        ->title(trans_choice(self::T.'title', count($below), ['count' => count($below)]))
+        ->body($list)
+        ->actions([Action::make('open')->label(__(self::T.'open'))->url(Lagerspiegel::getUrl())]));
+}
+```
+
+`Saft::notify()` delivers the notification immediately, without a queue worker (see [chapter 8](#8-accessing-data)).
+
+**Step 4 – register in the plugin class:**
+
+```php
+public function taskTypes(): array
+{
+    return [StocktakingReminderTask::class, MinimumStockReportTask::class];
+}
+```
+
+**Using it:** under **Administration › Scheduled tasks › New** the kinds appear in “Type”; choose parameters and
+schedule, save. SAFT's scheduler (`php artisan schedule:run` via cron, see system administration) starts them at the
+chosen time; “Run now” starts them immediately. If the plugin is switched off or resting, its tasks are skipped.
+
+**Testing:** call `run()` directly – without a logged-in person, as in operation:
+
+```php
+$this->actingAsSuperAdmin();
+$this->demoTables();
+auth()->logout();                                          // scheduled tasks run without a logged-in person
+
+$result = (new StocktakingReminderTask)->run(['days' => '30']);
+$this->assertSame(['count' => 2], $result->data);
+
+$this->expectException(TaskSkipped::class);                // e.g. without the warehouse demo
+```
+
+**Pitfalls:**
+
+- **Identifier (`key()`)**: start it with the plugin id (`lager_tafel_…`) and do not change it after the first
+  installation – it is stored with every task created.
+- **Parameters arrive as text** from the form and come back as stored values. Convert them in `run()` and allow for
+  missing values (older tasks, new parameters).
+- **No person's permissions:** `Saft::table(…)` without `withoutAuthorization()` fails in `run()`. In turn, what the task
+  writes to the log or sends is seen by someone who may not be allowed to see the data – choose recipients deliberately.
+- **Long runs:** a run has no time limit. Process large amounts of data in chunks and keep the result short.

@@ -16,6 +16,8 @@ use Saft\LagerTafel\Listeners\LockArticleNumber;
 use Saft\LagerTafel\Listeners\NormalizeArticleNumber;
 use Saft\LagerTafel\Pages\Lagerspiegel;
 use Saft\LagerTafel\Pages\Lagertafel;
+use Saft\LagerTafel\Tasks\MinimumStockReportTask;
+use Saft\LagerTafel\Tasks\StocktakingReminderTask;
 
 /**
  * Beispiel-Plugin zu den Anleitungen im Anhang A des Entwicklerhandbuchs: je Baustein ein vollständiges, getestetes
@@ -84,6 +86,12 @@ final class LagerTafelPlugin extends SaftPlugin
                 sortOrder: 7,
             ),
         ];
+    }
+
+    /** A.8 – zwei Arten geplanter Aufgaben; die Administration legt sie unter „Geplante Aufgaben“ an. */
+    public function taskTypes(): array
+    {
+        return [StocktakingReminderTask::class, MinimumStockReportTask::class];
     }
 
     /** A.5 – Geschäftsregeln für die Tabelle Artikel, wirksam in allen Datenansichten, im Import und in der Schnittstelle. */

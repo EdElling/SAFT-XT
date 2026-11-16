@@ -7,6 +7,7 @@ namespace App\DynamicData\Ui;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Rules\CopySource;
+use App\DynamicData\Rules\NowDefault;
 use App\DynamicData\Rules\SequenceSuggester;
 use App\DynamicData\Rules\TableRuleValidator;
 use App\DynamicData\Schema\FieldType;
@@ -64,6 +65,7 @@ final class DynamicFormBuilder
         if (! $table->isExternal()) {
             $this->suggestSequences($table, $components, $preset);
             $this->copyFromMaster($table, $components, $preset);
+            $this->prefillNow($table, $components, $preset);
         }
 
         return $components;
@@ -180,6 +182,28 @@ final class DynamicFormBuilder
                         $set($name, $next($state));
                     }
                 });
+            }
+        }
+    }
+
+    /**
+     * Datums- und Zeitfelder mit „Mit heute/jetzt vorbelegen“: Vorgabe beim Anlegen, änderbar. Eine Vorgabe des
+     * Aufrufs (z. B. aus einer Detailtabelle) hat Vorrang.
+     *
+     * @param  list<Field>  $components
+     * @param  array<string, mixed>  $preset
+     */
+    private function prefillNow(CustomTable $table, array $components, array $preset): void
+    {
+        $byName = [];
+
+        foreach ($components as $component) {
+            $byName[$component->getName()] = $component;
+        }
+
+        foreach ($table->fields as $field) {
+            if (NowDefault::applies($field) && isset($byName[$field->name]) && ! array_key_exists($field->name, $preset)) {
+                $byName[$field->name]->default(static fn (): string => NowDefault::value($field));
             }
         }
     }

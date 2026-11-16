@@ -49,6 +49,8 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 | B-032 | Abhängigkeiten zwischen Plugins | Benötigte Plugins aus `require` der `composer.json`; ist eines ausgeschaltet oder ruht es, ruht das abhängige Plugin mit (Anzeige unter „Abhängigkeiten“, `saft:plugins --check`). Umgesetzt mit B-030. | umgesetzt | API 1.4 |
 | B-033 | MCP-Server für den Entwickler-Kontext | KI-Agenten fragen Schema und API live ab statt über Dateien. | offen | baut auf B-104 auf |
 | B-034 | Anonymisierte Beispieldaten im Kontext | Optional einige anonymisierte Beispielzeilen je Tabelle im Entwickler-Kontext. | zurückgestellt | Entscheid 2026-11-15: vorerst keine Beispieldaten (Datenschutz) |
+| B-035 | Aufgaben-Ergebnis mit Hinweis | Eine Aufgabe kann im `TaskResult` angeben, dass ihr Ergebnis Aufmerksamkeit braucht (z. B. „12 Bestände nicht gezählt“): Meldung nach „Jetzt ausführen“ orange statt grün, Markierung im Laufprotokoll. Erweiterung der Plugin-API (Minor). | offen | – |
+| B-036 | Arten geplanter Aufgaben in Plugins | `TaskType`, `TaskResult`, `TaskSkipped` in der Plugin-API; Beispiele „Inventur-Erinnerung“ und „Mindestbestand melden“ in Lager-Tafel, Anhang A.8 im Entwicklerhandbuch. | umgesetzt | API 1.5 |
 
 ## KI-Assistenz
 

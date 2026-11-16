@@ -51,7 +51,7 @@ class ScheduledTasksTest extends DuskTestCase
                 ->waitForText('Laufprotokoll bereinigen', 5)
                 ->pause(400);
             $this->clickVisibleButton($browser, 'Bestätigen')
-                ->waitForText('Erfolgreich: Laufprotokoll bereinigen', 15);
+                ->waitForText('Ausgeführt: Laufprotokoll bereinigen', 15);
 
             // Verlauf auf der Bearbeitungsseite.
             $browser->clickAtXPath($row."//a[@aria-label='Bearbeiten'] | ".$row."//button[@aria-label='Bearbeiten']")
@@ -103,6 +103,29 @@ class ScheduledTasksTest extends DuskTestCase
         });
 
         $this->assertSame(20, $people->fresh()->latestSnapshot()?->row_count);
+    }
+
+    /** TSK-09: Art mit Textfeld als Parameter (Beispiel-Plugin Lager-Tafel) – vorbelegt, eingetippter Wert kommt an. */
+    public function test_task_with_a_text_parameter_is_created(): void
+    {
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, self::ADMIN)
+                ->visit('/admin/scheduled-tasks/create')
+                ->waitFor('[id="form.type"]', 15)
+                ->select('[id="form.type"]', 'lager_tafel_inventory_reminder')
+                ->waitFor('[id="form.parameters.days"]', 15)
+                ->pause(500)
+                ->assertInputValue('[id="form.parameters.days"]', '90')
+                ->clear('[id="form.parameters.days"]')
+                ->type('[id="form.parameters.days"]', '30')
+                ->pause(300);
+            $this->clickVisibleButton($browser, 'Erstellen')
+                ->waitForText('Läufe', 15)
+                ->assertDontSee('muss ausgefüllt werden');
+        });
+
+        $task = ScheduledTask::query()->where('type', 'lager_tafel_inventory_reminder')->sole();
+        $this->assertSame(['days' => 30], array_map('intval', $task->parameterValues()));
     }
 
     /** TSK-03 */

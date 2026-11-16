@@ -9,7 +9,10 @@ use Filament\Schemas\Components\Component;
 
 /**
  * Vertrag einer Art von geplanter Aufgabe. Neue Arten (z. B. Daten an eine Schnittstelle senden, Sicherungen)
- * implementieren dieses Interface und werden in config/tasks.php eingetragen.
+ * implementieren dieses Interface und werden in config/tasks.php eingetragen – Plugins liefern sie über
+ * SaftPlugin::taskTypes(). Die Klasse wird über den Container erzeugt; run() läuft ohne angemeldete Person.
+ *
+ * @api
  */
 interface TaskType
 {

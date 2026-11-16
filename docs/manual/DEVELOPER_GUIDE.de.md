@@ -57,16 +57,18 @@ mitbringen:
 | Arten geplanter Aufgaben | Klassen, die `App\Tasks\TaskType` umsetzen |
 
 **Was zugesichert ist:** Die Programmierschnittstelle für Plugins (Plugin-API) hat eine **eigene Versionsnummer**,
-unabhängig von SAFT – derzeit **1.4**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
+unabhängig von SAFT – derzeit **1.5**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, alle Klassen unter `App\Plugins\Api` (ausser
-`ApiManifest`), die Test-Basis `App\Plugins\Testing\PluginTestCase` und das Trait
+`ApiManifest`), die Test-Basis `App\Plugins\Testing\PluginTestCase`, für Arten geplanter Aufgaben
+`App\Tasks\TaskType`, `App\Tasks\TaskResult` und `App\Tasks\TaskSkipped` sowie das Trait
 `App\Filament\Concerns\LimitsFormWidth`; von `App\Models\DynamicRecord` (Datensätze) und
 `App\Models\User` nur die Klasse als Typ mit ihrem Eloquent-Verhalten. Innerhalb einer API-Major-Version bleibt alles
 kompatibel. Alle übrigen Klassen von SAFT sind intern – Plugins verwenden sie nicht (ein Test prüft das). Einzelheiten:
 [Kapitel 17](#17-api-versionen-und-änderungsprotokoll).
 
 **Schritt für Schritt:** [Anhang A](#anhang-a--schritt-für-schritt-anleitungen) führt für die häufigsten Aufgaben –
-eigene Tabellensicht, eigenes Formular, Widget, Knopf in einer Datenansicht, Listener, Prüfregel, Menüvorschlag – von
+eigene Tabellensicht, eigenes Formular, Widget, Knopf in einer Datenansicht, Listener, Prüfregel, Menüvorschlag,
+geplante Aufgabe – von
 der leeren Datei bis zum Test, am Beispiel-Plugin *Lager-Tafel*.
 
 ## 2. Erste Schritte
@@ -218,7 +220,7 @@ final class LagerUmbuchungPlugin extends SaftPlugin
 | `description()` | nein | Kurzbeschreibung; ohne Angabe aus der `composer.json` |
 | `permissions()` | nein | Aktion => Bezeichnung; der Name des Rechts ist `<id>.<aktion>` (`permissionName('execute')`) |
 | `menuSuggestions()` | nein | Liste von `MenuSuggestion`, siehe [Kapitel 6](#6-rechte-und-menü) |
-| `taskTypes()` | nein | Klassen zusätzlicher Arten geplanter Aufgaben |
+| `taskTypes()` | nein | Klassen zusätzlicher Arten geplanter Aufgaben, siehe [Anhang A.8](#a8-geplante-aufgaben) |
 | `requiredTables()` | nein | Tabellen und Felder des Table-Designers, die das Plugin braucht, siehe [Kapitel 8](#8-auf-daten-zugreifen) |
 | `recordListeners()` | nein | Listener für Änderungen an Tabellen, siehe [Kapitel 9](#9-auf-änderungen-reagieren-ereignisse) |
 | `dataActions()` | nein | Knöpfe in Datenansichten, siehe [Kapitel 10](#10-aktionen-in-datenansichten) |
@@ -741,6 +743,7 @@ Das Plugin `plugins/lager-tafel` (nur in Entwicklungs- und Demo-Installationen) 
 | Listener | `src/Listeners/` | Artikelnummer in einer Schreibweise speichern; gesperrt, sobald es Lagerbewegungen gibt |
 | Prüfregel | `src/ArticleNumber.php`, `LagerTafelPlugin::fieldRules()` | „Artikelnummer (Lager-Demo)“: ein Buchstabe, Bindestrich, vier Ziffern |
 | Menüvorschläge | `LagerTafelPlugin::menuSuggestions()` | Lagerspiegel und Lagertafel in der Gruppe *Lager (Demo)* |
+| Geplante Aufgaben | `src/Tasks/` | „Lager: Inventur-Erinnerung“ (Bestände ohne Zählung seit N Tagen) und „Lager: Mindestbestand melden“ (Glocke) |
 
 **Rechte:** *Lager-Tafel: Lagerspiegel anzeigen* für Lagerspiegel und Kachel, *Lager-Tafel: Auf der Lagertafel umbuchen*
 für die Lagertafel; dazu die Datenrechte wie bei Lager-Umbuchung.
@@ -763,7 +766,7 @@ berechnetes Feld mit der Formel `rappen(betrag * 1.081)` anlegen.
 
 ## 17. API-Versionen und Änderungsprotokoll
 
-Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.4**). Sie steht in `config/saft.php`
+Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.5**). Sie steht in `config/saft.php`
 (`api_versions`) und erscheint unter **Dokumentation › Über SAFT XT** sowie auf der Seite **Plugins**.
 
 | Änderung | Version | Wirkung für Plugins |
@@ -792,6 +795,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 | API | SAFT | Änderungen |
 |---|---|---|
+| **1.5** | 0.1 | `App\Tasks\TaskType`, `TaskResult` und `TaskSkipped` gehören zur API – Arten geplanter Aufgaben aus Plugins (`SaftPlugin::taskTypes()`) bestehen damit `saft:plugins --check` |
 | **1.4** | 0.1 | `SaftPlugin::isEnabled()`, `PluginTestCase::withoutPlugin()`. Plugins lassen sich ausschalten (Seite **Plugins**, `saft:plugins --disable`); Plugins aus `require` der `composer.json` gelten als benötigt – ruht oder fehlt eines, ruht das abhängige Plugin mit |
 | **1.3** | 0.1 | `PluginTestCase::createTablesFromSchema()`. Werkzeuge (nicht Teil der API): Entwickler-Kontext (`saft:plugin-context`, Download in der Plugin-Verwaltung), `AGENTS.md` im Gerüst |
 | **1.2** | 0.1 | `DashboardWidget` (Bezeichnung der Kachel), `FormulaFunction` und `SaftPlugin::formulaFunctions()`, `FieldRule` und `SaftPlugin::fieldRules()` |
@@ -800,7 +804,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 ## Anhang A – Schritt-für-Schritt-Anleitungen
 
-Die Kapitel 1–17 beschreiben jeden Baustein für sich. Dieser Anhang führt für die sieben häufigsten Aufgaben von der
+Die Kapitel 1–17 beschreiben jeden Baustein für sich. Dieser Anhang führt für die acht häufigsten Aufgaben von der
 leeren Datei bis zum getesteten Ergebnis. Alle Beispiele stammen aus dem Beispiel-Plugin **Lager-Tafel**
 (`plugins/lager-tafel`). Sein Code ist mit Tests auf PostgreSQL, MySQL und MariaDB abgesichert, die Ausschnitte hier
 laufen also so, wie sie dastehen.
@@ -814,6 +818,7 @@ laufen also so, wie sie dastehen.
 | [A.5 Listener](#a5-listener) | Artikelnummer vereinheitlichen und sperren | `src/Listeners/` |
 | [A.6 Prüfregeln](#a6-prüfregeln) | „Artikelnummer (Lager-Demo)“ | `src/ArticleNumber.php`, `LagerTafelPlugin::fieldRules()` |
 | [A.7 Menüvorschläge](#a7-menüvorschläge) | Lagerspiegel und Lagertafel im Menü | `LagerTafelPlugin::menuSuggestions()` |
+| [A.8 Geplante Aufgaben](#a8-geplante-aufgaben) | Inventur-Erinnerung, Mindestbestand melden | `src/Tasks/` |
 
 **Ausprobieren:** Lager-Demo einspielen (`php artisan db:seed --class=LagerDemoSeeder`), unter
 **Administration › Plugins** bei *Lager-Tafel* „Menüeinträge anlegen“, dann **Lager (Demo) › Lagerspiegel** bzw.
@@ -1608,3 +1613,165 @@ $this->assertSame(['lager-tafel.view', 'lager-tafel.transfer'], array_map(static
   die Administration lesen erlauben, ohne Buchungen zu erlauben.
 - **Vorschläge ändern** wirkt nicht auf schon übernommene Einträge; die Administration übernimmt neue Vorschläge mit
   einem erneuten Klick.
+
+### A.8 Geplante Aufgaben
+
+**Wozu:** Eine geplante Aufgabe erledigt Arbeit nach Zeitplan, ohne dass jemand eine Seite öffnet – prüfen, erinnern,
+benachrichtigen, Daten abgleichen. Das Plugin liefert die **Art** der Aufgabe; die Administration legt unter
+**Administration › Geplante Aufgaben › Neu** Aufgaben dieser Art an, mit Parametern und Zeitplan, und kann sie mit
+„Jetzt ausführen“ sofort starten. Lager-Tafel bringt zwei Arten mit:
+
+| Art | Parameter | Ergebnis |
+|---|---|---|
+| **Lager: Inventur-Erinnerung** (`StocktakingReminderTask`) | Nicht gezählt seit (Tagen), Vorgabe 90 | Bestände mit Ware, deren letzte Zählung älter ist oder fehlt, im Laufprotokoll |
+| **Lager: Mindestbestand melden** (`MinimumStockReportTask`) | – | Meldung in die Glocke an alle aktiven Personen mit dem Recht *Lagerspiegel anzeigen*, wenn Artikel unter dem Mindestbestand liegen |
+
+**Nicht nötig** ist eine Aufgabe für Reaktionen auf einzelne Änderungen – dafür gibt es Listener (A.5).
+
+**Schritt 1 – Klasse anlegen** (`src/Tasks/StocktakingReminderTask.php`). Eine Art setzt `App\Tasks\TaskType` um (seit
+Plugin-API 1.5). SAFT erzeugt die Klasse über den Container, deshalb gehören keine Daten in Eigenschaften:
+
+```php
+final readonly class StocktakingReminderTask implements TaskType
+{
+    private const string T = 'lager-tafel::tafel.tasks.inventory.';
+
+    public const int DEFAULT_DAYS = 90;
+
+    /** Kennung, gespeichert bei jeder Aufgabe – mit der Plugin-id beginnen und nie mehr ändern. */
+    public function key(): string
+    {
+        return 'lager_tafel_inventory_reminder';
+    }
+
+    public function label(): string
+    {
+        return __(self::T.'label');
+    }
+
+    /** true: Die Administration kann Aufgaben dieser Art unter „Neu“ anlegen. */
+    public function creatable(): bool
+    {
+        return true;
+    }
+```
+
+**Schritt 2 – Parameter.** `parameterFields()` liefert Filament-Felder; SAFT zeigt sie im Formular der Aufgabe, sobald die
+Art gewählt ist, und belegt sie mit ihren Vorgaben. `describe()` ist die Kurzbeschreibung in der Liste:
+
+```php
+public function parameterFields(): array
+{
+    return [
+        TextInput::make('days')
+            ->label(__(self::T.'days'))
+            ->helperText(__(self::T.'days_help'))
+            ->integer()
+            ->minValue(1)
+            ->maxValue(3650)
+            ->default(self::DEFAULT_DAYS)
+            ->required(),
+    ];
+}
+
+public function describe(array $parameters): string
+{
+    return __(self::T.'describe', ['days' => $this->days($parameters)]);
+}
+
+/** @param  array<string, mixed>  $parameters  Werte aus dem Formular kommen als Text */
+private function days(array $parameters): int
+{
+    $days = $parameters['days'] ?? self::DEFAULT_DAYS;
+
+    return is_numeric($days) ? max(1, (int) $days) : self::DEFAULT_DAYS;
+}
+```
+
+**Schritt 3 – ausführen.** `run()` läuft **ohne angemeldete Person** – über den Scheduler oder „Jetzt ausführen“. Lesen
+Sie deshalb ohne Rechteprüfung (hier über `Warehouse::system()`, das `withoutAuthorization()` verwendet). Das Ergebnis
+ist ein `TaskResult` mit einer Meldung für das Laufprotokoll und Kennzahlen; kann die Aufgabe gerade nicht laufen, wirft
+sie `TaskSkipped` – der Lauf gilt dann als „übersprungen“, nicht als Fehler:
+
+```php
+public function run(array $parameters): TaskResult
+{
+    $warehouse = Warehouse::system();
+
+    if (! $warehouse->available()) {
+        throw new TaskSkipped(__('lager-tafel::tafel.tasks.unavailable', ['missing' => implode('; ', $warehouse->missing())]));
+    }
+
+    $days = $this->days($parameters);
+    $due = $warehouse->stocksNotCountedSince(now()->subDays($days)->toDateString());
+    // … Namen „Artikel (Lagerort)“ zusammenstellen
+
+    if ($names === []) {
+        return new TaskResult(__(self::T.'none', ['days' => $days]), ['count' => 0]);
+    }
+
+    return new TaskResult(trans_choice(self::T.'found', count($names), [/* … */]), ['count' => count($names)]);
+}
+```
+
+Jede andere Ausnahme lässt den Lauf **fehlschlagen**; die Meldung im Protokoll ist dann allgemein, die Einzelheiten
+stehen im Log, und SAFT benachrichtigt die aktiven Super-Admins in der Glocke.
+
+**Benachrichtigen statt nur protokollieren** (`MinimumStockReportTask`): Wer eine Meldung bekommt, entscheidet die
+Aufgabe selbst – hier alle aktiven Personen mit dem Leserecht des Plugins (Super-Admins haben es immer):
+
+```php
+$recipients = User::query()->where('is_active', true)->orderBy('id')->get()
+    ->filter(static fn (User $user): bool => $user->can(LagerTafelPlugin::ID.'.view'))
+    ->values()
+    ->all();
+
+foreach ($recipients as $user) {
+    Saft::notify($user, Notification::make()
+        ->warning()
+        ->title(trans_choice(self::T.'title', count($below), ['count' => count($below)]))
+        ->body($list)
+        ->actions([Action::make('open')->label(__(self::T.'open'))->url(Lagerspiegel::getUrl())]));
+}
+```
+
+`Saft::notify()` stellt die Meldung sofort zu, ohne Queue-Worker (siehe [Kapitel 8](#8-auf-daten-zugreifen)).
+
+**Schritt 4 – in der Plugin-Klasse anmelden:**
+
+```php
+public function taskTypes(): array
+{
+    return [StocktakingReminderTask::class, MinimumStockReportTask::class];
+}
+```
+
+**Verwenden:** Unter **Administration › Geplante Aufgaben › Neu** erscheinen die Arten bei „Art“; Parameter und
+Zeitplan wählen, speichern. Der Scheduler von SAFT (`php artisan schedule:run` per Cron, siehe Systemadministration)
+startet sie zur gewählten Zeit; „Jetzt ausführen“ startet sie sofort. Ist das Plugin ausgeschaltet oder ruht es, werden
+seine Aufgaben übersprungen.
+
+**Testen:** Rufen Sie `run()` direkt auf – ohne angemeldete Person, wie im Betrieb:
+
+```php
+$this->actingAsSuperAdmin();
+$this->demoTables();
+auth()->logout();                                          // geplante Aufgaben laufen ohne angemeldete Person
+
+$result = (new StocktakingReminderTask)->run(['days' => '30']);
+$this->assertSame(['count' => 2], $result->data);
+
+$this->expectException(TaskSkipped::class);                // z. B. ohne Lager-Demo
+```
+
+**Stolpersteine:**
+
+- **Kennung (`key()`)** mit der Plugin-id beginnen (`lager_tafel_…`) und nach der ersten Installation nicht ändern – sie
+  steht bei jeder angelegten Aufgabe.
+- **Parameter kommen als Text** aus dem Formular und als gespeicherte Werte zurück. Wandeln Sie sie in `run()` um und
+  rechnen Sie mit fehlenden Werten (ältere Aufgaben, neue Parameter).
+- **Keine Rechte der Person:** `Saft::table(…)` ohne `withoutAuthorization()` scheitert in `run()`. Dafür gilt: Was die
+  Aufgabe ins Protokoll schreibt oder verschickt, sieht jemand, der die Daten vielleicht nicht sehen darf – Empfänger
+  bewusst wählen.
+- **Lange Läufe:** Ein Lauf hat keine Zeitbegrenzung. Viele Daten in Stücken verarbeiten und das Ergebnis knapp
+  halten.

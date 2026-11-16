@@ -349,7 +349,7 @@ class LagerDemoSeeder extends Seeder
                         ['value' => 'Inventur', 'label' => $t('Inventur', 'Stocktaking', 'Inventaire', 'Inventario')],
                     ]]],
                     ['name' => 'menge', 'label' => $t('Menge', 'Quantity', 'Quantité', 'Quantità'), 'type' => 'integer', 'is_required' => true],
-                    ['name' => 'zeitpunkt', 'label' => $t('Zeitpunkt', 'Time', 'Date et heure', 'Data e ora'), 'type' => 'datetime', 'is_required' => true],
+                    ['name' => 'zeitpunkt', 'label' => $t('Zeitpunkt', 'Time', 'Date et heure', 'Data e ora'), 'type' => 'datetime', 'is_required' => true, 'options' => ['prefill_now' => true]],
                     ['name' => 'mitarbeiter_id', 'label' => $t('Mitarbeiter/in', 'Staff member', 'Collaborateur', 'Collaboratore'), 'type' => 'relation', 'options' => ['table' => 'lager_mitarbeitende', 'display_field' => 'kuerzel']],
                     ['name' => 'bemerkung', 'label' => $t('Bemerkung', 'Note', 'Remarque', 'Nota'), 'type' => 'text', 'show_in_table' => false],
                 ],

@@ -8,6 +8,7 @@ use App\Models\ScheduledTask;
 use App\Tasks\Frequency;
 use App\Tasks\TaskRegistry;
 use App\Tasks\TaskSchedule;
+use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -15,6 +16,7 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
 
@@ -37,6 +39,9 @@ class ScheduledTaskForm
                         : $registry->creatableOptions())
                     ->required()
                     ->live()
+                    // Parameter der Art mit ihren Vorgaben belegen: zeigt z. B. „90“ im Feld und macht den Zustand zu
+                    // einem Objekt mit Feldnamen – als leere Liste gingen im Browser eingetippte Werte verloren.
+                    ->afterStateUpdated(fn (mixed $state, Set $set) => $set('parameters', self::parameterDefaults($registry, $state)))
                     ->disabledOn('edit')
                     ->dehydrated(fn (string $operation): bool => $operation === 'create'),
                 TextInput::make('name')
@@ -133,5 +138,27 @@ class ScheduledTaskForm
         unset($data['minute']);
 
         return $data;
+    }
+
+    /**
+     * Vorgaben der Parameterfelder einer Art (Feldname => Vorgabe, auch null).
+     *
+     * @return array<string, mixed>
+     */
+    public static function parameterDefaults(TaskRegistry $registry, mixed $type): array
+    {
+        if (! is_string($type) || ! $registry->has($type)) {
+            return [];
+        }
+
+        $defaults = [];
+
+        foreach ($registry->get($type)->parameterFields() as $field) {
+            if ($field instanceof Field) {
+                $defaults[$field->getName()] = $field->getDefaultState();
+            }
+        }
+
+        return $defaults;
     }
 }

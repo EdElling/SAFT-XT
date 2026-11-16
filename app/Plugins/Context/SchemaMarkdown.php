@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Plugins\Context;
 
 use App\DynamicData\Rules\CopySource;
+use App\DynamicData\Rules\NowDefault;
 use App\DynamicData\Rules\SequenceSuggester;
 use App\DynamicData\Validation\FieldRuleCheck;
 
@@ -122,6 +123,10 @@ final class SchemaMarkdown
 
         if (! empty($options[SequenceSuggester::OPTION])) {
             $parts[] = 'next number suggested';
+        }
+
+        if (! empty($options[NowDefault::OPTION])) {
+            $parts[] = 'prefilled with the current date/time on entry';
         }
 
         return implode('; ', array_filter($parts));

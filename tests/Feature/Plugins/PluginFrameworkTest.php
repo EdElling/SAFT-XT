@@ -6,7 +6,9 @@ namespace Tests\Feature\Plugins;
 
 use App\Filament\Pages\PluginsPage;
 use App\Filament\Resources\Roles\Schemas\RoleForm;
+use App\Filament\Resources\ScheduledTasks\Pages\CreateScheduledTask;
 use App\Models\Menu;
+use App\Models\ScheduledTask;
 use App\Models\User;
 use App\Navigation\MenuNavigationBuilder;
 use App\Plugins\PluginCleanup;
@@ -154,6 +156,21 @@ class PluginFrameworkTest extends TestCase
         $this->app->forgetScopedInstances();
 
         $this->assertArrayHasKey('task_runs_prune', app(TaskRegistry::class)->all());
+    }
+
+    public function test_task_type_of_a_plugin_is_created_with_its_parameter_defaults(): void
+    {
+        $this->actingAs($this->userWithPermissions(['tasks.view', 'tasks.create']));
+
+        // Die Wahl der Art belegt die Parameter mit ihren Vorgaben (im Browser gingen Werte sonst verloren).
+        Livewire::test(CreateScheduledTask::class)
+            ->fillForm(['type' => 'lager_tafel_inventory_reminder'])
+            ->assertFormSet(['parameters.days' => 90])
+            ->fillForm(['parameters.days' => '30', 'frequency' => 'daily', 'at_time' => '06:00'])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(['days' => 30], array_map('intval', ScheduledTask::query()->where('type', 'lager_tafel_inventory_reminder')->sole()->parameterValues()));
     }
 
     public function test_menu_suggestions_are_adopted_once(): void
