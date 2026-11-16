@@ -23,6 +23,7 @@ gilt [Anhang B – Installation auf einem Entwickler-Rechner](INSTALL_DEVELOPMEN
 9. [Updates einspielen](#9-updates-einspielen)
 10. [Sicherheits-Checkliste](#10-sicherheits-checkliste)
 11. [Wenn etwas nicht klappt](#11-wenn-etwas-nicht-klappt)
+12. [Beispiel: Webspace bei Strato](#12-beispiel-webspace-bei-strato)
 
 ---
 
@@ -89,7 +90,7 @@ Datenbank und Benutzer wie in [Anhang B, Schritt 3](INSTALL_DEVELOPMENT.de.md#3-
 
 ## 3. SAFT auf den Server bringen
 
-Melden Sie sich per SSH an und holen Sie die gewünschte Version (hier 2.1.0) in Ihr Benutzerverzeichnis:
+Melden Sie sich per SSH an und holen Sie die gewünschte Version (hier v0.1.0) in Ihr Benutzerverzeichnis:
 
 ```bash
 cd ~
@@ -301,8 +302,10 @@ Prüfen Sie im Browser: **https://saft.example.ch** leitet auf `/admin` und zeig
 
 - `db:backup` braucht `pg_dump`, `mysqldump` bzw. `mariadb-dump` (Paket `mariadb-client`) in einer Version, die zum
   Datenbankserver passt. Liegt das Programm nicht im Suchpfad, tragen Sie es in `.env` ein (`PGSQL_DUMP_BINARY`,
-  `MYSQL_DUMP_BINARY` bzw. `MARIADB_DUMP_BINARY`). Fehlt es ganz, nutzen Sie die automatische Datenbanksicherung Ihres
-  Hosters. Bei MySQL und MariaDB enthält die `.sql`-Datei beide Datenbanken. Eine Sicherung aus MySQL lässt sich nicht
+  `MYSQL_DUMP_BINARY` bzw. `MARIADB_DUMP_BINARY`). Fehlt es ganz oder ist es zu alt (z. B. `mysqldump` 5.6 bei Strato,
+  Meldung `Error in field count`), sichert SAFT bei MySQL und MariaDB auch **in PHP**: `DB_BACKUP_METHOD=php` in `.env`
+  (oder einmalig `php artisan db:backup --php`). Die Datei ist ebenfalls ein SQL-Skript und lässt sich mit `mysql`,
+  `mariadb` oder in phpMyAdmin einspielen. Bei MySQL und MariaDB enthält die `.sql`-Datei beide Datenbanken. Eine Sicherung aus MySQL lässt sich nicht
   verlässlich in MariaDB einspielen und umgekehrt.
 - Die Sicherungen liegen auf demselben Server – kopieren Sie sie regelmässig an einen **anderen Ort** und löschen Sie
   alte Dateien, damit der Speicher nicht vollläuft.
@@ -348,7 +351,8 @@ eine neue Datenbank zurückspielen und `PGSQL_DATABASE` bzw. `MYSQL_DATABASE` in
 - [ ] `APP_ENV=production` und `APP_DEBUG=false`
 - [ ] Installiert mit `composer install --no-dev`
 - [ ] Domain zeigt auf `…/saft/public`, nicht auf den SAFT-Ordner
-- [ ] HTTPS aktiv, `SESSION_SECURE_COOKIE=true`, HTTP leitet auf HTTPS um
+- [ ] HTTPS aktiv, `APP_URL` beginnt mit `https://`, `SESSION_SECURE_COOKIE=true`, HTTP leitet auf HTTPS um (bei
+  Webspaces meist eine Einstellung beim Hoster, z. B. „SSL erzwingen“)
 - [ ] `TRUSTED_PROXIES` leer oder nur mit den Adressen des Proxys des Hosters (`*` nur, wenn der Server nur über den Proxy erreichbar ist)
 - [ ] `.env` mit `chmod 600`, Kopie von `.env` sicher verwahrt
 - [ ] Erstes Admin-Passwort nach der Anmeldung geändert bzw. sicher abgelegt
@@ -372,4 +376,63 @@ eine neue Datenbank zurückspielen und `PGSQL_DATABASE` bzw. `MYSQL_DATABASE` in
 | Links oder Weiterleitungen zeigen `http://` statt `https://`, im Protokoll steht immer dieselbe IP-Adresse | HTTPS endet vor dem Server (Load Balancer): `TRUSTED_PROXIES` setzen (Schritt 4), dann `php artisan optimize`. |
 | „Seite abgelaufen“ (419) nach der Anmeldung | `SESSION_SECURE_COOKIE=true` ohne HTTPS, oder `APP_URL` passt nicht zur aufgerufenen Adresse. |
 | E-Mails kommen nicht an | SMTP-Angaben prüfen; `MAIL_FROM_ADDRESS` muss eine Adresse der eigenen Domain sein. |
-| `db:backup` meldet „Sicherung fehlgeschlagen“ | Die Meldung dahinter nennt den Grund: `pg_dump` fehlt, ist älter als der Datenbankserver (`server version mismatch`) oder darf nicht verbinden – sonst die Sicherung des Hosters nutzen. |
+| `db:backup` meldet „Sicherung fehlgeschlagen“ | Die Meldung dahinter nennt den Grund: Programm fehlt (Pfad in `…_DUMP_BINARY`), ist älter als der Datenbankserver (`server version mismatch`, `Error in field count`) oder darf nicht verbinden. Bei MySQL und MariaDB hilft `DB_BACKUP_METHOD=php`, sonst die Sicherung des Hosters. |
+
+---
+
+## 12. Beispiel: Webspace bei Strato
+
+Erprobt mit einem Strato-Webspace (MariaDB 11.8, PHP 8.4). Bezeichnungen im Kundenportal können sich ändern.
+
+**Besonderheiten bei Strato:**
+
+| Thema | Lösung |
+|---|---|
+| `php` auf der Kommandozeile ist die CGI-Fassung (Ausgaben wie `Status:`, `Content-type:`) | das Kommandozeilen-PHP verwenden: `alias php='/opt/RZphp84/bin/php-cli'`, dauerhaft in `~/.bashrc` |
+| kein `composer` | `composer.phar` in den SAFT-Ordner laden (siehe unten) und mit `php composer.phar …` aufrufen |
+| jede Datenbank hat eigenen Namen, Benutzer und Server | zwei Datenbanken anlegen, die zweite mit `APP_DATA_SCHEMA` und `DB_APP_DATA_*` eintragen (Schritt 2) |
+| `mysqldump` 5.6 ist zu alt, `mariadb-dump` fehlt | `DB_BACKUP_METHOD=php` (Schritt 8) |
+| kein `which` | `command -v <programm>` |
+| HTTPS | Zertifikat für die (Sub-)Domain aktivieren und unter *Sicherheit* **SSL erzwingen** einschalten |
+
+**Ablauf** (per SSH; das Home-Verzeichnis ist bei Strato bereits `htdocs`):
+
+```bash
+alias php='/opt/RZphp84/bin/php-cli'
+git clone https://github.com/EdElling/SAFT-XT.git saft
+cd saft
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php && rm composer-setup.php
+php composer.phar install --no-dev --optimize-autoloader
+cp .env.example .env && php artisan key:generate
+```
+
+In `.env` (Werte aus dem Kundenportal, Port 3306):
+
+```dotenv
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://saft.example.ch
+SESSION_SECURE_COOKIE=true
+
+DB_CONNECTION=mariadb
+MARIADB_HOST=database-5011111111.webspace-host.com
+MARIADB_DATABASE=dbs11111111
+MARIADB_USERNAME=dbu1111111
+MARIADB_PASSWORD=<passwort der ersten datenbank>
+
+APP_DATA_SCHEMA=dbs22222222
+DB_APP_DATA_HOST=database-5022222222.webspace-host.com
+DB_APP_DATA_USERNAME=dbu2222222
+DB_APP_DATA_PASSWORD=<passwort der zweiten datenbank>
+
+DB_BACKUP_METHOD=php
+```
+
+Dann weiter mit Schritt 5 (`migrate`, `db:seed`, `optimize`). Im Kundenportal das Zielverzeichnis der Domain auf
+`…/saft/public` setzen, das Zertifikat aktivieren und **SSL erzwingen** einschalten.
+
+**Test- oder Schulungssystem mit den Beispielen:** Für die Lager-Demo und die Beispiel-Plugins installieren Sie die
+Abhängigkeiten **mit** den Entwicklungspaketen (`php composer.phar install --optimize-autoloader`, ohne `--no-dev`) und
+spielen danach `php artisan db:seed --class=LagerDemoSeeder --force` ein. `APP_ENV=production` muss dabei bleiben –
+nur so ist die Test-Anmeldung der Entwicklungspakete abgeschaltet. Für ein Produktivsystem bleibt `--no-dev` richtig.

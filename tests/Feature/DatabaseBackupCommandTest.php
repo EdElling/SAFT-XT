@@ -37,6 +37,12 @@ class DatabaseBackupCommandTest extends TestCase
         $this->fail('Kein --file-Argument');
     }
 
+    /** Process::fake für mysqldump: Ausgabe auf stdout bzw. Exit-Code. */
+    private function fakeMysqldump(string $output, int $exitCode = 0): void
+    {
+        Process::fake(['*' => Process::result(output: $exitCode === 0 ? $output : '', exitCode: $exitCode)]);
+    }
+
     public function test_creates_private_dump_without_exposing_the_password(): void
     {
         config(['database.default' => 'pgsql', 'database.connections.pgsql.password' => 'streng-geheim']);
@@ -91,7 +97,7 @@ class DatabaseBackupCommandTest extends TestCase
         ]);
         // Wie im Betrieb: app_data folgt der Standardverbindung (gleicher Server und Benutzer).
         config(['database.connections.app_data' => [...config('database.connections.mysql'), 'database' => '']]);
-        Process::fake(['*' => Process::result(output: "CREATE DATABASE `SAFT2`;\nCREATE DATABASE `SAFT2_app_data`;\n")]);
+        $this->fakeMysqldump("CREATE DATABASE `SAFT2`;\nCREATE DATABASE `SAFT2_app_data`;\n");
 
         $this->artisan('db:backup', ['--path' => $this->directory])
             ->expectsOutputToContain('Sicherung erstellt')
@@ -123,7 +129,7 @@ class DatabaseBackupCommandTest extends TestCase
         ]);
         // Wie im Betrieb: app_data folgt der Standardverbindung (gleicher Server und Benutzer).
         config(['database.connections.app_data' => [...config('database.connections.mariadb'), 'database' => '']]);
-        Process::fake(['*' => Process::result(output: "CREATE DATABASE `SAFT2`;\n")]);
+        $this->fakeMysqldump("CREATE DATABASE `SAFT2`;\n");
 
         $this->artisan('db:backup', ['--path' => $this->directory])
             ->expectsOutputToContain('Sicherung erstellt')
@@ -171,7 +177,7 @@ class DatabaseBackupCommandTest extends TestCase
             'database.connections.app_data' => ['driver' => 'mysql', 'host' => 'db.local', 'port' => '3306', 'database' => '', 'username' => 'saft', 'password' => 'geheim'],
             'dynamic_data.namespace' => 'saft_app_data',
         ]);
-        Process::fake(['*' => Process::result(output: "-- dump\n")]);
+        $this->fakeMysqldump("-- dump\n");
 
         $this->artisan('db:backup', ['--path' => $this->directory])->assertSuccessful();
 
@@ -188,7 +194,7 @@ class DatabaseBackupCommandTest extends TestCase
             'database.connections.app_data' => ['driver' => 'mysql', 'host' => 'database-5022222222.webspace-host.com', 'port' => '3306', 'database' => '', 'username' => 'dbu22222222', 'password' => 'zwei'],
             'dynamic_data.namespace' => 'dbs22222222',
         ]);
-        Process::fake(['*' => Process::result(output: "-- dump\n")]);
+        $this->fakeMysqldump("-- dump\n");
 
         $this->artisan('db:backup', ['--path' => $this->directory])->assertSuccessful();
 
@@ -209,13 +215,13 @@ class DatabaseBackupCommandTest extends TestCase
             'dynamic_data.namespace' => 'SAFT2_app_data',
         ]);
         config(['database.connections.app_data' => [...config('database.connections.mariadb'), 'database' => '']]);
-        Process::fake(['*' => Process::result(exitCode: 127)]);
+        $this->fakeMysqldump('', 127);
 
         $this->artisan('db:backup', ['--path' => $this->directory])
             ->expectsOutputToContain('„mariadb-dump“ nicht gefunden. Pfad in MARIADB_DUMP_BINARY eintragen')
             ->assertFailed();
 
-        Process::fake(['*' => Process::result(exitCode: 2)]);
+        $this->fakeMysqldump('', 2);
         $this->artisan('db:backup', ['--path' => $this->directory])
             ->expectsOutputToContain('„mariadb-dump“ endete mit Exit-Code 2 ohne Fehlermeldung.')
             ->assertFailed();

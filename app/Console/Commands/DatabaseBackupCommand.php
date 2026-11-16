@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Database\SqlDumper;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Throwable;
@@ -17,7 +19,7 @@ use Throwable;
  * (Hauptdatenbank und <DB>_app_data in einer Datei). Der Befehl liest nur; das Passwort wird
  * nie als Prozessargument übergeben.
  */
-#[Signature('db:backup {--path= : Zielordner (Standard: storage/backups)}')]
+#[Signature('db:backup {--path= : Zielordner (Standard: storage/backups)} {--php : MySQL/MariaDB: in PHP sichern statt mit mysqldump}')]
 #[Description('Erstellt eine Sicherung der Datenbank')]
 class DatabaseBackupCommand extends Command
 {
@@ -40,9 +42,12 @@ class DatabaseBackupCommand extends Command
         $database = (string) $connection['database'];
         $file = $directory.DIRECTORY_SEPARATOR.$database.'_'.now()->format('Ymd_His').($driver === 'pgsql' ? '.dump' : '.sql');
 
-        $error = $driver === 'pgsql'
-            ? $this->postgres($connection, $file)
-            : $this->mysql($connection, (array) config('database.connections.'.config('dynamic_data.connection')), $file, $driver);
+        $appData = (array) config('database.connections.'.config('dynamic_data.connection'));
+        $error = match (true) {
+            $driver === 'pgsql' => $this->postgres($connection, $file),
+            $this->option('php') || config('database.backup.method') === 'php' => $this->php($connection, $file),
+            default => $this->mysql($connection, $appData, $file, $driver),
+        };
 
         if ($error !== null || ! File::exists($file) || File::size($file) === 0) {
             File::delete($file);
@@ -81,8 +86,39 @@ class DatabaseBackupCommand extends Command
     }
 
     /**
-     * MySQL/MariaDB: Datenbank von SAFT und Namensraum app_data in eine Datei. Mit denselben Zugangsdaten in einem
-     * Aufruf; hat app_data eigenen Server oder Benutzer (Hoster mit einem Benutzer je Datenbank), in zwei Aufrufen.
+     * MySQL/MariaDB in PHP (SqlDumper): Datenbank von SAFT über die Standardverbindung, Namensraum app_data über seine
+     * eigene Verbindung – auch bei getrennten Zugangsdaten je Datenbank.
+     *
+     * @param  array<string, mixed>  $connection
+     * @return string|null Fehlermeldung
+     */
+    private function php(array $connection, string $file): ?string
+    {
+        $handle = fopen($file, 'xb');
+
+        if ($handle === false) {
+            return "Datei {$file} kann nicht angelegt werden.";
+        }
+
+        File::chmod($file, 0600);
+
+        try {
+            $dumper = app(SqlDumper::class);
+            $dumper->dump(DB::connection(), (string) $connection['database'], $handle);
+            $dumper->dump(DB::connection((string) config('dynamic_data.connection')), (string) config('dynamic_data.namespace'), $handle);
+
+            return null;
+        } catch (Throwable $e) {
+            return $e->getMessage();
+        } finally {
+            fclose($handle);
+        }
+    }
+
+    /**
+     * MySQL/MariaDB mit mysqldump bzw. mariadb-dump: je Verbindung ein Aufruf, die Ausgabe geht laufend in eine Datei.
+     * Mit denselben Zugangsdaten ein Aufruf für beide Datenbanken; hat app_data eigenen Server oder Benutzer, zwei.
+     * (Nicht --result-file: eingeschränkte Programme wie das Snap-Paket von MySQL dürfen nicht selbst Dateien anlegen.)
      *
      * @param  array<string, mixed>  $connection  Standardverbindung
      * @param  array<string, mixed>  $appData  Verbindung des Namensraums app_data
@@ -100,14 +136,18 @@ class DatabaseBackupCommand extends Command
         $namespace = (string) config('dynamic_data.namespace');
         $separate = array_map('strval', [$appData['host'] ?? '', $appData['port'] ?? '', $appData['username'] ?? ''])
             !== array_map('strval', [$connection['host'] ?? '', $connection['port'] ?? '', $connection['username'] ?? '']);
+        $parts = $separate
+            ? [[$connection, [(string) $connection['database']]], [$appData, [$namespace]]]
+            : [[$connection, [(string) $connection['database'], $namespace]]];
 
         try {
-            if (! $separate) {
-                return $this->mysqlDump($connection, [(string) $connection['database'], $namespace], $handle, $driver);
+            foreach ($parts as [$credentials, $databases]) {
+                if (($error = $this->mysqlDump($credentials, $databases, $handle, $driver)) !== null) {
+                    return $error;
+                }
             }
 
-            return $this->mysqlDump($connection, [(string) $connection['database']], $handle, $driver)
-                ?? $this->mysqlDump($appData, [$namespace], $handle, $driver);
+            return null;
         } finally {
             fclose($handle);
         }
@@ -145,7 +185,7 @@ class DatabaseBackupCommand extends Command
                 ]);
         } catch (Throwable $e) {
             // Programm fehlt oder darf nicht gestartet werden (z. B. proc_open gesperrt).
-            return "„{$binary}“ lässt sich nicht starten ({$e->getMessage()}). Pfad in {$variable} eintragen oder die Datenbanksicherung des Hosters verwenden.";
+            return "„{$binary}“ lässt sich nicht starten ({$e->getMessage()}). Pfad in {$variable} eintragen, DB_BACKUP_METHOD=php setzen oder die Datenbanksicherung des Hosters verwenden.";
         }
 
         $result = $process->wait(static function (string $type, string $output) use ($handle, &$errors): void {
@@ -163,8 +203,10 @@ class DatabaseBackupCommand extends Command
         $message = trim($errors !== '' ? $errors : $result->errorOutput());
 
         return match (true) {
+            // Alte mysqldump-Fassungen (z. B. 5.6 bei Strato) kennen die unsichtbaren Spalten von MariaDB nicht.
+            str_contains($message, 'field count') => $message.' – dieses mysqldump ist zu alt für die Tabellen; DB_BACKUP_METHOD=php setzen.',
             $message !== '' => $message,
-            $result->exitCode() === 127 => "„{$binary}“ nicht gefunden. Pfad in {$variable} eintragen (z. B. /usr/bin/mysqldump) oder die Datenbanksicherung des Hosters verwenden.",
+            $result->exitCode() === 127 => "„{$binary}“ nicht gefunden. Pfad in {$variable} eintragen (z. B. /usr/bin/mysqldump), DB_BACKUP_METHOD=php setzen oder die Datenbanksicherung des Hosters verwenden.",
             default => "„{$binary}“ endete mit Exit-Code {$result->exitCode()} ohne Fehlermeldung.",
         };
     }

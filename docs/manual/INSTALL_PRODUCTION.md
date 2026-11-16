@@ -23,6 +23,7 @@ This guide puts SAFT on a server that can be reached from the internet or the co
 9. [Installing updates](#9-installing-updates)
 10. [Security checklist](#10-security-checklist)
 11. [If something goes wrong](#11-if-something-goes-wrong)
+12. [Example: webspace at Strato](#12-example-webspace-at-strato)
 
 ---
 
@@ -89,7 +90,7 @@ database and user as in [Appendix B, step 3](INSTALL_DEVELOPMENT.md#3-create-the
 
 ## 3. Bring SAFT to the server
 
-Sign in via SSH and fetch the desired version (here 2.1.0) into your home directory:
+Sign in via SSH and fetch the desired version (here v0.1.0) into your home directory:
 
 ```bash
 cd ~
@@ -298,8 +299,10 @@ Check in the browser: **https://saft.example.com** redirects to `/admin` and sho
 
 - `db:backup` needs `pg_dump`, `mysqldump` or `mariadb-dump` (package `mariadb-client`) in a version that matches the
   database server. If the program is not in the search path, enter it in `.env` (`PGSQL_DUMP_BINARY`,
-  `MYSQL_DUMP_BINARY` or `MARIADB_DUMP_BINARY`). If it is missing altogether, use your provider's automatic database
-  backup. With MySQL and MariaDB, the `.sql` file contains both databases. A backup from MySQL cannot reliably be
+  `MYSQL_DUMP_BINARY` or `MARIADB_DUMP_BINARY`). If it is missing altogether or too old (e.g. `mysqldump` 5.6 at Strato,
+  message `Error in field count`), SAFT also backs up MySQL and MariaDB **in PHP**: `DB_BACKUP_METHOD=php` in `.env` (or
+  once `php artisan db:backup --php`). The file is also an SQL script and can be restored with `mysql`, `mariadb` or in
+  phpMyAdmin. With MySQL and MariaDB, the `.sql` file contains both databases. A backup from MySQL cannot reliably be
   restored into MariaDB and vice versa.
 - The backups are on the same server – copy them regularly to **another place** and delete old files so that the
   disk does not fill up.
@@ -345,7 +348,8 @@ backup into a new database and point `PGSQL_DATABASE` or `MYSQL_DATABASE` in `.e
 - [ ] `APP_ENV=production` and `APP_DEBUG=false`
 - [ ] Installed with `composer install --no-dev`
 - [ ] The domain points to `…/saft/public`, not to the SAFT folder
-- [ ] HTTPS active, `SESSION_SECURE_COOKIE=true`, HTTP redirects to HTTPS
+- [ ] HTTPS active, `APP_URL` starts with `https://`, `SESSION_SECURE_COOKIE=true`, HTTP redirects to HTTPS (on
+  webspaces usually a setting at the provider, e.g. “force SSL”)
 - [ ] `TRUSTED_PROXIES` empty or only with the addresses of the provider's proxy (`*` only if the server can only be reached through the proxy)
 - [ ] `.env` with `chmod 600`, a copy of `.env` kept safe
 - [ ] First admin password changed after signing in or stored safely
@@ -369,4 +373,63 @@ backup into a new database and point `PGSQL_DATABASE` or `MYSQL_DATABASE` in `.e
 | Links or redirects show `http://` instead of `https://`, the activity log always shows the same IP address | HTTPS ends before the server (load balancer): set `TRUSTED_PROXIES` (step 4), then `php artisan optimize`. |
 | "Page expired" (419) after signing in | `SESSION_SECURE_COOKIE=true` without HTTPS, or `APP_URL` does not match the address used. |
 | Emails do not arrive | Check the SMTP settings; `MAIL_FROM_ADDRESS` must be an address of your own domain. |
-| `db:backup` reports "Sicherung fehlgeschlagen" (backup failed) | The message behind it names the reason: `pg_dump` is missing, older than the database server (`server version mismatch`) or may not connect – otherwise use the provider's backup. |
+| `db:backup` reports "Sicherung fehlgeschlagen" (backup failed) | The message behind it names the reason: program missing (path in `…_DUMP_BINARY`), older than the database server (`server version mismatch`, `Error in field count`) or may not connect. With MySQL and MariaDB, `DB_BACKUP_METHOD=php` helps, otherwise the provider's backup. |
+
+---
+
+## 12. Example: webspace at Strato
+
+Tried with a Strato webspace (MariaDB 11.8, PHP 8.4). Names in the customer portal may change.
+
+**Specifics at Strato:**
+
+| Topic | Solution |
+|---|---|
+| `php` on the command line is the CGI version (output like `Status:`, `Content-type:`) | use the command-line PHP: `alias php='/opt/RZphp84/bin/php-cli'`, permanently in `~/.bashrc` |
+| no `composer` | download `composer.phar` into the SAFT folder (see below) and call it as `php composer.phar …` |
+| every database has its own name, user and server | create two databases, enter the second one with `APP_DATA_SCHEMA` and `DB_APP_DATA_*` (step 2) |
+| `mysqldump` 5.6 is too old, `mariadb-dump` is missing | `DB_BACKUP_METHOD=php` (step 8) |
+| no `which` | `command -v <program>` |
+| HTTPS | activate the certificate for the (sub)domain and switch on **force SSL** under *Security* |
+
+**Procedure** (via SSH; at Strato the home directory already is `htdocs`):
+
+```bash
+alias php='/opt/RZphp84/bin/php-cli'
+git clone https://github.com/EdElling/SAFT-XT.git saft
+cd saft
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php && rm composer-setup.php
+php composer.phar install --no-dev --optimize-autoloader
+cp .env.example .env && php artisan key:generate
+```
+
+In `.env` (values from the customer portal, port 3306):
+
+```dotenv
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://saft.example.com
+SESSION_SECURE_COOKIE=true
+
+DB_CONNECTION=mariadb
+MARIADB_HOST=database-5011111111.webspace-host.com
+MARIADB_DATABASE=dbs11111111
+MARIADB_USERNAME=dbu1111111
+MARIADB_PASSWORD=<password of the first database>
+
+APP_DATA_SCHEMA=dbs22222222
+DB_APP_DATA_HOST=database-5022222222.webspace-host.com
+DB_APP_DATA_USERNAME=dbu2222222
+DB_APP_DATA_PASSWORD=<password of the second database>
+
+DB_BACKUP_METHOD=php
+```
+
+Then continue with step 5 (`migrate`, `db:seed`, `optimize`). In the customer portal set the target directory of the
+domain to `…/saft/public`, activate the certificate and switch on **force SSL**.
+
+**Test or training system with the examples:** for the warehouse demo and the example plugins, install the dependencies
+**with** the development packages (`php composer.phar install --optimize-autoloader`, without `--no-dev`) and then run
+`php artisan db:seed --class=LagerDemoSeeder --force`. `APP_ENV=production` must stay – only then is the test sign-in
+of the development packages switched off. For a production system `--no-dev` remains right.

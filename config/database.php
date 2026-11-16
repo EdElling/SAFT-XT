@@ -186,6 +186,9 @@ return [
     | im PATH oder anders benannt (z. B. MySQL als Snap: /snap/bin/mysql.mysqldump).
     */
     'backup' => [
+        // MySQL/MariaDB: „dump“ = mysqldump/mariadb-dump (Vorgabe), „php“ = Sicherung in PHP (Webspaces ohne passendes
+        // mysqldump, z. B. Strato). PostgreSQL immer pg_dump.
+        'method' => env('DB_BACKUP_METHOD', 'dump'),
         'binaries' => [
             'pgsql' => env('PGSQL_DUMP_BINARY'),
             'mysql' => env('MYSQL_DUMP_BINARY'),
