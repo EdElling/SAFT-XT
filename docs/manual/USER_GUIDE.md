@@ -100,6 +100,14 @@ company login.
   sign-in with a password is switched off.
   The new password needs at least 12 characters; SAFT does not accept a password that has already appeared in a known
   data leak. Tip: several words that only you would put together are long and easy to remember.
+- **Two-factor authentication:** in *My settings* under **Two-factor authentication › Set up**. You need an
+  authenticator app on your phone (e.g. Microsoft Authenticator, Google Authenticator or 2FAS). Scan the QR code and
+  confirm with the 6-digit code from the app and your password. SAFT then shows **8 recovery codes** once – print them
+  or keep them in a safe place. From then on, SAFT asks for the current code from the app after the password. Without
+  your phone, sign in with **"Use a recovery code instead"**; each code works only once. If two-factor authentication
+  is required for your account, SAFT takes you straight to the setup after signing in. It does not apply to sign-in via
+  single sign-on – your organisation is responsible there. Lost phone and codes: the administration resets the second
+  factor.
 
 - The **menu** is on the **left**. It only shows the areas you have permissions for. Under **Data** you find the
   tables, under **Administration** the management functions.

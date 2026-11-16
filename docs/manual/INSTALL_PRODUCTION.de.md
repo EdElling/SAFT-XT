@@ -186,6 +186,9 @@ php artisan db:seed --force      # Rollen, Rechte, Menü und der erste Administr
 
 Steht `ADMIN_PASSWORD` leer, erscheint nun eine Zeile *„Admin-Passwort für … (generiert, bitte notieren)“* – notieren
 Sie das Passwort sofort.
+Bei der ersten Anmeldung führt SAFT das Admin-Konto zur Einrichtung der **Zwei-Faktor-Anmeldung** – halten Sie ein
+Handy mit einer Authenticator-App bereit und bewahren Sie die Wiederherstellungscodes sicher auf
+([Administratorhandbuch, Kapitel 5](ADMIN_GUIDE.de.md#5-authentifizierung)).
 
 Zum Schluss die Zwischenspeicher für schnelle Antwortzeiten aufbauen:
 
@@ -356,6 +359,7 @@ eine neue Datenbank zurückspielen und `PGSQL_DATABASE` bzw. `MYSQL_DATABASE` in
 - [ ] `TRUSTED_PROXIES` leer oder nur mit den Adressen des Proxys des Hosters (`*` nur, wenn der Server nur über den Proxy erreichbar ist)
 - [ ] `.env` mit `chmod 600`, Kopie von `.env` sicher verwahrt
 - [ ] Erstes Admin-Passwort nach der Anmeldung geändert bzw. sicher abgelegt
+- [ ] Zwei-Faktor-Anmeldung für das Admin-Konto eingerichtet, Wiederherstellungscodes sicher abgelegt
 - [ ] Tägliche Sicherung eingerichtet und einmal Wiederherstellung ausprobiert
 - [ ] Datenbankverbindungen zu externen Datenbanken mit Benutzern mit möglichst wenigen Rechten (nur lesen, wo
       nicht geschrieben wird)

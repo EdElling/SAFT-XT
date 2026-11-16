@@ -34,6 +34,7 @@ Installing SAFT step by step is described in [Appendix B](INSTALL_DEVELOPMENT.md
 |---|---|
 | Force local sign-in (emergency exit, e.g. if the IdP fails) | `AUTH_FORCE_LOCAL=true` in `.env` |
 | Set the sign-in mode from the console | `php artisan auth:mode local` (or `sso`, `hybrid`) |
+| Reset the two-factor authentication of an account (e.g. the only admin lost their phone) | `php artisan auth:two-factor-reset <email>` |
 | Compare the table designer settings with the database | `php artisan app-data:verify` |
 | Compare the linked tables with the schema of their external databases (exit code 1 for differences; `--apply` applies them) | `php artisan table-connector:verify` |
 | Bulk link on the console: all tables not linked yet (`--all`) or single ones (`--table=…`), with `--prefix=`, `--menu-group=<ID>` or `none`, `--role=<name>`, `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--schema=`, `--no-details` | `php artisan table-connector:connect "<connection>" --all` |
@@ -138,6 +139,13 @@ outbound HTTPS access to `api.pwnedpasswords.com:443` for this. If the service c
 as safe. Without internet access, set `PASSWORD_CHECK_LEAKED=false`, otherwise every password change waits for the
 timeout. The same rule applies to `ADMIN_PASSWORD` during the first `db:seed`.
 
+**Two-factor authentication:** the administration decides who must set it up (*Administration › Authentication*,
+default: required for administration). The authenticator app's secret and the (hashed) recovery codes are stored
+encrypted with `APP_KEY` in the `users` table – if `APP_KEY` is lost, all accounts must set up again. The codes depend
+on the time: the server clock must be correct (NTP), otherwise codes are rejected. If the only admin has lost phone and
+codes: `php artisan auth:two-factor-reset <email>`. `TWO_FACTOR_ENFORCE=false` only suspends the requirement and is
+meant for the automated tests; anyone who has set up a second factor is still asked for it.
+
 ## 4. Scheduled tasks and cron
 
 [Scheduled tasks](ADMIN_GUIDE.md#12-scheduled-tasks) (e.g. refreshing data snapshots) are run by the Laravel
@@ -217,6 +225,7 @@ shows all available commands, `php artisan help <command>` the options of a comm
 | `php artisan db:backup` | Backup of SAFT's database (PostgreSQL, MySQL or MariaDB) | `--path=` target folder (default `storage/backups`) |
 | `php artisan app-data:verify` | Checks whether the table designer's metadata and the tables in the `app_data` namespace match; exit code 1 on differences (for monitoring) | – |
 | `php artisan auth:mode [local\|sso\|hybrid]` | Shows or sets the sign-in mode, e.g. `auth:mode local` as an emergency exit when no identity provider is reachable | – |
+| `php artisan auth:two-factor-reset <email>` | Deletes the authenticator app and recovery codes of an account; the person signs in with the password and sets up again. Recorded in the activity log | – |
 | `php artisan computed:recompute [table …]` | Recalculates the computed fields (without arguments: all tables with computed fields) | internal table names |
 | `php artisan table-connector:verify [table …]` | Compares connected tables with the schema of the external database; exit code 1 on differences | `--apply` takes over differences like "Re-read" |
 | `php artisan table-connector:connect <connection>` | Bulk link on the console (without the web server's time limit) | `--all` or `--table=` (repeatable), `--schema=`, `--prefix=`, `--menu-group=` (ID or `none`), `--role=` (repeatable), `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--no-details` |

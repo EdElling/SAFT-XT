@@ -105,6 +105,15 @@ déconnecté du compte de l’entreprise.
   passe est alors géré par votre entreprise) ou si la connexion par mot de passe est désactivée.
   Le nouveau mot de passe compte au moins 12 caractères ; SAFT refuse un mot de passe déjà apparu dans une fuite de
   données connue. Conseil : plusieurs mots que vous seul associez sont longs et faciles à retenir.
+- **Authentification à deux facteurs :** dans *Mes paramètres* sous **Authentification à deux facteurs › Configurer**.
+  Il vous faut une application d’authentification sur votre téléphone (p. ex. Microsoft Authenticator, Google
+  Authenticator ou 2FAS). Scannez le code QR et confirmez avec le code à 6 chiffres de l’application et votre mot de
+  passe. SAFT affiche ensuite une seule fois **8 codes de récupération** – imprimez-les ou conservez-les en lieu sûr.
+  Dès lors, SAFT demande après le mot de passe le code actuel de l’application. Sans téléphone, connectez-vous avec
+  **« Utiliser un code de récupération à la place »** ; chaque code ne vaut qu’une fois. Si l’authentification à deux
+  facteurs est obligatoire pour votre compte, SAFT vous mène directement à la configuration après la connexion. Elle ne
+  s’applique pas à la connexion par authentification unique – votre entreprise en est responsable. Téléphone et codes
+  perdus : l’administration réinitialise le second facteur.
 
 - **À gauche** se trouve le **menu**. Il n’affiche que les domaines pour lesquels vous avez des droits. Sous
   **Données** se trouvent les tables, sous **Administration** les fonctions de gestion. La flèche **‹** à côté du nom

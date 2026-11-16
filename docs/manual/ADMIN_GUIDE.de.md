@@ -45,6 +45,9 @@ Rechten sichtbar. Auch hier sind Listen und Tabellen nur so breit wie ihre Spalt
   Rollen. Die **Standardrolle** (siehe [Kapitel 5](#5-authentifizierung)) ist beim Anlegen vorausgewählt.
 - **Passwortregel:** Neue Passwörter brauchen mindestens 12 Zeichen. Passwörter aus bekannten Datenlecks lehnt SAFT
   ab (Abgleich ohne Übermittlung des Passworts). Bestehende Passwörter bleiben gültig, bis sie geändert werden.
+- **Zwei-Faktor zurücksetzen:** Hat jemand Handy und Wiederherstellungscodes verloren, löscht diese Aktion oben in
+  der Bearbeitungsmaske die eingerichtete Authenticator-App. Die Person meldet sich danach mit dem Passwort an und
+  richtet den zweiten Faktor neu ein. Einrichten, Ausschalten und Zurücksetzen stehen im Änderungsprotokoll.
 - **Inaktive Benutzer** können sich nicht anmelden – weder per Passwort noch per SSO.
 - **SSO-Verknüpfungen:** Im Benutzer sehen Sie, mit welchen Single-Sign-On-Konten er verbunden ist, und können
   eine Verknüpfung trennen.
@@ -441,6 +444,7 @@ löschen](#tabelle-oder-feld-endgültig-löschen)). Danach lässt sich die Datei
 | **Notfall-Anmeldung für Super-Admins** | Erlaubt Super-Admins im SSO-Modus die Anmeldung per Passwort über `…/admin/login?local=1` – für den Fall, dass der Identity Provider ausfällt |
 | **„Passwort vergessen“ anbieten** | E-Mail zum Zurücksetzen des Passworts (nur bei Modus Lokal oder Hybrid; erfordert konfigurierten Mailversand) |
 | **Standardrolle für neue Benutzer** | wird beim Anlegen vorausgewählt und bei automatisch angelegten SSO-Benutzern vergeben |
+| **Zwei-Faktor-Anmeldung** | **Freiwillig**, **Pflicht für Administration** (Vorgabe) oder **Pflicht für alle**. Als Administration gilt: Super-Admin oder ein beliebiges Recht auf Benutzer, Rollen, Menüs, Identity Provider, Einstellungen, Table-Designer, Datenbankverbindungen, Table-Connector, Tabellenverknüpfungen, geplante Aufgaben, Plugins oder Konfiguration übertragen. Wer unter die Pflicht fällt, wird nach der Anmeldung zur Einrichtung geführt. Ausgenommen sind Anmeldungen per SSO und Konten ohne Passwort (zweiter Faktor beim Identity Provider) sowie *Ansicht als Rolle*. |
 
 Schutz vor Aussperren: Der Modus **Single Sign-On** lässt sich nur speichern, wenn mindestens ein aktiver
 Identity Provider einen **erfolgreichen Verbindungstest** hat. Zusätzliche Notausgänge für den Betrieb siehe

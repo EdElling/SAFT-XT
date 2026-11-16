@@ -16,4 +16,8 @@ return [
     // Neue Passwörter mit Datenlecks abgleichen (Have I Been Pwned; nur die ersten 5 Zeichen des SHA-1-Hashes verlassen
     // den Server). Abschalten für Server ohne Internetzugang und in Tests.
     'password_check_leaked' => (bool) env('PASSWORD_CHECK_LEAKED', true),
+
+    // Pflicht zur Zwei-Faktor-Anmeldung durchsetzen (Einstellung unter Administration › Authentifizierung). Aus nur in
+    // Tests; wer schon einen zweiten Faktor eingerichtet hat, wird bei der Anmeldung trotzdem danach gefragt.
+    'two_factor_enforce' => (bool) env('TWO_FACTOR_ENFORCE', true),
 ];

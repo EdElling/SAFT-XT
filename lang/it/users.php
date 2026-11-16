@@ -33,4 +33,9 @@ return [
         'soft' => 'L’account viene spostato nel cestino. La persona non può più accedere, nemmeno con il single sign-on, e in questo modo non ottiene un nuovo account. L’account può essere ripristinato; il suo nome resta visibile nel registro delle modifiche.',
         'force' => 'L’account viene rimosso definitivamente, insieme ai suoi collegamenti SSO. Se in seguito la persona accede con il single sign-on, può essere creato un nuovo account (provisioning automatico o collegamento tramite e-mail). Il registro delle modifiche mostra quindi solo il numero dell’utente invece del nome.',
     ],
+    'two_factor' => [
+        'reset' => 'Reimpostare i due fattori',
+        'reset_confirm' => 'L’app di autenticazione e i codici di recupero di questo account vengono eliminati, ad es. dopo la perdita del telefono. La persona accede poi solo con la password e configura di nuovo il secondo fattore.',
+        'reset_done' => 'Autenticazione a due fattori reimpostata',
+    ],
 ];

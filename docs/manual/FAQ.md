@@ -16,6 +16,7 @@
    - [I cannot delete a record.](#i-cannot-delete-a-record)
    - [I cannot change a column to another type.](#i-cannot-change-a-column-to-another-type)
    - [I used "Forgot password" but did not receive an email.](#i-used-forgot-password-but-did-not-receive-an-email)
+   - [I lost my phone with the authenticator app.](#i-lost-my-phone-with-the-authenticator-app)
    - [In which language does the application appear?](#in-which-language-does-the-application-appear)
    - [I chose English, but a menu entry or a table still has a German name.](#i-chose-english-but-a-menu-entry-or-a-table-still-has-a-german-name)
    - [I do not see an "Export" button.](#i-do-not-see-an-export-button)
@@ -48,6 +49,12 @@ The change would alter existing data. It is only possible with an empty column o
 The confirmation always appears, even if there is no account for the address. Check the spelling of the address and
 your spam folder, and wait a moment before trying again, because repeated requests are blocked. If this does not
 help, contact your administrator.
+
+### I lost my phone with the authenticator app.
+
+Sign in with one of your **recovery codes**: after the password, click **"Use a recovery code instead"**. Each code
+works only once. Then set up the app on the new phone in *My settings*. If you no longer have the codes either, the
+administration resets the second factor; after that the password is enough until you have set it up again.
 
 ### In which language does the application appear?
 

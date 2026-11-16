@@ -232,7 +232,7 @@ return [
         */
 
         'hidden' => [
-            '*secret*', '*password', '*token', 'remember_token',
+            '*secret*', '*password', '*token', 'remember_token', '*recovery_codes',
         ],
 
         /*

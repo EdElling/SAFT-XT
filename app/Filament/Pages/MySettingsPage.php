@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Auth\TwoFactor;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Filament\Support\PanelAppearance;
 use App\Models\User;
 use App\Support\AppLocale;
 use App\Support\HighContrast;
 use Filament\Actions\Action;
+use Filament\Auth\MultiFactor\Contracts\MultiFactorAuthenticationProvider;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Radio;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -101,7 +105,26 @@ class MySettingsPage extends Page
                         Action::make('save')->label(__('filament-panels::resources/pages/edit-record.form.actions.save.label'))->submit('save')->keyBindings(['mod+s']),
                     ]),
                 ]),
+            $this->twoFactorSection(),
         ]);
+    }
+
+    /** Zwei-Faktor-Anmeldung einrichten, Codes erneuern, ausschalten (Aktionen von Filament); nicht für reine SSO-Konten. */
+    private function twoFactorSection(): Section
+    {
+        $user = auth()->user();
+        $twoFactor = app(TwoFactor::class);
+
+        return Section::make(__('my_settings.two_factor'))
+            ->description(fn (): string => match (true) {
+                $user instanceof User && $twoFactor->isRequiredFor($user) => __('my_settings.two_factor_required'),
+                default => __('my_settings.two_factor_help'),
+            })
+            ->schema(collect(Filament::getMultiFactorAuthenticationProviders())
+                ->map(fn (MultiFactorAuthenticationProvider $provider): Group => Group::make($provider->getManagementSchemaComponents())->statePath($provider->getId()))
+                ->values()
+                ->all())
+            ->visible($user instanceof User && $twoFactor->isAvailableFor($user));
     }
 
     public function save(): void

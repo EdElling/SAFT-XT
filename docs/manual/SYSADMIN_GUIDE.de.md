@@ -34,6 +34,7 @@ und [Anhang C](INSTALL_PRODUCTION.de.md) (Produktionsserver, z. B. ein Managed S
 |---|---|
 | Lokale Anmeldung erzwingen (Notausgang, z. B. bei IdP-Ausfall) | `AUTH_FORCE_LOCAL=true` in der `.env` |
 | Anmeldemodus per Konsole setzen | `php artisan auth:mode local` (oder `sso`, `hybrid`) |
+| Zwei-Faktor-Anmeldung eines Kontos zurücksetzen (z. B. einziger Admin hat das Handy verloren) | `php artisan auth:two-factor-reset <email>` |
 | Einstellungen des Table-Designers mit der Datenbank abgleichen | `php artisan app-data:verify` |
 | Angebundene Tabellen mit dem Schema ihrer externen Datenbanken abgleichen (Exit-Code 1 bei Abweichungen; `--apply` übernimmt sie) | `php artisan table-connector:verify` |
 | Massenverknüpfung auf der Konsole: alle noch nicht angebundenen Tabellen (`--all`) oder einzelne (`--table=…`), mit `--prefix=`, `--menu-group=<ID>` bzw. `none`, `--role=<Name>`, `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--schema=`, `--no-details` | `php artisan table-connector:connect "<Verbindung>" --all` |
@@ -139,6 +140,14 @@ Server braucht dafür ausgehenden HTTPS-Zugriff auf `api.pwnedpasswords.com:443`
 gilt das Passwort als unbedenklich. Ohne Internetzugang `PASSWORD_CHECK_LEAKED=false` setzen, sonst wartet jede
 Passwortänderung auf die Zeitüberschreitung. Dieselbe Regel gilt für `ADMIN_PASSWORD` beim ersten `db:seed`.
 
+**Zwei-Faktor-Anmeldung:** Wer sie einrichten muss, legt die Administration fest (*Administration › Authentifizierung*,
+Vorgabe: Pflicht für Administration). Das Geheimnis der Authenticator-App und die (gehashten) Wiederherstellungscodes
+liegen verschlüsselt mit `APP_KEY` in der Tabelle `users` – geht `APP_KEY` verloren, müssen alle Konten neu
+einrichten. Die Codes hängen an der Uhrzeit: Die Serverzeit muss stimmen (NTP), sonst werden Codes abgelehnt. Hat der
+einzige Admin Handy und Codes verloren: `php artisan auth:two-factor-reset <email>`. `TWO_FACTOR_ENFORCE=false`
+setzt nur die Pflicht aus und ist für die automatischen Tests gedacht; wer einen zweiten Faktor eingerichtet hat, wird
+trotzdem danach gefragt.
+
 ## 4. Geplante Aufgaben und Cron
 
 [Geplante Aufgaben](ADMIN_GUIDE.de.md#12-geplante-aufgaben) (z. B. Datenstände aktualisieren) führt der
@@ -220,6 +229,7 @@ Alle Befehle im Hauptverzeichnis von SAFT ausführen, auf einem Produktionsserve
 | `php artisan db:backup` | Sicherung der Datenbank von SAFT (PostgreSQL, MySQL oder MariaDB) | `--path=` Zielordner (Vorgabe `storage/backups`) |
 | `php artisan app-data:verify` | Prüft, ob die Metadaten des Table-Designers und die Tabellen im Namensraum `app_data` übereinstimmen; Exit-Code 1 bei Abweichungen (für die Überwachung) | – |
 | `php artisan auth:mode [local\|sso\|hybrid]` | Zeigt oder setzt den Anmeldemodus, z. B. als Notausgang `auth:mode local`, wenn kein Identity Provider erreichbar ist | – |
+| `php artisan auth:two-factor-reset <email>` | Löscht Authenticator-App und Wiederherstellungscodes eines Kontos; die Person meldet sich mit dem Passwort an und richtet neu ein. Steht im Änderungsprotokoll | – |
 | `php artisan computed:recompute [tabelle …]` | Berechnet die berechneten Felder neu (ohne Angabe: alle Tabellen mit berechneten Feldern) | interne Tabellennamen |
 | `php artisan table-connector:verify [tabelle …]` | Vergleicht angebundene Tabellen mit dem Schema der externen Datenbank; Exit-Code 1 bei Abweichungen | `--apply` übernimmt Abweichungen wie „Neu einlesen“ |
 | `php artisan table-connector:connect <verbindung>` | Massenverknüpfung auf der Konsole (ohne Zeitlimit des Webservers) | `--all` bzw. `--table=` (mehrfach), `--schema=`, `--prefix=`, `--menu-group=` (ID oder `none`), `--role=` (mehrfach), `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--no-details` |

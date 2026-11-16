@@ -33,4 +33,9 @@ return [
         'soft' => 'Le compte est placé dans la corbeille. La personne ne peut plus se connecter, pas même par authentification unique, et n’obtient pas de nouveau compte de cette manière. Le compte peut être restauré ; son nom reste visible dans le journal des modifications.',
         'force' => 'Le compte est supprimé définitivement, ainsi que ses liaisons SSO. Si la personne se connecte plus tard par authentification unique, un nouveau compte peut être créé (provisionnement automatique ou liaison par e-mail). Le journal des modifications n’affiche alors plus que le numéro de l’utilisateur au lieu du nom.',
     ],
+    'two_factor' => [
+        'reset' => 'Réinitialiser les deux facteurs',
+        'reset_confirm' => 'L’application d’authentification et les codes de récupération de ce compte sont supprimés, p. ex. après la perte du téléphone. La personne se connecte ensuite avec le seul mot de passe et configure à nouveau le second facteur.',
+        'reset_done' => 'Authentification à deux facteurs réinitialisée',
+    ],
 ];

@@ -102,6 +102,15 @@ Firmen-Login abgemeldet.
   verwaltet dann Ihre Firma) oder die Anmeldung mit Passwort abgeschaltet ist.
   Das neue Passwort braucht mindestens 12 Zeichen; ein Passwort, das schon in einem bekannten Datenleck aufgetaucht
   ist, nimmt SAFT nicht an. Tipp: mehrere Wörter, die nur Sie zusammenbringen, sind lang und gut zu merken.
+- **Zwei-Faktor-Anmeldung:** in *Meine Einstellungen* unter **Zwei-Faktor-Anmeldung › Einrichten**. Sie brauchen
+  eine Authenticator-App auf dem Handy (z. B. Microsoft Authenticator, Google Authenticator oder 2FAS). Scannen Sie den
+  QR-Code, geben Sie zur Bestätigung den 6-stelligen Code aus der App und Ihr Passwort ein. Danach zeigt SAFT einmalig
+  **8 Wiederherstellungscodes** – drucken Sie sie aus oder speichern Sie sie an einem sicheren Ort. Ab jetzt fragt
+  SAFT nach dem Passwort zusätzlich nach dem aktuellen Code aus der App. Ohne Handy melden Sie sich mit
+  **„Stattdessen einen Wiederherstellungscode verwenden“** an; jeder Code gilt nur einmal. Ist die Zwei-Faktor-Anmeldung
+  für Ihr Konto vorgeschrieben, führt SAFT Sie nach der Anmeldung direkt zur Einrichtung. Bei der Anmeldung per Single
+  Sign-On entfällt sie – dort ist Ihre Firma zuständig. Handy und Codes verloren: Die Administration setzt den zweiten
+  Faktor zurück.
 
 - **Links** befindet sich das **Menü**. Es zeigt nur die Bereiche, für die Sie Rechte haben. Unter **Daten**
   finden Sie die Tabellen, unter **Administration** die Verwaltungsfunktionen.

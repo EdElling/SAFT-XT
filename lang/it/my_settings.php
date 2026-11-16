@@ -30,4 +30,7 @@ return [
         'lang' => '1.234,50 (Deutsch, Italiano) · 1,234.50 (English) · 1 234,50 (Français)',
         'CH' => '1\'234.50 – in francese secondo la regola svizzera 1 234,50; CSV con punto decimale.',
     ],
+    'two_factor' => 'Autenticazione a due fattori',
+    'two_factor_help' => 'Protegge il vostro account anche se qualcuno conosce la vostra password: all’accesso inserite anche un codice di un’app di autenticazione. Conservate i codici di recupero in un luogo sicuro – con essi potete accedere anche senza telefono.',
+    'two_factor_required' => 'Per il vostro account l’autenticazione a due fattori è obbligatoria. Conservate i codici di recupero in un luogo sicuro – con essi potete accedere anche senza telefono.',
 ];

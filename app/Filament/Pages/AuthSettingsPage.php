@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Auth\AuthConfiguration;
 use App\Auth\AuthMode;
+use App\Auth\TwoFactorMode;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Models\Role;
 use App\Models\User;
@@ -70,6 +71,15 @@ class AuthSettingsPage extends SettingsPage
                                 }
                             }),
                     ]),
+                Section::make(__('auth_admin.settings.two_factor'))
+                    ->description(__('auth_admin.settings.two_factor_help'))
+                    ->schema([
+                        Radio::make('two_factor')
+                            ->hiddenLabel()
+                            ->options(TwoFactorMode::options())
+                            ->descriptions(collect(TwoFactorMode::cases())->mapWithKeys(fn (TwoFactorMode $m): array => [$m->value => $m->description()])->all())
+                            ->required(),
+                    ]),
                 Section::make(__('auth_admin.settings.options'))
                     ->schema([
                         Toggle::make('break_glass_enabled')
@@ -100,6 +110,7 @@ class AuthSettingsPage extends SettingsPage
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['mode'] = $data['mode'] instanceof AuthMode ? $data['mode']->value : $data['mode'];
+        $data['two_factor'] = $data['two_factor'] instanceof TwoFactorMode ? $data['two_factor']->value : $data['two_factor'];
 
         return $data;
     }
@@ -111,6 +122,7 @@ class AuthSettingsPage extends SettingsPage
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $data['mode'] = AuthMode::from((string) $data['mode']);
+        $data['two_factor'] = TwoFactorMode::from((string) $data['two_factor']);
         $data['password_reset_enabled'] ??= false;
         $data['default_role'] = filled($data['default_role'] ?? null) ? (string) $data['default_role'] : null;
 

@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Models\Base\User as BaseUser;
 use App\Models\Concerns\HasAuditLog;
 use Database\Factories\UserFactory;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Translation\HasLocalePreference;
@@ -15,9 +17,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
+use SensitiveParameter;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends BaseUser implements FilamentUser, HasLocalePreference
+class User extends BaseUser implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasLocalePreference
 {
     use HasAuditLog;
 
@@ -47,6 +50,8 @@ class User extends BaseUser implements FilamentUser, HasLocalePreference
         return [
             'password' => 'hashed',
             'deleted_at' => 'datetime',
+            'app_authentication_secret' => 'encrypted',
+            'app_authentication_recovery_codes' => 'encrypted:array',
         ];
     }
 
@@ -96,5 +101,39 @@ class User extends BaseUser implements FilamentUser, HasLocalePreference
     public function isSuperAdmin(): bool
     {
         return $this->hasRole(self::ROLE_SUPER_ADMIN);
+    }
+
+    public function getAppAuthenticationSecret(): ?string
+    {
+        return $this->app_authentication_secret;
+    }
+
+    /** Einrichten bzw. Ausschalten in „Meine Einstellungen“ (Filament); im Protokoll nur das Ereignis, nie das Geheimnis. */
+    public function saveAppAuthenticationSecret(#[SensitiveParameter] ?string $secret): void
+    {
+        $wasEnabled = filled($this->app_authentication_secret);
+        $this->forceFill(['app_authentication_secret' => $secret])->saveQuietly();
+
+        if ($wasEnabled !== filled($secret)) {
+            $event = filled($secret) ? 'two_factor_enabled' : 'two_factor_disabled';
+            activity('auth')->performedOn($this)->causedBy($this)->event($event)->log($event);
+        }
+    }
+
+    public function getAppAuthenticationHolderName(): string
+    {
+        return $this->email;
+    }
+
+    /** @return array<string>|null gehashte Wiederherstellungscodes */
+    public function getAppAuthenticationRecoveryCodes(): ?array
+    {
+        return $this->app_authentication_recovery_codes;
+    }
+
+    /** @param  array<string>|null  $codes  gehashte Wiederherstellungscodes */
+    public function saveAppAuthenticationRecoveryCodes(#[SensitiveParameter] ?array $codes): void
+    {
+        $this->forceFill(['app_authentication_recovery_codes' => $codes])->saveQuietly();
     }
 }

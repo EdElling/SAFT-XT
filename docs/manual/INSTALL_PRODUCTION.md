@@ -183,6 +183,9 @@ php artisan db:seed --force      # roles, permissions, menu and the first admini
 
 If `ADMIN_PASSWORD` is empty, a line *"Admin-Passwort für … (generiert, bitte notieren)"* (generated admin password)
 appears now – note the password immediately.
+On first sign-in, SAFT takes the admin account to the setup of **two-factor authentication** – have a phone with an
+authenticator app ready and keep the recovery codes in a safe place
+([Administrator guide, chapter 5](ADMIN_GUIDE.md#5-authentication)).
 
 Finally build the caches for fast response times:
 
@@ -353,6 +356,7 @@ backup into a new database and point `PGSQL_DATABASE` or `MYSQL_DATABASE` in `.e
 - [ ] `TRUSTED_PROXIES` empty or only with the addresses of the provider's proxy (`*` only if the server can only be reached through the proxy)
 - [ ] `.env` with `chmod 600`, a copy of `.env` kept safe
 - [ ] First admin password changed after signing in or stored safely
+- [ ] Two-factor authentication set up for the admin account, recovery codes stored safely
 - [ ] Daily backup set up and a restore tried once
 - [ ] Database connections to external databases use users with as few rights as possible (read only where nothing
       is written)

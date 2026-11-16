@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Settings;
 
 use App\Auth\AuthMode;
+use App\Auth\TwoFactorMode;
 use Spatie\LaravelSettings\Settings;
 
 class AuthSettings extends Settings
@@ -18,6 +19,10 @@ class AuthSettings extends Settings
 
     /** Rollenname für neue Benutzer (lokal vorausgewählt, SSO-Fallback). */
     public ?string $default_role;
+
+    // Wer die Zwei-Faktor-Anmeldung (Authenticator-App) einrichten muss. Kein Doc-Kommentar: spatie/laravel-settings
+    // läse daraus den Typ und wandelte das Enum dann nicht um.
+    public TwoFactorMode $two_factor;
 
     public static function group(): string
     {

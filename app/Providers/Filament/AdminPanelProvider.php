@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Auth\RoleSimulation;
+use App\Auth\SaftAppAuthentication;
 use App\Filament\Actions\ChangePasswordAction;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Auth\RequestPasswordReset;
@@ -14,6 +15,7 @@ use App\Filament\Pages\MySettingsPage;
 use App\Filament\Pages\RoleSimulationPage;
 use App\Filament\Support\PanelAppearance;
 use App\Help\HelpAssistant;
+use App\Http\Middleware\RequireTwoFactor;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SimulateRole;
 use App\Models\User;
@@ -48,6 +50,11 @@ class AdminPanelProvider extends PanelProvider
             ->login(Login::class)
             // Routen immer registriert; Verfügbarkeit steuern die Seiten selbst (AuthSettings).
             ->passwordReset(RequestPasswordReset::class, ResetPassword::class)
+            // Zwei-Faktor-Anmeldung mit Authenticator-App (B-057). Filament fragt bei der Anmeldung nach dem Code, wenn
+            // die Person ihn eingerichtet hat; wer ihn einrichten muss, entscheidet RequireTwoFactor je Anfrage.
+            // Kontoname in der App: ohne brandName() der Name aus den App-Einstellungen (beim Einrichten gelesen).
+            ->multiFactorAuthentication([SaftAppAuthentication::make()->recoverable()], isRequired: true)
+            ->multiFactorAuthenticationRequiredMiddlewareName(RequireTwoFactor::class)
             ->brandName(fn (): string => (string) config('app.name'))
             // Farbschema aus den App-Einstellungen (für alle).
             ->colors(fn (): array => PanelAppearance::colors())

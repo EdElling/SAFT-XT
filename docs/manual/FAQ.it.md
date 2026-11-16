@@ -16,6 +16,7 @@
    - [Non riesco a eliminare un record.](#non-riesco-a-eliminare-un-record)
    - [Non riesco a cambiare il tipo di una colonna.](#non-riesco-a-cambiare-il-tipo-di-una-colonna)
    - [Ho usato «Hai smarrito la password?», ma non ho ricevuto alcuna e-mail.](#ho-usato-hai-smarrito-la-password-ma-non-ho-ricevuto-alcuna-e-mail)
+   - [Ho perso il telefono con l’app di autenticazione.](#ho-perso-il-telefono-con-lapp-di-autenticazione)
    - [In quale lingua compare l’applicazione?](#in-quale-lingua-compare-lapplicazione)
    - [Ho scelto l’italiano, ma una voce di menu o una tabella resta in tedesco.](#ho-scelto-litaliano-ma-una-voce-di-menu-o-una-tabella-resta-in-tedesco)
    - [Non vedo il pulsante «Esporta».](#non-vedo-il-pulsante-esporta)
@@ -49,6 +50,13 @@ dati (vedere [Guida all’amministrazione, capitolo 4](ADMIN_GUIDE.it.md#4-desig
 La conferma compare sempre, anche se per quell’indirizzo non esiste alcun account. Controllate come è scritto
 l’indirizzo e la cartella dello spam, e attendete un momento prima di riprovare, perché le richieste ripetute vengono
 bloccate. Se non basta, rivolgetevi all’amministrazione.
+
+### Ho perso il telefono con l’app di autenticazione.
+
+Accedete con uno dei vostri **codici di recupero**: dopo la password cliccate su **«Utilizza un codice di
+recupero»**. Ogni codice vale una sola volta. Configurate poi l’app sul nuovo telefono in *Le mie impostazioni*. Se non
+avete più nemmeno i codici, l’amministrazione reimposta il secondo fattore; da quel momento basta la password finché
+non avrete configurato di nuovo.
 
 ### In quale lingua compare l’applicazione?
 

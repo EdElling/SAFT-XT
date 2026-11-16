@@ -45,6 +45,9 @@ permissions. Here, too, lists and tables are only as wide as their columns (see 
   **default role** (see [chapter 5](#5-authentication)) is preselected when creating.
 - **Password rule:** new passwords need at least 12 characters. SAFT rejects passwords from known data leaks (checked
   without sending the password). Existing passwords stay valid until they are changed.
+- **Reset two-factor:** if someone has lost their phone and recovery codes, this action at the top of the edit form
+  deletes the authenticator app that was set up. The person then signs in with the password and sets up the second
+  factor again. Setting up, switching off and resetting appear in the activity log.
 - **Inactive users** cannot sign in, neither with a password nor with SSO.
 - **SSO links:** in the user you see which single sign-on accounts they are linked to, and you can remove a link.
 - **Change history:** every change to the user can be traced at the bottom of the page.
@@ -428,6 +431,7 @@ Afterwards the file can be imported again.
 | **Emergency sign-in for super admins** | Allows super admins in SSO mode to sign in with a password via `…/admin/login?local=1`, in case the identity provider fails |
 | **Offer "Forgot password"** | Email for resetting the password (only in Local or Hybrid mode; requires configured email delivery) |
 | **Default role for new users** | Preselected when creating users and assigned to SSO users created automatically |
+| **Two-factor authentication** | **Optional**, **Required for administration** (default) or **Required for everyone**. Administration means: super admin or any permission on users, roles, menus, identity providers, settings, table designer, database connections, table connector, table links, scheduled tasks, plugins or transfer configuration. Anyone covered is taken to the setup after signing in. Exempt are sign-ins via SSO and accounts without a password (second factor at the identity provider) as well as *View as role*. |
 
 Protection against lock-out: the **Single sign-on** mode can only be saved if at least one active identity provider
 has a **successful connection test**. For additional emergency exits in operations see

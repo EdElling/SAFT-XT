@@ -46,6 +46,9 @@ Anche qui elenchi e tabelle sono larghi solo quanto le loro colonne (vedere [Gui
 - **Regola delle password:** le nuove password richiedono almeno 12 caratteri. SAFT rifiuta le password presenti in
   fughe di dati note (verifica senza trasmettere la password). Le password esistenti restano valide finché non vengono
   modificate.
+- **Reimpostare i due fattori:** se qualcuno ha perso telefono e codici di recupero, questa azione in alto nel modulo
+  elimina l’app di autenticazione configurata. La persona accede poi con la password e configura di nuovo il secondo
+  fattore. Configurazione, disattivazione e reimpostazione compaiono nel registro modifiche.
 - **Gli utenti inattivi** non possono accedere – né con password né con SSO.
 - **Collegamenti SSO:** nell’utente vedete a quali account single sign-on è collegato e potete rimuovere un
   collegamento.
@@ -444,6 +447,7 @@ campo](#eliminare-definitivamente-una-tabella-o-un-campo)). In seguito il file s
 | **Accesso di emergenza per i super amministratori** | consente ai super-admin, in modalità SSO, l’accesso con password tramite `…/admin/login?local=1` – nel caso in cui il provider di identità non funzioni |
 | **Offri «Password dimenticata»** | e-mail per reimpostare la password (solo in modalità Locale o Ibrido; richiede l’invio di e-mail configurato) |
 | **Ruolo predefinito per i nuovi utenti** | preselezionato alla creazione e assegnato agli utenti SSO creati automaticamente |
+| **Autenticazione a due fattori** | **Facoltativa**, **Obbligatoria per l’amministrazione** (predefinito) o **Obbligatoria per tutti**. Vale come amministrazione: super-admin o qualsiasi diritto su utenti, ruoli, menu, provider di identità, impostazioni, designer di tabelle, connessioni ai database, connettore di tabelle, collegamenti tra tabelle, attività pianificate, plugin o trasferimento della configurazione. Chi vi rientra viene portato alla configurazione dopo l’accesso. Sono esclusi gli accessi tramite SSO e gli account senza password (secondo fattore presso il provider di identità) nonché *Vista come ruolo*. |
 
 Protezione contro il blocco: la modalità **Single sign-on** si può salvare solo se almeno un provider di identità attivo
 ha un **test di connessione riuscito**. Per altre vie d’uscita d’emergenza nell’esercizio vedere

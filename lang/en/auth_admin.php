@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'two_factor_modes' => [
+        'optional' => ['label' => 'Optional', 'description' => 'Each person decides in "My settings".'],
+        'administration' => ['label' => 'Required for administration', 'description' => 'Anyone with an administration permission (users, roles, menus, table designer, settings, plugins …) must set up an authenticator app. Recommended.'],
+        'everyone' => ['label' => 'Required for everyone', 'description' => 'All accounts with a password must set up an authenticator app.'],
+    ],
     'modes' => [
         'local' => [
             'label' => 'Local',
@@ -71,6 +76,8 @@ return [
         'saml_sp_key_mismatch' => 'SP certificate and private key do not match.',
     ],
     'settings' => [
+        'two_factor' => 'Two-factor authentication',
+        'two_factor_help' => 'After the password, a code from an authenticator app (e.g. Microsoft Authenticator, Google Authenticator, 2FAS) is also required. Does not apply to sign-in via single sign-on – the identity provider is responsible there.',
         'title' => 'Authentication',
         'mode' => 'Sign-in mode',
         'options' => 'Options',

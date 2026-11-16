@@ -30,4 +30,7 @@ return [
         'lang' => '1.234,50 (Deutsch, Italiano) · 1,234.50 (English) · 1 234,50 (Français)',
         'CH' => '1\'234.50 – in French by the Swiss rule 1 234,50; CSV with decimal point.',
     ],
+    'two_factor' => 'Two-factor authentication',
+    'two_factor_help' => 'Protects your account even if someone knows your password: when signing in, you also enter a code from an authenticator app. Keep the recovery codes in a safe place – with them you can get in without your phone.',
+    'two_factor_required' => 'Two-factor authentication is required for your account. Keep the recovery codes in a safe place – with them you can get in without your phone.',
 ];

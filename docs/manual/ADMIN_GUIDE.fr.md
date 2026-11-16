@@ -46,6 +46,10 @@ correspondants. Ici aussi, les listes et les tableaux ne sont aussi larges que l
 - **Règle des mots de passe :** les nouveaux mots de passe comptent au moins 12 caractères. SAFT refuse les mots de
   passe issus de fuites de données connues (vérification sans transmettre le mot de passe). Les mots de passe existants
   restent valables jusqu’à leur modification.
+- **Réinitialiser les deux facteurs :** si quelqu’un a perdu son téléphone et ses codes de récupération, cette action
+  en haut du formulaire supprime l’application d’authentification configurée. La personne se connecte ensuite avec son
+  mot de passe et configure à nouveau le second facteur. Configuration, désactivation et réinitialisation figurent
+  dans le journal des modifications.
 - **Les utilisateurs inactifs** ne peuvent pas se connecter – ni par mot de passe ni par SSO.
 - **Liaisons SSO :** dans la fiche de l’utilisateur, vous voyez à quels comptes d’authentification unique il est lié
   et pouvez supprimer une liaison.
@@ -453,6 +457,7 @@ champ](#supprimer-définitivement-une-table-ou-un-champ)). Le fichier peut ensui
 | **Connexion d’urgence pour les super-administrateurs** | Permet aux super-admins, en mode SSO, de se connecter par mot de passe via `…/admin/login?local=1` – au cas où le fournisseur d’identité serait en panne |
 | **Proposer « Mot de passe oublié »** | e-mail pour réinitialiser le mot de passe (uniquement en mode Local ou Hybride ; nécessite un envoi d’e-mails configuré) |
 | **Rôle par défaut des nouveaux utilisateurs** | présélectionné à la création et attribué aux utilisateurs SSO créés automatiquement |
+| **Authentification à deux facteurs** | **Facultative**, **Obligatoire pour l’administration** (par défaut) ou **Obligatoire pour tous**. Est considéré comme administration : super-admin ou tout droit sur les utilisateurs, rôles, menus, fournisseurs d’identité, paramètres, concepteur de tables, connexions aux bases de données, connecteur de tables, liaisons de tables, tâches planifiées, plugins ou transfert de configuration. Les personnes concernées sont conduites à la configuration après la connexion. Sont exemptées les connexions par SSO et les comptes sans mot de passe (second facteur chez le fournisseur d’identité) ainsi que *Vue en tant que rôle*. |
 
 Protection contre le verrouillage : le mode **Authentification unique** ne peut être enregistré que si au moins un
 fournisseur d’identité actif a un **test de connexion réussi**. Pour d’autres issues de secours en exploitation, voir

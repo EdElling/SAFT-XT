@@ -33,4 +33,9 @@ return [
         'soft' => 'Das Konto wird in den Papierkorb verschoben. Die Person kann sich nicht mehr anmelden, auch nicht per Single Sign-On, und erhält dabei auch kein neues Konto. Das Konto lässt sich wiederherstellen; sein Name bleibt im Änderungsprotokoll sichtbar.',
         'force' => 'Das Konto wird unwiderruflich entfernt, ebenso seine SSO-Verknüpfungen. Meldet sich die Person später per Single Sign-On an, kann ein neues Konto entstehen (Auto-Provisionierung oder E-Mail-Verknüpfung). Im Änderungsprotokoll erscheint statt des Namens nur noch die Benutzer-Nummer.',
     ],
+    'two_factor' => [
+        'reset' => 'Zwei-Faktor zurücksetzen',
+        'reset_confirm' => 'Die Authenticator-App und die Wiederherstellungscodes dieses Kontos werden gelöscht, etwa nach dem Verlust des Handys. Die Person meldet sich danach nur mit dem Passwort an und richtet den zweiten Faktor neu ein.',
+        'reset_done' => 'Zwei-Faktor-Anmeldung zurückgesetzt',
+    ],
 ];

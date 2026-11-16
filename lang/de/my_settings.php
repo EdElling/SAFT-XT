@@ -30,4 +30,7 @@ return [
         'lang' => '1.234,50 (Deutsch, Italiano) · 1,234.50 (English) · 1 234,50 (Français)',
         'CH' => '1\'234.50 – auf Französisch nach Schweizer Regel 1 234,50; CSV mit Dezimalpunkt.',
     ],
+    'two_factor' => 'Zwei-Faktor-Anmeldung',
+    'two_factor_help' => 'Schützt Ihr Konto auch dann, wenn jemand Ihr Passwort kennt: Bei der Anmeldung geben Sie zusätzlich einen Code aus einer Authenticator-App ein. Bewahren Sie die Wiederherstellungscodes sicher auf – mit ihnen kommen Sie auch ohne Handy hinein.',
+    'two_factor_required' => 'Für Ihr Konto ist die Zwei-Faktor-Anmeldung vorgeschrieben. Bewahren Sie die Wiederherstellungscodes sicher auf – mit ihnen kommen Sie auch ohne Handy hinein.',
 ];

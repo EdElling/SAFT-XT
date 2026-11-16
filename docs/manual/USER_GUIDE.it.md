@@ -103,6 +103,14 @@ dall’account aziendale.
   dalla vostra azienda) o se l’accesso con password è disattivato.
   La nuova password richiede almeno 12 caratteri; SAFT non accetta una password già comparsa in una fuga di dati
   nota. Consiglio: più parole che solo voi mettereste insieme sono lunghe e facili da ricordare.
+- **Autenticazione a due fattori:** in *Le mie impostazioni* sotto **Autenticazione a due fattori › Configurazione**.
+  Vi serve un’app di autenticazione sul telefono (ad es. Microsoft Authenticator, Google Authenticator o 2FAS).
+  Scansionate il codice QR e confermate con il codice a 6 cifre dell’app e la vostra password. SAFT mostra poi una sola
+  volta **8 codici di recupero** – stampateli o conservateli in un luogo sicuro. Da quel momento SAFT chiede dopo la
+  password il codice attuale dell’app. Senza telefono accedete con **«Utilizza un codice di recupero»**; ogni codice
+  vale una sola volta. Se l’autenticazione a due fattori è obbligatoria per il vostro account, SAFT vi porta
+  direttamente alla configurazione dopo l’accesso. Non vale per l’accesso tramite single sign-on – lì è responsabile la
+  vostra azienda. Telefono e codici persi: l’amministrazione reimposta il secondo fattore.
 
 - **A sinistra** si trova il **menu**. Mostra solo le aree per le quali avete diritti. Sotto **Dati** trovate le
   tabelle, sotto **Amministrazione** le funzioni di gestione. Con la freccia **‹** accanto al nome dell’applicazione

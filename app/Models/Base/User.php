@@ -32,6 +32,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array|null $dashboard_layout
  * @property string|null $theme
  * @property string|null $number_format
+ * @property string|null $app_authentication_secret
+ * @property string|null $app_authentication_recovery_codes
  * @property Collection|SocialAccount[] $social_accounts
  */
 class User extends \Illuminate\Foundation\Auth\User
@@ -52,6 +54,8 @@ class User extends \Illuminate\Foundation\Auth\User
     protected $hidden = [
         'password',
         'remember_token',
+        'app_authentication_secret',
+        'app_authentication_recovery_codes',
     ];
 
     protected $fillable = [

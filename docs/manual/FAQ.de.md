@@ -16,6 +16,7 @@
    - [Ich kann einen Datensatz nicht löschen.](#ich-kann-einen-datensatz-nicht-löschen)
    - [Ich kann eine Spalte nicht auf einen anderen Typ umstellen.](#ich-kann-eine-spalte-nicht-auf-einen-anderen-typ-umstellen)
    - [Ich habe „Passwort vergessen“ benutzt, aber keine E-Mail erhalten.](#ich-habe-passwort-vergessen-benutzt-aber-keine-e-mail-erhalten)
+   - [Ich habe mein Handy mit der Authenticator-App verloren.](#ich-habe-mein-handy-mit-der-authenticator-app-verloren)
    - [In welcher Sprache erscheint die Anwendung?](#in-welcher-sprache-erscheint-die-anwendung)
    - [Ich habe Englisch gewählt, aber ein Menüeintrag oder eine Tabelle heisst weiterhin deutsch.](#ich-habe-englisch-gewählt-aber-ein-menüeintrag-oder-eine-tabelle-heisst-weiterhin-deutsch)
    - [Ich sehe keine Schaltfläche „Exportieren“.](#ich-sehe-keine-schaltfläche-exportieren)
@@ -49,6 +50,13 @@ möglich (siehe [Administratorhandbuch, Kapitel 4](ADMIN_GUIDE.de.md#4-table-des
 Die Bestätigung erscheint immer, auch wenn es zu der Adresse kein Konto gibt. Prüfen Sie die Schreibweise der
 Adresse und Ihren Spam-Ordner, und warten Sie vor einem neuen Versuch einen Moment, weil wiederholte Anfragen
 gesperrt werden. Hilft das nicht, wenden Sie sich an die Administration.
+
+### Ich habe mein Handy mit der Authenticator-App verloren.
+
+Melden Sie sich mit einem Ihrer **Wiederherstellungscodes** an: nach dem Passwort auf **„Stattdessen einen
+Wiederherstellungscode verwenden“** klicken. Jeder Code gilt nur einmal. Richten Sie danach in *Meine Einstellungen*
+die App auf dem neuen Handy ein. Haben Sie auch die Codes nicht mehr, setzt die Administration den zweiten Faktor
+zurück; danach genügt das Passwort, bis Sie neu eingerichtet haben.
 
 ### In welcher Sprache erscheint die Anwendung?
 

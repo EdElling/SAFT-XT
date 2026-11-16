@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'two_factor_modes' => [
+        'optional' => ['label' => 'Facoltativa', 'description' => 'Ogni persona decide in «Le mie impostazioni».'],
+        'administration' => ['label' => 'Obbligatoria per l’amministrazione', 'description' => 'Chi ha un diritto di amministrazione (utenti, ruoli, menu, designer di tabelle, impostazioni, plugin …) deve configurare un’app di autenticazione. Consigliato.'],
+        'everyone' => ['label' => 'Obbligatoria per tutti', 'description' => 'Tutti gli account con password devono configurare un’app di autenticazione.'],
+    ],
     'modes' => [
         'local' => [
             'label' => 'Locale',
@@ -71,6 +76,8 @@ return [
         'saml_sp_key_mismatch' => 'Il certificato SP e la chiave privata non corrispondono.',
     ],
     'settings' => [
+        'two_factor' => 'Autenticazione a due fattori',
+        'two_factor_help' => 'Dopo la password è richiesto anche un codice di un’app di autenticazione (ad es. Microsoft Authenticator, Google Authenticator, 2FAS). Non vale per l’accesso tramite single sign-on – lì è responsabile il provider di identità.',
         'title' => 'Autenticazione',
         'mode' => 'Modalità di accesso',
         'options' => 'Opzioni',

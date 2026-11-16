@@ -33,4 +33,9 @@ return [
         'soft' => 'The account is moved to the trash. The person can no longer sign in, not even with single sign-on, and will not get a new account that way. The account can be restored; its name stays visible in the activity log.',
         'force' => 'The account is removed for good, together with its SSO links. If the person later signs in with single sign-on, a new account may be created (auto-provisioning or linking by email). The activity log then shows only the user number instead of the name.',
     ],
+    'two_factor' => [
+        'reset' => 'Reset two-factor',
+        'reset_confirm' => 'The authenticator app and the recovery codes of this account are deleted, e.g. after losing the phone. The person then signs in with the password only and sets up the second factor again.',
+        'reset_done' => 'Two-factor authentication reset',
+    ],
 ];

@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'two_factor_modes' => [
+        'optional' => ['label' => 'Freiwillig', 'description' => 'Jede Person entscheidet selbst in „Meine Einstellungen“.'],
+        'administration' => ['label' => 'Pflicht für Administration', 'description' => 'Wer ein Recht der Administration hat (Benutzer, Rollen, Menüs, Table-Designer, Einstellungen, Plugins …), muss eine Authenticator-App einrichten. Empfohlen.'],
+        'everyone' => ['label' => 'Pflicht für alle', 'description' => 'Alle Konten mit Passwort müssen eine Authenticator-App einrichten.'],
+    ],
     'modes' => [
         'local' => [
             'label' => 'Lokal',
@@ -71,6 +76,8 @@ return [
         'saml_sp_key_mismatch' => 'SP-Zertifikat und privater Schlüssel passen nicht zusammen.',
     ],
     'settings' => [
+        'two_factor' => 'Zwei-Faktor-Anmeldung',
+        'two_factor_help' => 'Nach dem Passwort zusätzlich ein Code aus einer Authenticator-App (z. B. Microsoft Authenticator, Google Authenticator, 2FAS). Gilt nicht für die Anmeldung per Single Sign-On – dort ist der Identity Provider zuständig.',
         'title' => 'Authentifizierung',
         'mode' => 'Anmeldemodus',
         'options' => 'Optionen',
