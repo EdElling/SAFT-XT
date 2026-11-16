@@ -39,7 +39,9 @@ class DatabaseBackupCommand extends Command
         $database = (string) $connection['database'];
         $file = $directory.DIRECTORY_SEPARATOR.$database.'_'.now()->format('Ymd_His').($driver === 'pgsql' ? '.dump' : '.sql');
 
-        $error = $driver === 'pgsql' ? $this->postgres($connection, $file) : $this->mysql($connection, $file, $driver);
+        $error = $driver === 'pgsql'
+            ? $this->postgres($connection, $file)
+            : $this->mysql($connection, (array) config('database.connections.'.config('dynamic_data.connection')), $file, $driver);
 
         if ($error !== null || ! File::exists($file) || File::size($file) === 0) {
             File::delete($file);
@@ -77,14 +79,14 @@ class DatabaseBackupCommand extends Command
     }
 
     /**
-     * mysqldump bzw. mariadb-dump schreibt nach stdout; SAFT schreibt die Datei selbst. So
-     * funktioniert auch ein mysqldump aus einem Snap, der keine Dateien im Home-Verzeichnis anlegen darf.
+     * MySQL/MariaDB: Datenbank von SAFT und Namensraum app_data in eine Datei. Mit denselben Zugangsdaten in einem
+     * Aufruf; hat app_data eigenen Server oder Benutzer (Hoster mit einem Benutzer je Datenbank), in zwei Aufrufen.
      *
-     * @param  array<string, mixed>  $connection
-     * @param  'mysql'|'mariadb'  $driver
+     * @param  array<string, mixed>  $connection  Standardverbindung
+     * @param  array<string, mixed>  $appData  Verbindung des Namensraums app_data
      * @return string|null Fehlermeldung
      */
-    private function mysql(array $connection, string $file, string $driver): ?string
+    private function mysql(array $connection, array $appData, string $file, string $driver): ?string
     {
         $handle = fopen($file, 'xb');
 
@@ -93,37 +95,55 @@ class DatabaseBackupCommand extends Command
         }
 
         File::chmod($file, 0600);
-        $errors = '';
+        $namespace = (string) config('dynamic_data.namespace');
+        $separate = array_map('strval', [$appData['host'] ?? '', $appData['port'] ?? '', $appData['username'] ?? ''])
+            !== array_map('strval', [$connection['host'] ?? '', $connection['port'] ?? '', $connection['username'] ?? '']);
 
         try {
-            $result = Process::timeout(self::TIMEOUT_SECONDS)
-                ->env(['MYSQL_PWD' => (string) ($connection['password'] ?? '')])
-                ->start([
-                    $driver === 'mariadb' ? $this->binary('mariadb', 'mariadb-dump') : $this->binary('mysql', 'mysqldump'),
-                    '--host='.$connection['host'],
-                    '--port='.$connection['port'],
-                    '--user='.$connection['username'],
-                    '--single-transaction',
-                    '--routines',
-                    '--triggers',
-                    '--hex-blob',
-                    '--no-tablespaces',
-                    // GTID-Option gibt es nur bei MySQL.
-                    ...($driver === 'mysql' ? ['--set-gtid-purged=OFF'] : []),
-                    '--databases',
-                    (string) $connection['database'],
-                    (string) config('dynamic_data.namespace'),
-                ])
-                ->wait(static function (string $type, string $output) use ($handle, &$errors): void {
-                    if ($type === 'out') {
-                        fwrite($handle, $output);
-                    } else {
-                        $errors .= $output;
-                    }
-                });
+            if (! $separate) {
+                return $this->mysqlDump($connection, [(string) $connection['database'], $namespace], $handle, $driver);
+            }
+
+            return $this->mysqlDump($connection, [(string) $connection['database']], $handle, $driver)
+                ?? $this->mysqlDump($appData, [$namespace], $handle, $driver);
         } finally {
             fclose($handle);
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $connection
+     * @param  list<string>  $databases
+     * @param  resource  $handle
+     * @return string|null Fehlermeldung
+     */
+    private function mysqlDump(array $connection, array $databases, $handle, string $driver): ?string
+    {
+        $errors = '';
+        $result = Process::timeout(self::TIMEOUT_SECONDS)
+            ->env(['MYSQL_PWD' => (string) ($connection['password'] ?? '')])
+            ->start([
+                $driver === 'mariadb' ? $this->binary('mariadb', 'mariadb-dump') : $this->binary('mysql', 'mysqldump'),
+                '--host='.$connection['host'],
+                '--port='.$connection['port'],
+                '--user='.$connection['username'],
+                '--single-transaction',
+                '--routines',
+                '--triggers',
+                '--hex-blob',
+                '--no-tablespaces',
+                // GTID-Option gibt es nur bei MySQL.
+                ...($driver === 'mysql' ? ['--set-gtid-purged=OFF'] : []),
+                '--databases',
+                ...$databases,
+            ])
+            ->wait(static function (string $type, string $output) use ($handle, &$errors): void {
+                if ($type === 'out') {
+                    fwrite($handle, $output);
+                } else {
+                    $errors .= $output;
+                }
+            });
 
         return $result->failed() ? ($errors !== '' ? $errors : $result->errorOutput()) : null;
     }

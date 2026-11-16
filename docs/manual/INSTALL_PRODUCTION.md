@@ -35,7 +35,7 @@ MariaDB – and with MySQL or MariaDB a second database; this is the most common
 |---|---|
 | **PHP 8.4 or newer** | for the website **and** on the command line (SSH), with the extensions `pdo_pgsql` or `pdo_mysql`, `intl`, `zip`, `mbstring`, `xml`, `curl`, `bcmath`, `openssl`; only for SQL Server as an external source also `pdo_sqlsrv` with the Microsoft ODBC Driver 18 |
 | **PostgreSQL 16 or newer** | a database of its own; the user must be allowed to create a schema in it (easiest: the user owns the database). A database at the same provider or a separate database service both work. |
-| *or* **MySQL 8.0.16 or newer** | **two** databases with the same user: one for SAFT and one for the tables of the table designer (default name `<database>_app_data`, otherwise set `APP_DATA_SCHEMA`). |
+| *or* **MySQL 8.0.16 or newer** | **two** databases with the same user (or one each, see step 2): one for SAFT and one for the tables of the table designer (default name `<database>_app_data`, otherwise set `APP_DATA_SCHEMA`). |
 | *or* **MariaDB 10.11 or newer** | as with MySQL: **two** databases with the same user. A Galera cluster works as well (all tables of SAFT have a primary key and use InnoDB); structure changes in the table designer run cluster-wide and lock briefly, so do larger changes outside peak hours. |
 | **SSH access** | to run commands (`composer`, `php artisan`); FTP access alone is not enough |
 | **Composer 2** | preinstalled on the server or installable in your home directory |
@@ -60,6 +60,24 @@ In your provider's customer portal (the names differ between providers):
    (usually 5432), database name, user and password. **With MySQL or MariaDB**, create two databases for the same user, e.g.
    `saft` and `saft_app_data` (port usually 3306). If the provider prefixes names (e.g. `customer42_saft_app_data`),
    enter the name of the second one as `APP_DATA_SCHEMA` in step 4.
+
+   **Providers with one user and server per database** (e.g. Strato): there every database gets its own name, user and
+   server assigned by the provider (e.g. `database-5011111111.webspace-host.com`). Create two databases and enter the
+   second one in step 4 with its own credentials – SAFT connects to both separately and does not create a database
+   itself:
+
+   ```dotenv
+   DB_CONNECTION=mysql
+   MYSQL_HOST=database-5011111111.webspace-host.com
+   MYSQL_DATABASE=dbs11111111
+   MYSQL_USERNAME=dbu11111111
+   MYSQL_PASSWORD=<password of the first database>
+
+   APP_DATA_SCHEMA=dbs22222222
+   DB_APP_DATA_HOST=database-5022222222.webspace-host.com
+   DB_APP_DATA_USERNAME=dbu22222222
+   DB_APP_DATA_PASSWORD=<password of the second database>
+   ```
 3. Set up a **domain or subdomain**, e.g. `saft.example.com`, and activate an **HTTPS certificate**.
 4. Set up **SSH access** (preferably with an SSH key instead of a password).
 
@@ -122,6 +140,7 @@ DB_SSLMODE=prefer               # require if the database runs on another machin
 # With MySQL instead MYSQL_HOST, MYSQL_PORT (3306), MYSQL_DATABASE, MYSQL_USERNAME, MYSQL_PASSWORD,
 # with MariaDB MARIADB_HOST, MARIADB_PORT, MARIADB_DATABASE, MARIADB_USERNAME, MARIADB_PASSWORD
 # and, if the provider names the second database differently: APP_DATA_SCHEMA=<name of the second database>
+# – if it has its own server or user: DB_APP_DATA_HOST, DB_APP_DATA_PORT, DB_APP_DATA_USERNAME, DB_APP_DATA_PASSWORD
 
 SESSION_SECURE_COOKIE=true      # session cookie over HTTPS only
 TRUSTED_PROXIES=                # only with the provider's load balancer, see below
@@ -289,7 +308,9 @@ Check in the browser: **https://saft.example.com** redirects to `/admin` and sho
   `pg_restore -h <host> -U <user> --no-owner -d <new_database> storage/backups/<file>.dump`
   – MySQL: `mysql -h <host> -u <user> -p < storage/backups/<file>.sql` (MariaDB: `mariadb …`) restores both databases under their
   **original names** and overwrites existing tables there; for other names, first adjust the `CREATE DATABASE` and
-  `USE` lines in the file.
+  `USE` lines in the file. If the two databases have their own users or servers (e.g. Strato), the file consists of
+  two parts, each starting with `-- MySQL dump` or `-- MariaDB dump`; restore each part with the credentials of its
+  database.
 
 If you use linked external tables, you can additionally check weekly whether their structure has changed:
 
@@ -340,7 +361,7 @@ backup into a new database and point `PGSQL_DATABASE` or `MYSQL_DATABASE` in `.e
 |---|---|
 | White page or "500 Server Error" | The cause is in `storage/logs/laravel.log`. Common: folders not writable (step 5) or `APP_KEY` missing. |
 | `could not find driver` | PHP extension `pdo_pgsql` or `pdo_mysql` is missing – ask the provider to enable it. |
-| `Access denied for user` (MySQL) | The user has no rights on the second database (`…_app_data`) – assign them in the customer portal or correct the name in `APP_DATA_SCHEMA`. |
+| `Access denied for user` (MySQL) | The user has no rights on the second database (`…_app_data`) – assign them in the customer portal or correct the name in `APP_DATA_SCHEMA`. If the second database has its own user (e.g. Strato), enter its credentials in `DB_APP_DATA_HOST`, `DB_APP_DATA_USERNAME` and `DB_APP_DATA_PASSWORD`. |
 | The command line reports an old PHP version | The command line uses another PHP version; change it at the provider or use the matching command (often `php8.4`). |
 | `permission denied to create schema` | The database user may not create a schema in the database – the provider must make the user the owner or grant `CREATE`. |
 | Sign-in page without styling | Run `php artisan filament:upgrade`; check that the domain points to `public`. |

@@ -89,6 +89,8 @@ class DatabaseBackupCommandTest extends TestCase
             'database.backup.binaries.mysql' => '/snap/bin/mysql.mysqldump',
             'dynamic_data.namespace' => 'SAFT2_app_data',
         ]);
+        // Wie im Betrieb: app_data folgt der Standardverbindung (gleicher Server und Benutzer).
+        config(['database.connections.app_data' => [...config('database.connections.mysql'), 'database' => '']]);
         Process::fake(['*' => Process::result(output: "CREATE DATABASE `SAFT2`;\nCREATE DATABASE `SAFT2_app_data`;\n")]);
 
         $this->artisan('db:backup', ['--path' => $this->directory])
@@ -119,6 +121,8 @@ class DatabaseBackupCommandTest extends TestCase
             'database.backup.binaries.mariadb' => null,
             'dynamic_data.namespace' => 'SAFT2_app_data',
         ]);
+        // Wie im Betrieb: app_data folgt der Standardverbindung (gleicher Server und Benutzer).
+        config(['database.connections.app_data' => [...config('database.connections.mariadb'), 'database' => '']]);
         Process::fake(['*' => Process::result(output: "CREATE DATABASE `SAFT2`;\n")]);
 
         $this->artisan('db:backup', ['--path' => $this->directory])
@@ -157,5 +161,43 @@ class DatabaseBackupCommandTest extends TestCase
         $this->artisan('db:backup', ['--path' => $this->directory])->assertFailed();
 
         Process::assertNothingRan();
+    }
+
+    public function test_mysql_dumps_both_databases_in_one_call_with_the_same_credentials(): void
+    {
+        config([
+            'database.default' => 'mysql',
+            'database.connections.mysql' => ['driver' => 'mysql', 'host' => 'db.local', 'port' => '3306', 'database' => 'saft', 'username' => 'saft', 'password' => 'geheim'],
+            'database.connections.app_data' => ['driver' => 'mysql', 'host' => 'db.local', 'port' => '3306', 'database' => '', 'username' => 'saft', 'password' => 'geheim'],
+            'dynamic_data.namespace' => 'saft_app_data',
+        ]);
+        Process::fake(['*' => Process::result(output: "-- dump\n")]);
+
+        $this->artisan('db:backup', ['--path' => $this->directory])->assertSuccessful();
+
+        Process::assertRanTimes(static fn (): bool => true, 1);
+        Process::assertRan(static fn (PendingProcess $process): bool => array_slice($process->command, -3) === ['--databases', 'saft', 'saft_app_data']);
+    }
+
+    /** Hoster mit einem Benutzer und Server je Datenbank (Strato): zwei Aufrufe mit den jeweiligen Zugangsdaten, eine Datei. */
+    public function test_mysql_dumps_app_data_separately_with_its_own_host_and_user(): void
+    {
+        config([
+            'database.default' => 'mysql',
+            'database.connections.mysql' => ['driver' => 'mysql', 'host' => 'database-5011111111.webspace-host.com', 'port' => '3306', 'database' => 'dbs11111111', 'username' => 'dbu11111111', 'password' => 'eins'],
+            'database.connections.app_data' => ['driver' => 'mysql', 'host' => 'database-5022222222.webspace-host.com', 'port' => '3306', 'database' => '', 'username' => 'dbu22222222', 'password' => 'zwei'],
+            'dynamic_data.namespace' => 'dbs22222222',
+        ]);
+        Process::fake(['*' => Process::result(output: "-- dump\n")]);
+
+        $this->artisan('db:backup', ['--path' => $this->directory])->assertSuccessful();
+
+        Process::assertRanTimes(static fn (): bool => true, 2);
+        Process::assertRan(static fn (PendingProcess $p): bool => in_array('--host=database-5011111111.webspace-host.com', $p->command, true)
+            && array_slice($p->command, -2) === ['--databases', 'dbs11111111'] && $p->environment['MYSQL_PWD'] === 'eins');
+        Process::assertRan(static fn (PendingProcess $p): bool => in_array('--host=database-5022222222.webspace-host.com', $p->command, true)
+            && in_array('--user=dbu22222222', $p->command, true)
+            && array_slice($p->command, -2) === ['--databases', 'dbs22222222'] && $p->environment['MYSQL_PWD'] === 'zwei');
+        $this->assertCount(1, File::files($this->directory), 'Beide in einer Datei.');
     }
 }

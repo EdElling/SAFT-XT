@@ -126,8 +126,12 @@ return [
                 'mariadb' => [...$mariadb, 'database' => ''],
                 default => [...$pgsql, 'search_path' => env('APP_DATA_SCHEMA', 'app_data')],
             },
-            'username' => env('DB_APP_DATA_USERNAME', $appDataBase['username']),
-            'password' => env('DB_APP_DATA_PASSWORD', $appDataBase['password']),
+            // Eigener Server, Benutzer und Passwort für den Namensraum app_data – z. B. bei Hostern, die je Datenbank
+            // einen eigenen Benutzer und Host vergeben (Strato). Leer = wie die Standardverbindung.
+            'host' => env('DB_APP_DATA_HOST') ?: $appDataBase['host'],
+            'port' => env('DB_APP_DATA_PORT') ?: $appDataBase['port'],
+            'username' => env('DB_APP_DATA_USERNAME') ?: $appDataBase['username'],
+            'password' => env('DB_APP_DATA_PASSWORD') ?: $appDataBase['password'],
         ],
 
         // Nur für die SQL-Server-Fassung der Forschungsdatenbank (Demo und Tests) und als Vorlage;

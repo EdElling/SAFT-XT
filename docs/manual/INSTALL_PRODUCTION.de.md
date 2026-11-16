@@ -35,7 +35,7 @@ MariaDB – und mit MySQL bzw. MariaDB eine zweite Datenbank; das ist der häufi
 |---|---|
 | **PHP 8.4 oder neuer** | für die Website **und** auf der Kommandozeile (SSH), mit den Erweiterungen `pdo_pgsql` bzw. `pdo_mysql`, `intl`, `zip`, `mbstring`, `xml`, `curl`, `bcmath`, `openssl`; nur für SQL Server als externe Quelle zusätzlich `pdo_sqlsrv` mit dem Microsoft ODBC Driver 18 |
 | **PostgreSQL 16 oder neuer** | eine eigene Datenbank; der Benutzer muss darin ein Schema anlegen dürfen (am einfachsten: er ist Eigentümer der Datenbank). Eine Datenbank beim gleichen Hoster oder ein separater Datenbankdienst ist beides möglich. |
-| *oder* **MySQL 8.0.16 oder neuer** | **zwei** Datenbanken mit demselben Benutzer: eine für SAFT und eine für die Tabellen des Table-Designers (Vorgabename `<datenbank>_app_data`, sonst in `APP_DATA_SCHEMA` eintragen). |
+| *oder* **MySQL 8.0.16 oder neuer** | **zwei** Datenbanken mit demselben Benutzer (oder je eigenem, siehe Schritt 2): eine für SAFT und eine für die Tabellen des Table-Designers (Vorgabename `<datenbank>_app_data`, sonst in `APP_DATA_SCHEMA` eintragen). |
 | *oder* **MariaDB 10.11 oder neuer** | wie MySQL: **zwei** Datenbanken mit demselben Benutzer. Auch ein Galera-Cluster ist möglich (alle Tabellen von SAFT haben einen Primärschlüssel und nutzen InnoDB); Strukturänderungen im Table-Designer laufen dort clusterweit und sperren kurz, grössere Umbauten daher ausserhalb der Hauptzeit. |
 | **SSH-Zugang** | zum Ausführen von Befehlen (`composer`, `php artisan`); reiner FTP-Zugang reicht nicht |
 | **Composer 2** | auf dem Server vorinstalliert oder selbst ins Benutzerverzeichnis installierbar |
@@ -60,6 +60,24 @@ Im Kundenportal Ihres Hosters (die Bezeichnungen unterscheiden sich je nach Anbi
    (meist 5432), Datenbankname, Benutzer und Passwort. **Bei MySQL oder MariaDB** legen Sie zwei Datenbanken für denselben Benutzer
    an, z. B. `saft` und `saft_app_data` (Port meist 3306). Vergibt der Hoster Namen mit Präfix (z. B.
    `kunde42_saft_app_data`), tragen Sie den Namen der zweiten in Schritt 4 als `APP_DATA_SCHEMA` ein.
+
+   **Hoster mit einem Benutzer und Server je Datenbank** (z. B. Strato): Dort erhält jede Datenbank einen eigenen,
+   vom Hoster vergebenen Namen, Benutzer und Server (z. B. `database-5011111111.webspace-host.com`). Legen Sie zwei
+   Datenbanken an und tragen Sie die zweite in Schritt 4 mit eigenen Zugangsdaten ein – SAFT verbindet sich mit beiden
+   getrennt und legt keine Datenbank selbst an:
+
+   ```dotenv
+   DB_CONNECTION=mysql
+   MYSQL_HOST=database-5011111111.webspace-host.com
+   MYSQL_DATABASE=dbs11111111
+   MYSQL_USERNAME=dbu11111111
+   MYSQL_PASSWORD=<passwort der ersten datenbank>
+
+   APP_DATA_SCHEMA=dbs22222222
+   DB_APP_DATA_HOST=database-5022222222.webspace-host.com
+   DB_APP_DATA_USERNAME=dbu22222222
+   DB_APP_DATA_PASSWORD=<passwort der zweiten datenbank>
+   ```
 3. **Domain oder Subdomain** einrichten, z. B. `saft.example.ch`, und ein **HTTPS-Zertifikat** aktivieren.
 4. **SSH-Zugang** einrichten (am besten mit SSH-Schlüssel statt Passwort).
 
@@ -123,6 +141,7 @@ DB_SSLMODE=prefer               # require, wenn die Datenbank auf einem anderen 
 # Mit MySQL stattdessen MYSQL_HOST, MYSQL_PORT (3306), MYSQL_DATABASE, MYSQL_USERNAME, MYSQL_PASSWORD,
 # mit MariaDB MARIADB_HOST, MARIADB_PORT, MARIADB_DATABASE, MARIADB_USERNAME, MARIADB_PASSWORD
 # und, falls der Hoster die zweite Datenbank anders benennt: APP_DATA_SCHEMA=<name der zweiten datenbank>
+# – hat sie eigenen Server oder Benutzer: DB_APP_DATA_HOST, DB_APP_DATA_PORT, DB_APP_DATA_USERNAME, DB_APP_DATA_PASSWORD
 
 SESSION_SECURE_COOKIE=true      # Sitzungs-Cookie nur über HTTPS
 TRUSTED_PROXIES=                # nur bei Load Balancer des Hosters, siehe unten
@@ -292,7 +311,9 @@ Prüfen Sie im Browser: **https://saft.example.ch** leitet auf `/admin` und zeig
   `pg_restore -h <host> -U <benutzer> --no-owner -d <neue_datenbank> storage/backups/<datei>.dump`
   – MySQL: `mysql -h <host> -u <benutzer> -p < storage/backups/<datei>.sql` (MariaDB: `mariadb …`) spielt beide Datenbanken unter ihren
   **ursprünglichen Namen** zurück und überschreibt dort vorhandene Tabellen; für andere Namen passen Sie zuvor die
-  Zeilen `CREATE DATABASE` und `USE` in der Datei an.
+  Zeilen `CREATE DATABASE` und `USE` in der Datei an. Haben die beiden Datenbanken eigene Benutzer bzw. Server (z. B.
+  Strato), besteht die Datei aus zwei Teilen, je beginnend mit `-- MySQL dump` bzw. `-- MariaDB dump`; spielen Sie jeden
+  Teil mit den Zugangsdaten seiner Datenbank ein.
 
 Wer angebundene externe Tabellen nutzt, kann zusätzlich wöchentlich prüfen, ob sich deren Aufbau geändert hat:
 
@@ -343,7 +364,7 @@ eine neue Datenbank zurückspielen und `PGSQL_DATABASE` bzw. `MYSQL_DATABASE` in
 |---|---|
 | Weisse Seite oder „500 Server Error“ | Ursache steht in `storage/logs/laravel.log`. Häufig: Ordner nicht beschreibbar (Schritt 5) oder `APP_KEY` fehlt. |
 | `could not find driver` | PHP-Erweiterung `pdo_pgsql` bzw. `pdo_mysql` fehlt – beim Hoster aktivieren lassen. |
-| `Access denied for user` (MySQL) | Der Benutzer hat keine Rechte auf die zweite Datenbank (`…_app_data`) – im Kundenportal zuweisen oder den Namen in `APP_DATA_SCHEMA` korrigieren. |
+| `Access denied for user` (MySQL) | Der Benutzer hat keine Rechte auf die zweite Datenbank (`…_app_data`) – im Kundenportal zuweisen oder den Namen in `APP_DATA_SCHEMA` korrigieren. Hat die zweite Datenbank einen eigenen Benutzer (z. B. Strato), dessen Zugangsdaten in `DB_APP_DATA_HOST`, `DB_APP_DATA_USERNAME` und `DB_APP_DATA_PASSWORD` eintragen. |
 | Kommandozeile meldet eine alte PHP-Version | Auf der Kommandozeile ist eine andere PHP-Version eingestellt; beim Hoster umstellen oder den passenden Befehl nutzen (oft `php8.4`). |
 | `permission denied to create schema` | Der Datenbankbenutzer darf in der Datenbank kein Schema anlegen – der Hoster muss ihn zum Eigentümer machen oder `CREATE` erlauben. |
 | Anmeldeseite ohne Gestaltung | `php artisan filament:upgrade` ausführen; prüfen, dass die Domain auf `public` zeigt. |

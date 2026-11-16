@@ -25,6 +25,12 @@ abstract class MySqlFamilyDialect implements DdlDialect
 
     public function ensureNamespace(Connection $connection, string $namespace): void
     {
+        // Gibt es die Datenbank schon (z. B. beim Hoster angelegt), nicht anlegen: Hoster wie Strato erlauben dem
+        // Benutzer kein CREATE DATABASE, auch nicht mit IF NOT EXISTS.
+        if ($connection->table('information_schema.schemata')->where('schema_name', $namespace)->exists()) {
+            return;
+        }
+
         $connection->statement(sprintf(
             'CREATE DATABASE IF NOT EXISTS %s CHARACTER SET %s COLLATE %s',
             $this->wrap($connection, $namespace),

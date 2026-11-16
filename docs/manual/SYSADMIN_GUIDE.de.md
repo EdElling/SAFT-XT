@@ -38,7 +38,7 @@ und [Anhang C](INSTALL_PRODUCTION.de.md) (Produktionsserver, z. B. ein Managed S
 | Angebundene Tabellen mit dem Schema ihrer externen Datenbanken abgleichen (Exit-Code 1 bei Abweichungen; `--apply` übernimmt sie) | `php artisan table-connector:verify` |
 | Massenverknüpfung auf der Konsole: alle noch nicht angebundenen Tabellen (`--all`) oder einzelne (`--table=…`), mit `--prefix=`, `--menu-group=<ID>` bzw. `none`, `--role=<Name>`, `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--schema=`, `--no-details` | `php artisan table-connector:connect "<Verbindung>" --all` |
 | Datenbank wählen: PostgreSQL, MySQL oder MariaDB, mit den Zugangsdaten `PGSQL_*`, `MYSQL_*` bzw. `MARIADB_*` | `DB_CONNECTION=pgsql`, `mysql` bzw. `mariadb` in der `.env` |
-| Datenbank sichern (nach `storage/backups`; MySQL/MariaDB: Hauptdatenbank und `…_app_data` in einer `.sql`-Datei; Pfad zum Programm bei Bedarf in `PGSQL_DUMP_BINARY`, `MYSQL_DUMP_BINARY` bzw. `MARIADB_DUMP_BINARY`) | `php artisan db:backup` |
+| Datenbank sichern (nach `storage/backups`; MySQL/MariaDB: Hauptdatenbank und `…_app_data` in einer `.sql`-Datei, bei eigenen Zugangsdaten für `app_data` (`DB_APP_DATA_*`) in zwei Teilen; Pfad zum Programm bei Bedarf in `PGSQL_DUMP_BINARY`, `MYSQL_DUMP_BINARY` bzw. `MARIADB_DUMP_BINARY`) | `php artisan db:backup` |
 | Berechnete Felder neu berechnen (nach Änderungen an SAFT vorbei; optional Tabellennamen) | `php artisan computed:recompute` |
 | Höchstzahl der Datensätze je Export ändern (Vorgabe 50.000) | `APP_DATA_EXPORT_MAX_ROWS=50000` in der `.env` |
 | Höchstzahl der Zeilen je Datenimport in eine bestehende Tabelle ändern (Vorgabe 10'000) | `APP_DATA_IMPORT_MAX_RECORD_ROWS=10000` in der `.env` |
