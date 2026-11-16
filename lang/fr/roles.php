@@ -22,6 +22,7 @@ return [
         'tasks' => 'Tâches planifiées',
         'plugins' => 'Plugins',
         'configuration' => 'Configuration',
+        'help' => 'Aide',
     ],
     'actions' => [
         'view' => 'afficher',

@@ -836,6 +836,7 @@ in the editor or form, is checked there and only takes effect with **Save** or *
 |---|---|---|---|
 | **Reports** | Report editor, field "Describe the report" | Reports: use assistant | Choose base table, rows, columns, values, filters, sorting, number of rows and display; build calculated values and columns as well as figures from values with formulas; ask back; change a proposal on request |
 | **Tables** | Table designer: "Describe the table" when creating, **Adjust with AI** for existing tables | Table designer: use assistant | New table with fields, types, choices, relations to existing tables and labels in all four languages; for existing tables new fields, labels, required/unique/searchable/sortable, further choices and display fields of relations (preview in words, then **Apply**). Changing types, renaming and deleting stay manual |
+| **Help** | **?** button in the header; **Documentation** › tab **AI assistant** | Help: use assistant | Answers questions about using SAFT from the manuals the person may see, with references to the sections; proposes nothing and changes nothing |
 
 ### Setup
 
@@ -846,18 +847,21 @@ in the editor or form, is checked there and only takes effect with **Save** or *
 
    | Setting | Meaning |
    |---|---|
-   | **Switch on the AI assistant** | Main switch for both assistants |
+   | **Switch on the AI assistant** | Main switch for the report and table assistants |
    | **Provider, model** | Anthropic, Amazon Bedrock or Google Vertex AI; model ID, e.g. `claude-opus-5-5` (with Bedrock prefixed `anthropic.`). Empty = value from `.env` |
    | **Thinking depth** | Low, medium (default), high – higher is more thorough but slower and more expensive |
    | **API key** | Stored encrypted and never shown again; leave empty to keep it, "Delete the stored key" removes it. The activity log shows it masked |
    | **Processing region** | Optional (Anthropic), e.g. `us`; empty = workspace default |
    | **Requests per person and day** | Default for everyone (default 50) |
    | **Send the values of selection fields** | Improves filters such as "only regular customers", but passes the entries of selection lists to the provider |
+   | **Switch on help assistant** | Separate switch for the help assistant, independent of the main switch above |
+   | **Help assistant knows the data model** | Also sends the tables and fields the person may see (for questions like “Where do I enter suppliers?”); default off |
 
 3. **Test connection** checks key and model via the provider's free model query, without saving.
 4. **Grant permissions:** *Reports: use assistant* or *Table designer: use assistant* to the desired roles.
+   For the help assistant: *Help: use assistant*.
 5. **Limit per person** (optional): under **Users** in the field **AI requests per day** – empty = default, 0 = blocked.
-   The limit is shared by both assistants.
+   The limit is shared by all assistants.
 
 ### What is transmitted – privacy
 
@@ -865,6 +869,10 @@ in the editor or form, is checked there and only takes effect with **Save** or *
   **data model**: for the report assistant the tables and fields the person may evaluate (labels, technical names,
   types, relations; values of selection fields only with the setting above), for the table assistant the structure of
   the table designer's tables.
+- **Help assistant:** the question, the last six messages of the conversation, title and address of the page the
+  person is on, and the manuals they see in the online help (user guide, frequently asked questions, with an
+  administration permission the administrator guide); with the switch above also the data model as for the report
+  assistant.
 - **Never transmitted** are records, report results, user data or credentials.
 - Above the input field people see which provider receives their description.
 - The contract with the provider (data processing agreement, storage location) is the organisation's responsibility;
@@ -892,6 +900,21 @@ model cannot create anything the person could not also create by hand.
 "purchase volume per supplier for 2026, descending, as bars". The assistant answers ambiguous terms ("revenue" in a
 warehouse) with a question. It cannot invent what is missing in the data model – then an additional (computed) field
 in the table designer helps, e.g. *purchase value* = `round(quantity * purchase_price, 2)`.
+
+### Help assistant
+
+The help assistant answers questions about using SAFT, e.g. “How do I export a table to Excel?”. It answers only from
+the manuals the person sees in the online help, in the language of the interface, and refers to the sections; a click
+opens the section in the documentation. SAFT removes references to sections that do not exist. If something is not in
+the manuals, it says so and refers to the administration.
+
+- **Conversations** are stored and can be reopened, continued and deleted; each person sees only their own. Only the
+  last six messages go to the model, the manuals are cached.
+- **Permissions:** the person's permissions apply – also in **role simulation**: if the simulated role lacks the
+  permission *Help: use assistant*, the button is missing; otherwise the assistant sees the manuals and tables of that
+  role. Conversations and the daily limit belong to the real person.
+- **Plugins:** the assistant knows validation rules and fields from plugins through the data model only by name, not
+  their exact rule.
 
 ### Log and costs
 
@@ -1047,4 +1070,5 @@ package lists them as a prerequisite.
 | Scheduled tasks | view, create, edit (also "Run now"), delete |
 | Plugins | view; manage (create menu entries, clean up); the plugins' own permissions are listed under their name |
 | Configuration | view (page and menu entry); export; import |
+| Help | use assistant (help assistant) |
 | Data per table (data permissions matrix) | view, create, edit, delete, export, import; for linked external tables write permissions only if enabled |

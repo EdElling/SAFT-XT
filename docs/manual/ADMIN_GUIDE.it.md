@@ -879,6 +879,7 @@ risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effe
 |---|---|---|---|
 | **Report** | editor dei report, campo «Descrivere il report» | Report: usare l’assistente | scegliere tabella di base, righe, colonne, valori, filtri, ordinamento, numero di righe e visualizzazione; creare valori e colonne calcolati e indicatori dai valori con formule; porre domande; modificare una proposta su richiesta |
 | **Tabelle** | Designer di tabelle: «Descrivere la tabella» alla creazione, **Adattare con l’IA** per le tabelle esistenti | Designer di tabelle: usare l’assistente | nuova tabella con campi, tipi, opzioni di selezione, collegamenti a tabelle esistenti ed etichette in tutte e quattro le lingue; per le tabelle esistenti nuovi campi, etichette, obbligatorio/univoco/ricercabile/ordinabile, altre opzioni di selezione e campi visualizzati dei collegamenti (anteprima a parole, poi **Importa**). Cambiare tipo, rinominare ed eliminare restano lavoro manuale |
+| **Aiuto** | pulsante **?** nell’intestazione; **Documentazione** › scheda **Assistente IA** | Aiuto: usare l’assistente | risponde alle domande sull’uso in base ai manuali che la persona può vedere, con rimandi alle sezioni; non propone nulla e non modifica nulla |
 
 ### Configurazione
 
@@ -889,20 +890,23 @@ risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effe
 
    | Impostazione | Significato |
    |---|---|
-   | **Attivare l’assistente IA** | interruttore principale per entrambi gli assistenti |
+   | **Attivare l’assistente IA** | interruttore principale per gli assistenti dei report e delle tabelle |
    | **Provider, modello** | Anthropic, Amazon Bedrock o Google Vertex AI; ID del modello, ad es. `claude-opus-5-5` (con Bedrock con il prefisso `anthropic.`). Senza inserimento vale il file `.env` |
    | **Profondità di ragionamento** | bassa, media (predefinita), alta – più alta è più accurata, ma più lenta e più cara |
    | **Chiave API** | viene salvata cifrata e non viene mai più mostrata; lasciarla vuota la conserva, «Eliminare la chiave salvata» la rimuove. Nel registro modifiche compare mascherata |
    | **Regione di elaborazione** | facoltativo (Anthropic), ad es. `us`; vuoto = impostazione predefinita del workspace |
    | **Richieste per persona al giorno** | valore standard per tutti (predefinito 50) |
    | **Trasmettere i valori dei campi di selezione** | migliora filtri come «solo clienti abituali», ma trasmette al provider le voci degli elenchi di selezione |
+   | **Attivare l’assistente di aiuto** | interruttore proprio dell’assistente di aiuto, indipendente dall’interruttore principale sopra |
+   | **L’assistente di aiuto conosce il modello dei dati** | trasmette inoltre le tabelle e i campi che la persona può vedere (per domande come «Dove inserisco i fornitori?»); disattivato per impostazione predefinita |
 
 3. **Testare la connessione** verifica chiave e modello tramite l’interrogazione gratuita dei modelli del provider,
    senza salvare.
 4. **Assegnare i diritti:** *Report: usare l’assistente* o *Designer di tabelle: usare l’assistente* ai ruoli
    desiderati.
+   Per l’assistente di aiuto: *Aiuto: usare l’assistente*.
 5. **Limite per persona** (facoltativo): sotto **Utenti** nel campo **Richieste IA al giorno** – vuoto = valore
-   standard, 0 = bloccato. Il limite vale insieme per entrambi gli assistenti.
+   standard, 0 = bloccato. Il limite vale insieme per tutti gli assistenti.
 
 ### Cosa viene trasmesso – protezione dei dati
 
@@ -910,6 +914,10 @@ risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effe
   il **modello di dati**: per l’assistente dei report le tabelle e i campi che la persona può analizzare (etichette,
   nomi tecnici, tipi, collegamenti; valori dei campi di selezione solo con l’impostazione sopra), per l’assistente
   delle tabelle la struttura delle tabelle del Designer di tabelle.
+- **Assistente di aiuto:** la domanda, gli ultimi sei messaggi della conversazione, titolo e indirizzo della pagina in
+  cui si trova la persona e i manuali che vede nell’aiuto in linea (guida utente, domande frequenti, con un diritto di
+  amministrazione la guida per amministratori); con l’interruttore sopra, inoltre il modello dei dati come per
+  l’assistente dei report.
 - **Non vengono mai trasmessi** record, risultati dei report, dati degli utenti o dati di accesso.
 - Sopra il campo di inserimento le persone vedono a quale provider va la loro descrizione.
 - Il contratto con il provider (trattamento per conto terzi, luogo di archiviazione) è di competenza
@@ -939,6 +947,21 @@ potrebbe creare anche a mano.
 il risultato: «volume d’acquisto per fornitore per il 2026, decrescente, a barre». Ai termini ambigui («fatturato» in
 un magazzino) l’assistente risponde con una domanda. Non può inventare ciò che manca nel modello di dati – aiuta
 allora un campo (calcolato) aggiuntivo nel Designer di tabelle, ad es. *Einkaufswert* = `round(menge * einkaufspreis, 2)`.
+
+### Assistente di aiuto
+
+L’assistente di aiuto risponde alle domande sull’uso, ad es. «Come esporto una tabella in Excel?». Risponde solo in base
+ai manuali che la persona vede nell’aiuto in linea, nella lingua dell’interfaccia, e rimanda alle sezioni; un clic apre
+la sezione nella documentazione. SAFT rimuove i rimandi a sezioni che non esistono. Se qualcosa non è nei manuali, lo
+dice e rimanda all’amministrazione.
+
+- **Le conversazioni** vengono salvate e possono essere riaperte, proseguite ed eliminate; ogni persona vede solo le
+  proprie. Al modello vanno solo gli ultimi sei messaggi, i manuali vengono memorizzati nella cache.
+- **Diritti:** valgono i diritti della persona – anche nella **simulazione di ruolo**: se il ruolo simulato non ha il
+  diritto *Aiuto: usare l’assistente*, il pulsante manca; altrimenti l’assistente vede i manuali e le tabelle di quel
+  ruolo. Le conversazioni e il limite giornaliero appartengono alla persona reale.
+- **Plugin:** l’assistente conosce regole di verifica e campi dei plugin, tramite il modello dei dati, solo per nome,
+  non la loro regola esatta.
 
 ### Registro e costi
 
@@ -1100,4 +1123,5 @@ devono già esistere nell’installazione di destinazione; il pacchetto le indic
 | Attività pianificate | visualizzare, creare, modificare (anche «Esegui ora»), eliminare |
 | Plugin | visualizzare; gestire (creare voci di menu, pulire); i diritti propri dei plugin compaiono sotto il loro nome |
 | Configurazione | visualizzare (pagina e voce di menu); esportare; importare |
+| Aiuto | usare l’assistente (assistente di aiuto) |
 | Dati per tabella (matrice dei diritti sui dati) | visualizzare, creare, modificare, eliminare, esportare, importare; per le tabelle esterne collegate diritti di scrittura solo se abilitati |

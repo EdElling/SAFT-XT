@@ -1,6 +1,6 @@
 {{-- Online-Hilfe: Reiter je Handbuch (+ „Über SAFT“), Inhaltsverzeichnis links, Suche über alle sichtbaren Handbücher. --}}
 @php
-    $tabs = [...array_keys($docs), 'about'];
+    $tabs = [...array_keys($docs), ...($assistant ? ['assistant'] : []), 'about'];
 @endphp
 <x-filament-panels::page>
     <style>
@@ -98,7 +98,7 @@
             <x-filament::tabs class="tabs" :contained="false">
                 @foreach ($tabs as $key)
                     <x-filament::tabs.item :alpine-active="'tab === ' . \Illuminate\Support\Js::from($key)" x-on:click="tab = {{ \Illuminate\Support\Js::from($key) }}" data-doc-tab="{{ $key }}">
-                        {{ $key === 'about' ? __('documentation.about') : $docs[$key]['label'] }}
+                        {{ match ($key) { 'about' => __('documentation.about'), 'assistant' => __('help.tab'), default => $docs[$key]['label'] } }}
                     </x-filament::tabs.item>
                 @endforeach
             </x-filament::tabs>
@@ -115,6 +115,13 @@
                     @endforeach
                 </article>
             @endforeach
+
+            @if ($assistant)
+                {{-- Hilfe-Assistent: Verweise in Antworten springen über data-doc-link in den Abschnitt. --}}
+                <article data-doc="assistant" data-label="{{ __('help.tab') }}" x-show="tab === 'assistant'" x-cloak>
+                    @livewire(\App\Livewire\HelpAssistantChat::class, ['onDocumentationPage' => true], key('help-assistant-docs'))
+                </article>
+            @endif
 
             <article class="saft-doc" data-doc="about" data-label="{{ __('documentation.about') }}" x-show="tab === 'about'" x-cloak>
                 <h2>{{ __('documentation.about') }}</h2>

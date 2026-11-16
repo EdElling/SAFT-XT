@@ -89,6 +89,13 @@ class AppSettingsPage extends SettingsPage
                         Toggle::make('ai_send_choices')
                             ->label(__('assistant.settings.send_choices'))
                             ->helperText(__('assistant.settings.send_choices_help')),
+                        Toggle::make('ai_help_enabled')
+                            ->label(__('assistant.settings.help_enabled'))
+                            ->helperText(__('assistant.settings.help_enabled_help'))
+                            ->disabled(fn (Get $get): bool => ! app(AiConfig::class)->configured() && ! in_array($get('ai_provider'), AiConfig::PROVIDERS, true)),
+                        Toggle::make('ai_help_schema')
+                            ->label(__('assistant.settings.help_schema'))
+                            ->helperText(__('assistant.settings.help_schema_help')),
                         Select::make('ai_provider')
                             ->label(__('assistant.settings.provider'))
                             ->options(['anthropic' => __('assistant.providers.anthropic'), 'bedrock' => __('assistant.providers.bedrock'), 'vertex' => __('assistant.providers.vertex'), 'none' => __('assistant.settings.provider_off')])

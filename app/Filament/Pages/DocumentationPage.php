@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Documentation\Documentation;
+use App\Help\HelpAssistant;
 use App\Models\User;
 use Composer\InstalledVersions;
 use Filament\Pages\Page;
@@ -52,6 +53,7 @@ class DocumentationPage extends Page
             ],
             'license' => (string) @file_get_contents(base_path('LICENSE')),
             'notices' => Documentation::thirdPartyNotices(),
+            'assistant' => app(HelpAssistant::class)->availableFor($user instanceof User ? $user : null),
         ];
     }
 }

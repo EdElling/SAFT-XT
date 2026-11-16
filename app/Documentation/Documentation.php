@@ -133,6 +133,12 @@ final class Documentation
         return $text === false ? null : self::markdown((string) preg_replace('/^# .*\n/', '', $text));
     }
 
+    /** Markdown eines Handbuchs ohne Kopf, in der Sprache der Oberfläche (für den Hilfe-Assistenten). */
+    public static function source(string $doc): string
+    {
+        return self::body($doc);
+    }
+
     /** Markdown ohne Kopf (Titel, Sprachwahl, eigenes Inhaltsverzeichnis): alles nach der zweiten Trennlinie. */
     private static function body(string $doc): string
     {

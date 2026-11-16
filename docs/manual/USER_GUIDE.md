@@ -108,6 +108,11 @@ company login.
   application, with a table of contents and a search field that searches all guides while you type. People with a
   permission in the Administration area also see the administrator guide. **About SAFT XT** shows the version, the
   licence terms and the third-party components with their licences.
+- **Help assistant:** if it is set up and you have the permission, the **?** button at the top right opens a window
+  where you ask questions about using SAFT, e.g. “How do I export this table?”. The answer is based on the manuals you
+  may see and refers to the matching sections; the assistant knows which page you are on. You find the same
+  conversations under **Documentation** in the tab **AI assistant**, where you reopen, continue or delete earlier
+  conversations. AI answers may contain mistakes – the manuals are authoritative.
 - The **dashboard** is the start page. The tiles (widgets) are arranged in two columns that grow downwards
   independently; wide tiles follow below across the full width. Which tiles you see is set by the administrator
   through your role; tiles from plugins can be added, e.g. *Warehouse: minimum stock*. You **arrange** them yourself: **"Customize dashboard"** (top right) shows a handle and

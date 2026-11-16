@@ -21,6 +21,12 @@ class AppSettings extends Settings
     /** KI-Assistent für Auswertungen eingeschaltet (zusätzlich AI_PROVIDER und Recht reports.assistant). */
     public bool $ai_assistant_enabled;
 
+    /** Hilfe-Assistent eingeschaltet (zusätzlich KI-Anbieter und Recht help.assistant). */
+    public bool $ai_help_enabled;
+
+    /** Hilfe-Assistent kennt das Datenmodell (Tabellen und Felder, die die Person sehen darf) – nie Datensätze. */
+    public bool $ai_help_schema;
+
     /** Werte von Auswahlfeldern an das Modell übertragen (bessere Filter, verrät aber Inhalte der Auswahl). */
     public bool $ai_send_choices;
 

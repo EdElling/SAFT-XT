@@ -865,6 +865,7 @@ landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bz
 |---|---|---|---|
 | **Auswertungen** | Auswertungs-Editor, Feld „Auswertung beschreiben“ | Auswertungen: Assistent nutzen | Grundtabelle, Zeilen, Spalten, Werte, Filter, Sortierung, Anzahl Zeilen und Darstellung wählen; berechnete Werte und Spalten sowie Kennzahlen aus Werten mit Formeln bilden; Rückfragen stellen; einen Vorschlag auf Zuruf ändern |
 | **Tabellen** | Table-Designer: beim Anlegen „Tabelle beschreiben“, bei bestehenden Tabellen **Mit KI anpassen** | Table-Designer: Assistent nutzen | Neue Tabelle mit Feldern, Typen, Auswahloptionen, Verknüpfungen zu bestehenden Tabellen und Bezeichnungen in allen vier Sprachen; bei bestehenden Tabellen neue Felder, Bezeichnungen, Pflicht/eindeutig/durchsuchbar/sortierbar, weitere Auswahloptionen und Anzeigefelder von Verknüpfungen (Vorschau in Worten, dann **Übernehmen**). Typ ändern, umbenennen und löschen bleibt Handarbeit |
+| **Hilfe** | Knopf **?** in der Kopfzeile; **Dokumentation** › Reiter **KI-Assistent** | Hilfe: Assistent nutzen | Beantwortet Fragen zur Bedienung aus den Handbüchern, die die Person sehen darf, mit Verweisen auf die Abschnitte; schlägt nichts vor und ändert nichts |
 
 ### Einrichten
 
@@ -875,18 +876,21 @@ landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bz
 
    | Einstellung | Bedeutung |
    |---|---|
-   | **KI-Assistent einschalten** | Hauptschalter für beide Assistenten |
+   | **KI-Assistent einschalten** | Hauptschalter für die Assistenten für Auswertungen und Tabellen |
    | **Anbieter, Modell** | Anthropic, Amazon Bedrock oder Google Vertex AI; Modell-ID, z. B. `claude-opus-5-5` (bei Bedrock mit Präfix `anthropic.`). Ohne Eintrag gilt die `.env` |
    | **Denktiefe** | Niedrig, Mittel (Vorgabe), Hoch – höher ist gründlicher, aber langsamer und teurer |
    | **API-Schlüssel** | Wird verschlüsselt gespeichert und nie wieder angezeigt; leer lassen behält ihn, „Gespeicherten Schlüssel löschen“ entfernt ihn. Im Änderungsprotokoll erscheint er maskiert |
    | **Region der Verarbeitung** | Optional (Anthropic), z. B. `us`; leer = Vorgabe des Workspace |
    | **Anfragen pro Person und Tag** | Standard für alle (Vorgabe 50) |
    | **Werte von Auswahlfeldern übertragen** | Verbessert Filter wie „nur Stammkunden“, gibt aber die Einträge der Auswahllisten an den Anbieter weiter |
+   | **Hilfe-Assistent einschalten** | Eigener Schalter für den Hilfe-Assistenten, unabhängig vom Hauptschalter oben |
+   | **Hilfe-Assistent kennt das Datenmodell** | Schickt zusätzlich die Tabellen und Felder mit, die die Person sehen darf (für Fragen wie „Wo erfasse ich Lieferanten?“); Vorgabe aus |
 
 3. **Verbindung testen** prüft Schlüssel und Modell über die kostenlose Modell-Abfrage des Anbieters, ohne zu speichern.
 4. **Rechte vergeben:** *Auswertungen: Assistent nutzen* bzw. *Table-Designer: Assistent nutzen* an die gewünschten Rollen.
+   Für den Hilfe-Assistenten: *Hilfe: Assistent nutzen*.
 5. **Limit je Person** (optional): unter **Benutzer** im Feld **KI-Anfragen pro Tag** – leer = Standard, 0 = gesperrt.
-   Das Limit gilt gemeinsam für beide Assistenten.
+   Das Limit gilt gemeinsam für alle Assistenten.
 
 ### Was übertragen wird – Datenschutz
 
@@ -894,6 +898,10 @@ landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bz
   **Datenmodell**: beim Auswertungs-Assistenten die Tabellen und Felder, die die Person auswerten darf (Bezeichnungen,
   technische Namen, Typen, Verknüpfungen; Werte von Auswahlfeldern nur mit der Einstellung oben), beim
   Tabellen-Assistenten der Aufbau der Tabellen des Table-Designers.
+- **Hilfe-Assistent:** die Frage, die letzten sechs Nachrichten der Unterhaltung, Titel und Adresse der Seite, auf
+  der die Person gerade ist, und die Handbücher, die sie in der Online-Hilfe sieht (Anwenderhandbuch, Häufige Fragen,
+  mit einem Administrationsrecht das Administratorhandbuch); mit dem Schalter oben zusätzlich das Datenmodell wie beim
+  Auswertungs-Assistenten.
 - **Nie übertragen** werden Datensätze, Ergebnisse von Auswertungen, Benutzerdaten oder Zugangsdaten.
 - Über dem Eingabefeld sehen die Personen, an welchen Anbieter ihre Beschreibung geht.
 - Für den Vertrag mit dem Anbieter (Auftragsverarbeitung, Speicherort) ist die Organisation zuständig; die **Region der
@@ -921,6 +929,21 @@ Vorschlag“ und ändert nichts. Das Modell kann also nichts anlegen, was die Pe
 aussehen soll: „Einkaufsvolumen je Lieferant für 2026, absteigend, als Balken“. Mehrdeutige Begriffe („Umsatz“ in
 einem Lager) beantwortet der Assistent mit einer Rückfrage. Was im Datenmodell fehlt, kann er nicht erfinden – dann
 hilft ein zusätzliches (berechnetes) Feld im Table-Designer, z. B. *Einkaufswert* = `round(menge * einkaufspreis, 2)`.
+
+### Hilfe-Assistent
+
+Der Hilfe-Assistent beantwortet Fragen zur Bedienung, z. B. „Wie exportiere ich eine Tabelle nach Excel?“. Er antwortet
+nur aus den Handbüchern, die die Person in der Online-Hilfe sieht, in der Sprache der Oberfläche, und verweist auf die
+Abschnitte; ein Klick öffnet den Abschnitt in der Dokumentation. Verweise auf Abschnitte, die es nicht gibt, entfernt
+SAFT. Steht etwas nicht in den Handbüchern, sagt er das und verweist an die Administration.
+
+- **Unterhaltungen** werden gespeichert und lassen sich wieder öffnen, fortsetzen und löschen; jede Person sieht nur
+  ihre eigenen. Ans Modell gehen jeweils nur die letzten sechs Nachrichten, die Handbücher werden zwischengespeichert.
+- **Rechte:** Es gelten die Rechte der Person – auch in der **Rollen-Simulation**: Hat die simulierte Rolle das Recht
+  *Hilfe: Assistent nutzen* nicht, fehlt der Knopf; sonst sieht der Assistent die Handbücher und Tabellen dieser Rolle.
+  Die Unterhaltungen und das Tageslimit gehören der echten Person.
+- **Plugins:** Prüfregeln und Felder aus Plugins kennt der Assistent über das Datenmodell nur mit Namen, nicht ihre
+  genaue Regel.
 
 ### Protokoll und Kosten
 
@@ -1084,4 +1107,5 @@ Zielinstallation bereits angelegt sein; das Paket nennt sie als Voraussetzung.
 | Geplante Aufgaben | anzeigen, anlegen, bearbeiten (auch „Jetzt ausführen“), löschen |
 | Plugins | anzeigen; verwalten (Menüeinträge anlegen, Aufräumen); die Rechte der Plugins selbst stehen unter ihrem Namen |
 | Konfiguration | anzeigen (Seite und Menüeintrag); exportieren; einspielen |
+| Hilfe | Assistent nutzen (Hilfe-Assistent) |
 | Daten je Tabelle (Datenrechte-Matrix) | anzeigen, anlegen, bearbeiten, löschen, exportieren, importieren; bei angebundenen externen Tabellen Schreibrechte nur, wenn freigeschaltet |

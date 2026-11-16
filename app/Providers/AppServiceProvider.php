@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Ai\AnthropicChatClient;
+use App\Ai\ChatClient;
 use App\Auth\RoleSimulation;
 use App\Auth\Sso\Drivers\EntraDriver;
 use App\Auth\Sso\Drivers\SamlDriver;
@@ -76,6 +78,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(PendingSsoLogout::class);
         $this->app->scoped(TaskRegistry::class);
         $this->app->bind(AssistantClient::class, AnthropicAssistantClient::class);
+        // Hilfe-Assistent: heute Claude; ein lokal betriebenes Modell bekäme hier eine eigene Umsetzung.
+        $this->app->bind(ChatClient::class, AnthropicChatClient::class);
         $this->app->scoped(RoleSimulation::class);
         // Plugins melden sich in ihren ServiceProvidern an (die vor diesem laufen, daher singletonIf).
         $this->app->singletonIf(PluginRegistry::class);

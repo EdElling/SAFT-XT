@@ -185,6 +185,11 @@ comes from the `.env`:
   process. PHP's `max_execution_time` and time limits of an upstream proxy should therefore be above `AI_TIMEOUT`.
 - Errors are written to the application log (`storage/logs`), every request also to the activity log.
 - Switching off: main switch off or provider "Off" in the app settings, or `AI_PROVIDER=none`.
+- **Help assistant:** separate switch in the app settings. It sends the manuals of the online help (in the
+  language of the interface, about 35,000 tokens), which the provider caches; follow-up questions within a few minutes
+  are therefore much cheaper. The conversations are stored in SAFT's database (tables `ai_help_conversations` and
+  `ai_help_messages`) and are not deleted automatically; each person deletes their own. A locally operated model is
+  planned but cannot be connected yet.
 
 ## 6. Command reference (php artisan)
 

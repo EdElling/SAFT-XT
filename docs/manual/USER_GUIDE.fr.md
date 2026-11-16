@@ -112,6 +112,12 @@ déconnecté du compte de l’entreprise.
   l’application, avec un sommaire et un champ de recherche qui cherche dans tous les guides pendant la frappe. Les
   personnes ayant un droit dans le domaine Administration voient en plus le guide d’administration. **À propos de
   SAFT** indique la version, les conditions de licence et les composants tiers avec leurs licences.
+- **Assistant d’aide :** s’il est configuré et que vous en avez le droit, le bouton **?** en haut à droite ouvre une
+  fenêtre où vous posez des questions sur l’utilisation, p. ex. « Comment exporter cette table ? ». La réponse s’appuie
+  sur les manuels que vous pouvez voir et renvoie aux sections correspondantes ; l’assistant sait sur quelle page vous
+  vous trouvez. Vous retrouvez les mêmes conversations sous **Documentation**, onglet **Assistant IA**, où vous rouvrez,
+  poursuivez ou supprimez les conversations précédentes. Les réponses de l’IA peuvent contenir des erreurs – les
+  manuels font foi.
 - Le **tableau de bord** est la page d’accueil. Les tuiles (widgets) sont disposées sur deux colonnes qui s’allongent
   indépendamment l’une de l’autre ; les tuiles larges suivent en dessous sur toute la largeur. Les tuiles que vous
   voyez sont définies par l’administration via votre rôle ; des tuiles issues de plugins peuvent s’y ajouter, p. ex.

@@ -25,6 +25,18 @@ final class SchemaMarkdown
             '',
         ];
 
+        return implode("\n", $out)."\n".$this->tables($schema);
+    }
+
+    /**
+     * Nur die Tabellen, ohne Kopf mit Hinweisen für Plugins – z. B. für den Hilfe-Assistenten.
+     *
+     * @param  array<string, mixed>  $schema  Ergebnis von SchemaExporter::export()
+     */
+    public function tables(array $schema): string
+    {
+        $out = [];
+
         foreach ($schema['tables'] as $table) {
             $out = [...$out, ...$this->table($table)];
         }

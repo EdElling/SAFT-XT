@@ -187,6 +187,11 @@ dort leer bleibt, kommt aus der `.env`:
   `max_execution_time` von PHP bzw. Zeitlimits eines vorgeschalteten Proxys sollten daher über `AI_TIMEOUT` liegen.
 - Fehler stehen im Protokoll der Anwendung (`storage/logs`), jede Anfrage zusätzlich im Änderungsprotokoll.
 - Ausschalten: in den App-Einstellungen den Hauptschalter aus bzw. Anbieter „Aus“, oder `AI_PROVIDER=none`.
+- **Hilfe-Assistent:** eigener Schalter in den App-Einstellungen. Er schickt die Handbücher der Online-Hilfe mit
+  (in der Sprache der Oberfläche, etwa 35 000 Tokens), die beim Anbieter zwischengespeichert werden; Folgefragen
+  innerhalb weniger Minuten sind dadurch deutlich günstiger. Die Unterhaltungen liegen in der Datenbank von SAFT
+  (Tabellen `ai_help_conversations` und `ai_help_messages`) und werden nicht automatisch gelöscht; jede Person löscht
+  ihre eigenen. Ein lokal betriebenes Modell ist vorgesehen, aber noch nicht anschliessbar.
 
 ## 6. Befehlsreferenz (php artisan)
 

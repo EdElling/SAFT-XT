@@ -110,6 +110,11 @@ dall’account aziendale.
   nell’applicazione, con indice e un campo di ricerca che cerca in tutte le guide durante la digitazione. Chi ha un
   diritto nell’area Amministrazione vede anche la guida all’amministrazione. **Informazioni su SAFT XT** indica la
   versione, le condizioni di licenza e i componenti di terze parti con le relative licenze.
+- **Assistente di aiuto:** se è configurato e hai il diritto, il pulsante **?** in alto a destra apre una finestra in
+  cui fai domande sull’uso, ad es. «Come esporto questa tabella?». La risposta si basa sui manuali che puoi vedere e
+  rimanda alle sezioni corrispondenti; l’assistente sa in quale pagina ti trovi. Le stesse conversazioni si trovano in
+  **Documentazione** nella scheda **Assistente IA**, dove riapri, prosegui o elimini le conversazioni precedenti. Le
+  risposte dell’IA possono contenere errori – fanno fede i manuali.
 - La **dashboard** è la pagina iniziale. I riquadri (widget) sono disposti su due colonne che crescono verso il basso
   in modo indipendente; i riquadri larghi seguono sotto, a tutta larghezza. Quali riquadri vedete lo stabilisce
   l’amministrazione tramite il vostro ruolo; possono aggiungersi riquadri dei plugin, p. es. *Magazzino: scorta minima*. Potete **disporli** voi stessi: **«Personalizza dashboard»** (in alto a

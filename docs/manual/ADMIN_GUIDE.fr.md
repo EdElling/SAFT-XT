@@ -900,6 +900,7 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
 |---|---|---|---|
 | **Rapports** | éditeur de rapports, champ « Décrire le rapport » | Rapports : utiliser l’assistant | choisir la table de base, les lignes, colonnes, valeurs, filtres, le tri, le nombre de lignes et l’affichage ; créer des valeurs et colonnes calculées ainsi que des indicateurs à partir des valeurs avec des formules ; poser des questions ; modifier une proposition sur demande |
 | **Tables** | Concepteur de tables : « Décrire la table » à la création, **Adapter avec l’IA** pour les tables existantes | Concepteur de tables : utiliser l’assistant | nouvelle table avec champs, types, options de sélection, liaisons vers des tables existantes et libellés dans les quatre langues ; pour les tables existantes nouveaux champs, libellés, obligatoire/unique/recherchable/triable, options de sélection supplémentaires et champs affichés des liaisons (aperçu en mots, puis **Reprendre**). Changer de type, renommer et supprimer restent manuels |
+| **Aide** | bouton **?** dans l’en-tête ; **Documentation** › onglet **Assistant IA** | Aide : utiliser l’assistant | répond aux questions sur l’utilisation à partir des manuels que la personne peut voir, avec renvois aux sections ; ne propose rien et ne modifie rien |
 
 ### Configuration
 
@@ -910,20 +911,23 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
 
    | Réglage | Signification |
    |---|---|
-   | **Activer l’assistant IA** | interrupteur principal pour les deux assistants |
+   | **Activer l’assistant IA** | interrupteur principal pour les assistants de rapports et de tables |
    | **Fournisseur, modèle** | Anthropic, Amazon Bedrock ou Google Vertex AI ; ID du modèle, p. ex. `claude-opus-5-5` (pour Bedrock avec le préfixe `anthropic.`). Sans saisie, le fichier `.env` s’applique |
    | **Profondeur de réflexion** | faible, moyenne (par défaut), élevée – plus élevée est plus approfondie, mais plus lente et plus chère |
    | **Clé API** | enregistrée chiffrée et plus jamais affichée ; la laisser vide la conserve, « Supprimer la clé enregistrée » la retire. Elle apparaît masquée dans le journal des modifications |
    | **Région de traitement** | facultatif (Anthropic), p. ex. `us` ; vide = valeur par défaut de l’espace de travail |
    | **Demandes par personne et par jour** | valeur standard pour tous (50 par défaut) |
    | **Transmettre les valeurs des champs de sélection** | améliore des filtres comme « seulement les clients réguliers », mais transmet les entrées des listes de sélection au fournisseur |
+   | **Activer l’assistant d’aide** | interrupteur propre à l’assistant d’aide, indépendant de l’interrupteur principal ci-dessus |
+   | **L’assistant d’aide connaît le modèle de données** | transmet en plus les tables et champs que la personne peut voir (pour des questions comme « Où saisir les fournisseurs ? ») ; désactivé par défaut |
 
 3. **Tester la connexion** vérifie la clé et le modèle via la requête gratuite des modèles du fournisseur, sans
    enregistrer.
 4. **Attribuer les droits :** *Rapports : utiliser l’assistant* ou *Concepteur de tables : utiliser l’assistant* aux
    rôles souhaités.
+   Pour l’assistant d’aide : *Aide : utiliser l’assistant*.
 5. **Limite par personne** (facultatif) : sous **Utilisateurs**, dans le champ **Demandes IA par jour** – vide =
-   valeur standard, 0 = bloqué. La limite vaut pour les deux assistants ensemble.
+   valeur standard, 0 = bloqué. La limite vaut pour tous les assistants ensemble.
 
 ### Ce qui est transmis – protection des données
 
@@ -931,6 +935,10 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
   « seulement 2026 ») et le **modèle de données** : pour l’assistant des rapports, les tables et champs que la personne
   peut analyser (libellés, noms techniques, types, liaisons ; valeurs des champs de sélection uniquement avec le
   réglage ci-dessus), pour l’assistant des tables, la structure des tables du Concepteur de tables.
+- **Assistant d’aide :** la question, les six derniers messages de la conversation, le titre et l’adresse de la page
+  où se trouve la personne et les manuels qu’elle voit dans l’aide en ligne (guide utilisateur, questions fréquentes,
+  avec un droit d’administration le guide d’administration) ; avec l’interrupteur ci-dessus, en plus le modèle de
+  données comme pour l’assistant de rapports.
 - **Ne sont jamais transmis** les enregistrements, les résultats des rapports, les données des utilisateurs ni les
   données d’accès.
 - Au-dessus du champ de saisie, les personnes voient à quel fournisseur leur description est envoyée.
@@ -961,6 +969,21 @@ résultat doit ressembler : « volume d’achat par fournisseur pour 2026, décr
 aux termes ambigus (« chiffre d’affaires » dans un entrepôt) par une question. Il ne peut pas inventer ce qui manque
 dans le modèle de données – un champ (calculé) supplémentaire dans le Concepteur de tables aide alors, p. ex.
 *Einkaufswert* = `round(menge * einkaufspreis, 2)`.
+
+### Assistant d’aide
+
+L’assistant d’aide répond aux questions sur l’utilisation, p. ex. « Comment exporter une table vers Excel ? ». Il
+répond uniquement à partir des manuels que la personne voit dans l’aide en ligne, dans la langue de l’interface, et
+renvoie aux sections ; un clic ouvre la section dans la documentation. SAFT supprime les renvois vers des sections qui
+n’existent pas. Si quelque chose ne figure pas dans les manuels, il le dit et renvoie à l’administration.
+
+- **Les conversations** sont enregistrées et peuvent être rouvertes, poursuivies et supprimées ; chaque personne ne voit
+  que les siennes. Seuls les six derniers messages sont envoyés au modèle, les manuels sont mis en cache.
+- **Droits :** les droits de la personne s’appliquent – aussi dans la **simulation de rôle** : si le rôle simulé n’a pas
+  le droit *Aide : utiliser l’assistant*, le bouton manque ; sinon l’assistant voit les manuels et les tables de ce
+  rôle. Les conversations et la limite journalière appartiennent à la personne réelle.
+- **Plugins :** l’assistant ne connaît les règles de validation et champs des plugins, via le modèle de données, que
+  par leur nom, pas leur règle exacte.
 
 ### Journal et coûts
 
@@ -1126,4 +1149,5 @@ doivent déjà exister dans l’installation cible ; le paquet les indique comme
 | Tâches planifiées | afficher, créer, modifier (aussi « Exécuter maintenant »), supprimer |
 | Plugins | afficher ; gérer (créer les entrées de menu, nettoyer) ; les droits propres aux plugins figurent sous leur nom |
 | Configuration | afficher (page et entrée de menu) ; exporter ; importer |
+| Aide | utiliser l’assistant (assistant d’aide) |
 | Données par table (matrice des droits sur les données) | afficher, créer, modifier, supprimer, exporter, importer ; pour les tables externes liées, droits d’écriture uniquement s’ils sont activés |

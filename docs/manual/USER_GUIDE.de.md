@@ -110,6 +110,12 @@ Firmen-Login abgemeldet.
   Anwendung, mit Inhaltsverzeichnis und einem Suchfeld, das beim Tippen über alle Handbücher sucht. Wer ein Recht im
   Bereich Administration hat, sieht zusätzlich das Administratorhandbuch. **Über SAFT XT** nennt die Version, die
   Lizenzbedingungen und die Komponenten von Drittanbietern mit ihren Lizenzen.
+- **Hilfe-Assistent:** Ist er eingerichtet und haben Sie das Recht dazu, öffnet der Knopf **?** oben rechts ein
+  Fenster, in dem Sie Fragen zur Bedienung stellen, z. B. „Wie exportiere ich diese Tabelle?“. Die Antwort stützt sich
+  auf die Handbücher, die Sie sehen dürfen, und verweist auf die passenden Abschnitte; der Assistent weiss, auf welcher
+  Seite Sie gerade sind. Dieselben Unterhaltungen finden Sie unter **Dokumentation** im Reiter **KI-Assistent**, wo Sie
+  frühere Unterhaltungen wieder öffnen, fortsetzen oder löschen. KI-Antworten können Fehler enthalten – massgeblich
+  sind die Handbücher.
 - Das **Dashboard** ist die Startseite. Die Kacheln (Widgets) stehen in zwei Spalten, die unabhängig voneinander
   nach unten wachsen; breite Kacheln folgen darunter über die volle Breite. Welche Kacheln Sie sehen, legt die
   Administration über Ihre Rolle fest; dazu können Kacheln aus Plugins kommen, z. B. *Lager: Mindestbestand*. **Anordnen** können Sie sie selbst: **„Dashboard anpassen“** (oben rechts)

@@ -13,6 +13,7 @@ use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\MySettingsPage;
 use App\Filament\Pages\RoleSimulationPage;
 use App\Filament\Support\PanelAppearance;
+use App\Help\HelpAssistant;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SimulateRole;
 use App\Models\User;
@@ -64,6 +65,8 @@ class AdminPanelProvider extends PanelProvider
             // Eigene Stile und der persönliche Kontrastmodus (siehe PanelAppearance).
             ->renderHook(PanelsRenderHook::STYLES_AFTER, fn (): string => PanelAppearance::styles().PanelAppearance::themeScript())
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => PanelAppearance::headScript())
+            // Hilfe-Assistent (Knopf „?“), nur wenn eingerichtet, eingeschaltet und mit Recht.
+            ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn (): string => app(HelpAssistant::class)->availableFor(($user = auth()->user()) instanceof User ? $user : null) ? view('filament.help-assistant-button')->render() : '')
             // „Ansicht als Rolle“: Hinweisband mit „Beenden“ auf jeder Seite.
             ->renderHook(PanelsRenderHook::BODY_START, fn (): string => ($roles = app(RoleSimulation::class)->active()) === null ? '' : view('filament.role-simulation-banner', ['roles' => $roles])->render())
             ->userMenuItems([
