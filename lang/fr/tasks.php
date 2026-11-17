@@ -107,7 +107,7 @@ return [
     'missing_table' => 'La table n’existe plus.',
     'plugin_inactive' => 'Ignorée : le plugin « :plugin » est désactivé ou en veille.',
     'already_running' => 'Cette tâche est déjà en cours.',
-    'failed_generic' => 'La tâche a échoué. Détails dans le journal de l’application.',
+    'failed_generic' => 'La tâche a échoué (référence :reference). Détails techniques : sous « Détails » à l’exécution ou dans le fichier journal sur le serveur (storage/logs/laravel.log).',
     'aborted' => 'Interrompue (le processus a été arrêté).',
     'notifications' => [
         'failed' => 'Échec de la tâche planifiée : :task',
@@ -141,5 +141,16 @@ return [
         'disabled' => 'Ignorée : la réinitialisation des données de démo n’est pas autorisée sur ce serveur (DEMO_RESET=true dans .env).',
         'nothing_installed' => 'Ignorée : aucune des démos choisies n’est chargée.',
         'not_installed' => 'La démo n’est pas chargée entièrement, il manque : :tables.',
+    ],
+    'error_detail' => [
+        'action' => 'Détails',
+        'heading' => 'Détails techniques (référence :reference)',
+        'close' => 'Fermer',
+        'error' => 'Erreur',
+        'message' => 'Message',
+        'location' => 'Emplacement',
+        'causes' => 'Causes',
+        'trace' => 'Déroulement',
+        'hint' => 'Réservé à l’administration : les détails peuvent contenir des chemins, des noms de tables et des valeurs. L’erreur est décrite plus en détail dans le fichier journal sur le serveur (storage/logs/laravel.log) – y rechercher :reference.',
     ],
 ];

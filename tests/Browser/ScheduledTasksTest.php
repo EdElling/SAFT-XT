@@ -7,6 +7,7 @@ namespace Tests\Browser;
 use App\ExternalData\TableConnectorService;
 use App\Models\ScheduledTask;
 use App\Models\TaskRun;
+use App\Tasks\TaskRunner;
 use Database\Seeders\ExternalResearchDatabase;
 use Facebook\WebDriver\WebDriverBy;
 use Illuminate\Support\Facades\Artisan;
@@ -126,6 +127,45 @@ class ScheduledTasksTest extends DuskTestCase
 
         $task = ScheduledTask::query()->where('type', 'lager_tafel_inventory_reminder')->sole();
         $this->assertSame(['days' => 30], array_map('intval', $task->parameterValues()));
+    }
+
+    /** TSK-12: Technische Details eines fehlgeschlagenen Laufs – nur mit Recht, Hinweis auf die Logdatei. */
+    public function test_error_details_of_a_failed_run(): void
+    {
+        $prune = ScheduledTask::query()->where('type', 'task_runs_prune')->sole();
+        $prune->runs()->create([
+            'trigger' => TaskRun::MANUAL, 'status' => ScheduledTask::FAILED, 'started_at' => now(), 'finished_at' => now(),
+            'message' => 'Die Aufgabe ist fehlgeschlagen (Referenz TEST1234).',
+            'error_detail' => TaskRunner::errorDetail(new \RuntimeException('Testfehler für die Anzeige'), 'TEST1234'),
+        ]);
+        $this->activeUser('aufgaben@example.com')->givePermissionTo(['tasks.view', 'tasks.update']);
+
+        $this->browse(function (Browser $admin, Browser $other): void {
+            $this->login($admin, 'admin@example.com')
+                ->visit('/admin/scheduled-tasks/'.ScheduledTask::query()->where('type', 'task_runs_prune')->value('id').'/edit')
+                ->waitForText('Läufe', 15);
+            $this->scrollToRuns($admin);
+            $admin->press('Details')
+                ->waitForText('Technische Details (Referenz TEST1234)', 15)
+                ->assertSee('Testfehler für die Anzeige')
+                ->assertSee('RuntimeException')
+                ->assertSee('storage/logs/laravel.log')
+                ->assertSee('dort nach TEST1234 suchen');
+
+            $this->login($other, 'aufgaben@example.com')
+                ->visit('/admin/scheduled-tasks/'.ScheduledTask::query()->where('type', 'task_runs_prune')->value('id').'/edit')
+                ->waitForText('Läufe', 15);
+            $this->scrollToRuns($other);
+            $other->assertDontSee('Details');
+        });
+    }
+
+    /** Der Verlauf lädt erst, wenn er sichtbar wird: scrollen, bis der fehlgeschlagene Testlauf da ist. */
+    private function scrollToRuns(Browser $browser): void
+    {
+        $browser->waitUsing(15, 300, static fn (): bool => (bool) $browser->driver->executeScript(
+            'window.scrollTo(0, document.body.scrollHeight); return document.body.innerText.includes("Referenz TEST1234");',
+        ));
     }
 
     /** TSK-03 */

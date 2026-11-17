@@ -886,6 +886,12 @@ planning.
 durée et le message. Une tâche ne s’exécute jamais deux fois en même temps : si elle tourne encore, la nouvelle
 exécution est « ignorée » ; de même lorsque la même table est en cours d’actualisation manuelle.
 
+**Analyser un échec :** en cas d’erreur inattendue, le message ne donne qu’une **référence**, p. ex. « La tâche a
+échoué (référence K7Q2M9XA) » – les détails techniques peuvent contenir des chemins, des noms de tables et des valeurs.
+Qui a le droit *Tâches planifiées : voir les détails techniques* (les super-admins toujours) les ouvre à l’exécution
+avec **Détails** : erreur, message, emplacement dans le programme, causes et déroulement. La même erreur est décrite
+plus en détail sous la référence dans le fichier journal sur le serveur (`storage/logs/laravel.log`).
+
 **Notification :** si une tâche échoue, **tous les super-admins** reçoivent une notification (cloche, dans leur
 langue) – au premier échec et de nouveau lorsqu’elle réussit ensuite pour la première fois ; la colonne « Échecs
 consécutifs » compte les échecs répétés entre-temps. Le widget **Tâches planifiées** montre un feu tricolore (tout va
@@ -1174,7 +1180,7 @@ doivent déjà exister dans l’installation cible ; le paquet les indique comme
 | Widgets du tableau de bord | par widget |
 | Rapports | afficher, créer (ses propres), modifier et supprimer (aussi ceux d’autrui), utiliser l’assistant (IA) |
 | Liaisons de tables | afficher, créer, modifier, supprimer |
-| Tâches planifiées | afficher, créer, modifier (aussi « Exécuter maintenant »), supprimer |
+| Tâches planifiées | afficher, créer, modifier (aussi « Exécuter maintenant »), supprimer, voir les détails techniques (détails d’erreur des exécutions échouées) |
 | Plugins | afficher ; gérer (créer les entrées de menu, nettoyer) ; les droits propres aux plugins figurent sous leur nom |
 | Configuration | afficher (page et entrée de menu) ; exporter ; importer |
 | Aide | utiliser l’assistant (assistant d’aide) |

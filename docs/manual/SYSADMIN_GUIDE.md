@@ -181,6 +181,10 @@ as the terminal is open.
 `.env`: `TASKS_HEARTBEAT_MINUTES` (when the administration warns, default 15), `TASKS_HANGING_HOURS` (when a run counts
 as aborted, default 6).
 
+**Failed runs:** the message names a reference; under it, the error with trace is in `storage/logs/laravel.log`
+(entry `Geplante Aufgabe fehlgeschlagen`). The administration also sees error, message, location and trace in SAFT at
+the run under **Details** (permission *Scheduled tasks: see technical details*).
+
 **System tasks for backups and demos:** *Back up database* (02:30) and *Clean up backups* (02:45, 14 days, at least
 3) run from installation on; the scheduler thus replaces a separate cron entry for `db:backup`. If you still have such
 an entry, remove it or switch off the task, otherwise backups are made twice. *Reset demo data* is destructive:

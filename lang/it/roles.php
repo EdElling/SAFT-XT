@@ -25,6 +25,7 @@ return [
         'help' => 'Aiuto',
     ],
     'actions' => [
+        'details' => 'vedere i dettagli tecnici',
         'view' => 'visualizzare',
         'create' => 'creare',
         'update' => 'modificare',

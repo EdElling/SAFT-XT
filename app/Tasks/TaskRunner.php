@@ -13,6 +13,7 @@ use App\Plugins\PluginRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -23,6 +24,9 @@ use Throwable;
 final readonly class TaskRunner
 {
     private const string HEARTBEAT = 'tasks:heartbeat';
+
+    /** Schritte des Ablaufs in den Fehlerdetails eines Laufs. */
+    private const int TRACE_FRAMES = 20;
 
     public function __construct(private TaskNotifier $notifier) {}
 
@@ -66,10 +70,13 @@ final readonly class TaskRunner
             } catch (TaskSkipped $e) {
                 return $this->finish($task, $run, ScheduledTask::SKIPPED, $e->getMessage());
             } catch (Throwable $e) {
-                Log::warning('Geplante Aufgabe fehlgeschlagen', ['task' => $task->id, 'type' => $task->type, 'error' => $e->getMessage()]);
-                $message = $e instanceof BusinessRuleException ? $e->getMessage() : __('tasks.failed_generic');
+                // Referenz in Meldung, Lauf und Protokoll: Die Administration findet den Eintrag ohne Server-Zugang
+                // (Lauf › Details, Recht tasks.details) und im Protokoll per grep.
+                $reference = Str::upper(Str::random(8));
+                Log::warning('Geplante Aufgabe fehlgeschlagen', ['task' => $task->id, 'type' => $task->type, 'error' => $e->getMessage(), 'error_reference' => $reference, 'exception' => $e]);
+                $message = $e instanceof BusinessRuleException ? $e->getMessage() : __('tasks.failed_generic', ['reference' => $reference]);
 
-                return $this->finish($task, $run, ScheduledTask::FAILED, $message);
+                return $this->finish($task, $run, ScheduledTask::FAILED, $message, errorDetail: self::errorDetail($e, $reference));
             }
         } finally {
             $lock->release();
@@ -120,9 +127,41 @@ final readonly class TaskRunner
     }
 
     /** @param  array<string, mixed>  $data */
-    private function finish(ScheduledTask $task, TaskRun $run, string $status, string $message, array $data = []): TaskRun
+    /**
+     * Technische Details eines Fehlschlags für die Administration: Klasse, Meldung, Ort und die ersten Schritte des
+     * Ablaufs (Pfade relativ zum Programmordner, ohne Argumente – keine Werte aus dem Aufruf). Ursachen
+     * (getPrevious) stehen mit Klasse und Meldung dabei.
+     *
+     * @return array{reference: string, class: class-string, message: string, location: string, trace: list<string>, causes: list<string>}
+     */
+    public static function errorDetail(Throwable $e, string $reference): array
     {
-        $run->update(['status' => $status, 'finished_at' => now(), 'message' => $message, 'result' => $data === [] ? null : $data]);
+        $relative = static fn (string $file): string => str_starts_with($file, base_path().DIRECTORY_SEPARATOR) ? substr($file, strlen(base_path()) + 1) : $file;
+        $trace = array_slice(array_map(
+            static fn (array $frame): string => (isset($frame['class']) ? $frame['class'].($frame['type'] ?? '::') : '').($frame['function'] ?? '?').'()'
+                .(isset($frame['file']) ? ' – '.$relative($frame['file']).':'.($frame['line'] ?? '?') : ''),
+            $e->getTrace(),
+        ), 0, self::TRACE_FRAMES);
+        $causes = [];
+
+        for ($previous = $e->getPrevious(); $previous !== null && count($causes) < 5; $previous = $previous->getPrevious()) {
+            $causes[] = $previous::class.': '.$previous->getMessage();
+        }
+
+        return [
+            'reference' => $reference,
+            'class' => $e::class,
+            'message' => $e->getMessage(),
+            'location' => $relative($e->getFile()).':'.$e->getLine(),
+            'trace' => $trace,
+            'causes' => $causes,
+        ];
+    }
+
+    /** @param  array<string, mixed>|null  $errorDetail */
+    private function finish(ScheduledTask $task, TaskRun $run, string $status, string $message, array $data = [], ?array $errorDetail = null): TaskRun
+    {
+        $run->update(['status' => $status, 'finished_at' => now(), 'message' => $message, 'result' => $data === [] ? null : $data, 'error_detail' => $errorDetail]);
 
         $previousFailures = (int) $task->consecutive_failures;
         $failures = match ($status) {

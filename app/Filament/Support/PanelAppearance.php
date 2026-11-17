@@ -106,6 +106,12 @@ final class PanelAppearance
             // Prüfregeln aus Plugins in der Auswahl „Weitere Prüfungen“: Symbol, Regel, Plugin (grau).
             .'.saft-plugin-option{display:inline-flex;align-items:center;gap:.3rem}'
             .'.saft-plugin-option-source{opacity:.65;font-size:.85em}'
+            // Technische Details eines fehlgeschlagenen Laufs (geplante Aufgaben).
+            .'.saft-error-detail{font-size:.875rem}.saft-error-detail-hint{color:var(--gray-500);margin-bottom:.75rem}'
+            .'.saft-error-detail dt{font-weight:600;margin-top:.75rem}.saft-error-detail dd{margin-top:.25rem}'
+            .'.saft-error-detail pre,.saft-error-detail code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8rem}'
+            .'.saft-error-detail pre{white-space:pre-wrap;word-break:break-word;background:var(--gray-50);padding:.5rem .75rem;border-radius:.375rem;max-height:20rem;overflow:auto}'
+            .'.dark .saft-error-detail pre{background:color-mix(in oklab,var(--gray-800) 70%,transparent)}'
             // Hervorhebung der ausgewählten Zeile in der Master-Detail-Kaskade (Filament-Farbvariablen, Dark Mode).
             .'.saft-row-selected > td{background-color:color-mix(in oklab,var(--saft-highlight) 14%,transparent)!important}'
             .'.saft-row-selected > td:first-child{box-shadow:inset 3px 0 0 var(--saft-highlight)}'

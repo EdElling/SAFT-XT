@@ -107,7 +107,7 @@ return [
     'missing_table' => 'The table no longer exists.',
     'plugin_inactive' => 'Skipped: the plugin “:plugin” is switched off or resting.',
     'already_running' => 'This task is already running.',
-    'failed_generic' => 'The task failed. Details in the application log.',
+    'failed_generic' => 'The task failed (reference :reference). Technical details: under "Details" at the run or in the log file on the server (storage/logs/laravel.log).',
     'aborted' => 'Aborted (the process was interrupted).',
     'notifications' => [
         'failed' => 'Scheduled task failed: :task',
@@ -141,5 +141,16 @@ return [
         'disabled' => 'Skipped: resetting demo data is not allowed on this server (DEMO_RESET=true in .env).',
         'nothing_installed' => 'Skipped: none of the selected demos is loaded.',
         'not_installed' => 'The demo is not loaded completely, missing: :tables.',
+    ],
+    'error_detail' => [
+        'action' => 'Details',
+        'heading' => 'Technical details (reference :reference)',
+        'close' => 'Close',
+        'error' => 'Error',
+        'message' => 'Message',
+        'location' => 'Location',
+        'causes' => 'Causes',
+        'trace' => 'Trace',
+        'hint' => 'For the administration only: the details may contain paths, table names and values. The error is described in more detail in the log file on the server (storage/logs/laravel.log) – search there for :reference.',
     ],
 ];

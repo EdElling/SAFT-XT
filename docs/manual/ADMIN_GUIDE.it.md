@@ -865,6 +865,12 @@ ogni esecuzione con ora, avvio (pianificazione, a mano, console), stato, durata 
 eseguita due volte in contemporanea: se è ancora in corso, la nuova esecuzione viene «saltata»; lo stesso quando la
 stessa tabella viene aggiornata in quel momento a mano.
 
+**Analizzare un errore:** in caso di errore inatteso il messaggio indica solo un **riferimento**, ad es. «L’attività
+non è riuscita (riferimento K7Q2M9XA)» – i dettagli tecnici possono contenere percorsi, nomi di tabelle e valori. Chi ha
+il diritto *Attività pianificate: vedere i dettagli tecnici* (i super-admin sempre) li apre nell’esecuzione con
+**Dettagli**: errore, messaggio, posizione nel programma, cause e svolgimento. Lo stesso errore è descritto più in
+dettaglio sotto il riferimento nel file di log sul server (`storage/logs/laravel.log`).
+
 **Notifica:** se un’attività fallisce, **tutti i super-admin** ricevono una notifica (campanella, nella loro lingua) –
 al primo errore e di nuovo quando poi riesce per la prima volta; la colonna «Errori consecutivi» conta gli errori
 ripetuti nel frattempo. Il widget **Attività pianificate** mostra un semaforo (tutto in ordine, attività fallite, lo
@@ -1147,7 +1153,7 @@ devono già esistere nell’installazione di destinazione; il pacchetto le indic
 | Widget della dashboard | per widget |
 | Report | visualizzare, creare (propri), modificare ed eliminare (anche altrui), usare l’assistente (IA) |
 | Collegamenti tra tabelle | visualizzare, creare, modificare, eliminare |
-| Attività pianificate | visualizzare, creare, modificare (anche «Esegui ora»), eliminare |
+| Attività pianificate | visualizzare, creare, modificare (anche «Esegui ora»), eliminare, vedere i dettagli tecnici (dettagli degli errori delle esecuzioni non riuscite) |
 | Plugin | visualizzare; gestire (creare voci di menu, pulire); i diritti propri dei plugin compaiono sotto il loro nome |
 | Configurazione | visualizzare (pagina e voce di menu); esportare; importare |
 | Aiuto | usare l’assistente (assistente di aiuto) |

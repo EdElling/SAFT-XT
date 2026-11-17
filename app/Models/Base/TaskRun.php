@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property Carbon|null $finished_at
  * @property string|null $message
  * @property array|null $result
+ * @property array|null $error_detail
  */
 class TaskRun extends Model
 {
@@ -34,6 +35,7 @@ class TaskRun extends Model
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
         'result' => 'json',
+        'error_detail' => 'json',
     ];
 
     protected $fillable = [
@@ -45,5 +47,6 @@ class TaskRun extends Model
         'finished_at',
         'message',
         'result',
+        'error_detail',
     ];
 }

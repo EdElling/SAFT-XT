@@ -185,6 +185,10 @@ das Terminal offen ist.
 Scheduler auf). Optionale Einstellungen in der `.env`: `TASKS_HEARTBEAT_MINUTES` (ab wann die Verwaltung warnt,
 Vorgabe 15), `TASKS_HANGING_HOURS` (ab wann ein Lauf als abgebrochen gilt, Vorgabe 6).
 
+**Fehlgeschlagene Läufe:** Die Meldung nennt eine Referenz; unter ihr steht der Fehler mit Ablauf in
+`storage/logs/laravel.log` (Eintrag `Geplante Aufgabe fehlgeschlagen`). Fehler, Meldung, Ort und Ablauf sieht die
+Administration auch in SAFT beim Lauf unter **Details** (Recht *Geplante Aufgaben: technische Details sehen*).
+
 **System-Aufgaben für Sicherungen und Demos:** *Datenbank sichern* (02:30) und *Sicherungen aufräumen* (02:45, 14
 Tage, mindestens 3) laufen ab Installation; damit ersetzt der Scheduler einen eigenen Cron-Eintrag für `db:backup`.
 Wer noch einen solchen Eintrag hat, entfernt ihn oder schaltet die Aufgabe aus, sonst wird doppelt gesichert.

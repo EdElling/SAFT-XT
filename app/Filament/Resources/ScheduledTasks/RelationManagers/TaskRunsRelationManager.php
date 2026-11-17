@@ -6,9 +6,12 @@ namespace App\Filament\Resources\ScheduledTasks\RelationManagers;
 
 use App\Filament\Resources\ScheduledTasks\Tables\ScheduledTasksTable;
 use App\Models\TaskRun;
+use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Attributes\On;
 
@@ -56,6 +59,27 @@ class TaskRunsRelationManager extends RelationManager
                     ->state(fn (TaskRun $record): string => ($s = $record->durationSeconds()) === null ? '–' : gmdate($s >= 3600 ? 'G:i:s' : 'i:s', $s))
                     ->alignEnd(),
                 TextColumn::make('message')->label(__('tasks.fields.message'))->wrap(),
+            ])
+            ->recordActions([
+                // Technische Details eines Fehlschlags (Referenz, Fehler, Ort, Ablauf) – nur mit Recht tasks.details.
+                Action::make('errorDetails')
+                    ->label(__('tasks.error_detail.action'))
+                    ->icon('heroicon-o-bug-ant')
+                    ->color('gray')
+                    ->visible(fn (TaskRun $record): bool => $record->error_detail !== null && self::canSeeDetails())
+                    ->modalHeading(fn (TaskRun $record): string => __('tasks.error_detail.heading', ['reference' => (string) ($record->error_detail['reference'] ?? '')]))
+                    ->modalContent(fn (TaskRun $record): View => view('filament.tasks.error-detail', ['detail' => (array) $record->error_detail]))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel(__('tasks.error_detail.close'))
+                    ->modalWidth(Width::FourExtraLarge)
+                    ->action(function (): void {
+                        abort_unless(self::canSeeDetails(), 403);
+                    }),
             ]);
+    }
+
+    public static function canSeeDetails(): bool
+    {
+        return auth()->user()?->can('tasks.details') ?? false;
     }
 }

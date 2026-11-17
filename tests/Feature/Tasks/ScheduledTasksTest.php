@@ -8,6 +8,7 @@ use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\ScheduledTasks\Pages\CreateScheduledTask;
 use App\Filament\Resources\ScheduledTasks\Pages\EditScheduledTask;
 use App\Filament\Resources\ScheduledTasks\Pages\ListScheduledTasks;
+use App\Filament\Resources\ScheduledTasks\RelationManagers\TaskRunsRelationManager;
 use App\Models\ScheduledTask;
 use App\Models\TaskRun;
 use App\Tasks\TaskRegistry;
@@ -27,6 +28,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Livewire\Livewire;
 use RuntimeException;
 use Spatie\Activitylog\Models\Activity;
@@ -129,9 +131,46 @@ class ScheduledTasksTest extends TestCase
             $admin->notifications()->get()->map(fn ($n): string => $n->data['title'])->all(),
         );
 
-        // Ein unerwarteter Fehler zeigt keine Interna.
+        // Ein unerwarteter Fehler zeigt keine Interna, aber eine Referenz; die Details stehen am Lauf.
         FakeTask::$outcome = 'crash';
-        $this->assertSame('Die Aufgabe ist fehlgeschlagen. Details im Protokoll der Anwendung.', $this->runner()->run($task->fresh(), TaskRun::MANUAL)->message);
+        Log::spy();
+        $run = $this->runner()->run($task->fresh(), TaskRun::MANUAL);
+        $this->assertMatchesRegularExpression('/^Die Aufgabe ist fehlgeschlagen \(Referenz ([A-Z0-9]{8})\)\./', (string) $run->message);
+        $this->assertStringNotContainsString('SQLSTATE', (string) $run->message);
+        $detail = $run->fresh()->error_detail;
+        $this->assertStringContainsString('Referenz '.$detail['reference'], (string) $run->message);
+        $this->assertSame([RuntimeException::class, 'SQLSTATE geheim'], [$detail['class'], $detail['message']]);
+        $this->assertStringStartsWith('tests/Feature/Tasks/ScheduledTasksTest.php:', $detail['location'], 'Pfad relativ zum Programmordner.');
+        $this->assertNotEmpty($detail['trace']);
+        Log::shouldHaveReceived('warning')->withArgs(fn (string $message, array $context): bool => $context['error_reference'] === $detail['reference']);
+    }
+
+    public function test_error_details_of_a_run_only_with_permission(): void
+    {
+        $task = $this->fakeTask();
+        FakeTask::$outcome = 'crash';
+        $failed = $this->runner()->run($task, TaskRun::MANUAL);
+        FakeTask::$outcome = 'success';
+        $ok = $this->runner()->run($task->fresh(), TaskRun::MANUAL);
+        $this->assertNull($ok->fresh()->error_detail);
+
+        $this->actingAs($this->userWithPermissions(['tasks.view', 'tasks.update']));
+        Livewire::test(TaskRunsRelationManager::class, ['ownerRecord' => $task, 'pageClass' => EditScheduledTask::class])
+            ->assertTableActionHidden('errorDetails', $failed);
+
+        $this->actingAs($this->userWithPermissions(['tasks.view', 'tasks.details']));
+        Livewire::test(TaskRunsRelationManager::class, ['ownerRecord' => $task, 'pageClass' => EditScheduledTask::class])
+            ->assertTableActionVisible('errorDetails', $failed)
+            ->assertTableActionHidden('errorDetails', $ok)
+            ->mountTableAction('errorDetails', $failed)
+            ->assertHasNoErrors();
+        $html = view('filament.tasks.error-detail', ['detail' => $failed->fresh()->error_detail])->render();
+        $this->assertStringContainsString('SQLSTATE geheim', $html);
+        $this->assertStringContainsString('data-error-reference="'.$failed->fresh()->error_detail['reference'].'"', $html);
+
+        $this->actingAs($this->superAdmin());
+        Livewire::test(TaskRunsRelationManager::class, ['ownerRecord' => $task, 'pageClass' => EditScheduledTask::class])
+            ->assertTableActionVisible('errorDetails', $failed);
     }
 
     public function test_a_task_never_runs_twice_and_skips_are_no_failures(): void

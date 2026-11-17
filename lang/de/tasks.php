@@ -107,7 +107,7 @@ return [
     'missing_table' => 'Die Tabelle gibt es nicht mehr.',
     'plugin_inactive' => 'Übersprungen: Das Plugin „:plugin“ ist ausgeschaltet oder ruht.',
     'already_running' => 'Diese Aufgabe läuft bereits.',
-    'failed_generic' => 'Die Aufgabe ist fehlgeschlagen. Details im Protokoll der Anwendung.',
+    'failed_generic' => 'Die Aufgabe ist fehlgeschlagen (Referenz :reference). Technische Details: beim Lauf unter „Details“ oder in der Logdatei auf dem Server (storage/logs/laravel.log).',
     'aborted' => 'Abgebrochen (der Prozess wurde unterbrochen).',
     'notifications' => [
         'failed' => 'Geplante Aufgabe fehlgeschlagen: :task',
@@ -141,5 +141,16 @@ return [
         'disabled' => 'Übersprungen: Demo-Daten zurücksetzen ist auf diesem Server nicht erlaubt (DEMO_RESET=true in der .env).',
         'nothing_installed' => 'Übersprungen: Keine der gewählten Demos ist geladen.',
         'not_installed' => 'Die Demo ist nicht vollständig geladen, es fehlen: :tables.',
+    ],
+    'error_detail' => [
+        'action' => 'Details',
+        'heading' => 'Technische Details (Referenz :reference)',
+        'close' => 'Schliessen',
+        'error' => 'Fehler',
+        'message' => 'Meldung',
+        'location' => 'Ort',
+        'causes' => 'Ursachen',
+        'trace' => 'Ablauf',
+        'hint' => 'Nur für die Administration: Die Angaben können Pfade, Tabellennamen und Werte enthalten. Ausführlicher steht der Fehler in der Logdatei auf dem Server (storage/logs/laravel.log) – dort nach :reference suchen.',
     ],
 ];

@@ -25,6 +25,7 @@ return [
         'help' => 'Help',
     ],
     'actions' => [
+        'details' => 'see technical details',
         'view' => 'view',
         'create' => 'create',
         'update' => 'edit',

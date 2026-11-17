@@ -822,6 +822,12 @@ server was down, a missed date is caught up **once**. "Active" off: the task no 
 time, trigger (schedule, manually, console), status, duration and message. A task never runs twice: if it is still
 running, the new run is "skipped"; the same applies when the same table is being refreshed manually.
 
+**Investigating a failure:** for an unexpected error the message only names a **reference**, e.g. "The task failed
+(reference K7Q2M9XA)" – technical details can contain paths, table names and values. Anyone with the permission
+*Scheduled tasks: see technical details* (super admins always) opens them at the run with **Details**: error, message,
+location in the program, causes and trace. The same error is described in more detail under the reference in the log
+file on the server (`storage/logs/laravel.log`).
+
 **Notification:** if a task fails, **all super admins** get a notification (bell, in their language) – on the first
 failure and again when it succeeds for the first time afterwards; repeated failures in between are counted in the
 column "Failures in a row". The dashboard widget **Scheduled tasks** shows a traffic light (all fine, failed tasks,
@@ -1094,7 +1100,7 @@ package lists them as a prerequisite.
 | Dashboard widgets | per widget |
 | Reports | view, create (own), edit and delete (also other people's), use assistant (AI) |
 | Table links | view, create, edit, delete |
-| Scheduled tasks | view, create, edit (also "Run now"), delete |
+| Scheduled tasks | view, create, edit (also "Run now"), delete, see technical details (error details of failed runs) |
 | Plugins | view; manage (create menu entries, clean up); the plugins' own permissions are listed under their name |
 | Configuration | view (page and menu entry); export; import |
 | Help | use assistant (help assistant) |

@@ -107,7 +107,7 @@ return [
     'missing_table' => 'La tabella non esiste più.',
     'plugin_inactive' => 'Saltata: il plugin «:plugin» è disattivato o inattivo.',
     'already_running' => 'Questa attività è già in esecuzione.',
-    'failed_generic' => 'L’attività non è riuscita. Dettagli nel registro dell’applicazione.',
+    'failed_generic' => 'L’attività non è riuscita (riferimento :reference). Dettagli tecnici: sotto «Dettagli» nell’esecuzione o nel file di log sul server (storage/logs/laravel.log).',
     'aborted' => 'Interrotta (il processo è stato interrotto).',
     'notifications' => [
         'failed' => 'Attività pianificata non riuscita: :task',
@@ -141,5 +141,16 @@ return [
         'disabled' => 'Saltata: il ripristino dei dati demo non è consentito su questo server (DEMO_RESET=true nel file .env).',
         'nothing_installed' => 'Saltata: nessuna delle demo scelte è caricata.',
         'not_installed' => 'La demo non è caricata completamente, mancano: :tables.',
+    ],
+    'error_detail' => [
+        'action' => 'Dettagli',
+        'heading' => 'Dettagli tecnici (riferimento :reference)',
+        'close' => 'Chiudi',
+        'error' => 'Errore',
+        'message' => 'Messaggio',
+        'location' => 'Posizione',
+        'causes' => 'Cause',
+        'trace' => 'Svolgimento',
+        'hint' => 'Solo per l’amministrazione: i dettagli possono contenere percorsi, nomi di tabelle e valori. L’errore è descritto più in dettaglio nel file di log sul server (storage/logs/laravel.log) – cercarvi :reference.',
     ],
 ];

@@ -850,6 +850,12 @@ jede Ausführung mit Zeit, Auslöser (Zeitplan, von Hand, Konsole), Status, Daue
 doppelt: Läuft sie noch, wird der neue Lauf „übersprungen“; ebenso, wenn dieselbe Tabelle gerade von Hand aktualisiert
 wird.
 
+**Fehlschlag untersuchen:** Bei einem unerwarteten Fehler nennt die Meldung nur eine **Referenz**, z. B. „Die Aufgabe
+ist fehlgeschlagen (Referenz K7Q2M9XA)“ – technische Einzelheiten können Pfade, Tabellennamen und Werte enthalten. Wer
+das Recht *Geplante Aufgaben: technische Details sehen* hat (Super-Admins immer), öffnet sie beim Lauf mit **Details**:
+Fehler, Meldung, Ort im Programm, Ursachen und Ablauf. Ausführlicher steht derselbe Fehler unter der Referenz in der
+Logdatei auf dem Server (`storage/logs/laravel.log`).
+
 **Benachrichtigung:** Schlägt eine Aufgabe fehl, erhalten **alle Super-Admins** eine Benachrichtigung (Glocke, in ihrer
 Sprache) – beim ersten Fehlschlag und wieder, wenn sie danach erstmals gelingt; wiederholte Fehlschläge dazwischen
 zählt die Spalte „Fehlschläge in Folge“. Das Dashboard-Widget **Geplante Aufgaben** zeigt eine Ampel (alles in
@@ -1128,7 +1134,7 @@ Zielinstallation bereits angelegt sein; das Paket nennt sie als Voraussetzung.
 | Dashboard-Widgets | je Widget |
 | Auswertungen | anzeigen, anlegen (eigene), bearbeiten und löschen (auch fremde), Assistent nutzen (KI) |
 | Tabellenverknüpfungen | anzeigen, anlegen, bearbeiten, löschen |
-| Geplante Aufgaben | anzeigen, anlegen, bearbeiten (auch „Jetzt ausführen“), löschen |
+| Geplante Aufgaben | anzeigen, anlegen, bearbeiten (auch „Jetzt ausführen“), löschen, technische Details sehen (Fehlerdetails fehlgeschlagener Läufe) |
 | Plugins | anzeigen; verwalten (Menüeinträge anlegen, Aufräumen); die Rechte der Plugins selbst stehen unter ihrem Namen |
 | Konfiguration | anzeigen (Seite und Menüeintrag); exportieren; einspielen |
 | Hilfe | Assistent nutzen (Hilfe-Assistent) |
