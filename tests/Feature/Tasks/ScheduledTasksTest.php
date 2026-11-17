@@ -105,9 +105,10 @@ class ScheduledTasksTest extends TestCase
 
     public function test_failure_notifies_super_admins_once_and_again_on_recovery(): void
     {
-        $admin = $this->superAdmin();
+        // Die englischsprachige Person zuerst anlegen: Sie wird vor der ohne eigene Sprache benachrichtigt (B-059).
         $other = $this->superAdmin();
         $other->update(['locale' => 'en']);
+        $admin = $this->superAdmin();
         $this->userWithPermissions(['tasks.view']);
         $task = $this->fakeTask(['name' => 'Testlauf']);
 
