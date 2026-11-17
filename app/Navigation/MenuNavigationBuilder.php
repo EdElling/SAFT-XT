@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Navigation;
 
+use App\Auth\RoleSimulation;
 use App\DynamicData\DataMenu;
 use App\DynamicData\Diagram\DataModelGraphBuilder;
 use App\Filament\Pages\DataModelPage;
@@ -36,6 +37,12 @@ final class MenuNavigationBuilder
 {
     private const string DEFAULT_PARENT_ICON = 'heroicon-o-folder';
 
+    /** Auswertungen der Menüeinträge, einmal je Aufbau geladen. @var array<int, Report> */
+    private array $reports = [];
+
+    /** Ein Prüfer je Aufbau: Er hält Tabellen und Felder zwischen, statt sie je Auswertung neu zu laden. */
+    private ?ReportRunner $runner = null;
+
     public function __construct(private readonly DataModelGraphBuilder $dataModels) {}
 
     public function build(NavigationBuilder $builder, ?User $user): NavigationBuilder
@@ -50,6 +57,10 @@ final class MenuNavigationBuilder
             ->orderBy('sort_order')
             ->orderedByLabel()
             ->get();
+
+        $reportIds = $menus->where('route', ReportResource::VIEW_ROUTE)->map(static fn (Menu $menu): int => (int) ($menu->route_parameters['record'] ?? 0))->filter()->unique()->values()->all();
+        $this->reports = $reportIds === [] ? [] : Report::query()->whereIn('id', $reportIds)->get()->keyBy('id')->all();
+        $this->runner = app(ReportRunner::class);
 
         /** @var array<int|string, Collection<int, Menu>> $byParent */
         $byParent = $menus->groupBy(fn (Menu $menu): string => (string) ($menu->parent_id ?? 'root'))->all();
@@ -157,6 +168,34 @@ final class MenuNavigationBuilder
         return $children === [] ? $item : $item->childItems($children);
     }
 
+    /**
+     * Navigation einmal je Anfrage (Panel): Schlüssel aus Person, Sprache, Rollen-Simulation, ein- und ausgeschalteten
+     * Plugins und einem Fingerabdruck der Menüs (Anzahl, letzte Änderung) – ändert sich etwas davon, wird neu aufgebaut.
+     */
+    public static function cachedForRequest(NavigationBuilder $builder, ?User $user): NavigationBuilder
+    {
+        if ($user === null) {
+            return $builder;
+        }
+
+        $fingerprint = Menu::query()->toBase()->selectRaw('count(*) as entries, max(updated_at) as changed')->first();
+        $key = 'saft.navigation.'.md5(json_encode([
+            $user->getKey(),
+            app()->getLocale(),
+            app(RoleSimulation::class)->active()?->all(),
+            app(PluginStates::class)->fingerprint(),
+            $fingerprint?->entries,
+            $fingerprint?->changed,
+        ], JSON_THROW_ON_ERROR));
+        $attributes = request()->attributes;
+
+        if (! $attributes->has($key)) {
+            $attributes->set($key, app(self::class)->build($builder, $user));
+        }
+
+        return $attributes->get($key);
+    }
+
     /** Bezeichnung eines Untermenüs mit Pfeil; Filament entfernt das HTML selbst für Tooltip und Vorlesen. */
     public static function submenuLabel(string $label): HtmlString
     {
@@ -165,9 +204,9 @@ final class MenuNavigationBuilder
 
     private function canRunReport(Menu $menu, User $user): bool
     {
-        $report = Report::query()->find($menu->route_parameters['record'] ?? null);
+        $report = $this->reports[(int) ($menu->route_parameters['record'] ?? 0)] ?? null;
 
-        return $report !== null && $user->can('view', $report) && app(ReportRunner::class)->canRun($report, $user);
+        return $report !== null && $user->can('view', $report) && ($this->runner ?? app(ReportRunner::class))->canRun($report, $user);
     }
 
     /** Ein unbekanntes Icon darf nie das ganze Panel ausfallen lassen: weglassen und protokollieren. */

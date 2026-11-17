@@ -67,6 +67,18 @@ final class PluginStates
         return $class !== null && $this->blocks($class);
     }
 
+    /** @return array<string, bool> eingeschaltet je Plugin – für Zwischenspeicher, die vom Zustand abhängen */
+    public function fingerprint(): array
+    {
+        $states = [];
+
+        foreach (array_keys($this->plugins->all()) as $id) {
+            $states[$id] = $this->isEnabled($id);
+        }
+
+        return $states;
+    }
+
     public function enable(string $id): void
     {
         $this->store($id, true);

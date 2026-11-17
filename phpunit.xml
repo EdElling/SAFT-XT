@@ -40,6 +40,7 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="PASSWORD_CHECK_LEAKED" value="false"/>
         <env name="TWO_FACTOR_ENFORCE" value="false"/>
+        <env name="DEMO_RESET" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>

@@ -99,8 +99,12 @@ class AdminPanelProvider extends PanelProvider
             ->registerErrorNotification(fn (): string => __('errors.titles.429'), fn (): string => __('errors.http.429'), 429)
             ->registerErrorNotification(fn (): string => __('errors.titles.500'), fn (): string => __('errors.http.500'), 500)
             ->registerErrorNotification(fn (): string => __('errors.titles.503'), fn (): string => __('errors.http.503'), 503)
-            ->navigation(static fn (NavigationBuilder $builder): NavigationBuilder => app(MenuNavigationBuilder::class)
-                ->build($builder, ($user = auth()->user()) instanceof User ? $user : null))
+            // Einmal je Anfrage aufbauen: Filament ruft die Navigation mehrfach ab (u. a. nur um zu prüfen, ob es eine gibt),
+            // und jeder Aufbau kostet Abfragen – bei einer entfernten Datenbank (Webspace) merklich (B-068).
+            ->navigation(static fn (NavigationBuilder $builder): NavigationBuilder => MenuNavigationBuilder::cachedForRequest(
+                $builder,
+                ($user = auth()->user()) instanceof User ? $user : null,
+            ))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
