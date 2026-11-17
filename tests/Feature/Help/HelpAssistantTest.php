@@ -261,7 +261,7 @@ class HelpAssistantTest extends DynamicDataTestCase
         $this->assertStringNotContainsString('Data model of this installation', $this->systemText(), 'Ohne Leserecht auf Tabellen kein Datenmodell.');
         $this->assertStringContainsString('Roles: mit-hilfe', $this->systemText(), 'Rechte der simulierten Rolle.');
         $this->assertStringContainsString('✗ Benutzer: anlegen', $this->systemText());
-        $this->assertStringNotContainsString('Administration › Benutzer', $this->systemText(), 'Menü der simulierten Rolle.');
+        $this->assertStringNotContainsString('→ /admin/users', $this->systemText(), 'Menü der simulierten Rolle (ohne Benutzerverwaltung).');
         $this->assertSame(1, AiHelpConversation::query()->ownedBy($admin)->count(), 'Die Unterhaltung gehört der echten Person.');
     }
 
