@@ -113,7 +113,9 @@ dall’account aziendale.
   vostra azienda. Telefono e codici persi: l’amministrazione reimposta il secondo fattore.
 
 - **A sinistra** si trova il **menu**. Mostra solo le aree per le quali avete diritti. Sotto **Dati** trovate le
-  tabelle, sotto **Amministrazione** le funzioni di gestione. Con la freccia **‹** accanto al nome dell’applicazione
+  tabelle, sotto **Amministrazione** le funzioni di gestione. Le voci con una freccia
+  **›** a destra sono sottomenu (ad es. *Amministrazione › Utenti e accesso*): un clic apre la loro prima pagina e
+  mostra le altre sotto; la freccia punta allora verso il basso. Con la freccia **‹** accanto al nome dell’applicazione
   nascondete del tutto il menu per avere più spazio per le tabelle; il pulsante **☰** nello stesso punto lo fa
   ricomparire. Il browser ricorda la scelta. Il menu è largo quanto la sua voce più lunga.
 - **Documentazione** (nel menu, subito sotto la dashboard) mostra questa guida e le domande frequenti

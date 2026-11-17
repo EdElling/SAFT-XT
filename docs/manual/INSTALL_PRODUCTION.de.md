@@ -267,9 +267,9 @@ Prüfen Sie im Browser: **https://saft.example.ch** leitet auf `/admin` und zeig
 ## 7. Erste Anmeldung und Grundeinstellungen
 
 1. Mit `ADMIN_EMAIL` und dem Passwort anmelden.
-2. **Administration → App-Einstellungen:** Anzeigename und Farbschema festlegen
+2. **Administration → Anwendung → App-Einstellungen:** Anzeigename und Farbschema festlegen
    ([Administratorhandbuch, Kapitel 7](ADMIN_GUIDE.de.md#7-app-einstellungen)).
-3. **Administration → Authentifizierung:** Anmeldeart wählen, bei Bedarf den Schalter *„Passwort vergessen“ anbieten* einschalten
+3. **Administration → Benutzer und Zugriff → Authentifizierung:** Anmeldeart wählen, bei Bedarf den Schalter *„Passwort vergessen“ anbieten* einschalten
    ([Administratorhandbuch, Kapitel 5](ADMIN_GUIDE.de.md#5-authentifizierung)).
 4. **Single Sign-on** (optional): Identity Provider anlegen. Die Adresse, die Sie beim Anbieter (z. B. Microsoft Entra
    ID) eintragen, lautet `https://saft.example.ch/auth/sso/<kurzname>/callback`, bei SAML
@@ -299,7 +299,7 @@ Prüfen Sie im Browser: **https://saft.example.ch** leitet auf `/admin` und zeig
 für den Scheduler aus Schritt 7. Jede Sicherung ist eine Datei `<datenbank>_<datum>_<zeit>.dump` (bzw. `.sql`) in
 `storage/backups`, nur für Ihren Benutzer lesbar. Schlägt sie fehl, steht der Grund unter *Geplante Aufgaben → Läufe*,
 und die Super-Admins bekommen eine Meldung in der Glocke. **Sicherungen aufräumen** (02:45) löscht Sicherungen, die
-älter als 14 Tage sind, und behält immer die 3 neuesten. Zeiten und Fristen ändern Sie unter *Administration ›
+älter als 14 Tage sind, und behält immer die 3 neuesten. Zeiten und Fristen ändern Sie unter *Administration › Betrieb ›
 Geplante Aufgaben* ([Administratorhandbuch, Kapitel 12](ADMIN_GUIDE.de.md#12-geplante-aufgaben)). Von Hand jederzeit:
 `php artisan db:backup`.
 
@@ -452,7 +452,7 @@ Damit laufen auch die tägliche Sicherung und das Aufräumen der Sicherungen. Be
 [Systemadministration, Kapitel 4](SYSADMIN_GUIDE.de.md#4-geplante-aufgaben-und-cron).
 
 **Öffentliche Demo jede Nacht zurücksetzen:** `DEMO_RESET=true` in `.env`, dann `php artisan optimize`, und unter
-*Administration › Geplante Aufgaben* die Aufgabe **Demo-Daten zurücksetzen** einschalten. Sie lädt um 04:00 die Daten
+*Administration › Betrieb › Geplante Aufgaben* die Aufgabe **Demo-Daten zurücksetzen** einschalten. Sie lädt um 04:00 die Daten
 der gewählten Demos neu; Änderungen der Besucher an den Demo-Daten sind danach weg, alles andere bleibt.
 
 **Updates** (Ablauf wie in [Abschnitt 9](#9-updates-einspielen), mit dem Kommandozeilen-PHP):
@@ -468,6 +468,10 @@ php artisan migrate --force
 php artisan optimize && php artisan filament:optimize
 php artisan up
 ```
+
+Die Lager-Demo bekommt neue Menüs (z. B. die Untermenüs *Lager führen*, *Stammdaten*, *Auswertungen*), wenn ihr Seeder
+nach dem Update noch einmal läuft: `php artisan db:seed --class=LagerDemoSeeder --force` – vorhandene Daten bleiben,
+selbst verschobene Menüeinträge auch.
 
 Wurde eine Demo mit Beispiel-Plugins einmal mit `--no-dev` aktualisiert, fehlen die Plugins danach. Dann **nicht** auf
 der Seite *Plugins* **Aufräumen** klicken – das löscht ihre Menüeinträge und Rechte, und die Rollen verlieren die

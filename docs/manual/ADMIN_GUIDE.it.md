@@ -37,7 +37,7 @@ Anche qui elenchi e tabelle sono larghi solo quanto le loro colonne (vedere [Gui
 
 ## 1. Utenti
 
-**Amministrazione → Utenti**
+**Amministrazione → Utenti e accesso → Utenti**
 
 - **Elenco** con nome, e-mail, ruoli, attivo, ultimo accesso. Filtri: attivo, ruolo, **senza ruolo**,
   **collegamento SSO**, utenti eliminati.
@@ -78,7 +78,7 @@ solo da super-admin, e agli altri utenti il ruolo `super-admin` non viene nemmen
 
 ## 2. Ruoli e diritti
 
-**Amministrazione → Ruoli**
+**Amministrazione → Utenti e accesso → Ruoli**
 
 ![Ruoli e diritti sui dati](images/it/07-roles-data-permissions.png)
 
@@ -125,7 +125,7 @@ ruolo può fare viene davvero salvato durante la vista – con voi come autore.
 
 ## 3. Menu
 
-**Amministrazione → Menu**
+**Amministrazione → Applicazione → Menu**
 
 Il menu a sinistra si gestisce qui. Ogni voce ha un **tipo**:
 
@@ -184,14 +184,17 @@ es. «user»), il numero sulla scheda indica i risultati per stile; un clic ripr
 `heroicon-o-users`; il modulo accetta solo icone note. La stessa finestra esiste per l’icona della tabella nel
 Designer di tabelle. Una voce con sottovoci che non ha un’icona valida riceve il simbolo di una cartella.
 
-**Altre regole:** un menu ha al massimo tre livelli; le voci si ordinano con il trascinamento. Eliminando una voce
+**Altre regole:** un menu ha al massimo tre livelli: gruppo (intestazione), voce e sottovoce. Una voce con sottovoci è
+un **sottomenu** e compare con una freccia **›**; un clic apre la sua prima pagina e lo espande. Così sono strutturate
+l’amministrazione (*Utenti e accesso*, *Database*, *Applicazione*, *Esercizio*) e la demo magazzino (*Gestione del
+magazzino*, *Dati di base*, *Report*); le voci si ordinano con il trascinamento. Eliminando una voce
 vengono eliminate anche le sue sottovoci.
 
 > I **dettagli** (master-detail) non si impostano nel menu, ma nel Designer di tabelle.
 
 ## 4. Designer di tabelle
 
-**Amministrazione → Designer di tabelle**
+**Amministrazione → Database → Designer di tabelle**
 
 Qui create tabelle proprie – senza programmazione.
 
@@ -439,7 +442,7 @@ campo](#eliminare-definitivamente-una-tabella-o-un-campo)). In seguito il file s
 
 ## 5. Autenticazione
 
-**Amministrazione → Autenticazione**
+**Amministrazione → Utenti e accesso → Autenticazione**
 
 | Impostazione | Significato |
 |---|---|
@@ -455,7 +458,7 @@ ha un **test di connessione riuscito**. Per altre vie d’uscita d’emergenza n
 
 ## 6. Provider di identità (single sign-on)
 
-**Amministrazione → Provider di identità**
+**Amministrazione → Utenti e accesso → Provider di identità**
 
 ![Provider di identità](images/it/11-identity-provider.png)
 
@@ -498,7 +501,7 @@ predefinita.
 
 ## 7. Impostazioni dell’applicazione
 
-**Amministrazione → Impostazioni dell’applicazione**
+**Amministrazione → Applicazione → Impostazioni dell’applicazione**
 
 | Impostazione | Significato |
 |---|---|
@@ -518,7 +521,7 @@ La sezione **Assistente IA per i report** configura provider, modello e chiave d
 
 ## 8. Registro modifiche
 
-**Amministrazione → Registro modifiche**
+**Amministrazione → Esercizio → Registro modifiche**
 
 Ogni modifica nell’applicazione viene registrata: chi, quando, cosa, con **prima/dopo**. Ne fanno parte record,
 utenti, ruoli e diritti, menu, strutture delle tabelle, impostazioni nonché accessi, uscite e tentativi di accesso
@@ -540,7 +543,7 @@ falliti. I segreti (password, chiavi) non vengono mai registrati.
 
 ## 9. Connessioni ai database
 
-**Amministrazione → Connessioni ai database**
+**Amministrazione → Database → Connessioni ai database**
 
 Qui configurate le connessioni a database esterni, ad esempio a un ERP o a un sistema di ricerca. Il **Connettore di
 tabelle** (vedere [capitolo 10](#10-connettore-di-tabelle)) collega tabelle di questi database in modo che si possano
@@ -616,7 +619,7 @@ si collegano con il comando `php artisan table-connector:connect` (vedere
 
 ## 10. Connettore di tabelle
 
-**Amministrazione → Connettore di tabelle**
+**Amministrazione → Database → Connettore di tabelle**
 
 Il Connettore di tabelle collega tabelle e viste di una connessione al database. In seguito compaiono come le tabelle
 del Designer di tabelle sotto **Dati**: con voce di menu, diritti, elenco, ricerca, filtri, ordinamento, «Dettagli» ed
@@ -793,7 +796,7 @@ nel database esterno restano invariati.
 
 ## 11. Collegamenti tra tabelle
 
-**Amministrazione › Collegamenti tra tabelle** collega tabelle **senza chiave esterna** – anche dove non può esserci
+**Amministrazione › Database › Collegamenti tra tabelle** collega tabelle **senza chiave esterna** – anche dove non può esserci
 un campo di collegamento: una tabella SAFT con una tabella collegata, due tabelle collegate di connessioni diverse
 oppure due tabelle SAFT la cui relazione sta solo in un numero (ad es. dopo un’importazione). Utilizzabili nei
 **report** e come **dettagli nella vista master-detail**. Nei database di origine non viene creato nulla: i report
@@ -831,7 +834,7 @@ dovrebbe avere un indice nel database di origine. Nel [modello dati](#3-menu) i 
 
 ## 12. Attività pianificate
 
-**Amministrazione › Attività pianificate** elenca ciò che SAFT esegue da sé secondo una pianificazione. Ogni attività
+**Amministrazione › Esercizio › Attività pianificate** elenca ciò che SAFT esegue da sé secondo una pianificazione. Ogni attività
 ha un **tipo**, i relativi **parametri** e una **pianificazione**:
 
 | Tipo | Parametri | Effetto |
@@ -871,7 +874,7 @@ il diritto *Attività pianificate: vedere i dettagli tecnici* (i super-admin sem
 **Dettagli**: errore, messaggio, posizione nel programma, cause e svolgimento. Lo stesso errore è descritto più in
 dettaglio sotto il riferimento nel file di log sul server (`storage/logs/laravel.log`).
 
-**Registro di sistema:** *Amministrazione › Registro di sistema* (diritto *Registro di sistema: visualizzare*; i
+**Registro di sistema:** *Amministrazione › Esercizio › Registro di sistema* (diritto *Registro di sistema: visualizzare*; i
 super-admin sempre) mostra le voci più recenti di questo file di log, al massimo 500 e, per file grandi, solo la loro
 fine: ora, livello (errore, avviso, info …), messaggio e riferimento. La ricerca (anche di un riferimento) e il filtro
 per livello restringono la vista, **Mostra** apre una voce completa, **Scaricare l’estratto** salva la parte letta.
@@ -909,7 +912,7 @@ risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effe
 1. **Preparare il provider:** per Anthropic creare una chiave API nella Claude Console (*API Keys*); un abbonamento
    Claude (Pro/Max) da solo non basta, l’API viene fatturata separatamente in base al consumo. In alternativa Amazon
    Bedrock o Google Vertex AI (configurazione vedere [Amministrazione di sistema](SYSADMIN_GUIDE.md#5-ai-functions)).
-2. **Amministrazione → Impostazioni dell’applicazione → Assistente IA per i report:**
+2. **Amministrazione → Applicazione → Impostazioni dell’applicazione → Assistente IA per i report:**
 
    | Impostazione | Significato |
    |---|---|
@@ -1016,7 +1019,7 @@ sotto il riquadro. I pulsanti nelle tabelle di dati indicano il plugin nel toolt
 portano l’aggiunta «(plugin …)», le regole sotto *Ulteriori verifiche* mostrano simbolo e plugin, le funzioni
 dell’editor di formule indicano il plugin nel tooltip.
 
-La pagina **Amministrazione › Plugin** (diritto *Plugin: visualizzare*) elenca i plugin installati:
+La pagina **Amministrazione › Applicazione › Plugin** (diritto *Plugin: visualizzare*) elenca i plugin installati:
 
 | Colonna | Significato |
 |---|---|
@@ -1095,7 +1098,7 @@ dopo un aggiornamento senza i pacchetti di sviluppo –, reinstallateli prima in
 
 ## 15. Trasferire la configurazione
 
-**Amministrazione › Trasferire la configurazione** porta tabelle, analisi, voci di menu e ruoli da un’installazione a
+**Amministrazione › Applicazione › Trasferire la configurazione** porta tabelle, analisi, voci di menu e ruoli da un’installazione a
 un’altra – tipicamente dall’installazione di test a quella di produzione. Invece di ricostruire tutto a mano, esportate
 un **pacchetto** (un file JSON) e lo importate nell’altra installazione.
 
@@ -1110,7 +1113,7 @@ un **pacchetto** (un file JSON) e lo importate nell’altra installazione.
 | ruoli con i loro diritti e le voci di menu nascoste | impostazioni dell’applicazione, attività pianificate |
 
 Tutti i riferimenti sono salvati come **nomi**, non come numeri interni – tabelle e campi con il nome tecnico, voci di
-menu con il percorso (p. es. «Magazzino (demo) › Giacenze»), analisi con il nome. Così il pacchetto va bene per qualsiasi
+menu con il percorso (p. es. «Magazzino (demo) › Gestione del magazzino › Giacenze»), analisi con il nome. Così il pacchetto va bene per qualsiasi
 installazione.
 
 **Esportare** (diritti *Configurazione: visualizzare* ed *esportare*), scheda *Esporta*:

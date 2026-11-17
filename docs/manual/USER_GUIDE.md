@@ -110,7 +110,9 @@ company login.
   factor.
 
 - The **menu** is on the **left**. It only shows the areas you have permissions for. Under **Data** you find the
-  tables, under **Administration** the management functions.
+  tables, under **Administration** the management functions. Entries with an arrow **›** on the right are submenus
+  (e.g. *Administration › Users and access*): a click opens their first page and expands the others below it; the
+  arrow then points down.
   The arrow **‹** next to the application name hides the menu completely to make more room for tables; the **☰**
   button in the same place shows it again. Your browser remembers the choice. The menu is as wide as its longest
   entry.

@@ -71,7 +71,7 @@ PostgreSQL, MySQL oder MariaDB.
 ### Erweiterbarkeit
 - **Plugins:** eigene Seiten und Fachfunktionen als Composer-Pakete, ohne den Kern zu ändern – mit Rechten,
   Menüvorschlägen, stabiler Schnittstelle (Datenzugriff mit Rechten und Prüfregeln, Ereignisse beim Speichern,
-  Knöpfe in Datenansichten) und Schutz der benötigten Tabellen und Felder; Verwaltung unter **Administration ›
+  Knöpfe in Datenansichten) und Schutz der benötigten Tabellen und Felder; Verwaltung unter **Administration › Anwendung ›
   Plugins**, Beispiel-Plugins „Lager-Umbuchung“, „Lager-Tafel“ und „CH-Prüfungen“ ([Entwicklerhandbuch](docs/manual/DEVELOPER_GUIDE.de.md))
 - **Plugins erweitern auch Dashboard und Table-Designer:** eigene Kacheln, Formelfunktionen für berechnete Felder
   (z. B. Rundung auf 5 Rappen) und Prüfregeln für Felder (z. B. AHV-Nummer, IBAN)

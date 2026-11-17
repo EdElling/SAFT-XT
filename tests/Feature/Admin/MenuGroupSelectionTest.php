@@ -60,7 +60,10 @@ class MenuGroupSelectionTest extends TestCase
             (string) $this->research->id => self::INDENT.'Daten › Forschung',
             (string) Menu::query()->where('label->de', 'Kennzahlen')->value('id') => 'Kennzahlen',
             (string) Menu::query()->where('label->de', 'Administration')->value('id') => 'Administration',
-        ], $options);
+        ] + collect(['Benutzer und Zugriff', 'Datenbank', 'Anwendung', 'Betrieb'])->mapWithKeys(static fn (string $label): array => [
+            // Vereinigung statt Spread: Spread nummeriert die numerischen Schlüssel (Menü-IDs) neu.
+            (string) Menu::query()->where('label->de', $label)->value('id') => self::INDENT.'Administration › '.$label,
+        ])->all(), $options);
         $this->assertArrayNotHasKey((string) $third->id, $options);
         // Einträge mit Seite (z. B. Dashboard) sind keine Gruppen.
         $this->assertNotContains('Dashboard', $options);

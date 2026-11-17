@@ -58,7 +58,7 @@ mitbringen:
 | Arten geplanter Aufgaben | Klassen, die `App\Tasks\TaskType` umsetzen |
 
 **Was zugesichert ist:** Die Programmierschnittstelle für Plugins (Plugin-API) hat eine **eigene Versionsnummer**,
-unabhängig von SAFT – derzeit **1.6**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
+unabhängig von SAFT – derzeit **1.7**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, alle Klassen unter `App\Plugins\Api` (ausser
 `ApiManifest`), die Test-Basis `App\Plugins\Testing\PluginTestCase`, für Arten geplanter Aufgaben
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` und `App\Tasks\TaskSkipped` sowie das Trait
@@ -160,7 +160,7 @@ composer require acme/kunden-portal               # bindet plugins/kunden-portal
 php artisan saft:plugins                          # legt die Rechte an
 ```
 
-Danach unter **Administration › Plugins** den Menüvorschlag übernehmen und das Recht *Kunden-Portal verwenden* einer
+Danach unter **Administration › Anwendung › Plugins** den Menüvorschlag übernehmen und das Recht *Kunden-Portal verwenden* einer
 Rolle geben (Super-Admins haben es ohnehin). Änderungen am Code wirken sofort, ein erneutes `composer require` ist nur
 nach Änderungen an der `composer.json` des Plugins nötig.
 
@@ -274,6 +274,8 @@ final class LagerUmbuchungPlugin extends SaftPlugin
             icon: 'heroicon-o-arrows-right-left',
             permission: $this->permissionName('execute'),
             group: ['de' => 'Lager (Demo)', 'en' => 'Warehouse (demo)', 'fr' => 'Entrepôt (démo)', 'it' => 'Magazzino (demo)'],
+            sortOrder: 30,
+            subgroup: ['de' => 'Lager führen', 'en' => 'Warehouse operations', 'fr' => 'Gestion de l’entrepôt', 'it' => 'Gestione del magazzino'],
         )];
     }
 }
@@ -367,7 +369,8 @@ damit die Administration sie mit vergibt.
 | `icon` | Heroicon, z. B. `heroicon-o-arrows-right-left` |
 | `permission` | Recht, das den Eintrag sichtbar macht (vollständiger Name) |
 | `group` | Menügruppe je Sprache; gefunden über die deutsche Bezeichnung, sonst neu angelegt; `null` = oberste Ebene |
-| `sortOrder` | Reihenfolge innerhalb der Gruppe |
+| `sortOrder` | Reihenfolge innerhalb der Gruppe bzw. des Untermenüs |
+| `subgroup` | Untermenü innerhalb der Gruppe je Sprache (seit API 1.7), z. B. „Lager führen“; gefunden über die deutsche Bezeichnung, sonst neu angelegt; `null` = direkt in der Gruppe |
 
 Übernommen werden die Vorschläge erst, wenn die Administration auf der Seite **Plugins** „Menüeinträge anlegen“
 wählt. Danach sind es gewöhnliche Menüeinträge, die sich verschieben und umbenennen lassen. Schritt für Schritt:
@@ -617,7 +620,7 @@ Ein Plugin aus einem eigenen Git-Repository tragen Sie zusätzlich unter `reposi
 ein (`{"type": "vcs", "url": "…"}`). Vor dem Ausliefern: `php artisan saft:plugins --check <id>` ohne Fehler, Version in
 der `composer.json` bzw. als Git-Tag erhöht.
 
-Nach der Installation zeigt **Administration › Plugins** das Plugin mit Version, Kompatibilität und Erweiterungen; dort
+Nach der Installation zeigt **Administration › Anwendung › Plugins** das Plugin mit Version, Kompatibilität und Erweiterungen; dort
 übernimmt die Administration die Menüeinträge und vergibt anschliessend die Rechte in der Rollenverwaltung.
 
 **Ausschalten:** Die Administration kann ein installiertes Plugin auf der Seite **Plugins** ausschalten, die
@@ -703,7 +706,7 @@ php artisan saft:plugin-context --tables=kunden --tables=bestellungen    # nur d
 php artisan saft:plugin-context --zip --output=kontext.zip               # als ZIP; --without-external ohne angebundene
 ```
 
-In der Oberfläche: **Administration › Plugins › „Entwickler-Kontext herunterladen“** (Recht *Plugins: verwalten*) mit
+In der Oberfläche: **Administration › Anwendung › Plugins › „Entwickler-Kontext herunterladen“** (Recht *Plugins: verwalten*) mit
 Auswahl der Tabellen – so gibt die Administration einer Kundeninstallation den Kontext weiter, ohne Zugang zur
 Datenbank zu gewähren. Der Download steht im Änderungsprotokoll.
 
@@ -794,8 +797,8 @@ Lagerbewegungen. Die Bestände bucht der Listener ohne Rechteprüfung nach – w
 erfasst, braucht keine Rechte auf die Bestände.
 
 So probieren Sie es aus: Lager-Demo einspielen (`php artisan db:seed --class=LagerDemoSeeder`), unter
-**Administration › Plugins** „Menüeinträge anlegen“, dann **Lager (Demo) › Umbuchung** oder der Knopf „Umbuchen“ in
-**Lager (Demo) › Bestände**. Eine Lagerbewegung „Ausgang“ zeigt die Buchung des Bestands und – unter dem
+**Administration › Anwendung › Plugins** „Menüeinträge anlegen“, dann **Lager (Demo) › Lager führen › Umbuchung** oder der Knopf „Umbuchen“ in
+**Lager (Demo) › Lager führen › Bestände**. Eine Lagerbewegung „Ausgang“ zeigt die Buchung des Bestands und – unter dem
 Mindestbestand – die Meldung in der Glocke. Die Kachel **Lager: Mindestbestand** (`src/Widgets/MinimumStockWidget.php`)
 auf dem Dashboard zeigt die Artikel unter dem Mindestbestand. Das Benutzerhandbuch (`docs/manual/`) erscheint als Reiter
 *Lager-Umbuchung* in der Online-Hilfe.
@@ -839,7 +842,7 @@ berechnetes Feld mit der Formel `rappen(betrag * 1.081)` anlegen.
 
 ## 18. API-Versionen und Änderungsprotokoll
 
-Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.6**). Sie steht in `config/saft.php`
+Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.7**). Sie steht in `config/saft.php`
 (`api_versions`) und erscheint unter **Dokumentation › Über SAFT XT** sowie auf der Seite **Plugins**.
 
 | Änderung | Version | Wirkung für Plugins |
@@ -868,6 +871,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 | API | SAFT | Änderungen |
 |---|---|---|
+| **1.7** | 0.1 | `MenuSuggestion` mit optionalem `subgroup` – Menüvorschlag in ein Untermenü der Gruppe (dritte Ebene) |
 | **1.6** | 0.1 | `FieldRule` mit optionaler `description`; `SaftPlugin::manuals()` und `Manual` – Handbücher aus Plugins in Online-Hilfe und Hilfe-Assistent; `saft:plugins --check` prüft sie |
 | **1.5** | 0.1 | `App\Tasks\TaskType`, `TaskResult` und `TaskSkipped` gehören zur API – Arten geplanter Aufgaben aus Plugins (`SaftPlugin::taskTypes()`) bestehen damit `saft:plugins --check` |
 | **1.4** | 0.1 | `SaftPlugin::isEnabled()`, `PluginTestCase::withoutPlugin()`. Plugins lassen sich ausschalten (Seite **Plugins**, `saft:plugins --disable`); Plugins aus `require` der `composer.json` gelten als benötigt – ruht oder fehlt eines, ruht das abhängige Plugin mit |
@@ -896,7 +900,7 @@ laufen also so, wie sie dastehen.
 | [A.9 Handbuch mitliefern](#a9-handbuch-mitliefern) | Benutzerhandbuch in vier Sprachen | `docs/manual/`, `LagerTafelPlugin::manuals()` |
 
 **Ausprobieren:** Lager-Demo einspielen (`php artisan db:seed --class=LagerDemoSeeder`), unter
-**Administration › Plugins** bei *Lager-Tafel* „Menüeinträge anlegen“, dann **Lager (Demo) › Lagerspiegel** bzw.
+**Administration › Anwendung › Plugins** bei *Lager-Tafel* „Menüeinträge anlegen“, dann **Lager (Demo) › Lager führen › Lagerspiegel** bzw.
 **Lagertafel**. Die Tests: `vendor/bin/phpunit --testsuite Plugins --filter LagerTafelTest`.
 
 ### Typsicher programmieren
@@ -1644,6 +1648,7 @@ verschieben, umbenennen oder löschen wie jeden anderen Eintrag.
 public function menuSuggestions(): array
 {
     $group = ['de' => 'Lager (Demo)', 'en' => 'Warehouse (demo)', 'fr' => 'Entrepôt (démo)', 'it' => 'Magazzino (demo)'];
+    $operations = ['de' => 'Lager führen', 'en' => 'Warehouse operations', 'fr' => 'Gestion de l’entrepôt', 'it' => 'Gestione del magazzino']; // Untermenü der Lager-Demo (seit API 1.7)
 
     return [
         new MenuSuggestion(
@@ -1652,7 +1657,8 @@ public function menuSuggestions(): array
             icon: 'heroicon-o-table-cells',
             permission: $this->permissionName('view'),
             group: $group,
-            sortOrder: 6,
+            sortOrder: 50,
+            subgroup: $operations,
         ),
         new MenuSuggestion(
             route: Lagertafel::ROUTE,
@@ -1660,7 +1666,8 @@ public function menuSuggestions(): array
             icon: 'heroicon-o-view-columns',
             permission: $this->permissionName('transfer'),
             group: $group,
-            sortOrder: 7,
+            sortOrder: 40,
+            subgroup: $operations,
         ),
     ];
 }
@@ -1671,10 +1678,13 @@ public function menuSuggestions(): array
 - **`permission`** über `permissionName()` – der Eintrag erscheint nur für Personen mit diesem Recht.
 - **`group`** wird über die deutsche Bezeichnung gefunden; gibt es die Gruppe schon (hier aus der Lager-Demo und dem
   Plugin Lager-Umbuchung), landen die Einträge darin, sonst legt SAFT sie an. `null` = oberste Ebene.
-- **`sortOrder`** ordnet innerhalb der Gruppe; hier hinter „Umbuchung“ (5).
+- **`subgroup`** (seit API 1.7) legt den Eintrag in ein Untermenü der Gruppe, hier „Lager führen“ der Lager-Demo; es wird
+  ebenfalls über die deutsche Bezeichnung gefunden oder angelegt. Untermenüs erscheinen in der Seitenleiste mit einem
+  Pfeil ›; ein Klick öffnet ihre erste Seite und klappt sie auf.
+- **`sortOrder`** ordnet innerhalb des Untermenüs; hier hinter „Umbuchung“ (30), in der Reihenfolge der Lager-Demo.
 - **`label`** in allen vier Sprachen angeben (`de`, `en`, `fr`, `it`).
 
-**Verwenden:** Unter **Administration › Plugins** beim Plugin **Menüeinträge anlegen** wählen, danach in der
+**Verwenden:** Unter **Administration › Anwendung › Plugins** beim Plugin **Menüeinträge anlegen** wählen, danach in der
 **Rollenverwaltung** die Rechte vergeben. Ein zweites Übernehmen legt nichts doppelt an. Wird das Plugin entfernt,
 blendet SAFT seine Einträge aus; unter **Aufräumen** lassen sie sich zusammen mit den Rechten löschen.
 
@@ -1697,7 +1707,7 @@ $this->assertSame(['lager-tafel.view', 'lager-tafel.transfer'], array_map(static
 
 **Wozu:** Eine geplante Aufgabe erledigt Arbeit nach Zeitplan, ohne dass jemand eine Seite öffnet – prüfen, erinnern,
 benachrichtigen, Daten abgleichen. Das Plugin liefert die **Art** der Aufgabe; die Administration legt unter
-**Administration › Geplante Aufgaben › Neu** Aufgaben dieser Art an, mit Parametern und Zeitplan, und kann sie mit
+**Administration › Betrieb › Geplante Aufgaben › Neu** Aufgaben dieser Art an, mit Parametern und Zeitplan, und kann sie mit
 „Jetzt ausführen“ sofort starten. Lager-Tafel bringt zwei Arten mit:
 
 | Art | Parameter | Ergebnis |
@@ -1825,7 +1835,7 @@ public function taskTypes(): array
 }
 ```
 
-**Verwenden:** Unter **Administration › Geplante Aufgaben › Neu** erscheinen die Arten bei „Art“; Parameter und
+**Verwenden:** Unter **Administration › Betrieb › Geplante Aufgaben › Neu** erscheinen die Arten bei „Art“; Parameter und
 Zeitplan wählen, speichern. Der Scheduler von SAFT (`php artisan schedule:run` per Cron, siehe Systemadministration)
 startet sie zur gewählten Zeit; „Jetzt ausführen“ startet sie sofort. Ist das Plugin ausgeschaltet oder ruht es, werden
 seine Aufgaben übersprungen.

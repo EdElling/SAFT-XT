@@ -139,7 +139,7 @@ outbound HTTPS access to `api.pwnedpasswords.com:443` for this. If the service c
 as safe. Without internet access, set `PASSWORD_CHECK_LEAKED=false`, otherwise every password change waits for the
 timeout. The same rule applies to `ADMIN_PASSWORD` during the first `db:seed`.
 
-**Two-factor authentication:** the administration decides who must set it up (*Administration › Authentication*,
+**Two-factor authentication:** the administration decides who must set it up (*Administration › Users and access › Authentication*,
 default: required for administration). The authenticator app's secret and the (hashed) recovery codes are stored
 encrypted with `APP_KEY` in the `users` table – if `APP_KEY` is lost, all accounts must set up again. The codes depend
 on the time: the server clock must be correct (NTP), otherwise codes are rejected. If the only admin has lost phone and
@@ -183,7 +183,7 @@ as aborted, default 6).
 
 **Failed runs:** the message names a reference; under it, the error with trace is in `storage/logs/laravel.log`
 (entry `Geplante Aufgabe fehlgeschlagen`). The administration also sees error, message, location and trace in SAFT at
-the run under **Details** (permission *Scheduled tasks: see technical details*). *Administration › System log*
+the run under **Details** (permission *Scheduled tasks: see technical details*). *Administration › Operations › System log*
 (permission *System log: view*) shows the end of the log file – useful without SSH access, e.g. on web hosting. At most
 the last 2 MB are read; files `laravel.log` and `laravel-YYYY-MM-DD.log` (log channel `daily`) in `storage/logs`.
 
@@ -309,7 +309,7 @@ php artisan optimize && php artisan filament:optimize
 php artisan up
 ```
 
-Afterwards **Administration › Plugins** shows the plugin with its version and whether it fits the installed SAFT
+Afterwards **Administration › Application › Plugins** shows the plugin with its version and whether it fits the installed SAFT
 version; there the administration adopts the suggested menu entries and grants the permissions in role management.
 `php artisan saft:plugins` lists the plugins on the console and creates missing permissions.
 

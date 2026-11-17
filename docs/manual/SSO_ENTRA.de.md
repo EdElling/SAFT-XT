@@ -104,7 +104,7 @@ zugewiesene Gruppen“* wählen.
 
 ## 3. Identity Provider in SAFT anlegen
 
-Unter der Adresse aus Schritt 1 als Super-Admin anmelden, dann **Administration → Identity Provider → Erstellen**.
+Unter der Adresse aus Schritt 1 als Super-Admin anmelden, dann **Administration → Benutzer und Zugriff → Identity Provider → Erstellen**.
 
 **3.1 Allgemein und Entra-Angaben:**
 
@@ -130,7 +130,7 @@ eingetragenen.
 - **Automatisch anlegen:** **„Unbekannte Benutzer automatisch anlegen“** einschalten, eine **Standardrolle** wählen
   (z. B. `benutzer`) und unter **Erlaubte E-Mail-Domains** die eigene Domäne eintragen (z. B.
   `firma.onmicrosoft.com`), damit niemand von aussen ein Konto erhält. Bleibt die Standardrolle leer, gilt die
-  globale Standardrolle unter **Administration → Authentifizierung** (das Feld zeigt an, welche). Sie bleibt bei
+  globale Standardrolle unter **Administration → Benutzer und Zugriff → Authentifizierung** (das Feld zeigt an, welche). Sie bleibt bei
   späteren Anmeldungen erhalten; Rollen aus der Rollen-Zuordnung (3.3) kommen zusätzlich dazu. Soll eine Person
   ausschliesslich die zugeordneten Rollen haben, die globale Standardrolle auf „Keine“ stellen.
 
@@ -144,7 +144,7 @@ lässt sich der Zugang auf diese Personen beschränken.
 gültig“**. Der Test merkt sich dabei die Mandanten-GUID, die SAFT für die Rollen-Übernahme prüft – nach einer
 Änderung von Tenant, Client-ID oder Geheimnis bitte erneut testen.
 
-**3.5 Anmeldemodus.** Unter **Administration → Authentifizierung**:
+**3.5 Anmeldemodus.** Unter **Administration → Benutzer und Zugriff → Authentifizierung**:
 
 - **Hybrid** – Passwort *und* Microsoft-Schaltfläche; empfohlen für den Anfang, so sperren Sie sich nicht aus.
 - **Single Sign-On** – nur noch Microsoft; wählbar, sobald ein Identity Provider aktiv und erfolgreich getestet ist.

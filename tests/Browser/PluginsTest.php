@@ -79,11 +79,12 @@ class PluginsTest extends DuskTestCase
             $this->clickVisibleButton($browser, 'Menüeinträge anlegen')->pause(400);
             $this->clickVisibleButton($browser, 'Bestätigen')
                 ->waitForText('1 Menüeinträge angelegt.', 15)
-                ->waitForTextIn(self::SELECTOR_SIDEBAR, 'Umbuchung', 15)
+                ->waitForTextIn(self::SELECTOR_SIDEBAR, 'Lager führen', 15)
                 ->assertSee('1 von 1 übernommen');
 
-            // Über den neuen Menüeintrag zur Maske.
-            $browser->clickLink('Umbuchung')
+            // Über das neue Untermenü „Lager führen“ (API 1.7) zur Maske: Klick öffnet seine erste Seite und klappt es auf.
+            $browser->clickLink('Lager führen')
+                ->waitForTextIn(self::SELECTOR_SIDEBAR, 'Umbuchung', 15)
                 ->waitForText('Von Lagerort', 15);
             $this->pickOption($browser, 'form.artikel', 'Schraube');
             $browser->waitUsing(15, 100, fn (): bool => in_array((string) $this->north, $this->selectOptions($browser, 'select[id="form.von"]'), true))

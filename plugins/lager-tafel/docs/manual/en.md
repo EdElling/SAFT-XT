@@ -14,7 +14,7 @@ it is switched off, the stock matrix and the stock board show a hint.
 
 ## Stock matrix
 
-**Warehouse (demo) › Stock matrix** shows one row per item and one column per location with the stock; locations
+**Warehouse (demo) › Warehouse operations › Stock matrix** shows one row per item and one column per location with the stock; locations
 without stock show 0 in grey. **Total** sums all locations and is red when the item is below its **minimum stock**.
 
 - **Search** by item number or name with the search field.
@@ -25,7 +25,7 @@ without stock show 0 in grey. **Total** sums all locations and is red when the i
 
 ## Stock board
 
-**Warehouse (demo) › Stock board** shows one card per location with the stock of an item.
+**Warehouse (demo) › Warehouse operations › Stock board** shows one card per location with the stock of an item.
 
 1. Choose the **Item** (or come from the stock matrix or the items with **Distribute on stock board**).
 2. **Drag** the stock of a card **onto another card** with the mouse.
@@ -33,12 +33,12 @@ without stock show 0 in grey. **Total** sums all locations and is red when the i
    is available is not possible.
 
 The booking works as in the *Transfer* form: two stock movements of the kind *Transfer*, all or nothing. Cancelling the
-dialog changes nothing. Dragging only works with the mouse; with the keyboard, transfer via **Warehouse (demo) ›
+dialog changes nothing. Dragging only works with the mouse; with the keyboard, transfer via **Warehouse (demo) › Warehouse operations ›
 Transfer**.
 
 ## Items: buttons and rules
 
-In **Warehouse (demo) › Items** there are two additional buttons: **Stock matrix** above the table and **Distribute on
+In **Warehouse (demo) › Master data › Items** there are two additional buttons: **Stock matrix** above the table and **Distribute on
 stock board** in every row.
 
 For the **item number** these rules also apply:
@@ -56,7 +56,7 @@ designer.
 
 **Tile “Warehouse: stock by location”:** bar chart with the sum of all stock per location on the dashboard.
 
-The administration sets up two kinds of scheduled tasks under **Administration › Scheduled tasks**:
+The administration sets up two kinds of scheduled tasks under **Administration › Operations › Scheduled tasks**:
 
 | Task | What it does |
 |---|---|

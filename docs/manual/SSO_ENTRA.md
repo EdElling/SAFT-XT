@@ -102,7 +102,7 @@ to the application"*.
 
 ## 3. Create the identity provider in SAFT
 
-Sign in as super admin at the address from step 1, then **Administration → Identity providers → Create**.
+Sign in as super admin at the address from step 1, then **Administration → Users and access → Identity providers → Create**.
 
 **3.1 General and Entra settings:**
 
@@ -128,7 +128,7 @@ Entra.
 - **Create automatically:** switch on **"Create unknown users automatically"**, choose a **default role** (e.g.
   `benutzer`) and enter your own domain under **Allowed email domains** (e.g. `company.onmicrosoft.com`), so that
   nobody from outside gets an account. If the default role is left empty, the global default role under
-  **Administration → Authentication** applies (the field shows which one). It is kept at later sign-ins; roles from
+  **Administration → Users and access → Authentication** applies (the field shows which one). It is kept at later sign-ins; roles from
   the role mapping (3.3) are granted in addition. If a person should have only the mapped roles, set the global
   default role to "None".
 
@@ -141,7 +141,7 @@ unchanged. **"Only allow sign-in with a matching mapping"** restricts access to 
 valid"**. The test also remembers the tenant GUID that SAFT checks for role mapping – test again after changing the
 tenant, client ID or secret.
 
-**3.5 Sign-in mode.** Under **Administration → Authentication**:
+**3.5 Sign-in mode.** Under **Administration → Users and access → Authentication**:
 
 - **Hybrid** – password *and* Microsoft button; recommended to start with, so you do not lock yourself out.
 - **Single sign-on** – Microsoft only; available as soon as an identity provider is active and tested successfully.

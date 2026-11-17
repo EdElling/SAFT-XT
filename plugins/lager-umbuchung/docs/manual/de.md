@@ -11,7 +11,7 @@ Die Tabellen finden Sie im Menü unter **Lager (Demo)**: *Artikel*, *Lagerorte*,
 
 ## Lagerbewegungen erfassen
 
-Unter **Lager (Demo) › Lagerbewegungen** legen Sie mit **Neu** eine Bewegung an: *Artikel*, *Lagerort*, *Art*, *Menge*,
+Unter **Lager (Demo) › Lager führen › Lagerbewegungen** legen Sie mit **Neu** eine Bewegung an: *Artikel*, *Lagerort*, *Art*, *Menge*,
 *Zeitpunkt* (vorbelegt mit jetzt) und bei Bedarf eine *Bemerkung*.
 
 | Art | Wirkung auf den Bestand am Lagerort |
@@ -30,7 +30,7 @@ her, wird sie erneut gebucht.
 
 ## Bestände ansehen und korrigieren
 
-**Lager (Demo) › Bestände** zeigt je Artikel und Lagerort die *Menge* und das Datum der *Letzten Zählung*.
+**Lager (Demo) › Lager führen › Bestände** zeigt je Artikel und Lagerort die *Menge* und das Datum der *Letzten Zählung*.
 
 Bestände **ändern Sie nicht direkt**: Anlegen, Bearbeiten und Löschen in dieser Tabelle – auch beim Import – lehnt SAFT
 mit dem Hinweis ab, dass Bestände über Lagerbewegungen geführt werden. So bleibt jeder Bestand nachvollziehbar.
@@ -46,7 +46,7 @@ Die Meldung nennt Artikel, Lagerort und den vorhandenen Bestand.
 
 Umbuchen heisst: Ware von einem Lagerort an einen anderen bringen, ohne dass sich der Gesamtbestand ändert.
 
-1. **Lager (Demo) › Umbuchung** öffnen – oder in **Bestände** in der Zeile des Quellorts auf **Umbuchen** klicken; dann
+1. **Lager (Demo) › Lager führen › Umbuchung** öffnen – oder in **Bestände** in der Zeile des Quellorts auf **Umbuchen** klicken; dann
    sind Artikel und Quellort schon gewählt. Ohne Bestand am Lagerort ist der Knopf ausgegraut.
 2. **Artikel** wählen. Unter **Von Lagerort** stehen nur Lagerorte mit Bestand dieses Artikels, mit der Menge.
 3. **Nach Lagerort** und **Menge** angeben (höchstens der Bestand am Quellort), bei Bedarf eine **Bemerkung**.

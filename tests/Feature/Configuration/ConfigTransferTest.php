@@ -69,7 +69,8 @@ class ConfigTransferTest extends DynamicDataTestCase
         return app(ConfigExporter::class)->export(
             tables: CustomTable::query()->designer()->pluck('name')->all(),
             reports: Report::query()->pluck('id')->all(),
-            menus: Menu::query()->where('parent_id', $group->id)->pluck('id')->all(),
+            // Einträge der Gruppe und ihrer Untermenüs (Lager führen, Stammdaten, Auswertungen).
+            menus: [...($children = Menu::query()->where('parent_id', $group->id)->pluck('id')->all()), ...Menu::query()->whereIn('parent_id', $children)->pluck('id')->all()],
             roles: Role::query()->where('name', 'Lager')->pluck('id')->all(),
             user: $this->admin,
             label: 'Lager',
@@ -104,12 +105,12 @@ class ConfigTransferTest extends DynamicDataTestCase
         $before = $this->exportAll();
 
         $this->assertSame(ConfigExporter::FORMAT, $before['format']);
-        $this->assertSame(['lager-umbuchung' => '1.4.0'], $before['requires']['plugins']);
+        $this->assertSame(['lager-umbuchung' => '1.5.0'], $before['requires']['plugins']);
         $this->assertContains('Über Verknüpfung', array_column($before['reports'], 'name'));
         $this->assertSame('lager_artikel', $before['reports'][array_search('Über Verknüpfung', array_column($before['reports'], 'name'), true)]['definition']['base']);
         $this->assertSame([['label' => ['de' => 'Zur Gruppe', 'en' => 'To group'], 'source' => 'lager_artikel.artikelnummer', 'target_table' => 'lager_artikelgruppen', 'target_field' => 'lager_artikelgruppen.bezeichnung']], $before['report_links']);
         $this->assertSame('Lager (Demo)', $before['menus'][0]['path'], 'Übergeordnete Gruppe zuerst.');
-        $this->assertSame(['Lager (Demo) › Messprotokoll'], $before['roles'][0]['hidden_menus']);
+        $this->assertSame(['Lager (Demo) › Lager führen › Messprotokoll'], $before['roles'][0]['hidden_menus']);
 
         $this->wipe();
         $items = app(ConfigImporter::class)->analyze($before);
@@ -226,7 +227,7 @@ class ConfigTransferTest extends DynamicDataTestCase
         $page = Livewire::test(ConfigurationTransferPage::class)
             ->set('importData.file', UploadedFile::fake()->createWithContent('paket.json', (string) json_encode($package)))
             ->assertSet('packageInfo.label', 'Lager')
-            ->assertSee('Lager (Demo) › Bestände')
+            ->assertSee('Lager (Demo) › Lager führen › Bestände')
             ->assertSee('identisch')
             ->assertSee('neu');
 
@@ -243,7 +244,8 @@ class ConfigTransferTest extends DynamicDataTestCase
     {
         $this->seedConfiguration();
         $report = Report::query()->where('name', LagerDemoSeeder::REPORT_BELOW_MINIMUM)->sole();
-        $group = md5('Lager (Demo)');
+        // Tabellen und Auswertungen nach dem Menüpfad ihrer Tabelle: Artikel liegen unter „Stammdaten“ (B-066).
+        $group = md5('Lager (Demo) › Stammdaten');
 
         $this->assertSame(['lager_artikel', 'lager_artikelgruppen', 'lager_lieferanten'], app(ConfigExporter::class)->reportUses($report)['tables'], 'Grundtabelle zuerst.');
 
@@ -267,17 +269,20 @@ class ConfigTransferTest extends DynamicDataTestCase
         $belowMenu = (string) Menu::query()->where('route', 'filament.admin.resources.reports.view')->where('route_parameters->record', (string) $report->id)->value('id');
         $menuDisabled = static fn (string $id): \Closure => static fn (CheckboxList $field): bool => $field->isOptionDisabled($id, '');
 
+        // Menüeinträge nach ihrem Untermenü gruppiert.
+        [$operations, $masterData, $reportsMenu] = [md5('Lager (Demo) › Lager führen'), md5('Lager (Demo) › Stammdaten'), md5('Lager (Demo) › Auswertungen')];
+
         $page->assertSee('Datenansicht: Bestände – fehlt: Bestände')
             ->assertSee('Auswertung: '.LagerDemoSeeder::REPORT_BELOW_MINIMUM)
-            ->assertFormFieldExists('menus.'.$group, 'exportForm', $menuDisabled($stocks))
-            ->assertFormFieldExists('menus.'.$group, 'exportForm', $menuDisabled($belowMenu))
-            ->assertFormFieldExists('menus.'.$group, 'exportForm', fn (CheckboxList $field): bool => ! $menuDisabled($articles)($field))
-            ->fillForm(['menus' => [$group => [$articles, $stocks]]], 'exportForm')
-            ->assertSeeHtml('<strong>Lager (Demo) › Bestände</strong>: Bestände');
+            ->assertFormFieldExists('menus.'.$operations, 'exportForm', $menuDisabled($stocks))
+            ->assertFormFieldExists('menus.'.$reportsMenu, 'exportForm', $menuDisabled($belowMenu))
+            ->assertFormFieldExists('menus.'.$masterData, 'exportForm', fn (CheckboxList $field): bool => ! $menuDisabled($articles)($field))
+            ->fillForm(['menus' => [$masterData => [$articles], $operations => [$stocks]]], 'exportForm')
+            ->assertSeeHtml('<strong>Lager (Demo) › Lager führen › Bestände</strong>: Bestände');
 
         $page->call('exportPackage');
         $menus = Activity::query()->where('event', 'config_exported')->latest('id')->first()->attribute_changes['attributes']['menues'] ?? [];
-        $this->assertSame(['Lager (Demo)', 'Lager (Demo) › Artikel'], $menus, 'Bestände fehlt die Tabelle; die Gruppe kommt immer mit.');
+        $this->assertSame(['Lager (Demo)', 'Lager (Demo) › Stammdaten', 'Lager (Demo) › Stammdaten › Artikel'], $menus, 'Bestände fehlt die Tabelle; Gruppe und Untermenü kommen immer mit.');
         $exported = Activity::query()->where('event', 'config_exported')->latest('id')->first()->attribute_changes['attributes']['auswertungen'] ?? [];
         $this->assertSame([LagerDemoSeeder::REPORT_CALCULATION], $exported, 'Nur die Auswertung, deren Tabellen gewählt sind.');
 

@@ -222,7 +222,7 @@ php artisan serve
 Open **http://localhost:8000** in the browser – you land on the sign-in page under `/admin`. Sign in with
 `ADMIN_EMAIL` and `ADMIN_PASSWORD`. Stop the server in the terminal with `Ctrl+C`.
 
-After signing in, have a look at **Administration → App settings** (display name, colour scheme) and **Users**. The
+After signing in, have a look at **Administration → Application → App settings** (display name, colour scheme) and **Users**. The
 [user manual](USER_GUIDE.md) describes how to continue.
 
 ---
@@ -423,5 +423,5 @@ More commands are listed in [System administration, chapter 6](SYSADMIN_GUIDE.md
 | `Your requirements could not be resolved … php ^8.4` | PHP is too old, see step 2. |
 | `The ext-intl extension is missing` (or `zip`) | Install the extension: `sudo apt install php-intl php-zip`. |
 | Sign-in page without styling | Run `php artisan filament:upgrade` (copies the files to `public/`). |
-| Admin password unknown | Set it directly: `php artisan tinker --execute="App\Models\User::where('email', '<address>')->first()->update(['password' => '<new password>']);"` (If the switch *Offer “Forgot password”* is on under Administration → Authentication, the sign-in page works too; locally the email is written to `storage/logs/laravel.log`.) |
+| Admin password unknown | Set it directly: `php artisan tinker --execute="App\Models\User::where('email', '<address>')->first()->update(['password' => '<new password>']);"` (If the switch *Offer “Forgot password”* is on under Administration → Users and access → Authentication, the sign-in page works too; locally the email is written to `storage/logs/laravel.log`.) |
 | Nothing happens after changing `.env` | Run `php artisan optimize:clear` and restart the server. |

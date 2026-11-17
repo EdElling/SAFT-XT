@@ -116,7 +116,9 @@ déconnecté du compte de l’entreprise.
   perdus : l’administration réinitialise le second facteur.
 
 - **À gauche** se trouve le **menu**. Il n’affiche que les domaines pour lesquels vous avez des droits. Sous
-  **Données** se trouvent les tables, sous **Administration** les fonctions de gestion. La flèche **‹** à côté du nom
+  **Données** se trouvent les tables, sous **Administration** les fonctions de gestion. Les entrées
+  avec une flèche **›** à droite sont des sous-menus (p. ex. *Administration › Utilisateurs et accès*) : un clic ouvre
+  leur première page et déplie les autres en dessous ; la flèche pointe alors vers le bas. La flèche **‹** à côté du nom
   de l’application masque entièrement le menu pour laisser plus de place aux tables ; le bouton **☰** au même endroit
   le fait réapparaître. Votre navigateur retient ce choix. Le menu est aussi large que son entrée la plus longue.
 - **Documentation** (dans le menu, juste sous le tableau de bord) affiche ce guide et les questions fréquentes dans

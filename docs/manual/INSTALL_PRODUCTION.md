@@ -264,9 +264,9 @@ Check in the browser: **https://saft.example.com** redirects to `/admin` and sho
 ## 7. First sign-in and basic settings
 
 1. Sign in with `ADMIN_EMAIL` and the password.
-2. **Administration → App settings:** set the display name and colour scheme
+2. **Administration → Application → App settings:** set the display name and colour scheme
    ([Administrator guide, chapter 7](ADMIN_GUIDE.md#7-app-settings)).
-3. **Administration → Authentication:** choose the sign-in mode, switch on *Offer “Forgot password”* if needed
+3. **Administration → Users and access → Authentication:** choose the sign-in mode, switch on *Offer “Forgot password”* if needed
    ([Administrator guide, chapter 5](ADMIN_GUIDE.md#5-authentication)).
 4. **Single sign-on** (optional): create an identity provider. The address you enter at the provider (e.g. Microsoft
    Entra ID) is `https://saft.example.com/auth/sso/<short name>/callback`, for SAML
@@ -296,7 +296,7 @@ Check in the browser: **https://saft.example.com** redirects to `/admin` and sho
 scheduler from step 7 is all it needs. Each backup is a file `<database>_<date>_<time>.dump` (or `.sql`) in
 `storage/backups`, readable only by your user. If it fails, the reason is shown under *Scheduled tasks → Runs*, and
 the super admins get a notification in the bell. **Clean up backups** (02:45) deletes backups older than 14 days and
-always keeps the 3 newest. Change times and periods under *Administration › Scheduled tasks*
+always keeps the 3 newest. Change times and periods under *Administration › Operations › Scheduled tasks*
 ([Administrator guide, chapter 12](ADMIN_GUIDE.md#12-scheduled-tasks)). Manually at any time: `php artisan db:backup`.
 
 - `db:backup` needs `pg_dump`, `mysqldump` or `mariadb-dump` (package `mariadb-client`) in a version that matches the
@@ -448,7 +448,7 @@ This also runs the daily backup and the clean-up of backups. For coarser interva
 [System administration, chapter 4](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron).
 
 **Reset a public demo every night:** `DEMO_RESET=true` in `.env`, then `php artisan optimize`, and switch on the task
-**Reset demo data** under *Administration › Scheduled tasks*. At 04:00 it reloads the data of the chosen demos;
+**Reset demo data** under *Administration › Operations › Scheduled tasks*. At 04:00 it reloads the data of the chosen demos;
 visitors' changes to the demo data are gone afterwards, everything else stays.
 
 **Updates** (procedure as in [section 9](#9-installing-updates), with the command-line PHP):
@@ -464,6 +464,10 @@ php artisan migrate --force
 php artisan optimize && php artisan filament:optimize
 php artisan up
 ```
+
+The warehouse demo gets new menus (e.g. the submenus *Warehouse operations*, *Master data*, *Reports*) when its seeder
+runs again after the update: `php artisan db:seed --class=LagerDemoSeeder --force` – existing data stays, and so do
+menu entries you moved yourself.
 
 If a demo with example plugins was once updated with `--no-dev`, the plugins are missing afterwards. Then do **not**
 click **Clean up** on the *Plugins* page – that deletes their menu entries and permissions, and the roles lose the

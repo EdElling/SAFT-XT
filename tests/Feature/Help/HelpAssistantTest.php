@@ -293,17 +293,17 @@ class HelpAssistantTest extends DynamicDataTestCase
     {
         $user = $this->user(['help.assistant', 'users.view']);
         $this->actingAs($user);
-        $this->fake->push('Unter [Administration › Benutzer](/admin/users) auf **Neu** klicken; nicht [Rollen](/admin/roles), nicht [hier](https://example.com) und nicht [erfunden](/admin/gibt-es-nicht).');
+        $this->fake->push('Unter [Administration › Benutzer und Zugriff › Benutzer](/admin/users) auf **Neu** klicken; nicht [Rollen](/admin/roles), nicht [hier](https://example.com) und nicht [erfunden](/admin/gibt-es-nicht).');
 
         $conversation = $this->assistant()->ask($user, null, 'Wo lege ich Benutzer an?');
 
         $menu = end($this->fake->calls[0]['system'])['text'];
         $this->assertStringStartsWith('Menu of the person asking', $menu);
-        $this->assertStringContainsString('Administration › Benutzer → /admin/users', $menu);
+        $this->assertStringContainsString('Administration › Benutzer und Zugriff › Benutzer → /admin/users', $menu, 'Voller Pfad bis zur Seite im Untermenü.');
         $this->assertStringNotContainsString('/admin/roles', $menu, 'Nur Einträge, die die Person sieht.');
 
         $answer = $conversation->messages()->get()->last()->content;
-        $this->assertStringContainsString('[Administration › Benutzer](/admin/users)', $answer);
+        $this->assertStringContainsString('[Administration › Benutzer und Zugriff › Benutzer](/admin/users)', $answer);
         $this->assertStringContainsString('nicht Rollen, nicht hier und nicht erfunden.', $answer, 'Nicht sichtbare, externe und erfundene Adressen werden Text.');
 
         $html = $this->assistant()->html($user, $answer);

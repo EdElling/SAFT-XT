@@ -60,8 +60,8 @@ class PluginFrameworkTest extends TestCase
 
         $plugin = $this->plugin();
         $this->assertSame('saft/lager-umbuchung', $plugin->packageName());
-        $this->assertSame('1.4.0', $plugin->version());
-        $this->assertSame('^1.6', $plugin->requiresApi());
+        $this->assertSame('1.5.0', $plugin->version());
+        $this->assertSame('^1.7', $plugin->requiresApi());
         $this->assertSame([self::PERMISSION], $plugin->permissionNames());
     }
 
@@ -184,7 +184,9 @@ class PluginFrameworkTest extends TestCase
 
         $entry = Menu::query()->where('route', Umbuchung::ROUTE)->sole();
         $this->assertSame(self::PERMISSION, $entry->permission_name);
-        $this->assertSame('Lager (Demo)', $entry->parent?->getTranslation('label', 'de'), 'Gruppe neu angelegt.');
+        $this->assertSame('Lager führen', $entry->parent?->getTranslation('label', 'de'), 'Untermenü neu angelegt (API 1.7).');
+        $this->assertSame('Lager (Demo)', $entry->parent?->parent?->getTranslation('label', 'de'), 'Gruppe neu angelegt.');
+        $this->assertNull($entry->parent?->route);
         $this->assertSame('Transfert', $entry->getTranslation('label', 'fr'));
     }
 

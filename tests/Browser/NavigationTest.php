@@ -81,7 +81,9 @@ class NavigationTest extends DuskTestCase
         $this->browse(function (Browser $browser): void {
             $this->login($browser, 'admin@example.com');
 
-            $browser->clickLink('Rollen')->waitForLocation('/admin/roles', 15)
+            // Rollen liegen im Untermenü „Benutzer und Zugriff“: erst aufklappen (öffnet Benutzer), dann Rollen.
+            $browser->clickLink('Benutzer und Zugriff')->waitForLocation('/admin/users', 15)
+                ->clickLink('Rollen')->waitForLocation('/admin/roles', 15)
                 ->clickLink('Kunden')->waitForText('ACME GmbH', 15)
                 ->back()->waitForLocation('/admin/roles', 15)->waitForText('super-admin', 15);
 
@@ -203,7 +205,7 @@ class NavigationTest extends DuskTestCase
         $this->superAdmin();
         $this->createOrderData();
         $toggle = "//*[contains(@class, 'fi-sidebar-group')][.//*[contains(@class, 'fi-sidebar-group-label')][normalize-space(.)='Administration']]//button[contains(@class, 'fi-sidebar-group-collapse-btn')]";
-        $item = "//a[contains(@class, 'fi-sidebar-item-btn')][normalize-space(.)='Benutzer']";
+        $item = "//a[contains(@class, 'fi-sidebar-item-btn')][normalize-space(.)='Benutzer und Zugriff']";
         $itemVisible = static fn (Browser $b): bool => $b->driver->findElement(WebDriverBy::xpath($item))->isDisplayed();
 
         $this->browse(function (Browser $browser) use ($toggle, $itemVisible): void {

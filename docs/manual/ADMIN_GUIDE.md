@@ -37,7 +37,7 @@ permissions. Here, too, lists and tables are only as wide as their columns (see 
 
 ## 1. Users
 
-**Administration → Users**
+**Administration → Users and access → Users**
 
 - **List** with name, email, roles, active and last sign-in. Filters: active, role, **without role**,
   **SSO link**, deleted users.
@@ -75,7 +75,7 @@ admins, and other users are not even offered the `super-admin` role.
 
 ## 2. Roles and permissions
 
-**Administration → Roles**
+**Administration → Users and access → Roles**
 
 ![Roles and data permissions](images/en/07-roles-data-permissions.png)
 
@@ -120,7 +120,7 @@ activity log. Note: what the role is allowed to do is really saved during the vi
 
 ## 3. Menus
 
-**Administration → Menus**
+**Administration → Application → Menus**
 
 This is where the menu on the left is maintained. Every entry has a **type**:
 
@@ -177,14 +177,17 @@ highlighted and appears as a preview on the left of the field. You can also type
 the form only accepts known icons. The same dialog is available for the table icon in the table designer. An entry
 with child entries that has no valid icon gets a folder icon.
 
-**Further rules:** A menu has at most three levels; entries can be sorted by drag and drop. When an entry is deleted,
+**Further rules:** A menu has at most three levels: group (heading), entry and sub-entry. An entry with sub-entries is
+a **submenu** and appears with an arrow **›**; a click opens its first page and expands it. This is how the
+administration is structured (*Users and access*, *Database*, *Application*, *Operations*) and the warehouse demo
+(*Warehouse operations*, *Master data*, *Reports*); entries can be sorted by drag and drop. When an entry is deleted,
 its child entries are deleted as well.
 
 > The **details** (master-detail) are not set in the menu but in the table designer.
 
 ## 4. Table designer
 
-**Administration → Table designer**
+**Administration → Database → Table designer**
 
 This is where you create your own tables, without programming.
 
@@ -423,7 +426,7 @@ Afterwards the file can be imported again.
 
 ## 5. Authentication
 
-**Administration → Authentication**
+**Administration → Users and access → Authentication**
 
 | Setting | Meaning |
 |---|---|
@@ -439,7 +442,7 @@ has a **successful connection test**. For additional emergency exits in operatio
 
 ## 6. Identity providers (single sign-on)
 
-**Administration → Identity providers**
+**Administration → Users and access → Identity providers**
 
 ![Identity provider](images/en/11-identity-provider.png)
 
@@ -480,7 +483,7 @@ affects all Microsoft services in the browser (Outlook, Teams …), so it is off
 
 ## 7. App settings
 
-**Administration → App settings**
+**Administration → Application → App settings**
 
 | Setting | Meaning |
 |---|---|
@@ -500,7 +503,7 @@ The section **AI assistant for reports** sets up provider, model and key of the 
 
 ## 8. Activity log
 
-**Administration → Activity log**
+**Administration → Operations → Activity log**
 
 Every change in the application is logged: who, when, what, with **before/after**. This includes records, users,
 roles and permissions, menus, table structures, settings as well as sign-ins, sign-outs and failed sign-in attempts.
@@ -521,7 +524,7 @@ Secrets (passwords, keys) are never logged.
 
 ## 9. Database connections
 
-**Administration → Database connections**
+**Administration → Database → Database connections**
 
 This is where you set up connections to external databases, such as an ERP or research system. The **table
 connector** (see [chapter 10](#10-table-connector)) links tables of these databases so that they can be read like the
@@ -593,7 +596,7 @@ table connector. Writing applies only where possible: views, tables without a un
 
 ## 10. Table connector
 
-**Administration → Table connector**
+**Administration → Database → Table connector**
 
 The table connector links tables and views of a database connection. They then appear under **Data** like the
 tables of the table designer: with menu entry, permissions, list, search, filters, sorting, "Details" and export.
@@ -757,7 +760,7 @@ external database remains unchanged.
 
 ## 11. Table links
 
-**Administration › Table links** joins tables **without foreign keys** – also where no relation field is possible: a
+**Administration › Database › Table links** joins tables **without foreign keys** – also where no relation field is possible: a
 SAFT table with a connected table, two connected tables of different connections, or two SAFT tables related only by a
 number (e.g. after an import). Usable in **reports** and as **details in the master-detail view**. Nothing is created
 in the source databases: reports are computed in SAFT's database, connected tables through their
@@ -791,7 +794,7 @@ foreign key). For large connected tables the source field should have an index i
 
 ## 12. Scheduled tasks
 
-**Administration › Scheduled tasks** lists what SAFT runs by itself on a schedule. Each task has a **type**, its
+**Administration › Operations › Scheduled tasks** lists what SAFT runs by itself on a schedule. Each task has a **type**, its
 **parameters** and a **schedule**:
 
 | Type | Parameters | Effect |
@@ -828,7 +831,7 @@ running, the new run is "skipped"; the same applies when the same table is being
 location in the program, causes and trace. The same error is described in more detail under the reference in the log
 file on the server (`storage/logs/laravel.log`).
 
-**System log:** *Administration › System log* (permission *System log: view*; super admins always) shows the newest
+**System log:** *Administration › Operations › System log* (permission *System log: view*; super admins always) shows the newest
 entries of this log file, at most 500 and for large files only its end: time, level (error, warning, info …), message
 and reference. Search (also for a reference) and the level filter narrow it down, **Show** opens an entry completely,
 **Download extract** saves the part that was read. From the details of a run, **Show in the system log** leads there
@@ -865,7 +868,7 @@ in the editor or form, is checked there and only takes effect with **Save** or *
 1. **Prepare the provider:** For Anthropic create an API key in the Claude Console (*API Keys*); a Claude subscription
    (Pro/Max) alone is not enough, the API is billed separately by usage. Alternatively Amazon Bedrock or Google Vertex
    AI (setup see [System administration](SYSADMIN_GUIDE.md#5-ai-functions)).
-2. **Administration → App settings → AI assistant for reports:**
+2. **Administration → Application → App settings → AI assistant for reports:**
 
    | Setting | Meaning |
    |---|---|
@@ -967,7 +970,7 @@ Buttons in data tables name the plugin in their tooltip, scheduled task types ca
 rules under *Further checks* show icon and plugin, formula functions in the formula editor name the plugin in their
 tooltip.
 
-The page **Administration › Plugins** (permission *Plugins: view*) lists the installed plugins:
+The page **Administration › Application › Plugins** (permission *Plugins: view*) lists the installed plugins:
 
 | Column | Meaning |
 |---|---|
@@ -1044,7 +1047,7 @@ development packages – install them again first instead of cleaning up.
 
 ## 15. Transfer configuration
 
-**Administration › Transfer configuration** brings tables, reports, menu entries and roles from one installation to
+**Administration › Application › Transfer configuration** brings tables, reports, menu entries and roles from one installation to
 another – typically from the test to the production installation. Instead of rebuilding everything by hand, you export
 a **package** (a JSON file) and import it in the other installation.
 
@@ -1059,7 +1062,7 @@ a **package** (a JSON file) and import it in the other installation.
 | roles with their permissions and hidden menu entries | app settings, scheduled tasks |
 
 All references are stored as **names**, not internal numbers – tables and fields by technical name, menu entries by
-path (e.g. "Warehouse (demo) › Stock levels"), reports by name. So the package fits any installation.
+path (e.g. "Warehouse (demo) › Warehouse operations › Stock levels"), reports by name. So the package fits any installation.
 
 **Export** (permissions *Configuration: view* and *export*), tab *Export*:
 

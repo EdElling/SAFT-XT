@@ -42,7 +42,7 @@ class MenuTranslationTest extends TestCase
 
         foreach ($builder->getNavigation() as $group) {
             /** @var NavigationGroup $group */
-            $labels = collect($group->getItems())->map(fn (NavigationItem $i): string => (string) $i->getLabel())->values()->all();
+            $labels = collect($group->getItems())->map(fn (NavigationItem $i): string => trim(strip_tags((string) $i->getLabel())))->values()->all();
 
             if ($group->getLabel() === null) {
                 $result['items'] = [...$result['items'], ...$labels];
@@ -59,15 +59,15 @@ class MenuTranslationTest extends TestCase
         app()->setLocale('en');
 
         $this->assertSame(
-            ['Administration' => ['Users', 'Roles', 'Menus', 'Activity log', 'Authentication', 'Identity providers', 'Table designer', 'Table connector', 'Table links', 'Database connections', 'Scheduled tasks', 'Plugins', 'App settings', 'Transfer configuration', 'System log']],
+            ['Administration' => ['Users and access', 'Database', 'Application', 'Operations']],
             $this->navigation()['groups'],
         );
 
         app()->setLocale('de');
-        $this->assertContains('Benutzer', $this->navigation()['groups']['Administration']);
+        $this->assertContains('Benutzer und Zugriff', $this->navigation()['groups']['Administration']);
 
         app()->setLocale('fr');
-        $this->assertSame(['Utilisateurs', 'Rôles'], array_slice($this->navigation()['groups']['Administration'], 0, 2));
+        $this->assertSame(['Utilisateurs et accès', 'Base de données'], array_slice($this->navigation()['groups']['Administration'], 0, 2));
         $this->assertSame(['Tableau de bord', 'Documentation', 'Rapports'], $this->navigation()['items']);
 
         app()->setLocale('it');
@@ -143,7 +143,7 @@ class MenuTranslationTest extends TestCase
             ->assertCanSeeTableRecords([$users]);
 
         // Englischer Suchbegriff, deutsche Oberfläche: Treffer mit der deutschen Bezeichnung.
-        $this->assertSame(['Benutzer'], MenuResource::getGlobalSearchResults('Users')->map(fn ($result): string => (string) $result->title)->values()->all());
+        $this->assertSame(['Benutzer und Zugriff', 'Benutzer'], MenuResource::getGlobalSearchResults('Users')->map(fn ($result): string => (string) $result->title)->values()->all());
     }
 
     public function test_data_group_is_created_in_both_languages_and_found_again(): void

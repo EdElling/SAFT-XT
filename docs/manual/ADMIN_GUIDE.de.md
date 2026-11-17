@@ -37,7 +37,7 @@ Rechten sichtbar. Auch hier sind Listen und Tabellen nur so breit wie ihre Spalt
 
 ## 1. Benutzer
 
-**Administration → Benutzer**
+**Administration → Benutzer und Zugriff → Benutzer**
 
 - **Liste** mit Name, E-Mail, Rollen, aktiv, letzter Anmeldung. Filter: aktiv, Rolle, **ohne Rolle**,
   **SSO-Verknüpfung**, gelöschte Benutzer.
@@ -76,7 +76,7 @@ Super-Admins bearbeitet werden, und anderen Benutzern wird die Rolle `super-admi
 
 ## 2. Rollen und Rechte
 
-**Administration → Rollen**
+**Administration → Benutzer und Zugriff → Rollen**
 
 ![Rollen und Datenrechte](images/de/07-roles-data-permissions.png)
 
@@ -123,7 +123,7 @@ als Verursacher.
 
 ## 3. Menüs
 
-**Administration → Menüs**
+**Administration → Anwendung → Menüs**
 
 Das Menü auf der linken Seite wird hier gepflegt. Jeder Eintrag hat einen **Typ**:
 
@@ -183,14 +183,17 @@ hervorgehoben und erscheint links im Feld als Vorschau. Den Namen können Sie au
 `heroicon-o-users`; das Formular nimmt nur bekannte Icons an. Denselben Dialog gibt es beim Tabellen-Icon im
 Table-Designer. Ein Eintrag mit Untereinträgen, der kein gültiges Icon hat, erhält ein Ordner-Symbol.
 
-**Weitere Regeln:** Ein Menü hat höchstens drei Ebenen; Einträge lassen sich per Drag & Drop sortieren. Beim
+**Weitere Regeln:** Ein Menü hat höchstens drei Ebenen: Gruppe (Überschrift), Eintrag und Untereintrag. Ein Eintrag mit
+Untereinträgen ist ein **Untermenü** und erscheint mit einem Pfeil **›**; ein Klick öffnet seine erste Seite und klappt
+es auf. So ist die Administration gegliedert (*Benutzer und Zugriff*, *Datenbank*, *Anwendung*, *Betrieb*) und die
+Lager-Demo (*Lager führen*, *Stammdaten*, *Auswertungen*); Einträge lassen sich per Drag & Drop sortieren. Beim
 Löschen eines Eintrags werden seine Untereinträge mitgelöscht.
 
 > Die **Details** (Master-Detail) werden nicht im Menü, sondern im Table-Designer eingestellt.
 
 ## 4. Table-Designer
 
-**Administration → Table-Designer**
+**Administration → Datenbank → Table-Designer**
 
 Hier legen Sie eigene Tabellen an – ohne Programmierung.
 
@@ -436,7 +439,7 @@ löschen](#tabelle-oder-feld-endgültig-löschen)). Danach lässt sich die Datei
 
 ## 5. Authentifizierung
 
-**Administration → Authentifizierung**
+**Administration → Benutzer und Zugriff → Authentifizierung**
 
 | Einstellung | Bedeutung |
 |---|---|
@@ -452,7 +455,7 @@ Identity Provider einen **erfolgreichen Verbindungstest** hat. Zusätzliche Nota
 
 ## 6. Identity Provider (Single Sign-On)
 
-**Administration → Identity Provider**
+**Administration → Benutzer und Zugriff → Identity Provider**
 
 ![Identity Provider](images/de/11-identity-provider.png)
 
@@ -494,7 +497,7 @@ betrifft das alle Microsoft-Dienste im Browser (Outlook, Teams …) – daher st
 
 ## 7. App-Einstellungen
 
-**Administration → App-Einstellungen**
+**Administration → Anwendung → App-Einstellungen**
 
 | Einstellung | Bedeutung |
 |---|---|
@@ -514,7 +517,7 @@ Der Abschnitt **KI-Assistent für Auswertungen** richtet Anbieter, Modell und Sc
 
 ## 8. Änderungsprotokoll
 
-**Administration → Änderungsprotokoll**
+**Administration → Betrieb → Änderungsprotokoll**
 
 Jede Änderung in der Anwendung wird protokolliert: wer, wann, was, mit **vorher/nachher**. Dazu gehören
 Datensätze, Benutzer, Rollen und Rechte, Menüs, Tabellenstrukturen, Einstellungen sowie An- und Abmeldungen
@@ -535,7 +538,7 @@ und fehlgeschlagene Anmeldeversuche. Geheimnisse (Passwörter, Schlüssel) werde
 
 ## 9. Datenbankverbindungen
 
-**Administration → Datenbankverbindungen**
+**Administration → Datenbank → Datenbankverbindungen**
 
 Hier richten Sie Verbindungen zu externen Datenbanken ein, etwa zu einem ERP- oder Forschungssystem. Der
 **Table-Connector** (siehe [Kapitel 10](#10-table-connector)) bindet Tabellen dieser Datenbanken an, so dass sie wie die
@@ -609,7 +612,7 @@ ein, mit `--no-details` nicht.
 
 ## 10. Table-Connector
 
-**Administration → Table-Connector**
+**Administration → Datenbank → Table-Connector**
 
 Der Table-Connector bindet Tabellen und Views einer Datenbankverbindung an. Danach erscheinen sie wie die Tabellen
 des Table-Designers unter **Daten**: mit Menüeintrag, Rechten, Liste, Suche, Filtern, Sortierung, „Details“ und
@@ -779,7 +782,7 @@ Daten in der externen Datenbank bleiben unverändert.
 
 ## 11. Tabellenverknüpfungen
 
-**Administration › Tabellenverknüpfungen** verbindet Tabellen **ohne Fremdschlüssel** – auch dort, wo es kein
+**Administration › Datenbank › Tabellenverknüpfungen** verbindet Tabellen **ohne Fremdschlüssel** – auch dort, wo es kein
 Verknüpfungsfeld geben kann: eine SAFT-Tabelle mit einer angebundenen Tabelle, zwei angebundene Tabellen
 verschiedener Verbindungen oder zwei SAFT-Tabellen, deren Zusammenhang nur in einer Nummer steckt (z. B. nach einem
 Import). Nutzbar in **Auswertungen** und als **Details in der Master-Detail-Ansicht**. In den Quelldatenbanken
@@ -816,7 +819,7 @@ angebundenen Tabellen sollte das Quellfeld in der Quelldatenbank einen Index hab
 
 ## 12. Geplante Aufgaben
 
-**Administration › Geplante Aufgaben** listet, was SAFT nach Zeitplan selbst ausführt. Jede Aufgabe hat eine **Art**,
+**Administration › Betrieb › Geplante Aufgaben** listet, was SAFT nach Zeitplan selbst ausführt. Jede Aufgabe hat eine **Art**,
 deren **Parameter** und einen **Zeitplan**:
 
 | Art | Parameter | Wirkung |
@@ -856,7 +859,7 @@ das Recht *Geplante Aufgaben: technische Details sehen* hat (Super-Admins immer)
 Fehler, Meldung, Ort im Programm, Ursachen und Ablauf. Ausführlicher steht derselbe Fehler unter der Referenz in der
 Logdatei auf dem Server (`storage/logs/laravel.log`).
 
-**Systemprotokoll:** *Administration › Systemprotokoll* (Recht *Systemprotokoll: anzeigen*; Super-Admins immer) zeigt
+**Systemprotokoll:** *Administration › Betrieb › Systemprotokoll* (Recht *Systemprotokoll: anzeigen*; Super-Admins immer) zeigt
 die neuesten Einträge dieser Logdatei, höchstens 500 und bei grossen Dateien nur deren Ende: Zeit, Stufe (Fehler,
 Warnung, Info …), Meldung und Referenz. Suche (auch nach einer Referenz) und Filter nach Stufe grenzen ein,
 **Anzeigen** öffnet einen Eintrag vollständig, **Ausschnitt herunterladen** speichert den gelesenen Teil. Aus den
@@ -894,7 +897,7 @@ landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bz
 1. **Anbieter vorbereiten:** Für Anthropic einen API-Schlüssel in der Claude Console (*API Keys*) anlegen; ein
    Claude-Abo (Pro/Max) allein genügt nicht, die API wird getrennt nach Verbrauch abgerechnet. Alternativ Amazon
    Bedrock oder Google Vertex AI (Einrichtung siehe [Systemadministration](SYSADMIN_GUIDE.de.md#5-ki-funktionen)).
-2. **Administration → App-Einstellungen → KI-Assistent für Auswertungen:**
+2. **Administration → Anwendung → App-Einstellungen → KI-Assistent für Auswertungen:**
 
    | Einstellung | Bedeutung |
    |---|---|
@@ -995,7 +998,7 @@ Puzzle-Symbol; wer diese Seite sehen darf, gelangt mit einem Klick hierher), ebe
 in Datentabellen nennen das Plugin im Tooltip, Arten geplanter Aufgaben tragen den Zusatz „(Plugin …)“, Prüfregeln
 unter *Weitere Prüfungen* zeigen Symbol und Plugin, Formelfunktionen im Formel-Editor das Plugin im Tooltip.
 
-Die Seite **Administration › Plugins** (Recht *Plugins: anzeigen*) listet die installierten Plugins:
+Die Seite **Administration › Anwendung › Plugins** (Recht *Plugins: anzeigen*) listet die installierten Plugins:
 
 | Spalte | Bedeutung |
 |---|---|
@@ -1074,7 +1077,7 @@ etwa nach einem Update ohne die Entwicklungspakete –, installieren Sie sie zue
 
 ## 15. Konfiguration übertragen
 
-**Administration › Konfiguration übertragen** bringt Tabellen, Auswertungen, Menüeinträge und Rollen von einer
+**Administration › Anwendung › Konfiguration übertragen** bringt Tabellen, Auswertungen, Menüeinträge und Rollen von einer
 Installation in eine andere – typisch von der Test- in die Produktionsinstallation. Statt alles von Hand nachzubauen,
 exportieren Sie ein **Paket** (eine JSON-Datei) und spielen es in der anderen Installation ein.
 
@@ -1089,7 +1092,7 @@ exportieren Sie ein **Paket** (eine JSON-Datei) und spielen es in der anderen In
 | Rollen mit ihren Rechten und ausgeblendeten Menüeinträgen | App-Einstellungen, geplante Aufgaben |
 
 Alle Verweise stehen im Paket als **Namen**, nicht als interne Nummern – Tabellen und Felder mit ihrem technischen
-Namen, Menüeinträge mit ihrem Pfad (z. B. „Lager (Demo) › Bestände“), Auswertungen mit ihrem Namen. So passt das Paket
+Namen, Menüeinträge mit ihrem Pfad (z. B. „Lager (Demo) › Lager führen › Bestände“), Auswertungen mit ihrem Namen. So passt das Paket
 in jede Installation.
 
 **Exportieren** (Rechte *Konfiguration: anzeigen* und *exportieren*), Reiter *Exportieren*:

@@ -113,7 +113,9 @@ Firmen-Login abgemeldet.
   Faktor zurück.
 
 - **Links** befindet sich das **Menü**. Es zeigt nur die Bereiche, für die Sie Rechte haben. Unter **Daten**
-  finden Sie die Tabellen, unter **Administration** die Verwaltungsfunktionen.
+  finden Sie die Tabellen, unter **Administration** die Verwaltungsfunktionen. Einträge mit einem Pfeil **›** rechts sind
+  Untermenüs (z. B. *Administration › Benutzer und Zugriff*): Ein Klick öffnet ihre erste Seite und klappt die übrigen
+  darunter auf; der Pfeil zeigt dann nach unten.
   Über den Pfeil **‹** neben dem Namen der Anwendung blenden Sie das Menü ganz aus, um mehr Platz für Tabellen zu
   haben; die Schaltfläche **☰** an derselben Stelle blendet es wieder ein. Ihr Browser merkt sich die Wahl. Das
   Menü ist so breit wie sein längster Eintrag.

@@ -15,7 +15,7 @@ l’inventaire. S’il est désactivé, la matrice et le tableau des stocks affi
 
 ## Matrice des stocks
 
-**Entrepôt (démo) › Matrice des stocks** affiche une ligne par article et une colonne par emplacement avec le stock ; les
+**Entrepôt (démo) › Gestion de l’entrepôt › Matrice des stocks** affiche une ligne par article et une colonne par emplacement avec le stock ; les
 emplacements sans stock affichent 0 en gris. **Total** additionne tous les emplacements et apparaît en rouge lorsque
 l’article est sous son **stock minimum**.
 
@@ -28,7 +28,7 @@ l’article est sous son **stock minimum**.
 
 ## Tableau des stocks
 
-**Entrepôt (démo) › Tableau des stocks** affiche, pour un article, une carte par emplacement avec le stock.
+**Entrepôt (démo) › Gestion de l’entrepôt › Tableau des stocks** affiche, pour un article, une carte par emplacement avec le stock.
 
 1. Choisir l’**Article** (ou venir de la matrice des stocks ou des articles avec **Répartir sur le tableau des stocks**).
 2. **Faire glisser** le stock d’une carte **sur une autre carte** avec la souris.
@@ -41,7 +41,7 @@ de dialogue ne change rien. Le glisser-déposer ne fonctionne qu’à la souris 
 
 ## Articles : boutons et règles
 
-Dans **Entrepôt (démo) › Articles**, deux boutons s’ajoutent : **Matrice des stocks** au-dessus de la table et
+Dans **Entrepôt (démo) › Données de base › Articles**, deux boutons s’ajoutent : **Matrice des stocks** au-dessus de la table et
 **Répartir sur le tableau des stocks** dans chaque ligne.
 
 Pour le **numéro d’article**, les règles suivantes s’appliquent en plus :
@@ -60,7 +60,7 @@ définis par le concepteur de tables.
 **Tuile « Entrepôt : stock par emplacement » :** diagramme à barres avec la somme de tous les stocks par emplacement sur
 le tableau de bord.
 
-L’administration configure deux types de tâches planifiées sous **Administration › Tâches planifiées** :
+L’administration configure deux types de tâches planifiées sous **Administration › Exploitation › Tâches planifiées** :
 
 | Tâche | Ce qu’elle fait |
 |---|---|

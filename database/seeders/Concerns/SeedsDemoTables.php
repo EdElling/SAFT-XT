@@ -96,6 +96,32 @@ trait SeedsDemoTables
     /** Füllt die (leeren) Tabellen der Demo mit ihren Beispieldaten. */
     abstract protected function reseedDemoData(): void;
 
+    /**
+     * Untermenüs einer Demo-Gruppe (dritte Ebene) anlegen und Einträge dorthin umhängen – nur solche, die noch direkt in
+     * der Gruppe oder schon im Untermenü liegen; anderswohin verschobene bleiben. Wiederholbar.
+     *
+     * @param  list<array{label: array<string, string>, icon: string, sort_order: int, entries: list<array{0: 'table'|'report'|'route', 1: string}>}>  $submenus
+     */
+    protected function demoSubmenus(Menu $group, array $submenus): void
+    {
+        foreach ($submenus as $submenu) {
+            $parent = Menu::query()->where('parent_id', $group->id)->whereNull('route')->whereNull('url')->where('label->de', $submenu['label']['de'])->first()
+                ?? Menu::create(['parent_id' => $group->id, 'label' => $submenu['label'], 'icon' => $submenu['icon'], 'sort_order' => $submenu['sort_order'], 'is_active' => true]);
+
+            foreach ($submenu['entries'] as $index => [$kind, $key]) {
+                $query = Menu::query()->whereIn('parent_id', [$group->id, $parent->id]);
+                $entry = match ($kind) {
+                    'table' => $query->where('route', DataMenu::ROUTE)->where('route_parameters->table', $key)->first(),
+                    'report' => ($report = Report::query()->where('name', $key)->first()) === null ? null
+                        : $query->where('route', ReportResource::VIEW_ROUTE)->where('route_parameters->record', (string) $report->id)->first(),
+                    'route' => $query->where('route', $key)->first(),
+                };
+
+                $entry?->update(['parent_id' => $parent->id, 'sort_order' => ($index + 1) * 10]);
+            }
+        }
+    }
+
     /** @param  array<string, string>  $labels  Bezeichnung je Sprache */
     protected function demoGroup(array $labels, int $sortOrder): Menu
     {

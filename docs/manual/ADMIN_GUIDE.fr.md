@@ -37,7 +37,7 @@ correspondants. Ici aussi, les listes et les tableaux ne sont aussi larges que l
 
 ## 1. Utilisateurs
 
-**Administration → Utilisateurs**
+**Administration → Utilisateurs et accès → Utilisateurs**
 
 - **Liste** avec nom, e-mail, rôles, actif, dernière connexion. Filtres : actif, rôle, **sans rôle**,
   **liaison SSO**, utilisateurs supprimés.
@@ -79,7 +79,7 @@ Règles de protection : personne ne peut se supprimer ni se désactiver soi-mêm
 
 ## 2. Rôles et droits
 
-**Administration → Rôles**
+**Administration → Utilisateurs et accès → Rôles**
 
 ![Rôles et droits sur les données](images/fr/07-roles-data-permissions.png)
 
@@ -127,7 +127,7 @@ est réellement enregistré pendant la vue – avec vous comme auteur.
 
 ## 3. Menus
 
-**Administration → Menus**
+**Administration → Application → Menus**
 
 Le menu de gauche est géré ici. Chaque entrée a un **type** :
 
@@ -189,14 +189,17 @@ nom à la main, p. ex. `heroicon-o-users` ; le formulaire n’accepte que des ic
 existe pour l’icône de table dans le Concepteur de tables. Une entrée avec des sous-entrées sans icône valide reçoit
 un symbole de dossier.
 
-**Autres règles :** un menu a au plus trois niveaux ; les entrées se trient par glisser-déposer. La suppression d’une
+**Autres règles :** un menu a au plus trois niveaux : groupe (titre), entrée et sous-entrée. Une entrée avec des
+sous-entrées est un **sous-menu** et apparaît avec une flèche **›** ; un clic ouvre sa première page et le déplie.
+Ainsi sont structurées l’administration (*Utilisateurs et accès*, *Base de données*, *Application*, *Exploitation*) et
+la démo entrepôt (*Gestion de l’entrepôt*, *Données de base*, *Rapports*) ; les entrées se trient par glisser-déposer. La suppression d’une
 entrée supprime aussi ses sous-entrées.
 
 > Les **détails** (maître-détail) ne se configurent pas dans le menu, mais dans le Concepteur de tables.
 
 ## 4. Concepteur de tables
 
-**Administration → Concepteur de tables**
+**Administration → Base de données → Concepteur de tables**
 
 Vous créez ici vos propres tables – sans programmation.
 
@@ -449,7 +452,7 @@ champ](#supprimer-définitivement-une-table-ou-un-champ)). Le fichier peut ensui
 
 ## 5. Authentification
 
-**Administration → Authentification**
+**Administration → Utilisateurs et accès → Authentification**
 
 | Réglage | Signification |
 |---|---|
@@ -465,7 +468,7 @@ fournisseur d’identité actif a un **test de connexion réussi**. Pour d’aut
 
 ## 6. Fournisseurs d’identité (authentification unique)
 
-**Administration → Fournisseurs d’identité**
+**Administration → Utilisateurs et accès → Fournisseurs d’identité**
 
 ![Fournisseur d’identité](images/fr/11-identity-provider.png)
 
@@ -510,7 +513,7 @@ désactivée par défaut.
 
 ## 7. Paramètres de l’application
 
-**Administration → Paramètres de l’application**
+**Administration → Application → Paramètres de l’application**
 
 | Réglage | Signification |
 |---|---|
@@ -530,7 +533,7 @@ La section **Assistant IA pour les rapports** configure le fournisseur, le modè
 
 ## 8. Journal des modifications
 
-**Administration → Journal des modifications**
+**Administration → Exploitation → Journal des modifications**
 
 Chaque modification dans l’application est consignée : qui, quand, quoi, avec **avant/après**. Cela comprend les
 enregistrements, les utilisateurs, les rôles et les droits, les menus, les structures de tables, les paramètres ainsi
@@ -555,7 +558,7 @@ sont jamais consignés.
 
 ## 9. Connexions aux bases de données
 
-**Administration → Connexions aux bases de données**
+**Administration → Base de données → Connexions aux bases de données**
 
 Vous configurez ici des connexions à des bases de données externes, p. ex. à un ERP ou à un système de recherche. Le
 **Connecteur de tables** (voir [chapitre 10](#10-connecteur-de-tables)) lie des tables de ces bases de données de
@@ -634,7 +637,7 @@ très grandes bases de données se lient avec la commande `php artisan table-con
 
 ## 10. Connecteur de tables
 
-**Administration → Connecteur de tables**
+**Administration → Base de données → Connecteur de tables**
 
 Le Connecteur de tables lie des tables et des vues d’une connexion à une base de données. Elles apparaissent ensuite
 comme les tables du Concepteur de tables sous **Données** : avec entrée de menu, droits, liste, recherche, filtres,
@@ -813,7 +816,7 @@ données de la base de données externe restent inchangées.
 
 ## 11. Liaisons de tables
 
-**Administration › Liaisons de tables** relie des tables **sans clé étrangère** – aussi là où il ne peut pas y avoir
+**Administration › Base de données › Liaisons de tables** relie des tables **sans clé étrangère** – aussi là où il ne peut pas y avoir
 de champ de liaison : une table SAFT avec une table liée, deux tables liées de connexions différentes ou deux tables
 SAFT dont la relation ne réside que dans un numéro (p. ex. après un import). Utilisables dans les **rapports** et
 comme **détails dans la vue maître-détail**. Rien n’est créé dans les bases de données sources : les rapports
@@ -851,7 +854,7 @@ devant le libellé.
 
 ## 12. Tâches planifiées
 
-**Administration › Tâches planifiées** liste ce que SAFT exécute lui-même selon un planning. Chaque tâche a un
+**Administration › Exploitation › Tâches planifiées** liste ce que SAFT exécute lui-même selon un planning. Chaque tâche a un
 **type**, ses **paramètres** et un **planning** :
 
 | Type | Paramètres | Effet |
@@ -892,7 +895,7 @@ Qui a le droit *Tâches planifiées : voir les détails techniques* (les super-a
 avec **Détails** : erreur, message, emplacement dans le programme, causes et déroulement. La même erreur est décrite
 plus en détail sous la référence dans le fichier journal sur le serveur (`storage/logs/laravel.log`).
 
-**Journal système :** *Administration › Journal système* (droit *Journal système : afficher* ; les super-admins
+**Journal système :** *Administration › Exploitation › Journal système* (droit *Journal système : afficher* ; les super-admins
 toujours) affiche les entrées les plus récentes de ce fichier journal, au plus 500 et, pour les gros fichiers, seulement
 leur fin : heure, niveau (erreur, avertissement, info …), message et référence. La recherche (aussi d’une référence) et
 le filtre par niveau restreignent l’affichage, **Afficher** ouvre une entrée complète, **Télécharger l’extrait**
@@ -932,7 +935,7 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
 1. **Préparer le fournisseur :** pour Anthropic, créer une clé API dans la Claude Console (*API Keys*) ; un
    abonnement Claude (Pro/Max) seul ne suffit pas, l’API est facturée séparément selon la consommation. Sinon Amazon
    Bedrock ou Google Vertex AI (configuration voir [Administration système](SYSADMIN_GUIDE.md#5-ai-functions)).
-2. **Administration → Paramètres de l’application → Assistant IA pour les rapports :**
+2. **Administration → Application → Paramètres de l’application → Assistant IA pour les rapports :**
 
    | Réglage | Signification |
    |---|---|
@@ -1041,7 +1044,7 @@ portent en dessous. Les boutons des tables de données nomment le plugin dans le
 planifiées portent l’ajout « (plugin …) », les règles sous *Contrôles supplémentaires* affichent symbole et plugin, les
 fonctions de l’éditeur de formules nomment le plugin dans leur info-bulle.
 
-La page **Administration › Plugins** (droit *Plugins : afficher*) liste les plugins installés :
+La page **Administration › Application › Plugins** (droit *Plugins : afficher*) liste les plugins installés :
 
 | Colonne | Signification |
 |---|---|
@@ -1122,7 +1125,7 @@ d’abord au lieu de nettoyer.
 
 ## 15. Transférer la configuration
 
-**Administration › Transférer la configuration** transfère des tables, analyses, entrées de menu et rôles d’une
+**Administration › Application › Transférer la configuration** transfère des tables, analyses, entrées de menu et rôles d’une
 installation à une autre – typiquement de l’installation de test vers la production. Au lieu de tout reconstruire à la
 main, vous exportez un **paquet** (un fichier JSON) et l’importez dans l’autre installation.
 
@@ -1137,7 +1140,7 @@ main, vous exportez un **paquet** (un fichier JSON) et l’importez dans l’aut
 | rôles avec leurs droits et entrées de menu masquées | paramètres de l’application, tâches planifiées |
 
 Toutes les références figurent sous forme de **noms**, pas de numéros internes – tables et champs par leur nom
-technique, entrées de menu par leur chemin (p. ex. « Entrepôt (démo) › Stocks »), analyses par leur nom. Le paquet
+technique, entrées de menu par leur chemin (p. ex. « Entrepôt (démo) › Gestion de l’entrepôt › Stocks »), analyses par leur nom. Le paquet
 convient ainsi à toute installation.
 
 **Exporter** (droits *Configuration : afficher* et *exporter*), onglet *Exporter* :

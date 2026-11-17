@@ -71,7 +71,7 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
 ### Extensibility
 - **Plugins:** own pages and business functions as Composer packages, without changing the core – with permissions,
   menu suggestions, a stable interface (data access with permissions and validation rules, events on saving, buttons in
-  data views) and protection of the tables and fields they need; managed under **Administration › Plugins**, example
+  data views) and protection of the tables and fields they need; managed under **Administration › Application › Plugins**, example
   plugins “Lager-Umbuchung”, “Lager-Tafel” and “CH-Prüfungen” ([developer guide](docs/manual/DEVELOPER_GUIDE.md))
 - **Plugins also extend the dashboard and table designer:** own tiles, formula functions for computed fields (e.g.
   rounding to 5 centimes) and validation rules for fields (e.g. AHV number, IBAN)

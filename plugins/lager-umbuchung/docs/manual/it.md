@@ -12,7 +12,7 @@ magazzino*.
 
 ## Registrare movimenti di magazzino
 
-In **Magazzino (demo) › Movimenti di magazzino**, **Nuovo** crea un movimento: *Articolo*, *Ubicazione*, *Tipo*,
+In **Magazzino (demo) › Gestione del magazzino › Movimenti di magazzino**, **Nuovo** crea un movimento: *Articolo*, *Ubicazione*, *Tipo*,
 *Quantità*, *Data e ora* (precompilata con adesso) e, se serve, una *Nota*.
 
 | Tipo | Effetto sulla giacenza dell’ubicazione |
@@ -31,7 +31,7 @@ registrato di nuovo.
 
 ## Consultare e correggere le giacenze
 
-**Magazzino (demo) › Giacenze** mostra per articolo e ubicazione la *Quantità* e la data dell’*Ultimo conteggio*.
+**Magazzino (demo) › Gestione del magazzino › Giacenze** mostra per articolo e ubicazione la *Quantità* e la data dell’*Ultimo conteggio*.
 
 Le giacenze **non si modificano direttamente**: SAFT rifiuta creazione, modifica ed eliminazione in questa tabella – anche
 nell’importazione – indicando che le giacenze sono gestite tramite i movimenti di magazzino. Così ogni giacenza resta
@@ -48,7 +48,7 @@ messaggio indica articolo, ubicazione e giacenza disponibile.
 
 Trasferire significa spostare merce da un’ubicazione a un’altra senza cambiare la giacenza totale.
 
-1. Aprire **Magazzino (demo) › Trasferimento** – oppure in **Giacenze** cliccare su **Trasferisci** nella riga
+1. Aprire **Magazzino (demo) › Gestione del magazzino › Trasferimento** – oppure in **Giacenze** cliccare su **Trasferisci** nella riga
    dell’ubicazione di origine; articolo e origine sono allora già scelti. Senza giacenza nell’ubicazione il pulsante è
    disattivato.
 2. Scegliere l’**Articolo**. **Dall’ubicazione** elenca solo le ubicazioni con giacenza di questo articolo, con la

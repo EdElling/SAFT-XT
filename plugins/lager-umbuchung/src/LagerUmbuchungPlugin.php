@@ -110,7 +110,9 @@ final class LagerUmbuchungPlugin extends SaftPlugin
                 icon: 'heroicon-o-arrows-right-left',
                 permission: $this->permissionName('execute'),
                 group: ['de' => 'Lager (Demo)', 'en' => 'Warehouse (demo)', 'fr' => 'Entrepôt (démo)', 'it' => 'Magazzino (demo)'],
-                sortOrder: 5,
+                sortOrder: 30,
+                // Seit API 1.7: im Untermenü „Lager führen“ der Lager-Demo.
+                subgroup: ['de' => 'Lager führen', 'en' => 'Warehouse operations', 'fr' => 'Gestion de l’entrepôt', 'it' => 'Gestione del magazzino'],
             ),
         ];
     }

@@ -220,7 +220,9 @@ class CascadeTest extends DuskTestCase
             $this->clickRow($browser, 'ACME GmbH')->waitForText('B-100', 15);
             $this->clickRow($browser, 'B-100')->waitForText('Schraube M8', 15);
 
-            $browser->clickLink('Rollen')->waitForLocation('/admin/roles', 15)
+            $browser->clickLink('Benutzer und Zugriff')->waitForLocation('/admin/users', 15)
+                ->clickLink('Rollen')->waitForLocation('/admin/roles', 15)
+                ->back()
                 ->back()
                 ->waitForText('Schraube M8', 15);
 

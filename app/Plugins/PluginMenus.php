@@ -25,8 +25,14 @@ final class PluginMenus
             $missing = $this->missing($plugin);
 
             foreach ($missing as $suggestion) {
+                $parent = $suggestion->group === null ? null : $this->group($suggestion->group);
+
+                if ($parent !== null && $suggestion->subgroup !== null) {
+                    $parent = $this->subgroup($parent, $suggestion->subgroup);
+                }
+
                 Menu::create([
-                    'parent_id' => $suggestion->group === null ? null : $this->group($suggestion->group)->id,
+                    'parent_id' => $parent?->id,
                     'label' => $suggestion->label,
                     'route' => $suggestion->route,
                     'icon' => $suggestion->icon,
@@ -38,6 +44,23 @@ final class PluginMenus
 
             return count($missing);
         });
+    }
+
+    /**
+     * Untermenü einer Gruppe (dritte Ebene): ohne eigenes Ziel; Filament öffnet beim Klick die erste Seite darin.
+     *
+     * @param  array<string, string>  $label
+     */
+    private function subgroup(Menu $group, array $label): Menu
+    {
+        $subgroup = Menu::query()->where('parent_id', $group->id)->whereNull('route')->whereNull('url')->where('label->de', $label['de'] ?? reset($label))->first();
+
+        return $subgroup ?? Menu::create([
+            'parent_id' => $group->id,
+            'label' => $label,
+            'sort_order' => (int) Menu::query()->where('parent_id', $group->id)->max('sort_order') + 10,
+            'is_active' => true,
+        ]);
     }
 
     /** @param  array<string, string>  $label */

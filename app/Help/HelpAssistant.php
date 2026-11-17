@@ -259,16 +259,19 @@ final class HelpAssistant
         $entries = [];
         $add = function (NavigationItem $item, string $prefix) use (&$add, &$entries): void {
             $label = trim($prefix.strip_tags((string) $item->getLabel()));
+
+            // Unterpunkte zuerst: Ein Untermenü trägt die Adresse seiner ersten Seite, die so ihren vollen Pfad behält
+            // („Administration › Benutzer und Zugriff › Benutzer“ statt nur des Untermenüs).
+            foreach ($item->getChildItems() as $child) {
+                $add($child, $label.' › ');
+            }
+
             $url = $item->getUrl();
 
             if (is_string($url) && $url !== '') {
                 $parts = parse_url($url);
                 $path = ($parts['path'] ?? '/').(isset($parts['query']) ? '?'.$parts['query'] : '');
                 $entries[$path] ??= $label;
-            }
-
-            foreach ($item->getChildItems() as $child) {
-                $add($child, $label.' › ');
             }
         };
 

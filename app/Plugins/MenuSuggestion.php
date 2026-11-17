@@ -16,6 +16,9 @@ final readonly class MenuSuggestion
      * @param  array<string, string>|null  $group  Menügruppe je Sprache; gefunden über die deutsche Bezeichnung,
      *                                             sonst neu angelegt; null = oberste Ebene
      * @param  string|null  $permission  vollständiger Name des Rechts, das den Eintrag sichtbar macht
+     * @param  array<string, string>|null  $subgroup  Untermenü innerhalb der Gruppe je Sprache (seit API 1.7), z. B.
+     *                                                „Lager führen“; gefunden über die deutsche Bezeichnung, sonst neu
+     *                                                angelegt; null = direkt in der Gruppe. Nur zusammen mit $group.
      */
     public function __construct(
         public string $route,
@@ -24,5 +27,6 @@ final readonly class MenuSuggestion
         public ?string $permission = null,
         public ?array $group = null,
         public int $sortOrder = 100,
+        public ?array $subgroup = null,
     ) {}
 }

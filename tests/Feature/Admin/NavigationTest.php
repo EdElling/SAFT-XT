@@ -30,7 +30,7 @@ class NavigationTest extends TestCase
         $nav = $this->labels($this->userWithPermissions(['users.view']));
 
         $this->assertSame(['Dashboard', 'Dokumentation'], $nav['items']);
-        $this->assertSame(['Administration' => ['Benutzer']], $nav['groups']);
+        $this->assertSame(['Administration' => ['Benutzer und Zugriff']], $nav['groups']);
     }
 
     public function test_super_admin_sees_everything(): void
@@ -38,7 +38,7 @@ class NavigationTest extends TestCase
         $nav = $this->labels($this->superAdmin());
 
         $this->assertSame(
-            ['Administration' => ['Benutzer', 'Rollen', 'Menüs', 'Änderungsprotokoll', 'Authentifizierung', 'Identity Provider', 'Table-Designer', 'Table-Connector', 'Tabellenverknüpfungen', 'Datenbankverbindungen', 'Geplante Aufgaben', 'Plugins', 'App-Einstellungen', 'Konfiguration übertragen', 'Systemprotokoll']],
+            ['Administration' => ['Benutzer und Zugriff', 'Datenbank', 'Anwendung', 'Betrieb']],
             $nav['groups'],
         );
     }
@@ -72,14 +72,25 @@ class NavigationTest extends TestCase
 
     public function test_third_level_becomes_child_item(): void
     {
-        $users = Menu::where('label->de', 'Benutzer')->firstOrFail();
-        Menu::create(['parent_id' => $users->id, 'label' => 'Rollen-Zuordnung', 'route' => 'filament.admin.resources.roles.index']);
-
+        // Untermenüs der Administration (B-066): Einträge als Kind-Einträge, Klick öffnet die erste Seite.
         $builder = app(MenuNavigationBuilder::class)->build(new NavigationBuilder, $this->superAdmin());
         $group = collect($builder->getNavigation())->first(fn (NavigationGroup $g): bool => $g->getLabel() === 'Administration');
-        $item = collect($group->getItems())->first(fn (NavigationItem $i): bool => $i->getLabel() === 'Benutzer');
+        $item = collect($group->getItems())->first(fn (NavigationItem $i): bool => trim(strip_tags((string) $i->getLabel())) === 'Benutzer und Zugriff');
 
-        $this->assertSame(['Rollen-Zuordnung'], collect($item->getChildItems())->map->getLabel()->all());
+        $this->assertSame(['Benutzer', 'Rollen', 'Authentifizierung', 'Identity Provider'], collect($item->getChildItems())->map->getLabel()->all());
+        // Untermenü mit Pfeil, Seiten ohne: optisch unterscheidbar.
+        $this->assertStringContainsString('saft-submenu-chevron', (string) $item->getLabel());
+        $this->assertStringContainsString('<span class="saft-submenu-label">Benutzer und Zugriff</span>', (string) $item->getLabel());
+        $this->assertSame('Benutzer', collect($item->getChildItems())->first()->getLabel(), 'Seiten ohne HTML.');
+        $this->assertStringEndsWith('/admin/users', (string) $item->getUrl());
+
+        // Eine vierte Ebene wird nicht angezeigt.
+        $users = Menu::where('label->de', 'Benutzer')->firstOrFail();
+        Menu::create(['parent_id' => $users->id, 'label' => 'Zu tief', 'route' => 'filament.admin.resources.roles.index']);
+        $builder = app(MenuNavigationBuilder::class)->build(new NavigationBuilder, $this->superAdmin());
+        $group = collect($builder->getNavigation())->first(fn (NavigationGroup $g): bool => $g->getLabel() === 'Administration');
+        $item = collect($group->getItems())->first(fn (NavigationItem $i): bool => trim(strip_tags((string) $i->getLabel())) === 'Benutzer und Zugriff');
+        $this->assertSame([], collect($item->getChildItems())->first(fn (NavigationItem $i): bool => $i->getLabel() === 'Benutzer')->getChildItems());
     }
 
     public function test_panel_renders_dynamic_navigation(): void
@@ -101,7 +112,7 @@ class NavigationTest extends TestCase
         $groups = [];
 
         foreach ($builder->getNavigation() as $group) {
-            $labels = collect($group->getItems())->map(fn (NavigationItem $i): string => (string) $i->getLabel())->values()->all();
+            $labels = collect($group->getItems())->map(fn (NavigationItem $i): string => trim(strip_tags((string) $i->getLabel())))->values()->all();
 
             if ($group->getLabel() === null) {
                 $items = [...$items, ...$labels];

@@ -110,7 +110,7 @@ class PluginToolingTest extends DynamicDataTestCase
 
         config(['saft.api_versions' => ['2.0']]);
         $this->artisan('saft:plugins', ['--check' => true])
-            ->expectsOutputToContain('Verlangt Plugin-API ^1.6')
+            ->expectsOutputToContain('Verlangt Plugin-API ^1.7')
             ->assertFailed();
     }
 }

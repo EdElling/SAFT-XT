@@ -34,6 +34,11 @@ class DemoSeedersTest extends DynamicDataTestCase
             'lager_bestaende' => 25, 'lager_mitarbeitende' => 6, 'lager_bewegungen' => 40, 'lager_messprotokoll' => 20,
         ]);
         $this->assertGroup(LagerDemoSeeder::GROUP['de'], 8, 7);
+        $this->assertSame([
+            'Lager führen' => ['Lagerbewegungen', 'Bestände', 'Messprotokoll'],
+            'Stammdaten' => ['Artikel', 'Artikelgruppen', 'Lieferanten', 'Lagerorte', 'Mitarbeitende'],
+            'Auswertungen' => ['Unter Mindestbestand', 'Unter Minimum (Anzahl)', 'Lagerwert', 'Artikel-Kalkulation', 'Bewegungskennzahlen', 'Einkaufsvolumen je Lieferant', 'Temperaturverlauf'],
+        ], $this->submenus(LagerDemoSeeder::GROUP['de']), 'Untermenüs der Lager-Demo (B-066).');
 
         // Beschreibung (geht an den KI-Assistenten): Vorzeichen der Menge.
         $this->assertStringContainsString('negativ = Abgang', CustomTable::query()->where('name', 'lager_bewegungen')->sole()->getTranslation('description', 'de'));
@@ -174,11 +179,25 @@ class DemoSeedersTest extends DynamicDataTestCase
     private function assertGroup(string $label, int $tables, int $reports): void
     {
         $group = Menu::query()->whereNull('parent_id')->where('label->de', $label)->sole();
-        $entries = Menu::query()->where('parent_id', $group->id)->get();
+        // Direkt in der Gruppe und in ihren Untermenüs (Lager-Demo: Lager führen, Stammdaten, Auswertungen).
+        $submenus = Menu::query()->where('parent_id', $group->id)->whereNull('route')->pluck('id')->all();
+        $entries = Menu::query()->whereIn('parent_id', [$group->id, ...$submenus])->get();
 
         $this->assertSame($tables, $entries->where('route', DataMenu::ROUTE)->count());
         $this->assertSame(1, $entries->where('route', DataModelPage::ROUTE)->count());
         $this->assertSame($reports, $entries->where('route', ReportResource::VIEW_ROUTE)->count());
+    }
+
+    /** @return array<string, list<string>> Untermenü => Einträge, je nach Reihenfolge */
+    private function submenus(string $label): array
+    {
+        $group = Menu::query()->whereNull('parent_id')->where('label->de', $label)->sole();
+
+        return Menu::query()->where('parent_id', $group->id)->whereNull('route')->orderBy('sort_order')->get()
+            ->mapWithKeys(static fn (Menu $submenu): array => [
+                $submenu->getTranslation('label', 'de') => Menu::query()->where('parent_id', $submenu->id)->orderBy('sort_order')->get()
+                    ->map(static fn (Menu $entry): string => $entry->getTranslation('label', 'de'))->all(),
+            ])->all();
     }
 
     private function runReport(string $name): ReportResult

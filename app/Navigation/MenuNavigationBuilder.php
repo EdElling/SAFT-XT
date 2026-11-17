@@ -22,6 +22,7 @@ use Illuminate\Routing\Exceptions\UrlGenerationException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 /**
@@ -136,7 +137,8 @@ final class MenuNavigationBuilder
             return null;
         }
 
-        $item = NavigationItem::make($menu->label)
+        // Untermenü (aufklappbar): Pfeil rechts neben der Bezeichnung, damit es sich von Seiten unterscheidet (B-066).
+        $item = NavigationItem::make($children === [] ? $menu->label : self::submenuLabel((string) $menu->label))
             ->url($url ?? $children[0]->getUrl())
             ->sort($menu->sort_order)
             ->isActiveWhen($this->activeCallback($menu));
@@ -153,6 +155,12 @@ final class MenuNavigationBuilder
         }
 
         return $children === [] ? $item : $item->childItems($children);
+    }
+
+    /** Bezeichnung eines Untermenüs mit Pfeil; Filament entfernt das HTML selbst für Tooltip und Vorlesen. */
+    public static function submenuLabel(string $label): HtmlString
+    {
+        return new HtmlString('<span class="saft-submenu-label">'.e($label).'</span>'.svg('heroicon-m-chevron-right', 'saft-submenu-chevron')->toHtml());
     }
 
     private function canRunReport(Menu $menu, User $user): bool

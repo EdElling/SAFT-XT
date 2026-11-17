@@ -32,6 +32,9 @@ class LagerDemoSeeder extends Seeder
 
     public const array GROUP = ['de' => 'Lager (Demo)', 'en' => 'Warehouse (demo)', 'fr' => 'Entrepôt (démo)', 'it' => 'Magazzino (demo)'];
 
+    /** Untermenü für das Tagesgeschäft; dieselbe Bezeichnung nutzen die Menüvorschläge der Lager-Plugins. */
+    public const array OPERATIONS = ['de' => 'Lager führen', 'en' => 'Warehouse operations', 'fr' => 'Gestion de l’entrepôt', 'it' => 'Gestione del magazzino'];
+
     public const string REPORT_BELOW_MINIMUM = 'Artikel unter Mindestbestand';
 
     public const string REPORT_TEMPERATURE = 'Temperaturverlauf Kühlräume';
@@ -78,6 +81,34 @@ class LagerDemoSeeder extends Seeder
         // Für vorhandene Bewegungen nachgetragene Preise in den Einkaufswert übernehmen.
         app(Recalculator::class)->recomputeTable(CustomTable::query()->where('name', 'lager_bewegungen')->sole());
         $this->reports($group);
+        $this->submenus($group);
+    }
+
+    /** B-066: Lager führen, Stammdaten, Auswertungen; das Datenmodell bleibt direkt in der Gruppe. */
+    private function submenus(Menu $group): void
+    {
+        $this->demoSubmenus($group, [
+            [
+                'label' => self::OPERATIONS, 'icon' => 'heroicon-o-arrows-right-left', 'sort_order' => 10,
+                'entries' => [
+                    ['table', 'lager_bewegungen'], ['table', 'lager_bestaende'],
+                    // Seiten der Beispiel-Plugins, falls ihre Menüvorschläge schon übernommen sind.
+                    ['route', 'filament.admin.pages.lager-umbuchung'], ['route', 'filament.admin.pages.lager-tafel.lagertafel'], ['route', 'filament.admin.pages.lager-tafel.lagerspiegel'],
+                    ['table', 'lager_messprotokoll'],
+                ],
+            ],
+            [
+                'label' => self::demoText('Stammdaten', 'Master data', 'Données de base', 'Dati di base'), 'icon' => 'heroicon-o-archive-box', 'sort_order' => 20,
+                'entries' => [['table', 'lager_artikel'], ['table', 'lager_artikelgruppen'], ['table', 'lager_lieferanten'], ['table', 'lager_orte'], ['table', 'lager_mitarbeitende']],
+            ],
+            [
+                'label' => self::demoText('Auswertungen', 'Reports', 'Rapports', 'Report'), 'icon' => 'heroicon-o-presentation-chart-bar', 'sort_order' => 30,
+                'entries' => array_map(static fn (string $name): array => ['report', $name], [
+                    self::REPORT_BELOW_MINIMUM, self::REPORT_BELOW_MINIMUM_COUNT, self::REPORT_STOCK_VALUE, self::REPORT_CALCULATION,
+                    self::REPORT_MOVEMENT_FIGURES, self::REPORT_PURCHASES, self::REPORT_TEMPERATURE,
+                ]),
+            ],
+        ]);
     }
 
     /**

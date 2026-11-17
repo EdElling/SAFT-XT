@@ -79,6 +79,8 @@ final class LagerTafelPlugin extends SaftPlugin
     public function menuSuggestions(): array
     {
         $group = ['de' => 'Lager (Demo)', 'en' => 'Warehouse (demo)', 'fr' => 'Entrepôt (démo)', 'it' => 'Magazzino (demo)'];
+        // Seit API 1.7: im Untermenü „Lager führen“ der Lager-Demo (legt es an, falls es fehlt).
+        $operations = ['de' => 'Lager führen', 'en' => 'Warehouse operations', 'fr' => 'Gestion de l’entrepôt', 'it' => 'Gestione del magazzino'];
 
         return [
             new MenuSuggestion(
@@ -87,7 +89,8 @@ final class LagerTafelPlugin extends SaftPlugin
                 icon: 'heroicon-o-table-cells',
                 permission: $this->permissionName('view'),
                 group: $group,
-                sortOrder: 6,
+                sortOrder: 50,
+                subgroup: $operations,
             ),
             new MenuSuggestion(
                 route: Lagertafel::ROUTE,
@@ -95,7 +98,8 @@ final class LagerTafelPlugin extends SaftPlugin
                 icon: 'heroicon-o-view-columns',
                 permission: $this->permissionName('transfer'),
                 group: $group,
-                sortOrder: 7,
+                sortOrder: 40,
+                subgroup: $operations,
             ),
         ];
     }

@@ -224,7 +224,7 @@ php artisan serve
 Öffnen Sie im Browser **http://localhost:8000** – Sie landen auf der Anmeldeseite unter `/admin`. Melden Sie sich mit
 `ADMIN_EMAIL` und `ADMIN_PASSWORD` an. Beenden Sie den Server im Terminal mit `Strg+C`.
 
-Nach der Anmeldung lohnt ein Blick in **Administration → App-Einstellungen** (Anzeigename, Farbschema) und
+Nach der Anmeldung lohnt ein Blick in **Administration → Anwendung → App-Einstellungen** (Anzeigename, Farbschema) und
 **Benutzer**. Wie es weitergeht, beschreibt das [Benutzerhandbuch](USER_GUIDE.de.md).
 
 ---
@@ -426,5 +426,5 @@ Weitere Befehle stehen in der [Systemadministration, Kapitel 6](SYSADMIN_GUIDE.d
 | `Your requirements could not be resolved … php ^8.4` | PHP ist zu alt, siehe Schritt 2. |
 | `The ext-intl extension is missing` (oder `zip`) | Erweiterung nachinstallieren: `sudo apt install php-intl php-zip`. |
 | Anmeldeseite ohne Gestaltung | `php artisan filament:upgrade` ausführen (kopiert die Dateien nach `public/`). |
-| Admin-Passwort unbekannt | Direkt setzen: `php artisan tinker --execute="App\Models\User::where('email', '<adresse>')->first()->update(['password' => '<neues passwort>']);"` (Ist unter Administration → Authentifizierung der Schalter *„Passwort vergessen“ anbieten* eingeschaltet, geht es auch über die Anmeldeseite; lokal steht die E-Mail in `storage/logs/laravel.log`.) |
+| Admin-Passwort unbekannt | Direkt setzen: `php artisan tinker --execute="App\Models\User::where('email', '<adresse>')->first()->update(['password' => '<neues passwort>']);"` (Ist unter Administration → Benutzer und Zugriff → Authentifizierung der Schalter *„Passwort vergessen“ anbieten* eingeschaltet, geht es auch über die Anmeldeseite; lokal steht die E-Mail in `storage/logs/laravel.log`.) |
 | Nach einer Änderung an `.env` passiert nichts | `php artisan optimize:clear` und den Server neu starten. |

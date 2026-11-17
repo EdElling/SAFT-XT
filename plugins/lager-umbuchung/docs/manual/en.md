@@ -12,7 +12,7 @@ movements*.
 
 ## Recording stock movements
 
-Under **Warehouse (demo) › Stock movements**, **New** creates a movement: *Item*, *Location*, *Kind*, *Quantity*,
+Under **Warehouse (demo) › Warehouse operations › Stock movements**, **New** creates a movement: *Item*, *Location*, *Kind*, *Quantity*,
 *Time* (prefilled with now) and, if needed, a *Note*.
 
 | Kind | Effect on the stock at the location |
@@ -31,7 +31,7 @@ again.
 
 ## Viewing and correcting stock levels
 
-**Warehouse (demo) › Stock levels** shows the *Quantity* and the date of the *Last count* per item and location.
+**Warehouse (demo) › Warehouse operations › Stock levels** shows the *Quantity* and the date of the *Last count* per item and location.
 
 You **do not change stock levels directly**: SAFT rejects creating, editing and deleting in this table – also on import
 – with the note that stock levels are kept through stock movements. This keeps every stock level traceable.
@@ -47,7 +47,7 @@ the item, the location and the available stock.
 
 Transferring means moving goods from one location to another without changing the total stock.
 
-1. Open **Warehouse (demo) › Transfer** – or in **Stock levels** click **Transfer** in the row of the source location;
+1. Open **Warehouse (demo) › Warehouse operations › Transfer** – or in **Stock levels** click **Transfer** in the row of the source location;
    item and source location are then already selected. Without stock at the location the button is greyed out.
 2. Choose the **Item**. **From location** lists only locations with stock of this item, with the quantity.
 3. Enter **To location** and **Quantity** (at most the stock at the source), and a **Note** if needed.

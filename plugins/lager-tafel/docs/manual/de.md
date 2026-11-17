@@ -14,7 +14,7 @@ ausgeschaltet, zeigen Lagerspiegel und Lagertafel einen Hinweis.
 
 ## Lagerspiegel
 
-**Lager (Demo) › Lagerspiegel** zeigt je Artikel eine Zeile und je Lagerort eine Spalte mit dem Bestand; Lagerorte ohne
+**Lager (Demo) › Lager führen › Lagerspiegel** zeigt je Artikel eine Zeile und je Lagerort eine Spalte mit dem Bestand; Lagerorte ohne
 Bestand stehen grau mit 0. **Gesamt** summiert alle Lagerorte und ist rot, wenn der Artikel unter seinem
 **Mindestbestand** liegt.
 
@@ -26,7 +26,7 @@ Bestand stehen grau mit 0. **Gesamt** summiert alle Lagerorte und ist rot, wenn 
 
 ## Lagertafel
 
-**Lager (Demo) › Lagertafel** zeigt für einen Artikel je Lagerort eine Karte mit dem Bestand.
+**Lager (Demo) › Lager führen › Lagertafel** zeigt für einen Artikel je Lagerort eine Karte mit dem Bestand.
 
 1. **Artikel** wählen (oder aus dem Lagerspiegel bzw. den Artikeln mit **Auf Lagertafel verteilen** kommen).
 2. Den Bestand einer Karte mit der Maus **auf eine andere Karte ziehen**.
@@ -34,12 +34,12 @@ Bestand stehen grau mit 0. **Gesamt** summiert alle Lagerorte und ist rot, wenn 
    nicht möglich.
 
 Gebucht wird wie in der Maske *Umbuchung*: zwei Lagerbewegungen der Art *Umbuchung*, alles oder nichts. Bricht man den
-Dialog ab, ändert sich nichts. Ziehen geht nur mit der Maus; mit der Tastatur buchen Sie über **Lager (Demo) ›
+Dialog ab, ändert sich nichts. Ziehen geht nur mit der Maus; mit der Tastatur buchen Sie über **Lager (Demo) › Lager führen ›
 Umbuchung** um.
 
 ## Artikel: Knöpfe und Regeln
 
-In **Lager (Demo) › Artikel** gibt es zwei zusätzliche Knöpfe: **Lagerspiegel** über der Tabelle und **Auf Lagertafel
+In **Lager (Demo) › Stammdaten › Artikel** gibt es zwei zusätzliche Knöpfe: **Lagerspiegel** über der Tabelle und **Auf Lagertafel
 verteilen** in jeder Zeile.
 
 Für die **Artikelnummer** gelten zusätzlich:
@@ -57,7 +57,7 @@ Die Regeln gelten bei der Erfassung, beim Import und über die Schnittstelle. Ei
 
 **Kachel „Lager: Bestand je Lagerort“:** Balkendiagramm mit der Summe aller Bestände je Lagerort auf dem Dashboard.
 
-Zwei Arten geplanter Aufgaben richtet die Administration unter **Administration › Geplante Aufgaben** ein:
+Zwei Arten geplanter Aufgaben richtet die Administration unter **Administration › Betrieb › Geplante Aufgaben** ein:
 
 | Aufgabe | Was sie tut |
 |---|---|

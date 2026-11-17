@@ -140,7 +140,7 @@ Server braucht dafür ausgehenden HTTPS-Zugriff auf `api.pwnedpasswords.com:443`
 gilt das Passwort als unbedenklich. Ohne Internetzugang `PASSWORD_CHECK_LEAKED=false` setzen, sonst wartet jede
 Passwortänderung auf die Zeitüberschreitung. Dieselbe Regel gilt für `ADMIN_PASSWORD` beim ersten `db:seed`.
 
-**Zwei-Faktor-Anmeldung:** Wer sie einrichten muss, legt die Administration fest (*Administration › Authentifizierung*,
+**Zwei-Faktor-Anmeldung:** Wer sie einrichten muss, legt die Administration fest (*Administration › Benutzer und Zugriff › Authentifizierung*,
 Vorgabe: Pflicht für Administration). Das Geheimnis der Authenticator-App und die (gehashten) Wiederherstellungscodes
 liegen verschlüsselt mit `APP_KEY` in der Tabelle `users` – geht `APP_KEY` verloren, müssen alle Konten neu
 einrichten. Die Codes hängen an der Uhrzeit: Die Serverzeit muss stimmen (NTP), sonst werden Codes abgelehnt. Hat der
@@ -188,7 +188,7 @@ Vorgabe 15), `TASKS_HANGING_HOURS` (ab wann ein Lauf als abgebrochen gilt, Vorga
 **Fehlgeschlagene Läufe:** Die Meldung nennt eine Referenz; unter ihr steht der Fehler mit Ablauf in
 `storage/logs/laravel.log` (Eintrag `Geplante Aufgabe fehlgeschlagen`). Fehler, Meldung, Ort und Ablauf sieht die
 Administration auch in SAFT beim Lauf unter **Details** (Recht *Geplante Aufgaben: technische Details sehen*).
-Das Ende der Logdatei zeigt *Administration › Systemprotokoll* (Recht *Systemprotokoll: anzeigen*) – nützlich ohne
+Das Ende der Logdatei zeigt *Administration › Betrieb › Systemprotokoll* (Recht *Systemprotokoll: anzeigen*) – nützlich ohne
 SSH-Zugang, z. B. auf Webspaces. Gelesen werden höchstens die letzten 2 MB; Dateien `laravel.log` und
 `laravel-JJJJ-MM-TT.log` (Log-Kanal `daily`) in `storage/logs`.
 
@@ -314,7 +314,7 @@ php artisan optimize && php artisan filament:optimize
 php artisan up
 ```
 
-Danach zeigt **Administration › Plugins** das Plugin mit Version und der Angabe, ob es zur installierten SAFT-Version
+Danach zeigt **Administration › Anwendung › Plugins** das Plugin mit Version und der Angabe, ob es zur installierten SAFT-Version
 passt; dort übernimmt die Administration die vorgeschlagenen Menüeinträge, die Rechte vergibt sie in der
 Rollenverwaltung. `php artisan saft:plugins` listet die Plugins auf der Konsole und legt fehlende Rechte an.
 

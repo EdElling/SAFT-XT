@@ -57,7 +57,7 @@ A plugin is an ordinary **Composer package** with a plugin class and a service p
 | Kinds of scheduled tasks | classes implementing `App\Tasks\TaskType` |
 
 **What is guaranteed:** the programming interface for plugins (plugin API) has its **own version number**,
-independent of SAFT – currently **1.6**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
+independent of SAFT – currently **1.7**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, all classes under `App\Plugins\Api` (except
 `ApiManifest`), the test base `App\Plugins\Testing\PluginTestCase`, for kinds of scheduled tasks
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` and `App\Tasks\TaskSkipped`, and the trait
@@ -155,7 +155,7 @@ composer require acme/customer-portal             # includes plugins/customer-po
 php artisan saft:plugins                          # creates the permissions
 ```
 
-Then adopt the menu suggestion under **Administration › Plugins** and grant the permission *Use Customer portal* to a
+Then adopt the menu suggestion under **Administration › Application › Plugins** and grant the permission *Use Customer portal* to a
 role (super admins have it anyway). Code changes take effect immediately; run `composer require` again only after
 changing the plugin's `composer.json`.
 
@@ -268,6 +268,8 @@ final class LagerUmbuchungPlugin extends SaftPlugin
             icon: 'heroicon-o-arrows-right-left',
             permission: $this->permissionName('execute'),
             group: ['de' => 'Lager (Demo)', 'en' => 'Warehouse (demo)', 'fr' => 'Entrepôt (démo)', 'it' => 'Magazzino (demo)'],
+            sortOrder: 30,
+            subgroup: ['de' => 'Lager führen', 'en' => 'Warehouse operations', 'fr' => 'Gestion de l’entrepôt', 'it' => 'Gestione del magazzino'],
         )];
     }
 }
@@ -360,7 +362,8 @@ them as well.
 | `icon` | Heroicon, e.g. `heroicon-o-arrows-right-left` |
 | `permission` | permission that makes the entry visible (full name) |
 | `group` | menu group per language; found by its German label, otherwise created; `null` = top level |
-| `sortOrder` | order within the group |
+| `subgroup` | submenu within the group per language (since API 1.7), e.g. "Warehouse operations"; found by its German label, otherwise created; `null` = directly in the group |
+| `sortOrder` | order within the group or submenu |
 
 The suggestions are only adopted when the administration chooses “Create menu entries” on the **Plugins** page.
 Afterwards they are ordinary menu entries that can be moved and renamed. Step by step:
@@ -607,7 +610,7 @@ For a plugin from its own Git repository, also add it under `repositories` in SA
 (`{"type": "vcs", "url": "…"}`). Before delivery: `php artisan saft:plugins --check <id>` without errors, version
 increased in `composer.json` or as a Git tag.
 
-After installation, **Administration › Plugins** shows the plugin with version, compatibility and extensions; there the
+After installation, **Administration › Application › Plugins** shows the plugin with version, compatibility and extensions; there the
 administration adopts the menu entries and then grants the permissions in role management.
 
 **Switching off:** the administration can switch off an installed plugin on the **Plugins** page, system
@@ -691,7 +694,7 @@ php artisan saft:plugin-context --tables=customers --tables=orders         # onl
 php artisan saft:plugin-context --zip --output=context.zip                 # as ZIP; --without-external without connected ones
 ```
 
-In the user interface: **Administration › Plugins › "Download developer context"** (permission *Plugins: manage*) with
+In the user interface: **Administration › Application › Plugins › "Download developer context"** (permission *Plugins: manage*) with
 a selection of tables – this way the administration of a customer installation passes on the context without granting
 access to the database. The download is recorded in the activity log.
 
@@ -779,8 +782,8 @@ listener books stock levels without a permission check – whoever only records 
 permissions on stock levels.
 
 To try it: load the warehouse demo (`php artisan db:seed --class=LagerDemoSeeder`), choose “Create menu entries” under
-**Administration › Plugins**, then **Warehouse (demo) › Transfer** or the “Transfer” button in **Warehouse (demo) ›
-Stock levels**. A stock movement “Issue” shows how the stock is booked and – below the minimum stock – the notification
+**Administration › Application › Plugins**, then **Warehouse (demo) › Warehouse operations › Transfer** or the “Transfer” button in **Warehouse (demo) ›
+Warehouse operations › Stock levels**. A stock movement “Issue” shows how the stock is booked and – below the minimum stock – the notification
 in the bell. The tile **Warehouse: minimum stock** (`src/Widgets/MinimumStockWidget.php`) on the dashboard shows the
 items below minimum stock. The user guide (`docs/manual/`) appears as the tab *Stock transfer* in the online help.
 
@@ -824,7 +827,7 @@ with the formula `rappen(amount * 1.081)`.
 
 ## 18. API versions and change log
 
-The plugin API has its own version number **major.minor** (currently **1.6**). It is set in `config/saft.php`
+The plugin API has its own version number **major.minor** (currently **1.7**). It is set in `config/saft.php`
 (`api_versions`) and shown under **Documentation › About SAFT XT** and on the **Plugins** page.
 
 | Change | Version | Effect on plugins |
@@ -852,6 +855,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 | API | SAFT | Changes |
 |---|---|---|
+| **1.7** | 0.1 | `MenuSuggestion` with optional `subgroup` – menu suggestion into a submenu of the group (third level) |
 | **1.6** | 0.1 | `FieldRule` with optional `description`; `SaftPlugin::manuals()` and `Manual` – manuals from plugins in online help and help assistant; `saft:plugins --check` checks them |
 | **1.5** | 0.1 | `App\Tasks\TaskType`, `TaskResult` and `TaskSkipped` belong to the API – kinds of scheduled tasks from plugins (`SaftPlugin::taskTypes()`) thus pass `saft:plugins --check` |
 | **1.4** | 0.1 | `SaftPlugin::isEnabled()`, `PluginTestCase::withoutPlugin()`. Plugins can be switched off (**Plugins** page, `saft:plugins --disable`); plugins in `require` of `composer.json` count as required – if one is resting or missing, the dependent plugin rests as well |
@@ -880,7 +884,7 @@ are those of the warehouse demo (German, e.g. `lager_artikel` = items, `menge` =
 | [A.9 Shipping a manual](#a9-shipping-a-manual) | User guide in four languages | `docs/manual/`, `LagerTafelPlugin::manuals()` |
 
 **To try it:** load the warehouse demo (`php artisan db:seed --class=LagerDemoSeeder`), choose “Create menu entries”
-for *Stock board* under **Administration › Plugins**, then **Warehouse (demo) › Stock matrix** or **Stock board**. The
+for *Stock board* under **Administration › Application › Plugins**, then **Warehouse (demo) › Warehouse operations › Stock matrix** or **Stock board**. The
 tests: `vendor/bin/phpunit --testsuite Plugins --filter LagerTafelTest`.
 
 ### Type-safe programming
@@ -1621,6 +1625,7 @@ like any other entry.
 public function menuSuggestions(): array
 {
     $group = ['de' => 'Lager (Demo)', 'en' => 'Warehouse (demo)', 'fr' => 'Entrepôt (démo)', 'it' => 'Magazzino (demo)'];
+    $operations = ['de' => 'Lager führen', 'en' => 'Warehouse operations', 'fr' => 'Gestion de l’entrepôt', 'it' => 'Gestione del magazzino']; // submenu of the warehouse demo (since API 1.7)
 
     return [
         new MenuSuggestion(
@@ -1629,7 +1634,8 @@ public function menuSuggestions(): array
             icon: 'heroicon-o-table-cells',
             permission: $this->permissionName('view'),
             group: $group,
-            sortOrder: 6,
+            sortOrder: 50,
+            subgroup: $operations,
         ),
         new MenuSuggestion(
             route: Lagertafel::ROUTE,
@@ -1637,7 +1643,8 @@ public function menuSuggestions(): array
             icon: 'heroicon-o-view-columns',
             permission: $this->permissionName('transfer'),
             group: $group,
-            sortOrder: 7,
+            sortOrder: 40,
+            subgroup: $operations,
         ),
     ];
 }
@@ -1647,10 +1654,13 @@ public function menuSuggestions(): array
 - **`permission`** through `permissionName()` – the entry only appears for people with this permission.
 - **`group`** is found by its German label; if the group already exists (here from the warehouse demo and the plugin
   Lager-Umbuchung), the entries go into it, otherwise SAFT creates it. `null` = top level.
-- **`sortOrder`** orders within the group; here after “Transfer” (5).
+- **`subgroup`** (since API 1.7) puts the entry into a submenu of the group, here “Warehouse operations” of the warehouse
+  demo; it is also found by its German label or created. Submenus appear in the sidebar with an arrow ›; a click opens
+  their first page and expands them.
+- **`sortOrder`** orders within the submenu; here after “Transfer” (30), in the order of the warehouse demo.
 - **`label`** in all four languages (`de`, `en`, `fr`, `it`).
 
-**Using it:** under **Administration › Plugins** choose **Create menu entries** for the plugin, then grant the
+**Using it:** under **Administration › Application › Plugins** choose **Create menu entries** for the plugin, then grant the
 permissions in **role management**. Adopting a second time creates nothing twice. If the plugin is removed, SAFT hides
 its entries; under **Clean up** they can be deleted together with the permissions.
 
@@ -1673,7 +1683,7 @@ $this->assertSame(['lager-tafel.view', 'lager-tafel.transfer'], array_map(static
 
 **What for:** a scheduled task does work on a schedule without anyone opening a page – checking, reminding, notifying,
 synchronising data. The plugin provides the **kind** of task; the administration creates tasks of that kind under
-**Administration › Scheduled tasks › New**, with parameters and schedule, and can start them right away with “Run now”.
+**Administration › Operations › Scheduled tasks › New**, with parameters and schedule, and can start them right away with “Run now”.
 Lager-Tafel brings two kinds:
 
 | Kind | Parameters | Result |
@@ -1801,7 +1811,7 @@ public function taskTypes(): array
 }
 ```
 
-**Using it:** under **Administration › Scheduled tasks › New** the kinds appear in “Type”; choose parameters and
+**Using it:** under **Administration › Operations › Scheduled tasks › New** the kinds appear in “Type”; choose parameters and
 schedule, save. SAFT's scheduler (`php artisan schedule:run` via cron, see system administration) starts them at the
 chosen time; “Run now” starts them immediately. If the plugin is switched off or resting, its tasks are skipped.
 

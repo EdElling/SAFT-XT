@@ -12,7 +12,7 @@ stock*.
 
 ## Saisir des mouvements de stock
 
-Sous **Entrepôt (démo) › Mouvements de stock**, **Nouveau** crée un mouvement : *Article*, *Emplacement*, *Type*,
+Sous **Entrepôt (démo) › Gestion de l’entrepôt › Mouvements de stock**, **Nouveau** crée un mouvement : *Article*, *Emplacement*, *Type*,
 *Quantité*, *Date et heure* (préremplie avec maintenant) et, si nécessaire, une *Remarque*.
 
 | Type | Effet sur le stock de l’emplacement |
@@ -31,7 +31,7 @@ depuis la corbeille, il est de nouveau comptabilisé.
 
 ## Consulter et corriger les stocks
 
-**Entrepôt (démo) › Stocks** affiche par article et emplacement la *Quantité* et la date du *Dernier comptage*.
+**Entrepôt (démo) › Gestion de l’entrepôt › Stocks** affiche par article et emplacement la *Quantité* et la date du *Dernier comptage*.
 
 Vous **ne modifiez pas les stocks directement** : SAFT refuse la création, la modification et la suppression dans cette
 table – y compris à l’import – en indiquant que les stocks sont tenus par les mouvements de stock. Ainsi, chaque stock
@@ -48,7 +48,7 @@ message indique l’article, l’emplacement et le stock disponible.
 
 Transférer signifie déplacer des marchandises d’un emplacement à un autre sans modifier le stock total.
 
-1. Ouvrir **Entrepôt (démo) › Transfert** – ou, dans **Stocks**, cliquer sur **Transférer** dans la ligne de
+1. Ouvrir **Entrepôt (démo) › Gestion de l’entrepôt › Transfert** – ou, dans **Stocks**, cliquer sur **Transférer** dans la ligne de
    l’emplacement source ; l’article et l’emplacement source sont alors déjà choisis. Sans stock à l’emplacement, le bouton
    est grisé.
 2. Choisir l’**Article**. **Depuis l’emplacement** ne propose que les emplacements avec du stock de cet article, avec la

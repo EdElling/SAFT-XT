@@ -86,7 +86,7 @@ class PluginContextTest extends DynamicDataTestCase
         $this->assertSame(['AGENTS.md', 'api-reference.md', 'schema.md', 'schema.json'], array_keys($files));
 
         $this->assertStringContainsString('plugin API '.ApiManifest::current(), $files['AGENTS.md']);
-        $this->assertStringContainsString('`lager-umbuchung` 1.4.0', $files['AGENTS.md']);
+        $this->assertStringContainsString('`lager-umbuchung` 1.5.0', $files['AGENTS.md']);
         $this->assertStringContainsString('`ch-pruefungen.iban`', $files['AGENTS.md']);
         $this->assertStringNotContainsString('{{', $files['AGENTS.md']);
 

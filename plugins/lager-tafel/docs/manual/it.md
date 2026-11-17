@@ -15,7 +15,7 @@ e inventario. Se è disattivato, matrice e tabellone mostrano un avviso.
 
 ## Matrice delle giacenze
 
-**Magazzino (demo) › Matrice delle giacenze** mostra una riga per articolo e una colonna per ubicazione con la giacenza;
+**Magazzino (demo) › Gestione del magazzino › Matrice delle giacenze** mostra una riga per articolo e una colonna per ubicazione con la giacenza;
 le ubicazioni senza giacenza mostrano 0 in grigio. **Totale** somma tutte le ubicazioni ed è rosso quando l’articolo è
 sotto la sua **scorta minima**.
 
@@ -27,7 +27,7 @@ sotto la sua **scorta minima**.
 
 ## Tabellone delle giacenze
 
-**Magazzino (demo) › Tabellone delle giacenze** mostra per un articolo una scheda per ubicazione con la giacenza.
+**Magazzino (demo) › Gestione del magazzino › Tabellone delle giacenze** mostra per un articolo una scheda per ubicazione con la giacenza.
 
 1. Scegliere l’**Articolo** (oppure arrivare dalla matrice o dagli articoli con **Distribuire sul tabellone**).
 2. **Trascinare** con il mouse la giacenza di una scheda **su un’altra scheda**.
@@ -36,11 +36,11 @@ sotto la sua **scorta minima**.
 
 La registrazione avviene come nella maschera *Trasferimento*: due movimenti di tipo *Trasferimento*, tutto o niente.
 Annullando la finestra non cambia nulla. Il trascinamento funziona solo con il mouse; con la tastiera trasferisci tramite
-**Magazzino (demo) › Trasferimento**.
+**Magazzino (demo) › Gestione del magazzino › Trasferimento**.
 
 ## Articoli: pulsanti e regole
 
-In **Magazzino (demo) › Articoli** ci sono due pulsanti in più: **Matrice delle giacenze** sopra la tabella e
+In **Magazzino (demo) › Dati di base › Articoli** ci sono due pulsanti in più: **Matrice delle giacenze** sopra la tabella e
 **Distribuire sul tabellone** in ogni riga.
 
 Per il **codice articolo** valgono inoltre:
@@ -59,7 +59,7 @@ Le regole valgono nell’inserimento, nell’importazione e tramite l’interfac
 **Riquadro «Magazzino: giacenza per ubicazione»:** grafico a barre con la somma di tutte le giacenze per ubicazione
 sulla dashboard.
 
-L’amministrazione configura due tipi di attività pianificate in **Amministrazione › Attività pianificate**:
+L’amministrazione configura due tipi di attività pianificate in **Amministrazione › Esercizio › Attività pianificate**:
 
 | Attività | Che cosa fa |
 |---|---|

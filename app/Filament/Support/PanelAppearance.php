@@ -106,6 +106,10 @@ final class PanelAppearance
             // Prüfregeln aus Plugins in der Auswahl „Weitere Prüfungen“: Symbol, Regel, Plugin (grau).
             .'.saft-plugin-option{display:inline-flex;align-items:center;gap:.3rem}'
             .'.saft-plugin-option-source{opacity:.65;font-size:.85em}'
+            // Untermenüs in der Seitenleiste: Pfeil rechts, nach unten gedreht, wenn offen (MenuNavigationBuilder).
+            .'.fi-sidebar-item-label:has(> .saft-submenu-chevron){display:flex;align-items:center;justify-content:space-between;gap:.5rem}'
+            .'.saft-submenu-chevron{width:1rem;height:1rem;flex-shrink:0;opacity:.55;transition:transform .15s ease}'
+            .':is(.fi-sidebar-item.fi-active,.fi-sidebar-item.fi-sidebar-item-has-active-child-items) > .fi-sidebar-item-btn .saft-submenu-chevron{transform:rotate(90deg)}'
             // Technische Details eines fehlgeschlagenen Laufs (geplante Aufgaben).
             .'.saft-error-detail{font-size:.875rem}.saft-error-detail-hint{color:var(--gray-500);margin-bottom:.75rem}'
             .'.saft-error-detail dt{font-weight:600;margin-top:.75rem}.saft-error-detail dd{margin-top:.25rem}'

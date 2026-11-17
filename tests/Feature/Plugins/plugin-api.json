@@ -1,5 +1,5 @@
 {
-    "version": "1.6",
+    "version": "1.7",
     "surface": {
         "App\\Filament\\Concerns\\LimitsFormWidth": [
             "trait",
@@ -138,8 +138,9 @@
         ],
         "App\\Plugins\\MenuSuggestion": [
             "class",
-            "function __construct(string $route, array $label, ?string $icon = null, ?string $permission = null, ?array $group = null, int $sortOrder = 100)",
+            "function __construct(string $route, array $label, ?string $icon = null, ?string $permission = null, ?array $group = null, int $sortOrder = 100, ?array $subgroup = null)",
             "property ?array $group",
+            "property ?array $subgroup",
             "property ?string $icon",
             "property ?string $permission",
             "property array $label",

@@ -81,7 +81,7 @@ class PluginApiContractTest extends TestCase
         $this->assertTrue(app(PluginRegistry::class)->get('lager-umbuchung')->isCompatible(), 'API 1 weiterhin bereitgestellt.');
 
         config(['saft.api_versions' => ['1.0', '2.0']]);
-        $this->assertFalse(app(PluginRegistry::class)->get('lager-umbuchung')->isCompatible(), 'Verlangt ^1.6 – API 1.0 genügt nicht.');
+        $this->assertFalse(app(PluginRegistry::class)->get('lager-umbuchung')->isCompatible(), 'Verlangt ^1.7 – API 1.0 genügt nicht.');
 
         config(['saft.api_versions' => ['2.0']]);
         $this->assertFalse(app(PluginRegistry::class)->get('lager-umbuchung')->isCompatible(), 'API 1 nicht mehr bereitgestellt.');
