@@ -402,7 +402,8 @@ final class FieldForm
                 'items' => array_values(array_map(static fn (FormulaFunction $f): array => [
                     'label' => $f->name.'()',
                     'insert' => $f->name.'(',
-                    'title' => $f->description !== '' ? $f->description : $f->name,
+                    'title' => ($f->description !== '' ? $f->description : $f->name)
+                        .' – '.__('plugins.origin.tooltip', ['plugin' => (string) app(PluginRegistry::class)->formulaFunctionPlugin($f->name)?->label()]),
                 ], $pluginFunctions)),
             ];
         }
@@ -515,6 +516,8 @@ final class FieldForm
                 Select::make('validation_rules.'.FieldRuleCheck::OPTION)
                     ->label(__('tables.fields.plugin_checks'))
                     ->multiple()
+                    // Puzzle-Symbol und Plugin in Liste und gewählten Etiketten (Texte in pluginCheckOptions maskiert).
+                    ->allowHtml()
                     ->options(static fn (Get $get): array => self::pluginCheckOptions((string) $get('type'), (array) $get('validation_rules.'.FieldRuleCheck::OPTION)))
                     ->helperText(static fn (Get $get): ?string => self::pluginCheckHint((string) $get('type'), (array) $get('validation_rules.'.FieldRuleCheck::OPTION)))
                     ->visible(static fn (Get $get): bool => self::pluginCheckOptions((string) $get('type'), (array) $get('validation_rules.'.FieldRuleCheck::OPTION)) !== [])
@@ -533,11 +536,14 @@ final class FieldForm
         $options = [];
 
         foreach (app(PluginRegistry::class)->fieldRules($type) as $key => $rule) {
-            $options[$key] = $rule->label.' ('.app(PluginRegistry::class)->get((string) strstr($key, '.', true))->label().')';
+            $plugin = app(PluginRegistry::class)->get((string) strstr($key, '.', true));
+            $options[$key] = '<span class="saft-plugin-option" title="'.e(__('plugins.origin.tooltip', ['plugin' => $plugin->label()])).'">'
+                .svg('heroicon-m-puzzle-piece', 'saft-plugin-origin-icon')->toHtml()
+                .'<span>'.e($rule->label).'</span><span class="saft-plugin-option-source">'.e($plugin->label()).'</span></span>';
         }
 
         foreach (array_diff(array_map('strval', $selected), array_keys($options)) as $key) {
-            $options[$key] = __('tables.fields.plugin_check_unavailable', ['rule' => $key]);
+            $options[$key] = e(__('tables.fields.plugin_check_unavailable', ['rule' => $key]));
         }
 
         return $options;

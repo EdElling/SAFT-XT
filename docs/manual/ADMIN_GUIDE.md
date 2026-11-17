@@ -948,6 +948,12 @@ system administration (see [System administration, chapter 7](SYSADMIN_GUIDE.md#
 described in the [developer guide](DEVELOPER_GUIDE.md). Plugins are program code with full rights – only have plugins
 from a trusted source installed.
 
+**How to recognise parts from plugins:** pages of a plugin carry the label **"Plugin: …"** below the title (with a
+puzzle icon; anyone allowed to see this page gets here with one click), dashboard cards carry it below the card.
+Buttons in data tables name the plugin in their tooltip, scheduled task types carry the addition "(plugin …)", field
+rules under *Further checks* show icon and plugin, formula functions in the formula editor name the plugin in their
+tooltip.
+
 The page **Administration › Plugins** (permission *Plugins: view*) lists the installed plugins:
 
 | Column | Meaning |

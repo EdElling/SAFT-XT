@@ -126,7 +126,7 @@ company login.
   conversations. AI answers may contain mistakes – the manuals are authoritative.
 - The **dashboard** is the start page. The tiles (widgets) are arranged in two columns that grow downwards
   independently; wide tiles follow below across the full width. Which tiles you see is set by the administrator
-  through your role; tiles from plugins can be added, e.g. *Warehouse: minimum stock*. You **arrange** them yourself: **"Customize dashboard"** (top right) shows a handle and
+  through your role; tiles from plugins can be added, e.g. *Warehouse: minimum stock* – they carry the label "Plugin: …" below them, as pages from plugins do below their title. You **arrange** them yourself: **"Customize dashboard"** (top right) shows a handle and
   **"Hide"** on every tile. Drag a tile by its handle within a column, into the other column or – reports only – into
   the wide area below, where it gets the full width. Hidden tiles are listed at the top and can be shown again there.
   The arrangement is saved immediately and also applies on other devices; **"Restore default"** resets it, **"Done"**

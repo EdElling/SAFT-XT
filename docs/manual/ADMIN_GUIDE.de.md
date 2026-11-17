@@ -977,6 +977,11 @@ sie von der Systemadministration (siehe [Systemadministration, Kapitel 7](SYSADM
 ein Plugin schreibt, beschreibt das [Entwicklerhandbuch](DEVELOPER_GUIDE.de.md). Plugins sind Programmcode mit vollen
 Rechten – lassen Sie nur Plugins aus vertrauenswürdiger Quelle installieren.
 
+**Woran man Teile aus Plugins erkennt:** Seiten eines Plugins tragen unter dem Titel das Etikett **„Plugin: …“** (mit
+Puzzle-Symbol; wer diese Seite sehen darf, gelangt mit einem Klick hierher), ebenso Dashboard-Kacheln darunter. Knöpfe
+in Datentabellen nennen das Plugin im Tooltip, Arten geplanter Aufgaben tragen den Zusatz „(Plugin …)“, Prüfregeln
+unter *Weitere Prüfungen* zeigen Symbol und Plugin, Formelfunktionen im Formel-Editor das Plugin im Tooltip.
+
 Die Seite **Administration › Plugins** (Recht *Plugins: anzeigen*) listet die installierten Plugins:
 
 | Spalte | Bedeutung |

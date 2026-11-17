@@ -1400,6 +1400,10 @@ public function dataActions(): array
 - `DataAction::RECORD` – in every row, next to “Details”; closures receive the record as `DynamicRecord $record`.
 - **Action names** with a prefix derived from the id (`lagerTafel…`) so they do not collide with actions of SAFT or
   other plugins.
+- **Origin:** SAFT appends "From the plugin …" to the tooltip (your own tooltip stays first). Likewise, pages of the
+  plugin carry the label "Plugin: …" below the title and dashboard cards below the card, scheduled task types the
+  addition "(plugin …)". The assignment is made via the namespace of the classes; the plugin does not need to do
+  anything.
 
 **Step 2 – receive the target.** The page reads the prefill from the address, see `mount()` in A.2.
 

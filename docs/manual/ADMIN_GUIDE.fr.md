@@ -1021,6 +1021,12 @@ installés par l’administration système (voir [Administration système, chapi
 façon d’écrire un plugin est décrite dans le [guide du développeur](DEVELOPER_GUIDE.md). Les plugins sont du code avec
 tous les droits – ne faites installer que des plugins de source fiable.
 
+**Reconnaître les éléments issus de plugins :** les pages d’un plugin portent sous le titre l’étiquette **« Plugin :
+… »** (avec un symbole de puzzle ; qui peut voir cette page y accède d’un clic), les tuiles du tableau de bord la
+portent en dessous. Les boutons des tables de données nomment le plugin dans leur info-bulle, les types de tâches
+planifiées portent l’ajout « (plugin …) », les règles sous *Contrôles supplémentaires* affichent symbole et plugin, les
+fonctions de l’éditeur de formules nomment le plugin dans leur info-bulle.
+
 La page **Administration › Plugins** (droit *Plugins : afficher*) liste les plugins installés :
 
 | Colonne | Signification |

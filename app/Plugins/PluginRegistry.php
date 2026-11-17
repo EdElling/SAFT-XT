@@ -119,12 +119,38 @@ final class PluginRegistry
 
             foreach ($plugin->dataActions() as $action) {
                 if ($action->table === $table->name && $action->placement === $placement) {
-                    $actions[] = ($action->make)(new DataTable($table));
+                    $made = ($action->make)(new DataTable($table));
+
+                    // Herkunft im Tooltip (B-063), an einen eigenen Tooltip des Plugins angehängt. Dessen Wert erst beim
+                    // Anzeigen auswerten: Er kann vom Datensatz der Zeile abhängen.
+                    $origin = __('plugins.origin.tooltip', ['plugin' => $plugin->label()]);
+                    $own = (fn (): mixed => $this->tooltip)->call($made);
+                    $made->tooltip(static function (Action $action) use ($own, $origin): string {
+                        $text = $own === null ? '' : trim((string) $action->evaluate($own));
+
+                        return $text !== '' ? $text.' · '.$origin : $origin;
+                    });
+
+                    $actions[] = $made;
                 }
             }
         }
 
         return $actions;
+    }
+
+    /** Plugin, das eine Formelfunktion mitbringt (für den Hinweis im Formel-Editor). */
+    public function formulaFunctionPlugin(string $name): ?SaftPlugin
+    {
+        foreach ($this->all() as $plugin) {
+            foreach ($plugin->formulaFunctions() as $function) {
+                if ($function->name === $name) {
+                    return $plugin;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

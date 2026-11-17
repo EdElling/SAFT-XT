@@ -1417,6 +1417,9 @@ public function dataActions(): array
 - `DataAction::RECORD` – in jeder Zeile, neben „Details“; Closures erhalten den Datensatz als `DynamicRecord $record`.
 - **Namen der Aktionen** mit einem Präfix aus der id (`lagerTafel…`), damit sie nicht mit Aktionen von SAFT oder anderen
   Plugins kollidieren.
+- **Herkunft:** SAFT hängt an den Tooltip „Aus dem Plugin …“ an (ein eigener Tooltip bleibt vorne). Ebenso tragen Seiten
+  des Plugins unter dem Titel und Dashboard-Kacheln darunter das Etikett „Plugin: …“, Arten geplanter Aufgaben den
+  Zusatz „(Plugin …)“. Die Zuordnung geschieht über den Namensraum der Klassen; das Plugin muss nichts dafür tun.
 
 **Schritt 2 – Ziel entgegennehmen.** Die Seite liest die Vorbelegung aus der Adresse, siehe `mount()` in A.2.
 

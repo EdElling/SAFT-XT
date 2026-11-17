@@ -96,6 +96,16 @@ final class PanelAppearance
 
         return '<style>'
             .":root{--saft-highlight:{$highlight}}"
+            // Herkunft aus einem Plugin (PluginOrigin): kleines Etikett unter dem Seitentitel bzw. unter einer Kachel.
+            .'.saft-plugin-origin{margin-top:.25rem}.saft-plugin-origin-card{text-align:end}'
+            .'.saft-plugin-origin-badge{display:inline-flex;align-items:center;gap:.25rem;font-size:.75rem;line-height:1rem;'
+            .'padding:.125rem .5rem;border-radius:9999px;color:var(--gray-600);background:var(--gray-100)}'
+            .'.dark .saft-plugin-origin-badge{color:var(--gray-300);background:color-mix(in oklab,var(--gray-700) 60%,transparent)}'
+            .'a.saft-plugin-origin-badge:hover{color:var(--primary-600)}.dark a.saft-plugin-origin-badge:hover{color:var(--primary-400)}'
+            .'.saft-plugin-origin-icon{width:.875rem;height:.875rem;flex-shrink:0}'
+            // Prüfregeln aus Plugins in der Auswahl „Weitere Prüfungen“: Symbol, Regel, Plugin (grau).
+            .'.saft-plugin-option{display:inline-flex;align-items:center;gap:.3rem}'
+            .'.saft-plugin-option-source{opacity:.65;font-size:.85em}'
             // Hervorhebung der ausgewählten Zeile in der Master-Detail-Kaskade (Filament-Farbvariablen, Dark Mode).
             .'.saft-row-selected > td{background-color:color-mix(in oklab,var(--saft-highlight) 14%,transparent)!important}'
             .'.saft-row-selected > td:first-child{box-shadow:inset 3px 0 0 var(--saft-highlight)}'

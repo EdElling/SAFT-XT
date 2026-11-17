@@ -78,7 +78,7 @@ class ScheduledTask extends BaseScheduledTask
 
     public function typeLabel(): string
     {
-        return app(TaskRegistry::class)->has($this->type) ? $this->type()->label() : $this->type;
+        return app(TaskRegistry::class)->has($this->type) ? app(TaskRegistry::class)->labelOf($this->type()) : $this->type;
     }
 
     /** Was die Aufgabe betrifft, z. B. die Tabelle; leer, wenn die Art unbekannt ist. */

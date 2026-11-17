@@ -20,6 +20,7 @@ use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SimulateRole;
 use App\Models\User;
 use App\Navigation\MenuNavigationBuilder;
+use App\Plugins\PluginOrigin;
 use App\Plugins\PluginRegistry;
 use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
@@ -74,6 +75,8 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => PanelAppearance::headScript())
             // Hilfe-Assistent (Knopf „?“), nur wenn eingerichtet, eingeschaltet und mit Recht.
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn (): string => app(HelpAssistant::class)->availableFor(($user = auth()->user()) instanceof User ? $user : null) ? view('filament.help-assistant-button')->render() : '')
+            // Seiten aus Plugins: Hinweis „Plugin: …“ unter dem Titel (B-063).
+            ->renderHook(PanelsRenderHook::PAGE_HEADER_HEADING_AFTER, fn (array $scopes): string => isset($scopes[0]) ? app(PluginOrigin::class)->badge((string) $scopes[0]) : '')
             // „Ansicht als Rolle“: Hinweisband mit „Beenden“ auf jeder Seite.
             ->renderHook(PanelsRenderHook::BODY_START, fn (): string => ($roles = app(RoleSimulation::class)->active()) === null ? '' : view('filament.role-simulation-banner', ['roles' => $roles])->render())
             ->userMenuItems([

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tasks;
 
+use App\Plugins\PluginOrigin;
 use App\Plugins\PluginRegistry;
 use InvalidArgumentException;
 
@@ -48,6 +49,12 @@ final class TaskRegistry
     public function creatableOptions(): array
     {
         return collect($this->all())->filter(fn (TaskType $type): bool => $type->creatable())
-            ->map(fn (TaskType $type): string => $type->label())->all();
+            ->map(fn (TaskType $type): string => $this->labelOf($type))->all();
+    }
+
+    /** Bezeichnung mit Herkunft, z. B. „Lager: Inventur-Erinnerung (Plugin Lager-Tafel)“ (B-063). */
+    public function labelOf(TaskType $type): string
+    {
+        return app(PluginOrigin::class)->suffixed($type->label(), $type);
     }
 }

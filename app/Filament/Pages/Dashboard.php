@@ -8,6 +8,7 @@ use App\Dashboard\DashboardLayout;
 use App\Filament\Widgets\ReportCardWidget;
 use App\Models\User;
 use App\Plugins\Api\DashboardWidget;
+use App\Plugins\PluginOrigin;
 use App\Plugins\PluginRegistry;
 use App\Plugins\PluginStates;
 use Filament\Actions\Action;
@@ -259,6 +260,10 @@ class Dashboard extends BaseDashboard
                     static fn (Component $component): Component => $component->columnSpanFull()->key('dashboard-card-'.preg_replace('/[^A-Za-z0-9_-]/', '-', $key)),
                     $this->getWidgetsSchemaComponents([$cards[$key]['widget']]),
                 ),
+                // Kachel aus einem Plugin: Hinweis darunter (oben rechts lägen Filter und Knöpfe der Kachel).
+                View::make('filament.dashboard.plugin-origin')
+                    ->viewData(['html' => str_starts_with($key, 'plugin:') ? app(PluginOrigin::class)->badge(str_replace('.', '\\', substr($key, 7)), 'card') : ''])
+                    ->visible(str_starts_with($key, 'plugin:')),
             ])->extraAttributes(['data-dashboard-card' => $key, 'data-span' => $cards[$key]['span'], 'wire:key' => 'card-'.$key]), $keys))
             ->extraAttributes($attributes);
     }

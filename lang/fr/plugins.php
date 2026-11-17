@@ -167,4 +167,10 @@ return [
         'unknown_tables' => 'Tables inconnues : :tables',
         'event' => 'Contexte développeur exporté',
     ],
+    'origin' => [
+        'badge' => 'Plugin : :plugin',
+        'tooltip' => 'Du plugin :plugin',
+        'tooltip_version' => 'Du plugin :plugin (version :version)',
+        'suffixed' => ':label (plugin :plugin)',
+    ],
 ];

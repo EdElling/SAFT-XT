@@ -112,6 +112,24 @@ class PluginsTest extends DuskTestCase
     }
 
     /** @return list<string> */
+    /** PLG-45 */
+    public function test_plugin_page_shows_its_plugin_and_links_to_the_plugin_list(): void
+    {
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, self::ADMIN)
+                ->visit('/admin/lager-umbuchung')
+                ->waitFor('[data-plugin-origin="lager-umbuchung"]', 15)
+                ->assertSeeIn('.fi-header', 'Plugin: Lager-Umbuchung')
+                ->assertAttributeContains('[data-plugin-origin="lager-umbuchung"] a', 'title', 'Aus dem Plugin Lager-Umbuchung')
+                ->click('[data-plugin-origin="lager-umbuchung"] a')
+                ->waitForLocation('/admin/plugins', 15)
+                ->waitForText('Lager-Umbuchung', 15);
+
+            // Seiten von SAFT selbst ohne Hinweis.
+            $browser->visit('/admin/my-settings')->waitFor(self::SELECTOR_SIDEBAR, 15)->assertMissing('[data-plugin-origin]');
+        });
+    }
+
     private function selectOptions(Browser $browser, string $selector): array
     {
         return array_map(

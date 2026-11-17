@@ -997,6 +997,12 @@ installati dall’amministrazione di sistema (vedi [Amministrazione di sistema, 
 come si scrive un plugin è descritto nella [guida per sviluppatori](DEVELOPER_GUIDE.md). I plugin sono codice con pieni
 diritti – faccia installare solo plugin di fonte affidabile.
 
+**Riconoscere le parti provenienti da plugin:** le pagine di un plugin portano sotto il titolo l’etichetta **«Plugin:
+…»** (con simbolo di puzzle; chi può vedere questa pagina vi arriva con un clic), i riquadri della dashboard la portano
+sotto il riquadro. I pulsanti nelle tabelle di dati indicano il plugin nel tooltip, i tipi di attività pianificate
+portano l’aggiunta «(plugin …)», le regole sotto *Ulteriori verifiche* mostrano simbolo e plugin, le funzioni
+dell’editor di formule indicano il plugin nel tooltip.
+
 La pagina **Amministrazione › Plugin** (diritto *Plugin: visualizzare*) elenca i plugin installati:
 
 | Colonna | Significato |
