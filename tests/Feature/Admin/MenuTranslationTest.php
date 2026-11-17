@@ -59,7 +59,7 @@ class MenuTranslationTest extends TestCase
         app()->setLocale('en');
 
         $this->assertSame(
-            ['Administration' => ['Users', 'Roles', 'Menus', 'Activity log', 'Authentication', 'Identity providers', 'Table designer', 'Table connector', 'Table links', 'Database connections', 'Scheduled tasks', 'Plugins', 'App settings', 'Transfer configuration']],
+            ['Administration' => ['Users', 'Roles', 'Menus', 'Activity log', 'Authentication', 'Identity providers', 'Table designer', 'Table connector', 'Table links', 'Database connections', 'Scheduled tasks', 'Plugins', 'App settings', 'Transfer configuration', 'System log']],
             $this->navigation()['groups'],
         );
 

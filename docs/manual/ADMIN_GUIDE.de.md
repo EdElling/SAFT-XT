@@ -856,6 +856,13 @@ das Recht *Geplante Aufgaben: technische Details sehen* hat (Super-Admins immer)
 Fehler, Meldung, Ort im Programm, Ursachen und Ablauf. Ausführlicher steht derselbe Fehler unter der Referenz in der
 Logdatei auf dem Server (`storage/logs/laravel.log`).
 
+**Systemprotokoll:** *Administration › Systemprotokoll* (Recht *Systemprotokoll: anzeigen*; Super-Admins immer) zeigt
+die neuesten Einträge dieser Logdatei, höchstens 500 und bei grossen Dateien nur deren Ende: Zeit, Stufe (Fehler,
+Warnung, Info …), Meldung und Referenz. Suche (auch nach einer Referenz) und Filter nach Stufe grenzen ein,
+**Anzeigen** öffnet einen Eintrag vollständig, **Ausschnitt herunterladen** speichert den gelesenen Teil. Aus den
+Details eines Laufs führt **Im Systemprotokoll anzeigen** direkt dorthin. Die Einträge können Pfade, SQL mit Werten,
+E-Mail- und IP-Adressen enthalten; jeder Aufruf steht im Änderungsprotokoll.
+
 **Benachrichtigung:** Schlägt eine Aufgabe fehl, erhalten **alle Super-Admins** eine Benachrichtigung (Glocke, in ihrer
 Sprache) – beim ersten Fehlschlag und wieder, wenn sie danach erstmals gelingt; wiederholte Fehlschläge dazwischen
 zählt die Spalte „Fehlschläge in Folge“. Das Dashboard-Widget **Geplante Aufgaben** zeigt eine Ampel (alles in
@@ -1135,6 +1142,7 @@ Zielinstallation bereits angelegt sein; das Paket nennt sie als Voraussetzung.
 | Auswertungen | anzeigen, anlegen (eigene), bearbeiten und löschen (auch fremde), Assistent nutzen (KI) |
 | Tabellenverknüpfungen | anzeigen, anlegen, bearbeiten, löschen |
 | Geplante Aufgaben | anzeigen, anlegen, bearbeiten (auch „Jetzt ausführen“), löschen, technische Details sehen (Fehlerdetails fehlgeschlagener Läufe) |
+| Systemprotokoll | anzeigen (Logdatei des Servers, nur lesen) |
 | Plugins | anzeigen; verwalten (Menüeinträge anlegen, Aufräumen); die Rechte der Plugins selbst stehen unter ihrem Namen |
 | Konfiguration | anzeigen (Seite und Menüeintrag); exportieren; einspielen |
 | Hilfe | Assistent nutzen (Hilfe-Assistent) |

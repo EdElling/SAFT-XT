@@ -6,6 +6,7 @@ return [
     'model' => 'role',
     'plural' => 'roles',
     'resources' => [
+        'system_log' => 'System log',
         'users' => 'Users',
         'roles' => 'Roles',
         'menus' => 'Menus',

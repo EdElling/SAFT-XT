@@ -1,6 +1,14 @@
 {{-- Technische Details eines fehlgeschlagenen Laufs (TaskRunsRelationManager, Recht tasks.details). --}}
 <div class="saft-error-detail" data-error-reference="{{ $detail['reference'] ?? '' }}">
     <p class="saft-error-detail-hint">{{ __('tasks.error_detail.hint', ['reference' => $detail['reference'] ?? '']) }}</p>
+    @if (\App\Filament\Pages\SystemLogPage::canAccess() && filled($detail['reference'] ?? null))
+        <p class="saft-error-detail-hint">
+            {{-- Filament-Link statt Tailwind-Klassen: das vorkompilierte CSS von Filament kennt nur seine eigenen. --}}
+            <x-filament::link :href="\App\Filament\Pages\SystemLogPage::getUrl(['search' => $detail['reference']])" icon="heroicon-m-document-text" data-system-log-link>
+                {{ __('system_log.open_log') }}
+            </x-filament::link>
+        </p>
+    @endif
     <dl>
         <dt>{{ __('tasks.error_detail.error') }}</dt>
         <dd><code>{{ $detail['class'] ?? '' }}</code></dd>

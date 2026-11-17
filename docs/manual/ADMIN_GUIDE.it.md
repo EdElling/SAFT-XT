@@ -871,6 +871,13 @@ il diritto *Attività pianificate: vedere i dettagli tecnici* (i super-admin sem
 **Dettagli**: errore, messaggio, posizione nel programma, cause e svolgimento. Lo stesso errore è descritto più in
 dettaglio sotto il riferimento nel file di log sul server (`storage/logs/laravel.log`).
 
+**Registro di sistema:** *Amministrazione › Registro di sistema* (diritto *Registro di sistema: visualizzare*; i
+super-admin sempre) mostra le voci più recenti di questo file di log, al massimo 500 e, per file grandi, solo la loro
+fine: ora, livello (errore, avviso, info …), messaggio e riferimento. La ricerca (anche di un riferimento) e il filtro
+per livello restringono la vista, **Mostra** apre una voce completa, **Scaricare l’estratto** salva la parte letta.
+Dai dettagli di un’esecuzione, **Mostra nel registro di sistema** porta direttamente lì. Le voci possono contenere
+percorsi, SQL con valori, indirizzi e-mail e IP; ogni consultazione compare nel registro modifiche.
+
 **Notifica:** se un’attività fallisce, **tutti i super-admin** ricevono una notifica (campanella, nella loro lingua) –
 al primo errore e di nuovo quando poi riesce per la prima volta; la colonna «Errori consecutivi» conta gli errori
 ripetuti nel frattempo. Il widget **Attività pianificate** mostra un semaforo (tutto in ordine, attività fallite, lo
@@ -1154,6 +1161,7 @@ devono già esistere nell’installazione di destinazione; il pacchetto le indic
 | Report | visualizzare, creare (propri), modificare ed eliminare (anche altrui), usare l’assistente (IA) |
 | Collegamenti tra tabelle | visualizzare, creare, modificare, eliminare |
 | Attività pianificate | visualizzare, creare, modificare (anche «Esegui ora»), eliminare, vedere i dettagli tecnici (dettagli degli errori delle esecuzioni non riuscite) |
+| Registro di sistema | visualizzare (file di log del server, sola lettura) |
 | Plugin | visualizzare; gestire (creare voci di menu, pulire); i diritti propri dei plugin compaiono sotto il loro nome |
 | Configurazione | visualizzare (pagina e voce di menu); esportare; importare |
 | Aiuto | usare l’assistente (assistente di aiuto) |

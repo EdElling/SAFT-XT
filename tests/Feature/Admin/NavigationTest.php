@@ -38,7 +38,7 @@ class NavigationTest extends TestCase
         $nav = $this->labels($this->superAdmin());
 
         $this->assertSame(
-            ['Administration' => ['Benutzer', 'Rollen', 'Menüs', 'Änderungsprotokoll', 'Authentifizierung', 'Identity Provider', 'Table-Designer', 'Table-Connector', 'Tabellenverknüpfungen', 'Datenbankverbindungen', 'Geplante Aufgaben', 'Plugins', 'App-Einstellungen', 'Konfiguration übertragen']],
+            ['Administration' => ['Benutzer', 'Rollen', 'Menüs', 'Änderungsprotokoll', 'Authentifizierung', 'Identity Provider', 'Table-Designer', 'Table-Connector', 'Tabellenverknüpfungen', 'Datenbankverbindungen', 'Geplante Aufgaben', 'Plugins', 'App-Einstellungen', 'Konfiguration übertragen', 'Systemprotokoll']],
             $nav['groups'],
         );
     }

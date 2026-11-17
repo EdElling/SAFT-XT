@@ -24,6 +24,7 @@ return [
         'assistant' => 'KI-Assistent',
         'snapshot_deleted' => 'Datenstand gelöscht',
         'password_changed' => 'Passwort geändert',
+        'system_log_viewed' => 'Systemprotokoll angesehen',
         'two_factor_enabled' => 'Zwei-Faktor eingerichtet',
         'two_factor_disabled' => 'Zwei-Faktor ausgeschaltet',
         'two_factor_reset' => 'Zwei-Faktor zurückgesetzt',

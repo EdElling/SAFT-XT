@@ -892,6 +892,14 @@ Qui a le droit *Tâches planifiées : voir les détails techniques* (les super-a
 avec **Détails** : erreur, message, emplacement dans le programme, causes et déroulement. La même erreur est décrite
 plus en détail sous la référence dans le fichier journal sur le serveur (`storage/logs/laravel.log`).
 
+**Journal système :** *Administration › Journal système* (droit *Journal système : afficher* ; les super-admins
+toujours) affiche les entrées les plus récentes de ce fichier journal, au plus 500 et, pour les gros fichiers, seulement
+leur fin : heure, niveau (erreur, avertissement, info …), message et référence. La recherche (aussi d’une référence) et
+le filtre par niveau restreignent l’affichage, **Afficher** ouvre une entrée complète, **Télécharger l’extrait**
+enregistre la partie lue. Depuis les détails d’une exécution, **Afficher dans le journal système** y mène directement.
+Les entrées peuvent contenir des chemins, du SQL avec des valeurs, des adresses e-mail et IP ; chaque consultation
+figure dans le journal des modifications.
+
 **Notification :** si une tâche échoue, **tous les super-admins** reçoivent une notification (cloche, dans leur
 langue) – au premier échec et de nouveau lorsqu’elle réussit ensuite pour la première fois ; la colonne « Échecs
 consécutifs » compte les échecs répétés entre-temps. Le widget **Tâches planifiées** montre un feu tricolore (tout va
@@ -1181,6 +1189,7 @@ doivent déjà exister dans l’installation cible ; le paquet les indique comme
 | Rapports | afficher, créer (ses propres), modifier et supprimer (aussi ceux d’autrui), utiliser l’assistant (IA) |
 | Liaisons de tables | afficher, créer, modifier, supprimer |
 | Tâches planifiées | afficher, créer, modifier (aussi « Exécuter maintenant »), supprimer, voir les détails techniques (détails d’erreur des exécutions échouées) |
+| Journal système | afficher (fichier journal du serveur, lecture seule) |
 | Plugins | afficher ; gérer (créer les entrées de menu, nettoyer) ; les droits propres aux plugins figurent sous leur nom |
 | Configuration | afficher (page et entrée de menu) ; exporter ; importer |
 | Aide | utiliser l’assistant (assistant d’aide) |

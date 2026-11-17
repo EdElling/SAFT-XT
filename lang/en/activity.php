@@ -24,6 +24,7 @@ return [
         'assistant' => 'AI assistant',
         'snapshot_deleted' => 'Snapshot deleted',
         'password_changed' => 'Password changed',
+        'system_log_viewed' => 'System log viewed',
         'two_factor_enabled' => 'Two-factor set up',
         'two_factor_disabled' => 'Two-factor switched off',
         'two_factor_reset' => 'Two-factor reset',

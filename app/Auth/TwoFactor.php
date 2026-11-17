@@ -15,7 +15,7 @@ use App\Settings\AuthSettings;
 final class TwoFactor
 {
     /** Bereiche, deren Rechte als Administration gelten (ein beliebiges Recht genügt). */
-    public const array ADMINISTRATION = ['users', 'roles', 'menus', 'identity_providers', 'settings.auth', 'settings.app', 'custom_tables', 'database_connections', 'table_connector', 'report_links', 'tasks', 'plugins', 'configuration'];
+    public const array ADMINISTRATION = ['users', 'roles', 'menus', 'identity_providers', 'settings.auth', 'settings.app', 'custom_tables', 'database_connections', 'table_connector', 'report_links', 'tasks', 'plugins', 'configuration', 'system_log'];
 
     public function __construct(
         private readonly AuthSettings $settings,

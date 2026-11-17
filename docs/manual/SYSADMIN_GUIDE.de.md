@@ -188,6 +188,9 @@ Vorgabe 15), `TASKS_HANGING_HOURS` (ab wann ein Lauf als abgebrochen gilt, Vorga
 **Fehlgeschlagene Läufe:** Die Meldung nennt eine Referenz; unter ihr steht der Fehler mit Ablauf in
 `storage/logs/laravel.log` (Eintrag `Geplante Aufgabe fehlgeschlagen`). Fehler, Meldung, Ort und Ablauf sieht die
 Administration auch in SAFT beim Lauf unter **Details** (Recht *Geplante Aufgaben: technische Details sehen*).
+Das Ende der Logdatei zeigt *Administration › Systemprotokoll* (Recht *Systemprotokoll: anzeigen*) – nützlich ohne
+SSH-Zugang, z. B. auf Webspaces. Gelesen werden höchstens die letzten 2 MB; Dateien `laravel.log` und
+`laravel-JJJJ-MM-TT.log` (Log-Kanal `daily`) in `storage/logs`.
 
 **System-Aufgaben für Sicherungen und Demos:** *Datenbank sichern* (02:30) und *Sicherungen aufräumen* (02:45, 14
 Tage, mindestens 3) laufen ab Installation; damit ersetzt der Scheduler einen eigenen Cron-Eintrag für `db:backup`.

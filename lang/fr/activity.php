@@ -24,6 +24,7 @@ return [
         'assistant' => 'Assistant IA',
         'snapshot_deleted' => 'État des données supprimé',
         'password_changed' => 'Mot de passe changé',
+        'system_log_viewed' => 'Journal système consulté',
         'two_factor_enabled' => 'Deux facteurs configurés',
         'two_factor_disabled' => 'Deux facteurs désactivés',
         'two_factor_reset' => 'Deux facteurs réinitialisés',

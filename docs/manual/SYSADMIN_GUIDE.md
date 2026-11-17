@@ -183,7 +183,9 @@ as aborted, default 6).
 
 **Failed runs:** the message names a reference; under it, the error with trace is in `storage/logs/laravel.log`
 (entry `Geplante Aufgabe fehlgeschlagen`). The administration also sees error, message, location and trace in SAFT at
-the run under **Details** (permission *Scheduled tasks: see technical details*).
+the run under **Details** (permission *Scheduled tasks: see technical details*). *Administration › System log*
+(permission *System log: view*) shows the end of the log file – useful without SSH access, e.g. on web hosting. At most
+the last 2 MB are read; files `laravel.log` and `laravel-YYYY-MM-DD.log` (log channel `daily`) in `storage/logs`.
 
 **System tasks for backups and demos:** *Back up database* (02:30) and *Clean up backups* (02:45, 14 days, at least
 3) run from installation on; the scheduler thus replaces a separate cron entry for `db:backup`. If you still have such
