@@ -138,12 +138,14 @@ class DatabaseConnectionsTest extends DuskTestCase
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $this->browse(function (Browser $reader, Browser $other): void {
-            $this->login($reader, 'leser@example.com')->assertSeeIn(self::SELECTOR_SIDEBAR, 'Datenbankverbindungen');
+            // Im Untermenü „Datenbank“ (B-066): zugeklappt nur das Untermenü, auf der Seite aufgeklappt mit dem Eintrag.
+            $this->login($reader, 'leser@example.com')->assertSeeIn(self::SELECTOR_SIDEBAR, 'Datenbank');
             $reader->visit('/admin/database-connections')->waitForText('Forschung', 15)
+                ->assertSeeIn(self::SELECTOR_SIDEBAR, 'Datenbankverbindungen')
                 ->assertDontSee('Erstellen')
                 ->assertDontSee('Verbindung testen');
 
-            $this->login($other, 'ohne@example.com')->assertDontSeeIn(self::SELECTOR_SIDEBAR, 'Datenbankverbindungen');
+            $this->login($other, 'ohne@example.com')->assertDontSeeIn(self::SELECTOR_SIDEBAR, 'Datenbank');
             $other->visit('/admin/database-connections')->waitForText('Keine Berechtigung', 15);
         });
     }

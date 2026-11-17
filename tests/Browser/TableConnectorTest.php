@@ -134,12 +134,14 @@ class TableConnectorTest extends DuskTestCase
         $this->browse(function (Browser $reader, Browser $connector): void {
             $this->login($reader, 'leser@example.com')
                 ->assertSeeIn(self::SELECTOR_SIDEBAR, 'Personen')
-                ->assertDontSeeIn(self::SELECTOR_SIDEBAR, 'Table-Connector');
+                ->assertDontSeeIn(self::SELECTOR_SIDEBAR, 'Datenbank');
             $reader->visit('/admin/data/personen')->waitForText('Keller', 15)->assertDontSee('Exportieren');
             $reader->visit('/admin/table-connector')->waitForText('Keine Berechtigung', 15);
 
-            $this->login($connector, 'connector@example.com')->assertSeeIn(self::SELECTOR_SIDEBAR, 'Table-Connector');
+            // Im Untermenü „Datenbank“ (B-066): auf der Seite aufgeklappt mit dem Eintrag.
+            $this->login($connector, 'connector@example.com')->assertSeeIn(self::SELECTOR_SIDEBAR, 'Datenbank');
             $connector->visit('/admin/table-connector')->waitForText('forschung.personen', 15)
+                ->assertSeeIn(self::SELECTOR_SIDEBAR, 'Table-Connector')
                 ->assertDontSee('Tabelle anbinden');
         });
     }
