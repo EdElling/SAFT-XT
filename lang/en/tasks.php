@@ -12,6 +12,13 @@ return [
         'schedule' => 'Schedule',
     ],
     'fields' => [
+        'backup_days' => 'Keep backups (days)',
+        'backup_days_help' => 'Older backups in storage/backups are deleted.',
+        'backup_keep' => 'Always keep at least',
+        'backup_keep_help' => 'This many of the newest backups always stay, even if they are older – e.g. if the backup failed for a few days.',
+        'demos' => 'Demos',
+        'demos_help' => 'Only the data of these demos is deleted and reloaded; tables, menus, reports and permissions stay.',
+        'demo_backup' => 'Back up first',
         'type' => 'Type',
         'name' => 'Name',
         'frequency' => 'Frequency',
@@ -53,16 +60,25 @@ return [
         'weekly' => ':day at :time',
     ],
     'types' => [
+        'db_backup' => 'Back up database',
+        'backup_prune' => 'Clean up backups',
+        'demo_reset' => 'Reset demo data',
         'snapshot_connection_refresh' => 'Refresh snapshots of a connection',
         'snapshot_refresh' => 'Refresh snapshot',
         'snapshot_prune' => 'Clean up snapshots',
         'task_runs_prune' => 'Clean up run log',
     ],
     'describe_type' => [
+        'db_backup' => 'Entire database to storage/backups',
+        'backup_prune' => 'Backups older than :days days, the :keep newest stay',
         'snapshot_prune' => 'Retention periods of all snapshots, aborted runs',
         'task_runs_prune' => 'Runs older than :days days',
     ],
     'results' => [
+        'db_backup' => 'Backup :file created (:kb KB).',
+        'backup_prune' => ':deleted backups deleted.',
+        'demo_reset' => 'Demo data reset: :demos records.',
+        'demo_reset_backup' => 'Backed up first: :file.',
         'snapshot_refresh' => 'New snapshot with :rows rows.',
         'snapshot_prune' => ':deleted snapshots deleted after their retention period, :aborted aborted ones cleaned up.',
         'snapshot_connection_refresh' => ':done of :total tables refreshed (:rows rows).',
@@ -115,5 +131,15 @@ return [
     'console' => [
         'not_found' => 'No task with ID :id.',
         'heartbeat' => 'Scheduler last ran: :time',
+    ],
+    'demo_reset' => [
+        'demos' => [
+            'shop' => 'Shop',
+            'lager' => 'Warehouse',
+            'forschung' => 'Research',
+        ],
+        'disabled' => 'Skipped: resetting demo data is not allowed on this server (DEMO_RESET=true in .env).',
+        'nothing_installed' => 'Skipped: none of the selected demos is loaded.',
+        'not_installed' => 'The demo is not loaded completely, missing: :tables.',
     ],
 ];

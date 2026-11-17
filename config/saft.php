@@ -20,4 +20,7 @@ return [
     // Pflicht zur Zwei-Faktor-Anmeldung durchsetzen (Einstellung unter Administration › Authentifizierung). Aus nur in
     // Tests; wer schon einen zweiten Faktor eingerichtet hat, wird bei der Anmeldung trotzdem danach gefragt.
     'two_factor_enforce' => (bool) env('TWO_FACTOR_ENFORCE', true),
+
+    // Geplante Aufgabe „Demo-Daten zurücksetzen“ erlauben – nur für öffentliche Demo- und Schulungssysteme.
+    'demo_reset' => (bool) env('DEMO_RESET', false),
 ];

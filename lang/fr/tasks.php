@@ -12,6 +12,13 @@ return [
         'schedule' => 'Planning',
     ],
     'fields' => [
+        'backup_days' => 'Conserver les sauvegardes (jours)',
+        'backup_days_help' => 'Les sauvegardes plus anciennes dans storage/backups sont supprimées.',
+        'backup_keep' => 'Conserver au moins',
+        'backup_keep_help' => 'Ce nombre des sauvegardes les plus récentes reste toujours, même si elles sont plus anciennes – p. ex. si la sauvegarde a échoué quelques jours.',
+        'demos' => 'Démos',
+        'demos_help' => 'Seules les données de ces démos sont supprimées et rechargées ; tables, menus, analyses et droits restent.',
+        'demo_backup' => 'Sauvegarder auparavant',
         'type' => 'Type',
         'name' => 'Nom',
         'frequency' => 'Fréquence',
@@ -53,16 +60,25 @@ return [
         'weekly' => ':day à :time',
     ],
     'types' => [
+        'db_backup' => 'Sauvegarder la base de données',
+        'backup_prune' => 'Nettoyer les sauvegardes',
+        'demo_reset' => 'Réinitialiser les données de démo',
         'snapshot_connection_refresh' => 'Actualiser les états d’une connexion',
         'snapshot_refresh' => 'Actualiser l’état des données',
         'snapshot_prune' => 'Nettoyer les états des données',
         'task_runs_prune' => 'Nettoyer le journal des exécutions',
     ],
     'describe_type' => [
+        'db_backup' => 'Toute la base de données vers storage/backups',
+        'backup_prune' => 'Sauvegardes de plus de :days jours, les :keep plus récentes restent',
         'snapshot_prune' => 'Durées de conservation de tous les états, exécutions interrompues',
         'task_runs_prune' => 'Exécutions de plus de :days jours',
     ],
     'results' => [
+        'db_backup' => 'Sauvegarde :file créée (:kb Ko).',
+        'backup_prune' => ':deleted sauvegardes supprimées.',
+        'demo_reset' => 'Données de démo réinitialisées : :demos enregistrements.',
+        'demo_reset_backup' => 'Sauvegardé auparavant : :file.',
         'snapshot_refresh' => 'Nouvel état avec :rows lignes.',
         'snapshot_prune' => ':deleted états supprimés après leur durée de conservation, :aborted interrompus nettoyés.',
         'snapshot_connection_refresh' => ':done tables sur :total actualisées (:rows lignes).',
@@ -115,5 +131,15 @@ return [
     'console' => [
         'not_found' => 'Aucune tâche avec l’ID :id.',
         'heartbeat' => 'Dernière exécution du planificateur : :time',
+    ],
+    'demo_reset' => [
+        'demos' => [
+            'shop' => 'Boutique',
+            'lager' => 'Entrepôt',
+            'forschung' => 'Recherche',
+        ],
+        'disabled' => 'Ignorée : la réinitialisation des données de démo n’est pas autorisée sur ce serveur (DEMO_RESET=true dans .env).',
+        'nothing_installed' => 'Ignorée : aucune des démos choisies n’est chargée.',
+        'not_installed' => 'La démo n’est pas chargée entièrement, il manque : :tables.',
     ],
 ];

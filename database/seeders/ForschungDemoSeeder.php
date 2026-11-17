@@ -67,6 +67,12 @@ class ForschungDemoSeeder extends Seeder
         $this->reports($group);
     }
 
+    protected function reseedDemoData(): void
+    {
+        $this->db = app(DynamicDataNamespace::class)->connection();
+        $this->seed();
+    }
+
     protected function qualified(string $table): string
     {
         return app(DynamicDataNamespace::class)->qualify('forschung_'.$table);

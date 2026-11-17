@@ -840,6 +840,9 @@ ha un **tipo**, i relativi **parametri** e una **pianificazione**:
 | Aggiornare gli stati di una connessione | connessione al database; «Solo tabelle che hanno già uno stato» (predefinito: attivo) | nuovi stati di tutte le tabelle collegate della connessione (o di quelle già usate), una dopo l’altra. Se una tabella fallisce, le altre continuano; l’esecuzione vale allora come fallita e nomina le tabelle |
 | Pulire gli stati dei dati (sistema) | – | applica la conservazione di tutti gli stati dei dati, anche senza nuovo aggiornamento, e ripulisce le esecuzioni interrotte; predefinito ogni giorno alle 03:15 |
 | Pulire il registro delle esecuzioni (sistema) | conservare le esecuzioni (giorni, predefinito 90) | elimina le voci più vecchie del registro delle esecuzioni; predefinito ogni giorno alle 03:30 |
+| Eseguire il backup del database (sistema) | – | backup come `php artisan db:backup` in `storage/backups`; se non riesce, l’esecuzione ne indica il motivo e la campanella avvisa i super-admin; predefinito ogni giorno alle 02:30 |
+| Ripulire i backup (sistema) | conservare i backup (giorni, predefinito 14); conservare almeno (predefinito 3) | elimina i backup più vecchi in `storage/backups`, i più recenti restano sempre; predefinito ogni giorno alle 02:45 |
+| Ripristinare i dati demo (sistema) | demo (Negozio, Magazzino, Ricerca); eseguire prima il backup (predefinito attivo) | elimina i **dati** delle demo scelte e ricarica lo stato di consegna – tabelle, menu, analisi e diritti restano. Per demo pubbliche; consegnata disattivata ed efficace solo se il server lo consente con `DEMO_RESET=true` (altrimenti «saltata»); predefinito ogni giorno alle 04:00 |
 
 I plugin possono aggiungere altri tipi; compaiono in **Nuovo** alla voce «Tipo». Il plugin di esempio *Tabellone delle
 giacenze* aggiunge **Magazzino: promemoria inventario** (segnala nel registro le giacenze non contate da un numero di

@@ -295,13 +295,13 @@ Prüfen Sie im Browser: **https://saft.example.ch** leitet auf `/admin` und zeig
 
 ## 8. Sicherungen
 
-**Täglich automatisch** mit einem Cron-Job (im Kundenportal oder mit `crontab -e`). Jede Sicherung ist eine Datei
-`<datenbank>_<datum>_<zeit>.dump`, nur für Ihren Benutzer lesbar:
-
-```cron
-# Jeden Tag um 02:30 die Datenbank nach storage/backups sichern
-30 2 * * * cd /home/<benutzer>/saft && php artisan db:backup >> storage/logs/backup.log 2>&1
-```
+**Täglich automatisch** über die geplante System-Aufgabe **Datenbank sichern** (02:30) – dafür genügt der Cron-Eintrag
+für den Scheduler aus Schritt 7. Jede Sicherung ist eine Datei `<datenbank>_<datum>_<zeit>.dump` (bzw. `.sql`) in
+`storage/backups`, nur für Ihren Benutzer lesbar. Schlägt sie fehl, steht der Grund unter *Geplante Aufgaben → Läufe*,
+und die Super-Admins bekommen eine Meldung in der Glocke. **Sicherungen aufräumen** (02:45) löscht Sicherungen, die
+älter als 14 Tage sind, und behält immer die 3 neuesten. Zeiten und Fristen ändern Sie unter *Administration ›
+Geplante Aufgaben* ([Administratorhandbuch, Kapitel 12](ADMIN_GUIDE.de.md#12-geplante-aufgaben)). Von Hand jederzeit:
+`php artisan db:backup`.
 
 - `db:backup` braucht `pg_dump`, `mysqldump` bzw. `mariadb-dump` (Paket `mariadb-client`) in einer Version, die zum
   Datenbankserver passt. Liegt das Programm nicht im Suchpfad, tragen Sie es in `.env` ein (`PGSQL_DUMP_BINARY`,
@@ -310,8 +310,7 @@ Prüfen Sie im Browser: **https://saft.example.ch** leitet auf `/admin` und zeig
   (oder einmalig `php artisan db:backup --php`). Die Datei ist ebenfalls ein SQL-Skript und lässt sich mit `mysql`,
   `mariadb` oder in phpMyAdmin einspielen. Bei MySQL und MariaDB enthält die `.sql`-Datei beide Datenbanken. Eine Sicherung aus MySQL lässt sich nicht
   verlässlich in MariaDB einspielen und umgekehrt.
-- Die Sicherungen liegen auf demselben Server – kopieren Sie sie regelmässig an einen **anderen Ort** und löschen Sie
-  alte Dateien, damit der Speicher nicht vollläuft.
+- Die Sicherungen liegen auf demselben Server – kopieren Sie sie regelmässig an einen **anderen Ort**.
 - Sichern Sie zusätzlich die Datei `.env` (siehe Schritt 4).
 - **Wiederherstellen** in eine neue, leere Datenbank:
   `pg_restore -h <host> -U <benutzer> --no-owner -d <neue_datenbank> storage/backups/<datei>.dump`
@@ -441,6 +440,20 @@ Dann weiter mit Schritt 5 (`migrate`, `db:seed`, `optimize`). Im Kundenportal da
 Abhängigkeiten **mit** den Entwicklungspaketen (`php composer.phar install --optimize-autoloader`, ohne `--no-dev`) und
 spielen danach `php artisan db:seed --class=LagerDemoSeeder --force` ein. `APP_ENV=production` muss dabei bleiben –
 nur so ist die Test-Anmeldung der Entwicklungspakete abgeschaltet. Für ein Produktivsystem bleibt `--no-dev` richtig.
+
+**Geplante Aufgaben und Sicherung:** Im Kundenportal einen Cronjob anlegen, der jede Minute (oder im kürzesten
+angebotenen Abstand) diesen Befehl ausführt:
+
+```bash
+cd ~/saft && /opt/RZphp84/bin/php-cli artisan schedule:run
+```
+
+Damit laufen auch die tägliche Sicherung und das Aufräumen der Sicherungen. Bei gröberen Abständen siehe
+[Systemadministration, Kapitel 4](SYSADMIN_GUIDE.de.md#4-geplante-aufgaben-und-cron).
+
+**Öffentliche Demo jede Nacht zurücksetzen:** `DEMO_RESET=true` in `.env`, dann `php artisan optimize`, und unter
+*Administration › Geplante Aufgaben* die Aufgabe **Demo-Daten zurücksetzen** einschalten. Sie lädt um 04:00 die Daten
+der gewählten Demos neu; Änderungen der Besucher an den Demo-Daten sind danach weg, alles andere bleibt.
 
 **Updates** (Ablauf wie in [Abschnitt 9](#9-updates-einspielen), mit dem Kommandozeilen-PHP):
 

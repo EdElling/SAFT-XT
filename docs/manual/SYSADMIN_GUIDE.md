@@ -181,6 +181,12 @@ as the terminal is open.
 `.env`: `TASKS_HEARTBEAT_MINUTES` (when the administration warns, default 15), `TASKS_HANGING_HOURS` (when a run counts
 as aborted, default 6).
 
+**System tasks for backups and demos:** *Back up database* (02:30) and *Clean up backups* (02:45, 14 days, at least
+3) run from installation on; the scheduler thus replaces a separate cron entry for `db:backup`. If you still have such
+an entry, remove it or switch off the task, otherwise backups are made twice. *Reset demo data* is destructive:
+delivered switched off and, even when switched on, only effective with `DEMO_RESET=true` in `.env` – set this only on
+public demo or training systems.
+
 ## 5. AI functions
 
 The AI assistants for reports and tables (see [Administrator guide, chapter 13](ADMIN_GUIDE.md#13-ai-functions)) are

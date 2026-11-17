@@ -860,6 +860,9 @@ devant le libellé.
 | Actualiser les états d’une connexion | connexion à une base de données ; « Uniquement les tables qui ont déjà un état » (activé par défaut) | nouveaux états de toutes les tables liées de la connexion (ou de celles déjà utilisées), l’une après l’autre. Si une table échoue, les autres continuent ; l’exécution est alors considérée comme échouée et nomme les tables |
 | Nettoyer les états des données (système) | – | applique la conservation de tous les états des données, même sans nouvelle actualisation, et nettoie les exécutions interrompues ; par défaut tous les jours à 03:15 |
 | Nettoyer le journal des exécutions (système) | conserver les exécutions (jours, 90 par défaut) | supprime les entrées plus anciennes du journal des exécutions ; par défaut tous les jours à 03:30 |
+| Sauvegarder la base de données (système) | – | sauvegarde comme `php artisan db:backup` vers `storage/backups` ; en cas d’échec, l’exécution en indique la raison et la cloche avertit les super-admins ; par défaut tous les jours à 02:30 |
+| Nettoyer les sauvegardes (système) | conserver les sauvegardes (jours, 14 par défaut) ; conserver au moins (3 par défaut) | supprime les sauvegardes plus anciennes dans `storage/backups`, les plus récentes restent toujours ; par défaut tous les jours à 02:45 |
+| Réinitialiser les données de démo (système) | démos (Boutique, Entrepôt, Recherche) ; sauvegarder auparavant (activé par défaut) | supprime les **données** des démos choisies et recharge l’état livré – tables, menus, analyses et droits restent. Pour les démos publiques ; livrée désactivée et effective seulement si le serveur l’autorise avec `DEMO_RESET=true` (sinon « ignorée ») ; par défaut tous les jours à 04:00 |
 
 Les plugins peuvent apporter d’autres types ; ils apparaissent sous **Nouveau** dans « Type ». Le plugin d’exemple
 *Tableau des stocks* apporte **Entrepôt : rappel d’inventaire** (signale dans le journal les stocks non comptés depuis

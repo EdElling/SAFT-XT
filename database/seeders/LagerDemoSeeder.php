@@ -366,6 +366,12 @@ class LagerDemoSeeder extends Seeder
     }
 
     /** Dieselben Daten wie die externe Lager-Demo (MariaDB/SQL Server). */
+    protected function reseedDemoData(): void
+    {
+        $this->seedRecords();
+        $this->purchaseValues();
+    }
+
     private function seedRecords(): void
     {
         $insert = fn (string $table, array $data): int => (int) DynamicRecord::forTableName($table)->create($data)->getKey();

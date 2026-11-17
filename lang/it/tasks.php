@@ -12,6 +12,13 @@ return [
         'schedule' => 'Pianificazione',
     ],
     'fields' => [
+        'backup_days' => 'Conservare i backup (giorni)',
+        'backup_days_help' => 'I backup più vecchi in storage/backups vengono eliminati.',
+        'backup_keep' => 'Conservare almeno',
+        'backup_keep_help' => 'Questo numero dei backup più recenti resta sempre, anche se sono più vecchi – ad es. se il backup non è riuscito per alcuni giorni.',
+        'demos' => 'Demo',
+        'demos_help' => 'Vengono eliminati e ricaricati solo i dati di queste demo; tabelle, menu, analisi e diritti restano.',
+        'demo_backup' => 'Eseguire prima il backup',
         'type' => 'Tipo',
         'name' => 'Nome',
         'frequency' => 'Frequenza',
@@ -53,16 +60,25 @@ return [
         'weekly' => ':day alle :time',
     ],
     'types' => [
+        'db_backup' => 'Eseguire il backup del database',
+        'backup_prune' => 'Ripulire i backup',
+        'demo_reset' => 'Ripristinare i dati demo',
         'snapshot_connection_refresh' => 'Aggiornare gli stati di una connessione',
         'snapshot_refresh' => 'Aggiornare lo stato dei dati',
         'snapshot_prune' => 'Pulire gli stati dei dati',
         'task_runs_prune' => 'Pulire il registro delle esecuzioni',
     ],
     'describe_type' => [
+        'db_backup' => 'Intero database in storage/backups',
+        'backup_prune' => 'Backup più vecchi di :days giorni, restano i :keep più recenti',
         'snapshot_prune' => 'Periodi di conservazione di tutti gli stati, esecuzioni interrotte',
         'task_runs_prune' => 'Esecuzioni più vecchie di :days giorni',
     ],
     'results' => [
+        'db_backup' => 'Backup :file creato (:kb KB).',
+        'backup_prune' => ':deleted backup eliminati.',
+        'demo_reset' => 'Dati demo ripristinati: :demos record.',
+        'demo_reset_backup' => 'Backup eseguito prima: :file.',
         'snapshot_refresh' => 'Nuovo stato con :rows righe.',
         'snapshot_prune' => ':deleted stati eliminati dopo il periodo di conservazione, :aborted interrotti ripuliti.',
         'snapshot_connection_refresh' => ':done tabelle su :total aggiornate (:rows righe).',
@@ -115,5 +131,15 @@ return [
     'console' => [
         'not_found' => 'Nessuna attività con ID :id.',
         'heartbeat' => 'Ultima esecuzione dello scheduler: :time',
+    ],
+    'demo_reset' => [
+        'demos' => [
+            'shop' => 'Negozio',
+            'lager' => 'Magazzino',
+            'forschung' => 'Ricerca',
+        ],
+        'disabled' => 'Saltata: il ripristino dei dati demo non è consentito su questo server (DEMO_RESET=true nel file .env).',
+        'nothing_installed' => 'Saltata: nessuna delle demo scelte è caricata.',
+        'not_installed' => 'La demo non è caricata completamente, mancano: :tables.',
     ],
 ];

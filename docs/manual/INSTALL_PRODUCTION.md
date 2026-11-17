@@ -292,13 +292,12 @@ Check in the browser: **https://saft.example.com** redirects to `/admin` and sho
 
 ## 8. Backups
 
-**Daily and automatic** with a cron job (in the customer portal or with `crontab -e`). Each backup is a file
-`<database>_<date>_<time>.dump`, readable only by your user:
-
-```cron
-# Every day at 02:30, back up the database to storage/backups
-30 2 * * * cd /home/<user>/saft && php artisan db:backup >> storage/logs/backup.log 2>&1
-```
+**Daily and automatic** through the scheduled system task **Back up database** (02:30) – the cron entry for the
+scheduler from step 7 is all it needs. Each backup is a file `<database>_<date>_<time>.dump` (or `.sql`) in
+`storage/backups`, readable only by your user. If it fails, the reason is shown under *Scheduled tasks → Runs*, and
+the super admins get a notification in the bell. **Clean up backups** (02:45) deletes backups older than 14 days and
+always keeps the 3 newest. Change times and periods under *Administration › Scheduled tasks*
+([Administrator guide, chapter 12](ADMIN_GUIDE.md#12-scheduled-tasks)). Manually at any time: `php artisan db:backup`.
 
 - `db:backup` needs `pg_dump`, `mysqldump` or `mariadb-dump` (package `mariadb-client`) in a version that matches the
   database server. If the program is not in the search path, enter it in `.env` (`PGSQL_DUMP_BINARY`,
@@ -307,8 +306,7 @@ Check in the browser: **https://saft.example.com** redirects to `/admin` and sho
   once `php artisan db:backup --php`). The file is also an SQL script and can be restored with `mysql`, `mariadb` or in
   phpMyAdmin. With MySQL and MariaDB, the `.sql` file contains both databases. A backup from MySQL cannot reliably be
   restored into MariaDB and vice versa.
-- The backups are on the same server – copy them regularly to **another place** and delete old files so that the
-  disk does not fill up.
+- The backups are on the same server – copy them regularly to **another place**.
 - Also back up the file `.env` (see step 4).
 - **Restore** into a new, empty database:
   `pg_restore -h <host> -U <user> --no-owner -d <new_database> storage/backups/<file>.dump`
@@ -438,6 +436,20 @@ domain to `…/saft/public`, activate the certificate and switch on **force SSL*
 **with** the development packages (`php composer.phar install --optimize-autoloader`, without `--no-dev`) and then run
 `php artisan db:seed --class=LagerDemoSeeder --force`. `APP_ENV=production` must stay – only then is the test sign-in
 of the development packages switched off. For a production system `--no-dev` remains right.
+
+**Scheduled tasks and backup:** in the customer portal create a cron job that runs this command every minute (or at
+the shortest interval offered):
+
+```bash
+cd ~/saft && /opt/RZphp84/bin/php-cli artisan schedule:run
+```
+
+This also runs the daily backup and the clean-up of backups. For coarser intervals see
+[System administration, chapter 4](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron).
+
+**Reset a public demo every night:** `DEMO_RESET=true` in `.env`, then `php artisan optimize`, and switch on the task
+**Reset demo data** under *Administration › Scheduled tasks*. At 04:00 it reloads the data of the chosen demos;
+visitors' changes to the demo data are gone afterwards, everything else stays.
 
 **Updates** (procedure as in [section 9](#9-installing-updates), with the command-line PHP):
 

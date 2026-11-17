@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Database\Seeders\Concerns;
 
 use App\DynamicData\DataMenu;
+use App\DynamicData\DynamicDataNamespace;
+use App\DynamicData\Formula\Recalculator;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Reports\ReportResource;
 use App\Models\CustomField;
@@ -28,6 +30,71 @@ trait SeedsDemoTables
     {
         return DynamicRecord::withoutPluginEvents(fn (): mixed => parent::__invoke($parameters));
     }
+
+    /** @return list<string> Namen der Demo-Tabellen in Anlegereihenfolge (Verknüpfungsziele zuerst) */
+    public function demoTableNames(): array
+    {
+        return array_values(array_column($this->definitions(), 'name'));
+    }
+
+    /** Ist die Demo vollständig geladen (alle ihre Tabellen vorhanden)? */
+    public function demoInstalled(): bool
+    {
+        return CustomTable::query()->whereIn('name', $this->demoTableNames())->count() === count($this->demoTableNames());
+    }
+
+    /**
+     * Setzt nur die Daten der Demo zurück (geplante Aufgabe „Demo-Daten zurücksetzen“): leert ihre Tabellen – in
+     * umgekehrter Anlegereihenfolge, Verweise einer Tabelle auf sich selbst vorher geleert – und füllt sie neu.
+     * Aufbau der Tabellen, Menüs, Auswertungen, Regeln, Rollen und Rechte bleiben unverändert; andere Tabellen werden
+     * nicht berührt. Alles in einer Transaktion: Scheitert etwas (z. B. eine fremde Tabelle verweist auf Demo-Daten),
+     * bleibt der alte Stand.
+     *
+     * @return int Zahl der danach vorhandenen Datensätze
+     */
+    public function resetDemoData(): int
+    {
+        $names = $this->demoTableNames();
+        $tables = CustomTable::query()->whereIn('name', $names)->get()->keyBy('name');
+
+        if ($tables->count() !== count($names)) {
+            throw new BusinessRuleException(__('tasks.demo_reset.not_installed', ['tables' => implode(', ', array_diff($names, $tables->keys()->all()))]));
+        }
+
+        $namespace = app(DynamicDataNamespace::class);
+        $db = $namespace->connection();
+
+        return DynamicRecord::withoutPluginEvents(function () use ($names, $tables, $namespace, $db): int {
+            $db->transaction(function () use ($names, $tables, $namespace, $db): void {
+                foreach (array_reverse($names) as $name) {
+                    $query = $db->table($namespace->qualify($name));
+                    $selfReferences = $tables[$name]->fields()->where('type', 'relation')->get()
+                        ->filter(static fn (CustomField $field): bool => ($field->optionsArray()['table'] ?? null) === $name);
+
+                    foreach ($selfReferences as $field) {
+                        (clone $query)->update([$field->name => null]);
+                    }
+
+                    (clone $query)->delete();
+                }
+
+                $this->reseedDemoData();
+            });
+
+            $done = [];
+            $count = 0;
+
+            foreach ($names as $name) {
+                app(Recalculator::class)->recomputeTable($tables[$name], $done);
+                $count += $db->table($namespace->qualify($name))->count();
+            }
+
+            return $count;
+        });
+    }
+
+    /** Füllt die (leeren) Tabellen der Demo mit ihren Beispieldaten. */
+    abstract protected function reseedDemoData(): void;
 
     /** @param  array<string, string>  $labels  Bezeichnung je Sprache */
     protected function demoGroup(array $labels, int $sortOrder): Menu

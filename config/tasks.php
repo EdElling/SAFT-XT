@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Tasks\Types\BackupPruneTask;
+use App\Tasks\Types\DatabaseBackupTask;
+use App\Tasks\Types\DemoResetTask;
 use App\Tasks\Types\SnapshotConnectionRefreshTask;
 use App\Tasks\Types\SnapshotPruneTask;
 use App\Tasks\Types\SnapshotRefreshTask;
@@ -18,6 +21,9 @@ return [
         SnapshotConnectionRefreshTask::class,
         SnapshotPruneTask::class,
         TaskRunsPruneTask::class,
+        DatabaseBackupTask::class,
+        BackupPruneTask::class,
+        DemoResetTask::class,
     ],
 
     // Ein Lauf, der länger als so viele Stunden auf „läuft“ steht, gilt als abgebrochen.

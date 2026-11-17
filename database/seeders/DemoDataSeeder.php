@@ -359,6 +359,13 @@ class DemoDataSeeder extends Seeder
         ];
     }
 
+    protected function reseedDemoData(): void
+    {
+        $this->faker = FakerFactory::create('de_DE');
+        $this->faker->seed(2026);
+        $this->seedRecords();
+    }
+
     private function seedRecords(): void
     {
         $artikel = DynamicRecord::forTableName('artikel');

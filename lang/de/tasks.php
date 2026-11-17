@@ -12,6 +12,13 @@ return [
         'schedule' => 'Zeitplan',
     ],
     'fields' => [
+        'backup_days' => 'Sicherungen aufbewahren (Tage)',
+        'backup_days_help' => 'Ältere Sicherungen in storage/backups werden gelöscht.',
+        'backup_keep' => 'Mindestens behalten',
+        'backup_keep_help' => 'So viele der neuesten Sicherungen bleiben immer, auch wenn sie älter sind – etwa wenn die Sicherung einige Tage ausfiel.',
+        'demos' => 'Demos',
+        'demos_help' => 'Nur die Daten dieser Demos werden gelöscht und neu geladen; Tabellen, Menüs, Auswertungen und Rechte bleiben.',
+        'demo_backup' => 'Vorher sichern',
         'type' => 'Art',
         'name' => 'Name',
         'frequency' => 'Intervall',
@@ -53,16 +60,25 @@ return [
         'weekly' => ':day um :time',
     ],
     'types' => [
+        'db_backup' => 'Datenbank sichern',
+        'backup_prune' => 'Sicherungen aufräumen',
+        'demo_reset' => 'Demo-Daten zurücksetzen',
         'snapshot_connection_refresh' => 'Datenstände einer Verbindung aktualisieren',
         'snapshot_refresh' => 'Datenstand aktualisieren',
         'snapshot_prune' => 'Datenstände bereinigen',
         'task_runs_prune' => 'Laufprotokoll bereinigen',
     ],
     'describe_type' => [
+        'db_backup' => 'Gesamte Datenbank nach storage/backups',
+        'backup_prune' => 'Sicherungen älter als :days Tage, die :keep neuesten bleiben',
         'snapshot_prune' => 'Aufbewahrungsfristen aller Datenstände, abgebrochene Läufe',
         'task_runs_prune' => 'Läufe älter als :days Tage',
     ],
     'results' => [
+        'db_backup' => 'Sicherung :file erstellt (:kb KB).',
+        'backup_prune' => ':deleted Sicherungen gelöscht.',
+        'demo_reset' => 'Demo-Daten zurückgesetzt: :demos Datensätze.',
+        'demo_reset_backup' => 'Vorher gesichert: :file.',
         'snapshot_refresh' => 'Neuer Datenstand mit :rows Zeilen.',
         'snapshot_prune' => ':deleted Stände nach Frist gelöscht, :aborted abgebrochene aufgeräumt.',
         'snapshot_connection_refresh' => ':done von :total Tabellen aktualisiert (:rows Zeilen).',
@@ -115,5 +131,15 @@ return [
     'console' => [
         'not_found' => 'Keine Aufgabe mit der ID :id.',
         'heartbeat' => 'Scheduler zuletzt gelaufen: :time',
+    ],
+    'demo_reset' => [
+        'demos' => [
+            'shop' => 'Shop',
+            'lager' => 'Lager',
+            'forschung' => 'Forschung',
+        ],
+        'disabled' => 'Übersprungen: Demo-Daten zurücksetzen ist auf diesem Server nicht erlaubt (DEMO_RESET=true in der .env).',
+        'nothing_installed' => 'Übersprungen: Keine der gewählten Demos ist geladen.',
+        'not_installed' => 'Die Demo ist nicht vollständig geladen, es fehlen: :tables.',
     ],
 ];
