@@ -82,4 +82,6 @@ return [
         ],
     ],
     'computed_placeholder' => 'wird beim Speichern berechnet',
+    'reset_view' => 'Ansicht zurücksetzen',
+    'reset_view_help' => 'Filter, Suche, Sortierung, Zeilen pro Seite und Spaltenauswahl auf die Vorgabe zurücksetzen. Sonst bleiben sie für Sie gespeichert, auch nach dem Abmelden.',
 ];

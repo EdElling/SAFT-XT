@@ -436,6 +436,28 @@ class ListTest extends DuskTestCase
         });
     }
 
+    /** LIS-19: Ansicht bleibt nach dem Abmelden erhalten und lässt sich zurücksetzen (B-027). */
+    public function test_view_is_remembered_after_signing_out_and_can_be_reset(): void
+    {
+        $this->seedOrders();
+
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/data/kunden')->waitForText('Müller KG', 15)
+                ->assertDontSee('Ansicht zurücksetzen');
+            $browser->type('.fi-ta-search-field input', 'müller')->waitUntilMissingText('Alpha AG', 15)
+                ->waitForText('Ansicht zurücksetzen', 15);
+
+            $this->logout($browser);
+            $this->login($browser, self::ADMIN)->visit('/admin/data/kunden')->waitForText('Müller KG', 15)
+                ->assertInputValue('.fi-ta-search-field input', 'müller')
+                ->assertDontSee('Alpha AG')
+                ->press('Ansicht zurücksetzen')
+                ->waitForText('Alpha AG', 15)
+                ->assertInputValue('.fi-ta-search-field input', '')
+                ->waitUntilMissingText('Ansicht zurücksetzen', 15);
+        });
+    }
+
     /** LIS-16 */
     public function test_column_choice_in_the_column_menu_is_remembered(): void
     {

@@ -18,6 +18,7 @@ use App\Models\DynamicRecord;
 use App\Models\Menu;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserTableState;
 use App\Navigation\MenuNavigationBuilder;
 use Database\Seeders\DemoDataSeeder;
 use Filament\Navigation\NavigationBuilder;
@@ -253,26 +254,33 @@ class DataFeaturesTest extends DynamicDataTestCase
             ->assertTableFilterExists('budget')
             ->assertTableFilterExists('start');
 
-        // Filter bleiben in der Sitzung: jeder Schritt in einer neuen Sitzung.
-        $this->flushSession();
+        // Filter bleiben gespeichert (Sitzung und B-027): jeder Schritt mit frischer Ansicht.
+        $this->freshView();
         Livewire::test(DynamicDataPage::class, ['table' => 'projekte'])
             ->filterTable('titel', ['value' => 'alp'])
             ->assertCanSeeTableRecords([$a])
             ->assertCanNotSeeTableRecords([$b]);
 
-        $this->flushSession();
+        $this->freshView();
         Livewire::test(DynamicDataPage::class, ['table' => 'projekte'])
             ->filterTable('anzahl', ['from' => 10, 'until' => 100])
             ->assertCanSeeTableRecords([$b])
             ->assertCanNotSeeTableRecords([$a]);
 
         $model->newQuery()->whereKey($a->id)->update(['start' => '2026-03-01']);
-        $this->flushSession();
+        $this->freshView();
         Livewire::test(DynamicDataPage::class, ['table' => 'projekte'])
             ->filterTable('start', ['from' => '2026-02-01'])
             ->assertCanSeeTableRecords([$a])
             ->assertCanNotSeeTableRecords([$b]);
 
         $this->assertSame([10, 25, 50, 100], Livewire::test(DynamicDataPage::class, ['table' => 'projekte'])->instance()->getTable()->getPaginationPageOptions());
+    }
+
+    /** Neue Sitzung ohne gespeicherten Stand der Ansicht (B-027 speichert ihn sonst über die Sitzung hinaus). */
+    private function freshView(): void
+    {
+        UserTableState::query()->delete();
+        $this->flushSession();
     }
 }

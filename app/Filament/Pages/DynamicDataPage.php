@@ -17,6 +17,7 @@ use App\DynamicData\Ui\RecordEntries;
 use App\ExternalData\ExternalTableUnavailable;
 use App\ExternalData\SchemaComparison;
 use App\Filament\Concerns\RemembersTableColumns;
+use App\Filament\Concerns\RemembersTableState;
 use App\Livewire\DynamicDetailTable;
 use App\Models\CustomField;
 use App\Models\CustomTable;
@@ -62,6 +63,7 @@ class DynamicDataPage extends Page implements HasTable
         RemembersTableColumns::loadTableColumnsFromSession insteadof InteractsWithTable;
         RemembersTableColumns::persistTableColumns insteadof InteractsWithTable;
     }
+    use RemembersTableState;
 
     protected static ?string $slug = 'data/{table}';
 
@@ -86,6 +88,12 @@ class DynamicDataPage extends Page implements HasTable
 
     private ?DataView $dataView = null;
 
+    /** Je Tabelle und Menüeintrag eigene Filter, Suche, Sortierung und Spaltenauswahl. */
+    protected function rememberedTableIdentifier(): string
+    {
+        return 'data.'.$this->tableName.'.'.($this->viewId ?? 'default');
+    }
+
     /** Routenname ohne Platzhalter: filament.admin.pages.data */
     public static function getRelativeRouteName(Panel $panel): string
     {
@@ -106,6 +114,7 @@ class DynamicDataPage extends Page implements HasTable
 
         abort_unless($customTable->is_active, 404);
         abort_unless(DataAccess::current($customTable, 'view'), 403);
+        $this->restoreRememberedTableState();
 
         if ($customTable->isExternal()) {
             $this->unavailable = $this->checkExternal($customTable);
@@ -219,15 +228,14 @@ class DynamicDataPage extends Page implements HasTable
         $sort = $customTable->keyColumn() ?? $builder->tableFields($customTable, $columns)[0]->name ?? null;
 
         return $table
-            // Je Tabelle und Menüeintrag eigene Filter, Suche, Sortierung und Spaltenauswahl.
-            ->identifier('data.'.$customTable->name.'.'.($this->viewId ?? 'default'))
+            ->identifier($this->rememberedTableIdentifier())
             ->query(fn () => $builder->query($customTable, $columns, toggleable: true))
             ->columns($builder->columns($customTable, $columns, toggleable: true))
             ->filters([...$builder->filters($customTable), TrashedFilter::make()->visible(! $external && DataAccess::current($customTable, 'delete'))])
             ->filtersFormColumns(3)
             // Designer-Tabellen: neueste zuerst; externe Tabellen in Schlüsselreihenfolge.
             ->defaultSort($sort, $external ? 'asc' : 'desc')
-            // Vorgabe 10 Zeilen; eine andere Wahl gilt nur für die laufende Sitzung (Filament-Vorgabe).
+            // Vorgabe 10 Zeilen; eine andere Wahl bleibt je Person gespeichert (RemembersTableState, B-027).
             ->paginationPageOptions([10, 25, 50, 100])
             ->defaultPaginationPageOption(10)
             ->modelLabel(__('data.record'))
@@ -235,6 +243,8 @@ class DynamicDataPage extends Page implements HasTable
             ->recordAction($selectable ? 'selectRecord' : null)
             ->recordClasses(fn (DynamicRecord $record): ?string => $selectable && (string) $record->getKey() === (string) $selected() ? 'saft-row-selected' : null)
             ->headerActions([
+                // B-027: Filter, Suche, Sortierung und Zeilen pro Seite bleiben je Person gespeichert.
+                $this->resetTableViewAction(),
                 DynamicRecordActions::create($customTable),
                 DynamicRecordActions::export($customTable, $columns),
                 DynamicRecordActions::import($customTable),

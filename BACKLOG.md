@@ -8,8 +8,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-1. **B-027** Filter und Sortierung je Person und Tabelle merken
-2. **B-021** Feldtyp Datei/Bild
+1. **B-021** Feldtyp Datei/Bild
 
 ## Konfiguration übertragen
 
@@ -36,7 +35,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 | B-023 | REST-API | Zugriff von aussen auf Tabellen des Table-Designers mit Token, Rechten und Prüfregeln (wie `Saft::table()`). | offen | – |
 | B-024 | Massenbearbeitung | Mehrere Datensätze auf einmal ändern (ein Feld auf einen Wert setzen). | offen | – |
 | B-025 | Ereignisregeln ohne Code | Einfache Regeln in der Oberfläche („wenn Status = erledigt, dann Datum setzen / Meldung senden“). | offen | – |
-| B-027 | Filter und Sortierung merken | Filter, Sortierung und Suchbegriff einer Datenansicht je Person und Tabelle dauerhaft speichern (heute nur für die Sitzung), ohne Weitergabe; Knopf „Filter zurücksetzen“. Spaltenauswahl wird schon je Person gespeichert (user_table_columns). Vorstufe zu B-022. | geplant (Prio 1) | – |
+| B-027 | Filter und Sortierung merken | Filter, Sortierung, Suchbegriff, Spaltensuchen und Zeilen pro Seite einer Datenansicht je Person, Tabelle und Menüeintrag dauerhaft (Tabelle `user_table_states`, Trait `RemembersTableState`; nur Abweichungen, eine Abfrage nur bei Änderungen). Knopf „Ansicht zurücksetzen“ (auch Spaltenauswahl), nur bei Abweichungen sichtbar. Listen der Administration weiterhin nur für die Sitzung. Vorstufe zu B-022. | umgesetzt | – |
 | B-026 | PDF und Dokumentvorlagen | Datensätze bzw. Auswertungen als PDF nach Vorlage ausgeben (z. B. Lieferschein, Rechnung). | offen | – |
 
 ## Plugins

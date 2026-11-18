@@ -180,7 +180,7 @@ class TableViewSettingsTest extends DynamicDataTestCase
         Livewire::test(DynamicDataPage::class, ['table' => 'projekte'])->assertSet('tableSearch', 'Alpha');
     }
 
-    public function test_ten_rows_by_default_and_another_choice_only_for_the_session(): void
+    public function test_ten_rows_by_default_and_another_choice_is_remembered(): void
     {
         Livewire::test(DynamicDataPage::class, ['table' => 'projekte'])
             ->assertSet('tableRecordsPerPage', 10)
@@ -188,9 +188,12 @@ class TableViewSettingsTest extends DynamicDataTestCase
 
         Livewire::test(DynamicDataPage::class, ['table' => 'projekte'])->assertSet('tableRecordsPerPage', 50);
 
-        // Neue Sitzung (z. B. nach dem Abmelden): wieder 10.
+        // Seit B-027 auch in einer neuen Sitzung (z. B. nach dem Abmelden); „Ansicht zurücksetzen“ führt zu 10.
         $this->flushSession();
-        Livewire::test(DynamicDataPage::class, ['table' => 'projekte'])->assertSet('tableRecordsPerPage', 10);
+        Livewire::test(DynamicDataPage::class, ['table' => 'projekte'])
+            ->assertSet('tableRecordsPerPage', 50)
+            ->callTableAction('resetTableView')
+            ->assertSet('tableRecordsPerPage', 10);
     }
 
     public function test_numbers_are_right_aligned(): void

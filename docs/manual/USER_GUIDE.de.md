@@ -194,9 +194,12 @@ sich genauso.
 > Menüeintrag, auch nach dem Abmelden und auf einem anderen Rechner. „Zurücksetzen“ stellt die Vorgabe wieder her.
 > Das Spalten-Symbol gibt es auch in den Listen der Administration.
 
-**Filter, Suche und Sortierung** bleiben während Ihrer Sitzung erhalten: Öffnen Sie z. B. einen Datensatz zum
-Bearbeiten und kehren zur Liste zurück, ist die Auswahl noch da. Nach dem Abmelden beginnen Listen wieder ohne
-Filter. **Zahlen** stehen in allen Tabellen rechtsbündig.
+**Filter, Suche, Sortierung und Zeilen pro Seite** merkt sich SAFT in den Datenansichten ebenfalls **dauerhaft für
+Sie persönlich** – je Tabelle und Menüeintrag, auch nach dem Abmelden. Öffnen Sie also eine Tabelle wieder, sehen
+Sie sie so, wie Sie sie verlassen haben. Weicht die Ansicht von der Vorgabe ab, erscheint über der Tabelle der Knopf
+**Ansicht zurücksetzen**: Er stellt Filter, Suche, Sortierung, Zeilen pro Seite und Spaltenauswahl wieder auf die
+Vorgabe. In den Listen der Administration gelten Filter, Suche und Sortierung nur bis zum Abmelden. **Zahlen** stehen
+in allen Tabellen rechtsbündig.
 
 ### 4.2 Datensätze ansehen, anlegen, bearbeiten, löschen
 

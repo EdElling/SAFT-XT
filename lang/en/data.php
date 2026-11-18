@@ -82,4 +82,6 @@ return [
         ],
     ],
     'computed_placeholder' => 'calculated when saving',
+    'reset_view' => 'Reset view',
+    'reset_view_help' => 'Reset filters, search, sorting, rows per page and column selection to the default. Otherwise they stay saved for you, even after signing out.',
 ];

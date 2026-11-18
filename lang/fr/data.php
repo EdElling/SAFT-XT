@@ -82,4 +82,6 @@ return [
         ],
     ],
     'computed_placeholder' => 'calculé à l’enregistrement',
+    'reset_view' => 'Réinitialiser la vue',
+    'reset_view_help' => 'Rétablir les filtres, la recherche, le tri, les lignes par page et le choix des colonnes par défaut. Sinon, ils restent enregistrés pour vous, même après la déconnexion.',
 ];

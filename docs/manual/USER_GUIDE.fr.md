@@ -200,9 +200,12 @@ maître-détail se comportent de la même manière.
 > par entrée de menu, même après la déconnexion et sur un autre ordinateur. « Réinitialiser » rétablit la
 > présélection. L’icône des colonnes existe aussi dans les listes de l’administration.
 
-Les **filtres, la recherche et le tri** sont conservés pendant votre session : si vous ouvrez p. ex. un enregistrement
-pour le modifier puis revenez à la liste, la sélection est toujours là. Après la déconnexion, les listes repartent sans
-filtre. Les **nombres** sont alignés à droite dans tous les tableaux.
+SAFT mémorise aussi les **filtres, la recherche, le tri et les lignes par page** des vues de données **durablement
+et pour vous personnellement** – par table et entrée de menu, même après la déconnexion. Lorsque vous rouvrez une
+table, vous la retrouvez telle que vous l’avez quittée. Si la vue diffère de la valeur par défaut, le bouton
+**Réinitialiser la vue** apparaît au-dessus de la table : il rétablit les filtres, la recherche, le tri, les lignes par
+page et le choix des colonnes par défaut. Dans les listes de l’administration, filtres, recherche et tri ne valent que
+jusqu’à la déconnexion. Les **nombres** sont alignés à droite dans tous les tableaux.
 
 ### 4.2 Consulter, créer, modifier et supprimer des enregistrements
 

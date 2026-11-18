@@ -155,7 +155,8 @@ class AppServiceProvider extends ServiceProvider
         Table::configureUsing(self::useLocaleDateFormats(...));
 
         // Filter, Suche und Sortierung bleiben für die Dauer der Sitzung erhalten (z. B. nach
-        // „Bearbeiten“ und zurück). Die Spaltenauswahl speichert RemembersTableColumns dauerhaft.
+        // „Bearbeiten“ und zurück). Dauerhaft je Person: Spaltenauswahl (RemembersTableColumns) und – in den
+        // Datenansichten – Filter, Suche, Sortierung und Zeilen pro Seite (RemembersTableState).
         Table::configureUsing(static function (Table $table): void {
             $table->persistFiltersInSession()
                 ->persistSearchInSession()

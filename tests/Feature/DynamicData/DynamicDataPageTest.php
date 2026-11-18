@@ -127,9 +127,11 @@ class DynamicDataPageTest extends DynamicDataTestCase
             ->assertSet('tableSearch', 'alp')
             ->assertCanNotSeeTableRecords([$beta]);
 
-        // … in einer neuen Sitzung nicht.
+        // … und seit B-027 auch in einer neuen Sitzung (z. B. nach dem Abmelden).
         $this->flushSession();
         Livewire::test(DynamicDataPage::class, ['table' => 'projekte'])
+            ->assertSet('tableSearch', 'alp')
+            ->searchTable(null)
             ->filterTable('status', ['erledigt'])
             ->assertCanSeeTableRecords([$beta])
             ->assertCanNotSeeTableRecords([$alpha]);

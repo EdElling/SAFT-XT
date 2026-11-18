@@ -193,8 +193,11 @@ master-detail si comportano allo stesso modo.
 > anche dopo l’uscita e su un altro computer. «Reimposta» ripristina la preimpostazione. L’icona delle colonne esiste
 > anche negli elenchi dell’amministrazione.
 
-**Filtri, ricerca e ordinamento** restano durante la sessione: se ad es. aprite un record per modificarlo e tornate
-all’elenco, la selezione è ancora lì. Dopo l’uscita gli elenchi ripartono senza filtri. I **numeri** sono allineati a
+SAFT memorizza anche **filtri, ricerca, ordinamento e righe per pagina** delle viste dati **in modo permanente e
+personale** – per tabella e voce di menu, anche dopo la disconnessione. Riaprendo una tabella la ritrovate come l’avete
+lasciata. Se la vista differisce dal predefinito, sopra la tabella compare il pulsante **Reimposta vista**: riporta
+filtri, ricerca, ordinamento, righe per pagina e scelta delle colonne ai valori predefiniti. Negli elenchi
+dell’amministrazione filtri, ricerca e ordinamento valgono solo fino alla disconnessione. I **numeri** sono allineati a
 destra in tutte le tabelle.
 
 ### 4.2 Visualizzare, creare, modificare ed eliminare record

@@ -187,9 +187,11 @@ be scrolled horizontally. Summaries and detail tables in the master-detail view 
 > after signing out and on another computer. "Reset" restores the default. The columns icon is also available in the
 > lists of the administration.
 
-**Filters, search and sorting** are kept during your session: if you open a record for editing and return to the
-list, your selection is still there. After signing out, lists start without filters again. **Numbers** are
-right-aligned in all tables.
+SAFT also remembers **filters, search, sorting and rows per page** in the data views **permanently for you
+personally** – per table and menu entry, even after signing out. When you open a table again, you see it as you
+left it. If the view differs from the default, the button **Reset view** appears above the table: it sets filters,
+search, sorting, rows per page and the column selection back to the default. In the administration lists, filters,
+search and sorting only last until you sign out. **Numbers** are right-aligned in all tables.
 
 ### 4.2 Viewing, creating, editing and deleting records
 

@@ -82,4 +82,6 @@ return [
         ],
     ],
     'computed_placeholder' => 'calcolato al salvataggio',
+    'reset_view' => 'Reimposta vista',
+    'reset_view_help' => 'Riportare filtri, ricerca, ordinamento, righe per pagina e scelta delle colonne ai valori predefiniti. Altrimenti restano salvati per voi, anche dopo la disconnessione.',
 ];
