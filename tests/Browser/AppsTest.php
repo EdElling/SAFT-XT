@@ -122,4 +122,35 @@ class AppsTest extends DuskTestCase
             $this->assertSame(['reports.view'], $copy->permissions->pluck('name')->all());
         });
     }
+
+    /** FAP-04 */
+    public function test_connected_tables_are_moved_together_with_role_rights(): void
+    {
+        app(DynamicSchemaService::class)->createTable(['app_id' => $this->first->id, 'name' => 'bestellungen', 'label' => 'Bestellungen'], [
+            ['name' => 'nummer', 'label' => 'Nummer', 'type' => 'string'],
+            ['name' => 'kunde_id', 'label' => 'Kunde', 'type' => 'relation', 'options' => ['table' => 'kunden', 'display_fields' => ['firma']]],
+        ]);
+        $role = Role::query()->create(['name' => 'vertrieb', 'guard_name' => 'web', 'app_id' => $this->first->id]);
+        $role->givePermissionTo(['data.kunden.view', 'data.bestellungen.view']);
+
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/table-designer')->waitForText('Bestellungen', 15)
+                ->click('tr.fi-ta-row input[type="checkbox"][value="'.CustomTable::query()->where('name', 'bestellungen')->value('id').'"]')
+                ->pause(800);
+            $this->clickVisibleButton($browser, 'In andere App verschieben');
+            $browser->waitFor('.fi-modal-window select[id$="target"]', 15)
+                ->select('.fi-modal-window select[id$="target"]', (string) $this->second->id)
+                ->waitForText('So kann nicht verschoben werden', 15)
+                ->assertSee('Verknüpfung „Kunde“ von Bestellungen zu Kunden');
+            $this->clickVisibleButton($browser, 'Verknüpfte Tabellen hinzufügen');
+            $browser->waitForText('Es werden 2 Tabellen', 15)
+                ->assertDontSee('So kann nicht verschoben werden')
+                ->assertInputValue('.fi-modal-window input[id$="role_names.'.Role::findByName('vertrieb')->id.'"]', 'vertrieb-hr');
+            $this->clickVisibleButton($browser, 'Verschieben');
+            $browser->waitForText('2 Tabellen nach „Personal“ verschoben.', 15);
+        });
+
+        $this->assertSame(2, CustomTable::query()->whereIn('name', ['kunden', 'bestellungen'])->where('app_id', $this->second->id)->count());
+        $this->assertEqualsCanonicalizing(['data.kunden.view', 'data.bestellungen.view'], Role::findByName('vertrieb-hr')->permissions->pluck('name')->all());
+    }
 }

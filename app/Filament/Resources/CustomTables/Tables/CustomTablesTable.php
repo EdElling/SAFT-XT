@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\CustomTables\Tables;
 
 use App\Filament\Support\AppFilter;
+use App\Filament\Support\MoveToAppAction;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Plugins\PluginDependencies;
@@ -58,6 +59,8 @@ class CustomTablesTable
             ])
             ->recordActions([
                 EditAction::make(),
-            ]);
+            ])
+            // In andere App verschieben (B-107): mehrere zusammenhängende Tabellen in einem Schritt.
+            ->toolbarActions([MoveToAppAction::forTables()]);
     }
 }

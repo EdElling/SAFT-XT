@@ -1211,9 +1211,27 @@ Löschen lässt sich nur eine leere App.
 und Formeln über Kind-Tabellen sind nur innerhalb einer App möglich. Der Table-Designer bietet nur Tabellen derselben
 App an; der KI-Tabellenassistent sieht nur das Datenmodell der gewählten App.
 
+**In andere App verschieben:** Tabellen wechseln samt Menüeinträgen, Auswertungen (mit dieser Grundtabelle),
+Tabellenverknüpfungen und Aufgaben in eine andere App; Daten, Dateien und technische Namen bleiben unverändert. Drei
+Wege führen zum selben Dialog:
+
+- **Table-Designer:** Tabellen anhaken, Massenaktion **„In andere App verschieben“**.
+- **Menüs:** bei einer obersten Gruppe **„Gruppe in andere App verschieben“** – die ganze Gruppe zieht mit allen
+  Tabellen darin um.
+- **Apps:** bei einer App **„Tabellen verschieben …“**, z. B. um „Bestehende Daten“ aufzuteilen.
+
+Im Dialog wählen Sie die Ziel-App. Geprüft wird der Zustand nach dem Verschieben: Verweise innerhalb der Auswahl sind in
+Ordnung; würde eine Verknüpfung, Tabellenverknüpfung oder Auswertung über die App-Grenze reichen, nennt der Dialog sie
+und verschiebt nicht. **„Verknüpfte Tabellen hinzufügen“** ergänzt die Auswahl um alles, was zusammenhängt. Menüeinträge
+kommen in eine Gruppe der Ziel-App (vorgegeben: neue Gruppe mit dem Namen der bisherigen); leere Gruppen der alten App
+werden entfernt. Für jede Rolle mit Rechten auf die Tabellen wählen Sie: **neue Rolle in der Ziel-App** (vorgegeben, Name
+mit dem Präfix der Ziel-App, z. B. `vertrieb-lager`), Übertragen auf eine bestehende Rolle der Ziel-App – beide mit den
+Mitgliedern, damit niemand den Zugriff verliert – oder Rechte entfernen. Das Verschieben steht im Änderungsprotokoll.
+
 **Nach dem Update:** Bestehende Installationen erhalten eine App „Bestehende Daten“ mit allen vorhandenen Tabellen,
 Menüs, Auswertungen, Rollen und Aufgaben; System-Menüs, Systemrollen und System-Aufgaben bleiben ohne App. Neue
-Installationen beginnen ohne App; die Demo-Daten legen je eine eigene App an (Shop, Lager, Forschung).
+Installationen beginnen ohne App; die Demo-Daten legen je eine eigene App an (Shop, Lager, Forschung). Aufteilen lässt sich „Bestehende Daten“ mit „In andere App verschieben“
+(oben).
 
 ## Anhang A – Rechte im Überblick
 

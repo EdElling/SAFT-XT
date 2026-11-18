@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Menus\Tables;
 
 use App\Filament\Support\AppFilter;
+use App\Filament\Support\MoveToAppAction;
 use App\Models\Menu;
 use App\Navigation\MenuTree;
 use App\Support\AppLocale;
@@ -79,6 +80,7 @@ class MenusTable
             ])
             ->recordActions([
                 EditAction::make(),
+                MoveToAppAction::forGroup(),
                 DeleteAction::make()
                     ->modalDescription(__('menus.delete_children')),
             ])

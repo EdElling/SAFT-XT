@@ -1232,9 +1232,27 @@ Si può eliminare solo un’app vuota.
 formule sulle tabelle figlie sono possibili solo all’interno di un’app. Il designer di tabelle offre solo tabelle della
 stessa app; l’assistente IA delle tabelle vede solo il modello dati dell’app scelta.
 
+**Spostare in un’altra app:** le tabelle cambiano app insieme alle loro voci di menu, ai report (con quella tabella di
+base), ai collegamenti tra tabelle e alle attività; dati, file e nomi tecnici restano invariati. Tre vie portano allo
+stesso dialogo:
+
+- **Designer di tabelle:** spuntare le tabelle, azione multipla **«Sposta in un’altra app»**.
+- **Menu:** su un gruppo di primo livello **«Sposta il gruppo in un’altra app»** – l’intero gruppo si sposta con tutte
+  le sue tabelle.
+- **App:** su un’app **«Sposta tabelle …»**, ad es. per suddividere «Dati esistenti».
+
+Nel dialogo scegliete l’app di destinazione. Viene controllato lo stato dopo lo spostamento: i riferimenti all’interno
+della selezione vanno bene; se un collegamento, un collegamento tra tabelle o un report superasse il confine dell’app,
+il dialogo lo indica e non sposta nulla. **«Aggiungi tabelle collegate»** completa la selezione con tutto ciò che va
+insieme. Le voci di menu finiscono in un gruppo dell’app di destinazione (predefinito: nuovo gruppo con il nome di
+quello attuale); i gruppi vuoti della vecchia app vengono rimossi. Per ogni ruolo con diritti sulle tabelle scegliete:
+**nuovo ruolo nell’app di destinazione** (predefinito, nome con il prefisso dell’app di destinazione, ad es.
+`vertrieb-lager`), trasferimento a un ruolo esistente dell’app di destinazione – entrambi con i membri, così nessuno
+perde l’accesso – oppure rimozione dei diritti. Lo spostamento compare nel registro modifiche.
+
 **Dopo l’aggiornamento:** le installazioni esistenti ricevono un’app «Dati esistenti» con tutte le tabelle, i menu, i
 report, i ruoli e le attività esistenti; menu, ruoli e attività di sistema restano senza app. Le nuove installazioni
-iniziano senza app; i dati demo creano ciascuno la propria app (Negozio, Magazzino, Ricerca).
+iniziano senza app; i dati demo creano ciascuno la propria app (Negozio, Magazzino, Ricerca). «Dati esistenti» si suddivide con «Sposta in un’altra app» (sopra).
 
 ## Allegato A – Panoramica dei diritti
 

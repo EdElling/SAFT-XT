@@ -1262,9 +1262,28 @@ Seule une app vide peut être supprimée.
 de » et les formules sur les tables enfants ne sont possibles qu’au sein d’une app. Le concepteur de tables ne propose
 que les tables de la même app ; l’assistant IA des tables ne voit que le modèle de données de l’app choisie.
 
+**Déplacer vers une autre app :** les tables changent d’app avec leurs entrées de menu, rapports (avec cette table de
+base), liaisons de tables et tâches ; données, fichiers et noms techniques restent inchangés. Trois chemins mènent au
+même dialogue :
+
+- **Concepteur de tables :** cocher les tables, action groupée **« Déplacer vers une autre app »**.
+- **Menus :** sur un groupe de premier niveau **« Déplacer le groupe vers une autre app »** – tout le groupe déménage
+  avec toutes ses tables.
+- **Apps :** sur une app **« Déplacer des tables … »**, p. ex. pour répartir « Données existantes ».
+
+Dans le dialogue, vous choisissez l’app cible. L’état après le déplacement est contrôlé : les références au sein de la
+sélection sont en ordre ; si une liaison, une liaison de tables ou un rapport dépassait la frontière de l’app, le
+dialogue le signale et ne déplace rien. **« Ajouter les tables liées »** complète la sélection avec tout ce qui va
+ensemble. Les entrées de menu vont dans un groupe de l’app cible (par défaut : nouveau groupe avec le nom de l’actuel) ;
+les groupes vides de l’ancienne app sont supprimés. Pour chaque rôle ayant des droits sur les tables, vous choisissez :
+**nouveau rôle dans l’app cible** (par défaut, nom avec le préfixe de l’app cible, p. ex. `vertrieb-lager`), transfert
+à un rôle existant de l’app cible – les deux avec les membres, pour que personne ne perde l’accès – ou retrait des
+droits. Le déplacement figure dans le journal des modifications.
+
 **Après la mise à jour :** les installations existantes reçoivent une app « Données existantes » avec toutes les
 tables, menus, rapports, rôles et tâches existants ; les menus, rôles et tâches système restent sans app. Les nouvelles
-installations commencent sans app ; les données de démo créent chacune leur propre app (Boutique, Entrepôt, Recherche).
+installations commencent sans app ; les données de démo créent chacune leur propre app (Boutique, Entrepôt, Recherche). « Données existantes » se répartit avec « Déplacer vers une autre
+app » (ci-dessus).
 
 ## Annexe A – Aperçu des droits
 

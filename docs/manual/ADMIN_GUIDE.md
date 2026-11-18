@@ -1175,9 +1175,24 @@ Only an empty app can be deleted.
 child tables are only possible within one app. The table designer only offers tables of the same app; the AI table
 assistant only sees the data model of the chosen app.
 
+**Move to another app:** tables change app together with their menu entries, reports (with that base table), table
+links and tasks; data, files and technical names stay unchanged. Three ways lead to the same dialog:
+
+- **Table designer:** tick tables, bulk action **“Move to another app”**.
+- **Menus:** on a top-level group **“Move group to another app”** – the whole group moves with all tables in it.
+- **Apps:** on an app **“Move tables …”**, e.g. to split “Existing data”.
+
+In the dialog you choose the target app. The state after moving is checked: references within the selection are fine;
+if a relation, table link or report would reach across the app boundary, the dialog names it and does not move.
+**“Add connected tables”** adds everything that belongs together to the selection. Menu entries go into a group of the
+target app (default: a new group with the name of the current one); empty groups of the old app are removed. For each
+role with permissions on the tables you choose: **new role in the target app** (default, name with the target app's
+prefix, e.g. `vertrieb-lager`), transfer to an existing role of the target app – both with the members, so nobody loses
+access – or remove the permissions. Moving is recorded in the activity log.
+
 **After the update:** existing installations get an app “Existing data” with all existing tables, menus, reports,
 roles and tasks; system menus, system roles and system tasks stay without an app. New installations start without an
-app; the demo data create one app each (Shop, Warehouse, Research).
+app; the demo data create one app each (Shop, Warehouse, Research). “Existing data” can be split with “Move to another app” (above).
 
 ## Appendix A – Permissions at a glance
 
