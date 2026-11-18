@@ -14,6 +14,7 @@ use App\Models\DynamicRecord;
 use App\Models\RecordFile;
 use App\Models\User;
 use Filament\Actions\Testing\TestAction;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -222,6 +223,16 @@ class FileFieldTest extends DynamicDataTestCase
     public function test_livewire_accepts_uploads_up_to_the_designer_limit(): void
     {
         $this->assertContains('max:'.((int) config('dynamic_data.files.limit_max_mb') * 1024), config('livewire.temporary_file_upload.rules'));
+    }
+
+    public function test_upload_size_never_exceeds_the_php_limit(): void
+    {
+        $limit = FileKinds::phpLimitMb();
+        $expected = min(2, max(1, $limit ?? PHP_INT_MAX)) * 1024;
+
+        Livewire::test(DynamicDataPage::class, ['table' => 'vertraege'])
+            ->mountTableAction('create')
+            ->assertFormFieldExists('belege', fn (FileUpload $c): bool => $c->getMaxSize() === $expected);
     }
 
     public function test_specific_kinds_win_over_any(): void

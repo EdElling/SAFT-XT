@@ -94,7 +94,11 @@ final class DynamicFormBuilder
             ->maxFiles($maxFiles)
             ->reorderable($maxFiles > 1)
             ->appendFiles()
-            ->maxSize(max(1, (int) ($options['max_mb'] ?? config('dynamic_data.files.default_max_mb', 10))) * 1024)
+            // Höchstens so gross, wie PHP annimmt: sonst scheitert der Upload ohne verständliche Meldung.
+            ->maxSize(min(
+                max(1, (int) ($options['max_mb'] ?? config('dynamic_data.files.default_max_mb', 10))),
+                max(1, FileKinds::phpLimitMb() ?? PHP_INT_MAX),
+            ) * 1024)
             ->when($mimes !== [], fn (FileUpload $c) => $c->acceptedFileTypes($mimes))
             ->openable()
             ->downloadable()
