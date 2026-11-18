@@ -1,5 +1,5 @@
 {
-    "version": "1.7",
+    "version": "1.8",
     "surface": {
         "App\\Filament\\Concerns\\LimitsFormWidth": [
             "trait",
@@ -27,11 +27,14 @@
         ],
         "App\\Plugins\\Api\\DataTable": [
             "class",
+            "function attachFile(App\\Models\\DynamicRecord|string|int $record, string $field, Illuminate\\Http\\UploadedFile|string $file, ?string $name = null): App\\Plugins\\Api\\StoredFile",
             "function authorize(string $action): void",
             "function can(string $action): bool",
             "function create(array $values): App\\Models\\DynamicRecord",
             "function delete(App\\Models\\DynamicRecord|string|int $record): void",
+            "function detachFile(App\\Models\\DynamicRecord|string|int $record, string $field, string $fileId): void",
             "function fieldNames(): array",
+            "function files(App\\Models\\DynamicRecord|string|int $record, string $field): array",
             "function find(string|int $id): ?App\\Models\\DynamicRecord",
             "function formFields(array $only = [], array $except = []): array",
             "function label(): string",
@@ -135,6 +138,16 @@
             "static function plugin(string $id): App\\Plugins\\SaftPlugin",
             "static function table(string $name): App\\Plugins\\Api\\DataTable",
             "static function transaction(Closure $callback): mixed"
+        ],
+        "App\\Plugins\\Api\\StoredFile": [
+            "class",
+            "function contents(): string",
+            "function stream(): mixed",
+            "function url(): string",
+            "property int $size",
+            "property string $id",
+            "property string $mime",
+            "property string $name"
         ],
         "App\\Plugins\\MenuSuggestion": [
             "class",

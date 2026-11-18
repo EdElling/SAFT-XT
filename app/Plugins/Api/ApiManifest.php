@@ -50,6 +50,8 @@ final class ApiManifest
         TaskType::class,
         TaskResult::class,
         TaskSkipped::class,
+        // Dateien aus Dateifeldern (DataTable::files(), attachFile(), detachFile()), seit API 1.8.
+        StoredFile::class,
     ];
 
     /** @var list<class-string> */

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Database\DatabaseBackup;
 use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class DatabaseBackupCommandTest extends TestCase
@@ -17,6 +19,8 @@ class DatabaseBackupCommandTest extends TestCase
     {
         parent::setUp();
         $this->directory = sys_get_temp_dir().'/saft-backup-test-'.uniqid();
+        // Nie die echten Dateien aus Dateifeldern mitsichern.
+        Storage::fake('local');
     }
 
     protected function tearDown(): void
@@ -227,5 +231,27 @@ class DatabaseBackupCommandTest extends TestCase
             ->assertFailed();
 
         $this->assertSame([], File::files($this->directory));
+    }
+
+    public function test_files_from_file_fields_are_saved_next_to_the_dump_unless_switched_off(): void
+    {
+        config(['database.default' => 'pgsql']);
+        Storage::disk('local')->put('files/belege/scan/a.pdf', 'pdf');
+        Process::fake(function (PendingProcess $process) {
+            File::put($this->targetFile($process->command), 'dump');
+
+            return Process::result();
+        });
+
+        $this->artisan('db:backup', ['--path' => $this->directory])
+            ->expectsOutputToContain('Dateien gesichert')
+            ->assertSuccessful();
+        $this->assertCount(1, File::glob($this->directory.'/*'.DatabaseBackup::FILES_SUFFIX));
+
+        File::cleanDirectory($this->directory);
+        $this->artisan('db:backup', ['--path' => $this->directory, '--without-files' => true])
+            ->doesntExpectOutputToContain('Dateien gesichert')
+            ->assertSuccessful();
+        $this->assertCount(1, File::files($this->directory), 'Nur die Datenbanksicherung.');
     }
 }

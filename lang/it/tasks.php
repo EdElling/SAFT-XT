@@ -12,6 +12,8 @@ return [
         'schedule' => 'Pianificazione',
     ],
     'fields' => [
+        'backup_files' => 'Salvare anche i file dei campi file',
+        'backup_files_help' => 'Come ZIP accanto al backup della banca dati (solo se i file si trovano su questo server).',
         'backup_days' => 'Conservare i backup (giorni)',
         'backup_days_help' => 'I backup più vecchi in storage/backups vengono eliminati.',
         'backup_keep' => 'Conservare almeno',
@@ -60,6 +62,7 @@ return [
         'weekly' => ':day alle :time',
     ],
     'types' => [
+        'files_prune' => 'Ripulire i file',
         'db_backup' => 'Eseguire il backup del database',
         'backup_prune' => 'Ripulire i backup',
         'demo_reset' => 'Ripristinare i dati demo',
@@ -69,12 +72,18 @@ return [
         'task_runs_prune' => 'Pulire il registro delle esecuzioni',
     ],
     'describe_type' => [
+        'files_prune' => 'File orfani dei campi file (caricamenti mai salvati, file senza record)',
+        'db_backup_files' => ', con file',
         'db_backup' => 'Intero database in storage/backups',
         'backup_prune' => 'Backup più vecchi di :days giorni, restano i :keep più recenti',
         'snapshot_prune' => 'Periodi di conservazione di tutti gli stati, esecuzioni interrotte',
         'task_runs_prune' => 'Esecuzioni più vecchie di :days giorni',
     ],
     'results' => [
+        'files_prune' => ':deleted file orfani eliminati (:size).',
+        'files_missing' => '{1} Manca 1 file nello spazio di archiviazione: :files|[2,*] Mancano :count file nello spazio di archiviazione: :files',
+        'db_backup_files' => 'File: :file (:kb KB).',
+        'db_backup_files_remote' => 'I file non si trovano su questo server (p. es. S3) e non sono inclusi.',
         'db_backup' => 'Backup :file creato (:kb KB).',
         'backup_prune' => ':deleted backup eliminati.',
         'demo_reset' => 'Dati demo ripristinati: :demos record.',

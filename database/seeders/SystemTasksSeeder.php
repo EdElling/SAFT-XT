@@ -17,6 +17,7 @@ class SystemTasksSeeder extends Seeder
     public const array TASKS = [
         ['type' => 'db_backup', 'at_time' => '02:30', 'parameters' => null],
         ['type' => 'backup_prune', 'at_time' => '02:45', 'parameters' => ['days' => 14, 'keep' => 3]],
+        ['type' => 'files_prune', 'at_time' => '03:00', 'parameters' => null],
         ['type' => 'snapshot_prune', 'at_time' => '03:15', 'parameters' => null],
         ['type' => 'task_runs_prune', 'at_time' => '03:30', 'parameters' => ['days' => 90]],
         // Zerstörerisch: ausgeschaltet, und auch eingeschaltet nur mit DEMO_RESET=true.

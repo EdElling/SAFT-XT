@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\DynamicData;
 
+use App\Database\DatabaseBackup;
+use App\DynamicData\Files\RecordFiles;
+use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\RecordFile;
 use App\Models\ScheduledTask;
 use App\Models\TaskRun;
 use App\Tasks\TaskRunner;
@@ -12,6 +16,11 @@ use App\Tasks\TaskSkipped;
 use App\Tasks\Types\DemoResetTask;
 use Database\Seeders\ForschungDemoSeeder;
 use Database\Seeders\LagerDemoSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Process\PendingProcess;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Storage;
 
 /** System-Aufgabe „Demo-Daten zurücksetzen“: nur mit DEMO_RESET=true, nur Daten der gewählten Demos. */
 class DemoResetTest extends DynamicDataTestCase
@@ -84,5 +93,38 @@ class DemoResetTest extends DynamicDataTestCase
 
         $this->expectException(TaskSkipped::class);
         app(DemoResetTask::class)->run(['demos' => ['shop', 'forschung'], 'backup' => false]);
+    }
+
+    public function test_files_of_the_demo_tables_are_removed_and_backed_up(): void
+    {
+        config(['saft.demo_reset' => true]);
+        Storage::fake('local');
+        Process::fake(static function (PendingProcess $process) {
+            foreach ((array) $process->command as $argument) {
+                if (str_starts_with($argument, '--file=')) {
+                    File::put(substr($argument, 7), 'dump');
+                }
+            }
+
+            return Process::result(output: "-- dump\n");
+        });
+        $storage = sys_get_temp_dir().'/saft-demo-reset-'.uniqid();
+        $this->app->useStoragePath($storage);
+
+        $this->seed(LagerDemoSeeder::class);
+        $orte = CustomTable::query()->where('name', 'lager_orte')->sole();
+        $doku = $this->service()->addField($orte, ['name' => 'doku', 'label' => 'Doku', 'type' => 'file', 'options' => ['kinds' => ['any'], 'max_files' => 5]]);
+        $file = app(RecordFiles::class)->store($orte->fresh(), $doku, UploadedFile::fake()->createWithContent('plan.txt', 'Lageplan'));
+        DynamicRecord::forTableName('lager_orte')->newQuery()->firstOrFail()->update(['doku' => [$file->toReference()]]);
+
+        $task = ScheduledTask::query()->where('type', 'demo_reset')->sole();
+        $task->update(['parameters' => ['demos' => ['lager'], 'backup' => true]]);
+        $run = app(TaskRunner::class)->run($task, TaskRun::MANUAL);
+
+        $this->assertSame(ScheduledTask::SUCCESS, $run->status, (string) $run->message);
+        $this->assertSame(0, RecordFile::query()->count());
+        Storage::disk('local')->assertMissing($file->path);
+        $this->assertCount(1, File::glob($storage.'/backups/*'.DatabaseBackup::FILES_SUFFIX), 'Die Dateien sind vorher gesichert.');
+        File::deleteDirectory($storage);
     }
 }

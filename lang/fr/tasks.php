@@ -12,6 +12,8 @@ return [
         'schedule' => 'Planning',
     ],
     'fields' => [
+        'backup_files' => 'Sauvegarder aussi les fichiers des champs de fichiers',
+        'backup_files_help' => 'En ZIP à côté de la sauvegarde de la base (seulement si les fichiers se trouvent sur ce serveur).',
         'backup_days' => 'Conserver les sauvegardes (jours)',
         'backup_days_help' => 'Les sauvegardes plus anciennes dans storage/backups sont supprimées.',
         'backup_keep' => 'Conserver au moins',
@@ -60,6 +62,7 @@ return [
         'weekly' => ':day à :time',
     ],
     'types' => [
+        'files_prune' => 'Nettoyer les fichiers',
         'db_backup' => 'Sauvegarder la base de données',
         'backup_prune' => 'Nettoyer les sauvegardes',
         'demo_reset' => 'Réinitialiser les données de démo',
@@ -69,12 +72,18 @@ return [
         'task_runs_prune' => 'Nettoyer le journal des exécutions',
     ],
     'describe_type' => [
+        'files_prune' => 'Fichiers orphelins des champs de fichiers (téléversements jamais enregistrés, fichiers sans enregistrement)',
+        'db_backup_files' => ', avec fichiers',
         'db_backup' => 'Toute la base de données vers storage/backups',
         'backup_prune' => 'Sauvegardes de plus de :days jours, les :keep plus récentes restent',
         'snapshot_prune' => 'Durées de conservation de tous les états, exécutions interrompues',
         'task_runs_prune' => 'Exécutions de plus de :days jours',
     ],
     'results' => [
+        'files_prune' => ':deleted fichiers orphelins supprimés (:size).',
+        'files_missing' => '{1} 1 fichier manque dans le stockage : :files|[2,*] :count fichiers manquent dans le stockage : :files',
+        'db_backup_files' => 'Fichiers : :file (:kb Ko).',
+        'db_backup_files_remote' => 'Les fichiers ne se trouvent pas sur ce serveur (p. ex. S3) et ne sont pas inclus.',
         'db_backup' => 'Sauvegarde :file créée (:kb Ko).',
         'backup_prune' => ':deleted sauvegardes supprimées.',
         'demo_reset' => 'Données de démo réinitialisées : :demos enregistrements.',

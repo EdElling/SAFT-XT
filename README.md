@@ -157,7 +157,8 @@ only run with a full installation.
 | Force local sign-in (emergency exit) | `AUTH_FORCE_LOCAL=true` in `.env` |
 | Set the sign-in mode from the console | `php artisan auth:mode local` |
 | Compare the table designer with the database | `php artisan app-data:verify` |
-| Back up the database (to `storage/backups`) | `php artisan db:backup` |
+| Back up the database (to `storage/backups`, files from file fields as a ZIP alongside) | `php artisan db:backup` |
+| Clean up orphaned files from file fields (`--dry-run` only counts) | `php artisan files:prune` |
 | Recalculate computed fields | `php artisan computed:recompute` |
 | Compare linked tables with their external databases (`--apply` applies differences) | `php artisan table-connector:verify` |
 | Change the maximum number of records per export (default 50,000) | `APP_DATA_EXPORT_MAX_ROWS` in `.env` |
@@ -173,6 +174,9 @@ pg_restore -h 127.0.0.1 -U <user> --no-owner -d SAFT2_restored storage/backups/<
 With MySQL, the `.sql` file contains the main database and `…_app_data` under their original names
 (`mysql -h 127.0.0.1 -u <user> -p < storage/backups/<file>.sql`); for other names, adjust the `CREATE DATABASE` and
 `USE` lines first.
+
+The files from file fields are in the ZIP file with the same name and `_files.zip`; unzip it after restoring the
+database: `unzip storage/backups/<file>_files.zip -d storage/app/private`.
 
 Backups contain all data and stay outside the repository. Keep an additional copy outside this machine.
 

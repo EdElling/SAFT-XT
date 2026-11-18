@@ -12,6 +12,8 @@ return [
         'schedule' => 'Schedule',
     ],
     'fields' => [
+        'backup_files' => 'Include files from file fields',
+        'backup_files_help' => 'As a ZIP next to the database backup (only if the files are stored on this server).',
         'backup_days' => 'Keep backups (days)',
         'backup_days_help' => 'Older backups in storage/backups are deleted.',
         'backup_keep' => 'Always keep at least',
@@ -60,6 +62,7 @@ return [
         'weekly' => ':day at :time',
     ],
     'types' => [
+        'files_prune' => 'Clean up files',
         'db_backup' => 'Back up database',
         'backup_prune' => 'Clean up backups',
         'demo_reset' => 'Reset demo data',
@@ -69,12 +72,18 @@ return [
         'task_runs_prune' => 'Clean up run log',
     ],
     'describe_type' => [
+        'files_prune' => 'Orphaned files from file fields (uploads never saved, files without record)',
+        'db_backup_files' => ', with files',
         'db_backup' => 'Entire database to storage/backups',
         'backup_prune' => 'Backups older than :days days, the :keep newest stay',
         'snapshot_prune' => 'Retention periods of all snapshots, aborted runs',
         'task_runs_prune' => 'Runs older than :days days',
     ],
     'results' => [
+        'files_prune' => ':deleted orphaned files deleted (:size).',
+        'files_missing' => '{1} 1 file is missing from storage: :files|[2,*] :count files are missing from storage: :files',
+        'db_backup_files' => 'Files: :file (:kb KB).',
+        'db_backup_files_remote' => 'The files are not stored on this server (e.g. S3) and are not included.',
         'db_backup' => 'Backup :file created (:kb KB).',
         'backup_prune' => ':deleted backups deleted.',
         'demo_reset' => 'Demo data reset: :demos records.',

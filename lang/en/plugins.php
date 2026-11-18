@@ -101,7 +101,12 @@ return [
     ],
     'api' => [
         'forbidden' => 'You lack the data permission “:action” for :table.',
-        'unknown_field' => 'The field “:field” does not exist in :table (or it is computed).',
+        'unknown_field' => 'The field “:field” does not exist in :table (or it is computed or a file field – use attachFile() for those).',
+        'not_a_file_field' => 'The field “:field” in :table is not an active file field.',
+        'file_missing' => ':field: The file was not found.',
+        'file_kind' => ':field: Files of type :mime are not allowed.',
+        'file_size' => ':field: The file is larger than :max MB.',
+        'file_count' => ':field: At most :max files are allowed.',
         'read_only' => 'The table :table is read-only through the interface.',
     ],
     'console' => [

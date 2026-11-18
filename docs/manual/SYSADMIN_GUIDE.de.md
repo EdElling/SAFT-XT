@@ -39,7 +39,7 @@ und [Anhang C](INSTALL_PRODUCTION.de.md) (Produktionsserver, z. B. ein Managed S
 | Angebundene Tabellen mit dem Schema ihrer externen Datenbanken abgleichen (Exit-Code 1 bei Abweichungen; `--apply` übernimmt sie) | `php artisan table-connector:verify` |
 | Massenverknüpfung auf der Konsole: alle noch nicht angebundenen Tabellen (`--all`) oder einzelne (`--table=…`), mit `--prefix=`, `--menu-group=<ID>` bzw. `none`, `--role=<Name>`, `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--schema=`, `--no-details` | `php artisan table-connector:connect "<Verbindung>" --all` |
 | Datenbank wählen: PostgreSQL, MySQL oder MariaDB, mit den Zugangsdaten `PGSQL_*`, `MYSQL_*` bzw. `MARIADB_*` | `DB_CONNECTION=pgsql`, `mysql` bzw. `mariadb` in der `.env` |
-| Datenbank sichern (nach `storage/backups`; MySQL/MariaDB: Hauptdatenbank und `…_app_data` in einer `.sql`-Datei, bei eigenen Zugangsdaten für `app_data` (`DB_APP_DATA_*`) in zwei Teilen; ohne passendes `mysqldump` mit `DB_BACKUP_METHOD=php` bzw. `--php` in PHP; Pfad zum Programm bei Bedarf in `PGSQL_DUMP_BINARY`, `MYSQL_DUMP_BINARY` bzw. `MARIADB_DUMP_BINARY`) | `php artisan db:backup` |
+| Datenbank sichern (nach `storage/backups`; MySQL/MariaDB: Hauptdatenbank und `…_app_data` in einer `.sql`-Datei, bei eigenen Zugangsdaten für `app_data` (`DB_APP_DATA_*`) in zwei Teilen; ohne passendes `mysqldump` mit `DB_BACKUP_METHOD=php` bzw. `--php` in PHP; Pfad zum Programm bei Bedarf in `PGSQL_DUMP_BINARY`, `MYSQL_DUMP_BINARY` bzw. `MARIADB_DUMP_BINARY`; die Dateien aus Dateifeldern daneben als `<gleicher Name>_files.zip`, ohne sie mit `--without-files`) | `php artisan db:backup` |
 | Berechnete Felder neu berechnen (nach Änderungen an SAFT vorbei; optional Tabellennamen) | `php artisan computed:recompute` |
 | Höchstzahl der Datensätze je Export ändern (Vorgabe 50.000) | `APP_DATA_EXPORT_MAX_ROWS=50000` in der `.env` |
 | Höchstzahl der Zeilen je Datenimport in eine bestehende Tabelle ändern (Vorgabe 10'000) | `APP_DATA_IMPORT_MAX_RECORD_ROWS=10000` in der `.env` |
@@ -57,8 +57,13 @@ Hinweise:
   `APP_ENV=production`. Sonst steht eine Test-Route bereit, über die man sich ohne Passwort anmelden kann.
 - **Sicherungen** enthalten alle Daten. Bewahren Sie zusätzlich eine Kopie ausserhalb des Servers auf. Wie Sie eine
   Sicherung einspielen, steht in der [README](../../README.de.md#betrieb).
-- **Dateien aus Dateifeldern** sind nicht in `db:backup` enthalten. Sichern Sie `storage/app/private/files` (bzw. den
-  S3-Bucket) zusammen mit der Datenbank.
+- **Dateien aus Dateifeldern** sichert `db:backup` als ZIP neben der Datenbanksicherung (gleicher Name mit
+  `_files.zip`, ohne Vorschaubilder). Zum Wiederherstellen nach dem Einspielen der Datenbank das ZIP in
+  `storage/app/private` entpacken (`unzip <datei>_files.zip -d storage/app/private`); Vorschaubilder entstehen beim
+  ersten Aufruf neu. Liegen die Dateien in S3 (`APP_DATA_FILES_DISK=s3`), sind sie nicht enthalten – sichern Sie dort,
+  z. B. mit Versionierung des Buckets.
+- **Verwaiste Dateien** (Uploads aus abgebrochenen Formularen, Dateien von Datensätzen, die ausserhalb von SAFT gelöscht
+  wurden) räumt die System-Aufgabe *Dateien aufräumen* bzw. `php artisan files:prune` nach 24 Stunden weg.
 - **Grösse von Uploads:** Die Höchstgrösse je Dateifeld wirkt nur bis zur Grenze von PHP. Für z. B. 50 MB in der
   `php.ini` (bei Webhostern oft über `.user.ini` oder deren Verwaltungsoberfläche) `upload_max_filesize = 50M` und `post_max_size = 55M` setzen; beim
   Webserver gegebenenfalls auch `client_max_body_size` (nginx) bzw. `LimitRequestBody` (Apache).
@@ -198,8 +203,9 @@ Das Ende der Logdatei zeigt *Administration › Betrieb › Systemprotokoll* (Re
 SSH-Zugang, z. B. auf Webspaces. Gelesen werden höchstens die letzten 2 MB; Dateien `laravel.log` und
 `laravel-JJJJ-MM-TT.log` (Log-Kanal `daily`) in `storage/logs`.
 
-**System-Aufgaben für Sicherungen und Demos:** *Datenbank sichern* (02:30) und *Sicherungen aufräumen* (02:45, 14
-Tage, mindestens 3) laufen ab Installation; damit ersetzt der Scheduler einen eigenen Cron-Eintrag für `db:backup`.
+**System-Aufgaben für Sicherungen und Demos:** *Datenbank sichern* (02:30, mit den Dateien aus Dateifeldern),
+*Sicherungen aufräumen* (02:45, 14 Tage, mindestens 3; Sicherung und ZIP zählen als eine) und *Dateien aufräumen*
+(03:00) laufen ab Installation; damit ersetzt der Scheduler einen eigenen Cron-Eintrag für `db:backup`.
 Wer noch einen solchen Eintrag hat, entfernt ihn oder schaltet die Aufgabe aus, sonst wird doppelt gesichert.
 *Demo-Daten zurücksetzen* ist zerstörerisch: ausgeliefert ausgeschaltet und auch eingeschaltet nur wirksam mit
 `DEMO_RESET=true` in `.env` – setzen Sie das nur auf öffentlichen Demo- oder Schulungssystemen.
@@ -245,7 +251,8 @@ Alle Befehle im Hauptverzeichnis von SAFT ausführen, auf einem Produktionsserve
 
 | Befehl | Zweck | Wichtige Optionen |
 |---|---|---|
-| `php artisan db:backup` | Sicherung der Datenbank von SAFT (PostgreSQL, MySQL oder MariaDB) | `--path=` Zielordner (Vorgabe `storage/backups`) |
+| `php artisan db:backup` | Sicherung der Datenbank von SAFT (PostgreSQL, MySQL oder MariaDB), dazu die Dateien aus Dateifeldern als ZIP | `--path=` Zielordner (Vorgabe `storage/backups`), `--without-files` ohne Dateien |
+| `php artisan files:prune` | Räumt verwaiste Dateien aus Dateifeldern auf: nie gespeicherte Uploads, Dateien ohne Datensatz und Dateien ohne Eintrag (nach 24 Stunden); meldet Einträge, deren Datei fehlt | `--dry-run` nur zählen, `--hours=` Wartezeit |
 | `php artisan app-data:verify` | Prüft, ob die Metadaten des Table-Designers und die Tabellen im Namensraum `app_data` übereinstimmen; Exit-Code 1 bei Abweichungen (für die Überwachung) | – |
 | `php artisan auth:mode [local\|sso\|hybrid]` | Zeigt oder setzt den Anmeldemodus, z. B. als Notausgang `auth:mode local`, wenn kein Identity Provider erreichbar ist | – |
 | `php artisan auth:two-factor-reset <email>` | Löscht Authenticator-App und Wiederherstellungscodes eines Kontos; die Person meldet sich mit dem Passwort an und richtet neu ein. Steht im Änderungsprotokoll | – |

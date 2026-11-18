@@ -157,7 +157,8 @@ Tests laufen nur mit einer vollständigen Installation.
 | Lokale Anmeldung erzwingen (Notausgang) | `AUTH_FORCE_LOCAL=true` in der `.env` |
 | Anmeldemodus per Konsole setzen | `php artisan auth:mode local` |
 | Table-Designer mit Datenbank abgleichen | `php artisan app-data:verify` |
-| Datenbank sichern (nach `storage/backups`) | `php artisan db:backup` |
+| Datenbank sichern (nach `storage/backups`, Dateien aus Dateifeldern als ZIP daneben) | `php artisan db:backup` |
+| Verwaiste Dateien aus Dateifeldern aufräumen (`--dry-run` zählt nur) | `php artisan files:prune` |
 | Berechnete Felder neu berechnen | `php artisan computed:recompute` |
 | Angebundene Tabellen mit ihren externen Datenbanken abgleichen (`--apply` übernimmt Abweichungen) | `php artisan table-connector:verify` |
 | Höchstzahl der Datensätze je Export ändern (Vorgabe 50.000) | `APP_DATA_EXPORT_MAX_ROWS` in der `.env` |
@@ -173,6 +174,9 @@ pg_restore -h 127.0.0.1 -U <benutzer> --no-owner -d SAFT2_wiederhergestellt stor
 Bei MySQL enthält die `.sql`-Datei Hauptdatenbank und `…_app_data` mit ihren ursprünglichen Namen
 (`mysql -h 127.0.0.1 -u <benutzer> -p < storage/backups/<datei>.sql`); für andere Namen die Zeilen `CREATE DATABASE`
 und `USE` vorher anpassen.
+
+Die Dateien aus Dateifeldern liegen in der ZIP-Datei mit gleichem Namen und `_files.zip`; nach dem Einspielen der
+Datenbank entpacken: `unzip storage/backups/<datei>_files.zip -d storage/app/private`.
 
 Sicherungen enthalten alle Daten und bleiben ausserhalb des Repositorys. Bewahre zusätzlich eine Kopie ausserhalb
 dieses Rechners auf.

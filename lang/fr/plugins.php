@@ -101,7 +101,12 @@ return [
     ],
     'api' => [
         'forbidden' => 'Il vous manque le droit sur les données « :action » pour :table.',
-        'unknown_field' => 'Le champ « :field » n’existe pas dans :table (ou il est calculé).',
+        'unknown_field' => 'Le champ « :field » n’existe pas dans :table (ou il est calculé ou est un champ de fichiers – pour ceux-ci, attachFile()).',
+        'not_a_file_field' => 'Le champ « :field » de :table n’est pas un champ de fichiers actif.',
+        'file_missing' => ':field : le fichier est introuvable.',
+        'file_kind' => ':field : les fichiers de type :mime ne sont pas autorisés.',
+        'file_size' => ':field : le fichier dépasse :max Mo.',
+        'file_count' => ':field : au plus :max fichiers sont autorisés.',
         'read_only' => 'La table :table est en lecture seule via l’interface.',
     ],
     'console' => [

@@ -57,7 +57,7 @@ A plugin is an ordinary **Composer package** with a plugin class and a service p
 | Kinds of scheduled tasks | classes implementing `App\Tasks\TaskType` |
 
 **What is guaranteed:** the programming interface for plugins (plugin API) has its **own version number**,
-independent of SAFT – currently **1.7**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
+independent of SAFT – currently **1.8**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, all classes under `App\Plugins\Api` (except
 `ApiManifest`), the test base `App\Plugins\Testing\PluginTestCase`, for kinds of scheduled tasks
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` and `App\Tasks\TaskSkipped`, and the trait
@@ -411,6 +411,7 @@ Saft::transaction(function (): void { /* several changes: all or nothing */ });
 | `->validate($values, $existing)` | validate without saving |
 | `->can('update')`, `->authorize('update')` | data permissions of the signed-in person (`view`, `create`, `update`, `delete`, `export`, `import`) |
 | `->formFields(only: [...], except: [...])` | form fields from the table designer for your own forms |
+| `->files($record, 'field')`, `->attachFile($record, 'field', $file, $name)`, `->detachFile($record, 'field', $id)` | read, attach and remove files of a field of type “File” (since API 1.8, see below) |
 | `->withoutAuthorization()` | copy without permission checks, for background work |
 | `Saft::transaction(fn …)` | several changes as one unit |
 | `Saft::notify($person, $notification)` | notification in the bell (see below) |
@@ -466,6 +467,21 @@ adjusted like other Filament fields:
 
 Show errors of the interface in forms as a message, as the field names need not match your form:
 `catch (ValidationException $e) { Notification::make()->danger()->body(implode("\n", Arr::flatten($e->errors())))->send(); }`.
+
+**Files from file fields** (since API 1.8): `files()` returns the files of a field as `StoredFile` (ID, name, type,
+size, `contents()`, `stream()`, `url()`). `attachFile()` attaches a file – as a path on the server or as an uploaded
+file – and checks file kind (by content), maximum size and number like the form; violations come as
+`ValidationException`. `detachFile()` removes a file and deletes it. Both need the **update** permission and are
+recorded in the activity log. File fields cannot be set through `create()` and `update()`:
+
+```php
+$table = Saft::table('lager_lieferanten');
+$file = $table->attachFile($supplier, 'vertrag', storage_path('app/import/contract-17.pdf'), 'Framework contract.pdf');
+foreach ($table->files($supplier, 'vertrag') as $existing) {
+    $content = $existing->contents();
+}
+$table->detachFile($supplier, 'vertrag', $file->id);
+```
 
 **Notifications in the bell** are sent with `Saft::notify($person, Notification::make()->…)`. Filament's own
 `sendToDatabase()` puts them in a queue that is never processed without a queue worker.
@@ -827,7 +843,7 @@ with the formula `rappen(amount * 1.081)`.
 
 ## 18. API versions and change log
 
-The plugin API has its own version number **major.minor** (currently **1.7**). It is set in `config/saft.php`
+The plugin API has its own version number **major.minor** (currently **1.8**). It is set in `config/saft.php`
 (`api_versions`) and shown under **Documentation › About SAFT XT** and on the **Plugins** page.
 
 | Change | Version | Effect on plugins |
@@ -855,6 +871,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 | API | SAFT | Changes |
 |---|---|---|
+| **1.8** | 0.2.2 | `DataTable::files()`, `attachFile()` and `detachFile()` plus `StoredFile` – read, attach (with the form's checks) and remove files of fields of type “File” |
 | **1.7** | 0.1 | `MenuSuggestion` with optional `subgroup` – menu suggestion into a submenu of the group (third level) |
 | **1.6** | 0.1 | `FieldRule` with optional `description`; `SaftPlugin::manuals()` and `Manual` – manuals from plugins in online help and help assistant; `saft:plugins --check` checks them |
 | **1.5** | 0.1 | `App\Tasks\TaskType`, `TaskResult` and `TaskSkipped` belong to the API – kinds of scheduled tasks from plugins (`SaftPlugin::taskTypes()`) thus pass `saft:plugins --check` |

@@ -85,7 +85,15 @@ final readonly class DemoResetTask implements TaskType
             throw new TaskSkipped(__('tasks.demo_reset.nothing_installed'));
         }
 
-        $backup = ($parameters['backup'] ?? true) ? basename($this->backup->create()) : null;
+        $backup = null;
+
+        if ($parameters['backup'] ?? true) {
+            $dump = $this->backup->create();
+            // Die Dateien der Demo-Tabellen gehen beim Zurücksetzen verloren: mitsichern.
+            $this->backup->backupFiles($dump);
+            $backup = basename($dump);
+        }
+
         $records = [];
 
         foreach ($seeders as $key => $seeder) {

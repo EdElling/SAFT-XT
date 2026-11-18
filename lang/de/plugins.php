@@ -101,7 +101,12 @@ return [
     ],
     'api' => [
         'forbidden' => 'Ihnen fehlt das Datenrecht „:action“ für :table.',
-        'unknown_field' => 'Das Feld „:field“ gibt es in :table nicht (oder es ist berechnet).',
+        'unknown_field' => 'Das Feld „:field“ gibt es in :table nicht (oder es ist berechnet bzw. ein Dateifeld – dafür attachFile()).',
+        'not_a_file_field' => 'Das Feld „:field“ in :table ist kein aktives Dateifeld.',
+        'file_missing' => ':field: Die Datei wurde nicht gefunden.',
+        'file_kind' => ':field: Dateien vom Typ :mime sind nicht erlaubt.',
+        'file_size' => ':field: Die Datei ist grösser als :max MB.',
+        'file_count' => ':field: Es sind höchstens :max Dateien erlaubt.',
         'read_only' => 'Die Tabelle :table ist über die Schnittstelle nur lesbar.',
     ],
     'console' => [

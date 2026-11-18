@@ -7,13 +7,16 @@ namespace App\Database;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
+use ZipArchive;
 
 /**
  * Sicherung der gesamten Datenbank inkl. Tabellen des Table-Designers – für „php artisan db:backup“ und die geplante
  * Aufgabe „Datenbank sichern“: PostgreSQL per pg_dump (eine Datenbank, Schema app_data inklusive), MySQL/MariaDB per
  * mysqldump bzw. mariadb-dump oder in PHP (DB_BACKUP_METHOD=php). Liest nur; das Passwort wird nie als Prozessargument
- * übergeben. Dateien: <datenbank>_<JJJJMMTT_HHMMSS>.dump bzw. .sql, Rechte 0600.
+ * übergeben. Dateien: <datenbank>_<JJJJMMTT_HHMMSS>.dump bzw. .sql, Rechte 0600. Dazu die Dateien aus Dateifeldern
+ * (B-021) als <gleicher Name>_files.zip, sofern sie lokal liegen; Sicherung und ZIP bilden ein Paar.
  */
 final class DatabaseBackup
 {
@@ -21,6 +24,9 @@ final class DatabaseBackup
 
     /** Endungen der Sicherungsdateien (Aufräumen löscht nur diese). */
     public const array EXTENSIONS = ['dump', 'sql'];
+
+    /** Zusatz der ZIP-Datei mit den Dateien aus Dateifeldern. */
+    public const string FILES_SUFFIX = '_files.zip';
 
     public function directory(): string
     {
@@ -75,8 +81,72 @@ final class DatabaseBackup
     }
 
     /**
+     * Dateien aus Dateifeldern neben die Sicherung $dump legen (<name>_files.zip, ohne Vorschaubilder). null, wenn es
+     * keine gibt oder sie nicht lokal liegen (S3: siehe filesAreLocal()).
+     *
+     * @throws BackupFailed
+     */
+    public function backupFiles(string $dump): ?string
+    {
+        if (! $this->filesAreLocal()) {
+            return null;
+        }
+
+        $disk = Storage::disk((string) config('dynamic_data.files.disk', 'local'));
+        $directory = trim((string) config('dynamic_data.files.directory', 'files'), '/');
+        $root = $disk->path($directory);
+
+        if (! File::isDirectory($root)) {
+            return null;
+        }
+
+        $files = array_filter(File::allFiles($root), static fn (\SplFileInfo $file): bool => ! str_ends_with($file->getFilename(), '.thumb.jpg'));
+
+        if ($files === []) {
+            return null;
+        }
+
+        $zipFile = (string) preg_replace('/\.(dump|sql)$/', '', $dump).self::FILES_SUFFIX;
+        $zip = new ZipArchive;
+
+        if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::EXCL) !== true) {
+            throw new BackupFailed('Die ZIP-Datei mit den Dateien lässt sich nicht anlegen: '.$zipFile);
+        }
+
+        foreach ($files as $file) {
+            // Pfad wie im Speicher (files/<tabelle>/<feld>/<datei>), damit sich das ZIP in dessen Wurzel entpacken lässt.
+            $zip->addFile($file->getPathname(), $directory.'/'.str_replace('\\', '/', $file->getRelativePathname()));
+        }
+
+        if (! $zip->close() || ! File::exists($zipFile)) {
+            File::delete($zipFile);
+
+            throw new BackupFailed('Die ZIP-Datei mit den Dateien konnte nicht geschrieben werden.');
+        }
+
+        File::chmod($zipFile, 0600);
+
+        return $zipFile;
+    }
+
+    /** Name der Sicherung, zu der eine Datei gehört (Datenbanksicherung und ZIP mit den Dateien teilen ihn). */
+    public static function setName(string $fileName): string
+    {
+        return str_ends_with($fileName, self::FILES_SUFFIX)
+            ? substr($fileName, 0, -strlen(self::FILES_SUFFIX))
+            : pathinfo($fileName, PATHINFO_FILENAME);
+    }
+
+    /** Liegen die Dateien aus Dateifeldern auf dem Server (sonst z. B. in S3 und dort zu sichern)? */
+    public function filesAreLocal(): bool
+    {
+        return config('filesystems.disks.'.config('dynamic_data.files.disk', 'local').'.driver') === 'local';
+    }
+
+    /**
      * Alte Sicherungen löschen: die neuesten $keep bleiben immer, von den übrigen alle, die älter als $days Tage sind.
-     * Nur Dateien mit den Endungen der Sicherung, nur direkt im Ordner.
+     * Eine Sicherung und ihr ZIP mit den Dateien zählen als eine Sicherung und werden zusammen gelöscht. Nur Dateien
+     * mit den Endungen der Sicherung, nur direkt im Ordner.
      *
      * @return list<string> gelöschte Dateinamen
      */
@@ -88,17 +158,25 @@ final class DatabaseBackup
             return [];
         }
 
-        $files = collect(File::files($directory))
-            ->filter(static fn (\SplFileInfo $file): bool => in_array(strtolower($file->getExtension()), self::EXTENSIONS, true))
-            ->sortByDesc(static fn (\SplFileInfo $file): int => $file->getMTime())
+        $sets = collect(File::files($directory))
+            ->filter(static fn (\SplFileInfo $file): bool => in_array(strtolower($file->getExtension()), self::EXTENSIONS, true)
+                || str_ends_with($file->getFilename(), self::FILES_SUFFIX))
+            ->groupBy(static fn (\SplFileInfo $file): string => self::setName($file->getFilename()))
+            ->sortByDesc(static fn ($files): int => (int) $files->max(static fn (\SplFileInfo $file): int => $file->getMTime()))
             ->values();
 
         $limit = now()->subDays($days)->getTimestamp();
         $deleted = [];
 
-        foreach ($files->slice(max(0, $keep)) as $file) {
-            if ($file->getMTime() < $limit && File::delete($file->getPathname())) {
-                $deleted[] = $file->getFilename();
+        foreach ($sets->slice(max(0, $keep)) as $files) {
+            if ($files->max(static fn (\SplFileInfo $file): int => $file->getMTime()) >= $limit) {
+                continue;
+            }
+
+            foreach ($files as $file) {
+                if (File::delete($file->getPathname())) {
+                    $deleted[] = $file->getFilename();
+                }
             }
         }
 

@@ -6,6 +6,7 @@ namespace Database\Seeders\Concerns;
 
 use App\DynamicData\DataMenu;
 use App\DynamicData\DynamicDataNamespace;
+use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Formula\Recalculator;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Reports\ReportResource;
@@ -80,6 +81,11 @@ trait SeedsDemoTables
 
                 $this->reseedDemoData();
             });
+
+            // Die Datensätze wurden direkt in der Datenbank ersetzt: angehängte Dateien gehören zu keinem mehr (B-021).
+            foreach ($tables as $table) {
+                app(RecordFiles::class)->deleteForTable($table);
+            }
 
             $done = [];
             $count = 0;

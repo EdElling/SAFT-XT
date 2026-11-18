@@ -12,7 +12,6 @@ use App\Models\RecordFile;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -131,7 +130,7 @@ final class RecordFiles
 
         return $count === 0 ? null : trans_choice('tables.files_drop_warning', $count, [
             'count' => $count,
-            'size' => Number::fileSize((int) $query->sum('size'), precision: 1),
+            'size' => RecordFile::sizeText((int) $query->sum('size')),
         ]);
     }
 

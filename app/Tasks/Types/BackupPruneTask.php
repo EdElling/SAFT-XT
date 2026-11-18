@@ -64,7 +64,10 @@ final readonly class BackupPruneTask implements TaskType
     {
         $deleted = $this->backup->prune($this->days($parameters), $this->keep($parameters));
 
-        return new TaskResult(__('tasks.results.backup_prune', ['deleted' => count($deleted)]), ['deleted' => $deleted]);
+        // Eine Sicherung mit ZIP der Dateien zählt einmal.
+        $sets = count(array_unique(array_map(DatabaseBackup::setName(...), $deleted)));
+
+        return new TaskResult(__('tasks.results.backup_prune', ['deleted' => $sets]), ['deleted' => $deleted]);
     }
 
     /** @param  array<string, mixed>  $parameters */

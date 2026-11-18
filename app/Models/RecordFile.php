@@ -26,7 +26,13 @@ class RecordFile extends BaseRecordFile
 
     public function sizeLabel(): string
     {
-        return Number::fileSize($this->size, precision: $this->size < 1024 * 1024 ? 0 : 1);
+        return self::sizeText((int) $this->size);
+    }
+
+    /** Grösse lesbar: unter 1 MB ohne Nachkommastelle, z. B. „512 KB“, „3.4 MB“. */
+    public static function sizeText(int $bytes): string
+    {
+        return Number::fileSize($bytes, precision: $bytes < 1024 * 1024 ? 0 : 1);
     }
 
     public function url(bool $thumbnail = false): string

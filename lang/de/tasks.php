@@ -12,6 +12,8 @@ return [
         'schedule' => 'Zeitplan',
     ],
     'fields' => [
+        'backup_files' => 'Dateien aus Dateifeldern mitsichern',
+        'backup_files_help' => 'Als ZIP neben der Datenbanksicherung (nur wenn die Dateien auf diesem Server liegen).',
         'backup_days' => 'Sicherungen aufbewahren (Tage)',
         'backup_days_help' => 'Ältere Sicherungen in storage/backups werden gelöscht.',
         'backup_keep' => 'Mindestens behalten',
@@ -60,6 +62,7 @@ return [
         'weekly' => ':day um :time',
     ],
     'types' => [
+        'files_prune' => 'Dateien aufräumen',
         'db_backup' => 'Datenbank sichern',
         'backup_prune' => 'Sicherungen aufräumen',
         'demo_reset' => 'Demo-Daten zurücksetzen',
@@ -69,12 +72,18 @@ return [
         'task_runs_prune' => 'Laufprotokoll bereinigen',
     ],
     'describe_type' => [
+        'files_prune' => 'Verwaiste Dateien aus Dateifeldern (nicht gespeicherte Uploads, Dateien ohne Datensatz)',
+        'db_backup_files' => ', mit Dateien',
         'db_backup' => 'Gesamte Datenbank nach storage/backups',
         'backup_prune' => 'Sicherungen älter als :days Tage, die :keep neuesten bleiben',
         'snapshot_prune' => 'Aufbewahrungsfristen aller Datenstände, abgebrochene Läufe',
         'task_runs_prune' => 'Läufe älter als :days Tage',
     ],
     'results' => [
+        'files_prune' => ':deleted verwaiste Dateien gelöscht (:size).',
+        'files_missing' => '{1} 1 Datei fehlt im Speicher: :files|[2,*] :count Dateien fehlen im Speicher: :files',
+        'db_backup_files' => 'Dateien: :file (:kb KB).',
+        'db_backup_files_remote' => 'Die Dateien liegen nicht auf diesem Server (z. B. S3) und sind nicht enthalten.',
         'db_backup' => 'Sicherung :file erstellt (:kb KB).',
         'backup_prune' => ':deleted Sicherungen gelöscht.',
         'demo_reset' => 'Demo-Daten zurückgesetzt: :demos Datensätze.',

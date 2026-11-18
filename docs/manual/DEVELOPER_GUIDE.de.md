@@ -58,7 +58,7 @@ mitbringen:
 | Arten geplanter Aufgaben | Klassen, die `App\Tasks\TaskType` umsetzen |
 
 **Was zugesichert ist:** Die Programmierschnittstelle für Plugins (Plugin-API) hat eine **eigene Versionsnummer**,
-unabhängig von SAFT – derzeit **1.7**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
+unabhängig von SAFT – derzeit **1.8**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, alle Klassen unter `App\Plugins\Api` (ausser
 `ApiManifest`), die Test-Basis `App\Plugins\Testing\PluginTestCase`, für Arten geplanter Aufgaben
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` und `App\Tasks\TaskSkipped` sowie das Trait
@@ -418,6 +418,7 @@ Saft::transaction(function (): void { /* mehrere Änderungen: alles oder nichts 
 | `->validate($werte, $vorhanden)` | Prüfen ohne zu speichern |
 | `->can('update')`, `->authorize('update')` | Datenrechte der angemeldeten Person (`view`, `create`, `update`, `delete`, `export`, `import`) |
 | `->formFields(only: [...], except: [...])` | Formularfelder aus dem Table-Designer für eigene Masken |
+| `->files($datensatz, 'feld')`, `->attachFile($datensatz, 'feld', $datei, $name)`, `->detachFile($datensatz, 'feld', $id)` | Dateien eines Felds vom Typ „Datei“ lesen, anhängen und entfernen (seit API 1.8, siehe unten) |
 | `->withoutAuthorization()` | Kopie ohne Rechteprüfung, für Hintergrundarbeit |
 | `Saft::transaction(fn …)` | Mehrere Änderungen als Einheit |
 | `Saft::notify($person, $meldung)` | Benachrichtigung in die Glocke (siehe unten) |
@@ -475,6 +476,21 @@ Name, die Felder lassen sich wie andere Filament-Felder anpassen:
 
 Fehler der Schnittstelle zeigen Sie in Masken als Meldung an, denn die Feldnamen müssen nicht zu Ihrem Formular passen:
 `catch (ValidationException $e) { Notification::make()->danger()->body(implode("\n", Arr::flatten($e->errors())))->send(); }`.
+
+**Dateien aus Dateifeldern** (seit API 1.8): `files()` liefert die Dateien eines Felds als `StoredFile` (Kennung,
+Name, Typ, Grösse, `contents()`, `stream()`, `url()`). `attachFile()` hängt eine Datei an – als Pfad auf dem Server oder
+als hochgeladene Datei – und prüft dabei wie das Formular Dateiart (nach Inhalt), Höchstgrösse und Anzahl; Verstösse
+kommen als `ValidationException`. `detachFile()` entfernt eine Datei und löscht sie. Beide Methoden brauchen das Recht
+**Ändern** und stehen im Änderungsprotokoll. Über `create()` und `update()` lassen sich Dateifelder nicht setzen:
+
+```php
+$tabelle = Saft::table('lager_lieferanten');
+$datei = $tabelle->attachFile($lieferant, 'vertrag', storage_path('app/import/vertrag-17.pdf'), 'Rahmenvertrag.pdf');
+foreach ($tabelle->files($lieferant, 'vertrag') as $vorhanden) {
+    $inhalt = $vorhanden->contents();
+}
+$tabelle->detachFile($lieferant, 'vertrag', $datei->id);
+```
 
 **Benachrichtigungen in die Glocke** verschicken Sie mit `Saft::notify($person, Notification::make()->…)`. Filaments
 eigenes `sendToDatabase()` stellt sie in eine Warteschlange, die ohne Queue-Worker nie abgearbeitet wird.
@@ -842,7 +858,7 @@ berechnetes Feld mit der Formel `rappen(betrag * 1.081)` anlegen.
 
 ## 18. API-Versionen und Änderungsprotokoll
 
-Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.7**). Sie steht in `config/saft.php`
+Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.8**). Sie steht in `config/saft.php`
 (`api_versions`) und erscheint unter **Dokumentation › Über SAFT XT** sowie auf der Seite **Plugins**.
 
 | Änderung | Version | Wirkung für Plugins |
@@ -871,6 +887,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 | API | SAFT | Änderungen |
 |---|---|---|
+| **1.8** | 0.2.2 | `DataTable::files()`, `attachFile()` und `detachFile()` sowie `StoredFile` – Dateien aus Feldern vom Typ „Datei“ lesen, anhängen (mit den Prüfungen des Formulars) und entfernen |
 | **1.7** | 0.1 | `MenuSuggestion` mit optionalem `subgroup` – Menüvorschlag in ein Untermenü der Gruppe (dritte Ebene) |
 | **1.6** | 0.1 | `FieldRule` mit optionaler `description`; `SaftPlugin::manuals()` und `Manual` – Handbücher aus Plugins in Online-Hilfe und Hilfe-Assistent; `saft:plugins --check` prüft sie |
 | **1.5** | 0.1 | `App\Tasks\TaskType`, `TaskResult` und `TaskSkipped` gehören zur API – Arten geplanter Aufgaben aus Plugins (`SaftPlugin::taskTypes()`) bestehen damit `saft:plugins --check` |

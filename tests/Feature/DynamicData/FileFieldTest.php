@@ -14,12 +14,14 @@ use App\Filament\Support\ActivityChanges;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\RecordFile;
+use App\Models\ScheduledTask;
+use App\Models\TaskRun;
 use App\Models\User;
+use App\Tasks\TaskRunner;
 use Filament\Actions\Testing\TestAction;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Number;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
 
@@ -327,7 +329,7 @@ class FileFieldTest extends DynamicDataTestCase
         [$trashed] = $this->recordWithFile('b.png');
         $trashed->delete();
 
-        $size = Number::fileSize((int) RecordFile::query()->sum('size'), precision: 1);
+        $size = RecordFile::sizeText((int) RecordFile::query()->sum('size'));
         $this->assertSame("Dabei werden auch 2 Dateien ({$size}) endgültig gelöscht.", RecordFiles::dropWarning($this->vertraege));
         $this->assertSame("Dabei werden auch 2 Dateien ({$size}) endgültig gelöscht.", RecordFiles::dropWarning($this->vertraege, 'belege'));
         $this->assertNull(RecordFiles::dropWarning($this->vertraege, 'titel'));
@@ -342,5 +344,38 @@ class FileFieldTest extends DynamicDataTestCase
         Livewire::test(EditCustomTable::class, ['record' => $this->vertraege->id])
             ->mountAction(TestAction::make('dropTable'))
             ->assertActionMounted(TestAction::make('dropTable'));
+    }
+
+    public function test_prune_removes_orphans_after_the_waiting_time_and_reports_missing_files(): void
+    {
+        $field = $this->vertraege->fields()->where('name', 'belege')->firstOrFail();
+        [$kept] = $this->recordWithFile('bleibt.png');
+        $keptFile = RecordFile::query()->where('record_id', $kept->getKey())->sole();
+
+        // Nie gespeicherter Upload (alt und frisch), Eintrag ohne Datensatz, Datei ohne Eintrag (alt und frisch).
+        $abandoned = $this->files()->store($this->vertraege, $field, self::png('abgebrochen.png'));
+        $abandoned->forceFill(['created_at' => now()->subDays(2)])->save();
+        $fresh = $this->files()->store($this->vertraege, $field, self::png('offen.png'));
+        [$gone] = $this->recordWithFile('ohne-datensatz.png');
+        $goneFile = RecordFile::query()->where('record_id', $gone->getKey())->sole();
+        DynamicRecord::forTable($this->vertraege)->newQuery()->whereKey($gone->getKey())->toBase()->delete();
+        Storage::disk('local')->put('files/vertraege/belege/fremd.bin', 'x');
+        touch(Storage::disk('local')->path('files/vertraege/belege/fremd.bin'), now()->subDays(2)->getTimestamp());
+        Storage::disk('local')->put('files/vertraege/belege/neu.bin', 'x');
+        $missing = $this->files()->store($this->vertraege, $field, self::png('weg.png'));
+        $missing->forceFill(['record_id' => $kept->getKey()])->save();
+        Storage::disk('local')->delete($missing->path);
+
+        $this->artisan('files:prune', ['--dry-run' => true])->expectsOutputToContain('Würde löschen: 3 Dateien')->assertSuccessful();
+        $this->assertSame(6, RecordFile::query()->count() + 1, 'Probelauf löscht nichts.');
+
+        $run = app(TaskRunner::class)->run(ScheduledTask::query()->firstOrCreate(['type' => 'files_prune', 'is_system' => true], ['frequency' => 'daily', 'at_time' => '03:00']), TaskRun::MANUAL);
+        $this->assertSame(ScheduledTask::SUCCESS, $run->status, (string) $run->message);
+        $this->assertStringStartsWith('3 verwaiste Dateien gelöscht', (string) $run->message);
+        $this->assertStringContainsString('1 Datei fehlt im Speicher: '.$missing->path, (string) $run->message);
+
+        $this->assertEqualsCanonicalizing([$keptFile->id, $fresh->id, $missing->id], RecordFile::query()->pluck('id')->all());
+        Storage::disk('local')->assertMissing([$abandoned->path, $goneFile->path, 'files/vertraege/belege/fremd.bin']);
+        Storage::disk('local')->assertExists([$keptFile->path, $fresh->path, 'files/vertraege/belege/neu.bin']);
     }
 }
