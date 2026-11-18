@@ -101,7 +101,9 @@ class FileFieldTest extends DuskTestCase
 
             // Nicht erlaubte Art wird schon im Browser abgewiesen.
             $this->attach($browser, $text, self::INVALID);
-            $browser->click('.filepond--item[data-filepond-item-state="load-invalid"] .filepond--action-remove-item')->pause(500);
+            // Per Skript: Je nach Fenstergrösse überdeckt das Ablagefeld den Knopf zum Entfernen.
+            $browser->script("document.querySelector('.filepond--item[data-filepond-item-state=\"load-invalid\"] .filepond--action-remove-item').click()");
+            $browser->waitUntilMissing(self::INVALID, 15);
 
             $this->attach($browser, $image);
             // Der Knopf enthält bei Datei-Feldern zusätzlich den (ausgeblendeten) Hinweis „Datei wird hochgeladen…“.

@@ -150,6 +150,9 @@ class TableDesignerTest extends DuskTestCase
                 $this->pickOption($b, self::MODAL.'options.display_fields', 'Firma');
             });
 
+            // Datei (B-021): Vorgaben genügen (beliebige Dateien, 10 MB, eine Datei).
+            $this->addField($browser, 'Beleg', FieldType::File->value);
+
             // Berechnet: Formel mit Prüfung beim Verlassen des Felds.
             $this->addField($browser, 'Doppelt', FieldType::Computed->value, function (Browser $b): void {
                 $b->waitFor('textarea[id="'.self::MODAL.'options.formula"]', 15)
@@ -158,7 +161,7 @@ class TableDesignerTest extends DuskTestCase
                     ->waitForText('hängt ab von: ganzzahl', 15);
             });
 
-            $this->assertSame(10, $table->fields()->count());
+            $this->assertSame(11, $table->fields()->count());
             $this->assertEqualsCanonicalizing(
                 array_map(static fn (FieldType $type): string => $type->value, FieldType::cases()),
                 $table->fields()->get()->map(static fn (CustomField $f): string => $f->type->value)->unique()->values()->all(),
