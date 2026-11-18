@@ -90,16 +90,20 @@ Damit Verweise zwischen Apps robust sind (und dieselbe Logik später der REST-AP
 
 ## 5a. In andere App verschieben
 
-Verschoben wird immer eine **Tabelle mit allem, was nur an ihr hängt**; der Dialog zeigt vorher, was mitgeht und was
-zu klären ist:
+Verschoben wird eine **Auswahl von Tabellen in einem Schritt** (Mehrfachauswahl im Table-Designer oder eine ganze
+Menügruppe), jeweils mit allem, was nur an ihnen hängt. Alle Prüfungen beziehen sich auf den **Endzustand nach dem
+Verschieben**, nicht auf Zwischenschritte: Ein Verweis zwischen zwei Tabellen, die beide verschoben werden, ist danach
+ein Verweis innerhalb der neuen App und braucht keine Schnittstelle. Der Dialog zeigt vorher, was mitgeht und was zu
+klären ist:
 
 - **Mit:** Menüeinträge, die nur diese Tabelle öffnen (Ziel: eine Gruppe der neuen App, wählbar), Auswertungen mit
   dieser Tabelle als Grundtabelle, Tabellenverknüpfungen für Auswertungen von ihr aus, geplante Aufgaben zu ihr,
   Datenstände, Dateien (bleiben einfach liegen, sie hängen an der Tabelle).
-- **Verknüpfte Tabellen:** Verweist die Tabelle auf Tabellen, die in der alten App bleiben (oder umgekehrt), schlägt
-  der Dialog vor, sie **gemeinsam** zu verschieben (zusammenhängende Gruppe, z. B. Bestellungen mit Positionen). Bleiben
-  Verweise über die App-Grenze, werden sie zu Verweisen über eine Schnittstelle (Abschnitt 5): Die Zieltabelle wird
-  freigegeben, der Dialog nennt das ausdrücklich.
+- **Verknüpfte Tabellen:** Verweist eine gewählte Tabelle auf Tabellen, die in der alten App bleiben würden (oder
+  umgekehrt), bietet der Dialog an, sie mit einem Klick **zur Auswahl hinzuzufügen** – bis zur ganzen zusammenhängenden
+  Gruppe (z. B. Bestellungen mit Positionen und Kunden). Nur Verweise, die nach dem Verschieben tatsächlich über die
+  App-Grenze gehen, werden zu Verweisen über eine Schnittstelle (Abschnitt 5): Die Zieltabelle wird freigegeben, der
+  Dialog nennt das ausdrücklich. Vor Etappe 5 verhindern solche verbleibenden Verweise das Verschieben.
 - **Auswertungen über mehrere Apps:** Nutzt eine Auswertung der alten App die verschobene Tabelle, braucht sie die
   Schnittstelle (wie oben) – sonst wird sie mitverschoben, wenn sie nur diese Tabelle und mitverschobene nutzt.
 - **Rollen:** Datenrechte auf die Tabelle gehören zu Rollen der alten App und werden dort entfernt. Der Dialog bietet
@@ -157,7 +161,7 @@ Tabellen-Assistenten), Diagramm aus einer Definition, Änderungsplan.
 
 | Etappe | Inhalt | Grösse |
 |---|---|---|
-| 1 Fundament | Tabelle `apps`; **In andere App verschieben** (Abschnitt 5a, zunächst ohne Schnittstellen: Verweise über die App-Grenze verhindern das Verschieben, bis Etappe 5 sie erlaubt); `app_id` an Tabellen, Menüs, Auswertungen, Tabellenverknüpfungen, Rollen, Aufgaben; **stabile Schlüssel** an allen Objekten; Migration: Demos (Shop, Lager, Forschung) in eigene Apps, Übriges in „Nicht zugeordnet“; Seite „Apps“ (anlegen, bearbeiten); App-Auswahl in Formularen, Filter in Listen; Präfix-Vorschlag im Table-Designer | gross |
+| 1 Fundament | Tabelle `apps`; **In andere App verschieben** (Abschnitt 5a: mehrere Tabellen in einem Schritt, Prüfung auf den Endzustand; verbleibende Verweise über die App-Grenze verhindern das Verschieben, bis Etappe 5 sie erlaubt); `app_id` an Tabellen, Menüs, Auswertungen, Tabellenverknüpfungen, Rollen, Aufgaben; **stabile Schlüssel** an allen Objekten; Migration: Demos (Shop, Lager, Forschung) in eigene Apps, Übriges in „Nicht zugeordnet“; Seite „Apps“ (anlegen, bearbeiten); App-Auswahl in Formularen, Filter in Listen; Präfix-Vorschlag im Table-Designer | gross |
 | 2 Umschalten | aktuelle App, Umschalter in der Titelzeile, Navigation und Dashboard je App (Navigations-Cache je App), Zugang über Rollen; Rollen je App mit **Rolle kopieren** | mittel |
 | 3 Lebenszyklus | aktivieren, deaktivieren, entfernen (Abhängigkeiten, Sicherung, Bestätigung); „Demo-Daten zurücksetzen“ wird „App-Daten zurücksetzen“ | mittel |
 | 4 App-Definition | Format `saft-app/1`: aus dem aktuellen Stand erzeugen, exportieren, als neue App installieren, Ausgangsstand speichern; Diagramm aus einer Definition; Seite „Apps“ ersetzt „Konfiguration übertragen“ | mittel |
