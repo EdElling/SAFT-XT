@@ -210,9 +210,7 @@ final class RecordFiles
     /** @return list<string> Kennungen aus einem Feldwert */
     public static function ids(mixed $value): array
     {
-        if (is_string($value)) {
-            $value = json_decode($value, true);
-        }
+        $value = self::items($value);
 
         return is_array($value)
             ? array_values(array_filter(array_map(static fn (mixed $item): ?string => is_array($item) && is_string($item['id'] ?? null) ? $item['id'] : null, $value)))
@@ -222,13 +220,24 @@ final class RecordFiles
     /** @return list<string> Dateinamen aus einem Feldwert (Liste, Export, Protokoll) */
     public static function names(mixed $value): array
     {
-        if (is_string($value)) {
-            $value = json_decode($value, true);
-        }
+        $value = self::items($value);
 
         return is_array($value)
             ? array_values(array_filter(array_map(static fn (mixed $item): ?string => is_array($item) && is_string($item['name'] ?? null) ? $item['name'] : null, $value)))
             : [];
+    }
+
+    /**
+     * Feldwert als Liste von {id, name}: aus JSON, und auch eine einzelne Angabe – so reicht Filament den Wert eines
+     * Felds mit höchstens einer Datei an das Formular weiter.
+     */
+    private static function items(mixed $value): mixed
+    {
+        if (is_string($value)) {
+            $value = json_decode($value, true);
+        }
+
+        return is_array($value) && array_key_exists('id', $value) ? [$value] : $value;
     }
 
     private static function thumbnailPath(string $path): string

@@ -13,6 +13,7 @@ use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\RecordFile;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -252,5 +253,26 @@ class FileFieldTest extends DynamicDataTestCase
 
         $this->assertStringContainsString('vertrag.pdf', $html);
         $this->assertStringContainsString(e(route('files.show', ['file' => $image->id, 'thumb' => 1])), $html);
+    }
+
+    public function test_edit_form_shows_the_stored_file_of_a_single_file_field(): void
+    {
+        $this->service()->createTable(['name' => 'lieferanten', 'label' => 'Lieferanten'], [
+            ['name' => 'name', 'label' => 'Name', 'type' => 'string', 'is_required' => true],
+            ['name' => 'vertrag', 'label' => 'Vertrag', 'type' => 'file', 'options' => ['kinds' => ['pdf'], 'max_files' => 1]],
+        ]);
+        $table = CustomTable::query()->where('name', 'lieferanten')->firstOrFail();
+        $field = $table->fields()->where('name', 'vertrag')->firstOrFail();
+        $pdf = $this->files()->store($table, $field, UploadedFile::fake()->create('v.pdf', 10, 'application/pdf'));
+        $record = DynamicRecord::forTable($table)->create(['name' => 'A', 'vertrag' => [$pdf->toReference()]]);
+        $edit = [TestAction::make('details')->table($record), TestAction::make('edit')];
+
+        $page = Livewire::test(DynamicDataPage::class, ['table' => 'lieferanten'])->mountAction($edit);
+        $this->assertSame([$pdf->path], array_values((array) $page->get('mountedActions.1.data.vertrag')));
+
+        // Unverändert speichern behält die Datei.
+        $page->callMountedAction()->assertHasNoFormErrors();
+        $this->assertSame([$pdf->toReference()], DynamicRecord::forTable($table)->newQuery()->findOrFail($record->getKey())->vertrag);
+        $this->assertNotNull(RecordFile::query()->find($pdf->id));
     }
 }
