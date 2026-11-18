@@ -23,6 +23,8 @@ Ausdrücklich **kein** Ziel: Mandantenfähigkeit (getrennte Organisationen, getr
 | Zugang zu einer App | Ergibt sich aus den Rollen: Wer eine Rolle einer App hat, sieht die App. Kein zusätzliches Recht. |
 | Umschalten | Ein Filament-Panel; aktuelle App in der Sitzung, Umschalter in der Titelzeile (nur bei mehr als einer App). Adressen bleiben gleich, die App ergibt sich aus der Tabelle bzw. dem Objekt. |
 | Verwaltung | Neue Administrationsseite **Apps** für den Super-Admin: anlegen, bearbeiten, aktivieren, deaktivieren, installieren (aus Paket), exportieren, aktualisieren, entfernen. Sie ersetzt „Konfiguration übertragen“. |
+| Umstellung bestehender Installationen | Die Migration ordnet Demo-Objekte (Shop, Lager, Forschung) anhand ihrer bekannten Namen eigenen Apps zu. Alles Übrige kommt in die Auffang-App **„Nicht zugeordnet“** – nur wenn es solche Objekte gibt. Sie ist danach eine normale App (umbenennen, aufteilen, entfernen). Neue Installationen haben keine Auffang-App. |
+| Verschieben | Tabellen lassen sich samt Zugehörigem **in eine andere App verschieben** (Abschnitt 5a), z. B. um „Nicht zugeordnet“ aufzuteilen. |
 | Tabellennamen | Bleiben global eindeutig (ein Namensraum `app_data`). Der Table-Designer schlägt das Präfix der App vor (`lager_…`). |
 
 ## 3. Was je App getrennt ist
@@ -86,6 +88,28 @@ Damit Verweise zwischen Apps robust sind (und dieselbe Logik später der REST-AP
 - Die Schnittstelle ist Teil der App-Definition und hat eine **Version**; inkompatible Änderungen erhöhen sie und
   werden beim Aktualisieren als Bruch gemeldet.
 
+## 5a. In andere App verschieben
+
+Verschoben wird immer eine **Tabelle mit allem, was nur an ihr hängt**; der Dialog zeigt vorher, was mitgeht und was
+zu klären ist:
+
+- **Mit:** Menüeinträge, die nur diese Tabelle öffnen (Ziel: eine Gruppe der neuen App, wählbar), Auswertungen mit
+  dieser Tabelle als Grundtabelle, Tabellenverknüpfungen für Auswertungen von ihr aus, geplante Aufgaben zu ihr,
+  Datenstände, Dateien (bleiben einfach liegen, sie hängen an der Tabelle).
+- **Verknüpfte Tabellen:** Verweist die Tabelle auf Tabellen, die in der alten App bleiben (oder umgekehrt), schlägt
+  der Dialog vor, sie **gemeinsam** zu verschieben (zusammenhängende Gruppe, z. B. Bestellungen mit Positionen). Bleiben
+  Verweise über die App-Grenze, werden sie zu Verweisen über eine Schnittstelle (Abschnitt 5): Die Zieltabelle wird
+  freigegeben, der Dialog nennt das ausdrücklich.
+- **Auswertungen über mehrere Apps:** Nutzt eine Auswertung der alten App die verschobene Tabelle, braucht sie die
+  Schnittstelle (wie oben) – sonst wird sie mitverschoben, wenn sie nur diese Tabelle und mitverschobene nutzt.
+- **Rollen:** Datenrechte auf die Tabelle gehören zu Rollen der alten App und werden dort entfernt. Der Dialog bietet
+  an, sie einer Rolle der neuen App zu übertragen (bestehende wählen oder neue anlegen). Wer dadurch die Tabelle nicht
+  mehr sieht, nennt der Dialog vorher (Anzahl Personen je Rolle).
+- **Daten** bleiben unverändert; der technische Tabellenname auch (kein Umbenennen auf das neue Präfix, das wäre ein
+  eigener Schritt).
+- Alles in einem Schritt, im Änderungsprotokoll festgehalten; die Ausgangsstände beider Apps werden als „lokal
+  geändert“ markiert (für spätere Paket-Updates).
+
 ## 6. Aktualisieren: Änderungsplan statt Überschreiben
 
 Grundlage für das Einspielen neuer Versionen einer App, für B-001 und für Änderungen durch den KI-App-Designer:
@@ -133,7 +157,7 @@ Tabellen-Assistenten), Diagramm aus einer Definition, Änderungsplan.
 
 | Etappe | Inhalt | Grösse |
 |---|---|---|
-| 1 Fundament | Tabelle `apps`; `app_id` an Tabellen, Menüs, Auswertungen, Tabellenverknüpfungen, Rollen, Aufgaben; **stabile Schlüssel** an allen Objekten; Migration: bestehende Objekte in eine Standard-App, Demos (Shop, Lager, Forschung) in eigene Apps; Seite „Apps“ (anlegen, bearbeiten); App-Auswahl in Formularen, Filter in Listen; Präfix-Vorschlag im Table-Designer | gross |
+| 1 Fundament | Tabelle `apps`; **In andere App verschieben** (Abschnitt 5a, zunächst ohne Schnittstellen: Verweise über die App-Grenze verhindern das Verschieben, bis Etappe 5 sie erlaubt); `app_id` an Tabellen, Menüs, Auswertungen, Tabellenverknüpfungen, Rollen, Aufgaben; **stabile Schlüssel** an allen Objekten; Migration: Demos (Shop, Lager, Forschung) in eigene Apps, Übriges in „Nicht zugeordnet“; Seite „Apps“ (anlegen, bearbeiten); App-Auswahl in Formularen, Filter in Listen; Präfix-Vorschlag im Table-Designer | gross |
 | 2 Umschalten | aktuelle App, Umschalter in der Titelzeile, Navigation und Dashboard je App (Navigations-Cache je App), Zugang über Rollen; Rollen je App mit **Rolle kopieren** | mittel |
 | 3 Lebenszyklus | aktivieren, deaktivieren, entfernen (Abhängigkeiten, Sicherung, Bestätigung); „Demo-Daten zurücksetzen“ wird „App-Daten zurücksetzen“ | mittel |
 | 4 App-Definition | Format `saft-app/1`: aus dem aktuellen Stand erzeugen, exportieren, als neue App installieren, Ausgangsstand speichern; Diagramm aus einer Definition; Seite „Apps“ ersetzt „Konfiguration übertragen“ | mittel |
@@ -149,15 +173,16 @@ Schlüsseln die Grundlage für 4, 6 und 8.
 
 - **Breite:** Fast jede Liste und jedes Formular der Administration ist betroffen; Browser-Tests und Handbücher in vier
   Sprachen entsprechend.
-- **Migration bestehender Installationen** (auch Strato): Zuordnung zur Standard-App und Aufteilung der Demos muss
+- **Migration bestehender Installationen** (auch Strato): Aufteilung in die Demo-Apps und „Nicht zugeordnet“ muss
   verlässlich sein; vorher Sicherung, Probelauf (`--dry-run`).
-- **Verweise zwischen Apps** in bestehenden Daten: Gibt es sie nach der Migration (z. B. eine eigene Tabelle verweist
-  auf eine Demo-Tabelle), werden die Ziele automatisch als Schnittstelle freigegeben und gemeldet.
+- **Verweise zwischen Apps** in bestehenden Daten: Die Migration erzeugt keine. Verknüpfte Tabellen bleiben zusammen –
+  verweist eine eigene Tabelle auf eine Demo-Tabelle (oder umgekehrt), kommt sie in die App dieser Demo und wird
+  gemeldet; aufteilen lässt sie sich später mit „In andere App verschieben“, sobald Schnittstellen möglich sind
+  (Etappe 5).
 - **Plugins** sehen technisch weiterhin alle Tabellen; „je App“ betrifft Zuordnung, Sichtbarkeit und Aktivierung.
 - **Änderungsplan** ist der anspruchsvollste Teil (Konflikte, teilweise angewendete Pläne); er kommt bewusst spät, auf
   einem stabilen Fundament.
 
 ## 10. Offene Punkte
 
-- Name der Standard-App bei der Migration (z. B. „Allgemein“).
 - Was wird aus Konfigurationspaketen im alten Format `saft-config/1`: Einspielen weiterhin möglich (als neue App)?
