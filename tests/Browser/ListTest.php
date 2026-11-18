@@ -451,8 +451,11 @@ class ListTest extends DuskTestCase
             $this->login($browser, self::ADMIN)->visit('/admin/data/kunden')->waitForText('Müller KG', 15)
                 ->assertInputValue('.fi-ta-search-field input', 'müller')
                 ->assertDontSee('Alpha AG')
+                // Erst klicken, wenn Livewire bereit ist; auf langsamen Rechnern ging der Klick sonst verloren.
+                ->waitForText('Ansicht zurücksetzen', 15)
+                ->pause(1000)
                 ->press('Ansicht zurücksetzen')
-                ->waitForText('Alpha AG', 15)
+                ->waitForText('Alpha AG', 20)
                 ->assertInputValue('.fi-ta-search-field input', '')
                 ->waitUntilMissingText('Ansicht zurücksetzen', 15);
         });
