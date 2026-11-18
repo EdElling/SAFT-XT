@@ -218,8 +218,9 @@ At the bottom you find (1):
 click **"browse"**; with several files you can change the order by dragging, and the ✕ removes a file. Nothing is
 stored until you click **Create** or **Save**. Which kinds and sizes of files are allowed is set per field by the
 administration; other files are rejected as soon as they are uploaded. In the list, images appear as small previews
-and other files with a paperclip (at most three, plus "+2" etc.); the details show all of them. A click opens images
-and PDFs in a new window; other files are downloaded. Only people who may read the table can see its files. The
+and other files with a paperclip (at most three, plus "+2" etc.); the details show all of them. A click on an image or PDF – or on
+"+2" – shows the file in a **preview window**: the arrows (also the arrow keys) page through all files of the field,
+and at the top you find **Open in new tab**, **Download** and **Close** (also Esc). Other files are downloaded directly. Only people who may read the table can see its files. The
 filter **"with files" / "without files"** finds records with or without attachments.
 
 Which buttons you see depends on your permissions: with read permission only, "New record", "Edit" and "Delete" are
@@ -355,6 +356,8 @@ in outside SAFT and read it back in. The button appears if import is allowed for
 - **Values** may be written as the export delivers them: selection lists with label or stored value, yes/no (also
   Ja/Nein, Oui/Non, Sì/No, 1/0), relations with the displayed name (e.g. "ACME AG") or the number, dates as 31.12.2026,
   31/12/2026 or 2026-12-31, numbers as 1234.50, 1234,50 or 1'234.50.
+- **File fields** are not in the template and stay empty on import, even if they are required; the dialog points
+  this out.
 - **Only new records:** existing records are never changed. An export read back in unchanged therefore reports
   "already taken" for unique fields.
 - Defaults (sequential numbers, copy from) and computed fields are set as when entering data. The activity log

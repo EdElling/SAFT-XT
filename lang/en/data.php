@@ -26,6 +26,7 @@ return [
         'step_file' => 'File',
         'step_check' => 'Check',
         'intro' => 'Creates new records from an Excel or CSV file; existing records remain unchanged. The first row contains the column headings – as in the template or an export of this table.',
+        'files_skipped' => 'File fields (:fields) are not imported and stay empty.',
         'file' => 'File',
         'file_help' => 'Excel (.xlsx) or CSV, at most :max MB and :rows rows.',
         'invalid' => 'The file cannot be imported like this – nothing was created',
@@ -50,6 +51,15 @@ return [
         'who' => 'By',
         'what' => 'Change',
         'empty' => 'No entries',
+    ],
+    'files' => [
+        'show_all' => 'View all files',
+        'open_new_tab' => 'Open in new tab',
+        'download' => 'Download',
+        'close' => 'Close',
+        'previous' => 'Previous file',
+        'next' => 'Next file',
+        'no_preview' => 'There is no preview for this file.',
     ],
     'filters' => [
         'with_files' => 'with files',

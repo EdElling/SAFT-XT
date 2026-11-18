@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\CustomTables\RelationManagers;
 
+use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
 use App\Filament\Resources\CustomTables\Schemas\FieldForm;
@@ -18,6 +19,7 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\IconPosition;
 use Filament\Support\Enums\Width;
@@ -129,6 +131,10 @@ class CustomFieldsRelationManager extends RelationManager
                     ->modalHeading(__('tables.fields.drop_heading'))
                     ->modalDescription(fn (CustomField $record): string => __('tables.fields.drop_description', ['name' => $record->name]))
                     ->schema([
+                        // Dateien des Felds werden mitgelöscht (B-021).
+                        Callout::make(fn (CustomField $record): ?string => RecordFiles::dropWarning($record->custom_table, $record->name))
+                            ->danger()
+                            ->visible(fn (CustomField $record): bool => $record->type === FieldType::File && RecordFiles::dropWarning($record->custom_table, $record->name) !== null),
                         TextInput::make('confirmation')
                             ->label(fn (CustomField $record): string => __('tables.confirm_name', ['name' => $record->name]))
                             ->required(),

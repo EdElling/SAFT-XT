@@ -9,7 +9,7 @@ return [
         'import' => 'Import',
     ],
     'export' => [
-        'intro' => 'Export table designer tables, reports, menu entries and roles as a package, e.g. to transfer them from a test to a production installation. Records, users, credentials and app settings are not included; reports only if shared or your own.',
+        'intro' => 'Export table designer tables, reports, menu entries and roles as a package, e.g. to transfer them from a test to a production installation. Records (and with them files from file fields), users, credentials and app settings are not included; reports only if shared or your own.',
         'tables' => 'Tables',
         'reports' => 'Reports',
         'menus' => 'Menu entries',
@@ -73,6 +73,7 @@ return [
         'external_table' => 'Connected table “:table” is missing (create it with the table connector)',
     ],
     'notes' => [
+        'file_fields' => 'file fields without files: :fields',
         'field' => 'field :field is missing',
         'table' => 'table :table is missing',
         'link' => 'link :link is missing',

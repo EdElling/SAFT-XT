@@ -373,7 +373,11 @@ final class ConfigImporter
             }
         }
 
-        return new ImportItem(ImportItem::TABLE, $name, $label, $notes === [] ? ImportItem::NEW : ImportItem::MISSING, array_values(array_unique($notes)));
+        // Hinweis, keine fehlende Voraussetzung: Dateifelder kommen ohne Dateien (wie alle Datensätze).
+        $files = array_values(array_map(static fn (array $f): string => (string) $f['name'], array_filter((array) $table['fields'], static fn (mixed $f): bool => is_array($f) && ($f['type'] ?? null) === 'file')));
+        $hints = $files === [] ? [] : [__('configuration.notes.file_fields', ['fields' => implode(', ', $files)])];
+
+        return new ImportItem(ImportItem::TABLE, $name, $label, $notes === [] ? ImportItem::NEW : ImportItem::MISSING, [...array_values(array_unique($notes)), ...$hints]);
     }
 
     /** @return array<string, mixed> */

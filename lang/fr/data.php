@@ -26,6 +26,7 @@ return [
         'step_file' => 'Fichier',
         'step_check' => 'Contrôle',
         'intro' => 'Crée de nouveaux enregistrements à partir d’un fichier Excel ou CSV ; les enregistrements existants restent inchangés. La première ligne contient les en-têtes de colonnes – comme dans le modèle ou un export de cette table.',
+        'files_skipped' => 'Les champs de fichiers (:fields) ne sont pas importés et restent vides.',
         'file' => 'Fichier',
         'file_help' => 'Excel (.xlsx) ou CSV, au plus :max Mo et :rows lignes.',
         'invalid' => 'Le fichier ne peut pas être importé ainsi – rien n’a été créé',
@@ -50,6 +51,15 @@ return [
         'who' => 'Par',
         'what' => 'Modification',
         'empty' => 'Aucune entrée',
+    ],
+    'files' => [
+        'show_all' => 'Voir tous les fichiers',
+        'open_new_tab' => 'Ouvrir dans un nouvel onglet',
+        'download' => 'Télécharger',
+        'close' => 'Fermer',
+        'previous' => 'Fichier précédent',
+        'next' => 'Fichier suivant',
+        'no_preview' => 'Aucun aperçu n’est disponible pour ce fichier.',
     ],
     'filters' => [
         'with_files' => 'avec fichiers',

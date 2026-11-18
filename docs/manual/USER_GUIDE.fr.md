@@ -233,8 +233,10 @@ fichiers dans le champ ou cliquez sur **« parcourir »** ; s’il y a plusieurs
 glisser-déposer et le ✕ retire un fichier. Rien n’est enregistré avant **Créer** ou **Enregistrer**. Les types et la
 taille autorisés sont définis par l’administration pour chaque champ ; les autres fichiers sont refusés dès le
 téléversement. Dans la liste, les images apparaissent en petit aperçu et les autres fichiers avec un trombone (trois
-au plus, puis « +2 », etc.) ; les détails les montrent tous. Un clic ouvre les images et les PDF dans une nouvelle
-fenêtre ; les autres fichiers sont téléchargés. Seules les personnes autorisées à lire la table voient ses fichiers.
+au plus, puis « +2 », etc.) ; les détails les montrent tous. Un clic sur une image ou un PDF – ou sur
+« +2 » – affiche le fichier dans une **fenêtre d’aperçu** : les flèches (aussi les touches fléchées) parcourent tous
+les fichiers du champ ; en haut se trouvent **Ouvrir dans un nouvel onglet**, **Télécharger** et **Fermer** (aussi
+Échap). Les autres fichiers sont téléchargés directement. Seules les personnes autorisées à lire la table voient ses fichiers.
 Le filtre **« avec fichiers » / « sans fichiers »** trouve les enregistrements avec ou sans pièce jointe.
 
 Les boutons visibles dépendent de vos droits : avec un simple droit de lecture, « Nouvel enregistrement », « Modifier »
@@ -384,6 +386,8 @@ un modèle vide, le remplir en dehors de SAFT et le réimporter. Le bouton appar
   enregistrée, oui/non (aussi Ja/Nein, Yes/No, Sì/No, 1/0), liaisons avec le nom affiché (p. ex. « ACME AG ») ou le
   numéro, dates sous la forme 31.12.2026, 31/12/2026 ou 2026-12-31, nombres sous la forme 1234,50, 1234.50 ou
   1'234.50.
+- **Les champs de fichiers** ne figurent pas dans le modèle et restent vides lors de l’import, même s’ils sont
+  obligatoires ; la boîte de dialogue le signale.
 - **Uniquement de nouveaux enregistrements :** les enregistrements existants ne sont jamais modifiés. Un export
   réimporté sans changement signale donc « déjà utilisé » pour les champs uniques.
 - Les valeurs par défaut (numéros successifs, reprise) et les champs calculés sont définis comme lors de la saisie. Le

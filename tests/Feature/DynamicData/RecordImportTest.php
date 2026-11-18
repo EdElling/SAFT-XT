@@ -213,4 +213,22 @@ class RecordImportTest extends DynamicDataTestCase
         $this->orders->update(['import_enabled' => false]);
         $this->assertFalse(DataAccess::canImport($this->orders->fresh()), 'Ohne Freigabe in den Stammdaten.');
     }
+
+    public function test_required_file_fields_stay_empty_and_the_dialog_says_so(): void
+    {
+        $belege = $this->service()->addField($this->orders, ['name' => 'beleg', 'label' => ['de' => 'Beleg', 'en' => 'Receipt'], 'type' => 'file', 'is_required' => true]);
+        $this->orders->refresh();
+
+        $this->assertStringNotContainsString('Beleg', implode(',', $this->importer()->analyze($this->orders, $this->csv("Nummer\nB-9\n"), 'a.csv')->columns));
+        $path = $this->csv("Nummer;Beleg\nB-9;scan.png\n");
+        $analysis = $this->importer()->analyze($this->orders, $path, 'a.csv');
+        $this->assertTrue($analysis->isValid());
+        $this->assertContains('Beleg', $analysis->ignored);
+
+        $this->assertSame(1, $this->importer()->import($this->orders, $path, 'a.csv', auth()->user()));
+        $this->assertNull(DynamicRecord::forTableName('bestellungen')->newQuery()->where('nummer', 'B-9')->sole()->beleg);
+        unlink($path);
+
+        $this->assertSame('Dateifelder (Beleg) werden nicht importiert und bleiben leer.', __('data.import.files_skipped', ['fields' => $belege->label]));
+    }
 }

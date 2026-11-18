@@ -62,6 +62,7 @@ class TableAssistantTest extends DynamicDataTestCase
             'name' => $name, 'label' => $this->t(ucfirst($name)), 'type' => $type,
             'required' => false, 'unique' => false, 'searchable' => false, 'sortable' => false,
             'length' => null, 'precision' => null, 'scale' => null, 'choices' => [], 'relation_table' => null, 'relation_display' => [],
+            'file_kinds' => [], 'max_mb' => null, 'max_files' => null,
         ], ...$overrides];
     }
 
@@ -230,5 +231,28 @@ class TableAssistantTest extends DynamicDataTestCase
         $this->actingAs($this->admin);
         $this->assertSame(0, AiUsage::remainingToday($this->admin));
         $this->assertFalse(TableAssistant::availableFor($this->userWithPermissions(['custom_tables.view'])));
+    }
+
+    public function test_file_fields_can_be_proposed(): void
+    {
+        $this->fake->push($this->members(['fields' => [
+            $this->field('nachname', 'string', ['required' => true]),
+            $this->field('foto', 'file', ['file_kinds' => ['images'], 'max_mb' => 5, 'max_files' => 1, 'sortable' => true, 'unique' => true]),
+            $this->field('vertrag', 'file', ['file_kinds' => ['pdf', 'any'], 'max_mb' => null, 'max_files' => null]),
+        ]]));
+
+        Livewire::test(CreateCustomTable::class)
+            ->set('assistantPrompt', 'Mitglieder mit Foto und Vertrag als PDF')
+            ->call('askTableAssistant')
+            ->assertSet('assistantReplyKind', 'proposal')
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $fields = CustomTable::query()->where('name', 'mitglieder')->sole()->fields()->get()->keyBy('name');
+        $this->assertSame(FieldType::File, $fields['foto']->type);
+        $this->assertSame(['kinds' => ['images'], 'max_mb' => 5, 'max_files' => 1], $fields['foto']->options);
+        $this->assertFalse($fields['foto']->is_unique || $fields['foto']->is_sortable);
+        $this->assertSame(['kinds' => ['pdf'], 'max_mb' => 10, 'max_files' => 1], $fields['vertrag']->options);
+        $this->assertStringContainsString('file_kinds = images', $this->fake->sentText());
     }
 }

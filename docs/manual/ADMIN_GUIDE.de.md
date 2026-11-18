@@ -402,7 +402,8 @@ Beim Löschen einer Tabelle entfernt SAFT auch ihre Datenrechte und Menüeinträ
 erhalten. Nötig ist das Recht **Table-Designer: löschen**. Verweist eine andere Tabelle über ein
 Verknüpfungsfeld auf die Tabelle, nennt die Meldung dieses Feld – es muss zuerst entfernt werden. Wird die Tabelle
 anderswo verwendet (Auswertungen, Menüs, Rollen …), zeigt der Dialog eine Warnung mit der Anzahl je Bereich; das Löschen
-bleibt möglich, Einzelheiten stehen im Reiter **Verwendet in**.
+bleibt möglich, Einzelheiten stehen im Reiter **Verwendet in**. Enthält die Tabelle bzw. das Feld Dateien (Typ
+*Datei*), nennt der Dialog ihre Anzahl und Grösse; sie werden mitgelöscht, auch die von Datensätzen im Papierkorb.
 
 ### Tabelle aus Datei importieren
 
@@ -907,7 +908,7 @@ landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bz
 | Assistent | Wo | Recht | Kann |
 |---|---|---|---|
 | **Auswertungen** | Auswertungs-Editor, Feld „Auswertung beschreiben“ | Auswertungen: Assistent nutzen | Grundtabelle, Zeilen, Spalten, Werte, Filter, Sortierung, Anzahl Zeilen und Darstellung wählen; berechnete Werte und Spalten sowie Kennzahlen aus Werten mit Formeln bilden; Rückfragen stellen; einen Vorschlag auf Zuruf ändern |
-| **Tabellen** | Table-Designer: beim Anlegen „Tabelle beschreiben“, bei bestehenden Tabellen **Mit KI anpassen** | Table-Designer: Assistent nutzen | Neue Tabelle mit Feldern, Typen, Auswahloptionen, Verknüpfungen zu bestehenden Tabellen und Bezeichnungen in allen vier Sprachen; bei bestehenden Tabellen neue Felder, Bezeichnungen, Pflicht/eindeutig/durchsuchbar/sortierbar, weitere Auswahloptionen und Anzeigefelder von Verknüpfungen (Vorschau in Worten, dann **Übernehmen**). Typ ändern, umbenennen und löschen bleibt Handarbeit |
+| **Tabellen** | Table-Designer: beim Anlegen „Tabelle beschreiben“, bei bestehenden Tabellen **Mit KI anpassen** | Table-Designer: Assistent nutzen | Neue Tabelle mit Feldern, Typen (auch Dateifelder mit Arten, Grösse und Anzahl), Auswahloptionen, Verknüpfungen zu bestehenden Tabellen und Bezeichnungen in allen vier Sprachen; bei bestehenden Tabellen neue Felder, Bezeichnungen, Pflicht/eindeutig/durchsuchbar/sortierbar, weitere Auswahloptionen und Anzeigefelder von Verknüpfungen (Vorschau in Worten, dann **Übernehmen**). Typ ändern, umbenennen und löschen bleibt Handarbeit |
 | **Hilfe** | Knopf **?** in der Kopfzeile; **Dokumentation** › Reiter **KI-Assistent** | Hilfe: Assistent nutzen | Beantwortet Fragen zur Bedienung aus den Handbüchern, die die Person sehen darf, mit Verweisen auf die Abschnitte; schlägt nichts vor und ändert nichts |
 
 ### Einrichten
@@ -1103,7 +1104,7 @@ exportieren Sie ein **Paket** (eine JSON-Datei) und spielen es in der anderen In
 
 | Im Paket | Nicht im Paket |
 |---|---|
-| Tabellen des Table-Designers mit Feldern, Prüfungen, Formeln, Tabellenregeln und Detailtabellen | Datensätze |
+| Tabellen des Table-Designers mit Feldern, Prüfungen, Formeln, Tabellenregeln und Detailtabellen | Datensätze (auch Dateien aus Dateifeldern; die Vorschau nennt solche Felder unter *Hinweise*) |
 | Verknüpfungen für Auswertungen | Benutzer und ihre Dashboard-Anordnung |
 | Auswertungen – freigegebene und Ihre eigenen | private Auswertungen anderer |
 | Menüeinträge (mit den übergeordneten Gruppen) | Datenbankverbindungen und Zugangsdaten |

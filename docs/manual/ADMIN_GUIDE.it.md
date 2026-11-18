@@ -404,7 +404,8 @@ Eliminando una tabella, SAFT rimuove anche i suoi diritti sui dati e le sue voci
 Serve il diritto **Designer di tabelle: eliminare**. Se un’altra tabella fa riferimento alla tabella con un campo di
 collegamento, il messaggio nomina quel campo – va rimosso prima. Se la tabella è usata altrove (analisi, menu,
 ruoli …), la finestra mostra un avviso con il numero per ambito; l’eliminazione resta possibile, i dettagli sono nella
-scheda **Usata in**.
+scheda **Usata in**. Se la tabella o il campo contiene file (tipo *File*), la finestra ne indica numero e dimensione;
+vengono eliminati anch’essi, compresi quelli dei record nel cestino.
 
 ### Importare una tabella da un file
 
@@ -922,7 +923,7 @@ risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effe
 | Assistente | Dove | Diritto | Può |
 |---|---|---|---|
 | **Report** | editor dei report, campo «Descrivere il report» | Report: usare l’assistente | scegliere tabella di base, righe, colonne, valori, filtri, ordinamento, numero di righe e visualizzazione; creare valori e colonne calcolati e indicatori dai valori con formule; porre domande; modificare una proposta su richiesta |
-| **Tabelle** | Designer di tabelle: «Descrivere la tabella» alla creazione, **Adattare con l’IA** per le tabelle esistenti | Designer di tabelle: usare l’assistente | nuova tabella con campi, tipi, opzioni di selezione, collegamenti a tabelle esistenti ed etichette in tutte e quattro le lingue; per le tabelle esistenti nuovi campi, etichette, obbligatorio/univoco/ricercabile/ordinabile, altre opzioni di selezione e campi visualizzati dei collegamenti (anteprima a parole, poi **Importa**). Cambiare tipo, rinominare ed eliminare restano lavoro manuale |
+| **Tabelle** | Designer di tabelle: «Descrivere la tabella» alla creazione, **Adattare con l’IA** per le tabelle esistenti | Designer di tabelle: usare l’assistente | nuova tabella con campi, tipi (anche campi file con tipi, dimensione e numero), opzioni di selezione, collegamenti a tabelle esistenti ed etichette in tutte e quattro le lingue; per le tabelle esistenti nuovi campi, etichette, obbligatorio/univoco/ricercabile/ordinabile, altre opzioni di selezione e campi visualizzati dei collegamenti (anteprima a parole, poi **Importa**). Cambiare tipo, rinominare ed eliminare restano lavoro manuale |
 | **Aiuto** | pulsante **?** nell’intestazione; **Documentazione** › scheda **Assistente IA** | Aiuto: usare l’assistente | risponde alle domande sull’uso in base ai manuali che la persona può vedere, con rimandi alle sezioni; non propone nulla e non modifica nulla |
 
 ### Configurazione
@@ -1124,7 +1125,7 @@ un **pacchetto** (un file JSON) e lo importate nell’altra installazione.
 
 | Nel pacchetto | Non nel pacchetto |
 |---|---|
-| tabelle del designer di tabelle con campi, verifiche, formule, regole di tabella e tabelle di dettaglio | record |
+| tabelle del designer di tabelle con campi, verifiche, formule, regole di tabella e tabelle di dettaglio | record (compresi i file dei campi file; l’anteprima indica tali campi sotto *Note*) |
 | collegamenti per le analisi | utenti e disposizione della loro dashboard |
 | analisi – condivise e le vostre | analisi private di altre persone |
 | voci di menu (con i gruppi superiori) | connessioni ai database e credenziali |

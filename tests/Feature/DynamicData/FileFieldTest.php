@@ -8,6 +8,8 @@ use App\DynamicData\Files\FileKinds;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Ui\DynamicTableBuilder;
 use App\Filament\Pages\DynamicDataPage;
+use App\Filament\Resources\CustomTables\Pages\EditCustomTable;
+use App\Filament\Resources\CustomTables\RelationManagers\CustomFieldsRelationManager;
 use App\Filament\Support\ActivityChanges;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -17,6 +19,7 @@ use Filament\Actions\Testing\TestAction;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Number;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
 
@@ -285,5 +288,59 @@ class FileFieldTest extends DynamicDataTestCase
         $page->callMountedAction()->assertHasNoFormErrors();
         $this->assertSame([$pdf->toReference()], DynamicRecord::forTable($table)->newQuery()->findOrFail($record->getKey())->vertrag);
         $this->assertNotNull(RecordFile::query()->find($pdf->id));
+    }
+
+    public function test_files_carry_preview_data_and_can_be_forced_to_download(): void
+    {
+        [$record, $image] = $this->recordWithFile('bild.png');
+        $field = $this->vertraege->fields()->where('name', 'belege')->firstOrFail();
+        $pdf = $this->files()->store($this->vertraege, $field, UploadedFile::fake()->create('vertrag.pdf', 10, 'application/pdf'));
+        $text = $this->files()->store($this->vertraege, $field, UploadedFile::fake()->create('notiz.txt', 1, 'text/plain'));
+        $references = [$image->toReference(), $pdf->toReference(), $text->toReference()];
+
+        $html = DynamicTableBuilder::fileSummary($references, limit: 2);
+        preg_match('/data-saft-files="([^"]+)"/', (string) $html, $match);
+        $files = json_decode(html_entity_decode($match[1]), true);
+
+        $this->assertSame(['image', 'pdf', null], array_column($files, 'preview'));
+        $this->assertSame(route('files.show', ['file' => $text->id]), $files[2]['url']);
+        $this->assertStringContainsString('data-saft-file="2"', (string) $html, '„+1“ öffnet die Vorschau bei der dritten Datei.');
+
+        $fourth = $this->files()->store($this->vertraege, $field, self::png('viertes.png'));
+        $record->update(['belege' => [...$references, $fourth->toReference()]]);
+        $this->get(route('files.show', ['file' => $pdf->id]))->assertHeader('Content-Disposition', 'inline; filename=vertrag.pdf');
+        $this->get(route('files.show', ['file' => $pdf->id, 'download' => 1]))->assertHeader('Content-Disposition', 'attachment; filename=vertrag.pdf');
+
+        // In der Liste unverändert (nicht von Filament bereinigt): Vorschau-Daten, Klick-Handler und „+1“.
+        $this->get('/admin/data/vertraege')->assertOk()->assertSee('data-saft-file-preview', false)->assertSee('window.saftFilePreview', false);
+        Livewire::test(DynamicDataPage::class, ['table' => 'vertraege'])
+            ->call('loadTable')
+            ->assertSeeHtml('data-saft-files=')
+            ->assertSeeHtml('window.saftFilePreview(this, true)')
+            ->assertSeeHtml('class="saft-file-more"');
+    }
+
+    public function test_drop_dialogs_warn_about_the_files(): void
+    {
+        $this->assertNull(RecordFiles::dropWarning($this->vertraege));
+        $this->recordWithFile('a.png');
+        [$trashed] = $this->recordWithFile('b.png');
+        $trashed->delete();
+
+        $size = Number::fileSize((int) RecordFile::query()->sum('size'), precision: 1);
+        $this->assertSame("Dabei werden auch 2 Dateien ({$size}) endgültig gelöscht.", RecordFiles::dropWarning($this->vertraege));
+        $this->assertSame("Dabei werden auch 2 Dateien ({$size}) endgültig gelöscht.", RecordFiles::dropWarning($this->vertraege, 'belege'));
+        $this->assertNull(RecordFiles::dropWarning($this->vertraege, 'titel'));
+
+        $field = $this->vertraege->fields()->where('name', 'belege')->firstOrFail();
+        $this->service()->updateField($field, ['is_active' => false]);
+        Livewire::test(CustomFieldsRelationManager::class, ['ownerRecord' => $this->vertraege->fresh(), 'pageClass' => EditCustomTable::class])
+            ->mountAction(TestAction::make('dropField')->table($field->fresh()))
+            ->assertActionMounted(TestAction::make('dropField')->table($field->fresh()));
+
+        $this->service()->updateTable($this->vertraege, ['is_active' => false]);
+        Livewire::test(EditCustomTable::class, ['record' => $this->vertraege->id])
+            ->mountAction(TestAction::make('dropTable'))
+            ->assertActionMounted(TestAction::make('dropTable'));
     }
 }

@@ -26,6 +26,7 @@ return [
         'step_file' => 'File',
         'step_check' => 'Controllo',
         'intro' => 'Crea nuovi record da un file Excel o CSV; i record esistenti restano invariati. La prima riga contiene le intestazioni delle colonne – come nel modello o in un’esportazione di questa tabella.',
+        'files_skipped' => 'I campi file (:fields) non vengono importati e restano vuoti.',
         'file' => 'File',
         'file_help' => 'Excel (.xlsx) o CSV, al massimo :max MB e :rows righe.',
         'invalid' => 'Il file non può essere importato così – non è stato creato nulla',
@@ -50,6 +51,15 @@ return [
         'who' => 'Da',
         'what' => 'Modifica',
         'empty' => 'Nessuna voce',
+    ],
+    'files' => [
+        'show_all' => 'Vedi tutti i file',
+        'open_new_tab' => 'Apri in una nuova scheda',
+        'download' => 'Scarica',
+        'close' => 'Chiudi',
+        'previous' => 'File precedente',
+        'next' => 'File successivo',
+        'no_preview' => 'Per questo file non è disponibile un’anteprima.',
     ],
     'filters' => [
         'with_files' => 'con file',

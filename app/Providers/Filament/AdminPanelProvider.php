@@ -73,6 +73,8 @@ class AdminPanelProvider extends PanelProvider
             // Eigene Stile und der persönliche Kontrastmodus (siehe PanelAppearance).
             ->renderHook(PanelsRenderHook::STYLES_AFTER, fn (): string => PanelAppearance::styles().PanelAppearance::themeScript())
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => PanelAppearance::headScript())
+            // Vorschau von Bildern und PDF aus Dateifeldern (B-021).
+            ->renderHook(PanelsRenderHook::BODY_END, fn (): string => view('filament.file-preview')->render())
             // Hilfe-Assistent (Knopf „?“), nur wenn eingerichtet, eingeschaltet und mit Recht.
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn (): string => app(HelpAssistant::class)->availableFor(($user = auth()->user()) instanceof User ? $user : null) ? view('filament.help-assistant-button')->render() : '')
             // Seiten aus Plugins: Hinweis „Plugin: …“ unter dem Titel (B-063).

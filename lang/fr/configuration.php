@@ -9,7 +9,7 @@ return [
         'import' => 'Importer',
     ],
     'export' => [
-        'intro' => 'Exporter des tables du concepteur de tables, des analyses, des entrées de menu et des rôles sous forme de paquet, p. ex. pour les transférer d’une installation de test vers la production. Les enregistrements, utilisateurs, identifiants et paramètres de l’application ne sont pas inclus ; les analyses seulement si elles sont partagées ou les vôtres.',
+        'intro' => 'Exporter des tables du concepteur de tables, des analyses, des entrées de menu et des rôles sous forme de paquet, p. ex. pour les transférer d’une installation de test vers la production. Les enregistrements (et donc les fichiers des champs de fichiers), utilisateurs, identifiants et paramètres de l’application ne sont pas inclus ; les analyses seulement si elles sont partagées ou les vôtres.',
         'tables' => 'Tables',
         'reports' => 'Analyses',
         'menus' => 'Entrées de menu',
@@ -73,6 +73,7 @@ return [
         'external_table' => 'La table connectée « :table » manque (à créer avec le connecteur de tables)',
     ],
     'notes' => [
+        'file_fields' => 'champs de fichiers sans fichiers : :fields',
         'field' => 'le champ :field manque',
         'table' => 'la table :table manque',
         'link' => 'le lien :link manque',

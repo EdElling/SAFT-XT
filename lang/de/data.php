@@ -26,6 +26,7 @@ return [
         'step_file' => 'Datei',
         'step_check' => 'Prüfung',
         'intro' => 'Legt neue Datensätze aus einer Excel- oder CSV-Datei an; vorhandene Datensätze bleiben unverändert. Die erste Zeile enthält die Spaltenüberschriften – wie in der Vorlage oder einem Export dieser Tabelle.',
+        'files_skipped' => 'Dateifelder (:fields) werden nicht importiert und bleiben leer.',
         'file' => 'Datei',
         'file_help' => 'Excel (.xlsx) oder CSV, höchstens :max MB und :rows Zeilen.',
         'invalid' => 'Die Datei kann so nicht importiert werden – es wurde nichts angelegt',
@@ -50,6 +51,15 @@ return [
         'who' => 'Durch',
         'what' => 'Änderung',
         'empty' => 'Keine Einträge',
+    ],
+    'files' => [
+        'show_all' => 'Alle Dateien ansehen',
+        'open_new_tab' => 'In neuem Tab öffnen',
+        'download' => 'Herunterladen',
+        'close' => 'Schliessen',
+        'previous' => 'Vorherige Datei',
+        'next' => 'Nächste Datei',
+        'no_preview' => 'Für diese Datei gibt es keine Vorschau.',
     ],
     'filters' => [
         'with_files' => 'mit Dateien',

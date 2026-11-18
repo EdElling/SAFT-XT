@@ -313,6 +313,7 @@ return [
         'drop_heading' => 'Cette table est utilisée',
         'drop_description' => 'Utilisée dans : :list. Ces références ne fonctionneront plus après la suppression. Détails dans l’onglet « Utilisée dans ».',
     ],
+    'files_drop_warning' => '{1} :count fichier (:size) sera également supprimé définitivement.|[2,*] :count fichiers (:size) seront également supprimés définitivement.',
     'file_kinds' => [
         'images' => 'Images (JPEG, PNG, GIF, WebP)',
         'pdf' => 'PDF',

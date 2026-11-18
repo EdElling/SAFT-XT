@@ -313,6 +313,7 @@ return [
         'drop_heading' => 'Questa tabella è in uso',
         'drop_description' => 'Usata in: :list. Questi riferimenti non funzioneranno più dopo l’eliminazione. Dettagli nella scheda «Usata in».',
     ],
+    'files_drop_warning' => '{1} Verrà eliminato definitivamente anche :count file (:size).|[2,*] Verranno eliminati definitivamente anche :count file (:size).',
     'file_kinds' => [
         'images' => 'Immagini (JPEG, PNG, GIF, WebP)',
         'pdf' => 'PDF',

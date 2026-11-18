@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Assistant;
 
+use App\DynamicData\Files\FileKinds;
+
 /**
  * JSON-Schemas der Antworten des Tabellen-Assistenten (neue Tabelle bzw. Änderungen an einer bestehenden) und die
  * Übersetzung eines vorgeschlagenen Felds in den Formularzustand des Table-Designers (FieldForm).
@@ -11,7 +13,7 @@ namespace App\DynamicData\Assistant;
 final class TableProposalSchema
 {
     /** Feldtypen, die der Assistent vorschlagen darf (keine berechneten Felder). */
-    public const array TYPES = ['string', 'text', 'integer', 'decimal', 'boolean', 'date', 'datetime', 'select', 'relation'];
+    public const array TYPES = ['string', 'text', 'integer', 'decimal', 'boolean', 'date', 'datetime', 'select', 'relation', 'file'];
 
     /** @return list<string> */
     public static function locales(): array
@@ -68,6 +70,12 @@ final class TableProposalSchema
             'decimal' => ['precision' => is_int($field['precision'] ?? null) ? $field['precision'] : 12, 'scale' => is_int($field['scale'] ?? null) ? $field['scale'] : 2],
             'select' => ['options' => array_map(fn (array $c): array => ['value' => (string) ($c['value'] ?? ''), 'label' => self::cleanTranslations($c['label'] ?? null)], array_values(array_filter((array) ($field['choices'] ?? []), 'is_array')))],
             'relation' => ['table' => (string) ($field['relation_table'] ?? ''), 'display_fields' => array_values(array_map('strval', (array) ($field['relation_display'] ?? []))), 'separator' => ' '],
+            // Grenzen prüft der FieldDefinitionNormalizer beim Anlegen.
+            'file' => [
+                'kinds' => FileKinds::normalize((array) ($field['file_kinds'] ?? [])),
+                'max_mb' => is_int($field['max_mb'] ?? null) && $field['max_mb'] > 0 ? $field['max_mb'] : (int) config('dynamic_data.files.default_max_mb', 10),
+                'max_files' => is_int($field['max_files'] ?? null) && $field['max_files'] > 0 ? $field['max_files'] : 1,
+            ],
             default => [],
         };
 
@@ -78,9 +86,10 @@ final class TableProposalSchema
             'options' => $options,
             'validation_rules' => [],
             'is_required' => (bool) ($field['required'] ?? false),
-            'is_unique' => (bool) ($field['unique'] ?? false),
-            'is_searchable' => (bool) ($field['searchable'] ?? false),
-            'is_sortable' => (bool) ($field['sortable'] ?? false),
+            // Dateifelder sind weder eindeutig noch durchsuchbar noch sortierbar.
+            'is_unique' => $type !== 'file' && (bool) ($field['unique'] ?? false),
+            'is_searchable' => $type !== 'file' && (bool) ($field['searchable'] ?? false),
+            'is_sortable' => $type !== 'file' && (bool) ($field['sortable'] ?? false),
             'show_in_table' => true,
             'show_in_form' => true,
         ];
@@ -109,6 +118,9 @@ final class TableProposalSchema
             'choices' => ['type' => 'array', 'items' => self::choice()],
             'relation_table' => self::nullable(['type' => 'string']),
             'relation_display' => ['type' => 'array', 'items' => ['type' => 'string']],
+            'file_kinds' => ['type' => 'array', 'items' => ['type' => 'string', 'enum' => [...array_keys(FileKinds::MIMES), FileKinds::ANY]]],
+            'max_mb' => self::nullable(['type' => 'integer']),
+            'max_files' => self::nullable(['type' => 'integer']),
         ]);
     }
 

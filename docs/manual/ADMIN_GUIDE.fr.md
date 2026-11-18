@@ -416,6 +416,8 @@ journal des modifications est conservé. Le droit **Concepteur de tables : suppr
 table fait référence à la table par un champ de liaison, le message nomme ce champ – il doit d’abord être retiré. Si
 la table est utilisée ailleurs (analyses, menus, rôles …), la boîte de dialogue affiche un avertissement avec le nombre
 par domaine ; la suppression reste possible, les détails figurent dans l’onglet **Utilisée dans**.
+Si la table ou le champ contient des fichiers (type *Fichier*), la boîte de dialogue indique leur nombre et leur
+taille ; ils sont également supprimés, y compris ceux des enregistrements dans la corbeille.
 
 ### Importer une table depuis un fichier
 
@@ -946,7 +948,7 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
 | Assistant | Où | Droit | Peut |
 |---|---|---|---|
 | **Rapports** | éditeur de rapports, champ « Décrire le rapport » | Rapports : utiliser l’assistant | choisir la table de base, les lignes, colonnes, valeurs, filtres, le tri, le nombre de lignes et l’affichage ; créer des valeurs et colonnes calculées ainsi que des indicateurs à partir des valeurs avec des formules ; poser des questions ; modifier une proposition sur demande |
-| **Tables** | Concepteur de tables : « Décrire la table » à la création, **Adapter avec l’IA** pour les tables existantes | Concepteur de tables : utiliser l’assistant | nouvelle table avec champs, types, options de sélection, liaisons vers des tables existantes et libellés dans les quatre langues ; pour les tables existantes nouveaux champs, libellés, obligatoire/unique/recherchable/triable, options de sélection supplémentaires et champs affichés des liaisons (aperçu en mots, puis **Reprendre**). Changer de type, renommer et supprimer restent manuels |
+| **Tables** | Concepteur de tables : « Décrire la table » à la création, **Adapter avec l’IA** pour les tables existantes | Concepteur de tables : utiliser l’assistant | nouvelle table avec champs, types (y compris champs de fichiers avec types, taille et nombre), options de sélection, liaisons vers des tables existantes et libellés dans les quatre langues ; pour les tables existantes nouveaux champs, libellés, obligatoire/unique/recherchable/triable, options de sélection supplémentaires et champs affichés des liaisons (aperçu en mots, puis **Reprendre**). Changer de type, renommer et supprimer restent manuels |
 | **Aide** | bouton **?** dans l’en-tête ; **Documentation** › onglet **Assistant IA** | Aide : utiliser l’assistant | répond aux questions sur l’utilisation à partir des manuels que la personne peut voir, avec renvois aux sections ; ne propose rien et ne modifie rien |
 
 ### Configuration
@@ -1152,7 +1154,7 @@ main, vous exportez un **paquet** (un fichier JSON) et l’importez dans l’aut
 
 | Dans le paquet | Pas dans le paquet |
 |---|---|
-| tables du concepteur de tables avec champs, contrôles, formules, règles de table et tables de détail | enregistrements |
+| tables du concepteur de tables avec champs, contrôles, formules, règles de table et tables de détail | enregistrements (y compris les fichiers des champs de fichiers ; l’aperçu nomme ces champs sous *Remarques*) |
 | liens pour les analyses | utilisateurs et disposition de leur tableau de bord |
 | analyses – partagées et les vôtres | analyses privées d’autres personnes |
 | entrées de menu (avec leurs groupes parents) | connexions aux bases de données et identifiants |

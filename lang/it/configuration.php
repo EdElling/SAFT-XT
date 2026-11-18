@@ -9,7 +9,7 @@ return [
         'import' => 'Importa',
     ],
     'export' => [
-        'intro' => 'Esportare tabelle del designer di tabelle, analisi, voci di menu e ruoli come pacchetto, p. es. per trasferirli da un’installazione di test a quella di produzione. Record, utenti, credenziali e impostazioni dell’applicazione non sono inclusi; le analisi solo se condivise o vostre.',
+        'intro' => 'Esportare tabelle del designer di tabelle, analisi, voci di menu e ruoli come pacchetto, p. es. per trasferirli da un’installazione di test a quella di produzione. Record (e quindi i file dei campi file), utenti, credenziali e impostazioni dell’applicazione non sono inclusi; le analisi solo se condivise o vostre.',
         'tables' => 'Tabelle',
         'reports' => 'Analisi',
         'menus' => 'Voci di menu',
@@ -73,6 +73,7 @@ return [
         'external_table' => 'Manca la tabella collegata «:table» (da creare con il connettore di tabelle)',
     ],
     'notes' => [
+        'file_fields' => 'campi file senza file: :fields',
         'field' => 'manca il campo :field',
         'table' => 'manca la tabella :table',
         'link' => 'manca il collegamento :link',

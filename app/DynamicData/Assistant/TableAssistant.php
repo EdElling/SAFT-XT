@@ -47,10 +47,12 @@ final class TableAssistant
         string (short text; length 1-10000, default 255), text (long text), integer, decimal (precision 1-38, scale ≤
         precision), boolean, date, datetime, select (fixed choices: value = short technical value, label in all
         languages), relation (link to an existing table of the table designer: relation_table = its technical name,
-        relation_display = 1-3 non-relation fields of that table shown as the name, e.g. first and last name).
-        Flags: required, unique (not for text and boolean), searchable (string, text, select), sortable (an index for
-        fields often filtered or sorted; not for text). Use null for length/precision/scale when they do not apply,
-        empty lists for choices/relation_display when they do not apply.
+        relation_display = 1-3 non-relation fields of that table shown as the name, e.g. first and last name), file
+        (attachments such as photos, contracts or documents: file_kinds = images, pdf, office, text or any; max_mb =
+        maximum size per file, 1-200, usually 10; max_files = 1-50, 1 for a single photo or contract).
+        Flags: required, unique (not for text, boolean and file), searchable (string, text, select), sortable (an index
+        for fields often filtered or sorted; not for text and file). Use null for length/precision/scale/max_mb/max_files
+        when they do not apply, empty lists for choices/relation_display/file_kinds when they do not apply.
 
         Create relations only when the description asks for them or clearly implies them (e.g. "belongs to a club" and a
         table for clubs exists). Use only existing tables and fields from the data model. Keep tables focused: the

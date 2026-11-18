@@ -228,8 +228,10 @@ in das Feld oder klicken Sie auf **„auswählen“**; bei mehreren Dateien läs
 das ✕ entfernt eine Datei. Gespeichert wird erst mit **Erstellen** bzw. **Speichern**. Welche Arten und wie grosse
 Dateien erlaubt sind, legt die Administration je Feld fest; andere Dateien werden schon beim Hochladen abgewiesen.
 In der Liste erscheinen Bilder als kleine Vorschau und andere Dateien mit einer Büroklammer (höchstens drei, dazu
-„+2“ usw.), in den Details alle. Ein Klick öffnet Bilder und PDF in einem neuen Fenster; andere Dateien werden
-heruntergeladen. Dateien sieht nur, wer die Tabelle lesen darf. Der Filter **„mit Dateien“ / „ohne Dateien“** findet
+„+2“ usw.), in den Details alle. Ein Klick auf ein Bild oder PDF – oder auf
+„+2“ – zeigt die Datei in einem **Vorschaufenster**: Mit den Pfeilen (auch den Pfeiltasten) blättern Sie durch alle
+Dateien des Felds, oben stehen **In neuem Tab öffnen**, **Herunterladen** und **Schliessen** (auch Esc). Andere
+Dateien werden direkt heruntergeladen. Dateien sieht nur, wer die Tabelle lesen darf. Der Filter **„mit Dateien“ / „ohne Dateien“** findet
 Datensätze mit bzw. ohne Anhang.
 
 Welche Schaltflächen Sie sehen, hängt von Ihren Rechten ab: Mit reinem Leserecht fehlen „Neuer Datensatz“,
@@ -376,6 +378,8 @@ Rolle die Rechte **Anlegen** und **Importieren** hat.
 - **Werte** dürfen so geschrieben sein, wie der Export sie liefert: Auswahllisten mit Bezeichnung oder gespeichertem
   Wert, Ja/Nein (auch Yes/No, Oui/Non, Sì/No, 1/0), Verknüpfungen mit dem angezeigten Namen (z. B. „ACME AG“) oder der
   Nummer, Datum als 31.12.2026, 31/12/2026 oder 2026-12-31, Zahlen als 1234,50, 1234.50 oder 1'234.50.
+- **Dateifelder** stehen nicht in der Vorlage und bleiben beim Import leer, auch wenn sie Pflichtfelder sind; der
+  Dialog weist darauf hin.
 - **Nur neue Datensätze:** Vorhandene Datensätze werden nie geändert. Ein unverändert wieder eingelesener Export meldet
   deshalb bei eindeutigen Feldern „bereits vergeben“.
 - Vorgaben (fortlaufende Nummern, Übernehmen aus) und berechnete Felder werden wie beim Erfassen gesetzt. Im

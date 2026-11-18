@@ -313,6 +313,7 @@ return [
         'drop_heading' => 'This table is in use',
         'drop_description' => 'Used in: :list. These references no longer work after deleting. Details in the “Used in” tab.',
     ],
+    'files_drop_warning' => '{1} This also permanently deletes :count file (:size).|[2,*] This also permanently deletes :count files (:size).',
     'file_kinds' => [
         'images' => 'Images (JPEG, PNG, GIF, WebP)',
         'pdf' => 'PDF',

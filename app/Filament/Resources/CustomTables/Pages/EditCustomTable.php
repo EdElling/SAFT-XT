@@ -7,6 +7,7 @@ namespace App\Filament\Resources\CustomTables\Pages;
 use App\DynamicData\Assistant\TableAssistant;
 use App\DynamicData\Assistant\TableAssistantResult;
 use App\DynamicData\DataAccess;
+use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Rules\TableRule;
 use App\DynamicData\Rules\TableRuleNormalizer;
 use App\DynamicData\Usages\TableUsages;
@@ -201,6 +202,10 @@ class EditCustomTable extends EditRecord
                         ->description(fn (CustomTable $record): string => self::usageSummary($record))
                         ->warning()
                         ->visible(fn (CustomTable $record): bool => app(TableUsages::class)->counts($record) !== []),
+                    // Dateien aus Dateifeldern werden mitgelöscht (B-021).
+                    Callout::make(fn (CustomTable $record): ?string => RecordFiles::dropWarning($record))
+                        ->danger()
+                        ->visible(fn (CustomTable $record): bool => RecordFiles::dropWarning($record) !== null),
                     TextInput::make('confirmation')
                         ->label(fn (CustomTable $record): string => __('tables.confirm_name', ['name' => $record->name]))
                         ->required(),

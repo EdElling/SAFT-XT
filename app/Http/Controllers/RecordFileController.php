@@ -18,8 +18,8 @@ use Throwable;
 /**
  * Datei aus einem Feld vom Typ „Datei“ ausliefern (B-021) – nur mit Leserecht auf die Tabelle und den Datensatz;
  * sonst „nicht gefunden“, damit sich nicht erraten lässt, welche Dateien es gibt. Noch keinem Datensatz zugeordnete
- * Dateien (gerade hochgeladen) sieht nur, wer sie hochgeladen hat. Bilder und PDF im Browser, alles andere als
- * Download; nosniff verhindert, dass der Browser den Typ selbst errät.
+ * Dateien (gerade hochgeladen) sieht nur, wer sie hochgeladen hat. Bilder und PDF im Browser (mit ?download=1 als
+ * Download), alles andere als Download; nosniff verhindert, dass der Browser den Typ selbst errät.
  */
 final class RecordFileController
 {
@@ -42,7 +42,7 @@ final class RecordFileController
         abort_if($stream === null || $stream === false, 404);
 
         $disposition = HeaderUtils::makeDisposition(
-            $record->isInline() ? HeaderUtils::DISPOSITION_INLINE : HeaderUtils::DISPOSITION_ATTACHMENT,
+            $record->isInline() && ! $request->boolean('download') ? HeaderUtils::DISPOSITION_INLINE : HeaderUtils::DISPOSITION_ATTACHMENT,
             $record->name,
             (string) preg_replace('/[^\x20-\x7E]/', '_', $record->name),
         );

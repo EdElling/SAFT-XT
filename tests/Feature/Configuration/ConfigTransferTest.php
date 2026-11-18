@@ -14,6 +14,7 @@ use App\Filament\Pages\ConfigurationTransferPage;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\Menu;
+use App\Models\RecordFile;
 use App\Models\Report;
 use App\Models\ReportLink;
 use App\Models\Role;
@@ -289,5 +290,29 @@ class ConfigTransferTest extends DynamicDataTestCase
         $page->fillForm(['dependencies' => true], 'exportForm')
             ->assertDontSee('Gewählte Einträge werden nicht exportiert')
             ->assertFormFieldExists('reports.'.$group, 'exportForm', fn (CheckboxList $field): bool => ! $disabled($report)($field));
+    }
+
+    public function test_file_fields_are_transferred_with_their_settings_but_without_files(): void
+    {
+        $table = $this->service()->createTable(['name' => 'belege', 'label' => 'Belege'], [
+            ['name' => 'titel', 'label' => 'Titel', 'type' => 'string', 'is_required' => true],
+            ['name' => 'scan', 'label' => 'Scan', 'type' => 'file', 'options' => ['kinds' => ['images', 'pdf'], 'max_mb' => 5, 'max_files' => 2]],
+        ]);
+        DynamicRecord::forTable($table)->create(['titel' => 'Ohne Datei']);
+
+        $package = app(ConfigExporter::class)->export(tables: ['belege'], reports: [], menus: [], roles: [], user: $this->admin, label: 'Belege');
+        $this->assertArrayNotHasKey('records', $package);
+
+        // Als neue Tabelle einer anderen Installation: Hinweis, aber keine fehlende Voraussetzung.
+        $package['tables'][0]['name'] = 'belege_neu';
+        $item = collect(app(ConfigImporter::class)->analyze($package))->firstWhere('area', ImportItem::TABLE);
+        $this->assertSame(ImportItem::NEW, $item->status);
+        $this->assertSame(['Dateifelder ohne Dateien: scan'], $item->notes);
+
+        app(ConfigImporter::class)->apply($package, $this->admin);
+        $scan = CustomTable::query()->where('name', 'belege_neu')->sole()->fields()->where('name', 'scan')->sole();
+        $this->assertSame('file', $scan->type->value);
+        $this->assertSame(['kinds' => ['images', 'pdf'], 'max_mb' => 5, 'max_files' => 2], $scan->options);
+        $this->assertSame(0, RecordFile::query()->count());
     }
 }

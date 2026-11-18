@@ -23,6 +23,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\HtmlString;
 
 /**
  * Spalten, Filter und Abfrage einer Designer-Tabelle aus den Metadaten.
@@ -240,8 +241,9 @@ final class DynamicTableBuilder
                 ->action(RelationPreview::make($field, fn (DynamicRecord $record): mixed => $record->getAttribute($field->name), 'preview_'.$field->name)),
             FieldType::Text => TextColumn::make($field->name)->limit(60)->wrap(),
             FieldType::File => TextColumn::make($field->name)
-                ->state(fn (DynamicRecord $record): ?string => self::fileSummary($record->getAttribute($field->name)))
-                ->html(),
+                // HtmlString statt html(): Filaments Bereinigung entfernte onclick, data-Attribute und den Knopf „+N“.
+                // fileSummary() maskiert alle Werte selbst.
+                ->state(fn (DynamicRecord $record): ?HtmlString => ($html = self::fileSummary($record->getAttribute($field->name))) === null ? null : new HtmlString($html)),
             default => TextColumn::make($field->name),
         };
 
@@ -267,7 +269,9 @@ final class DynamicTableBuilder
     private const array IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
     /**
-     * Dateien in der Liste: bis zu drei Vorschaubilder bzw. Symbol mit Namen, dazu „+N“. Namen werden maskiert.
+     * Dateien in der Liste: bis zu drei Vorschaubilder bzw. Symbol mit Namen, dazu „+N“; in den Details alle. Namen
+     * werden maskiert. data-saft-files enthält alle Dateien des Felds für die Vorschau im Overlay (Bilder, PDF);
+     * ohne JavaScript öffnen die Links die Datei wie bisher.
      */
     public static function fileSummary(mixed $value, ?int $limit = 3): ?string
     {
@@ -281,22 +285,51 @@ final class DynamicTableBuilder
             return null;
         }
 
-        $parts = array_map(static function (array $item) use ($items, $limit): string {
-            $name = (string) ($item['name'] ?? '');
-            $url = route('files.show', ['file' => $item['id']]);
+        $files = array_map(static fn (array $item): array => [
+            'name' => (string) ($item['name'] ?? ''),
+            'url' => route('files.show', ['file' => $item['id']]),
+            'preview' => self::previewKind((string) ($item['name'] ?? '')),
+        ], $items);
 
-            if (in_array(strtolower(pathinfo($name, PATHINFO_EXTENSION)), self::IMAGE_EXTENSIONS, true)) {
-                return '<a href="'.e($url).'" target="_blank" rel="noopener" title="'.e($name).'" onclick="event.stopPropagation()">'
-                    .'<img src="'.e(route('files.show', ['file' => $item['id'], 'thumb' => 1])).'" alt="'.e($name).'" class="saft-file-thumb" loading="lazy"></a>';
+        $parts = [];
+
+        foreach (array_slice($files, 0, $limit) as $index => $file) {
+            $attributes = 'href="'.e($file['url']).'" target="_blank" rel="noopener" data-saft-file="'.$index.'"'
+                .' onclick="event.stopPropagation(); if (window.saftFilePreview && window.saftFilePreview(this)) event.preventDefault();"';
+
+            if ($file['preview'] === 'image') {
+                $parts[] = '<a '.$attributes.' title="'.e($file['name']).'">'
+                    .'<img src="'.e($file['url'].'?thumb=1').'" alt="'.e($file['name']).'" class="saft-file-thumb" loading="lazy"></a>';
+
+                continue;
             }
 
-            return '<a href="'.e($url).'" target="_blank" rel="noopener" class="saft-file-link" onclick="event.stopPropagation()">'
-                .svg('heroicon-m-paper-clip', 'saft-file-icon')->toHtml().'<span>'.e($limit !== null && count($items) > 1 ? mb_strimwidth($name, 0, 24, '…') : $name).'</span></a>';
-        }, array_slice($items, 0, $limit));
+            $parts[] = '<a '.$attributes.' class="saft-file-link">'
+                .svg('heroicon-m-paper-clip', 'saft-file-icon')->toHtml()
+                .'<span>'.e($limit !== null && count($files) > 1 ? mb_strimwidth($file['name'], 0, 24, '…') : $file['name']).'</span></a>';
+        }
 
-        $more = $limit !== null && count($items) > $limit ? '<span class="saft-file-more">+'.(count($items) - $limit).'</span>' : '';
+        $more = $limit !== null && count($files) > $limit
+            // Ein Link, kein Knopf: Die Zelle liegt in Filaments eigenem <button>, und ein Knopf darin würde vom Browser
+            // aus der Liste geschoben (ohne Zugriff auf data-saft-files).
+            ? '<a href="'.e($files[$limit]['url']).'" target="_blank" rel="noopener" role="button" class="saft-file-more" data-saft-file="'.$limit.'" title="'.e(__('data.files.show_all')).'"'
+                .' onclick="event.stopPropagation(); if (window.saftFilePreview && window.saftFilePreview(this, true)) event.preventDefault();">+'.(count($files) - $limit).'</a>'
+            : '';
 
-        return '<span class="saft-file-list">'.implode('', $parts).$more.'</span>';
+        return '<span class="saft-file-list" data-saft-files="'.e((string) json_encode($files, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)).'">'
+            .implode('', $parts).$more.'</span>';
+    }
+
+    /** Vorschau im Overlay: image, pdf oder null (wird heruntergeladen). */
+    private static function previewKind(string $name): ?string
+    {
+        $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+
+        return match (true) {
+            in_array($extension, self::IMAGE_EXTENSIONS, true) => 'image',
+            $extension === 'pdf' => 'pdf',
+            default => null,
+        };
     }
 
     /**

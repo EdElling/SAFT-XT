@@ -9,7 +9,7 @@ return [
         'import' => 'Einspielen',
     ],
     'export' => [
-        'intro' => 'Tabellen des Table-Designers, Auswertungen, Menüeinträge und Rollen als Paket exportieren, z. B. um sie von einer Test- in die Produktionsinstallation zu übertragen. Nicht enthalten sind Datensätze, Benutzer, Zugangsdaten und App-Einstellungen; Auswertungen nur freigegebene und eigene.',
+        'intro' => 'Tabellen des Table-Designers, Auswertungen, Menüeinträge und Rollen als Paket exportieren, z. B. um sie von einer Test- in die Produktionsinstallation zu übertragen. Nicht enthalten sind Datensätze (und damit Dateien aus Dateifeldern), Benutzer, Zugangsdaten und App-Einstellungen; Auswertungen nur freigegebene und eigene.',
         'tables' => 'Tabellen',
         'reports' => 'Auswertungen',
         'menus' => 'Menüeinträge',
@@ -73,6 +73,7 @@ return [
         'external_table' => 'Angebundene Tabelle „:table“ fehlt (über den Table-Connector anlegen)',
     ],
     'notes' => [
+        'file_fields' => 'Dateifelder ohne Dateien: :fields',
         'field' => 'Feld :field fehlt',
         'table' => 'Tabelle :table fehlt',
         'link' => 'Verknüpfung :link fehlt',

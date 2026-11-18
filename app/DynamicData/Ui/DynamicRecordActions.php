@@ -9,6 +9,7 @@ use App\DynamicData\Export\ExportFormat;
 use App\DynamicData\Export\TableExporter;
 use App\DynamicData\Import\RecordImportAnalysis;
 use App\DynamicData\Import\RecordImporter;
+use App\DynamicData\Schema\FieldType;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Support\ActivityChanges;
 use App\Models\Activity;
@@ -119,6 +120,15 @@ final class DynamicRecordActions
      * Datenimport (nur neue Datensätze): Vorlage herunterladen oder eine Excel-/CSV-Datei einlesen. Der Dialog prüft die
      * Datei zuerst vollständig und legt erst nach Bestätigung an – alles oder nichts.
      */
+    /** Bezeichnungen der aktiven Dateifelder, kommagetrennt; leer, wenn keine. */
+    private static function fileFieldLabels(CustomTable $table): string
+    {
+        return $table->fields
+            ->filter(static fn (CustomField $f): bool => $f->is_active && $f->type === FieldType::File)
+            ->map(static fn (CustomField $f): string => (string) $f->label)
+            ->implode(', ');
+    }
+
     public static function import(CustomTable $table): ActionGroup
     {
         return ActionGroup::make([
@@ -146,6 +156,9 @@ final class DynamicRecordActions
                         ->label(__('data.import.step_file'))
                         ->schema([
                             Text::make(__('data.import.intro')),
+                            // Dateien lassen sich nicht importieren (B-021); auch Pflicht-Dateifelder bleiben leer.
+                            Text::make(fn (): string => __('data.import.files_skipped', ['fields' => self::fileFieldLabels($table)]))
+                                ->visible(fn (): bool => self::fileFieldLabels($table) !== ''),
                             FileUpload::make('file')
                                 ->label(__('data.import.file'))
                                 ->helperText(__('data.import.file_help', ['max' => config('dynamic_data.import.max_file_mb'), 'rows' => Number::format((int) config('dynamic_data.import.max_record_rows'), locale: AppLocale::numberLocale())]))

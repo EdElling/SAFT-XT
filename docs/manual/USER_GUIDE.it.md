@@ -224,8 +224,10 @@ per l’anteprima dei record collegati). «Ripristina» compare solo per i recor
 cliccate su **«sfoglia»**; con più file l’ordine si cambia trascinando, la ✕ rimuove un file. Nulla viene salvato
 prima di **Crea** o **Salva**. Quali tipi e quali dimensioni sono ammessi lo stabilisce l’amministrazione per ogni
 campo; gli altri file vengono rifiutati già al caricamento. Nell’elenco le immagini appaiono come piccola anteprima e
-gli altri file con una graffetta (al massimo tre, poi «+2» ecc.); nei dettagli compaiono tutti. Un clic apre immagini
-e PDF in una nuova finestra; gli altri file vengono scaricati. Vede i file solo chi può leggere la tabella. Il filtro
+gli altri file con una graffetta (al massimo tre, poi «+2» ecc.); nei dettagli compaiono tutti. Un clic su un’immagine o un PDF – o su
+«+2» – mostra il file in una **finestra di anteprima**: le frecce (anche i tasti freccia) scorrono tutti i file del
+campo; in alto si trovano **Apri in una nuova scheda**, **Scarica** e **Chiudi** (anche Esc). Gli altri file vengono
+scaricati direttamente. Vede i file solo chi può leggere la tabella. Il filtro
 **«con file» / «senza file»** trova i record con o senza allegati.
 
 I pulsanti visibili dipendono dai vostri diritti: con il solo diritto di lettura mancano «Nuovo record», «Modifica» ed
@@ -371,6 +373,8 @@ compilarlo al di fuori di SAFT e reimportarlo. Il pulsante compare se l’import
 - **I valori** possono essere scritti come li fornisce l’esportazione: elenchi di selezione con etichetta o valore
   salvato, sì/no (anche Ja/Nein, Yes/No, Oui/Non, 1/0), collegamenti con il nome visualizzato (ad es. «ACME AG») o il
   numero, date come 31.12.2026, 31/12/2026 o 2026-12-31, numeri come 1234,50, 1234.50 o 1'234.50.
+- **I campi file** non sono nel modello e restano vuoti all’importazione, anche se obbligatori; la finestra lo
+  segnala.
 - **Solo nuovi record:** i record esistenti non vengono mai modificati. Un’esportazione reimportata senza modifiche
   segnala quindi «già in uso» per i campi univoci.
 - I valori predefiniti (numeri successivi, ripresa) e i campi calcolati vengono impostati come nell’inserimento. Nel

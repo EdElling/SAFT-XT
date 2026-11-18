@@ -388,7 +388,9 @@ happening by accident, it takes two steps; until then the **"Delete permanently"
 When a table is deleted, SAFT also removes its data permissions and menu entries; the activity log is kept. The
 permission **Table designer: delete** is required. If another table refers to it through a relation field, the
 message names that field – it must be removed first. If the table is used elsewhere (reports, menus, roles …), the
-dialog shows a warning with the count per area; deleting remains possible, details are in the **Used in** tab.
+dialog shows a warning with the count per area; deleting remains possible, details are in the **Used in** tab. If the table or field
+contains files (type *File*), the dialog names their number and size; they are deleted too, including those of records
+in the trash.
 
 ### Import a table from a file
 
@@ -876,7 +878,7 @@ in the editor or form, is checked there and only takes effect with **Save** or *
 | Assistant | Where | Permission | Can |
 |---|---|---|---|
 | **Reports** | Report editor, field "Describe the report" | Reports: use assistant | Choose base table, rows, columns, values, filters, sorting, number of rows and display; build calculated values and columns as well as figures from values with formulas; ask back; change a proposal on request |
-| **Tables** | Table designer: "Describe the table" when creating, **Adjust with AI** for existing tables | Table designer: use assistant | New table with fields, types, choices, relations to existing tables and labels in all four languages; for existing tables new fields, labels, required/unique/searchable/sortable, further choices and display fields of relations (preview in words, then **Apply**). Changing types, renaming and deleting stay manual |
+| **Tables** | Table designer: "Describe the table" when creating, **Adjust with AI** for existing tables | Table designer: use assistant | New table with fields, types (including file fields with kinds, size and number), choices, relations to existing tables and labels in all four languages; for existing tables new fields, labels, required/unique/searchable/sortable, further choices and display fields of relations (preview in words, then **Apply**). Changing types, renaming and deleting stay manual |
 | **Help** | **?** button in the header; **Documentation** › tab **AI assistant** | Help: use assistant | Answers questions about using SAFT from the manuals the person may see, with references to the sections; proposes nothing and changes nothing |
 
 ### Setup
@@ -1071,7 +1073,7 @@ a **package** (a JSON file) and import it in the other installation.
 
 | In the package | Not in the package |
 |---|---|
-| table designer tables with fields, checks, formulas, table rules and detail tables | records |
+| table designer tables with fields, checks, formulas, table rules and detail tables | records (including files from file fields; the preview names such fields under *Notes*) |
 | links for reports | users and their dashboard layout |
 | reports – shared ones and your own | other people's private reports |
 | menu entries (with their parent groups) | database connections and credentials |

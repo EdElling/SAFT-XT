@@ -12,6 +12,7 @@ use App\Models\RecordFile;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -117,6 +118,21 @@ final class RecordFiles
 
             $this->deleteFiles($stale->get());
         }
+    }
+
+    /**
+     * Hinweis beim endgültigen Löschen eines Felds bzw. einer Tabelle: wie viele Dateien mit welcher Grösse dabei
+     * gelöscht werden (auch die gelöschter Datensätze im Papierkorb); null, wenn keine.
+     */
+    public static function dropWarning(CustomTable $table, ?string $field = null): ?string
+    {
+        $query = RecordFile::query()->where('custom_table_id', $table->id)->when($field !== null, static fn ($q) => $q->where('field', $field));
+        $count = (clone $query)->count();
+
+        return $count === 0 ? null : trans_choice('tables.files_drop_warning', $count, [
+            'count' => $count,
+            'size' => Number::fileSize((int) $query->sum('size'), precision: 1),
+        ]);
     }
 
     public function deleteForRecord(CustomTable $table, string $recordId): void

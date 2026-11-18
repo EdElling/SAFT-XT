@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Tests\Browser;
 
 use App\DynamicData\DataMenu;
+use App\DynamicData\Files\RecordFiles;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\RecordFile;
 use App\Services\DynamicSchemaService;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
@@ -129,6 +131,58 @@ class FileFieldTest extends DuskTestCase
             $browser->driver->manage()->deleteAllCookies();
             $browser->visit(route('files.show', ['file' => $files->first()->id], false))
                 ->assertPathIsNot('/files/'.$files->first()->id);
+        });
+    }
+
+    /** EIN-15 */
+    public function test_preview_overlay_opens_from_list_and_details(): void
+    {
+        $field = $this->table->fields()->where('name', 'belege')->firstOrFail();
+        $files = app(RecordFiles::class);
+        $references = [];
+
+        foreach (['eins.png' => self::png(30, 20), 'zwei.png' => self::png(20, 30), 'drei.png' => self::png(10, 10)] as $name => $content) {
+            $references[] = $files->store($this->table, $field, new UploadedFile($this->fixture($name, $content), $name, 'image/png', null, true))->toReference();
+        }
+
+        $pdf = "%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n";
+        $references[] = $files->store($this->table, $field, new UploadedFile($this->fixture('vier.pdf', $pdf), 'vier.pdf', 'application/pdf', null, true))->toReference();
+        DynamicRecord::forTable($this->table)->create(['titel' => 'Mit Vorschau', 'belege' => $references]);
+
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/data/'.self::TABLE)->waitFor('tr.fi-ta-row img.saft-file-thumb', 15);
+
+            // „+1“ öffnet die vierte Datei (PDF), ohne die Zeile auszuwählen.
+            $browser->assertSeeIn('tr.fi-ta-row .saft-file-list', '+1')
+                ->click('tr.fi-ta-row .saft-file-list a.saft-file-more')
+                ->waitFor('[data-saft-file-preview] iframe.saft-file-preview-pdf', 15)
+                ->assertSeeIn('[data-saft-file-preview] .saft-file-preview-name', 'vier.pdf')
+                ->assertSeeIn('[data-saft-file-preview] .saft-file-preview-count', '4 / 4')
+                ->assertQueryStringMissing('selection');
+
+            // Blättern mit der Pfeiltaste, Schliessen mit Esc.
+            $browser->keys('[data-saft-file-preview] button[x-ref="close"]', '{arrow_left}')
+                ->waitForTextIn('[data-saft-file-preview] .saft-file-preview-name', 'drei.png', 15)
+                ->waitUntil("(() => { const i = document.querySelector('[data-saft-file-preview] img.saft-file-preview-image'); return i && i.complete && i.naturalWidth > 0; })()", 15)
+                ->keys('[data-saft-file-preview] button[x-ref="close"]', '{escape}')
+                ->waitUntilMissing('[data-saft-file-preview] img.saft-file-preview-image', 15)
+                ->assertMissing('[data-saft-file-preview]:not([style*="display: none"])');
+
+            // Bild in der Liste: Vorschau beim angeklickten Bild.
+            $browser->click('tr.fi-ta-row .saft-file-list a[data-saft-file="1"]')
+                ->waitForTextIn('[data-saft-file-preview] .saft-file-preview-name', 'zwei.png', 15)
+                ->assertSeeIn('[data-saft-file-preview] .saft-file-preview-count', '2 / 4')
+                ->click('[data-saft-file-preview] .saft-file-preview-next')
+                ->waitForTextIn('[data-saft-file-preview] .saft-file-preview-name', 'drei.png', 15)
+                ->click('[data-saft-file-preview] button[x-ref="close"]')
+                ->pause(400);
+
+            // Details: alle vier Dateien, das PDF öffnet ebenfalls die Vorschau.
+            $this->clickRow($browser, 'Mit Vorschau')
+                ->waitFor('[data-field-blocks] .saft-file-list', 15)
+                ->click('[data-field-blocks] .saft-file-list a[data-saft-file="3"]')
+                ->waitFor('[data-saft-file-preview] iframe.saft-file-preview-pdf', 15)
+                ->assertSeeIn('[data-saft-file-preview] .saft-file-preview-name', 'vier.pdf');
         });
     }
 }

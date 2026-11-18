@@ -313,6 +313,7 @@ return [
         'drop_heading' => 'Diese Tabelle wird verwendet',
         'drop_description' => 'Verwendet in: :list. Diese Verweise funktionieren nach dem Löschen nicht mehr. Einzelheiten im Reiter „Verwendet in“.',
     ],
+    'files_drop_warning' => '{1} Dabei wird auch :count Datei (:size) endgültig gelöscht.|[2,*] Dabei werden auch :count Dateien (:size) endgültig gelöscht.',
     'file_kinds' => [
         'images' => 'Bilder (JPEG, PNG, GIF, WebP)',
         'pdf' => 'PDF',
