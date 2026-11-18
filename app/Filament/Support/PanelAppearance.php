@@ -110,6 +110,13 @@ final class PanelAppearance
             .'.fi-sidebar-item-label:has(> .saft-submenu-chevron){display:flex;align-items:center;justify-content:space-between;gap:.5rem}'
             .'.saft-submenu-chevron{width:1rem;height:1rem;flex-shrink:0;opacity:.55;transition:transform .15s ease}'
             .':is(.fi-sidebar-item.fi-active,.fi-sidebar-item.fi-sidebar-item-has-active-child-items) > .fi-sidebar-item-btn .saft-submenu-chevron{transform:rotate(90deg)}'
+            // Dateien in Listen und Details (B-021): Vorschaubilder, Symbol mit Namen.
+            .'.saft-file-list{display:inline-flex;flex-wrap:wrap;align-items:center;gap:.375rem}'
+            .'.saft-file-thumb{height:2.25rem;width:2.25rem;object-fit:cover;border-radius:.25rem;border:1px solid var(--gray-200)}'
+            .'.dark .saft-file-thumb{border-color:var(--gray-700)}'
+            .'.saft-file-link{display:inline-flex;align-items:center;gap:.25rem;color:var(--primary-600)}.dark .saft-file-link{color:var(--primary-400)}'
+            .'.saft-file-link:hover{text-decoration:underline}.saft-file-icon{width:1rem;height:1rem;flex-shrink:0}'
+            .'.saft-file-more{font-size:.75rem;color:var(--gray-500)}'
             // Technische Details eines fehlgeschlagenen Laufs (geplante Aufgaben).
             .'.saft-error-detail{font-size:.875rem}.saft-error-detail-hint{color:var(--gray-500);margin-bottom:.75rem}'
             .'.saft-error-detail dt{font-weight:600;margin-top:.75rem}.saft-error-detail dd{margin-top:.25rem}'

@@ -36,7 +36,8 @@ final class RecordChecker
     public function fields(CustomTable $table): array
     {
         return $table->fields->where('is_active', true)->sortBy('sort_order')
-            ->reject(fn (CustomField $field): bool => $field->type === FieldType::Computed)
+            // Berechnete Felder füllt SAFT; Dateien kommen nur über das Formular (hochladen), nicht als Wert.
+            ->reject(fn (CustomField $field): bool => in_array($field->type, [FieldType::Computed, FieldType::File], true))
             ->values()
             ->all();
     }

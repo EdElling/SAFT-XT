@@ -24,6 +24,8 @@ enum FieldType: string
     case Select = 'select';
     case Relation = 'relation';
     case Computed = 'computed';
+    // Dateien (B-021): im Datensatz je Datei Kennung und Name (JSON), Datei und Angaben in record_files.
+    case File = 'file';
 
     public const int SELECT_LENGTH = 255;
 
@@ -51,6 +53,7 @@ enum FieldType: string
             self::DateTime => $table->dateTime($column),
             self::Select => $table->string($column, self::SELECT_LENGTH),
             self::Relation => $table->unsignedBigInteger($column),
+            self::File => $table->json($column),
             self::Computed => throw new \LogicException('Berechnete Felder speichern als Ganz- oder Dezimalzahl.'),
         };
 
@@ -71,6 +74,7 @@ enum FieldType: string
             self::Boolean => 'boolean',
             self::Date => 'date',
             self::DateTime => 'datetime',
+            self::File => 'array',
             default => null,
         };
     }

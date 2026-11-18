@@ -8,6 +8,7 @@ use App\DynamicData\DataMenu;
 use App\DynamicData\DataPermissions;
 use App\DynamicData\DetailRelations;
 use App\DynamicData\DynamicDataNamespace;
+use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Formula\Printer;
 use App\DynamicData\Formula\Recalculator;
@@ -27,6 +28,7 @@ use App\Exceptions\Database\DatabaseErrorType;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\RecordFile;
 use App\Plugins\PluginDependencies;
 use App\Support\Translations;
 use Closure;
@@ -591,12 +593,19 @@ final class DynamicSchemaService
             $this->dropCopiesVia($table, $field->name);
             $field->delete();
         });
+
+        // Dateien erst nach erfolgreichem Löschen (bei einem Fehler bleibt alles, wie es war).
+        if ($field->type === FieldType::File) {
+            app(RecordFiles::class)->deleteForField($table, $field->name);
+        }
     }
 
     /** Physisches Löschen: Tabelle muss deaktiviert sein, Bestätigung durch Tabellennamen. */
     public function dropTable(CustomTable $table, string $confirmation): void
     {
         $this->assertDesigner($table);
+        // Die Einträge entfernt die Datenbank mit der Tabelle; die Dateien danach (nur bei Erfolg).
+        $files = RecordFile::query()->where('custom_table_id', $table->id)->get();
 
         $this->mutate($table->name, function () use ($table, $confirmation): void {
             $this->assertDestructionConfirmed($table->is_active, $table->name, $confirmation, __('tables.what.table'));
@@ -623,6 +632,8 @@ final class DynamicSchemaService
             $this->menu->remove($table);
             $table->delete();
         });
+
+        app(RecordFiles::class)->removeStored($files);
     }
 
     // --- intern ------------------------------------------------------------------------

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Auth\SsoController;
 use App\Http\Controllers\DocumentationImageController;
+use App\Http\Controllers\RecordFileController;
 use App\Http\Controllers\RoleSimulationController;
 use App\Http\Controllers\ThemeController;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -25,6 +26,9 @@ Route::middleware(['auth'])->get('documentation/images/{lang}/{file}', Documenta
     ->name('documentation.image');
 
 // Hell/Dunkel/System je Benutzer speichern (Umschalter im Benutzermenü, siehe PanelAppearance::themeScript).
+// Dateien in Feldern vom Typ „Datei“: nur mit Leserecht auf Tabelle und Datensatz (B-021).
+Route::middleware(['auth'])->get('files/{file}', RecordFileController::class)->whereUuid('file')->name('files.show');
+
 Route::middleware(['auth', 'throttle:30,1'])->post('my-theme', [ThemeController::class, 'store'])->name('my-theme');
 
 // Single Sign-On. {identityProvider} wird über den Slug aufgelöst.

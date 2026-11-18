@@ -52,6 +52,8 @@ return [
         'empty' => 'Nessuna voce',
     ],
     'filters' => [
+        'with_files' => 'con file',
+        'without_files' => 'senza file',
         'contains' => ':field contiene',
         'from' => ':field da',
         'until' => ':field fino a',

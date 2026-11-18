@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Ui\KeylessRow;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -116,6 +117,8 @@ final class ActivityChanges
             $value === null => '∅',
             is_bool($value) => $value ? __('common.yes') : __('common.no'),
             is_scalar($value) => (string) $value,
+            // Dateifelder (B-021): Liste aus Kennung und Name → Namen.
+            ($names = RecordFiles::names($value)) !== [] && count($names) === count((array) $value) => implode(', ', $names),
             default => (string) json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         };
     }

@@ -214,7 +214,8 @@ final class FieldCatalog
             $group = $labels === [] ? (string) $table->label : implode(' › ', $labels);
 
             foreach ($table->fields as $field) {
-                if (! $field->is_active) {
+                // Dateien lassen sich nicht auswerten (B-021).
+                if (! $field->is_active || $field->type === FieldType::File) {
                     continue;
                 }
 
@@ -279,7 +280,8 @@ final class FieldCatalog
             $fields = [];
 
             foreach ($table->fields as $field) {
-                if (! $field->is_active) {
+                // Dateien lassen sich nicht auswerten (B-021).
+                if (! $field->is_active || $field->type === FieldType::File) {
                     continue;
                 }
 

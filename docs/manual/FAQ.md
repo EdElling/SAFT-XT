@@ -22,6 +22,7 @@
    - [I do not see an "Export" button.](#i-do-not-see-an-export-button)
    - [A table has no "New record" and "Edit".](#a-table-has-no-new-record-and-edit)
    - [How do I pass on a specific view to someone?](#how-do-i-pass-on-a-specific-view-to-someone)
+   - [A file cannot be uploaded.](#a-file-cannot-be-uploaded)
 
 ---
 ## Frequently asked questions
@@ -80,3 +81,9 @@ Writing), or your role lacks the permission (Roles → Data permissions).
 
 Copy the address from the browser; it contains the table, the column selection and the selected records. The
 recipient only sees what they have permissions for.
+
+### A file cannot be uploaded.
+
+The field only allows certain file kinds and a maximum size and number (Table designer → field → Allowed files,
+Maximum size per file). The content is checked: a renamed file with the wrong extension is rejected. If even small allowed
+files fail, the server's limit is too low (system administration: `upload_max_filesize` and `post_max_size`).

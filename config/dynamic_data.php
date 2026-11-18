@@ -40,6 +40,22 @@ return [
     | Grenzen des Tabellen-Imports aus CSV/Excel. Der Import läuft synchron im Request; größere
     | Dateien werden mit einer Meldung abgelehnt.
     */
+    /*
+    | Dateien in Feldern vom Typ „Datei“ (B-021): Laravel-Speicher, nie öffentlich – Herunterladen nur über SAFT mit
+    | den Rechten des Datensatzes. Vorgabe ist der private lokale Speicher (storage/app/private), wahlweise S3
+    | (FILESYSTEM_DISK-Einträge in config/filesystems.php, Zugang über AWS_* in der .env).
+    */
+    'files' => [
+        'disk' => env('APP_DATA_FILES_DISK', 'local'),
+        'directory' => env('APP_DATA_FILES_DIRECTORY', 'files'),
+        // Vorgabe und Obergrenze für die Höchstgrösse je Datei (MB); PHP begrenzt zusätzlich (upload_max_filesize).
+        'default_max_mb' => (int) env('APP_DATA_FILES_DEFAULT_MAX_MB', 10),
+        'limit_max_mb' => (int) env('APP_DATA_FILES_LIMIT_MAX_MB', 200),
+        'max_files' => 50,
+        // Vorschaubilder für Listen: längste Seite in Pixeln.
+        'thumbnail_size' => 160,
+    ],
+
     'import' => [
         'max_file_mb' => (int) env('APP_DATA_IMPORT_MAX_FILE_MB', 20),
         'max_rows' => (int) env('APP_DATA_IMPORT_MAX_ROWS', 50000),

@@ -6,6 +6,7 @@ return [
     'model' => 'table',
     'plural' => 'Table designer',
     'types' => [
+        'file' => 'File',
         'string' => 'Text (single line)',
         'text' => 'Text (multi-line)',
         'integer' => 'Integer',
@@ -48,6 +49,12 @@ return [
         'orphan_table' => 'Table “:table”: exists in the database without metadata.',
     ],
     'fields' => [
+        'file_kinds' => 'Allowed files',
+        'file_kinds_help' => 'The content is checked, not the extension. SVG and HTML are never allowed because they could run scripts when opened.',
+        'file_max_mb' => 'Maximum size per file',
+        'file_php_limit' => 'The server accepts at most :mb MB per upload (PHP setting upload_max_filesize or post_max_size).',
+        'file_max_files' => 'Number of files',
+        'file_max_files_help' => '1 = one file; more = several files, sortable.',
         'column_name' => 'Column name (technical)',
         'column_name_help' => 'Lowercase letters, digits, underscore. Renaming keeps the data.',
         'type_help' => 'Changing the type of existing data is only possible without loss (e.g. integer → decimal).',
@@ -305,5 +312,12 @@ return [
         'copy' => 'copies :field',
         'drop_heading' => 'This table is in use',
         'drop_description' => 'Used in: :list. These references no longer work after deleting. Details in the “Used in” tab.',
+    ],
+    'file_kinds' => [
+        'images' => 'Images (JPEG, PNG, GIF, WebP)',
+        'pdf' => 'PDF',
+        'office' => 'Office documents (Word, Excel, PowerPoint, OpenDocument)',
+        'text' => 'Text and CSV',
+        'any' => 'Any files',
     ],
 ];

@@ -6,6 +6,7 @@ return [
     'model' => 'table',
     'plural' => 'Concepteur de tables',
     'types' => [
+        'file' => 'Fichier',
         'string' => 'Texte (une ligne)',
         'text' => 'Texte (plusieurs lignes)',
         'integer' => 'Nombre entier',
@@ -48,6 +49,12 @@ return [
         'orphan_table' => 'Table « :table » : existe dans la base de données sans métadonnées.',
     ],
     'fields' => [
+        'file_kinds' => 'Fichiers autorisés',
+        'file_kinds_help' => 'Le contenu est vérifié, pas l’extension. SVG et HTML ne sont jamais autorisés, car ils pourraient exécuter des scripts à l’ouverture.',
+        'file_max_mb' => 'Taille maximale par fichier',
+        'file_php_limit' => 'Le serveur accepte au plus :mb Mo par envoi (réglage PHP upload_max_filesize ou post_max_size).',
+        'file_max_files' => 'Nombre de fichiers',
+        'file_max_files_help' => '1 = un fichier ; plus = plusieurs fichiers, triables.',
         'column_name' => 'Nom de colonne (technique)',
         'column_name_help' => 'Minuscules, chiffres, trait de soulignement. Le renommage conserve les données.',
         'type_help' => 'Changement de type avec des données existantes uniquement sans perte (p. ex. nombre entier → nombre décimal).',
@@ -305,5 +312,12 @@ return [
         'copy' => 'reprend :field',
         'drop_heading' => 'Cette table est utilisée',
         'drop_description' => 'Utilisée dans : :list. Ces références ne fonctionneront plus après la suppression. Détails dans l’onglet « Utilisée dans ».',
+    ],
+    'file_kinds' => [
+        'images' => 'Images (JPEG, PNG, GIF, WebP)',
+        'pdf' => 'PDF',
+        'office' => 'Documents Office (Word, Excel, PowerPoint, OpenDocument)',
+        'text' => 'Texte et CSV',
+        'any' => 'Fichiers quelconques',
     ],
 ];

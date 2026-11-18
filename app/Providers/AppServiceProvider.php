@@ -96,6 +96,12 @@ class AppServiceProvider extends ServiceProvider
         // In Produktion keine zerstörerischen Befehle (migrate:fresh/refresh/reset, db:wipe).
         DB::prohibitDestructiveCommands($this->app->isProduction());
 
+        // Livewire nimmt Uploads sonst nur bis 12 MB an – unabhängig von der Höchstgrösse eines Dateifelds (B-021).
+        // Obergrenze wie im Table-Designer; die Grösse je Feld prüft das Formular.
+        if (config('livewire.temporary_file_upload.rules') === null) {
+            config(['livewire.temporary_file_upload.rules' => ['required', 'file', 'max:'.((int) config('dynamic_data.files.limit_max_mb', 200) * 1024)]]);
+        }
+
         // Passwörter: mindestens 12 Zeichen und – wenn eingeschaltet – nicht aus einem bekannten Datenleck. Gilt überall,
         // wo Password::defaults() greift: Benutzerformular, Passwort ändern, Passwort zurücksetzen, ADMIN_PASSWORD.
         Password::defaults(static function (): Password {

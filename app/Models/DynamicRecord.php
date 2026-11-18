@@ -7,6 +7,7 @@ namespace App\Models;
 use App\DynamicData\DeleteGuard;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Eloquent\OptionalSoftDeletingScope;
+use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Formula\Recalculator;
 use App\DynamicData\Rules\CopySource;
 use App\DynamicData\Rules\SequenceSuggester;
@@ -258,6 +259,12 @@ class DynamicRecord extends Model
         }
     }
 
+    /** Tabelle des Table-Designers zu diesem Datensatz (für Dateifelder; null bei unbekannter Tabelle). */
+    public function customTable(): ?CustomTable
+    {
+        return $this->definitionName === null ? null : CustomTable::query()->with('fields')->where('name', $this->definitionName)->first();
+    }
+
     public function definitionName(): string
     {
         return $this->definitionName ?? throw new LogicException('DynamicRecord ist keiner Tabelle zugeordnet – DynamicRecord::forTable() verwenden.');
@@ -397,6 +404,19 @@ class DynamicRecord extends Model
         static::deleting(static function (self $record): void {
             app(DeleteGuard::class)->assertDeletable($record);
             self::dispatchPluginEvent(RecordDeleting::class, $record);
+        });
+
+        // Dateifelder (B-021): neue Dateien zuordnen, ersetzte und entfernte löschen; endgültig gelöscht → Dateien weg.
+        // Im Papierkorb bleiben die Dateien, damit Wiederherstellen sie zurückbringt.
+        static::saved(static function (self $record): void {
+            if (($record->definition()?->files ?? []) !== [] && ($table = $record->customTable()) !== null) {
+                app(RecordFiles::class)->sync($record, $table);
+            }
+        });
+        static::forceDeleted(static function (self $record): void {
+            if (($record->definition()?->files ?? []) !== [] && ($table = $record->customTable()) !== null) {
+                app(RecordFiles::class)->deleteForRecord($table, (string) $record->getKey());
+            }
         });
 
         // Ereignisse für Plugins (nach SAFTs eigenen Nacharbeiten).

@@ -6,6 +6,7 @@ return [
     'model' => 'Tabelle',
     'plural' => 'Table-Designer',
     'types' => [
+        'file' => 'Datei',
         'string' => 'Text (einzeilig)',
         'text' => 'Text (mehrzeilig)',
         'integer' => 'Ganzzahl',
@@ -48,6 +49,12 @@ return [
         'orphan_table' => 'Tabelle „:table“: existiert in der Datenbank ohne Metadaten.',
     ],
     'fields' => [
+        'file_kinds' => 'Erlaubte Dateien',
+        'file_kinds_help' => 'Geprüft wird der Inhalt, nicht die Endung. SVG und HTML sind nie erlaubt, weil sie beim Öffnen Skripte ausführen könnten.',
+        'file_max_mb' => 'Höchstgrösse je Datei',
+        'file_php_limit' => 'Der Server lässt höchstens :mb MB je Upload zu (PHP-Einstellung upload_max_filesize bzw. post_max_size).',
+        'file_max_files' => 'Anzahl Dateien',
+        'file_max_files_help' => '1 = eine Datei; mehr = mehrere Dateien, sortierbar.',
         'column_name' => 'Spaltenname (technisch)',
         'column_name_help' => 'Kleinbuchstaben, Ziffern, Unterstrich. Umbenennen behält die Daten.',
         'type_help' => 'Typwechsel mit vorhandenen Daten nur, wenn verlustfrei (z. B. Ganzzahl → Dezimalzahl).',
@@ -305,5 +312,12 @@ return [
         'copy' => 'übernimmt :field',
         'drop_heading' => 'Diese Tabelle wird verwendet',
         'drop_description' => 'Verwendet in: :list. Diese Verweise funktionieren nach dem Löschen nicht mehr. Einzelheiten im Reiter „Verwendet in“.',
+    ],
+    'file_kinds' => [
+        'images' => 'Bilder (JPEG, PNG, GIF, WebP)',
+        'pdf' => 'PDF',
+        'office' => 'Office-Dokumente (Word, Excel, PowerPoint, OpenDocument)',
+        'text' => 'Text und CSV',
+        'any' => 'Beliebige Dateien',
     ],
 ];

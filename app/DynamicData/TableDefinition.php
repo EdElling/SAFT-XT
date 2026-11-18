@@ -33,6 +33,7 @@ final readonly class TableDefinition
      * @param  array<string, array{ast: array<string, mixed>, scale: int}>  $computed  berechnete Felder in Rechenreihenfolge
      * @param  list<array{table: string, via: string}>  $dependents  Master-Tabellen, die über diese Tabelle summieren
      * @param  bool  $uuidKey  SAFT vergibt den UUID-Schlüssel beim Anlegen (MySQL meldet DEFAULT (uuid()) nicht zurück)
+     * @param  list<string>  $files  Felder vom Typ „Datei“ (nach dem Speichern abgleichen, beim Löschen mitlöschen)
      */
     public function __construct(
         public string $name,
@@ -53,6 +54,7 @@ final readonly class TableDefinition
         public array $computed = [],
         public array $dependents = [],
         public bool $uuidKey = false,
+        public array $files = [],
     ) {}
 
     public static function fromCustomTable(CustomTable $table, string $qualifiedTable): self
@@ -71,6 +73,7 @@ final readonly class TableDefinition
             copies: self::copies($fields),
             computed: self::computed($fields),
             dependents: Recalculator::dependentsOf($table->name),
+            files: $fields->filter(fn (CustomField $f): bool => $f->type === FieldType::File)->pluck('name')->values()->all(),
         );
     }
 

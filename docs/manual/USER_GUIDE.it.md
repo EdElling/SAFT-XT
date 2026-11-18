@@ -220,6 +220,14 @@ per l’anteprima dei record collegati). «Ripristina» compare solo per i recor
 
 **Nuovo record:** pulsante **«Nuovo record»** in alto a destra nell’elenco.
 
+**Allegare file:** un campo di tipo *File* accetta immagini, PDF o altri documenti. Trascinate i file nel campo o
+cliccate su **«sfoglia»**; con più file l’ordine si cambia trascinando, la ✕ rimuove un file. Nulla viene salvato
+prima di **Crea** o **Salva**. Quali tipi e quali dimensioni sono ammessi lo stabilisce l’amministrazione per ogni
+campo; gli altri file vengono rifiutati già al caricamento. Nell’elenco le immagini appaiono come piccola anteprima e
+gli altri file con una graffetta (al massimo tre, poi «+2» ecc.); nei dettagli compaiono tutti. Un clic apre immagini
+e PDF in una nuova finestra; gli altri file vengono scaricati. Vede i file solo chi può leggere la tabella. Il filtro
+**«con file» / «senza file»** trova i record con o senza allegati.
+
 I pulsanti visibili dipendono dai vostri diritti: con il solo diritto di lettura mancano «Nuovo record», «Modifica» ed
 «Elimina».
 
@@ -315,6 +323,7 @@ vengono mostrati presso il campo interessato:
 | Univoco | «… è già in uso» (i record eliminati non contano) |
 | Elenco di selezione | solo i valori predefiniti |
 | Collegamento | solo record esistenti e non eliminati |
+| File | solo i tipi di file ammessi, al massimo la dimensione e il numero impostati |
 
 ### 4.7 Esportare i dati
 
@@ -506,6 +515,7 @@ l’etichetta del collegamento, ad es. «Contatti › Persona (Ricerca) › Cogn
 | Data e ora | Momento | |
 | Elenco di selezione | Stato, paese | valori fissi con etichetta visualizzata |
 | Collegamento | Cliente di un ordine | tabella di destinazione e campo visualizzato; base per dettagli e anteprima |
+| File | Contratto, foto del prodotto | immagini, PDF, documenti Office, testo/CSV o file qualsiasi; dimensione massima e numero per campo; anteprima nell’elenco e nei dettagli. Non nell’importazione; l’esportazione contiene solo i nomi dei file (vedi [4.2](#42-visualizzare-creare-modificare-ed-eliminare-record)) |
 | Calcolato | Importo = quantità × prezzo unitario | risultato come numero intero o decimale, formula; calcolato al salvataggio, non inserito (vedere [Campi calcolati](ADMIN_GUIDE.it.md#campi-calcolati)) |
 
 ---

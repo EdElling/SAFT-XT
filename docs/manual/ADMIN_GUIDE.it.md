@@ -236,7 +236,7 @@ non esiste.
 |---|---|
 | Etichetta / nome della colonna | visualizzazione o nome tecnico. **Rinominare conserva i dati.** |
 | Tipo | vedere [Guida utente, allegato A](USER_GUIDE.it.md#allegato-a--tipi-di-campo) |
-| Impostazioni del tipo | lunghezza (testo), cifre (numero decimale), valori (elenco di selezione), tabella di destinazione, campi visualizzati e separatore (collegamento) |
+| Impostazioni del tipo | lunghezza (testo), cifre (numero decimale), valori (elenco di selezione), tabella di destinazione, campi visualizzati e separatore (collegamento), tipi di file, dimensione massima e numero (file, vedi sotto) |
 | Validazione | lunghezza min./max., minimo/massimo, e-mail, URL; **Ulteriori verifiche** dei plugin, p. es. numero AVS o IBAN (compare solo se un plugin offre regole per il tipo di campo; valgono nell’inserimento, nell’importazione e tramite l’interfaccia, i valori vuoti non vengono verificati). Se in seguito il plugin manca o è sospeso, la verifica viene ignorata e indicata come «non disponibile» sul campo |
 | Valore proposto alla creazione (numero intero) | **Proponi il numero successivo (valore massimo + 1):** nella finestra «Nuovo record» compare il valore più alto esistente + 1, che resta modificabile; se il campo resta vuoto, SAFT imposta il valore al salvataggio. Con **Conta per** (un collegamento, ad es. *Ordine*) si conta per record master: sotto un ordine con due righe viene proposto 3; nell’elenco la proposta compare appena l’ordine è scelto. I record eliminati non contano. |
 | Valore proposto alla creazione (data, data e ora) | **Precompilare con la data odierna** o **Precompilare con data e ora attuali:** nella finestra «Nuovo record» il campo mostra all’apertura la data (o data e ora al minuto) attuale e resta modificabile. In modifica, importazione e tramite l’interfaccia SAFT non imposta nulla. Non insieme a «Riprendi da». |
@@ -254,6 +254,24 @@ Questo vale negli elenchi, nei dettagli, nell’anteprima, nei filtri, nell’es
 durante la modifica; lì l’inserimento cerca in tutti i campi visualizzati. L’ordinamento avviene in base al primo
 campo visualizzato. Se rinominate un campo visualizzato, il collegamento segue; finché un campo serve da qualche parte
 come campo visualizzato, non può essere eliminato definitivamente.
+
+**Campi file:** un campo di tipo **File** accetta allegati. Impostazioni:
+
+- **File consentiti:** immagini (JPEG, PNG, GIF, WebP), PDF, documenti Office (Word, Excel, PowerPoint,
+  OpenDocument), testo e CSV, oppure **File qualsiasi**. Viene controllato il contenuto effettivo, non solo l’estensione.
+  Spuntare un tipo preciso toglie «File qualsiasi» e viceversa. Le immagini SVG non sono previste (possono contenere
+  script).
+- **Dimensione massima per file** in MB (predefinito 10, al massimo 200). Se il limite del server (PHP) è più basso,
+  il campo lo segnala; vale il valore minore.
+- **Numero di file** (predefinito 1, al massimo 50).
+
+I file non sono salvati nella banca dati, ma nello spazio file del server (o in S3, vedi
+[Amministrazione di sistema](SYSADMIN_GUIDE.md#1-operations), in inglese); il record contiene solo il loro
+identificativo e il nome. I file sostituiti o rimossi vengono eliminati al salvataggio, così come all’eliminazione
+definitiva di un record, del campo o della tabella. I record eliminati nel cestino conservano i loro file (visibili
+solo con il diritto di eliminazione). I campi file non sono univoci né ordinabili e non hanno indice; non sono
+disponibili nell’importazione dei dati, nei rapporti né come origine di «Riprendi da». L’esportazione contiene i nomi
+dei file; la cronologia mostra quali file sono stati aggiunti o rimossi.
 
 **Regole** (illustrazione sotto, 1): controlli su più campi al salvataggio di un record, ad es. «data di consegna ≥
 data d’ordine» o «quantità > 0». Per ogni regola scegliete il **campo**, il **confronto** e se il confronto avviene con

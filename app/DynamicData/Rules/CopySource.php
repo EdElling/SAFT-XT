@@ -50,7 +50,7 @@ final class CopySource
             FieldType::String => in_array($source, [FieldType::String, FieldType::Select], true),
             FieldType::Text => in_array($source, [FieldType::String, FieldType::Select, FieldType::Text], true),
             FieldType::Select => $source === FieldType::Select,
-            FieldType::Relation, FieldType::Computed => false,
+            FieldType::Relation, FieldType::Computed, FieldType::File => false,
         };
     }
 

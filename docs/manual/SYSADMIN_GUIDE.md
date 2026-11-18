@@ -43,6 +43,7 @@ Installing SAFT step by step is described in [Appendix B](INSTALL_DEVELOPMENT.md
 | Recalculate computed fields (after changes outside SAFT; optionally table names) | `php artisan computed:recompute` |
 | Change the maximum number of records per export (default 50,000) | `APP_DATA_EXPORT_MAX_ROWS=50000` in `.env` |
 | Change the maximum number of rows per data import into an existing table (default 10,000) | `APP_DATA_IMPORT_MAX_RECORD_ROWS=10000` in `.env` |
+| Storage for file fields: `local` (default, `storage/app/private/files`) or `s3` (S3-compatible storage, e.g. AWS, Infomaniak, Exoscale; credentials in `AWS_*`, for providers other than AWS also `AWS_ENDPOINT` and `AWS_USE_PATH_STYLE_ENDPOINT=true`; first run `composer require league/flysystem-aws-s3-v3`). Do not switch while files are stored: existing files are not moved | `APP_DATA_FILES_DISK=local` in `.env` |
 | Time zone of the application (default `Europe/Zurich`) | `APP_TIMEZONE` in `.env` |
 | Trust the provider's load balancer when HTTPS ends before the server (proxy addresses, comma-separated) | `TRUSTED_PROXIES` in `.env` |
 | Default language if neither user nor browser selects an offered language | `APP_LOCALE=de` in `.env` |
@@ -56,6 +57,11 @@ Notes:
   Otherwise a test route is available through which anyone can sign in without a password.
 - **Backups** contain all data. Keep an additional copy outside the server. How to restore a backup is described in
   the [README](../../README.md#operations).
+- **Files from file fields** are not included in `db:backup`. Back up `storage/app/private/files` (or the S3 bucket)
+  together with the database.
+- **Upload size:** The maximum size per file field only applies up to PHP's limit. For e.g. 50 MB set
+  `upload_max_filesize = 50M` and `post_max_size = 55M` in `php.ini` (with web hosts often via `.user.ini` or their
+  control panel); on the web server possibly also `client_max_body_size` (nginx) or `LimitRequestBody` (Apache).
 - The **technical name** `APP_NAME` in `.env` determines cookie and cache names. The visible name is maintained in
   the app settings; changing it there does not sign anyone out.
 - The tables of the table designer are stored separately from the system tables: with PostgreSQL in the schema

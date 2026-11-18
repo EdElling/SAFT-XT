@@ -43,6 +43,7 @@ und [Anhang C](INSTALL_PRODUCTION.de.md) (Produktionsserver, z. B. ein Managed S
 | Berechnete Felder neu berechnen (nach Änderungen an SAFT vorbei; optional Tabellennamen) | `php artisan computed:recompute` |
 | Höchstzahl der Datensätze je Export ändern (Vorgabe 50.000) | `APP_DATA_EXPORT_MAX_ROWS=50000` in der `.env` |
 | Höchstzahl der Zeilen je Datenimport in eine bestehende Tabelle ändern (Vorgabe 10'000) | `APP_DATA_IMPORT_MAX_RECORD_ROWS=10000` in der `.env` |
+| Speicher für Dateifelder: `local` (Vorgabe, `storage/app/private/files`) oder `s3` (S3-kompatibler Speicher, z. B. AWS, Infomaniak, Exoscale; Zugangsdaten in `AWS_*`, bei anderen Anbietern als AWS auch `AWS_ENDPOINT` und `AWS_USE_PATH_STYLE_ENDPOINT=true`; vorher `composer require league/flysystem-aws-s3-v3`). Nicht wechseln, solange Dateien gespeichert sind – vorhandene Dateien werden nicht verschoben | `APP_DATA_FILES_DISK=local` in der `.env` |
 | Zeitzone der Anwendung (Vorgabe `Europe/Zurich`) | `APP_TIMEZONE` in der `.env` |
 | Dem Load Balancer des Hosters vertrauen, wenn HTTPS vor dem Server endet (Adressen des Proxys, kommagetrennt) | `TRUSTED_PROXIES` in der `.env` |
 | Vorgabesprache, wenn weder Benutzer noch Browser eine angebotene Sprache festlegen | `APP_LOCALE=de` in der `.env` |
@@ -56,6 +57,11 @@ Hinweise:
   `APP_ENV=production`. Sonst steht eine Test-Route bereit, über die man sich ohne Passwort anmelden kann.
 - **Sicherungen** enthalten alle Daten. Bewahren Sie zusätzlich eine Kopie ausserhalb des Servers auf. Wie Sie eine
   Sicherung einspielen, steht in der [README](../../README.de.md#betrieb).
+- **Dateien aus Dateifeldern** sind nicht in `db:backup` enthalten. Sichern Sie `storage/app/private/files` (bzw. den
+  S3-Bucket) zusammen mit der Datenbank.
+- **Grösse von Uploads:** Die Höchstgrösse je Dateifeld wirkt nur bis zur Grenze von PHP. Für z. B. 50 MB in der
+  `php.ini` (bei Webhostern oft über `.user.ini` oder deren Verwaltungsoberfläche) `upload_max_filesize = 50M` und `post_max_size = 55M` setzen; beim
+  Webserver gegebenenfalls auch `client_max_body_size` (nginx) bzw. `LimitRequestBody` (Apache).
 - Der **technische Name** `APP_NAME` in der `.env` bestimmt Cookie- und Cache-Namen. Der sichtbare Name wird
   in den App-Einstellungen gepflegt; eine Änderung dort meldet niemanden ab.
 - Die Tabellen des Table-Designers liegen getrennt von den Systemtabellen: bei PostgreSQL im Schema `app_data`, bei

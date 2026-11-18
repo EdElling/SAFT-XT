@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Ui;
 
+use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
 use App\Models\CustomField;
@@ -37,6 +38,7 @@ final class DynamicValueFormatter
             FieldType::DateTime => AppLocale::dateTime(Carbon::parse($value)),
             FieldType::Select => (string) (Translations::pick(collect((array) ($options['options'] ?? []))->firstWhere('value', $value)['label'] ?? null, (string) $value)),
             FieldType::Relation => self::relationLabel($options, $value),
+            FieldType::File => implode(', ', RecordFiles::names($value)),
             default => (string) $value,
         };
     }

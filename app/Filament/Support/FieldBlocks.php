@@ -18,7 +18,7 @@ final class FieldBlocks
     public const int MAX_BLOCKS = 3;
 
     /**
-     * @param  list<array{label: string, value: ?string, numeric?: bool}>  $fields
+     * @param  list<array{label: string, value: ?string, numeric?: bool, html?: ?string}>  $fields
      */
     public static function make(array $fields, ?string $empty = null, int $maxBlocks = self::MAX_BLOCKS): View
     {
@@ -27,8 +27,8 @@ final class FieldBlocks
     }
 
     /**
-     * @param  list<array{label: string, value: ?string, numeric?: bool}>  $fields
-     * @return list<list<array{label: string, value: ?string, numeric?: bool}>>
+     * @param  list<array{label: string, value: ?string, numeric?: bool, html?: ?string}>  $fields
+     * @return list<list<array{label: string, value: ?string, numeric?: bool, html?: ?string}>>
      */
     public static function blocks(array $fields, int $maxBlocks = self::MAX_BLOCKS): array
     {

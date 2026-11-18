@@ -149,6 +149,10 @@ final class DynamicTableBuilder
                 ->multiple()
                 : match ($field->valueType()) {
                     FieldType::Boolean => TernaryFilter::make($field->name),
+                    // Dateien: mit oder ohne (leere Felder speichert SAFT als NULL).
+                    FieldType::File => TernaryFilter::make($field->name)->nullable()
+                        ->trueLabel(__('data.filters.with_files'))
+                        ->falseLabel(__('data.filters.without_files')),
                     FieldType::Select => SelectFilter::make($field->name)
                         ->options(collect((array) ($options['options'] ?? []))->mapWithKeys(fn (array $o): array => [$o['value'] => Translations::pick($o['label'] ?? null, (string) $o['value'])])->all())
                         ->multiple(),
@@ -235,6 +239,9 @@ final class DynamicTableBuilder
                 ->state(fn (DynamicRecord $record): ?string => self::relationLabel($field, $record))
                 ->action(RelationPreview::make($field, fn (DynamicRecord $record): mixed => $record->getAttribute($field->name), 'preview_'.$field->name)),
             FieldType::Text => TextColumn::make($field->name)->limit(60)->wrap(),
+            FieldType::File => TextColumn::make($field->name)
+                ->state(fn (DynamicRecord $record): ?string => self::fileSummary($record->getAttribute($field->name)))
+                ->html(),
             default => TextColumn::make($field->name),
         };
 
@@ -248,10 +255,48 @@ final class DynamicTableBuilder
             $column->searchable();
         }
 
-        // Alle Spalten sortierbar; "Index anlegen" im Designer beschleunigt große Tabellen.
-        $column->sortable($field->type === FieldType::Relation ? [$field->name.self::RELATION_SUFFIX] : true);
+        // Alle Spalten sortierbar (ausser Dateien); "Index anlegen" im Designer beschleunigt große Tabellen.
+        if ($field->type !== FieldType::File) {
+            $column->sortable($field->type === FieldType::Relation ? [$field->name.self::RELATION_SUFFIX] : true);
+        }
 
         return $column;
+    }
+
+    /** Bilder an der Endung erkennen (die Liste fragt record_files nicht je Zeile ab). */
+    private const array IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+    /**
+     * Dateien in der Liste: bis zu drei Vorschaubilder bzw. Symbol mit Namen, dazu „+N“. Namen werden maskiert.
+     */
+    public static function fileSummary(mixed $value, ?int $limit = 3): ?string
+    {
+        if (is_string($value)) {
+            $value = json_decode($value, true);
+        }
+
+        $items = array_values(array_filter(is_array($value) ? $value : [], static fn (mixed $i): bool => is_array($i) && is_string($i['id'] ?? null)));
+
+        if ($items === []) {
+            return null;
+        }
+
+        $parts = array_map(static function (array $item) use ($items, $limit): string {
+            $name = (string) ($item['name'] ?? '');
+            $url = route('files.show', ['file' => $item['id']]);
+
+            if (in_array(strtolower(pathinfo($name, PATHINFO_EXTENSION)), self::IMAGE_EXTENSIONS, true)) {
+                return '<a href="'.e($url).'" target="_blank" rel="noopener" title="'.e($name).'" onclick="event.stopPropagation()">'
+                    .'<img src="'.e(route('files.show', ['file' => $item['id'], 'thumb' => 1])).'" alt="'.e($name).'" class="saft-file-thumb" loading="lazy"></a>';
+            }
+
+            return '<a href="'.e($url).'" target="_blank" rel="noopener" class="saft-file-link" onclick="event.stopPropagation()">'
+                .svg('heroicon-m-paper-clip', 'saft-file-icon')->toHtml().'<span>'.e($limit !== null && count($items) > 1 ? mb_strimwidth($name, 0, 24, '…') : $name).'</span></a>';
+        }, array_slice($items, 0, $limit));
+
+        $more = $limit !== null && count($items) > $limit ? '<span class="saft-file-more">+'.(count($items) - $limit).'</span>' : '';
+
+        return '<span class="saft-file-list">'.implode('', $parts).$more.'</span>';
     }
 
     /**

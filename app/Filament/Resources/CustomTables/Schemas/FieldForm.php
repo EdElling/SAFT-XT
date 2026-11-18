@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\CustomTables\Schemas;
 
+use App\DynamicData\Files\FileKinds;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Rules\CopySource;
@@ -22,6 +23,7 @@ use App\Plugins\PluginDependencies;
 use App\Plugins\PluginRegistry;
 use App\Support\Translations;
 use Closure;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -100,14 +102,14 @@ final class FieldForm
                         ->visible(fn (Get $get): bool => $get('type') !== FieldType::Computed->value),
                     Toggle::make('is_unique')
                         ->label(__('tables.fields.unique'))
-                        ->visible(fn (Get $get): bool => ! in_array($get('type'), [FieldType::Text->value, FieldType::Boolean->value, FieldType::Computed->value], true)),
+                        ->visible(fn (Get $get): bool => ! in_array($get('type'), [FieldType::Text->value, FieldType::Boolean->value, FieldType::Computed->value, FieldType::File->value], true)),
                     Toggle::make('is_searchable')
                         ->label(__('tables.fields.searchable'))
                         ->visible(fn (Get $get): bool => in_array($get('type'), [FieldType::String->value, FieldType::Text->value, FieldType::Select->value], true)),
                     Toggle::make('is_sortable')
                         ->label(__('tables.fields.index'))
                         ->helperText(__('tables.fields.index_help'))
-                        ->visible(fn (Get $get): bool => $get('type') !== FieldType::Text->value),
+                        ->visible(fn (Get $get): bool => ! in_array($get('type'), [FieldType::Text->value, FieldType::File->value], true)),
                     Toggle::make('show_in_table')->label(__('tables.fields.show_in_table'))->default(true),
                     Toggle::make('show_in_form')->label(__('tables.fields.show_in_form'))->default(true),
                 ]),
@@ -217,9 +219,41 @@ final class FieldForm
 
         return Fieldset::make(__('tables.fields.type_settings'))
             ->columns(2)
-            ->visible($is(FieldType::String, FieldType::Decimal, FieldType::Select, FieldType::Relation, FieldType::Computed))
+            ->visible($is(FieldType::String, FieldType::Decimal, FieldType::Select, FieldType::Relation, FieldType::Computed, FieldType::File))
             ->schema([
                 ...self::formula($owner),
+                // Dateien (B-021): erlaubte Arten, Höchstgrösse je Datei, Anzahl.
+                CheckboxList::make('options.kinds')
+                    ->label(__('tables.fields.file_kinds'))
+                    ->helperText(__('tables.fields.file_kinds_help'))
+                    ->options(FileKinds::options())
+                    ->default([FileKinds::ANY])
+                    // „Beliebig“ und bestimmte Arten schliessen sich aus: der neue Haken entfernt die anderen.
+                    ->live()
+                    ->afterStateUpdated(static function (Set $set, ?array $state, ?array $old): void {
+                        $state ??= [];
+                        $added = array_diff($state, $old ?? []);
+
+                        $set('options.kinds', in_array(FileKinds::ANY, $added, true)
+                            ? [FileKinds::ANY]
+                            : array_values(array_diff($state, [FileKinds::ANY])));
+                    })
+                    ->columns(3)
+                    ->visible($is(FieldType::File))
+                    ->columnSpanFull(),
+                TextInput::make('options.max_mb')
+                    ->label(__('tables.fields.file_max_mb'))
+                    ->integer()->minValue(1)->maxValue((int) config('dynamic_data.files.limit_max_mb', 200))
+                    ->default((int) config('dynamic_data.files.default_max_mb', 10))
+                    ->suffix('MB')
+                    ->helperText(fn (): ?string => ($php = FileKinds::phpLimitMb()) === null ? null : __('tables.fields.file_php_limit', ['mb' => $php]))
+                    ->visible($is(FieldType::File)),
+                TextInput::make('options.max_files')
+                    ->label(__('tables.fields.file_max_files'))
+                    ->helperText(__('tables.fields.file_max_files_help'))
+                    ->integer()->minValue(1)->maxValue((int) config('dynamic_data.files.max_files', 50))
+                    ->default(1)
+                    ->visible($is(FieldType::File)),
                 TextInput::make('options.length')
                     ->label(__('tables.fields.length'))
                     ->integer()

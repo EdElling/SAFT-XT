@@ -52,6 +52,8 @@ return [
         'empty' => 'Keine Einträge',
     ],
     'filters' => [
+        'with_files' => 'mit Dateien',
+        'without_files' => 'ohne Dateien',
         'contains' => ':field enthält',
         'from' => ':field von',
         'until' => ':field bis',

@@ -242,7 +242,7 @@ Connecteur de tables ne peuvent pas être importées.
 |---|---|
 | Libellé / nom de colonne | affichage ou nom technique. **Renommer conserve les données.** |
 | Type | voir [Guide utilisateur, annexe A](USER_GUIDE.fr.md#annexe-a--types-de-champs) |
-| Réglages du type | longueur (texte), chiffres (nombre décimal), valeurs (liste de sélection), table cible, champs affichés et séparateur (liaison) |
+| Réglages du type | longueur (texte), chiffres (nombre décimal), valeurs (liste de sélection), table cible, champs affichés et séparateur (liaison), types de fichiers, taille maximale et nombre (fichier, voir ci-dessous) |
 | Validation | longueur min./max., minimum/maximum, e-mail, URL ; **Contrôles supplémentaires** issus de plugins, p. ex. numéro AVS ou IBAN (affiché seulement si un plugin propose des règles pour le type de champ ; ils s’appliquent à la saisie, à l’importation et via l’interface, les valeurs vides ne sont pas contrôlées). Si le plugin manque ensuite ou est en veille, le contrôle est ignoré et indiqué « non disponible » sur le champ |
 | Valeur proposée à la création (nombre entier) | **Proposer le numéro suivant (valeur maximale + 1) :** dans la boîte « Nouvel enregistrement » figure la plus grande valeur existante + 1, qui reste modifiable ; si le champ reste vide, SAFT définit la valeur à l’enregistrement. Avec **Compter par** (une liaison, p. ex. *Commande*), le comptage se fait par enregistrement maître : sous une commande avec deux lignes, 3 est proposé ; dans la liste, la proposition apparaît dès que la commande est choisie. Les enregistrements supprimés ne comptent pas. |
 | Valeur proposée à la création (date, date et heure) | **Préremplir avec la date du jour** ou **Préremplir avec la date et l’heure actuelles :** dans la boîte de dialogue « Nouvel enregistrement », le champ affiche à l’ouverture la date (ou la date et l’heure à la minute) actuelle et reste modifiable. Lors de la modification, de l’import et via l’interface, SAFT ne remplit rien. Pas en même temps que « Reprendre de ». |
@@ -260,6 +260,25 @@ ignorés. Cela vaut dans les listes, les détails, l’aperçu, les filtres, l�
 de la modification ; la saisie y cherche dans tous les champs affichés. Le tri se fait selon le premier champ
 affiché. Si vous renommez un champ affiché, la liaison suit ; tant qu’un champ sert quelque part de champ affiché, il
 ne peut pas être supprimé définitivement.
+
+**Champs de fichiers :** un champ de type **Fichier** accepte des pièces jointes. Réglages :
+
+- **Fichiers autorisés :** images (JPEG, PNG, GIF, WebP), PDF, documents Office (Word, Excel, PowerPoint,
+  OpenDocument), texte et CSV, ou **Fichiers quelconques**. C’est le contenu réel qui est contrôlé, pas seulement l’extension.
+  Cocher un type précis retire « Fichiers quelconques » et inversement. Les images SVG ne sont pas prévues (elles peuvent
+  contenir des scripts).
+- **Taille maximale par fichier** en Mo (10 par défaut, 200 au plus). Si la limite du serveur (PHP) est plus basse,
+  le champ l’indique ; la plus petite valeur s’applique.
+- **Nombre de fichiers** (1 par défaut, 50 au plus).
+
+Les fichiers ne sont pas stockés dans la base de données, mais dans l’espace de fichiers du serveur (ou dans S3, voir
+[Administration système](SYSADMIN_GUIDE.md#1-operations), en anglais) ; l’enregistrement ne contient que leur
+identifiant et leur nom. Les fichiers remplacés ou retirés sont supprimés à l’enregistrement, de même lors de la
+suppression définitive d’un enregistrement, du champ ou de la table. Les enregistrements supprimés dans la corbeille
+gardent leurs fichiers (visibles seulement avec le droit de suppression). Les champs de fichiers ne sont ni uniques ni
+triables et n’ont pas d’index ; ils ne sont disponibles ni dans l’import de données, ni dans les rapports, ni comme
+source de « Reprendre de ». L’export contient les noms de fichiers ; l’historique montre quels fichiers ont été
+ajoutés ou retirés.
 
 **Règles** (illustration ci-dessous, 1) : contrôles portant sur plusieurs champs lors de l’enregistrement d’un
 enregistrement, p. ex. « date de livraison ≥ date de commande » ou « quantité > 0 ». Pour chaque règle, choisissez le

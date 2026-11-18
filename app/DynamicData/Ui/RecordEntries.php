@@ -29,6 +29,8 @@ final class RecordEntries
                 'label' => (string) $f->label,
                 'value' => DynamicValueFormatter::display($f, $record),
                 'numeric' => in_array($f->valueType(), [FieldType::Integer, FieldType::Decimal], true),
+                // Dateien mit Vorschau und Links (alle, nicht nur drei wie in der Liste).
+                'html' => $f->type === FieldType::File ? DynamicTableBuilder::fileSummary($record->getAttribute($f->name), limit: null) : null,
             ])
             ->values()
             ->all(), maxBlocks: $maxBlocks);

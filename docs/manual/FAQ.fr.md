@@ -22,6 +22,7 @@
    - [Je ne vois pas de bouton « Exporter ».](#je-ne-vois-pas-de-bouton--exporter-)
    - [Pour une table, « Nouvel enregistrement » et « Modifier » manquent.](#pour-une-table--nouvel-enregistrement--et--modifier--manquent)
    - [Comment transmettre une vue précise à quelqu’un ?](#comment-transmettre-une-vue-précise-à-quelquun-)
+   - [Un fichier ne se téléverse pas.](#un-fichier-ne-se-téléverse-pas)
 
 ---
 ## Questions fréquentes
@@ -83,3 +84,10 @@ activée (Connecteur de tables → Écriture), ou votre rôle n’a pas le droit
 
 Copiez l’adresse dans le navigateur : elle contient la table, le choix des colonnes et les enregistrements
 sélectionnés. Le destinataire ne voit que ce pour quoi il a des droits.
+
+### Un fichier ne se téléverse pas.
+
+Le champ n’autorise que certains types de fichiers, ainsi qu’une taille et un nombre maximaux (Concepteur de tables →
+champ → Fichiers autorisés, Taille maximale par fichier). Le contenu est contrôlé : un fichier renommé avec une mauvaise
+extension est refusé. Si même de petits fichiers autorisés échouent, la limite du serveur est trop basse
+(administration système : `upload_max_filesize` et `post_max_size`).

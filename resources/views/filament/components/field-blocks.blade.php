@@ -21,8 +21,9 @@
         @foreach ($blocks as $block)
             <dl>
                 @foreach ($block as $field)
+                    {{-- html: bereits maskiertes HTML (z. B. Dateien mit Vorschau und Links, DynamicTableBuilder::fileSummary). --}}
                     <dt>{{ $field['label'] }}</dt>
-                    <dd @class(['num' => ($field['numeric'] ?? false) && filled($field['value']), 'empty' => blank($field['value'])])>{{ filled($field['value']) ? $field['value'] : $empty }}</dd>
+                    <dd @class(['num' => ($field['numeric'] ?? false) && filled($field['value']), 'empty' => blank($field['value']) && blank($field['html'] ?? null)])>{!! filled($field['html'] ?? null) ? $field['html'] : e(filled($field['value']) ? $field['value'] : $empty) !!}</dd>
                 @endforeach
             </dl>
         @endforeach

@@ -8,7 +8,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-1. **B-021** Feldtyp Datei/Bild
+1. **B-021** Feldtyp Datei/Bild – Etappe 2 und 3
 
 ## Konfiguration übertragen
 
@@ -30,7 +30,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 | Nr. | Thema | Beschreibung | Status | Bezug |
 |---|---|---|---|---|
 | B-020 | Rechte auf Zeilenebene | Datensätze nur sehen bzw. bearbeiten, wenn eine Bedingung erfüllt ist (z. B. eigene Abteilung, eigene Datensätze). | offen | – |
-| B-021 | Feldtyp Datei/Bild | Anhänge wie Verträge, Fotos, PDFs an Datensätzen. Speicherort Laravel-Dateisystem (lokal privat, wahlweise S3), nie öffentlich – Herunterladen über geprüfte Adresse mit den Datenrechten des Datensatzes. Je Feld: erlaubte Typen, Höchstgrösse, eine oder mehrere Dateien. Vorschau (Vorschaubilder in Listen, Bild/PDF im Detail). Löschen: Papierkorb behält Dateien, endgültiges Löschen entfernt sie, Feld löschen warnt mit Anzahl/Grösse. Änderungsprotokoll; Excel-Export nur Dateinamen (ZIP später); Sicherung muss die Dateien einschliessen (Systemadministration); Konfiguration übertragen ohne Dateien; optional Virenprüfung. | geplant (Prio 1) | – |
+| B-021 | Feldtyp Datei/Bild | Anhänge wie Verträge, Fotos, PDFs an Datensätzen. **Etappe 1 (umgesetzt):** Feldtyp „Datei“ mit erlaubten Arten (Inhalt geprüft, kein SVG), Höchstgrösse und Anzahl je Feld; Ablage im Laravel-Dateisystem (lokal privat oder S3, `APP_DATA_FILES_DISK`), Tabelle `record_files`; Ausliefern nur über `files/{id}` mit Leserecht (Papierkorb nur mit Löschrecht, nicht zugeordnete Uploads nur für die hochladende Person), nosniff und CSP; Vorschaubilder (GD) und Links in Liste und Details, Filter mit/ohne Dateien; ersetzte Dateien, endgültig gelöschte Datensätze, gelöschte Felder und Tabellen räumen ihre Dateien weg; Export mit Dateinamen, Änderungsprotokoll mit Namen; Livewire-Upload-Grenze auf 200 MB angehoben. **Etappe 2:** Vorschau im Detail (Bild/PDF im Overlay), Feld löschen warnt mit Anzahl/Grösse der Dateien, Hinweise bei Export/Import, Konfiguration übertragen ohne Dateien, Datenmodell, KI-Assistent. **Etappe 3:** Dateien in `db:backup`, Aufgabe für verwaiste Dateien, Plugin-API, optional Virenprüfung. | in Arbeit (Etappe 1 umgesetzt) | – |
 | B-022 | Gespeicherte Ansichten | Filter, Sortierung und Spalten einer Datenansicht unter einem Namen speichern, persönlich oder für eine Rolle. | offen | – |
 | B-023 | REST-API | Zugriff von aussen auf Tabellen des Table-Designers mit Token, Rechten und Prüfregeln (wie `Saft::table()`). | offen | – |
 | B-024 | Massenbearbeitung | Mehrere Datensätze auf einmal ändern (ein Feld auf einen Wert setzen). | offen | – |

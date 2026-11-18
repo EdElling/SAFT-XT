@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Export;
 
+use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Ui\DynamicTableBuilder;
 use App\Models\CustomField;
@@ -207,6 +208,8 @@ final class TableExporter
             FieldType::Boolean => $state === null ? null : ($state ? __('common.yes') : __('common.no')),
             FieldType::Select => Translations::pick(collect((array) ($field->optionsArray()['options'] ?? []))->firstWhere('value', $state)['label'] ?? null, (string) $state),
             FieldType::Relation => DynamicTableBuilder::relationLabel($field, $record),
+            // Dateien: Namen (die Dateien selbst nicht).
+            FieldType::File => ($names = RecordFiles::names($state)) === [] ? null : implode('; ', $names),
             default => $state,
         };
 

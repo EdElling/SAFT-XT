@@ -228,6 +228,15 @@ En bas se trouvent (1) :
 
 **Nouvel enregistrement :** bouton **« Nouvel enregistrement »** en haut à droite de la liste concernée.
 
+**Joindre des fichiers :** un champ de type *Fichier* accepte des images, des PDF ou d’autres documents. Glissez les
+fichiers dans le champ ou cliquez sur **« parcourir »** ; s’il y a plusieurs fichiers, l’ordre se modifie par
+glisser-déposer et le ✕ retire un fichier. Rien n’est enregistré avant **Créer** ou **Enregistrer**. Les types et la
+taille autorisés sont définis par l’administration pour chaque champ ; les autres fichiers sont refusés dès le
+téléversement. Dans la liste, les images apparaissent en petit aperçu et les autres fichiers avec un trombone (trois
+au plus, puis « +2 », etc.) ; les détails les montrent tous. Un clic ouvre les images et les PDF dans une nouvelle
+fenêtre ; les autres fichiers sont téléchargés. Seules les personnes autorisées à lire la table voient ses fichiers.
+Le filtre **« avec fichiers » / « sans fichiers »** trouve les enregistrements avec ou sans pièce jointe.
+
 Les boutons visibles dépendent de vos droits : avec un simple droit de lecture, « Nouvel enregistrement », « Modifier »
 et « Supprimer » manquent.
 
@@ -327,6 +336,7 @@ sont affichées au champ concerné :
 | Unique | « … est déjà utilisé » (les enregistrements supprimés ne comptent pas) |
 | Liste de sélection | uniquement les valeurs prédéfinies |
 | Liaison | uniquement des enregistrements existants et non supprimés |
+| Fichier | uniquement les types de fichiers autorisés, au plus la taille et le nombre définis |
 
 ### 4.7 Exporter des données
 
@@ -523,6 +533,7 @@ champs sous le libellé de la liaison, p. ex. « Contacts › Personne (Recherch
 | Date et heure | Moment | |
 | Liste de sélection | Statut, pays | valeurs fixes avec libellé affiché |
 | Liaison | Client d’une commande | table cible et champ affiché ; base des détails et de l’aperçu |
+| Fichier | Contrat, photo de produit | images, PDF, documents Office, texte/CSV ou fichiers quelconques ; taille maximale et nombre par champ ; aperçu dans la liste et les détails. Pas dans l’import ; l’export ne contient que les noms de fichiers (voir [4.2](#42-consulter-créer-modifier-et-supprimer-des-enregistrements)) |
 | Calculé | Montant = quantité × prix unitaire | résultat en nombre entier ou décimal, formule ; calculé à l’enregistrement, non saisi (voir [Champs calculés](ADMIN_GUIDE.fr.md#champs-calculés)) |
 
 ---

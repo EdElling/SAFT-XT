@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Schema;
 
+use App\DynamicData\Files\FileKinds;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Formula\Printer;
 use App\DynamicData\RelationDisplay;
@@ -66,9 +67,9 @@ final class FieldDefinitionNormalizer
             'validation_rules' => $this->rules($type, (array) ($data['validation_rules'] ?? [])),
             // Berechnete Felder füllt SAFT; Pflicht und Eindeutigkeit gibt es dort nicht.
             'is_required' => (bool) ($data['is_required'] ?? false) && $type !== FieldType::Computed,
-            'is_unique' => (bool) ($data['is_unique'] ?? false) && ! in_array($type, [FieldType::Text, FieldType::Boolean, FieldType::Computed], true),
+            'is_unique' => (bool) ($data['is_unique'] ?? false) && ! in_array($type, [FieldType::Text, FieldType::Boolean, FieldType::Computed, FieldType::File], true),
             'is_searchable' => (bool) ($data['is_searchable'] ?? false) && in_array($type, [FieldType::String, FieldType::Text, FieldType::Select], true),
-            'is_sortable' => (bool) ($data['is_sortable'] ?? false) && $type !== FieldType::Text,
+            'is_sortable' => (bool) ($data['is_sortable'] ?? false) && ! in_array($type, [FieldType::Text, FieldType::File], true),
             'show_in_table' => (bool) ($data['show_in_table'] ?? true),
             'show_in_form' => (bool) ($data['show_in_form'] ?? true),
             'is_active' => (bool) ($data['is_active'] ?? true),
@@ -91,8 +92,14 @@ final class FieldDefinitionNormalizer
             FieldType::Integer => [...$this->suggestOptions($options, $owner), ...(array_key_exists(CustomField::GROUP_DIGITS, $options) && ! filter_var($options[CustomField::GROUP_DIGITS], FILTER_VALIDATE_BOOLEAN) ? [CustomField::GROUP_DIGITS => false] : [])],
             // Mit heute bzw. jetzt vorbelegen (nur gespeichert, wenn gewählt).
             FieldType::Date, FieldType::DateTime => filter_var($options[NowDefault::OPTION] ?? false, FILTER_VALIDATE_BOOLEAN) ? [NowDefault::OPTION => true] : [],
+            FieldType::File => $this->fileOptions($options),
             default => [],
         };
+
+        // Dateien übernehmen keine Werte aus dem Master-Datensatz.
+        if ($type === FieldType::File) {
+            return $typed;
+        }
 
         $copy = $this->copyOptions($type, $options, $owner);
 
@@ -188,6 +195,21 @@ final class FieldDefinitionNormalizer
      * @param  array<string, mixed>  $options
      * @return array{precision: int, scale: int}
      */
+    /**
+     * Dateifeld: erlaubte Arten, Höchstgrösse je Datei (MB) und Anzahl Dateien (1 = eine Datei).
+     *
+     * @param  array<string, mixed>  $options
+     * @return array{kinds: list<string>, max_mb: int, max_files: int}
+     */
+    private function fileOptions(array $options): array
+    {
+        return [
+            'kinds' => FileKinds::normalize((array) ($options['kinds'] ?? [])),
+            'max_mb' => $this->int($options['max_mb'] ?? config('dynamic_data.files.default_max_mb', 10), 1, (int) config('dynamic_data.files.limit_max_mb', 200), __('tables.fields.file_max_mb')),
+            'max_files' => $this->int($options['max_files'] ?? 1, 1, (int) config('dynamic_data.files.max_files', 50), __('tables.fields.file_max_files')),
+        ];
+    }
+
     private function decimalOptions(array $options): array
     {
         $precision = $this->int($options['precision'] ?? 12, 1, 38, __('tables.fields.precision'));

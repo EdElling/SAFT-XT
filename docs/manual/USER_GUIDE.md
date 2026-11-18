@@ -214,6 +214,14 @@ At the bottom you find (1):
 
 **New record:** the **"New record"** button at the top right of each list.
 
+**Attaching files:** A field of type *File* takes images, PDFs or other documents. Drag the files into the field or
+click **"browse"**; with several files you can change the order by dragging, and the ✕ removes a file. Nothing is
+stored until you click **Create** or **Save**. Which kinds and sizes of files are allowed is set per field by the
+administration; other files are rejected as soon as they are uploaded. In the list, images appear as small previews
+and other files with a paperclip (at most three, plus "+2" etc.); the details show all of them. A click opens images
+and PDFs in a new window; other files are downloaded. Only people who may read the table can see its files. The
+filter **"with files" / "without files"** finds records with or without attachments.
+
 Which buttons you see depends on your permissions: with read permission only, "New record", "Edit" and "Delete" are
 missing.
 
@@ -301,6 +309,7 @@ field concerned:
 | Unique | "… has already been taken" (deleted records do not count) |
 | Selection list | only the predefined values |
 | Relation | only existing, non-deleted records |
+| File | only allowed file kinds, at most the configured size and number |
 
 ### 4.7 Exporting data
 
@@ -481,6 +490,7 @@ appear in the field tree under the link's label, e.g. "Contacts › Person (Rese
 | Date and time | Timestamp | |
 | Selection list | Status, country | fixed values with display label |
 | Relation | Customer of an order | related table and displayed field; basis for details and preview |
+| File | Contract, product photo | images, PDF, Office documents, text/CSV or any files; maximum size and number per field; preview in list and details. Not in the import; the export contains only the file names (see [4.2](#42-viewing-creating-editing-and-deleting-records)) |
 | Computed | Amount = quantity × unit price | result as integer or decimal, formula; calculated when saving, not entered (see [Computed fields](ADMIN_GUIDE.md#computed-fields)) |
 
 ---

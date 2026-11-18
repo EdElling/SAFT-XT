@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\DynamicData\Ui;
 
 use App\DynamicData\DynamicDataNamespace;
+use App\DynamicData\Files\FileKinds;
+use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Rules\CopySource;
 use App\DynamicData\Rules\NowDefault;
@@ -17,11 +19,13 @@ use App\ExternalData\TableConnectorService;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\RecordFile;
 use App\Support\Translations;
 use Closure;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Field;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -32,6 +36,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Exists;
 use Illuminate\Validation\Rules\Unique;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 /**
  * Formularfelder und Validierung einer Tabelle aus den Metadaten. Designer-Tabellen: Unique/Exists
@@ -71,6 +76,39 @@ final class DynamicFormBuilder
         return $components;
     }
 
+    /**
+     * Dateifeld (B-021): SAFT legt jede hochgeladene Datei selbst ab (zufälliger Name, privat) und erfasst sie; im
+     * Formular stehen Pfade, im Datensatz Kennung und Name. Geprüft wird der Typ am Inhalt (MIME), nicht an der Endung.
+     */
+    private function fileUpload(CustomTable $table, CustomField $field): FileUpload
+    {
+        $options = $field->optionsArray();
+        $files = app(RecordFiles::class);
+        $maxFiles = max(1, (int) ($options['max_files'] ?? 1));
+        $mimes = FileKinds::mimes((array) ($options['kinds'] ?? []));
+
+        return FileUpload::make($field->name)
+            ->disk($files->diskName())
+            ->visibility('private')
+            ->multiple($maxFiles > 1)
+            ->maxFiles($maxFiles)
+            ->reorderable($maxFiles > 1)
+            ->appendFiles()
+            ->maxSize(max(1, (int) ($options['max_mb'] ?? config('dynamic_data.files.default_max_mb', 10))) * 1024)
+            ->when($mimes !== [], fn (FileUpload $c) => $c->acceptedFileTypes($mimes))
+            ->openable()
+            ->downloadable()
+            ->columnSpanFull()
+            ->formatStateUsing(static fn (mixed $state): array => $files->pathsFor($state))
+            ->saveUploadedFileUsing(static fn (TemporaryUploadedFile $file): string => $files->store($table, $field, $file)->path)
+            ->getUploadedFileUsing(static function (string $file) use ($table, $field): ?array {
+                $record = RecordFile::query()->where('custom_table_id', $table->id)->where('field', $field->name)->where('path', $file)->first();
+
+                return $record === null ? null : ['name' => $record->name, 'size' => $record->size, 'type' => $record->mime, 'url' => $record->url()];
+            })
+            ->dehydrateStateUsing(static fn (mixed $state): ?array => $files->referencesFor($table, $field, is_array($state) ? array_values($state) : $state));
+    }
+
     private function field(CustomTable $table, CustomField $field): Field
     {
         $options = $field->optionsArray();
@@ -107,6 +145,7 @@ final class DynamicFormBuilder
                     ->options(collect((array) ($options['options'] ?? []))->mapWithKeys(fn (array $o): array => [$o['value'] => Translations::pick($o['label'] ?? null, (string) $o['value'])])->all())
                     ->in(collect((array) ($options['options'] ?? []))->pluck('value')->all()),
                 FieldType::Relation => $this->relationSelect($field),
+                FieldType::File => $this->fileUpload($table, $field),
             };
 
         $component->label($field->label)->required($table->isExternal() ? ($options['db_required'] ?? false) : $field->is_required);

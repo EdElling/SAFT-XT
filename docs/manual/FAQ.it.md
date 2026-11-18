@@ -22,6 +22,7 @@
    - [Non vedo il pulsante «Esporta».](#non-vedo-il-pulsante-esporta)
    - [In una tabella mancano «Nuovo record» e «Modifica».](#in-una-tabella-mancano-nuovo-record-e-modifica)
    - [Come posso inviare a qualcuno una vista precisa?](#come-posso-inviare-a-qualcuno-una-vista-precisa)
+   - [Un file non si riesce a caricare.](#un-file-non-si-riesce-a-caricare)
 
 ---
 ## Domande frequenti
@@ -82,3 +83,10 @@ abilitata (Connettore di tabelle → Scrittura), oppure al vostro ruolo manca il
 
 Copiate l’indirizzo dal browser: contiene la tabella, la scelta delle colonne e i record selezionati. Il destinatario
 vede solo ciò per cui ha i diritti.
+
+### Un file non si riesce a caricare.
+
+Il campo ammette solo determinati tipi di file, una dimensione e un numero massimi (Progettazione tabelle → campo →
+File consentiti, Dimensione massima per file). Viene controllato il contenuto: un file rinominato con un’estensione errata
+viene rifiutato. Se falliscono anche piccoli file ammessi, il limite del server è troppo basso (amministrazione di
+sistema: `upload_max_filesize` e `post_max_size`).

@@ -236,7 +236,7 @@ Table-Connectors gibt es den Import nicht.
 |---|---|
 | Bezeichnung / Spaltenname | Anzeige bzw. technischer Name. **Umbenennen behält die Daten.** |
 | Typ | siehe [Anwenderhandbuch, Anhang A](USER_GUIDE.de.md#anhang-a--feldtypen) |
-| Typ-Einstellungen | Länge (Text), Stellen (Dezimalzahl), Werte (Auswahlliste), Zieltabelle, Anzeigefelder und Trennzeichen (Verknüpfung) |
+| Typ-Einstellungen | Länge (Text), Stellen (Dezimalzahl), Werte (Auswahlliste), Zieltabelle, Anzeigefelder und Trennzeichen (Verknüpfung), Dateiarten, Höchstgrösse und Anzahl (Datei, siehe unten) |
 | Validierung | Mindest-/Höchstlänge, Minimum/Maximum, E-Mail, URL; **Weitere Prüfungen** aus Plugins, z. B. AHV-Nummer oder IBAN (erscheint nur, wenn ein Plugin Prüfregeln für den Feldtyp anbietet; sie gelten bei der Erfassung, beim Import und über die Schnittstelle, leere Werte werden nicht geprüft). Fehlt das Plugin später oder ruht es, wird die Prüfung übersprungen und beim Feld als „nicht verfügbar“ angezeigt |
 | Vorgabe beim Anlegen (Ganzzahl) | **Fortlaufend vorschlagen:** Im Dialog „Neuer Datensatz“ steht der höchste vorhandene Wert + 1 und bleibt änderbar; bleibt das Feld leer, setzt SAFT den Wert beim Speichern. Mit **Zählen je** (eine Verknüpfung, z. B. *Bestellung*) wird je Master-Datensatz gezählt: unter einer Bestellung mit zwei Positionen wird 3 vorgeschlagen; in der Liste erscheint der Vorschlag, sobald die Bestellung gewählt ist. Gelöschte Datensätze zählen nicht. |
 | Vorgabe beim Anlegen (Datum, Datum und Zeit) | **Mit dem heutigen Datum vorbelegen** bzw. **Mit aktuellem Datum und Uhrzeit vorbelegen:** Im Dialog „Neuer Datensatz“ steht beim Öffnen das aktuelle Datum (bzw. Datum und Uhrzeit auf die Minute) und bleibt änderbar. Beim Bearbeiten, beim Import und über die Schnittstelle setzt SAFT nichts. Nicht zusammen mit „Übernehmen aus“. |
@@ -254,6 +254,24 @@ Gedankenstrich, Punkt oder Schrägstrich) verbunden, z. B. Vorname und Nachname 
 der Auswahlliste beim Bearbeiten; dort sucht die Eingabe in allen Anzeigefeldern. Sortiert wird nach dem ersten
 Anzeigefeld. Benennen Sie ein Anzeigefeld um, folgt die Verknüpfung; solange ein Feld irgendwo als Anzeigefeld dient,
 lässt es sich nicht endgültig löschen.
+
+**Dateifelder:** Ein Feld vom Typ **Datei** nimmt Anhänge auf. Einstellungen:
+
+- **Erlaubte Dateien:** Bilder (JPEG, PNG, GIF, WebP), PDF, Office-Dokumente (Word, Excel, PowerPoint,
+  OpenDocument), Text und CSV oder **Beliebige Dateien**. Geprüft wird der tatsächliche Inhalt, nicht nur die Endung. Eine
+  bestimmte Art anzuhaken entfernt „Beliebige Dateien“ und umgekehrt. SVG-Bilder sind nicht vorgesehen (sie können Skripte
+  enthalten).
+- **Höchstgrösse je Datei** in MB (Vorgabe 10, höchstens 200). Liegt die Grenze des Servers (PHP) darunter, zeigt das
+  Feld einen Hinweis; dann gilt die kleinere.
+- **Anzahl Dateien** (Vorgabe 1, höchstens 50).
+
+Die Dateien liegen nicht in der Datenbank, sondern im Dateispeicher des Servers (oder in S3, siehe
+[Systemadministration](SYSADMIN_GUIDE.de.md#1-für-den-betrieb)); der Datensatz speichert nur Kennung und Namen.
+Ersetzte oder entfernte Dateien werden beim Speichern gelöscht, ebenso beim endgültigen Löschen eines Datensatzes,
+beim Löschen des Felds oder der Tabelle. Gelöschte Datensätze im Papierkorb behalten ihre Dateien (sichtbar nur mit
+Löschrecht). Dateifelder sind nicht eindeutig, nicht sortierbar und haben keinen Index; sie fehlen im Datenimport,
+in Auswertungen und als Quelle für „Übernehmen aus“. Der Export enthält die Dateinamen, der Verlauf zeigt, welche
+Dateien hinzukamen oder entfernt wurden.
 
 **Regeln** (Abbildung unten, 1): Prüfungen über Felder hinweg beim Speichern eines Datensatzes, z. B. „Lieferdatum ≥ Bestelldatum“ oder
 „Menge > 0“. Für jede Regel wählen Sie das **Feld**, den **Vergleich** und ob mit einem **anderen Feld** oder einem

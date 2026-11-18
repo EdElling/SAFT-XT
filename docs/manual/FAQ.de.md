@@ -22,6 +22,7 @@
    - [Ich sehe keine Schaltfläche „Exportieren“.](#ich-sehe-keine-schaltfläche-exportieren)
    - [Bei einer Tabelle fehlen „Neuer Datensatz“ und „Bearbeiten“.](#bei-einer-tabelle-fehlen-neuer-datensatz-und-bearbeiten)
    - [Wie gebe ich jemandem eine bestimmte Ansicht weiter?](#wie-gebe-ich-jemandem-eine-bestimmte-ansicht-weiter)
+   - [Eine Datei lässt sich nicht hochladen.](#eine-datei-lässt-sich-nicht-hochladen)
 
 ---
 ## Häufige Fragen
@@ -82,3 +83,10 @@ ist (Table-Connector → Schreiben), oder Ihrer Rolle fehlt das Recht (Rollen �
 
 Kopieren Sie die Adresse aus dem Browser – sie enthält Tabelle, Spaltenauswahl und die ausgewählten Datensätze.
 Der Empfänger sieht nur, wofür er Rechte hat.
+
+### Eine Datei lässt sich nicht hochladen.
+
+Das Feld erlaubt nur bestimmte Dateiarten und eine Höchstgrösse und -anzahl (Table-Designer → Feld → Erlaubte
+Dateien, Höchstgrösse je Datei). Geprüft wird der Inhalt: Eine umbenannte Datei mit falscher Endung wird abgewiesen.
+Scheitern auch kleine erlaubte Dateien, ist die Grenze des Servers zu klein (Systemadministration:
+`upload_max_filesize` und `post_max_size`).

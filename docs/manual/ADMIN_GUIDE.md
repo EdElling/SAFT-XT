@@ -228,7 +228,7 @@ when entering data by hand, and it is all or nothing. At most 10,000 rows per fi
 |---|---|
 | Label / column name | Display name and technical name. **Renaming keeps the data.** |
 | Type | see [User guide, Appendix A](USER_GUIDE.md#appendix-a--field-types) |
-| Type settings | Length (text), digits (decimal), values (selection list), related table, display fields and separator (relation) |
+| Type settings | Length (text), digits (decimal), values (selection list), related table, display fields and separator (relation), file kinds, maximum size and number (file, see below) |
 | Validation | Minimum/maximum length, minimum/maximum, email, URL; **Further checks** from plugins, e.g. AHV number or IBAN (only shown when a plugin offers validation rules for the field type; they apply when entering data, when importing and through the interface, empty values are not checked). If the plugin is later missing or resting, the check is skipped and shown as “not available” on the field |
 | Required | must be filled in; always shown in lists |
 | Unique | may only occur once (deleted records do not count) |
@@ -245,6 +245,22 @@ last name to "Anna Keller" or name and city to "ETH Zürich, Zürich". Empty fie
 details, preview, filters, export and in the selection list when editing; there, typing searches all display fields.
 Sorting uses the first display field. If you rename a display field, the relation follows; as long as a field serves
 as display field anywhere, it cannot be deleted permanently.
+
+**File fields:** A field of type **File** takes attachments. Settings:
+
+- **Allowed files:** images (JPEG, PNG, GIF, WebP), PDF, Office documents (Word, Excel, PowerPoint, OpenDocument),
+  text and CSV, or **Any files**. The actual content is checked, not just the extension. Ticking a specific kind removes
+  "Any files" and vice versa. SVG images are not supported (they can contain scripts).
+- **Maximum size per file** in MB (default 10, at most 200). If the server's (PHP) limit is lower, the field shows a
+  note; the smaller value applies.
+- **Number of files** (default 1, at most 50).
+
+The files are not stored in the database but in the server's file storage (or in S3, see
+[System administration](SYSADMIN_GUIDE.md#1-operations)); the record only stores their ID and name. Replaced or
+removed files are deleted on saving, as well as when a record is deleted permanently or the field or table is deleted.
+Deleted records in the trash keep their files (visible only with delete permission). File fields are not unique, not
+sortable and have no index; they are not available in the data import, in reports or as a source for "Copy from".
+The export contains the file names; the history shows which files were added or removed.
 
 **Rules** (figure below, 1): Checks across fields when saving a record, e.g. "Delivery date ≥ Order date" or "Quantity > 0".
 For every rule you choose the **field**, the **comparison** and whether it is compared with **another field** or a

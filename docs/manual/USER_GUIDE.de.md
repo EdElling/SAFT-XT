@@ -223,6 +223,15 @@ Unten finden Sie (1):
 
 **Neuer Datensatz:** Schaltfläche **„Neuer Datensatz“** oben rechts in der jeweiligen Liste.
 
+**Dateien anhängen:** Ein Feld vom Typ *Datei* nimmt Bilder, PDF oder andere Dokumente auf. Ziehen Sie die Dateien
+in das Feld oder klicken Sie auf **„auswählen“**; bei mehreren Dateien lässt sich die Reihenfolge durch Ziehen ändern,
+das ✕ entfernt eine Datei. Gespeichert wird erst mit **Erstellen** bzw. **Speichern**. Welche Arten und wie grosse
+Dateien erlaubt sind, legt die Administration je Feld fest; andere Dateien werden schon beim Hochladen abgewiesen.
+In der Liste erscheinen Bilder als kleine Vorschau und andere Dateien mit einer Büroklammer (höchstens drei, dazu
+„+2“ usw.), in den Details alle. Ein Klick öffnet Bilder und PDF in einem neuen Fenster; andere Dateien werden
+heruntergeladen. Dateien sieht nur, wer die Tabelle lesen darf. Der Filter **„mit Dateien“ / „ohne Dateien“** findet
+Datensätze mit bzw. ohne Anhang.
+
 Welche Schaltflächen Sie sehen, hängt von Ihren Rechten ab: Mit reinem Leserecht fehlen „Neuer Datensatz“,
 „Bearbeiten“ und „Löschen“.
 
@@ -320,6 +329,7 @@ jeweiligen Feld angezeigt:
 | Eindeutig | „… ist bereits vergeben“ (gelöschte Datensätze zählen nicht) |
 | Auswahlliste | nur die vorgegebenen Werte |
 | Verknüpfung | nur vorhandene, nicht gelöschte Datensätze |
+| Datei | nur erlaubte Dateiarten, höchstens die eingestellte Grösse und Anzahl |
 
 ### 4.7 Daten exportieren
 
@@ -508,6 +518,7 @@ unter der Bezeichnung der Verknüpfung, z. B. „Kontakte › Person (Forschung)
 | Datum und Uhrzeit | Zeitpunkt | |
 | Auswahlliste | Status, Land | feste Werte mit Anzeige-Bezeichnung |
 | Verknüpfung | Kunde einer Bestellung | Zieltabelle und angezeigtes Feld; Grundlage für Details und Vorschau |
+| Datei | Vertrag, Produktfoto | Bilder, PDF, Office-Dokumente, Text/CSV oder beliebige Dateien; Höchstgrösse und Anzahl je Feld; Vorschau in Liste und Details. Nicht im Import, im Export nur die Dateinamen (siehe [4.2](#42-datensätze-ansehen-anlegen-bearbeiten-löschen)) |
 | Berechnet | Betrag = Menge × Einzelpreis | Ergebnis als Ganz- oder Dezimalzahl, Formel; wird beim Speichern berechnet, nicht eingegeben (siehe [Berechnete Felder](ADMIN_GUIDE.de.md#berechnete-felder)) |
 
 ---

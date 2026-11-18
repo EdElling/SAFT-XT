@@ -159,7 +159,8 @@ final class DefinitionResolver
 
         $field = $table->fields->firstWhere('id', $spec['field']);
 
-        if (! $field instanceof CustomField || ! $field->is_active) {
+        // Dateien lassen sich nicht auswerten (B-021): wie ein fehlendes Feld behandeln.
+        if (! $field instanceof CustomField || ! $field->is_active || $field->type === FieldType::File) {
             $this->error('missing_field', ['label' => $spec['label'] ?? '#'.$spec['field'], 'table' => $table->label]);
 
             return null;
