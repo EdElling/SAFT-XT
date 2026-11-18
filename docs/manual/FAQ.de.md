@@ -23,6 +23,7 @@
    - [Bei einer Tabelle fehlen „Neuer Datensatz“ und „Bearbeiten“.](#bei-einer-tabelle-fehlen-neuer-datensatz-und-bearbeiten)
    - [Wie gebe ich jemandem eine bestimmte Ansicht weiter?](#wie-gebe-ich-jemandem-eine-bestimmte-ansicht-weiter)
    - [Eine Datei lässt sich nicht hochladen.](#eine-datei-lässt-sich-nicht-hochladen)
+   - [Bei einer Verknüpfung fehlt eine Tabelle in der Auswahl.](#bei-einer-verknüpfung-fehlt-eine-tabelle-in-der-auswahl)
 
 ---
 ## Häufige Fragen
@@ -90,3 +91,8 @@ Das Feld erlaubt nur bestimmte Dateiarten und eine Höchstgrösse und -anzahl (T
 Dateien, Höchstgrösse je Datei). Geprüft wird der Inhalt: Eine umbenannte Datei mit falscher Endung wird abgewiesen.
 Scheitern auch kleine erlaubte Dateien, ist die Grenze des Servers zu klein (Systemadministration:
 `upload_max_filesize` und `post_max_size`).
+
+### Bei einer Verknüpfung fehlt eine Tabelle in der Auswahl.
+
+Verknüpfungen sind nur zwischen Tabellen derselben App möglich (Administratorhandbuch, Kapitel 16). Gehört die
+gewünschte Tabelle zu einer anderen App, legen Sie die neue Tabelle in deren App an – oder erweitern Sie diese App.

@@ -9,7 +9,7 @@ return [
         'import' => 'Importa',
     ],
     'export' => [
-        'intro' => 'Esportare tabelle del designer di tabelle, analisi, voci di menu e ruoli come pacchetto, p. es. per trasferirli da un’installazione di test a quella di produzione. Record (e quindi i file dei campi file), utenti, credenziali e impostazioni dell’applicazione non sono inclusi; le analisi solo se condivise o vostre.',
+        'intro' => 'Esportare tabelle del designer di tabelle, analisi, voci di menu e ruoli come pacchetto, p. es. per trasferirli da un’installazione di test a quella di produzione. Record (e quindi i file dei campi file), utenti, credenziali e impostazioni globali non sono inclusi; le analisi solo se condivise o vostre.',
         'tables' => 'Tabelle',
         'reports' => 'Analisi',
         'menus' => 'Voci di menu',
@@ -30,6 +30,10 @@ return [
         'empty' => 'Selezionare almeno una voce.',
     ],
     'import' => [
+        'target_app' => 'In quale app?',
+        'new_app' => 'Nuova app …',
+        'new_app_name' => 'Nome della nuova app',
+        'new_app_default' => 'Importato',
         'intro' => 'Importare un pacchetto da un’altra installazione. L’anteprima mostra prima cosa verrà creato; le voci esistenti non vengono modificate.',
         'file' => 'File del pacchetto (.json)',
         'analyze' => 'Mostra anteprima',

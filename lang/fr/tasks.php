@@ -12,6 +12,7 @@ return [
         'schedule' => 'Planning',
     ],
     'fields' => [
+        'app_help' => 'Les tâches liées à une table appartiennent automatiquement à son app.',
         'backup_files' => 'Sauvegarder aussi les fichiers des champs de fichiers',
         'backup_files_help' => 'En ZIP à côté de la sauvegarde de la base (seulement si les fichiers se trouvent sur ce serveur).',
         'backup_days' => 'Conserver les sauvegardes (jours)',

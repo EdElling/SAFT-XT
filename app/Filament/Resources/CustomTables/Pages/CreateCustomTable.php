@@ -11,6 +11,7 @@ use App\Exceptions\BusinessRuleException;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Filament\Resources\CustomTables\CustomTableResource;
 use App\Filament\Resources\CustomTables\Schemas\FieldForm;
+use App\Filament\Support\AppSelect;
 use App\Models\User;
 use App\Services\DynamicSchemaService;
 use Filament\Notifications\Notification;
@@ -59,7 +60,16 @@ class CreateCustomTable extends CreateRecord
         $this->assistantPrompt = '';
 
         if ($result->status === TableAssistantResult::PROPOSAL) {
-            $this->form->fill($result->proposal ?? []);
+            // Die gewählte App bleibt (B-107); der Vorschlag betrifft Tabelle und Felder, der Name bekommt ihr Präfix.
+            $appId = $this->form->getRawState()['app_id'] ?? null;
+            $proposal = $result->proposal ?? [];
+            $prefix = AppSelect::prefix($appId);
+
+            if ($prefix !== '' && filled($proposal['name'] ?? null) && ! str_starts_with((string) $proposal['name'], $prefix)) {
+                $proposal['name'] = mb_substr($prefix.$proposal['name'], 0, 63);
+            }
+
+            $this->form->fill([...$proposal, 'app_id' => $appId]);
             $this->assistantReply = __('tables_assistant.applied_form');
             // Vorgeschlagene Felder eingeklappt zeigen (Kopfzeile: Bezeichnung · Typ · Eigenschaften); von Hand ergänzte bleiben offen.
             $this->js("window.dispatchEvent(new CustomEvent('repeater-collapse', { detail: 'data.fields' }))");
@@ -78,7 +88,7 @@ class CreateCustomTable extends CreateRecord
     protected function handleRecordCreation(array $data): Model
     {
         $table = app(DynamicSchemaService::class)->createTable(
-            Arr::only($data, ['name', 'label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled']),
+            Arr::only($data, ['app_id', 'name', 'label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled']),
             array_map(FieldForm::toServiceData(...), array_values((array) ($data['fields'] ?? []))),
         );
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Menus\Tables;
 
+use App\Filament\Support\AppFilter;
 use App\Models\Menu;
 use App\Navigation\MenuTree;
 use App\Support\AppLocale;
@@ -59,10 +60,12 @@ class MenusTable
                 IconColumn::make('is_active')
                     ->label(__('common.active'))
                     ->boolean(),
+                AppFilter::column(),
             ])
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
             ->filters([
+                AppFilter::make(system: true),
                 SelectFilter::make('parent_id')
                     ->label(__('menus.parent'))
                     ->options(fn (): array => [self::ROOT => __('menus.root')] + $tree()->parentOptions())

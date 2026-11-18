@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Exceptions\BusinessRuleException;
 use App\Models\Base\ReportLink as BaseReportLink;
+use App\Models\Concerns\BelongsToApp;
 use App\Models\Concerns\HasAuditLog;
+use App\Models\Concerns\HasStableKey;
 use App\Models\Concerns\HasTranslatedAttributes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -16,11 +19,28 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ReportLink extends BaseReportLink
 {
+    use BelongsToApp;
     use HasAuditLog;
+    use HasStableKey;
     use HasTranslatedAttributes;
 
     /** @var list<string> */
     public array $translatable = ['label'];
+
+    protected static function booted(): void
+    {
+        // Gehört zur App der Quelltabelle; Ziel nur in derselben App (B-107, Schnittstellen erst später).
+        static::saving(static function (self $link): void {
+            $apps = CustomTable::query()->whereKey([$link->source_table_id, $link->target_table_id])->pluck('app_id', 'id');
+            $source = $apps[$link->source_table_id] ?? null;
+
+            if ($link->target_table_id !== null && ($apps[$link->target_table_id] ?? null) !== $source) {
+                throw new BusinessRuleException(__('apps.errors.cross_app_link'));
+            }
+
+            $link->app_id = $source === null ? null : (int) $source;
+        });
+    }
 
     /** @return BelongsTo<CustomTable, $this> */
     public function sourceTable(): BelongsTo

@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Class Menu
  *
  * @property int $id
+ * @property string $uuid
+ * @property int|null $app_id
  * @property int|null $parent_id
  * @property string $label übersetzbar, gespeichert als JSON je Sprache
  * @property string|null $route
@@ -36,6 +38,7 @@ class Menu extends Model
     protected $table = 'menus';
 
     protected $casts = [
+        'app_id' => 'int',
         'parent_id' => 'int',
         'sort_order' => 'int',
         'is_active' => 'bool',
@@ -44,6 +47,8 @@ class Menu extends Model
     ];
 
     protected $fillable = [
+        'uuid',
+        'app_id',
         'parent_id',
         'label',
         'route',

@@ -9,7 +9,7 @@ return [
         'import' => 'Einspielen',
     ],
     'export' => [
-        'intro' => 'Tabellen des Table-Designers, Auswertungen, Menüeinträge und Rollen als Paket exportieren, z. B. um sie von einer Test- in die Produktionsinstallation zu übertragen. Nicht enthalten sind Datensätze (und damit Dateien aus Dateifeldern), Benutzer, Zugangsdaten und App-Einstellungen; Auswertungen nur freigegebene und eigene.',
+        'intro' => 'Tabellen des Table-Designers, Auswertungen, Menüeinträge und Rollen als Paket exportieren, z. B. um sie von einer Test- in die Produktionsinstallation zu übertragen. Nicht enthalten sind Datensätze (und damit Dateien aus Dateifeldern), Benutzer, Zugangsdaten und Globale Einstellungen; Auswertungen nur freigegebene und eigene.',
         'tables' => 'Tabellen',
         'reports' => 'Auswertungen',
         'menus' => 'Menüeinträge',
@@ -30,6 +30,10 @@ return [
         'empty' => 'Bitte mindestens einen Eintrag wählen.',
     ],
     'import' => [
+        'target_app' => 'In welche App?',
+        'new_app' => 'Neue App …',
+        'new_app_name' => 'Name der neuen App',
+        'new_app_default' => 'Importiert',
         'intro' => 'Ein Paket aus einer anderen Installation einspielen. Zuerst zeigt die Vorschau, was neu angelegt wird; vorhandene Einträge werden nicht verändert.',
         'file' => 'Paketdatei (.json)',
         'analyze' => 'Vorschau anzeigen',

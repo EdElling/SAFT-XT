@@ -14,6 +14,7 @@ use App\DynamicData\Schema\IdentifierValidator;
 use App\DynamicData\TableDefinition;
 use App\Exceptions\BusinessRuleException;
 use App\ExternalData\Snapshots\SnapshotService;
+use App\Models\App;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DatabaseConnection;
@@ -102,6 +103,7 @@ final class TableConnectorService
         try {
             $table = DB::transaction(function () use ($connection, $info, $columns, $keys, $name, $data, $default): CustomTable {
                 $table = CustomTable::create([
+                    'app_id' => App::resolve($data['app_id'] ?? null)->id,
                     'name' => $name,
                     'source' => CustomTable::SOURCE_EXTERNAL,
                     'database_connection_id' => $connection->id,
@@ -286,7 +288,7 @@ final class TableConnectorService
         }
 
         foreach ($keys as $key) {
-            if ($key->column === $field->name && ($target = $this->connectedTarget($connection, $key)) !== null) {
+            if ($key->column === $field->name && ($target = $this->connectedTarget($connection, $key, $table->app_id)) !== null) {
                 return ['table' => $target->name, 'display_field' => $this->defaultDisplayField($target)];
             }
         }
@@ -320,7 +322,7 @@ final class TableConnectorService
                     continue;
                 }
 
-                $target = $this->connectedTarget($connection, $key);
+                $target = $this->connectedTarget($connection, $key, $table->app_id);
 
                 if ($target !== null) {
                     $this->setRelation($field, $target->name, $this->defaultDisplayField($target), automatic: true);
@@ -332,10 +334,12 @@ final class TableConnectorService
         return $count;
     }
 
-    private function connectedTarget(DatabaseConnection $connection, ForeignKeyInfo $key): ?CustomTable
+    /** Angebundene Zieltabelle eines Fremdschlüssels – nur in derselben App (B-107). */
+    private function connectedTarget(DatabaseConnection $connection, ForeignKeyInfo $key, ?int $appId): ?CustomTable
     {
         return CustomTable::query()->external()->with('fields')
             ->where('database_connection_id', $connection->id)
+            ->where('app_id', $appId)
             ->where('external_schema', $key->foreignSchema)
             ->where('external_table', $key->foreignTable)
             ->get()

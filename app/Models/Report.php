@@ -6,7 +6,9 @@ namespace App\Models;
 
 use App\Auth\RoleSimulation;
 use App\Models\Base\Report as BaseReport;
+use App\Models\Concerns\BelongsToApp;
 use App\Models\Concerns\HasAuditLog;
+use App\Models\Concerns\HasStableKey;
 use App\Reports\ReportDefinition;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,7 +20,22 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Report extends BaseReport
 {
+    use BelongsToApp;
     use HasAuditLog;
+    use HasStableKey;
+
+    protected static function booted(): void
+    {
+        // Eine Auswertung gehört zur App ihrer Grundtabelle (B-107).
+        static::saving(static function (self $report): void {
+            $base = (int) (((array) $report->definition)['base'] ?? 0);
+            $appId = $base > 0 ? CustomTable::query()->whereKey($base)->value('app_id') : null;
+
+            if ($appId !== null) {
+                $report->app_id = (int) $appId;
+            }
+        });
+    }
 
     /** @return BelongsTo<User, $this> */
     public function owner(): BelongsTo

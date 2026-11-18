@@ -6,6 +6,7 @@ namespace App\Livewire;
 
 use App\DynamicData\DataMenu;
 use App\ExternalData\BulkConnector;
+use App\Filament\Support\AppSelect;
 use App\Models\DatabaseConnection;
 use App\Models\Role;
 use App\Models\User;
@@ -18,6 +19,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Tables\Columns\TextColumn;
@@ -167,6 +170,16 @@ class BulkConnectTables extends Component implements HasActions, HasSchemas, Has
             ->modalSubmitActionLabel(__('table_connector.bulk.submit'))
             ->authorize(fn (): bool => $this->allowed())
             ->schema([
+                // App (B-107): Präfix und Menügruppe folgen ihr.
+                AppSelect::make()
+                    ->afterStateUpdated(function (Get $get, Set $set, mixed $state, mixed $old): void {
+                        // Präfix folgt der App, solange es leer ist oder noch das der bisherigen App.
+                        if (blank($get('prefix')) || $get('prefix') === AppSelect::prefix($old)) {
+                            $set('prefix', AppSelect::prefix($state));
+                        }
+
+                        $set('menu_group', app(DataMenu::class)->defaultGroup(filled($state) ? (int) $state : null));
+                    }),
                 TextInput::make('prefix')
                     ->label(__('table_connector.bulk.prefix'))
                     ->helperText(__('table_connector.bulk.prefix_help'))
@@ -186,14 +199,15 @@ class BulkConnectTables extends Component implements HasActions, HasSchemas, Has
                     ->default(true),
                 Select::make('menu_group')
                     ->label(__('table_connector.bulk.menu_group'))
-                    ->options(fn (): array => ['' => __('table_connector.bulk.no_menu')] + app(DataMenu::class)->groupOptions())
-                    ->default(app(DataMenu::class)->defaultGroup())
+                    ->options(fn (Get $get): array => ['' => __('table_connector.bulk.no_menu')] + app(DataMenu::class)->groupOptions(filled($get('app_id')) ? (int) $get('app_id') : null))
+                    ->default(fn (Get $get): string => app(DataMenu::class)->defaultGroup(filled($get('app_id')) ? (int) $get('app_id') : null))
                     ->selectablePlaceholder(false),
                 Select::make('roles')
                     ->label(__('table_connector.bulk.roles'))
                     ->helperText(__('table_connector.bulk.roles_help'))
                     ->multiple()
-                    ->options(fn (): array => Role::query()->where('name', '!=', User::ROLE_SUPER_ADMIN)->orderBy('name')->pluck('name', 'id')->all())
+                    // Nur Rollen der gewählten App (B-107).
+                    ->options(fn (Get $get): array => Role::query()->where('name', '!=', User::ROLE_SUPER_ADMIN)->where('app_id', filled($get('app_id')) ? (int) $get('app_id') : 0)->orderBy('name')->pluck('name', 'id')->all())
                     ->visible($canGrant),
             ])
             ->action(function (Collection $records, array $data): void {

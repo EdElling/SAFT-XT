@@ -47,8 +47,9 @@ class MenuSeeder extends Seeder
             'label' => ['de' => 'Anwendung', 'en' => 'Application', 'fr' => 'Application', 'it' => 'Applicazione'],
             'icon' => 'heroicon-o-squares-2x2', 'sort_order' => 30,
             'children' => [
+                ['label' => ['de' => 'Apps', 'en' => 'Apps', 'fr' => 'Apps', 'it' => 'App'], 'route' => 'filament.admin.resources.apps.index', 'icon' => 'heroicon-o-squares-2x2', 'permission_name' => 'apps.view', 'sort_order' => 5],
                 ['label' => ['de' => 'Menüs', 'en' => 'Menus', 'fr' => 'Menus', 'it' => 'Menu'], 'route' => 'filament.admin.resources.menus.index', 'icon' => 'heroicon-o-bars-3', 'permission_name' => 'menus.view', 'sort_order' => 10],
-                ['label' => ['de' => 'App-Einstellungen', 'en' => 'App settings', 'fr' => 'Paramètres de l’application', 'it' => 'Impostazioni dell’applicazione'], 'route' => 'filament.admin.pages.app-settings', 'icon' => 'heroicon-o-adjustments-horizontal', 'permission_name' => 'settings.app.view', 'sort_order' => 20],
+                ['label' => ['de' => 'Globale Einstellungen', 'en' => 'Global settings', 'fr' => 'Paramètres globaux', 'it' => 'Impostazioni globali'], 'route' => 'filament.admin.pages.app-settings', 'icon' => 'heroicon-o-adjustments-horizontal', 'permission_name' => 'settings.app.view', 'sort_order' => 20],
                 ['label' => ['de' => 'Plugins', 'en' => 'Plugins', 'fr' => 'Plugins', 'it' => 'Plugin'], 'route' => 'filament.admin.pages.plugins', 'icon' => 'heroicon-o-puzzle-piece', 'permission_name' => 'plugins.view', 'sort_order' => 30],
                 ['label' => ['de' => 'Konfiguration übertragen', 'en' => 'Transfer configuration', 'fr' => 'Transférer la configuration', 'it' => 'Trasferire la configurazione'], 'route' => 'filament.admin.pages.configuration-transfer', 'icon' => 'heroicon-o-arrows-up-down', 'permission_name' => 'configuration.view', 'sort_order' => 40],
             ],
@@ -65,6 +66,11 @@ class MenuSeeder extends Seeder
     ];
 
     public function run(): void
+    {
+        Menu::asSystemMenus($this->seedSystemMenus(...));
+    }
+
+    private function seedSystemMenus(): void
     {
         // Einträge über ihre Seite erkennen, Gruppen über die deutsche Bezeichnung.
         Menu::updateOrCreate(

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'title' => 'Paramètres de l’application',
+    'title' => 'Paramètres globaux',
     'branding' => 'Image de marque',
     'app_name' => 'Nom affiché de l’application',
     'app_name_help' => 'Apparaît dans l’en-tête, l’onglet du navigateur, sur la page de connexion et comme expéditeur des e-mails.',

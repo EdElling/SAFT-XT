@@ -12,6 +12,7 @@ return [
         'schedule' => 'Schedule',
     ],
     'fields' => [
+        'app_help' => 'Tasks for a table automatically belong to its app.',
         'backup_files' => 'Include files from file fields',
         'backup_files_help' => 'As a ZIP next to the database backup (only if the files are stored on this server).',
         'backup_days' => 'Keep backups (days)',

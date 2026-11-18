@@ -39,9 +39,12 @@ final readonly class SnapshotRefreshTask implements TaskType
         return [
             Select::make('table_id')
                 ->label(__('tasks.fields.table'))
-                ->options(fn (): array => CustomTable::query()->external()->with('databaseConnection')->get()
-                    ->mapWithKeys(fn (CustomTable $table): array => [$table->id => $this->tableLabel($table)])
-                    ->sort()->all())
+                // Nach App gruppiert (B-107); die Aufgabe gehört danach zur App der Tabelle.
+                ->options(fn (): array => CustomTable::query()->external()->with(['databaseConnection', 'app'])->get()
+                    ->groupBy(fn (CustomTable $table): string => (string) ($table->app?->name ?? __('apps.system')))
+                    ->sortKeys()
+                    ->map(fn ($tables): array => $tables->mapWithKeys(fn (CustomTable $table): array => [$table->id => $this->tableLabel($table)])->sort()->all())
+                    ->all())
                 ->searchable()
                 ->required(),
         ];

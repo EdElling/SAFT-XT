@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Apps\SystemObjects;
 use App\DynamicData\DataMenu;
 use App\Filament\Pages\DataModelPage;
 use App\Models\Base\Menu as BaseMenu;
+use App\Models\Concerns\BelongsToApp;
 use App\Models\Concerns\HasAuditLog;
+use App\Models\Concerns\HasStableKey;
 use App\Models\Concerns\HasTranslatedAttributes;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,7 +20,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Menu extends BaseMenu
 {
+    use BelongsToApp;
     use HasAuditLog;
+    use HasStableKey;
     use HasTranslatedAttributes;
 
     /** Bezeichnung je Sprache; fehlt sie, erscheint eine vorhandene (siehe AppServiceProvider). */
@@ -41,8 +46,47 @@ class Menu extends BaseMenu
         $query->orderBy('label->'.app()->getLocale())->orderBy('label->'.config('locales.default'));
     }
 
+    /** Während der Grundausstattung (MenuSeeder) entstehen System-Menüs ohne App. */
+    private static bool $systemMenus = false;
+
+    /**
+     * @template T
+     *
+     * @param  callable(): T  $callback
+     * @return T
+     */
+    public static function asSystemMenus(callable $callback): mixed
+    {
+        $previous = self::$systemMenus;
+        self::$systemMenus = true;
+
+        try {
+            return $callback();
+        } finally {
+            self::$systemMenus = $previous;
+        }
+    }
+
     protected static function booted(): void
     {
+        // App eines Eintrags (B-107): Dateneinträge gehören zur App ihrer Tabelle, andere Einträge zur App ihrer Gruppe;
+        // nur oberste Gruppen wählen sie selbst. System-Menüs haben keine.
+        static::saving(static function (self $menu): void {
+            $table = $menu->route === DataMenu::ROUTE ? (string) (($menu->route_parameters ?? [])['table'] ?? '') : '';
+            $appId = $table !== '' ? CustomTable::query()->where('name', $table)->value('app_id') : null;
+
+            if ($appId === null && $menu->parent_id !== null) {
+                $appId = self::query()->whereKey($menu->parent_id)->value('app_id');
+            }
+
+            if ($appId !== null) {
+                $menu->app_id = (int) $appId;
+            } elseif (! $menu->exists && $menu->app_id === null && $menu->parent_id === null && ! self::$systemMenus && ! SystemObjects::isSystemRoute($menu->route)) {
+                // Neue oberste Einträge: bei genau einer App gehören sie zu ihr.
+                $menu->app_id = App::onlyId();
+            }
+        });
+
         // Datenmodell-Einträge verweisen auf sich selbst; die Seite ermittelt daraus ihre Gruppe.
         static::saved(static function (self $menu): void {
             $own = ['menu' => (int) $menu->id];

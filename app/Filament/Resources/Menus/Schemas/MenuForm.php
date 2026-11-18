@@ -9,6 +9,7 @@ use App\DynamicData\DataPermissions;
 use App\Filament\Forms\Components\IconPicker;
 use App\Filament\Pages\DataModelPage;
 use App\Filament\Resources\Reports\ReportResource;
+use App\Filament\Support\AppSelect;
 use App\Filament\Support\TranslatableInputs;
 use App\Models\CustomField;
 use App\Models\CustomTable;
@@ -69,6 +70,11 @@ class MenuForm
                                     $fail(__('menus.form.invalid_position', ['max' => MenuTree::MAX_DEPTH]));
                                 }
                             }),
+                        // App (B-107) nur für oberste Einträge; darunter gilt die App der Gruppe bzw. der Tabelle.
+                        AppSelect::make(required: false)
+                            ->placeholder(__('apps.system'))
+                            ->helperText(__('menus.form.app_help'))
+                            ->visible(fn (Get $get): bool => blank($get('parent_id'))),
                         ToggleButtons::make('type')
                             ->label(__('common.type'))
                             ->options([
@@ -135,8 +141,9 @@ class MenuForm
                             ->columnSpanFull(),
                         Select::make('data_table')
                             ->label(__('menus.types.data'))
-                            ->options(fn (): array => CustomTable::labelOptions(activeOnly: true))
-                            ->in(fn (): array => CustomTable::query()->active()->pluck('name')->all())
+                            // Nur Tabellen der App der Gruppe bzw. der gewählten App (B-107).
+                            ->options(fn (Get $get): array => CustomTable::labelOptions(activeOnly: true, appId: self::entryAppId($get)))
+                            ->in(fn (Get $get): array => array_keys(CustomTable::labelOptions(activeOnly: true, appId: self::entryAppId($get))))
                             ->searchable()
                             ->live()
                             ->required(fn (Get $get): bool => $get('type') === self::TYPE_DATA)
@@ -224,6 +231,15 @@ class MenuForm
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
+    /** App eines Eintrags im Formular: die seiner Gruppe, oben die gewählte; null = keine Einschränkung. */
+    private static function entryAppId(Get $get): ?int
+    {
+        $parent = $get('parent_id');
+        $appId = filled($parent) ? Menu::query()->whereKey((int) $parent)->value('app_id') : $get('app_id');
+
+        return filled($appId) ? (int) $appId : null;
+    }
+
     public static function fill(Menu $record, array $data): array
     {
         return [...$data, 'label' => $record->getTranslations('label')];

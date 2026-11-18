@@ -8,13 +8,13 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-1. **B-107** Apps (Fachanwendungen) – Konzept abgestimmt, Etappe 1 planen
+1. **B-107** Apps (Fachanwendungen) – Etappe 1b (In andere App verschieben)
 
 ## Apps (Fachanwendungen)
 
 | Nr. | Thema | Beschreibung | Status | Bezug |
 |---|---|---|---|---|
-| B-107 | Apps (Fachanwendungen) | Mehrere Fachanwendungen nebeneinander: Tabellen, Menüs, Auswertungen, Rollen, Dashboard, Aufgaben, Plugins und KI-Kontext je App; Umschalten in der Titelzeile; Verweise zwischen Apps nur über freigegebene Schnittstellen; App-Definition `saft-app/1` mit stabilen Schlüsseln als Grundlage für Pakete, Aktualisieren (Änderungsplan) und KI-App-Designer; Seite „Apps“ ersetzt „Konfiguration übertragen“. Acht Etappen, siehe [Konzept](docs/concept/APPS.md). | geplant (Prio 1) | ersetzt B-001 |
+| B-107 | Apps (Fachanwendungen) | Mehrere Fachanwendungen nebeneinander: Tabellen, Menüs, Auswertungen, Rollen, Dashboard, Aufgaben, Plugins und KI-Kontext je App; Umschalten in der Titelzeile; Verweise zwischen Apps nur über freigegebene Schnittstellen; App-Definition `saft-app/1` mit stabilen Schlüsseln als Grundlage für Pakete, Aktualisieren (Änderungsplan) und KI-App-Designer; Seite „Apps“ ersetzt „Konfiguration übertragen“. Acht Etappen, siehe [Konzept](docs/concept/APPS.md). | in Arbeit (Etappe 1a umgesetzt: Tabelle `apps`, App-Zuordnung und stabile Schlüssel, Umstellung „Bestehende Daten“, Seite „Apps“, Grenze zwischen Apps, Präfix, Rolle kopieren, Import mit Ziel-App; „App-Einstellungen“ heisst „Globale Einstellungen“) | ersetzt B-001 |
 
 ## Konfiguration übertragen
 

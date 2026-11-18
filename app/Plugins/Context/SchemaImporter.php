@@ -6,6 +6,7 @@ namespace App\Plugins\Context;
 
 use App\DynamicData\Rules\CopySource;
 use App\Exceptions\BusinessRuleException;
+use App\Models\App;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Services\DynamicSchemaService;
@@ -24,10 +25,13 @@ final readonly class SchemaImporter
     /**
      * @param  array<string, mixed>  $schema
      * @param  list<string>  $only  nur diese Tabellen (leer = alle)
+     * @param  App|int|null  $app  Ziel-App (B-107); ohne Angabe die einzige vorhandene
      * @return array<string, CustomTable> angelegte Tabellen nach Name
      */
-    public function import(array $schema, array $only = []): array
+    public function import(array $schema, array $only = [], App|int|null $app = null): array
     {
+        $appId = App::resolve($app)->id;
+
         if (($schema['format'] ?? null) !== SchemaExporter::FORMAT) {
             throw new InvalidArgumentException('Unbekanntes Schemaformat: '.json_encode($schema['format'] ?? null).' (erwartet '.SchemaExporter::FORMAT.').');
         }
@@ -41,6 +45,7 @@ final readonly class SchemaImporter
         foreach ($tables as $table) {
             [$simple, $later[$table['name']]] = $this->split((array) ($table['fields'] ?? []));
             $created[$table['name']] = $this->service->createTable([
+                'app_id' => $appId,
                 'name' => $table['name'],
                 'label' => $table['label'] ?? $table['name'],
                 'description' => $table['description'] ?? null,

@@ -120,7 +120,7 @@ the chapters with the details. Work happens in two installations: the applicatio
       not come with the package.
 
 8. **Production system: set up what is not in the package.** Database connections with their credentials, scheduled
-   tasks and app settings; create [users](ADMIN_GUIDE.md#1-users) or set up single sign-on
+   tasks and global settings; create [users](ADMIN_GUIDE.md#1-users) or set up single sign-on
    ([authentication](ADMIN_GUIDE.md#5-authentication),
    [identity providers](ADMIN_GUIDE.md#6-identity-providers-single-sign-on)); import existing data. For operation: the
    scheduler via cron ([scheduled tasks and cron](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)) and
@@ -655,7 +655,10 @@ vendor/bin/phpunit -c phpunit.mysql.xml --testsuite Plugins      # on MySQL (php
 ```
 
 Test classes extend `App\Plugins\Testing\PluginTestCase` (part of the plugin API). Every test starts with an empty test
-database including roles, permissions and menu.
+database including roles, permissions, menu and an app “Test app” (B-107): tables, roles and menu groups without an
+app end up there. If a test has several apps (e.g. after seeding a demo), pass the app when creating a table
+(`DynamicSchemaService::createTable(['app_id' => …, 'name' => …])`); without it SAFT then refuses with
+“Please choose an app”.
 
 | Helper | Purpose |
 |---|---|

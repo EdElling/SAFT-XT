@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\ScheduledTasks\Tables;
 
+use App\Filament\Support\AppFilter;
 use App\Models\ScheduledTask;
 use App\Models\TaskRun;
 use App\Models\User;
@@ -48,7 +49,9 @@ class ScheduledTasksTable
                     ->numeric()
                     ->color(fn (int $state): ?string => $state > 0 ? 'danger' : null)
                     ->toggleable(),
+                AppFilter::column(),
             ])
+            ->filters([AppFilter::make(system: true)])
             ->recordActions([
                 Action::make('runNow')
                     ->label(__('tasks.run_now'))

@@ -6,6 +6,7 @@ return [
     'model' => 'entrée de menu',
     'plural' => 'menus',
     'form' => [
+        'app_help' => 'Les groupes et entrées d’une app apparaissent avec elle ; sans app, l’entrée appartient au système (p. ex. documentation).',
         'diagram_help' => 'Affiche les tables de données du groupe dans lequel se trouve cette entrée (sous-groupes compris) et leurs liaisons. Au premier niveau : toutes les tables de données.',
         'report_help' => 'Uniquement les rapports partagés. L’entrée n’apparaît que pour les personnes autorisées à exécuter le rapport (droits sur toutes les tables concernées).',
         'entry' => 'Entrée',

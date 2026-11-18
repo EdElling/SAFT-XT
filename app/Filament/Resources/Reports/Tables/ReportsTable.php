@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Reports\Tables;
 
 use App\Filament\Resources\Reports\ReportResource;
+use App\Filament\Support\AppFilter;
 use App\Models\CustomTable;
 use App\Models\Report;
 use App\Models\User;
@@ -76,8 +77,10 @@ final class ReportsTable
                 TextColumn::make('owner.name')->label(__('reports.ui.owner'))->placeholder('–')->toggleable(),
                 IconColumn::make('is_shared')->label(__('reports.ui.shared'))->boolean()->sortable(),
                 TextColumn::make('updated_at')->label(__('reports.ui.updated'))->since()->sortable(),
+                AppFilter::column(),
             ])
             ->filters([
+                AppFilter::make(),
                 SelectFilter::make('visual')
                     ->label(__('reports.ui.visual'))
                     ->options(fn (): array => collect(ReportDefinition::VISUALS)->mapWithKeys(fn (string $v): array => [$v => __('reports.visuals.'.$v)])->all())

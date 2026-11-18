@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\ReportLinks\Tables;
 
+use App\Filament\Support\AppFilter;
 use App\Models\ReportLink;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -37,7 +38,9 @@ class ReportLinksTable
                     ->description(fn (ReportLink $record): string => $origin($record, false))
                     ->wrap(),
                 TextColumn::make('updated_at')->label(__('common.changed'))->dateTime('d.m.Y H:i')->toggleable(),
+                AppFilter::column(),
             ])
+            ->filters([AppFilter::make()])
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),

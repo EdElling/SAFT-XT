@@ -43,6 +43,12 @@ class DemoDataSeeder extends Seeder
 
     private Generator $faker;
 
+    /** App der Demo (B-107); der Schlüssel ist fest, damit wiederholtes Einspielen dieselbe App trifft. */
+    public function demoAppDefinition(): array
+    {
+        return ['uuid' => '8f0c6a52-6d0e-4c8e-9a43-5b1c2f6e0a01', 'name' => ['de' => 'Shop (Demo)', 'en' => 'Shop (demo)', 'fr' => 'Boutique (démo)', 'it' => 'Negozio (demo)'], 'prefix' => null, 'icon' => 'heroicon-o-shopping-cart', 'sort_order' => 500];
+    }
+
     public function run(DynamicSchemaService $schema, DataMenu $menu): void
     {
         $this->faker = FakerFactory::create('de_DE');
@@ -55,7 +61,7 @@ class DemoDataSeeder extends Seeder
             $table = CustomTable::query()->where('name', $definition['name'])->first();
 
             if ($table === null) {
-                $table = $schema->createTable($definition, $definition['fields']);
+                $table = $schema->createTable(['app_id' => $this->demoApp()->id, ...$definition], $definition['fields']);
             } else {
                 $this->addMissingTranslations($schema, $table, $definition);
             }
@@ -103,7 +109,7 @@ class DemoDataSeeder extends Seeder
             return $legacy;
         }
 
-        return Menu::create(['label' => self::SHOP_GROUP, 'sort_order' => 500, 'is_active' => true]);
+        return Menu::create(['app_id' => $this->demoApp()->id, 'label' => self::SHOP_GROUP, 'sort_order' => 500, 'is_active' => true]);
     }
 
     /**

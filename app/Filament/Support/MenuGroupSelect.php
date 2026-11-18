@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Support;
 
 use App\DynamicData\DataMenu;
+use Closure;
 use Filament\Forms\Components\Select;
 
 /**
@@ -13,13 +14,18 @@ use Filament\Forms\Components\Select;
  */
 final class MenuGroupSelect
 {
-    public static function make(string $name = 'menu_group', bool $required = false): Select
+    /**
+     * @param  Closure|null  $app  liefert die App (ID) der Tabelle, z. B. fn (Get $get) => $get('app_id'); Gruppen nur dieser App
+     */
+    public static function make(string $name = 'menu_group', bool $required = false, ?Closure $app = null): Select
     {
+        $appId = static fn (Select $component): ?int => $app === null ? null : (filled($id = $component->evaluate($app)) ? (int) $id : null);
+
         return Select::make($name)
             ->label(__('menus.form.menu_group'))
             ->helperText(__('menus.form.menu_group_help'))
-            ->options(fn (): array => app(DataMenu::class)->groupOptions())
-            ->default(fn (): string => app(DataMenu::class)->defaultGroup())
+            ->options(fn (Select $component): array => app(DataMenu::class)->groupOptions($appId($component)))
+            ->default(fn (Select $component): string => app(DataMenu::class)->defaultGroup($appId($component)))
             ->placeholder(__('menus.form.no_menu_entry'))
             ->selectablePlaceholder(! $required)
             ->required($required)

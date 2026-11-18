@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Class CustomTable
  *
  * @property int $id
+ * @property string $uuid
+ * @property int|null $app_id
  * @property string $name
  * @property string $source
  * @property int|null $database_connection_id
@@ -46,6 +48,7 @@ class CustomTable extends Model
     protected $table = 'custom_tables';
 
     protected $casts = [
+        'app_id' => 'int',
         'is_active' => 'bool',
         'export_enabled' => 'bool',
         'import_enabled' => 'bool',
@@ -62,6 +65,8 @@ class CustomTable extends Model
     ];
 
     protected $fillable = [
+        'uuid',
+        'app_id',
         'name',
         'source',
         'database_connection_id',

@@ -268,6 +268,11 @@ final class FieldDefinitionNormalizer
             $this->fail(__('tables.errors.unknown_target', ['table' => $tableName]));
         }
 
+        // Verknüpfungen nur innerhalb einer App (B-107); über App-Grenzen später nur über freigegebene Schnittstellen.
+        if ($owner !== null && $target->app_id !== $owner->app_id) {
+            $this->fail(__('apps.errors.cross_app_relation', ['table' => (string) $target->label, 'app' => (string) $target->app?->name]));
+        }
+
         if ($displayFields === []) {
             $this->fail(__('tables.errors.unknown_display_field', ['field' => '', 'table' => $tableName]));
         }

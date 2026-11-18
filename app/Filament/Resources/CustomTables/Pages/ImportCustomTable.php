@@ -15,6 +15,7 @@ use App\DynamicData\Schema\IdentifierValidator;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Filament\Resources\CustomTables\CustomTableResource;
+use App\Filament\Support\AppSelect;
 use App\Filament\Support\MenuGroupSelect;
 use App\Filament\Support\TableLabelHint;
 use App\Filament\Support\TableNameRule;
@@ -36,6 +37,7 @@ use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
@@ -77,7 +79,8 @@ class ImportCustomTable extends Page
 
     public function mount(): void
     {
-        $this->form->fill(['menu_group' => app(DataMenu::class)->defaultGroup()]);
+        $appId = count($apps = AppSelect::options()) === 1 ? (int) array_key_first($apps) : null;
+        $this->form->fill(['app_id' => $appId, 'menu_group' => app(DataMenu::class)->defaultGroup($appId)]);
     }
 
     public function form(Schema $schema): Schema
@@ -141,6 +144,13 @@ class ImportCustomTable extends Page
                     Step::make('table')
                         ->label(__('import.wizard.steps.table'))
                         ->schema([
+                            // App (B-107) mit Präfix-Vorschlag für den technischen Namen.
+                            AppSelect::make()
+                                ->afterStateUpdated(function (Get $get, Set $set, mixed $state, mixed $old): void {
+                                    $set('table_name', AppSelect::switchPrefix($get('table_name'), $old, $state));
+
+                                    $set('menu_group', app(DataMenu::class)->defaultGroup(filled($state) ? (int) $state : null));
+                                }),
                             Grid::make(2)->schema([
                                 TableLabelHint::apply(TextInput::make('table_label'))
                                     ->label(__('import.wizard.table_label'))
@@ -153,7 +163,7 @@ class ImportCustomTable extends Page
                                     ->maxLength(63)
                                     ->rule(fn (): Closure => $this->identifierRule(table: true)),
                             ]),
-                            MenuGroupSelect::make(),
+                            MenuGroupSelect::make(app: fn (Get $get): mixed => $get('app_id')),
                         ]),
                 ])
                     ->submitAction(Action::make('import')->label(__('import.wizard.submit'))->submit('import')),
@@ -185,7 +195,7 @@ class ImportCustomTable extends Page
                 $file->getRealPath(),
                 $file->getClientOriginalName(),
                 $this->report['sheet'],
-                ['name' => (string) $data['table_name'], 'label' => (string) $data['table_label']],
+                ['app_id' => $data['app_id'] ?? null, 'name' => (string) $data['table_name'], 'label' => (string) $data['table_label']],
                 $columns->all(),
                 filled($data['menu_group'] ?? null) ? (string) $data['menu_group'] : null,
                 auth()->user() instanceof User ? auth()->user() : null,
@@ -230,7 +240,8 @@ class ImportCustomTable extends Page
             'label' => $column->header,
             'type' => $column->type->value,
         ], $analysis->columns);
-        $this->data['table_name'] = $analysis->tableName;
+        $prefix = AppSelect::prefix($this->data['app_id'] ?? null);
+        $this->data['table_name'] = $prefix !== '' && ! str_starts_with($analysis->tableName, $prefix) ? $prefix.$analysis->tableName : $analysis->tableName;
         $this->data['table_label'] = $this->tableLabel($file, $analysis);
     }
 

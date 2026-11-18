@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests;
 
 use App\DynamicData\DynamicDataNamespace;
+use App\Models\App;
 use App\Models\DynamicRecord;
 use App\Models\User;
 use Database\Seeders\MenuSeeder;
@@ -541,6 +542,7 @@ abstract class DuskTestCase extends BaseTestCase
         DB::table('settings')->insert(self::$settings);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
         $this->seed([RolesAndPermissionsSeeder::class, MenuSeeder::class, SystemTasksSeeder::class]);
+        App::query()->create(['name' => ['de' => 'Test-App', 'en' => 'Test app'], 'sort_order' => 1]);
     }
 
     private static function startServer(): void

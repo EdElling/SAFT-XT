@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\ScheduledTasks\Schemas;
 
+use App\Filament\Support\AppSelect;
 use App\Models\ScheduledTask;
 use App\Tasks\Frequency;
 use App\Tasks\TaskRegistry;
@@ -48,6 +49,11 @@ class ScheduledTaskForm
                     ->label(__('tasks.fields.name'))
                     ->placeholder(fn (Get $get): string => is_string($get('type')) && $registry->has($get('type')) ? $registry->get($get('type'))->label() : '')
                     ->maxLength(120),
+                // App (B-107): System-Aufgaben haben keine; Aufgaben zu einer Tabelle übernehmen deren App beim Speichern.
+                AppSelect::make()
+                    ->required(fn (Get $get): bool => blank($get('parameters.table_id')))
+                    ->hidden(fn (Get $get, ?ScheduledTask $record): bool => (bool) $record?->is_system || filled($get('parameters.table_id')))
+                    ->helperText(__('tasks.fields.app_help')),
                 // Felder der gewählten Art; $get liest hier im umgebenden Formular (die Gruppe setzt nur ihren statePath).
                 Group::make(function (Get $get, ?ScheduledTask $record) use ($registry): array {
                     $type = $record?->type ?? $get('type');

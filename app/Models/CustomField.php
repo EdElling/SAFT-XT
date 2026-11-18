@@ -7,6 +7,7 @@ namespace App\Models;
 use App\DynamicData\Schema\FieldType;
 use App\Models\Base\CustomField as BaseCustomField;
 use App\Models\Concerns\HasAuditLog;
+use App\Models\Concerns\HasStableKey;
 use App\Models\Concerns\HasTranslatedAttributes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class CustomField extends BaseCustomField
 {
     use HasAuditLog;
+    use HasStableKey;
     use HasTranslatedAttributes;
 
     /** Je Sprache (JSON); fehlt eine, gilt die Vorgabesprache. */

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\CustomTables\Tables;
 
+use App\Filament\Support\AppFilter;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Plugins\PluginDependencies;
@@ -48,9 +49,11 @@ class CustomTablesTable
                     }),
                 IconColumn::make('is_active')->label(__('common.active'))->boolean(),
                 TextColumn::make('updated_at')->label(__('common.changed'))->since()->dateTimeTooltip()->sortable(),
+                AppFilter::column(),
             ])
             ->defaultSort(fn (Builder $query): Builder => $query->orderBy('label->'.app()->getLocale())->orderBy('label->'.config('locales.default')))
             ->filters([
+                AppFilter::make(),
                 TernaryFilter::make('is_active')->label(__('common.active')),
             ])
             ->recordActions([

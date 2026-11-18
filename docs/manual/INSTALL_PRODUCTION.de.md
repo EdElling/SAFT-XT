@@ -267,8 +267,8 @@ Prüfen Sie im Browser: **https://saft.example.ch** leitet auf `/admin` und zeig
 ## 7. Erste Anmeldung und Grundeinstellungen
 
 1. Mit `ADMIN_EMAIL` und dem Passwort anmelden.
-2. **Administration → Anwendung → App-Einstellungen:** Anzeigename und Farbschema festlegen
-   ([Administratorhandbuch, Kapitel 7](ADMIN_GUIDE.de.md#7-app-einstellungen)).
+2. **Administration → Anwendung → Globale Einstellungen:** Anzeigename und Farbschema festlegen
+   ([Administratorhandbuch, Kapitel 7](ADMIN_GUIDE.de.md#7-globale-einstellungen)).
 3. **Administration → Benutzer und Zugriff → Authentifizierung:** Anmeldeart wählen, bei Bedarf den Schalter *„Passwort vergessen“ anbieten* einschalten
    ([Administratorhandbuch, Kapitel 5](ADMIN_GUIDE.de.md#5-authentifizierung)).
 4. **Single Sign-on** (optional): Identity Provider anlegen. Die Adresse, die Sie beim Anbieter (z. B. Microsoft Entra

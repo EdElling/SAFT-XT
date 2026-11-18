@@ -23,6 +23,7 @@
    - [Pour une table, « Nouvel enregistrement » et « Modifier » manquent.](#pour-une-table--nouvel-enregistrement--et--modifier--manquent)
    - [Comment transmettre une vue précise à quelqu’un ?](#comment-transmettre-une-vue-précise-à-quelquun-)
    - [Un fichier ne se téléverse pas.](#un-fichier-ne-se-téléverse-pas)
+   - [Une table manque dans le choix d’une liaison.](#une-table-manque-dans-le-choix-dune-liaison)
 
 ---
 ## Questions fréquentes
@@ -91,3 +92,8 @@ Le champ n’autorise que certains types de fichiers, ainsi qu’une taille et u
 champ → Fichiers autorisés, Taille maximale par fichier). Le contenu est contrôlé : un fichier renommé avec une mauvaise
 extension est refusé. Si même de petits fichiers autorisés échouent, la limite du serveur est trop basse
 (administration système : `upload_max_filesize` et `post_max_size`).
+
+### Une table manque dans le choix d’une liaison.
+
+Les liaisons ne sont possibles qu’entre tables de la même app (guide administrateur, chapitre 16). Si la table voulue
+appartient à une autre app, créez la nouvelle table dans cette app – ou étendez cette app.

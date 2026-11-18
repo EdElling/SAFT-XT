@@ -10,6 +10,7 @@ use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Formula\Recalculator;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Reports\ReportResource;
+use App\Models\App;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -31,6 +32,13 @@ trait SeedsDemoTables
     {
         return DynamicRecord::withoutPluginEvents(fn (): mixed => parent::__invoke($parameters));
     }
+
+    /**
+     * App der Demo: uuid (fest), name je Sprache, prefix, icon, sort_order.
+     *
+     * @return array{uuid: string, name: array<string, string>, prefix: string|null, icon: string, sort_order: int}
+     */
+    abstract public function demoAppDefinition(): array;
 
     /** @return list<string> Namen der Demo-Tabellen in Anlegereihenfolge (Verknüpfungsziele zuerst) */
     public function demoTableNames(): array
@@ -128,11 +136,28 @@ trait SeedsDemoTables
         }
     }
 
+    /**
+     * App der Demo (B-107): mit festem Schlüssel, damit das Einspielen wiederholbar ist. Sind Tabellen der Demo schon
+     * da (z. B. in „Bestehende Daten“ nach der Umstellung), gilt deren App – verschoben wird nur von Hand.
+     */
+    public function demoApp(): App
+    {
+        $existing = CustomTable::query()->whereIn('name', $this->demoTableNames())->whereNotNull('app_id')->value('app_id');
+
+        if ($existing !== null && ($app = App::query()->find($existing)) !== null) {
+            return $app;
+        }
+
+        $definition = $this->demoAppDefinition();
+
+        return App::query()->firstOrCreate(['uuid' => $definition['uuid']], $definition);
+    }
+
     /** @param  array<string, string>  $labels  Bezeichnung je Sprache */
     protected function demoGroup(array $labels, int $sortOrder): Menu
     {
         return Menu::query()->whereNull('parent_id')->whereNull('route')->whereNull('url')->where('label->de', $labels['de'])->first()
-            ?? Menu::create(['label' => $labels, 'sort_order' => $sortOrder, 'is_active' => true]);
+            ?? Menu::create(['app_id' => $this->demoApp()->id, 'label' => $labels, 'sort_order' => $sortOrder, 'is_active' => true]);
     }
 
     /**
@@ -153,7 +178,7 @@ trait SeedsDemoTables
             $table = CustomTable::query()->where('name', $definition['name'])->first();
 
             if ($table === null) {
-                $table = $schema->createTable($definition, $definition['fields']);
+                $table = $schema->createTable(['app_id' => $this->demoApp()->id, ...$definition], $definition['fields']);
                 $created[] = $table->name;
             }
 

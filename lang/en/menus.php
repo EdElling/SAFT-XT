@@ -6,6 +6,7 @@ return [
     'model' => 'menu entry',
     'plural' => 'menus',
     'form' => [
+        'app_help' => 'Groups and entries of an app appear with it; without an app the entry belongs to the system (e.g. documentation).',
         'diagram_help' => 'Shows the data tables of the group this entry is in (including subgroups) and their relations. At top level: all data tables.',
         'report_help' => 'Only shared reports. The entry appears only for people allowed to run the report (data permissions on all tables involved).',
         'entry' => 'Entry',

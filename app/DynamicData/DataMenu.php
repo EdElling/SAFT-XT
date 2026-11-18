@@ -91,9 +91,10 @@ final class DataMenu
      */
     public function create(CustomTable $table, int|string $group): Menu
     {
-        $parent = $group === self::NEW_DATA_GROUP ? $this->dataGroup() : Menu::query()->find((int) $group);
+        $parent = $group === self::NEW_DATA_GROUP ? $this->dataGroup($table->app_id) : Menu::query()->find((int) $group);
 
-        if ($parent === null || ! array_key_exists((string) $parent->id, $this->groupOptions())) {
+        // Nur Gruppen der App der Tabelle (B-107).
+        if ($parent === null || ! array_key_exists((string) $parent->id, $this->groupOptions($table->app_id))) {
             throw new BusinessRuleException(__('menus.form.invalid_group'), 'menu.invalid_group');
         }
 
@@ -115,9 +116,12 @@ final class DataMenu
      *
      * @return array<string, string>
      */
-    public function groupOptions(): array
+    public function groupOptions(?int $appId = null): array
     {
-        $groups = Menu::query()->whereNull('route')->whereNull('url')->orderBy('sort_order')->orderedByLabel()->get(['id', 'parent_id', 'label', 'sort_order']);
+        // Mit App: nur ihre Gruppen (B-107); System-Gruppen wie die Administration gehören zu keiner App.
+        $groups = Menu::query()->whereNull('route')->whereNull('url')
+            ->when($appId !== null, static fn ($q) => $q->where('app_id', $appId))
+            ->orderBy('sort_order')->orderedByLabel()->get(['id', 'parent_id', 'label', 'sort_order']);
         $children = $groups->groupBy(fn (Menu $menu): string => (string) ($menu->parent_id ?? 'root'));
         $options = [];
 
@@ -135,7 +139,7 @@ final class DataMenu
         };
         $walk('root', []);
 
-        if ($this->findDataGroup() === null) {
+        if ($this->findDataGroup($appId) === null) {
             // Vereinigung statt Spread: Spread nummeriert die Gruppen-IDs (numerische Schlüssel) neu.
             $options = [self::NEW_DATA_GROUP => __('menus.form.data_group_new', ['group' => __('menus.form.data_group')])] + $options;
         }
@@ -144,20 +148,23 @@ final class DataMenu
     }
 
     /** Vorbelegung der Auswahl: die Gruppe „Daten“ (oder ihr Anlegen). */
-    public function defaultGroup(): string
+    public function defaultGroup(?int $appId = null): string
     {
-        return (string) ($this->findDataGroup()?->id ?? self::NEW_DATA_GROUP);
+        return (string) ($this->findDataGroup($appId)?->id ?? self::NEW_DATA_GROUP);
     }
 
-    private function findDataGroup(): ?Menu
+    /** Gruppe „Daten“ – mit App die dieser App (B-107). */
+    private function findDataGroup(?int $appId = null): ?Menu
     {
-        return Menu::query()->whereNull('parent_id')->whereNull('route')->whereNull('url')->where('label->de', self::GROUP_LABEL)->first();
+        return Menu::query()->whereNull('parent_id')->whereNull('route')->whereNull('url')->where('label->de', self::GROUP_LABEL)
+            ->when($appId !== null, static fn ($q) => $q->where('app_id', $appId))
+            ->first();
     }
 
-    private function dataGroup(): Menu
+    private function dataGroup(?int $appId = null): Menu
     {
-        return $this->findDataGroup()
-            ?? Menu::create(['label' => [...self::GROUP_LABELS, 'de' => self::GROUP_LABEL], 'sort_order' => 500, 'is_active' => true]);
+        return $this->findDataGroup($appId)
+            ?? Menu::create(['app_id' => $appId, 'label' => [...self::GROUP_LABELS, 'de' => self::GROUP_LABEL], 'sort_order' => 500, 'is_active' => true]);
     }
 
     /** Bezeichnung des Menüeintrags „Datenmodell“ je Sprache (Demo-Daten). */

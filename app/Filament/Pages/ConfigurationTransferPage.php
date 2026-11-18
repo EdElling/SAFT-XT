@@ -10,6 +10,7 @@ use App\Configuration\ImportItem;
 use App\DynamicData\DataMenu;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Reports\ReportResource;
+use App\Models\App;
 use App\Models\CustomTable;
 use App\Models\Menu;
 use App\Models\Report;
@@ -18,6 +19,7 @@ use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
@@ -308,6 +310,9 @@ class ConfigurationTransferPage extends Page implements HasTable
         $this->resetTable();
     }
 
+    /** Auswahl „Neue App“ beim Einspielen. */
+    private const string NEW_APP = 'new';
+
     public function applyPackageAction(): Action
     {
         return Action::make('applyPackage')
@@ -317,13 +322,31 @@ class ConfigurationTransferPage extends Page implements HasTable
             ->modalDescription(fn (): string => __('configuration.import.apply_confirm', ['count' => $this->newCount()]))
             ->disabled(fn (): bool => $this->newCount() === 0)
             ->tooltip(fn (): ?string => $this->newCount() === 0 ? __('configuration.import.nothing') : null)
-            ->action(function (): void {
+            // Ziel-App (B-107): eine bestehende oder eine neue, vorgeschlagen mit der Bezeichnung des Pakets.
+            ->schema([
+                Select::make('app')
+                    ->label(__('configuration.import.target_app'))
+                    ->options(fn (): array => [self::NEW_APP => __('configuration.import.new_app'), ...App::query()->orderBy('sort_order')->get()->mapWithKeys(static fn (App $a): array => [(string) $a->id => (string) $a->name])->all()])
+                    ->default(self::NEW_APP)
+                    ->required()
+                    ->live(),
+                TextInput::make('new_app_name')
+                    ->label(__('configuration.import.new_app_name'))
+                    ->default(fn (): string => ($this->packageInfo['label'] ?? '–') !== '–' ? (string) $this->packageInfo['label'] : __('configuration.import.new_app_default'))
+                    ->maxLength(120)
+                    ->required(fn (Get $get): bool => $get('app') === self::NEW_APP)
+                    ->visible(fn (Get $get): bool => $get('app') === self::NEW_APP),
+            ])
+            ->action(function (array $data): void {
                 abort_unless(self::canImport() && $this->packageFile !== null && is_file($this->packageFile), 403);
                 $package = app(ConfigImporter::class)->read($this->packageFile);
                 $user = auth()->user();
 
                 try {
-                    $created = app(ConfigImporter::class)->apply($package, $user instanceof User ? $user : null);
+                    $app = ($data['app'] ?? self::NEW_APP) === self::NEW_APP
+                        ? App::query()->create(['name' => [app()->getLocale() => trim((string) ($data['new_app_name'] ?? '')) ?: __('configuration.import.new_app_default')]])
+                        : (int) $data['app'];
+                    $created = app(ConfigImporter::class)->apply($package, $user instanceof User ? $user : null, $app);
                 } catch (BusinessRuleException $e) {
                     Notification::make()->danger()->title($e->getMessage())->persistent()->send();
                     $this->refreshPreview($package);
@@ -399,7 +422,7 @@ class ConfigurationTransferPage extends Page implements HasTable
      */
     private static function tableGroups(): array
     {
-        $paths = DataMenu::groupPaths();
+        $paths = self::groupPaths();
         $groups = [];
 
         foreach (CustomTable::query()->designer()->get()->sortBy(static fn (CustomTable $t): string => mb_strtolower((string) $t->label)) as $table) {
@@ -409,6 +432,27 @@ class ConfigurationTransferPage extends Page implements HasTable
         uksort($groups, static fn (string $a, string $b): int => strnatcasecmp($a, $b));
 
         return $groups;
+    }
+
+    /**
+     * Menügruppe je Tabelle mit vorangestellter App (B-107): gleich benannte Gruppen verschiedener Apps (z. B. zweimal
+     * „Daten“) bleiben getrennt.
+     *
+     * @return array<string, string> Tabellenname => „App › Gruppe“
+     */
+    private static function groupPaths(): array
+    {
+        $apps = CustomTable::query()->with('app')->get()->mapWithKeys(static fn (CustomTable $t): array => [$t->name => (string) ($t->app?->name ?? '')])->all();
+        $groups = DataMenu::groupPaths();
+        $paths = [];
+
+        foreach ($apps as $table => $app) {
+            $group = $groups[$table] ?? __('roles.matrix.no_menu');
+            // Beginnt der Pfad schon mit dem Namen der App (z. B. „Lager (Demo) › Stammdaten“), nicht doppelt.
+            $paths[$table] = $app === '' || str_starts_with($group, $app) ? $group : $app.' › '.$group;
+        }
+
+        return $paths;
     }
 
     /**
@@ -426,7 +470,7 @@ class ConfigurationTransferPage extends Page implements HasTable
     private function loadReportGroups(): array
     {
         $user = auth()->user();
-        $paths = DataMenu::groupPaths();
+        $paths = self::groupPaths();
         $labels = CustomTable::query()->get()->mapWithKeys(static fn (CustomTable $t): array => [$t->name => (string) $t->label])->all();
         $groups = [];
 

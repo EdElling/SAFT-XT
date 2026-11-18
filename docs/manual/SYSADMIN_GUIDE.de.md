@@ -37,7 +37,7 @@ und [Anhang C](INSTALL_PRODUCTION.de.md) (Produktionsserver, z. B. ein Managed S
 | Zwei-Faktor-Anmeldung eines Kontos zurücksetzen (z. B. einziger Admin hat das Handy verloren) | `php artisan auth:two-factor-reset <email>` |
 | Einstellungen des Table-Designers mit der Datenbank abgleichen | `php artisan app-data:verify` |
 | Angebundene Tabellen mit dem Schema ihrer externen Datenbanken abgleichen (Exit-Code 1 bei Abweichungen; `--apply` übernimmt sie) | `php artisan table-connector:verify` |
-| Massenverknüpfung auf der Konsole: alle noch nicht angebundenen Tabellen (`--all`) oder einzelne (`--table=…`), mit `--prefix=`, `--menu-group=<ID>` bzw. `none`, `--role=<Name>`, `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--schema=`, `--no-details` | `php artisan table-connector:connect "<Verbindung>" --all` |
+| Massenverknüpfung auf der Konsole: alle noch nicht angebundenen Tabellen (`--all`) oder einzelne (`--table=…`), mit `--app=<ID>` (Pflicht bei mehreren Apps), `--prefix=`, `--menu-group=<ID>` bzw. `none`, `--role=<Name>`, `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--schema=`, `--no-details` | `php artisan table-connector:connect "<Verbindung>" --all` |
 | Datenbank wählen: PostgreSQL, MySQL oder MariaDB, mit den Zugangsdaten `PGSQL_*`, `MYSQL_*` bzw. `MARIADB_*` | `DB_CONNECTION=pgsql`, `mysql` bzw. `mariadb` in der `.env` |
 | Datenbank sichern (nach `storage/backups`; MySQL/MariaDB: Hauptdatenbank und `…_app_data` in einer `.sql`-Datei, bei eigenen Zugangsdaten für `app_data` (`DB_APP_DATA_*`) in zwei Teilen; ohne passendes `mysqldump` mit `DB_BACKUP_METHOD=php` bzw. `--php` in PHP; Pfad zum Programm bei Bedarf in `PGSQL_DUMP_BINARY`, `MYSQL_DUMP_BINARY` bzw. `MARIADB_DUMP_BINARY`; die Dateien aus Dateifeldern daneben als `<gleicher Name>_files.zip`, ohne sie mit `--without-files`) | `php artisan db:backup` |
 | Berechnete Felder neu berechnen (nach Änderungen an SAFT vorbei; optional Tabellennamen) | `php artisan computed:recompute` |
@@ -62,13 +62,18 @@ Hinweise:
   `storage/app/private` entpacken (`unzip <datei>_files.zip -d storage/app/private`); Vorschaubilder entstehen beim
   ersten Aufruf neu. Liegen die Dateien in S3 (`APP_DATA_FILES_DISK=s3`), sind sie nicht enthalten – sichern Sie dort,
   z. B. mit Versionierung des Buckets.
+- **Apps (ab 0.4):** Nach dem Update ordnet `php artisan migrate` alle vorhandenen Tabellen, Menüs, Auswertungen,
+  Rollen und Aufgaben einer App „Bestehende Daten“ zu; Systemrollen, System-Menüs und System-Aufgaben bleiben ohne App.
+  Aufteilen in eigene Apps geschieht danach in der Oberfläche (siehe
+  [Administratorhandbuch, Kapitel 16](ADMIN_GUIDE.de.md#16-apps-fachanwendungen)). Der Menüeintrag „App-Einstellungen“
+  heisst seither „Globale Einstellungen“.
 - **Verwaiste Dateien** (Uploads aus abgebrochenen Formularen, Dateien von Datensätzen, die ausserhalb von SAFT gelöscht
   wurden) räumt die System-Aufgabe *Dateien aufräumen* bzw. `php artisan files:prune` nach 24 Stunden weg.
 - **Grösse von Uploads:** Die Höchstgrösse je Dateifeld wirkt nur bis zur Grenze von PHP. Für z. B. 50 MB in der
   `php.ini` (bei Webhostern oft über `.user.ini` oder deren Verwaltungsoberfläche) `upload_max_filesize = 50M` und `post_max_size = 55M` setzen; beim
   Webserver gegebenenfalls auch `client_max_body_size` (nginx) bzw. `LimitRequestBody` (Apache).
 - Der **technische Name** `APP_NAME` in der `.env` bestimmt Cookie- und Cache-Namen. Der sichtbare Name wird
-  in den App-Einstellungen gepflegt; eine Änderung dort meldet niemanden ab.
+  in den globalen Einstellungen gepflegt; eine Änderung dort meldet niemanden ab.
 - Die Tabellen des Table-Designers liegen getrennt von den Systemtabellen: bei PostgreSQL im Schema `app_data`, bei
   MySQL in einer eigenen Datenbank `<Datenbank>_app_data`.
 - **Zeitzone:** Alle Zeiten werden in der Zeitzone aus `APP_TIMEZONE` angezeigt.
@@ -213,7 +218,7 @@ Wer noch einen solchen Eintrag hat, entfernt ihn oder schaltet die Aufgabe aus, 
 ## 5. KI-Funktionen
 
 Die KI-Assistenten für Auswertungen und Tabellen (siehe [Administratorhandbuch, Kapitel 13](ADMIN_GUIDE.de.md#13-ki-funktionen))
-sind ohne Einrichtung **aus**. Anbieter, Modell und API-Schlüssel lassen sich in den App-Einstellungen eintragen; was
+sind ohne Einrichtung **aus**. Anbieter, Modell und API-Schlüssel lassen sich in den globalen Einstellungen eintragen; was
 dort leer bleibt, kommt aus der `.env`:
 
 | Variable | Bedeutung |
@@ -223,20 +228,20 @@ dort leer bleibt, kommt aus der `.env`:
 | `AI_EFFORT` | Denktiefe `low`, `medium` (Vorgabe), `high` |
 | `AI_DAILY_LIMIT` | Anfragen je Person und Tag (Vorgabe 50) |
 | `AI_MAX_TOKENS`, `AI_TIMEOUT` | Obergrenze der Antwort (Vorgabe 16000) und Sekunden je Anfrage (Vorgabe 120) |
-| `ANTHROPIC_API_KEY` | Schlüssel für `anthropic`; besser in den App-Einstellungen (dort verschlüsselt gespeichert) |
+| `ANTHROPIC_API_KEY` | Schlüssel für `anthropic`; besser in den globalen Einstellungen (dort verschlüsselt gespeichert) |
 | `AI_INFERENCE_GEO` | Optional: Region der Verarbeitung bei Anthropic, z. B. `us` |
 | `AI_BASE_URL` | Nur für Proxys/Gateways; leer = `api.anthropic.com` |
 | `AI_AWS_REGION` | Amazon Bedrock: Region; Zugangsdaten wie üblich aus der Umgebung (`AWS_ACCESS_KEY_ID` …) oder der Rolle der Instanz |
 | `AI_VERTEX_PROJECT`, `AI_VERTEX_LOCATION` | Google Vertex AI: Projekt und Region; Anmeldung über Application Default Credentials, dafür einmalig `composer require google/auth` |
 
 - Der Server braucht **ausgehenden HTTPS-Zugriff** zum Anbieter (z. B. `api.anthropic.com:443`); **Verbindung testen**
-  in den App-Einstellungen meldet Netzwerk- und Firewallprobleme getrennt von falschen Schlüsseln.
+  in den globalen Einstellungen meldet Netzwerk- und Firewallprobleme getrennt von falschen Schlüsseln.
 - Nach Änderungen an der `.env` bei gecachter Konfiguration `php artisan config:cache` erneut ausführen.
 - Eine Anfrage dauert je nach Modell und Denktiefe einige Sekunden bis etwa eine Minute; sie läuft im Webserver-Prozess.
   `max_execution_time` von PHP bzw. Zeitlimits eines vorgeschalteten Proxys sollten daher über `AI_TIMEOUT` liegen.
 - Fehler stehen im Protokoll der Anwendung (`storage/logs`), jede Anfrage zusätzlich im Änderungsprotokoll.
-- Ausschalten: in den App-Einstellungen den Hauptschalter aus bzw. Anbieter „Aus“, oder `AI_PROVIDER=none`.
-- **Hilfe-Assistent:** eigener Schalter in den App-Einstellungen. Er schickt die Handbücher der Online-Hilfe mit
+- Ausschalten: in den globalen Einstellungen den Hauptschalter aus bzw. Anbieter „Aus“, oder `AI_PROVIDER=none`.
+- **Hilfe-Assistent:** eigener Schalter in den globalen Einstellungen. Er schickt die Handbücher der Online-Hilfe mit
   (in der Sprache der Oberfläche, etwa 35 000 Tokens), die beim Anbieter zwischengespeichert werden; Folgefragen
   innerhalb weniger Minuten sind dadurch deutlich günstiger. Die Unterhaltungen liegen in der Datenbank von SAFT
   (Tabellen `ai_help_conversations` und `ai_help_messages`) und werden nicht automatisch gelöscht; jede Person löscht
@@ -258,7 +263,7 @@ Alle Befehle im Hauptverzeichnis von SAFT ausführen, auf einem Produktionsserve
 | `php artisan auth:two-factor-reset <email>` | Löscht Authenticator-App und Wiederherstellungscodes eines Kontos; die Person meldet sich mit dem Passwort an und richtet neu ein. Steht im Änderungsprotokoll | – |
 | `php artisan computed:recompute [tabelle …]` | Berechnet die berechneten Felder neu (ohne Angabe: alle Tabellen mit berechneten Feldern) | interne Tabellennamen |
 | `php artisan table-connector:verify [tabelle …]` | Vergleicht angebundene Tabellen mit dem Schema der externen Datenbank; Exit-Code 1 bei Abweichungen | `--apply` übernimmt Abweichungen wie „Neu einlesen“ |
-| `php artisan table-connector:connect <verbindung>` | Massenverknüpfung auf der Konsole (ohne Zeitlimit des Webservers) | `--all` bzw. `--table=` (mehrfach), `--schema=`, `--prefix=`, `--menu-group=` (ID oder `none`), `--role=` (mehrfach), `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--no-details` |
+| `php artisan table-connector:connect <verbindung>` | Massenverknüpfung auf der Konsole (ohne Zeitlimit des Webservers) | `--all` bzw. `--table=` (mehrfach), `--app=` (ID der App), `--schema=`, `--prefix=`, `--menu-group=` (ID oder `none`), `--role=` (mehrfach), `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--no-details` |
 | `php artisan tasks:list` | Geplante Aufgaben mit Zeitplan, nächstem und letztem Lauf; letzter Aufruf des Schedulers | – |
 | `php artisan tasks:run <ID>` | Eine geplante Aufgabe sofort ausführen (der Zeitplan bleibt) | – |
 | `php artisan tasks:run-due` | Fällige geplante Aufgaben ausführen; ruft der Scheduler jede Minute auf | – |
@@ -266,7 +271,7 @@ Alle Befehle im Hauptverzeichnis von SAFT ausführen, auf einem Produktionsserve
 | `php artisan saft:plugins --check [id]` | Prüft Plugins vor der Auslieferung (Kennung, API, Rechte, Menü, nur Plugin-API); Exit-Code 1 bei Fehlern | – |
 | `php artisan saft:plugin-context` | Entwickler-Kontext für Plugins (AGENTS.md, API-Referenz, Schema; ohne Daten) | `--output=`, `--tables=` (mehrfach), `--without-external`, `--zip` |
 | `php artisan saft:config-export <datei>` | Konfigurationspaket schreiben: Tabellen, freigegebene Auswertungen, Menüeinträge, Rollen (siehe Administratorhandbuch, „Konfiguration übertragen“) | `--all` oder `--tables=`, `--reports=` (Namen), `--menus=` (Pfad, z. B. „Daten › Verkauf“), `--roles=` (je mehrfach), `--without-dependencies`, `--label=` |
-| `php artisan saft:config-import <datei>` | Paket einspielen: legt nur Neues an, Vorhandenes bleibt; zeigt zuerst die Vorschau | `--dry-run` nur prüfen |
+| `php artisan saft:config-import <datei>` | Paket einspielen: legt nur Neues an, Vorhandenes bleibt; zeigt zuerst die Vorschau | `--dry-run` nur prüfen; `--app=<ID>` in diese App bzw. `--new-app="Name"` in eine neue (ohne Angabe: die einzige vorhandene) |
 | `php artisan saft:third-party-notices` | Erzeugt `THIRD_PARTY_NOTICES.md` (alle Komponenten von Drittanbietern mit Version, Lizenz, Copyright und Lizenztexten, auch die Bibliotheken im Mermaid-Bundle). Nach jedem Paket-Update auf dem Entwickler-Rechner ausführen und die Datei committen; ein Test prüft die Vollständigkeit | braucht `node_modules` |
 | `php artisan external-demo:install` | Legt die externe Demo-Forschungsdatenbank und eine Datenbankverbindung dafür an und bindet ihre Tabellen an (`fdb_…`) | `--driver=pgsql\|mysql\|mariadb\|sqlsrv`, `--database=`, `--name=`, `--without-connection`, `--without-tables` |
 

@@ -19,7 +19,7 @@
 - [4. Concepteur de tables](#4-concepteur-de-tables)
 - [5. Authentification](#5-authentification)
 - [6. Fournisseurs d’identité (authentification unique)](#6-fournisseurs-didentité-authentification-unique)
-- [7. Paramètres de l’application](#7-paramètres-de-lapplication)
+- [7. Paramètres globaux](#7-paramètres-globaux)
 - [8. Journal des modifications](#8-journal-des-modifications)
 - [9. Connexions aux bases de données](#9-connexions-aux-bases-de-données)
 - [10. Connecteur de tables](#10-connecteur-de-tables)
@@ -28,6 +28,7 @@
 - [13. Fonctions IA](#13-fonctions-ia)
 - [14. Plugins](#14-plugins)
 - [15. Transférer la configuration](#15-transférer-la-configuration)
+- [16. Apps (applications métier)](#16-apps-applications-métier)
 - [Annexe A – Aperçu des droits](#annexe-a--aperçu-des-droits)
 
 ---
@@ -125,6 +126,13 @@ rôles : leurs propres rapports ne comptent alors pas comme les leurs. Une bande
 reste inchangée, le début et la fin figurent dans le journal des modifications. Attention : ce que le rôle peut faire
 est réellement enregistré pendant la vue – avec vous comme auteur.
 
+**App et copie** (B-107) : chaque rôle appartient à une [app](#16-apps-applications-métier) ; le formulaire n’affiche
+les droits sur les données et les entrées de menu que pour les tables de cette app. Les rôles système *super-admin* et
+*benutzer* n’appartiennent à aucune app et ne contiennent que des droits communs (p. ex. tableau de bord, aide) ;
+attribuez les droits sur les données via les rôles des apps. **Copier** (dans la liste et en modification) crée un
+nouveau rôle avec un nom et une app cible – avec les mêmes droits (droits sur les données seulement pour les tables de
+l’app cible) et les entrées de menu masquées, sans membres.
+
 ## 3. Menus
 
 **Administration → Application → Menus**
@@ -196,6 +204,10 @@ la démo entrepôt (*Gestion de l’entrepôt*, *Données de base*, *Rapports*) 
 entrée supprime aussi ses sous-entrées.
 
 > Les **détails** (maître-détail) ne se configurent pas dans le menu, mais dans le Concepteur de tables.
+
+**App :** les entrées et groupes de premier niveau appartiennent à une [app](#16-apps-applications-métier) ou –
+sans app – au système ; les entrées d’un groupe reprennent son app. Pour les entrées de données, le formulaire ne
+propose que les tables de cette app.
 
 ## 4. Concepteur de tables
 
@@ -298,6 +310,10 @@ enregistrement, p. ex. « date de livraison ≥ date de commande » ou « quanti
   combien – ils sont contrôlés à la prochaine modification.
 - Si un champ est renommé, ses règles suivent. Un champ utilisé par une règle ne peut pas être supprimé, et son type
   ne peut être changé que vers un type qui reste compatible avec la règle.
+
+**App et préfixe :** lors de la création, vous choisissez l’[app](#16-apps-applications-métier) de la table
+(obligatoire s’il y a plusieurs apps). Si l’app a un préfixe, il précède le nom technique proposé ; changer d’app le
+remplace. Les liaisons ne sont possibles qu’avec des tables de la même app.
 
 ### Champs calculés
 
@@ -532,9 +548,9 @@ qu’avec une correspondance applicable ».
 Entra, cela concerne tous les services Microsoft du navigateur (Outlook, Teams …) – c’est pourquoi l’option est
 désactivée par défaut.
 
-## 7. Paramètres de l’application
+## 7. Paramètres globaux
 
-**Administration → Application → Paramètres de l’application**
+**Administration → Application → Paramètres globaux**
 
 | Réglage | Signification |
 |---|---|
@@ -938,6 +954,9 @@ sont actuellement pas exécutées » figure au-dessus de la liste.
 > « modifier ». Pour le widget, en plus « Widget du tableau de bord : Tâches planifiées (état) ». Les modifications des
 > tâches figurent dans le journal des modifications.
 
+**App :** les tâches liées à une table appartiennent à son [app](#16-apps-applications-métier) ; pour les autres
+tâches, vous choisissez l’app. Les tâches système n’appartiennent à aucune app.
+
 ---
 
 ## 13. Fonctions IA
@@ -957,7 +976,7 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
 1. **Préparer le fournisseur :** pour Anthropic, créer une clé API dans la Claude Console (*API Keys*) ; un
    abonnement Claude (Pro/Max) seul ne suffit pas, l’API est facturée séparément selon la consommation. Sinon Amazon
    Bedrock ou Google Vertex AI (configuration voir [Administration système](SYSADMIN_GUIDE.md#5-ai-functions)).
-2. **Administration → Application → Paramètres de l’application → Assistant IA pour les rapports :**
+2. **Administration → Application → Paramètres globaux → Assistant IA pour les rapports :**
 
    | Réglage | Signification |
    |---|---|
@@ -1050,7 +1069,7 @@ personne ne voit pas, ainsi que les liens externes. Si quelque chose ne figure p
 
 > **Perspective :** des termes propres à l’organisation (p. ex. « chez nous, le chiffre d’affaires désigne la valeur
 > d’achat des entrées ») pourraient à l’avenir être enregistrés comme **indications pour l’assistant IA** dans les
-> paramètres de l’application et envoyés avec les instructions fixes. En attendant, des libellés et descriptions
+> paramètres globaux et envoyés avec les instructions fixes. En attendant, des libellés et descriptions
 > parlants des tables et des champs aident.
 
 ## 14. Plugins
@@ -1159,7 +1178,7 @@ main, vous exportez un **paquet** (un fichier JSON) et l’importez dans l’aut
 | liens pour les analyses | utilisateurs et disposition de leur tableau de bord |
 | analyses – partagées et les vôtres | analyses privées d’autres personnes |
 | entrées de menu (avec leurs groupes parents) | connexions aux bases de données et identifiants |
-| rôles avec leurs droits et entrées de menu masquées | paramètres de l’application, tâches planifiées |
+| rôles avec leurs droits et entrées de menu masquées | paramètres globaux, tâches planifiées |
 
 Toutes les références figurent sous forme de **noms**, pas de numéros internes – tables et champs par leur nom
 technique, entrées de menu par leur chemin (p. ex. « Entrepôt (démo) › Gestion de l’entrepôt › Stocks »), analyses par leur nom. Le paquet
@@ -1203,13 +1222,57 @@ doivent déjà exister dans l’installation cible ; le paquet les indique comme
 > **Conseil :** importez d’abord un paquet dans une installation de test et vérifiez l’aperçu. Pour des transferts
 > réguliers, il existe les commandes `saft:config-export` et `saft:config-import`.
 
+**App cible lors de l’import :** les tables, groupes de menu de premier niveau et rôles du paquet vont dans une
+[app](#16-apps-applications-métier) choisie – existante ou nouvelle (proposée avec le libellé du paquet) ; en console
+`saft:config-import --app=<ID>` ou `--new-app="Nom"`. À l’export, tables et rapports figurent sous
+« App › groupe de menu ».
+
+## 16. Apps (applications métier)
+
+Une **app** regroupe ce qui va ensemble sur le plan métier : tables, menus, rapports, liaisons de tables, rôles et
+tâches planifiées, p. ex. « Entrepôt » ou « Personnel ». Chacun de ces objets appartient à exactement une app ; les
+utilisateurs, la connexion, les paramètres globaux, la connexion IA, les connexions aux bases de données et le reste de
+l’administration restent communs à toutes les apps. Contexte et étapes suivantes (basculer entre apps, tableau de bord
+propre, déplacement, paquets) : [concept](../concept/APPS.md) (en allemand).
+
+**Administration → Application → Apps** (droits *Apps : afficher* et *gérer*) liste les apps avec le nombre de leurs
+tables, menus, rapports, liaisons, rôles et tâches :
+
+| Réglage | Signification |
+|---|---|
+| Nom, description | dans toutes les langues |
+| Préfixe des tables | placé devant le nom technique des nouvelles tables, p. ex. `hr` → `hr_absences`. Proposé à partir du nom lors de la création d’une app ; une modification ultérieure ne vaut que pour les nouvelles tables |
+| Icône, tri | affichage dans les listes |
+
+Seule une app vide peut être supprimée.
+
+**Où l’app se choisit – et où elle découle :**
+
+| Objet | App |
+|---|---|
+| Table (concepteur de tables, import depuis un fichier, connecteur de tables) | à choisir lors de la création ; obligatoire s’il y a plusieurs apps. Changer d’app remplace le préfixe dans le nom proposé |
+| Entrée de menu ou groupe de premier niveau | à choisir ; sans app, l’entrée appartient au système (p. ex. documentation) |
+| Entrée de menu dans un groupe | app du groupe ; les entrées de données l’app de leur table |
+| Rapport | app de sa table de base |
+| Liaison de tables | app de la table source |
+| Rôle | à choisir (voir [Rôles](#2-rôles-et-droits)) ; *super-admin* et *benutzer* sont des rôles système sans app |
+| Tâche planifiée | liée à une table : son app ; sinon à choisir ; tâches système sans app |
+
+**Frontière entre apps :** les champs de liaison, les liaisons de tables pour les rapports et donc aussi « Reprendre
+de » et les formules sur les tables enfants ne sont possibles qu’au sein d’une app. Le concepteur de tables ne propose
+que les tables de la même app ; l’assistant IA des tables ne voit que le modèle de données de l’app choisie.
+
+**Après la mise à jour :** les installations existantes reçoivent une app « Données existantes » avec toutes les
+tables, menus, rapports, rôles et tâches existants ; les menus, rôles et tâches système restent sans app. Les nouvelles
+installations commencent sans app ; les données de démo créent chacune leur propre app (Boutique, Entrepôt, Recherche).
+
 ## Annexe A – Aperçu des droits
 
 | Domaine | Droits |
 |---|---|
 | Utilisateurs, rôles, menus, fournisseurs d’identité, Concepteur de tables, Connecteur de tables, connexions aux bases de données | afficher, créer, modifier, supprimer ; Concepteur de tables en plus importer et utiliser l’assistant (IA) |
 | Journal des modifications | afficher |
-| Paramètres d’authentification, paramètres de l’application | afficher, modifier |
+| Paramètres d’authentification, paramètres globaux | afficher, modifier |
 | Widgets du tableau de bord | par widget |
 | Rapports | afficher, créer (ses propres), modifier et supprimer (aussi ceux d’autrui), utiliser l’assistant (IA) |
 | Liaisons de tables | afficher, créer, modifier, supprimer |
@@ -1217,5 +1280,6 @@ doivent déjà exister dans l’installation cible ; le paquet les indique comme
 | Journal système | afficher (fichier journal du serveur, lecture seule) |
 | Plugins | afficher ; gérer (créer les entrées de menu, nettoyer) ; les droits propres aux plugins figurent sous leur nom |
 | Configuration | afficher (page et entrée de menu) ; exporter ; importer |
+| Apps | afficher ; gérer (créer, modifier, supprimer les apps vides) |
 | Aide | utiliser l’assistant (assistant d’aide) |
 | Données par table (matrice des droits sur les données) | afficher, créer, modifier, supprimer, exporter, importer ; pour les tables externes liées, droits d’écriture uniquement s’ils sont activés |

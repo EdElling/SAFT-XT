@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\DynamicData\DataMenu;
 use App\ExternalData\BulkConnector;
+use App\Models\App;
 use App\Models\DatabaseConnection;
 use App\Models\Menu;
 use App\Models\Role;
@@ -23,7 +24,8 @@ use Illuminate\Console\Command;
     {--table=* : Externe Tabellen bzw. Views (mehrfach)}
     {--all : Alle noch nicht angebundenen Tabellen und Views des Schemas}
     {--prefix= : Präfix für die technischen Namen, z. B. erp_}
-    {--menu-group= : ID der Menügruppe; "none" = kein Menüeintrag; Vorgabe: Gruppe „Daten“}
+    {--app= : ID der App (B-107); Vorgabe: die einzige vorhandene}
+    {--menu-group= : ID der Menügruppe der App; "none" = kein Menüeintrag; Vorgabe: Gruppe „Daten“ der App}
     {--role=* : Rollen (Name) mit Anzeigerecht und den freigeschalteten Rechten}
     {--inactive : Tabellen inaktiv anlegen}
     {--export : Export erlauben}
@@ -64,6 +66,7 @@ class BulkConnectTablesCommand extends Command
             return self::FAILURE;
         }
 
+        $app = App::resolve(filled($this->option('app')) ? (int) $this->option('app') : null);
         $group = $this->option('menu-group');
 
         if ($group !== null && $group !== 'none' && ! Menu::query()->whereKey((int) $group)->whereNull('route')->whereNull('url')->exists()) {
@@ -87,7 +90,8 @@ class BulkConnectTablesCommand extends Command
             'allow_create' => (bool) $this->option('create'),
             'allow_update' => (bool) $this->option('update'),
             'allow_delete' => (bool) $this->option('delete'),
-            'menu_group' => $group === 'none' ? null : ($group ?? $menu->defaultGroup()),
+            'app_id' => $app->id,
+            'menu_group' => $group === 'none' ? null : ($group ?? $menu->defaultGroup($app->id)),
             'roles' => $roles->values()->map(static fn (mixed $id): int => (int) $id)->all(),
         ];
 

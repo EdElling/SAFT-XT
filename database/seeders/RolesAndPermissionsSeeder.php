@@ -30,6 +30,7 @@ class RolesAndPermissionsSeeder extends Seeder
         'tasks' => ['view', 'create', 'update', 'delete', 'details'],
         'plugins' => ['view', 'manage'],
         'configuration' => ['view', 'export', 'import'],
+        'apps' => ['view', 'manage'],
         'help' => ['assistant'],
         'system_log' => ['view'],
         'widgets' => [...self::PERSONAL_WIDGETS, 'recent_changes', 'idp_status', 'login_activity', 'users_overview', 'tasks'],

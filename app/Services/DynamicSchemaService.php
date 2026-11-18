@@ -25,6 +25,7 @@ use App\DynamicData\Schema\IdentifierValidator;
 use App\Exceptions\BusinessRuleException;
 use App\Exceptions\Database\DatabaseErrorClassifier;
 use App\Exceptions\Database\DatabaseErrorType;
+use App\Models\App;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -96,6 +97,7 @@ final class DynamicSchemaService
             }
 
             $table = CustomTable::create([
+                'app_id' => App::resolve($data['app_id'] ?? null)->id,
                 'name' => $name,
                 'label' => Translations::isEmpty($label = Translations::clean($data['label'] ?? null)) ? $name : $label,
                 'description' => Translations::isEmpty($description = Translations::clean($data['description'] ?? null, 5000)) ? null : $description,

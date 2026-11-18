@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Roles\Schemas;
 
+use App\Apps\SystemObjects;
 use App\DynamicData\DataMenu;
 use App\DynamicData\DataPermissions;
 use App\Filament\Forms\Components\DataPermissionMatrix;
+use App\Filament\Support\AppSelect;
 use App\Models\CustomTable;
 use App\Models\Menu;
 use App\Models\Role;
@@ -14,7 +16,9 @@ use App\Plugins\PluginRegistry;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Lang;
@@ -26,7 +30,7 @@ class RoleForm
 {
     /** Bereiche der Funktionsrechte; der Schlüssel der Sprachdatei ersetzt Punkte durch Unterstriche. */
     /** Bereiche der allgemeinen Rechte von SAFT selbst (ohne data.* und ohne Plugins). */
-    public const array RESOURCES = ['users', 'roles', 'menus', 'activity_log', 'identity_providers', 'settings.auth', 'settings.app', 'widgets', 'custom_tables', 'database_connections', 'table_connector', 'reports', 'report_links', 'tasks', 'plugins', 'configuration', 'help', 'system_log'];
+    public const array RESOURCES = ['users', 'roles', 'menus', 'activity_log', 'identity_providers', 'settings.auth', 'settings.app', 'widgets', 'custom_tables', 'database_connections', 'table_connector', 'reports', 'report_links', 'tasks', 'plugins', 'configuration', 'apps', 'help', 'system_log'];
 
     public static function configure(Schema $schema): Schema
     {
@@ -43,6 +47,12 @@ class RoleForm
                             ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule): Unique => $rule->where('guard_name', 'web')),
                         Hidden::make('guard_name')
                             ->default('web'),
+                        // App (B-107): Rollen gehören zu genau einer App; Systemrollen (Super-Admin, Standardrolle) zu keiner.
+                        AppSelect::make()
+                            ->required(fn (?Role $record): bool => ! SystemObjects::isSystemRole($record?->name))
+                            ->disabled(fn (?Role $record): bool => SystemObjects::isSystemRole($record?->name))
+                            ->placeholder(__('apps.system'))
+                            ->helperText(__('roles.form.app_help')),
                     ]),
                 Section::make(__('common.permissions'))
                     ->description(__('roles.form.permissions_help'))
@@ -68,30 +78,37 @@ class RoleForm
                     ]),
                 Section::make(__('roles.form.data_permissions'))
                     ->description(__('roles.form.data_permissions_help'))
-                    ->schema([DataPermissionMatrix::make('data_permissions')->hiddenLabel()])
-                    ->visible(fn (): bool => CustomTable::query()->exists()),
+                    ->schema([DataPermissionMatrix::make('data_permissions')->hiddenLabel()->app(fn (Get $get): mixed => $get('app_id'))])
+                    // Systemrollen enthalten nur app-übergreifende Rechte (B-107).
+                    ->visible(fn (?Role $record): bool => CustomTable::query()->exists() && ! SystemObjects::isSystemRole($record?->name)),
+                Callout::make(__('roles.form.system_role_hint'))
+                    ->info()
+                    ->visible(fn (?Role $record): bool => SystemObjects::isSystemRole($record?->name)),
                 Section::make(__('roles.form.menu_entries'))
                     ->description(__('roles.form.menu_entries_help'))
                     ->schema([
                         CheckboxList::make('visible_menus')
                             ->hiddenLabel()
-                            ->options(fn (): array => self::dataMenuOptions())
+                            ->options(fn (Get $get): array => self::dataMenuOptions(self::appId($get('app_id'))))
                             ->columns(3)
                             ->gridDirection('row')
                             ->bulkToggleable()
                             ->dehydrated(false)
                             // Gespeichert wird nur das Ausblenden: Ohne Datensatz ist alles angehakt.
-                            ->default(fn (): array => array_map('strval', array_keys(self::dataMenuOptions())))
+                            ->default(fn (Get $get): array => array_map('strval', array_keys(self::dataMenuOptions(self::appId($get('app_id'))))))
                             ->loadStateFromRelationshipsUsing(function (CheckboxList $component, ?Role $record): void {
                                 $hidden = $record?->hiddenMenus()->pluck('menus.id')->all() ?? [];
-                                $component->state(array_values(array_map('strval', array_diff(array_keys(self::dataMenuOptions()), $hidden))));
+                                $component->state(array_values(array_map('strval', array_diff(array_keys(self::dataMenuOptions($record?->app_id)), $hidden))));
                             })
                             ->saveRelationshipsUsing(function (CheckboxList $component, Role $record): void {
+                                // Nur Einträge der App der Rolle ändern; ausgeblendete anderer Apps bleiben.
+                                $offered = array_keys(self::dataMenuOptions($record->app_id));
                                 $visible = array_map('intval', (array) $component->getState());
-                                $record->hiddenMenus()->sync(array_values(array_diff(array_keys(self::dataMenuOptions()), $visible)));
+                                $others = $record->hiddenMenus()->pluck('menus.id')->map(static fn (mixed $id): int => (int) $id)->diff($offered)->all();
+                                $record->hiddenMenus()->sync(array_values([...$others, ...array_diff($offered, $visible)]));
                             }),
                     ])
-                    ->visible(fn (): bool => self::dataMenuOptions() !== []),
+                    ->visible(fn (Get $get, ?Role $record): bool => ! SystemObjects::isSystemRole($record?->name) && self::dataMenuOptions(self::appId($get('app_id'))) !== []),
             ]);
     }
 
@@ -100,10 +117,11 @@ class RoleForm
      *
      * @return array<int, string>
      */
-    private static function dataMenuOptions(): array
+    private static function dataMenuOptions(?int $appId): array
     {
         return once(static fn (): array => Menu::query()
             ->where('route', DataMenu::ROUTE)
+            ->where('app_id', $appId ?? 0)
             ->with('parent')
             ->get()
             ->sortBy([
@@ -115,6 +133,11 @@ class RoleForm
                     .($menu->is_active ? '' : ' ('.__('roles.form.inactive_entry').')'),
             ])
             ->all());
+    }
+
+    private static function appId(mixed $value): ?int
+    {
+        return filled($value) ? (int) $value : null;
     }
 
     /** Aktionen der Datenrechte (Spalten der Matrix). */

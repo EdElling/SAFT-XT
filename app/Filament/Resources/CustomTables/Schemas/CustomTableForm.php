@@ -14,6 +14,7 @@ use App\DynamicData\Rules\TableRuleNormalizer;
 use App\DynamicData\Schema\FieldType;
 use App\DynamicData\SchemaVerifier;
 use App\Filament\Forms\Components\IconPicker;
+use App\Filament\Support\AppSelect;
 use App\Filament\Support\MenuGroupSelect;
 use App\Filament\Support\TableLabelHint;
 use App\Filament\Support\TableNameRule;
@@ -63,6 +64,16 @@ class CustomTableForm
                 Section::make(__('tables.form.table'))
                     ->columns(2)
                     ->schema([
+                        // App (B-107): beim Anlegen wählen; wechseln später über „In andere App verschieben“.
+                        AppSelect::make()
+                            ->disabledOn('edit')
+                            ->dehydrated(fn (string $operation): bool => $operation === 'create')
+                            ->afterStateUpdated(function (Get $get, Set $set, mixed $state, mixed $old, string $operation): void {
+                                if ($operation === 'create') {
+                                    $set('name', AppSelect::switchPrefix($get('name'), $old, $state));
+                                }
+                            })
+                            ->columnSpanFull(),
                         TranslatableInputs::make('label', __('tables.form.display_name'), required: true, configure: static function ($input, string $locale): void {
                             if ($locale !== config('locales.default')) {
                                 return;
@@ -73,7 +84,7 @@ class CustomTableForm
                             // Technischen Namen aus der Bezeichnung der Vorgabesprache vorschlagen.
                             $input->live(onBlur: true)->afterStateUpdated(function (Get $get, Set $set, ?string $state, string $operation): void {
                                 if ($operation === 'create' && blank($get('name'))) {
-                                    $set('name', FieldForm::suggestName((string) $state));
+                                    $set('name', AppSelect::prefix($get('app_id')).FieldForm::suggestName((string) $state));
                                 }
                             });
                         }),
@@ -109,7 +120,7 @@ class CustomTableForm
                             ->default(false)
                             ->inline(false)
                             ->helperText(__('tables.form.import_enabled_help')),
-                        MenuGroupSelect::make()
+                        MenuGroupSelect::make(app: fn (Get $get): mixed => $get('app_id'))
                             ->visibleOn('create'),
                     ]),
                 Section::make(__('tables.fields.title'))

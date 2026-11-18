@@ -77,7 +77,7 @@ final class DataImporter
     private function run(ImportAnalysis $analysis, string $path, string $fileName, array $data, array $columns, int|string|null $menuGroup, ?User $user, ?CustomTable &$created = null): ImportResult
     {
         $created = $this->schema->createTable(
-            ['name' => $data['name'], 'label' => $data['label']],
+            ['app_id' => $data['app_id'] ?? null, 'name' => $data['name'], 'label' => $data['label']],
             $this->fieldDefinitions($columns),
         );
 

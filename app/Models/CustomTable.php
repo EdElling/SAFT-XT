@@ -6,7 +6,9 @@ namespace App\Models;
 
 use App\DynamicData\Rules\TableRule;
 use App\Models\Base\CustomTable as BaseCustomTable;
+use App\Models\Concerns\BelongsToApp;
 use App\Models\Concerns\HasAuditLog;
+use App\Models\Concerns\HasStableKey;
 use App\Models\Concerns\HasTranslatedAttributes;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,7 +22,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class CustomTable extends BaseCustomTable
 {
+    use BelongsToApp;
     use HasAuditLog;
+    use HasStableKey;
     use HasTranslatedAttributes;
 
     /** Je Sprache (JSON); fehlt eine, gilt die Vorgabesprache. */
@@ -49,10 +53,11 @@ class CustomTable extends BaseCustomTable
      *
      * @return array<string, string>
      */
-    public static function labelOptions(bool $activeOnly = false, bool $designerOnly = false): array
+    public static function labelOptions(bool $activeOnly = false, bool $designerOnly = false, ?int $appId = null): array
     {
         return self::query()
             ->when($activeOnly, fn (Builder $q) => $q->where('is_active', true))
+            ->when($appId !== null, fn (Builder $q) => $q->where('app_id', $appId))
             ->when($designerOnly, fn (Builder $q) => $q->where('source', self::SOURCE_DESIGNER))
             ->get(['id', 'name', 'label'])
             ->mapWithKeys(fn (self $table): array => [$table->name => (string) $table->label])

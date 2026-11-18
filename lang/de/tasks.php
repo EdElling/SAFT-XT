@@ -12,6 +12,7 @@ return [
         'schedule' => 'Zeitplan',
     ],
     'fields' => [
+        'app_help' => 'Aufgaben zu einer Tabelle gehören automatisch zu deren App.',
         'backup_files' => 'Dateien aus Dateifeldern mitsichern',
         'backup_files_help' => 'Als ZIP neben der Datenbanksicherung (nur wenn die Dateien auf diesem Server liegen).',
         'backup_days' => 'Sicherungen aufbewahren (Tage)',

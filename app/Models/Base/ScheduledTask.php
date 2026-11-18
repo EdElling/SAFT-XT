@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
  * Class ScheduledTask
  *
  * @property int $id
+ * @property string $uuid
+ * @property int|null $app_id
  * @property string|null $name
  * @property string $type
  * @property array|null $parameters
@@ -35,6 +37,7 @@ class ScheduledTask extends Model
     protected $table = 'scheduled_tasks';
 
     protected $casts = [
+        'app_id' => 'int',
         'parameters' => 'json',
         'interval_hours' => 'int',
         'weekday' => 'int',
@@ -47,6 +50,8 @@ class ScheduledTask extends Model
     ];
 
     protected $fillable = [
+        'uuid',
+        'app_id',
         'name',
         'type',
         'parameters',

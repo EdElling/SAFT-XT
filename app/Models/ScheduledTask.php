@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Base\ScheduledTask as BaseScheduledTask;
+use App\Models\Concerns\BelongsToApp;
 use App\Models\Concerns\HasAuditLog;
+use App\Models\Concerns\HasStableKey;
 use App\Tasks\TaskRegistry;
 use App\Tasks\TaskSchedule;
 use App\Tasks\TaskType;
@@ -19,7 +21,9 @@ use Throwable;
  */
 class ScheduledTask extends BaseScheduledTask
 {
+    use BelongsToApp;
     use HasAuditLog;
+    use HasStableKey;
 
     public const string SUCCESS = 'success';
 
@@ -36,6 +40,13 @@ class ScheduledTask extends BaseScheduledTask
     protected static function booted(): void
     {
         static::saving(function (self $task): void {
+            // Aufgaben zu einer Tabelle gehören zu deren App (B-107); andere wählen die App im Formular.
+            $tableId = (int) (((array) ($task->parameters ?? []))['table_id'] ?? 0);
+
+            if (! $task->is_system && $tableId > 0 && ($appId = CustomTable::query()->whereKey($tableId)->value('app_id')) !== null) {
+                $task->app_id = (int) $appId;
+            }
+
             if ($task->isDirty(['frequency', 'interval_hours', 'at_time', 'weekday', 'is_active']) || ($task->is_active && $task->next_run_at === null)) {
                 $task->next_run_at = $task->is_active ? $task->schedule()->next(now()) : null;
             }

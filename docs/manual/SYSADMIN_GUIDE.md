@@ -37,7 +37,7 @@ Installing SAFT step by step is described in [Appendix B](INSTALL_DEVELOPMENT.md
 | Reset the two-factor authentication of an account (e.g. the only admin lost their phone) | `php artisan auth:two-factor-reset <email>` |
 | Compare the table designer settings with the database | `php artisan app-data:verify` |
 | Compare the linked tables with the schema of their external databases (exit code 1 for differences; `--apply` applies them) | `php artisan table-connector:verify` |
-| Bulk link on the console: all tables not linked yet (`--all`) or single ones (`--table=…`), with `--prefix=`, `--menu-group=<ID>` or `none`, `--role=<name>`, `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--schema=`, `--no-details` | `php artisan table-connector:connect "<connection>" --all` |
+| Bulk link on the console: all tables not linked yet (`--all`) or single ones (`--table=…`), with `--app=<ID>` (required if there are several apps), `--prefix=`, `--menu-group=<ID>` or `none`, `--role=<name>`, `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--schema=`, `--no-details` | `php artisan table-connector:connect "<connection>" --all` |
 | Choose the database: PostgreSQL, MySQL or MariaDB, with the credentials `PGSQL_*`, `MYSQL_*` or `MARIADB_*` | `DB_CONNECTION=pgsql`, `mysql` or `mariadb` in `.env` |
 | Back up the database (to `storage/backups`; MySQL/MariaDB: main database and `…_app_data` in one `.sql` file, in two parts if `app_data` has its own credentials (`DB_APP_DATA_*`); without a suitable `mysqldump` in PHP with `DB_BACKUP_METHOD=php` or `--php`; path to the program if needed in `PGSQL_DUMP_BINARY`, `MYSQL_DUMP_BINARY` or `MARIADB_DUMP_BINARY`; the files from file fields alongside as `<same name>_files.zip`, without them with `--without-files`) | `php artisan db:backup` |
 | Recalculate computed fields (after changes outside SAFT; optionally table names) | `php artisan computed:recompute` |
@@ -61,13 +61,18 @@ Notes:
   `_files.zip`, without thumbnails). To restore, unzip it into `storage/app/private` after restoring the database
   (`unzip <file>_files.zip -d storage/app/private`); thumbnails are recreated when first shown. If the files are stored
   in S3 (`APP_DATA_FILES_DISK=s3`), they are not included – back them up there, e.g. with bucket versioning.
+- **Apps (from 0.4):** after the update, `php artisan migrate` assigns all existing tables, menus, reports, roles and
+  tasks to an app “Existing data”; system roles, system menus and system tasks stay without an app. Splitting into
+  separate apps is then done in the interface (see
+  [Administrator guide, chapter 16](ADMIN_GUIDE.md#16-apps-business-applications)). The menu entry “App settings” has
+  been called “Global settings” since then.
 - **Orphaned files** (uploads from cancelled forms, files of records deleted outside SAFT) are removed after 24 hours by
   the system task *Clean up files* or `php artisan files:prune`.
 - **Upload size:** The maximum size per file field only applies up to PHP's limit. For e.g. 50 MB set
   `upload_max_filesize = 50M` and `post_max_size = 55M` in `php.ini` (with web hosts often via `.user.ini` or their
   control panel); on the web server possibly also `client_max_body_size` (nginx) or `LimitRequestBody` (Apache).
 - The **technical name** `APP_NAME` in `.env` determines cookie and cache names. The visible name is maintained in
-  the app settings; changing it there does not sign anyone out.
+  the global settings; changing it there does not sign anyone out.
 - The tables of the table designer are stored separately from the system tables: with PostgreSQL in the schema
   `app_data`, with MySQL in a database of their own, `<database>_app_data`.
 - **Time zone:** All times are shown in the time zone from `APP_TIMEZONE`.
@@ -207,7 +212,7 @@ public demo or training systems.
 ## 5. AI functions
 
 The AI assistants for reports and tables (see [Administrator guide, chapter 13](ADMIN_GUIDE.md#13-ai-functions)) are
-**off** until set up. Provider, model and API key can be entered in the app settings; whatever is left empty there
+**off** until set up. Provider, model and API key can be entered in the global settings; whatever is left empty there
 comes from the `.env`:
 
 | Variable | Meaning |
@@ -217,20 +222,20 @@ comes from the `.env`:
 | `AI_EFFORT` | Thinking depth `low`, `medium` (default), `high` |
 | `AI_DAILY_LIMIT` | Requests per person and day (default 50) |
 | `AI_MAX_TOKENS`, `AI_TIMEOUT` | Maximum answer size (default 16000) and seconds per request (default 120) |
-| `ANTHROPIC_API_KEY` | Key for `anthropic`; better in the app settings (stored encrypted there) |
+| `ANTHROPIC_API_KEY` | Key for `anthropic`; better in the global settings (stored encrypted there) |
 | `AI_INFERENCE_GEO` | Optional: processing region with Anthropic, e.g. `us` |
 | `AI_BASE_URL` | Only for proxies/gateways; empty = `api.anthropic.com` |
 | `AI_AWS_REGION` | Amazon Bedrock: region; credentials as usual from the environment (`AWS_ACCESS_KEY_ID` …) or the instance role |
 | `AI_VERTEX_PROJECT`, `AI_VERTEX_LOCATION` | Google Vertex AI: project and region; sign-in via Application Default Credentials, requires `composer require google/auth` once |
 
 - The server needs **outbound HTTPS access** to the provider (e.g. `api.anthropic.com:443`); **Test connection** in the
-  app settings reports network and firewall problems separately from wrong keys.
+  global settings reports network and firewall problems separately from wrong keys.
 - After changing the `.env` with a cached configuration, run `php artisan config:cache` again.
 - Depending on model and thinking depth a request takes a few seconds up to about a minute; it runs in the web server
   process. PHP's `max_execution_time` and time limits of an upstream proxy should therefore be above `AI_TIMEOUT`.
 - Errors are written to the application log (`storage/logs`), every request also to the activity log.
-- Switching off: main switch off or provider "Off" in the app settings, or `AI_PROVIDER=none`.
-- **Help assistant:** separate switch in the app settings. It sends the manuals of the online help (in the
+- Switching off: main switch off or provider "Off" in the global settings, or `AI_PROVIDER=none`.
+- **Help assistant:** separate switch in the global settings. It sends the manuals of the online help (in the
   language of the interface, about 35,000 tokens), which the provider caches; follow-up questions within a few minutes
   are therefore much cheaper. The conversations are stored in SAFT's database (tables `ai_help_conversations` and
   `ai_help_messages`) and are not deleted automatically; each person deletes their own. A locally operated model is
@@ -252,7 +257,7 @@ shows all available commands, `php artisan help <command>` the options of a comm
 | `php artisan auth:two-factor-reset <email>` | Deletes the authenticator app and recovery codes of an account; the person signs in with the password and sets up again. Recorded in the activity log | – |
 | `php artisan computed:recompute [table …]` | Recalculates the computed fields (without arguments: all tables with computed fields) | internal table names |
 | `php artisan table-connector:verify [table …]` | Compares connected tables with the schema of the external database; exit code 1 on differences | `--apply` takes over differences like "Re-read" |
-| `php artisan table-connector:connect <connection>` | Bulk link on the console (without the web server's time limit) | `--all` or `--table=` (repeatable), `--schema=`, `--prefix=`, `--menu-group=` (ID or `none`), `--role=` (repeatable), `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--no-details` |
+| `php artisan table-connector:connect <connection>` | Bulk link on the console (without the web server's time limit) | `--all` or `--table=` (repeatable), `--app=` (ID of the app), `--schema=`, `--prefix=`, `--menu-group=` (ID or `none`), `--role=` (repeatable), `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--no-details` |
 | `php artisan tasks:list` | Scheduled tasks with schedule, next and last run; last scheduler call | – |
 | `php artisan tasks:run <ID>` | Run one scheduled task immediately (the schedule stays) | – |
 | `php artisan tasks:run-due` | Run due scheduled tasks; called by the scheduler every minute | – |
@@ -260,7 +265,7 @@ shows all available commands, `php artisan help <command>` the options of a comm
 | `php artisan saft:plugins --check [id]` | Checks plugins before delivery (ID, API, permissions, menu, plugin API only); exit code 1 on errors | – |
 | `php artisan saft:plugin-context` | Developer context for plugins (AGENTS.md, API reference, schema; no data) | `--output=`, `--tables=` (repeatable), `--without-external`, `--zip` |
 | `php artisan saft:config-export <file>` | Writes a configuration package: tables, shared reports, menu entries, roles (see administrator guide, "Transfer configuration") | `--all` or `--tables=`, `--reports=` (names), `--menus=` (path, e.g. "Data › Sales"), `--roles=` (each repeatable), `--without-dependencies`, `--label=` |
-| `php artisan saft:config-import <file>` | Imports a package: creates only new entries, existing ones stay; shows the preview first | `--dry-run` check only |
+| `php artisan saft:config-import <file>` | Imports a package: creates only new entries, existing ones stay; shows the preview first | `--dry-run` check only; `--app=<ID>` into this app or `--new-app="Name"` into a new one (without: the only existing one) |
 | `php artisan saft:third-party-notices` | Generates `THIRD_PARTY_NOTICES.md` (all third-party components with version, license, copyright and license texts, including the libraries inside the Mermaid bundle). Run it on the development machine after every package update and commit the file; a test checks it is complete | needs `node_modules` |
 | `php artisan external-demo:install` | Creates the external demo research database and a database connection for it and links its tables (`fdb_…`) | `--driver=pgsql\|mysql\|mariadb\|sqlsrv`, `--database=`, `--name=`, `--without-connection`, `--without-tables` |
 

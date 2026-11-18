@@ -117,7 +117,7 @@ class ConfigTransferTest extends DynamicDataTestCase
         $items = app(ConfigImporter::class)->analyze($before);
         $this->assertSame([ImportItem::NEW], array_values(array_unique(array_map(static fn (ImportItem $i): string => $i->status, $items))), 'Alles neu.');
 
-        $created = app(ConfigImporter::class)->apply($before, $this->admin);
+        $created = app(ConfigImporter::class)->apply($before, $this->admin, self::ensureTestApp());
         $this->assertSame(count($before['tables']), $created[ImportItem::TABLE]);
         $this->assertSame(count($before['menus']), $created[ImportItem::MENU]);
         $this->assertSame(1, $created[ImportItem::ROLE]);
@@ -147,7 +147,7 @@ class ConfigTransferTest extends DynamicDataTestCase
         $this->assertSame(ImportItem::MISSING, $status['report:Ohne Tabelle']);
         $this->assertSame(['Plugin „gibt-es-nicht“ ist nicht installiert'], app(ConfigImporter::class)->missingRequirements($package));
 
-        $this->assertSame(array_fill_keys(ImportItem::AREAS, 0), app(ConfigImporter::class)->apply($package, $this->admin), 'Nichts Neues angelegt.');
+        $this->assertSame(array_fill_keys(ImportItem::AREAS, 0), app(ConfigImporter::class)->apply($package, $this->admin, self::ensureTestApp()), 'Nichts Neues angelegt.');
         $this->assertSame('geändert', Report::query()->where('name', 'Über Verknüpfung')->value('description'), 'Vorhandenes bleibt.');
     }
 

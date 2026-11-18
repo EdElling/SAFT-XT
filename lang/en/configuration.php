@@ -9,7 +9,7 @@ return [
         'import' => 'Import',
     ],
     'export' => [
-        'intro' => 'Export table designer tables, reports, menu entries and roles as a package, e.g. to transfer them from a test to a production installation. Records (and with them files from file fields), users, credentials and app settings are not included; reports only if shared or your own.',
+        'intro' => 'Export table designer tables, reports, menu entries and roles as a package, e.g. to transfer them from a test to a production installation. Records (and with them files from file fields), users, credentials and global settings are not included; reports only if shared or your own.',
         'tables' => 'Tables',
         'reports' => 'Reports',
         'menus' => 'Menu entries',
@@ -30,6 +30,10 @@ return [
         'empty' => 'Please select at least one entry.',
     ],
     'import' => [
+        'target_app' => 'Into which app?',
+        'new_app' => 'New app …',
+        'new_app_name' => 'Name of the new app',
+        'new_app_default' => 'Imported',
         'intro' => 'Import a package from another installation. The preview first shows what will be created; existing entries are not changed.',
         'file' => 'Package file (.json)',
         'analyze' => 'Show preview',

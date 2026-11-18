@@ -30,10 +30,10 @@ class PluginContextTest extends DynamicDataTestCase
     {
         $this->seed(LagerDemoSeeder::class);
         // Gegenseitige Verknüpfung: geht nur in mehreren Durchgängen.
-        $departments = $this->service()->createTable(['name' => 'abteilungen', 'label' => ['de' => 'Abteilungen', 'en' => 'Departments']], [
+        $departments = $this->service()->createTable(['app_id' => self::ensureTestApp()->id, 'name' => 'abteilungen', 'label' => ['de' => 'Abteilungen', 'en' => 'Departments']], [
             ['name' => 'name', 'label' => 'Name', 'type' => 'string', 'options' => ['length' => 80], 'is_required' => true],
         ]);
-        $this->service()->createTable(['name' => 'personal', 'label' => 'Personal'], [
+        $this->service()->createTable(['app_id' => self::ensureTestApp()->id, 'name' => 'personal', 'label' => 'Personal'], [
             ['name' => 'name', 'label' => 'Name', 'type' => 'string', 'options' => ['length' => 80]],
             ['name' => 'abteilung_id', 'label' => 'Abteilung', 'type' => 'relation', 'options' => ['table' => 'abteilungen', 'display_field' => 'name']],
         ]);
@@ -60,7 +60,7 @@ class PluginContextTest extends DynamicDataTestCase
         $this->wipeDesignerTables();
         $this->assertSame([], app(SchemaExporter::class)->export()['tables']);
 
-        $created = app(SchemaImporter::class)->import(json_decode((string) json_encode($before), true));
+        $created = app(SchemaImporter::class)->import(json_decode((string) json_encode($before), true), app: self::ensureTestApp());
         $this->assertArrayHasKey('lager_bewegungen', $created);
         $this->assertEquals($before['tables'], app(SchemaExporter::class)->export()['tables'], 'Gleiche Tabellen, Felder, Regeln und Detailtabellen.');
 

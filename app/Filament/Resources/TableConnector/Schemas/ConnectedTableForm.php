@@ -12,6 +12,7 @@ use App\ExternalData\SchemaInspector;
 use App\ExternalData\TableConnectorService;
 use App\ExternalData\TableInfo;
 use App\Filament\Resources\TableConnector\Pages\EditConnectedTable;
+use App\Filament\Support\AppSelect;
 use App\Filament\Support\MenuGroupSelect;
 use App\Filament\Support\TableLabelHint;
 use App\Filament\Support\TableNameRule;
@@ -175,7 +176,8 @@ class ConnectedTableForm
                     ->placeholder(__('table_connector.form.no_key'))
                     ->visibleOn('edit'),
                 TranslatableInputs::make('description', __('common.description'), multiline: true, maxLength: 5000),
-                MenuGroupSelect::make()
+                AppSelect::make()->visibleOn('create'),
+                MenuGroupSelect::make(app: fn (Get $get): mixed => $get('app_id'))
                     ->visibleOn('create'),
                 Toggle::make('export_enabled')
                     ->label(__('tables.form.export_enabled'))

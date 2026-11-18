@@ -283,7 +283,8 @@ final class FieldForm
                     ->columnSpanFull(),
                 Select::make('options.table')
                     ->label(__('tables.fields.relation_table'))
-                    ->options(fn (): array => CustomTable::labelOptions(designerOnly: true))
+                    // Nur Tabellen derselben App (B-107); beim Anlegen einer Tabelle die im Formular gewählte.
+                    ->options(fn (Get $get): array => CustomTable::labelOptions(designerOnly: true, appId: $owner?->app_id ?? (filled($app = $get('../../app_id')) ? (int) $app : null)))
                     ->live()
                     ->afterStateUpdated(fn (Set $set) => $set('options.display_fields', []))
                     ->required($is(FieldType::Relation))

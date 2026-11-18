@@ -38,6 +38,12 @@ class ForschungDemoSeeder extends Seeder
     /** Verbindung des Table-Designers; ResearchDemoData schreibt direkt in die Tabellen. */
     private Connection $db;
 
+    /** App der Demo (B-107); der Schlüssel ist fest, damit wiederholtes Einspielen dieselbe App trifft. */
+    public function demoAppDefinition(): array
+    {
+        return ['uuid' => '8f0c6a52-6d0e-4c8e-9a43-5b1c2f6e0a03', 'name' => ['de' => 'Forschung (Demo)', 'en' => 'Research (demo)', 'fr' => 'Recherche (démo)', 'it' => 'Ricerca (demo)'], 'prefix' => 'forschung', 'icon' => 'heroicon-o-beaker', 'sort_order' => 540];
+    }
+
     public function run(DynamicDataNamespace $namespace): void
     {
         $this->db = $namespace->connection();

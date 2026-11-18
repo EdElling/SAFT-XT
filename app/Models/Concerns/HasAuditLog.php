@@ -70,6 +70,8 @@ trait HasAuditLog
         'token',
         'refresh_token',
         'updated_at',
+        // Stabiler Schlüssel (B-107): technisch, unveränderlich, im Protokoll ohne Nutzen.
+        'uuid',
     ];
 
     public function getActivitylogOptions(): LogOptions

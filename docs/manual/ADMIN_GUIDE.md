@@ -19,7 +19,7 @@
 - [4. Table designer](#4-table-designer)
 - [5. Authentication](#5-authentication)
 - [6. Identity providers (single sign-on)](#6-identity-providers-single-sign-on)
-- [7. App settings](#7-app-settings)
+- [7. Global settings](#7-global-settings)
 - [8. Activity log](#8-activity-log)
 - [9. Database connections](#9-database-connections)
 - [10. Table connector](#10-table-connector)
@@ -28,6 +28,7 @@
 - [13. AI functions](#13-ai-functions)
 - [14. Plugins](#14-plugins)
 - [15. Transfer configuration](#15-transfer-configuration)
+- [16. Apps (business applications)](#16-apps-business-applications)
 - [Appendix A – Permissions at a glance](#appendix-a--permissions-at-a-glance)
 
 ---
@@ -118,6 +119,12 @@ like another person with exactly these roles: their own reports do not count as 
 permissions (signing out also ends the view). The database stays unchanged; start and end are recorded in the
 activity log. Note: what the role is allowed to do is really saved during the view – with you as the causer.
 
+**App and copy** (B-107): each role belongs to an [app](#16-apps-business-applications); the form shows data
+permissions and menu entries only for tables of that app. The system roles *super-admin* and *benutzer* belong to no
+app and contain only app-wide permissions (e.g. dashboard, help); grant data permissions through the roles of the apps.
+**Copy** (in the list and when editing) creates a new role with a name and target app – with the same permissions (data
+permissions only for tables of the target app) and hidden menu entries, without members.
+
 ## 3. Menus
 
 **Administration → Application → Menus**
@@ -184,6 +191,9 @@ administration is structured (*Users and access*, *Database*, *Application*, *Op
 its child entries are deleted as well.
 
 > The **details** (master-detail) are not set in the menu but in the table designer.
+
+**App:** top-level entries and groups belong to an [app](#16-apps-business-applications) or – without one – to the
+system; entries inside a group take its app. For data entries the form only offers tables of that app.
 
 ## 4. Table designer
 
@@ -280,6 +290,10 @@ For every rule you choose the **field**, the **comparison** and whether it is co
   edited.
 - Renaming a field updates its rules. A field used in a rule cannot be deleted, and its type can only be changed to
   a type that still fits the rule.
+
+**App and prefix:** when creating a table you choose its [app](#16-apps-business-applications) (required if there
+are several apps). If the app has a prefix, it is put in front of the suggested technical name; changing the app
+replaces it. Relations are only possible to tables of the same app.
 
 ### Computed fields
 
@@ -499,9 +513,9 @@ with a matching mapping".
 **Sign-out (single logout):** On request, signing out of SAFT also signs out at the provider. With Entra this
 affects all Microsoft services in the browser (Outlook, Teams …), so it is off by default.
 
-## 7. App settings
+## 7. Global settings
 
-**Administration → Application → App settings**
+**Administration → Application → Global settings**
 
 | Setting | Meaning |
 |---|---|
@@ -869,6 +883,9 @@ currently not running".
 > **Permissions:** "Scheduled tasks: view/create/edit/delete"; "Run now" with "edit". For the widget additionally
 > "Dashboard widget: Scheduled tasks (status)". Changes to tasks are recorded in the activity log.
 
+**App:** tasks for a table belong to its [app](#16-apps-business-applications); for other tasks you choose the
+app. System tasks belong to no app.
+
 ---
 
 ## 13. AI functions
@@ -887,7 +904,7 @@ in the editor or form, is checked there and only takes effect with **Save** or *
 1. **Prepare the provider:** For Anthropic create an API key in the Claude Console (*API Keys*); a Claude subscription
    (Pro/Max) alone is not enough, the API is billed separately by usage. Alternatively Amazon Bedrock or Google Vertex
    AI (setup see [System administration](SYSADMIN_GUIDE.md#5-ai-functions)).
-2. **Administration → Application → App settings → AI assistant for reports:**
+2. **Administration → Application → Global settings → AI assistant for reports:**
 
    | Setting | Meaning |
    |---|---|
@@ -973,7 +990,7 @@ the manuals, it says so and refers to the administration.
   depth and the daily limit; a spending limit in the provider account caps them additionally.
 
 > **Outlook:** Organisation-specific terms (e.g. "for us, revenue means the purchase value of receipts") could in future
-> be stored as **notes for the AI assistant** in the app settings and sent along with the fixed instructions. Until
+> be stored as **notes for the AI assistant** in the global settings and sent along with the fixed instructions. Until
 > then, meaningful labels and descriptions of tables and fields help.
 
 ## 14. Plugins
@@ -1078,7 +1095,7 @@ a **package** (a JSON file) and import it in the other installation.
 | links for reports | users and their dashboard layout |
 | reports – shared ones and your own | other people's private reports |
 | menu entries (with their parent groups) | database connections and credentials |
-| roles with their permissions and hidden menu entries | app settings, scheduled tasks |
+| roles with their permissions and hidden menu entries | global settings, scheduled tasks |
 
 All references are stored as **names**, not internal numbers – tables and fields by technical name, menu entries by
 path (e.g. "Warehouse (demo) › Warehouse operations › Stock levels"), reports by name. So the package fits any installation.
@@ -1119,13 +1136,56 @@ package lists them as a prerequisite.
 > **Tip:** import a package into a test installation first and check the preview. For recurring transfers there are the
 > commands `saft:config-export` and `saft:config-import` (see [System administration](SYSADMIN_GUIDE.md)).
 
+**Target app when importing:** tables, top-level menu groups and roles of the package go into a chosen
+[app](#16-apps-business-applications) – an existing or a new one (suggested with the package's label); on the console
+`saft:config-import --app=<ID>` or `--new-app="Name"`. When exporting, tables and reports are listed under
+“App › menu group”.
+
+## 16. Apps (business applications)
+
+An **app** groups what belongs together: tables, menus, reports, table links, roles and scheduled tasks, e.g.
+“Warehouse” or “HR”. Each of these objects belongs to exactly one app; users, sign-in, global settings, AI connection,
+database connections and the rest of the administration remain shared by all apps. Background and next steps
+(switching between apps, own dashboard, moving, packages): [concept](../concept/APPS.md) (in German).
+
+**Administration → Application → Apps** (permissions *Apps: view* and *manage*) lists the apps with the number of their
+tables, menus, reports, links, roles and tasks:
+
+| Setting | Meaning |
+|---|---|
+| Name, description | in all languages |
+| Table prefix | put in front of the technical name of new tables, e.g. `hr` → `hr_absences`. Suggested from the name when an app is created; a later change only applies to new tables |
+| Icon, sort order | display in lists |
+
+Only an empty app can be deleted.
+
+**Where the app is chosen – and where it follows:**
+
+| Object | App |
+|---|---|
+| Table (table designer, import from file, table connector) | chosen when creating; required if there are several apps. Changing the app replaces the prefix in the suggested name |
+| Top-level menu entry or menu group | chosen; without an app the entry belongs to the system (e.g. documentation) |
+| Menu entry inside a group | app of the group; data entries the app of their table |
+| Report | app of its base table |
+| Table link | app of the source table |
+| Role | chosen (see [Roles](#2-roles-and-permissions)); *super-admin* and *benutzer* are system roles without an app |
+| Scheduled task | for a table: its app; otherwise chosen; system tasks without an app |
+
+**Boundary between apps:** relation fields, table links for reports and therefore also “Copy from” and formulas over
+child tables are only possible within one app. The table designer only offers tables of the same app; the AI table
+assistant only sees the data model of the chosen app.
+
+**After the update:** existing installations get an app “Existing data” with all existing tables, menus, reports,
+roles and tasks; system menus, system roles and system tasks stay without an app. New installations start without an
+app; the demo data create one app each (Shop, Warehouse, Research).
+
 ## Appendix A – Permissions at a glance
 
 | Area | Permissions |
 |---|---|
 | Users, roles, menus, identity providers, table designer, table connector, database connections | view, create, edit, delete; table designer also import and use assistant (AI) |
 | Activity log | view |
-| Authentication settings, app settings | view, edit |
+| Authentication settings, global settings | view, edit |
 | Dashboard widgets | per widget |
 | Reports | view, create (own), edit and delete (also other people's), use assistant (AI) |
 | Table links | view, create, edit, delete |
@@ -1133,5 +1193,6 @@ package lists them as a prerequisite.
 | System log | view (log file of the server, read only) |
 | Plugins | view; manage (create menu entries, clean up); the plugins' own permissions are listed under their name |
 | Configuration | view (page and menu entry); export; import |
+| Apps | view; manage (create, edit, delete empty ones) |
 | Help | use assistant (help assistant) |
 | Data per table (data permissions matrix) | view, create, edit, delete, export, import; for linked external tables write permissions only if enabled |

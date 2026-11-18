@@ -19,7 +19,7 @@
 - [4. Designer di tabelle](#4-designer-di-tabelle)
 - [5. Autenticazione](#5-autenticazione)
 - [6. Provider di identità (single sign-on)](#6-provider-di-identità-single-sign-on)
-- [7. Impostazioni dell’applicazione](#7-impostazioni-dellapplicazione)
+- [7. Impostazioni globali](#7-impostazioni-globali)
 - [8. Registro modifiche](#8-registro-modifiche)
 - [9. Connessioni ai database](#9-connessioni-ai-database)
 - [10. Connettore di tabelle](#10-connettore-di-tabelle)
@@ -28,6 +28,7 @@
 - [13. Funzioni IA](#13-funzioni-ia)
 - [14. Plugin](#14-plugin)
 - [15. Trasferire la configurazione](#15-trasferire-la-configurazione)
+- [16. App (applicazioni specialistiche)](#16-app-applicazioni-specialistiche)
 - [Allegato A – Panoramica dei diritti](#allegato-a--panoramica-dei-diritti)
 
 ---
@@ -123,6 +124,13 @@ propri. Una banda gialla in alto indica il ruolo; **Termina** nella banda ripris
 termina la vista). Il database resta invariato, inizio e fine figurano nel registro modifiche. Attenzione: ciò che il
 ruolo può fare viene davvero salvato durante la vista – con voi come autore.
 
+**App e copia** (B-107): ogni ruolo appartiene a un’[app](#16-app-applicazioni-specialistiche); il modulo mostra
+diritti sui dati e voci di menu solo per le tabelle di quell’app. I ruoli di sistema *super-admin* e *benutzer* non
+appartengono ad alcuna app e contengono solo diritti comuni (ad es. dashboard, guida); i diritti sui dati si assegnano
+tramite i ruoli delle app. **Copia** (nell’elenco e in modifica) crea un nuovo ruolo con nome e app di destinazione –
+con gli stessi diritti (diritti sui dati solo per le tabelle dell’app di destinazione) e le voci di menu nascoste,
+senza membri.
+
 ## 3. Menu
 
 **Amministrazione → Applicazione → Menu**
@@ -191,6 +199,10 @@ magazzino*, *Dati di base*, *Report*); le voci si ordinano con il trascinamento.
 vengono eliminate anche le sue sottovoci.
 
 > I **dettagli** (master-detail) non si impostano nel menu, ma nel Designer di tabelle.
+
+**App:** voci e gruppi di primo livello appartengono a un’[app](#16-app-applicazioni-specialistiche) o – senza
+app – al sistema; le voci di un gruppo ne riprendono l’app. Per le voci di dati il modulo offre solo tabelle di
+quell’app.
 
 ## 4. Designer di tabelle
 
@@ -291,6 +303,10 @@ un **altro campo** o con un **valore fisso**:
   alla modifica successiva.
 - Se un campo viene rinominato, le sue regole seguono. Un campo usato da una regola non si può eliminare e il suo tipo
   si può cambiare solo in un tipo che resta compatibile con la regola.
+
+**App e prefisso:** alla creazione scegliete l’[app](#16-app-applicazioni-specialistiche) della tabella
+(obbligatoria se ci sono più app). Se l’app ha un prefisso, precede il nome tecnico proposto; cambiare app lo
+sostituisce. I collegamenti sono possibili solo con tabelle della stessa app.
 
 ### Campi calcolati
 
@@ -518,9 +534,9 @@ esterno → ruolo». A ogni accesso i ruoli mappati vengono assegnati o revocati
 riguarda tutti i servizi Microsoft nel browser (Outlook, Teams …) – per questo è disattivato per impostazione
 predefinita.
 
-## 7. Impostazioni dell’applicazione
+## 7. Impostazioni globali
 
-**Amministrazione → Applicazione → Impostazioni dell’applicazione**
+**Amministrazione → Applicazione → Impostazioni globali**
 
 | Impostazione | Significato |
 |---|---|
@@ -914,6 +930,9 @@ attività pianificate al momento non vengono eseguite».
 > widget in più «Widget della dashboard: Attività pianificate (stato)». Le modifiche alle attività figurano nel
 > registro modifiche.
 
+**App:** le attività relative a una tabella appartengono alla sua [app](#16-app-applicazioni-specialistiche);
+per le altre attività scegliete l’app. Le attività di sistema non appartengono ad alcuna app.
+
 ---
 
 ## 13. Funzioni IA
@@ -932,7 +951,7 @@ risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effe
 1. **Preparare il provider:** per Anthropic creare una chiave API nella Claude Console (*API Keys*); un abbonamento
    Claude (Pro/Max) da solo non basta, l’API viene fatturata separatamente in base al consumo. In alternativa Amazon
    Bedrock o Google Vertex AI (configurazione vedere [Amministrazione di sistema](SYSADMIN_GUIDE.md#5-ai-functions)).
-2. **Amministrazione → Applicazione → Impostazioni dell’applicazione → Assistente IA per i report:**
+2. **Amministrazione → Applicazione → Impostazioni globali → Assistente IA per i report:**
 
    | Impostazione | Significato |
    |---|---|
@@ -1130,7 +1149,7 @@ un **pacchetto** (un file JSON) e lo importate nell’altra installazione.
 | collegamenti per le analisi | utenti e disposizione della loro dashboard |
 | analisi – condivise e le vostre | analisi private di altre persone |
 | voci di menu (con i gruppi superiori) | connessioni ai database e credenziali |
-| ruoli con i loro diritti e le voci di menu nascoste | impostazioni dell’applicazione, attività pianificate |
+| ruoli con i loro diritti e le voci di menu nascoste | impostazioni globali, attività pianificate |
 
 Tutti i riferimenti sono salvati come **nomi**, non come numeri interni – tabelle e campi con il nome tecnico, voci di
 menu con il percorso (p. es. «Magazzino (demo) › Gestione del magazzino › Giacenze»), analisi con il nome. Così il pacchetto va bene per qualsiasi
@@ -1173,13 +1192,57 @@ devono già esistere nell’installazione di destinazione; il pacchetto le indic
 > **Suggerimento:** importate un pacchetto prima in un’installazione di test e controllate l’anteprima. Per
 > trasferimenti ricorrenti esistono i comandi `saft:config-export` e `saft:config-import`.
 
+**App di destinazione all’importazione:** tabelle, gruppi di menu di primo livello e ruoli del pacchetto
+finiscono in un’[app](#16-app-applicazioni-specialistiche) scelta – esistente o nuova (proposta con il nome del
+pacchetto); da console `saft:config-import --app=<ID>` o `--new-app="Nome"`. All’esportazione tabelle e report
+figurano sotto «App › gruppo di menu».
+
+## 16. App (applicazioni specialistiche)
+
+Un’**app** raggruppa ciò che va insieme: tabelle, menu, report, collegamenti tra tabelle, ruoli e attività pianificate,
+ad es. «Magazzino» o «Personale». Ognuno di questi oggetti appartiene esattamente a un’app; utenti, accesso,
+impostazioni globali, collegamento IA, connessioni ai database e il resto dell’amministrazione restano comuni a tutte
+le app. Contesto e passi successivi (passare da un’app all’altra, dashboard propria, spostamento, pacchetti):
+[concetto](../concept/APPS.md) (in tedesco).
+
+**Amministrazione → Applicazione → App** (diritti *App: visualizzare* e *gestire*) elenca le app con il numero delle
+loro tabelle, menu, report, collegamenti, ruoli e attività:
+
+| Impostazione | Significato |
+|---|---|
+| Nome, descrizione | in tutte le lingue |
+| Prefisso delle tabelle | anteposto al nome tecnico delle nuove tabelle, ad es. `hr` → `hr_assenze`. Proposto dal nome alla creazione di un’app; una modifica successiva vale solo per le nuove tabelle |
+| Icona, ordinamento | visualizzazione negli elenchi |
+
+Si può eliminare solo un’app vuota.
+
+**Dove si sceglie l’app – e dove deriva:**
+
+| Oggetto | App |
+|---|---|
+| Tabella (designer di tabelle, importazione da file, connettore di tabelle) | da scegliere alla creazione; obbligatoria se ci sono più app. Cambiare app sostituisce il prefisso nel nome proposto |
+| Voce di menu o gruppo di primo livello | da scegliere; senza app la voce appartiene al sistema (ad es. documentazione) |
+| Voce di menu in un gruppo | app del gruppo; le voci di dati l’app della loro tabella |
+| Report | app della sua tabella di base |
+| Collegamento tra tabelle | app della tabella di origine |
+| Ruolo | da scegliere (vedi [Ruoli](#2-ruoli-e-diritti)); *super-admin* e *benutzer* sono ruoli di sistema senza app |
+| Attività pianificata | relativa a una tabella: la sua app; altrimenti da scegliere; attività di sistema senza app |
+
+**Confine tra app:** campi di collegamento, collegamenti tra tabelle per i report e quindi anche «Riprendi da» e le
+formule sulle tabelle figlie sono possibili solo all’interno di un’app. Il designer di tabelle offre solo tabelle della
+stessa app; l’assistente IA delle tabelle vede solo il modello dati dell’app scelta.
+
+**Dopo l’aggiornamento:** le installazioni esistenti ricevono un’app «Dati esistenti» con tutte le tabelle, i menu, i
+report, i ruoli e le attività esistenti; menu, ruoli e attività di sistema restano senza app. Le nuove installazioni
+iniziano senza app; i dati demo creano ciascuno la propria app (Negozio, Magazzino, Ricerca).
+
 ## Allegato A – Panoramica dei diritti
 
 | Area | Diritti |
 |---|---|
 | Utenti, ruoli, menu, provider di identità, Designer di tabelle, Connettore di tabelle, connessioni ai database | visualizzare, creare, modificare, eliminare; Designer di tabelle in più importare e usare l’assistente (IA) |
 | Registro modifiche | visualizzare |
-| Impostazioni di autenticazione, impostazioni dell’applicazione | visualizzare, modificare |
+| Impostazioni di autenticazione, impostazioni globali | visualizzare, modificare |
 | Widget della dashboard | per widget |
 | Report | visualizzare, creare (propri), modificare ed eliminare (anche altrui), usare l’assistente (IA) |
 | Collegamenti tra tabelle | visualizzare, creare, modificare, eliminare |
@@ -1187,5 +1250,6 @@ devono già esistere nell’installazione di destinazione; il pacchetto le indic
 | Registro di sistema | visualizzare (file di log del server, sola lettura) |
 | Plugin | visualizzare; gestire (creare voci di menu, pulire); i diritti propri dei plugin compaiono sotto il loro nome |
 | Configurazione | visualizzare (pagina e voce di menu); esportare; importare |
+| App | visualizzare; gestire (creare, modificare, eliminare app vuote) |
 | Aiuto | usare l’assistente (assistente di aiuto) |
 | Dati per tabella (matrice dei diritti sui dati) | visualizzare, creare, modificare, eliminare, esportare, importare; per le tabelle esterne collegate diritti di scrittura solo se abilitati |

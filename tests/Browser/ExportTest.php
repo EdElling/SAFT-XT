@@ -6,12 +6,12 @@ namespace Tests\Browser;
 
 use App\DynamicData\DataPermissions;
 use App\Models\Activity;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\DynamicSchemaService;
 use Laravel\Dusk\Browser;
 use OpenSpout\Reader\XLSX\Reader;
 use RuntimeException;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Browser\Concerns\CreatesOrderData;
 use Tests\DuskTestCase;

@@ -6,6 +6,7 @@ return [
     'model' => 'voce di menu',
     'plural' => 'menu',
     'form' => [
+        'app_help' => 'Gruppi e voci di un’app appaiono con essa; senza app la voce appartiene al sistema (ad es. documentazione).',
         'diagram_help' => 'Mostra le tabelle dati del gruppo in cui si trova questa voce (sottogruppi inclusi) e i loro collegamenti. Al primo livello: tutte le tabelle dati.',
         'report_help' => 'Solo report condivisi. La voce appare solo a chi può eseguire il report (diritti sui dati di tutte le tabelle coinvolte).',
         'entry' => 'Voce',

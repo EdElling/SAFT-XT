@@ -212,6 +212,7 @@ final class BulkConnector
         try {
             $table = $this->connector->connect($connection, $schema, $external, [
                 'name' => $name,
+                'app_id' => $options['app_id'] ?? null,
                 'menu_group' => filled($options['menu_group'] ?? null) ? (string) $options['menu_group'] : null,
             ], linkForeignKeys: false);
         } catch (BusinessRuleException $e) {

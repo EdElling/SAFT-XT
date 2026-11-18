@@ -71,6 +71,9 @@ final class TableAssistant
         "question" and explain briefly that this must be done by hand in the table designer.
         TXT;
 
+    /** App, deren Tabellen der Assistent sieht (B-107); null = alle. */
+    private ?int $appId = null;
+
     public function __construct(
         private readonly AssistantClient $client,
         private readonly FieldDefinitionNormalizer $normalizer,
@@ -89,6 +92,9 @@ final class TableAssistant
      */
     public function proposeTable(User $user, string $text, array $form, array $history = []): TableAssistantResult
     {
+        // Datenmodell nur der gewählten App (B-107): Verknüpfungen sind nur innerhalb einer App möglich.
+        $this->appId = filled($form['app_id'] ?? null) ? (int) $form['app_id'] : null;
+
         $this->assertCanAsk($user, $text);
         $request = $this->request($text, ['form' => $this->formForModel($form)]);
 
@@ -104,6 +110,8 @@ final class TableAssistant
      */
     public function proposeChanges(User $user, CustomTable $table, string $text, array $history = []): TableAssistantResult
     {
+        $this->appId = $table->app_id;
+
         $this->assertCanAsk($user, $text);
         $table->loadMissing('fields');
         $request = $this->request($text, ['table' => $this->tableForModel($table)]);
@@ -228,12 +236,12 @@ final class TableAssistant
     private function dataModel(): array
     {
         return [
-            'tables' => CustomTable::query()->designer()->with('fields')->orderBy('name')->get()->map(fn (CustomTable $t): array => [
+            'tables' => CustomTable::query()->designer()->when($this->appId !== null, fn ($q) => $q->where('app_id', $this->appId))->with('fields')->orderBy('name')->get()->map(fn (CustomTable $t): array => [
                 'name' => $t->name,
                 'label' => (string) $t->label,
                 'fields' => $t->fields->where('is_active', true)->map(fn (CustomField $f): array => ['name' => $f->name, 'label' => (string) $f->label, 'type' => $f->type->value])->values()->all(),
             ])->all(),
-            'menu_groups' => collect(app(DataMenu::class)->groupOptions())->map(fn (string $label, string $id): array => ['id' => $id, 'label' => trim($label)])->values()->all(),
+            'menu_groups' => collect(app(DataMenu::class)->groupOptions($this->appId))->map(fn (string $label, string $id): array => ['id' => $id, 'label' => trim($label)])->values()->all(),
         ];
     }
 

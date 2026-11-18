@@ -19,7 +19,7 @@
 - [4. Table-Designer](#4-table-designer)
 - [5. Authentifizierung](#5-authentifizierung)
 - [6. Identity Provider (Single Sign-On)](#6-identity-provider-single-sign-on)
-- [7. App-Einstellungen](#7-app-einstellungen)
+- [7. Globale Einstellungen](#7-globale-einstellungen)
 - [8. Änderungsprotokoll](#8-änderungsprotokoll)
 - [9. Datenbankverbindungen](#9-datenbankverbindungen)
 - [10. Table-Connector](#10-table-connector)
@@ -28,6 +28,7 @@
 - [13. KI-Funktionen](#13-ki-funktionen)
 - [14. Plugins](#14-plugins)
 - [15. Konfiguration übertragen](#15-konfiguration-übertragen)
+- [16. Apps (Fachanwendungen)](#16-apps-fachanwendungen)
 - [Anhang A – Rechte im Überblick](#anhang-a--rechte-im-überblick)
 
 ---
@@ -121,6 +122,12 @@ eigenen Rechte wieder her (auch die Abmeldung beendet die Ansicht). Die Datenban
 stehen im Änderungsprotokoll. Achtung: Was die Rolle darf, wird während der Ansicht wirklich gespeichert – mit Ihnen
 als Verursacher.
 
+**App und Kopie** (B-107): Jede Rolle gehört zu einer [App](#16-apps-fachanwendungen); Datenrechte und Menüeinträge
+zeigt das Formular nur für Tabellen dieser App. Die Systemrollen *super-admin* und *benutzer* gehören zu keiner App und
+enthalten nur app-übergreifende Rechte (z. B. Dashboard, Hilfe); Datenrechte vergeben Sie über die Rollen der Apps.
+**Kopieren** (in der Liste und beim Bearbeiten) legt eine neue Rolle mit Namen und Ziel-App an – mit denselben Rechten
+(Datenrechte nur für Tabellen der Ziel-App) und ausgeblendeten Menüeinträgen, ohne Mitglieder.
+
 ## 3. Menüs
 
 **Administration → Anwendung → Menüs**
@@ -190,6 +197,9 @@ Lager-Demo (*Lager führen*, *Stammdaten*, *Auswertungen*); Einträge lassen sic
 Löschen eines Eintrags werden seine Untereinträge mitgelöscht.
 
 > Die **Details** (Master-Detail) werden nicht im Menü, sondern im Table-Designer eingestellt.
+
+**App:** Oberste Einträge und Gruppen gehören zu einer [App](#16-apps-fachanwendungen) oder – ohne Angabe – zum
+System; Einträge in einer Gruppe übernehmen deren App. Für Dateneinträge bietet das Formular nur Tabellen dieser App an.
 
 ## 4. Table-Designer
 
@@ -291,6 +301,10 @@ Dateien hinzukamen oder entfernt wurden.
   Bearbeiten geprüft.
 - Wird ein Feld umbenannt, ändern sich seine Regeln mit. Ein Feld, das eine Regel verwendet, lässt sich nicht löschen,
   und sein Typ nur in einen Typ ändern, der weiter zur Regel passt.
+
+**App und Präfix:** Beim Anlegen wählen Sie die [App](#16-apps-fachanwendungen) der Tabelle (bei mehreren Apps
+Pflicht). Hat die App ein Präfix, steht es vor dem vorgeschlagenen technischen Namen; ein Wechsel der App ersetzt es.
+Verknüpfungen sind nur zu Tabellen derselben App möglich.
 
 ### Berechnete Felder
 
@@ -514,9 +528,9 @@ Anmeldung werden die zugeordneten Rollen vergeben bzw. entzogen; andere Rollen b
 **Abmeldung (Single Logout):** Auf Wunsch meldet die Abmeldung in SAFT auch beim Anbieter ab. Bei Entra
 betrifft das alle Microsoft-Dienste im Browser (Outlook, Teams …) – daher standardmässig aus.
 
-## 7. App-Einstellungen
+## 7. Globale Einstellungen
 
-**Administration → Anwendung → App-Einstellungen**
+**Administration → Anwendung → Globale Einstellungen**
 
 | Einstellung | Bedeutung |
 |---|---|
@@ -899,6 +913,9 @@ Server (siehe [Systemadministration](SYSADMIN_GUIDE.de.md#4-geplante-aufgaben-un
 > Widget zusätzlich „Dashboard-Widget: Geplante Aufgaben (Status)“. Änderungen an Aufgaben stehen im
 > Änderungsprotokoll.
 
+**App:** Aufgaben zu einer Tabelle gehören zu deren [App](#16-apps-fachanwendungen); für andere Aufgaben wählen
+Sie die App. System-Aufgaben gehören zu keiner App.
+
 ---
 
 ## 13. KI-Funktionen
@@ -917,7 +934,7 @@ landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bz
 1. **Anbieter vorbereiten:** Für Anthropic einen API-Schlüssel in der Claude Console (*API Keys*) anlegen; ein
    Claude-Abo (Pro/Max) allein genügt nicht, die API wird getrennt nach Verbrauch abgerechnet. Alternativ Amazon
    Bedrock oder Google Vertex AI (Einrichtung siehe [Systemadministration](SYSADMIN_GUIDE.de.md#5-ki-funktionen)).
-2. **Administration → Anwendung → App-Einstellungen → KI-Assistent für Auswertungen:**
+2. **Administration → Anwendung → Globale Einstellungen → KI-Assistent für Auswertungen:**
 
    | Einstellung | Bedeutung |
    |---|---|
@@ -1003,7 +1020,7 @@ entfernt SAFT, ebenso Links nach aussen. Steht etwas nicht in den Handbüchern, 
   zusätzlich.
 
 > **Ausblick:** Organisationsspezifische Begriffe (z. B. „Umsatz meint bei uns den Einkaufswert der Eingänge“) könnten
-> künftig als **Hinweise für den KI-Assistenten** in den App-Einstellungen hinterlegt und mit den festen Anweisungen
+> künftig als **Hinweise für den KI-Assistenten** in den globalen Einstellungen hinterlegt und mit den festen Anweisungen
 > mitgeschickt werden. Bis dahin helfen sprechende Bezeichnungen und Beschreibungen der Tabellen und Felder.
 
 ## 14. Plugins
@@ -1109,7 +1126,7 @@ exportieren Sie ein **Paket** (eine JSON-Datei) und spielen es in der anderen In
 | Verknüpfungen für Auswertungen | Benutzer und ihre Dashboard-Anordnung |
 | Auswertungen – freigegebene und Ihre eigenen | private Auswertungen anderer |
 | Menüeinträge (mit den übergeordneten Gruppen) | Datenbankverbindungen und Zugangsdaten |
-| Rollen mit ihren Rechten und ausgeblendeten Menüeinträgen | App-Einstellungen, geplante Aufgaben |
+| Rollen mit ihren Rechten und ausgeblendeten Menüeinträgen | Globale Einstellungen, geplante Aufgaben |
 
 Alle Verweise stehen im Paket als **Namen**, nicht als interne Nummern – Tabellen und Felder mit ihrem technischen
 Namen, Menüeinträge mit ihrem Pfad (z. B. „Lager (Demo) › Lager führen › Bestände“), Auswertungen mit ihrem Namen. So passt das Paket
@@ -1154,13 +1171,57 @@ Zielinstallation bereits angelegt sein; das Paket nennt sie als Voraussetzung.
 > Übertragungen gibt es die Befehle `saft:config-export` und `saft:config-import` (siehe
 > [Systemadministration](SYSADMIN_GUIDE.de.md)).
 
+**Ziel-App beim Einspielen:** Tabellen, oberste Menügruppen und Rollen des Pakets kommen in eine gewählte
+[App](#16-apps-fachanwendungen) – eine bestehende oder eine neue (vorgeschlagen mit der Bezeichnung des Pakets); auf
+der Konsole `saft:config-import --app=<ID>` bzw. `--new-app="Name"`. Beim Export stehen Tabellen und Auswertungen
+unter „App › Menügruppe“.
+
+## 16. Apps (Fachanwendungen)
+
+Eine **App** fasst zusammen, was fachlich zusammengehört: Tabellen, Menüs, Auswertungen, Tabellenverknüpfungen, Rollen
+und geplante Aufgaben, z. B. „Lager“ oder „Personal“. Jedes dieser Objekte gehört zu genau einer App; gemeinsam für
+alle Apps bleiben Benutzer, Anmeldung, Globale Einstellungen, KI-Anbindung, Datenbankverbindungen und die übrige
+Administration. Hintergrund und weitere Schritte (Umschalten zwischen Apps, eigenes Dashboard, Verschieben, Pakete):
+[Konzept](../concept/APPS.md).
+
+**Administration → Anwendung → Apps** (Rechte *Apps: anzeigen* bzw. *verwalten*) listet die Apps mit der Anzahl ihrer
+Tabellen, Menüs, Auswertungen, Verknüpfungen, Rollen und Aufgaben:
+
+| Einstellung | Bedeutung |
+|---|---|
+| Name, Beschreibung | in allen Sprachen |
+| Präfix für Tabellen | wird beim Anlegen von Tabellen dem technischen Namen vorangestellt, z. B. `hr` → `hr_abwesenheiten`. Beim Anlegen einer App aus dem Namen vorgeschlagen; eine spätere Änderung gilt nur für neue Tabellen |
+| Symbol, Sortierung | Darstellung in Listen |
+
+Löschen lässt sich nur eine leere App.
+
+**Wo die App gewählt wird – und wo sie sich ergibt:**
+
+| Objekt | App |
+|---|---|
+| Tabelle (Table-Designer, Import aus Datei, Table-Connector) | beim Anlegen wählen; bei mehreren Apps Pflicht. Ein Wechsel der App ersetzt das Präfix im vorgeschlagenen Namen |
+| Oberster Menüeintrag oder Menügruppe | wählen; ohne App gehört der Eintrag zum System (z. B. Dokumentation) |
+| Menüeintrag in einer Gruppe | App der Gruppe; Dateneinträge die App ihrer Tabelle |
+| Auswertung | App ihrer Grundtabelle |
+| Tabellenverknüpfung | App der Quelltabelle |
+| Rolle | wählen (siehe [Rollen](#2-rollen-und-rechte)); *super-admin* und *benutzer* sind Systemrollen ohne App |
+| Geplante Aufgabe | zu einer Tabelle: deren App; sonst wählen; System-Aufgaben ohne App |
+
+**Grenze zwischen Apps:** Verknüpfungsfelder, Tabellenverknüpfungen für Auswertungen und damit auch „Übernehmen aus“
+und Formeln über Kind-Tabellen sind nur innerhalb einer App möglich. Der Table-Designer bietet nur Tabellen derselben
+App an; der KI-Tabellenassistent sieht nur das Datenmodell der gewählten App.
+
+**Nach dem Update:** Bestehende Installationen erhalten eine App „Bestehende Daten“ mit allen vorhandenen Tabellen,
+Menüs, Auswertungen, Rollen und Aufgaben; System-Menüs, Systemrollen und System-Aufgaben bleiben ohne App. Neue
+Installationen beginnen ohne App; die Demo-Daten legen je eine eigene App an (Shop, Lager, Forschung).
+
 ## Anhang A – Rechte im Überblick
 
 | Bereich | Rechte |
 |---|---|
 | Benutzer, Rollen, Menüs, Identity Provider, Table-Designer, Table-Connector, Datenbankverbindungen | anzeigen, anlegen, bearbeiten, löschen; Table-Designer zusätzlich importieren und Assistent nutzen (KI) |
 | Änderungsprotokoll | anzeigen |
-| Einstellungen Authentifizierung, App-Einstellungen | anzeigen, bearbeiten |
+| Einstellungen Authentifizierung, Globale Einstellungen | anzeigen, bearbeiten |
 | Dashboard-Widgets | je Widget |
 | Auswertungen | anzeigen, anlegen (eigene), bearbeiten und löschen (auch fremde), Assistent nutzen (KI) |
 | Tabellenverknüpfungen | anzeigen, anlegen, bearbeiten, löschen |
@@ -1168,5 +1229,6 @@ Zielinstallation bereits angelegt sein; das Paket nennt sie als Voraussetzung.
 | Systemprotokoll | anzeigen (Logdatei des Servers, nur lesen) |
 | Plugins | anzeigen; verwalten (Menüeinträge anlegen, Aufräumen); die Rechte der Plugins selbst stehen unter ihrem Namen |
 | Konfiguration | anzeigen (Seite und Menüeintrag); exportieren; einspielen |
+| Apps | anzeigen; verwalten (anlegen, bearbeiten, leere löschen) |
 | Hilfe | Assistent nutzen (Hilfe-Assistent) |
 | Daten je Tabelle (Datenrechte-Matrix) | anzeigen, anlegen, bearbeiten, löschen, exportieren, importieren; bei angebundenen externen Tabellen Schreibrechte nur, wenn freigeschaltet |

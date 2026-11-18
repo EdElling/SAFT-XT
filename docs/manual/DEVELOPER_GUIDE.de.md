@@ -125,7 +125,7 @@ wird die Anwendung aufgebaut und erprobt, im **Echtsystem** läuft sie.
       übernehmen, die nicht schon mit dem Paket kamen.
 
 8. **Echtsystem: einrichten, was nicht im Paket ist.** Datenbankverbindungen mit ihren Zugangsdaten, geplante
-   Aufgaben und App-Einstellungen; [Benutzer](ADMIN_GUIDE.de.md#1-benutzer) anlegen oder Single Sign-On einrichten
+   Aufgaben und Globale Einstellungen; [Benutzer](ADMIN_GUIDE.de.md#1-benutzer) anlegen oder Single Sign-On einrichten
    ([Authentifizierung](ADMIN_GUIDE.de.md#5-authentifizierung),
    [Identity Provider](ADMIN_GUIDE.de.md#6-identity-provider-single-sign-on)); Bestandsdaten importieren. Für den
    Betrieb: Scheduler per Cron ([Geplante Aufgaben und Cron](SYSADMIN_GUIDE.de.md#4-geplante-aufgaben-und-cron)) und
@@ -667,7 +667,10 @@ vendor/bin/phpunit -c phpunit.mysql.xml --testsuite Plugins    # auf MySQL (phpu
 ```
 
 Testklassen erben von `App\Plugins\Testing\PluginTestCase` (Teil der Plugin-API). Jeder Test beginnt mit einer leeren
-Testdatenbank samt Rollen, Rechten und Menü.
+Testdatenbank samt Rollen, Rechten, Menü und einer App „Test-App“ (B-107): Tabellen, Rollen und Menügruppen ohne
+Angabe einer App landen in ihr. Gibt es im Test mehrere Apps (z. B. nach dem Einspielen einer Demo), geben Sie die App
+beim Anlegen einer Tabelle an (`DynamicSchemaService::createTable(['app_id' => …, 'name' => …])`); ohne Angabe lehnt
+SAFT dann mit „Bitte eine App wählen“ ab.
 
 | Hilfe | Zweck |
 |---|---|

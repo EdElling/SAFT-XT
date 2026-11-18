@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'title' => 'App settings',
+    'title' => 'Global settings',
     'branding' => 'Branding',
     'app_name' => 'Display name of the application',
     'app_name_help' => 'Shown in the header, the browser tab, on the sign-in page and as the sender of emails.',

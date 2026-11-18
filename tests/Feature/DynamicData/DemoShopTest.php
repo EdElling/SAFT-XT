@@ -48,7 +48,7 @@ class DemoShopTest extends DynamicDataTestCase
         $this->assertEqualsWithDelta($this->revenueWithoutCancelled(), $total, 0.01);
 
         // Neue Tabellen landen weiterhin in „Daten“ (wird bei Bedarf angelegt).
-        $table = app(DynamicSchemaService::class)->createTable(['name' => 'notizen', 'label' => 'Notizen']);
+        $table = app(DynamicSchemaService::class)->createTable(['app_id' => self::ensureTestApp()->id, 'name' => 'notizen', 'label' => 'Notizen']);
         $this->assertSame(DataMenu::GROUP_LABEL, app(DataMenu::class)->ensure($table)->parent->getTranslation('label', 'de'));
     }
 

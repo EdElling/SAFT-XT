@@ -7,6 +7,7 @@ namespace App\Configuration;
 use App\DynamicData\DataMenu;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Reports\ReportResource;
+use App\Models\App;
 use App\Models\DatabaseConnection;
 use App\Models\Menu;
 use App\Models\Report;
@@ -261,8 +262,11 @@ final class ConfigImporter
      * @param  array<string, mixed>  $package
      * @return array<string, int> Bereich => Anzahl angelegt
      */
-    public function apply(array $package, ?User $user): array
+    public function apply(array $package, ?User $user, App|int|null $app = null): array
     {
+        // Ziel-App (B-107): Tabellen, oberste Menügruppen und Rollen des Pakets; Auswertungen, Verknüpfungen und
+        // Menüeinträge folgen ihrer Tabelle bzw. Gruppe.
+        $app = App::resolve($app);
         $new = [];
 
         foreach ($this->analyze($package) as $item) {
@@ -277,12 +281,12 @@ final class ConfigImporter
         $tables = array_values(array_filter($package['tables'], static fn (array $t): bool => in_array($t['name'], $new[ImportItem::TABLE] ?? [], true)));
 
         if ($tables !== []) {
-            $created[ImportItem::TABLE] = count($this->schemaImporter->import(['format' => SchemaExporter::FORMAT, 'tables' => $tables]));
+            $created[ImportItem::TABLE] = count($this->schemaImporter->import(['format' => SchemaExporter::FORMAT, 'tables' => $tables], app: $app));
         }
 
         $this->refs->refresh();
 
-        DB::transaction(function () use ($package, $new, $user, &$created): void {
+        DB::transaction(function () use ($package, $new, $user, $app, &$created): void {
             foreach ($package['report_links'] as $link) {
                 if (in_array($link['source'].'>'.$link['target_table'], $new[ImportItem::REPORT_LINK] ?? [], true)) {
                     ReportLink::create([
@@ -315,6 +319,7 @@ final class ConfigImporter
                 if (in_array($menu['path'], $new[ImportItem::MENU] ?? [], true)) {
                     $this->refs->refresh();
                     Menu::create([
+                        'app_id' => $app->id,
                         'parent_id' => $menu['parent'] === null ? null : $this->refs->menuId((string) $menu['parent']),
                         'label' => $menu['label'],
                         'icon' => $menu['icon'] ?? null,
@@ -331,7 +336,7 @@ final class ConfigImporter
 
             foreach ($package['roles'] as $role) {
                 if (in_array($role['name'], $new[ImportItem::ROLE] ?? [], true)) {
-                    $model = Role::create(['name' => $role['name'], 'guard_name' => 'web']);
+                    $model = Role::create(['name' => $role['name'], 'guard_name' => 'web', 'app_id' => $app->id]);
                     $model->syncPermissions(Permission::query()->where('guard_name', 'web')->whereIn('name', (array) $role['permissions'])->get());
                     $model->hiddenMenus()->sync(array_values(array_filter(array_map(fn (string $p): ?int => $this->refs->menuId($p), (array) $role['hidden_menus']))));
                     $created[ImportItem::ROLE]++;

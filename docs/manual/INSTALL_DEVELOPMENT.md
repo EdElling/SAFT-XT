@@ -222,7 +222,7 @@ php artisan serve
 Open **http://localhost:8000** in the browser – you land on the sign-in page under `/admin`. Sign in with
 `ADMIN_EMAIL` and `ADMIN_PASSWORD`. Stop the server in the terminal with `Ctrl+C`.
 
-After signing in, have a look at **Administration → Application → App settings** (display name, colour scheme) and **Users**. The
+After signing in, have a look at **Administration → Application → Global settings** (display name, colour scheme) and **Users**. The
 [user manual](USER_GUIDE.md) describes how to continue.
 
 ---

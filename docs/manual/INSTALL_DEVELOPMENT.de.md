@@ -224,7 +224,7 @@ php artisan serve
 Öffnen Sie im Browser **http://localhost:8000** – Sie landen auf der Anmeldeseite unter `/admin`. Melden Sie sich mit
 `ADMIN_EMAIL` und `ADMIN_PASSWORD` an. Beenden Sie den Server im Terminal mit `Strg+C`.
 
-Nach der Anmeldung lohnt ein Blick in **Administration → Anwendung → App-Einstellungen** (Anzeigename, Farbschema) und
+Nach der Anmeldung lohnt ein Blick in **Administration → Anwendung → Globale Einstellungen** (Anzeigename, Farbschema) und
 **Benutzer**. Wie es weitergeht, beschreibt das [Benutzerhandbuch](USER_GUIDE.de.md).
 
 ---

@@ -49,6 +49,12 @@ class LagerDemoSeeder extends Seeder
 
     public const string REPORT_BELOW_MINIMUM_COUNT = 'Anzahl Artikel unter Mindestbestand';
 
+    /** App der Demo (B-107); der Schlüssel ist fest, damit wiederholtes Einspielen dieselbe App trifft. */
+    public function demoAppDefinition(): array
+    {
+        return ['uuid' => '8f0c6a52-6d0e-4c8e-9a43-5b1c2f6e0a02', 'name' => ['de' => 'Lager (Demo)', 'en' => 'Warehouse (demo)', 'fr' => 'Entrepôt (démo)', 'it' => 'Magazzino (demo)'], 'prefix' => 'lager', 'icon' => 'heroicon-o-cube', 'sort_order' => 520];
+    }
+
     public function run(): void
     {
         $group = $this->demoGroup(self::GROUP, 520);

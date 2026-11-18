@@ -83,7 +83,7 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
 - **Transfer configuration:** export tables, reports, menu entries and roles as a package and import them into another
   installation, e.g. from test to production – with preview, only new entries are created; also on the console
   (`saft:config-export`, `saft:config-import`)
-- **App settings:** display name and colour scheme of the application (branding); connection of external AI models for
+- **Global settings:** display name and colour scheme of the application (branding); connection of external AI models for
   the assistants (provider, model, encrypted API key, daily limit, connection test); personal settings such as language,
   number format and contrast mode under “My settings”
 - **Central error handling:** database, validation and rule errors appear as an understandable message instead of a

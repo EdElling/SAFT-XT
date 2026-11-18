@@ -83,7 +83,7 @@ PostgreSQL, MySQL oder MariaDB.
 - **Konfiguration übertragen:** Tabellen, Auswertungen, Menüeinträge und Rollen als Paket exportieren und in einer
   anderen Installation einspielen, z. B. von Test nach Produktion – mit Vorschau, nur Neues wird angelegt; auch auf der
   Konsole (`saft:config-export`, `saft:config-import`)
-- **App-Einstellungen:** Anzeigename und Farbschema der Anwendung (Branding); Anbindung externer KI-Modelle für die
+- **Globale Einstellungen:** Anzeigename und Farbschema der Anwendung (Branding); Anbindung externer KI-Modelle für die
   Assistenten (Anbieter, Modell, verschlüsselter API-Schlüssel, Tageslimit, Verbindungstest); persönliche Einstellungen
   wie Sprache, Zahlenformat und Kontrastmodus unter „Meine Einstellungen“
 - **Zentrales Fehler-Handling:** Datenbank-, Prüf- und Regelfehler erscheinen als verständliche Meldung statt als

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'title' => 'App-Einstellungen',
+    'title' => 'Globale Einstellungen',
     'branding' => 'Branding',
     'app_name' => 'Anzeigename der Anwendung',
     'app_name_help' => 'Erscheint in der Kopfzeile, im Browser-Tab, auf der Anmeldeseite und als Absender von E-Mails.',

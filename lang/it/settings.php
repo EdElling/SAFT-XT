@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'title' => 'Impostazioni dell’applicazione',
+    'title' => 'Impostazioni globali',
     'branding' => 'Branding',
     'app_name' => 'Nome visualizzato dell’applicazione',
     'app_name_help' => 'Compare nell’intestazione, nella scheda del browser, nella pagina di accesso e come mittente delle e-mail.',

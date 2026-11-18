@@ -264,8 +264,8 @@ Check in the browser: **https://saft.example.com** redirects to `/admin` and sho
 ## 7. First sign-in and basic settings
 
 1. Sign in with `ADMIN_EMAIL` and the password.
-2. **Administration → Application → App settings:** set the display name and colour scheme
-   ([Administrator guide, chapter 7](ADMIN_GUIDE.md#7-app-settings)).
+2. **Administration → Application → Global settings:** set the display name and colour scheme
+   ([Administrator guide, chapter 7](ADMIN_GUIDE.md#7-global-settings)).
 3. **Administration → Users and access → Authentication:** choose the sign-in mode, switch on *Offer “Forgot password”* if needed
    ([Administrator guide, chapter 5](ADMIN_GUIDE.md#5-authentication)).
 4. **Single sign-on** (optional): create an identity provider. The address you enter at the provider (e.g. Microsoft

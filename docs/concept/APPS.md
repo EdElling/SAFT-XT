@@ -1,6 +1,6 @@
 # Konzept: Apps (Fachanwendungen) in SAFT XT
 
-Stand: 18.11.2026 · Status: Entwurf zur Abstimmung · Backlog: B-107
+Stand: 18.11.2026 · Status: abgestimmt, Etappe 1a in Planung · Backlog: B-107
 
 ## 1. Ziel
 
@@ -16,15 +16,16 @@ Ausdrücklich **kein** Ziel: Mandantenfähigkeit (getrennte Organisationen, getr
 | Frage | Entscheidung |
 |---|---|
 | Art der Trennung | Fachliche Klammer: Jedes Objekt gehört zu genau einer App; die App bestimmt Sichtbarkeit (Navigation, Dashboard, Listen, KI-Kontext). Den Zugriff regeln weiterhin die Rechte. |
-| Gemeinsam für alle Apps | Nur das System: Benutzer, Anmeldung und SSO, App-Einstellungen, KI-Anbindung, Datenbankverbindungen, Systemtabellen, System-Aufgaben, Administration. |
+| Gemeinsam für alle Apps | Nur das System: Benutzer, Anmeldung und SSO, Globale Einstellungen, KI-Anbindung, Datenbankverbindungen, Systemtabellen, System-Aufgaben, Administration. |
 | Tabellen | Jede Tabelle des Table-Designers (auch angebundene) gehört zu genau einer App. Keine gemeinsamen Stammdaten-Tabellen: Braucht eine App die Stammdaten einer anderen, wird besser die erste App erweitert. |
 | Verweise zwischen Apps | Erlaubt, aber nur über eine **ausdrücklich freigegebene Schnittstelle** der anbietenden App (Abschnitt 5), nur lesend und robust gegen Änderungen. |
 | Rollen | Je App, nicht gemischt. Ausnahmen: die Systemrollen *super-admin* und *benutzer*. *benutzer* gilt in allen Apps und enthält nur app-übergreifende Rechte (Dashboard, KI-Hilfe, Dokumentation …), keine Datenrechte. Rollen lassen sich einer App zuordnen und als Vorlage für eine neue Rolle **kopieren**. |
 | Zugang zu einer App | Ergibt sich aus den Rollen: Wer eine Rolle einer App hat, sieht die App. Kein zusätzliches Recht. |
 | Umschalten | Ein Filament-Panel; aktuelle App in der Sitzung, Umschalter in der Titelzeile (nur bei mehr als einer App). Adressen bleiben gleich, die App ergibt sich aus der Tabelle bzw. dem Objekt. |
 | Verwaltung | Neue Administrationsseite **Apps** für den Super-Admin: anlegen, bearbeiten, aktivieren, deaktivieren, installieren (aus Paket), exportieren, aktualisieren, entfernen. Sie ersetzt „Konfiguration übertragen“. |
-| Umstellung bestehender Installationen | Die Migration ordnet Demo-Objekte (Shop, Lager, Forschung) anhand ihrer bekannten Namen eigenen Apps zu. Alles Übrige kommt in die Auffang-App **„Nicht zugeordnet“** – nur wenn es solche Objekte gibt. Sie ist danach eine normale App (umbenennen, aufteilen, entfernen). Neue Installationen haben keine Auffang-App. |
-| Verschieben | Tabellen lassen sich samt Zugehörigem **in eine andere App verschieben** (Abschnitt 5a), z. B. um „Nicht zugeordnet“ aufzuteilen. |
+| Umstellung bestehender Installationen | Minimal: Die Migration legt bei vorhandenen Objekten **eine** App „Bestehende Daten“ an und ordnet ihr alles zu (Tabellen, Menüs, Auswertungen, Rollen, Aufgaben) – ohne automatisches Aufteilen. Aufgeteilt wird danach von Hand mit „In andere App verschieben“ (z. B. die Lager-Demo in eine eigene App). Neue Installationen haben keine solche App; die Demo-Seeder legen ihre eigenen Apps an. |
+| Verschieben | Tabellen lassen sich samt Zugehörigem **in eine andere App verschieben** (Abschnitt 5a), z. B. um „Bestehende Daten“ aufzuteilen. |
+| Alte Pakete | Konfigurationspakete `saft-config/1` bleiben einspielbar; der Import fragt nach der Ziel-App (bestehende oder neue). |
 | Tabellennamen | Bleiben global eindeutig (ein Namensraum `app_data`). Der Table-Designer schlägt das Präfix der App vor (`lager_…`). |
 
 ## 3. Was je App getrennt ist
@@ -161,8 +162,9 @@ Tabellen-Assistenten), Diagramm aus einer Definition, Änderungsplan.
 
 | Etappe | Inhalt | Grösse |
 |---|---|---|
-| 1 Fundament | Tabelle `apps`; **In andere App verschieben** (Abschnitt 5a: mehrere Tabellen in einem Schritt, Prüfung auf den Endzustand; verbleibende Verweise über die App-Grenze verhindern das Verschieben, bis Etappe 5 sie erlaubt); `app_id` an Tabellen, Menüs, Auswertungen, Tabellenverknüpfungen, Rollen, Aufgaben; **stabile Schlüssel** an allen Objekten; Migration: Demos (Shop, Lager, Forschung) in eigene Apps, Übriges in „Nicht zugeordnet“; Seite „Apps“ (anlegen, bearbeiten); App-Auswahl in Formularen, Filter in Listen; Präfix-Vorschlag im Table-Designer | gross |
-| 2 Umschalten | aktuelle App, Umschalter in der Titelzeile, Navigation und Dashboard je App (Navigations-Cache je App), Zugang über Rollen; Rollen je App mit **Rolle kopieren** | mittel |
+| 1a Fundament | Tabelle `apps`; `app_id` an Tabellen, Menüs, Auswertungen, Tabellenverknüpfungen, Rollen, Aufgaben; **stabile Schlüssel** an allen Objekten; minimale Umstellung („Bestehende Daten“); Demo-Seeder legen ihre Apps an; Seite „Apps“; App-Auswahl in Formularen (nur wo nicht ableitbar), Filter in Listen; Grenze zwischen Apps (Verknüpfungen, Übernehmen aus, Formeln, Auswertungen nur innerhalb einer App); Präfix-Vorschlag; **Rolle kopieren**; Import alter Pakete mit Ziel-App | gross |
+| 1b Verschieben | **In andere App verschieben** (Abschnitt 5a: mehrere Tabellen oder eine Menügruppe in einem Schritt, Prüfung auf den Endzustand, Rollenrechte übertragen); verbleibende Verweise über die App-Grenze verhindern das Verschieben, bis Etappe 5 sie erlaubt | mittel |
+| 2 Umschalten | aktuelle App, Umschalter in der Titelzeile, Navigation und Dashboard je App (Navigations-Cache je App), Zugang über Rollen; Rechte wie „Auswertungen anlegen“ oder „Exportieren“ wirken je App | mittel |
 | 3 Lebenszyklus | aktivieren, deaktivieren, entfernen (Abhängigkeiten, Sicherung, Bestätigung); „Demo-Daten zurücksetzen“ wird „App-Daten zurücksetzen“ | mittel |
 | 4 App-Definition | Format `saft-app/1`: aus dem aktuellen Stand erzeugen, exportieren, als neue App installieren, Ausgangsstand speichern; Diagramm aus einer Definition; Seite „Apps“ ersetzt „Konfiguration übertragen“ | mittel |
 | 5 Schnittstellen | Freigabe von Tabellen/Feldern, Verweise aus anderen Apps nur darauf, Vertragsschutz, „Verwendet in“ über Apps | mittel |
@@ -177,16 +179,12 @@ Schlüsseln die Grundlage für 4, 6 und 8.
 
 - **Breite:** Fast jede Liste und jedes Formular der Administration ist betroffen; Browser-Tests und Handbücher in vier
   Sprachen entsprechend.
-- **Migration bestehender Installationen** (auch Strato): Aufteilung in die Demo-Apps und „Nicht zugeordnet“ muss
-  verlässlich sein; vorher Sicherung, Probelauf (`--dry-run`).
-- **Verweise zwischen Apps** in bestehenden Daten: Die Migration erzeugt keine. Verknüpfte Tabellen bleiben zusammen –
-  verweist eine eigene Tabelle auf eine Demo-Tabelle (oder umgekehrt), kommt sie in die App dieser Demo und wird
-  gemeldet; aufteilen lässt sie sich später mit „In andere App verschieben“, sobald Schnittstellen möglich sind
-  (Etappe 5).
+- **Umstellung bestehender Installationen** (auch Strato): bewusst minimal (alles in „Bestehende Daten“); das Aufteilen
+  geschieht von Hand mit „In andere App verschieben“ und ist damit sichtbar und kontrolliert.
 - **Plugins** sehen technisch weiterhin alle Tabellen; „je App“ betrifft Zuordnung, Sichtbarkeit und Aktivierung.
 - **Änderungsplan** ist der anspruchsvollste Teil (Konflikte, teilweise angewendete Pläne); er kommt bewusst spät, auf
   einem stabilen Fundament.
 
 ## 10. Offene Punkte
 
-- Was wird aus Konfigurationspaketen im alten Format `saft-config/1`: Einspielen weiterhin möglich (als neue App)?
+Keine – Etappe 1a ist abgestimmt (18.11.2026).

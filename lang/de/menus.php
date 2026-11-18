@@ -6,6 +6,7 @@ return [
     'model' => 'Menüeintrag',
     'plural' => 'Menüs',
     'form' => [
+        'app_help' => 'Gruppen und Einträge einer App erscheinen bei ihr; ohne App gehört der Eintrag zum System (z. B. Dokumentation).',
         'diagram_help' => 'Zeigt die Datentabellen der Gruppe, in der dieser Eintrag steht (einschliesslich Untergruppen), und ihre Verknüpfungen. Auf oberster Ebene: alle Datentabellen.',
         'report_help' => 'Nur geteilte Auswertungen. Der Eintrag erscheint nur für Personen, die die Auswertung ausführen dürfen (Datenrechte auf alle beteiligten Tabellen).',
         'entry' => 'Eintrag',

@@ -8,6 +8,7 @@ use App\DynamicData\DataMenu;
 use App\DynamicData\DataPermissions;
 use App\Models\CustomTable;
 use App\Models\Role;
+use Closure;
 use Filament\Forms\Components\Field;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
@@ -61,10 +62,23 @@ class DataPermissionMatrix extends Field
         });
     }
 
+    /** App, deren Tabellen die Matrix zeigt (B-107); leer = alle (Systemrollen). */
+    private Closure|int|null $app = null;
+
+    public function app(Closure|int|null $app): static
+    {
+        $this->app = $app;
+
+        return $this;
+    }
+
     /** @return Collection<int, CustomTable> */
     public function tables(): Collection
     {
+        $appId = $this->evaluate($this->app);
+
         return $this->tables ??= CustomTable::query()
+            ->when(filled($appId), static fn ($q) => $q->where('app_id', (int) $appId))
             ->with('databaseConnection:id,name')
             ->get()
             ->sortBy(fn (CustomTable $table): string => mb_strtolower((string) $table->label))

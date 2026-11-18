@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Class CustomField
  *
  * @property int $id
+ * @property string $uuid
  * @property int $custom_table_id
  * @property string $name
  * @property string $label
@@ -57,6 +58,7 @@ class CustomField extends Model
     ];
 
     protected $fillable = [
+        'uuid',
         'custom_table_id',
         'name',
         'label',

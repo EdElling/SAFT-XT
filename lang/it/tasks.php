@@ -12,6 +12,7 @@ return [
         'schedule' => 'Pianificazione',
     ],
     'fields' => [
+        'app_help' => 'Le attività relative a una tabella appartengono automaticamente alla sua app.',
         'backup_files' => 'Salvare anche i file dei campi file',
         'backup_files_help' => 'Come ZIP accanto al backup della banca dati (solo se i file si trovano su questo server).',
         'backup_days' => 'Conservare i backup (giorni)',

@@ -23,6 +23,7 @@
    - [In una tabella mancano «Nuovo record» e «Modifica».](#in-una-tabella-mancano-nuovo-record-e-modifica)
    - [Come posso inviare a qualcuno una vista precisa?](#come-posso-inviare-a-qualcuno-una-vista-precisa)
    - [Un file non si riesce a caricare.](#un-file-non-si-riesce-a-caricare)
+   - [In un collegamento manca una tabella nella scelta.](#in-un-collegamento-manca-una-tabella-nella-scelta)
 
 ---
 ## Domande frequenti
@@ -90,3 +91,8 @@ Il campo ammette solo determinati tipi di file, una dimensione e un numero massi
 File consentiti, Dimensione massima per file). Viene controllato il contenuto: un file rinominato con un’estensione errata
 viene rifiutato. Se falliscono anche piccoli file ammessi, il limite del server è troppo basso (amministrazione di
 sistema: `upload_max_filesize` e `post_max_size`).
+
+### In un collegamento manca una tabella nella scelta.
+
+I collegamenti sono possibili solo tra tabelle della stessa app (guida per amministratori, capitolo 16). Se la tabella
+desiderata appartiene a un’altra app, create la nuova tabella in quell’app – oppure estendete quell’app.
