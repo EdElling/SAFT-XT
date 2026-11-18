@@ -871,7 +871,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 | API | SAFT | Changes |
 |---|---|---|
-| **1.8** | 0.2.2 | `DataTable::files()`, `attachFile()` and `detachFile()` plus `StoredFile` – read, attach (with the form's checks) and remove files of fields of type “File” |
+| **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` and `detachFile()` plus `StoredFile` – read, attach (with the form's checks) and remove files of fields of type “File” |
 | **1.7** | 0.1 | `MenuSuggestion` with optional `subgroup` – menu suggestion into a submenu of the group (third level) |
 | **1.6** | 0.1 | `FieldRule` with optional `description`; `SaftPlugin::manuals()` and `Manual` – manuals from plugins in online help and help assistant; `saft:plugins --check` checks them |
 | **1.5** | 0.1 | `App\Tasks\TaskType`, `TaskResult` and `TaskSkipped` belong to the API – kinds of scheduled tasks from plugins (`SaftPlugin::taskTypes()`) thus pass `saft:plugins --check` |

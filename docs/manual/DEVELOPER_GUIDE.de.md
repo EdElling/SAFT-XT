@@ -887,7 +887,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 | API | SAFT | Änderungen |
 |---|---|---|
-| **1.8** | 0.2.2 | `DataTable::files()`, `attachFile()` und `detachFile()` sowie `StoredFile` – Dateien aus Feldern vom Typ „Datei“ lesen, anhängen (mit den Prüfungen des Formulars) und entfernen |
+| **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` und `detachFile()` sowie `StoredFile` – Dateien aus Feldern vom Typ „Datei“ lesen, anhängen (mit den Prüfungen des Formulars) und entfernen |
 | **1.7** | 0.1 | `MenuSuggestion` mit optionalem `subgroup` – Menüvorschlag in ein Untermenü der Gruppe (dritte Ebene) |
 | **1.6** | 0.1 | `FieldRule` mit optionaler `description`; `SaftPlugin::manuals()` und `Manual` – Handbücher aus Plugins in Online-Hilfe und Hilfe-Assistent; `saft:plugins --check` prüft sie |
 | **1.5** | 0.1 | `App\Tasks\TaskType`, `TaskResult` und `TaskSkipped` gehören zur API – Arten geplanter Aufgaben aus Plugins (`SaftPlugin::taskTypes()`) bestehen damit `saft:plugins --check` |
