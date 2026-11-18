@@ -8,13 +8,19 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-Derzeit nichts festgelegt.
+1. **B-107** Apps (Fachanwendungen) – Konzept abgestimmt, Etappe 1 planen
+
+## Apps (Fachanwendungen)
+
+| Nr. | Thema | Beschreibung | Status | Bezug |
+|---|---|---|---|---|
+| B-107 | Apps (Fachanwendungen) | Mehrere Fachanwendungen nebeneinander: Tabellen, Menüs, Auswertungen, Rollen, Dashboard, Aufgaben, Plugins und KI-Kontext je App; Umschalten in der Titelzeile; Verweise zwischen Apps nur über freigegebene Schnittstellen; App-Definition `saft-app/1` mit stabilen Schlüsseln als Grundlage für Pakete, Aktualisieren (Änderungsplan) und KI-App-Designer; Seite „Apps“ ersetzt „Konfiguration übertragen“. Acht Etappen, siehe [Konzept](docs/concept/APPS.md). | geplant (Prio 1) | ersetzt B-001 |
 
 ## Konfiguration übertragen
 
 | Nr. | Thema | Beschreibung | Status | Bezug |
 |---|---|---|---|---|
-| B-001 | Bestehende Einträge aktualisieren (Etappe 9) | Abweichende Tabellen, Auswertungen, Menüs und Rollen beim Einspielen aktualisieren statt überspringen; feldgenaue Vorschau der Unterschiede (z. B. „Feld *rabatt* neu“, „Regel entfernt“), Auswahl was übernommen wird; heikle Änderungen über die Schutzregeln des Table-Designers. Für den Erstaufbau einer Produktion nicht nötig, für spätere Updates in dieselbe Richtung schon – bis dahin Änderungen direkt in der Produktion. | zurückgestellt | baut auf B-105 auf |
+| B-001 | Bestehende Einträge aktualisieren (Etappe 9) | Abweichende Tabellen, Auswertungen, Menüs und Rollen beim Einspielen aktualisieren statt überspringen; feldgenaue Vorschau der Unterschiede (z. B. „Feld *rabatt* neu“, „Regel entfernt“), Auswahl was übernommen wird; heikle Änderungen über die Schutzregeln des Table-Designers. Für den Erstaufbau einer Produktion nicht nötig, für spätere Updates in dieselbe Richtung schon – bis dahin Änderungen direkt in der Produktion. | aufgegangen in B-107 | B-107 Etappe 6 (Änderungsplan) |
 | B-002 | Stammdaten mitnehmen | Je Tabelle wählbar die Datensätze kleiner Nachschlagetabellen (z. B. Lagerorte, Kategorien) ins Paket aufnehmen. | offen | – |
 | B-003 | Geplante Aufgaben mitnehmen | Datenstand-Aufgaben je Tabelle im Paket (Tabelle per Name). | offen | – |
 
