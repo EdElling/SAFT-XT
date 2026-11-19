@@ -15,6 +15,23 @@ return [
     'delete_only_empty' => 'Si possono eliminare solo app vuote.',
     'system' => 'Sistema',
     'app_help' => 'Appartiene a questa applicazione specialistica; i collegamenti sono possibili solo all’interno di un’app.',
+    'switch' => [
+        'label' => 'Cambia app',
+        'none' => 'Nessuna app',
+    ],
+    'manual' => [
+        'action' => 'Manuale',
+        'heading' => 'Manuale dell’app «:app»',
+        'description' => 'Un file Markdown per lingua. Appare sotto «Documentazione» e nell’assistente di guida finché l’app è quella attuale; se manca una lingua, vale il tedesco.',
+        'submit' => 'Salva',
+        'present' => 'Presente – un nuovo file lo sostituisce.',
+        'missing' => 'Non ancora.',
+        'remove' => 'Rimuovi',
+        'hint' => 'I titoli di livello 2 e 3 (##, ###) formano l’indice; un titolo di livello 1 all’inizio viene omesso (la scheda porta il nome dell’app).',
+        'not_utf8' => 'Il file per :language non è salvato in UTF-8.',
+        'saved' => 'Manuale salvato.',
+        'saved_body' => 'Appare sotto «Documentazione» finché quest’app è quella attuale.',
+    ],
     'move' => [
         'submit' => 'Sposta',
         'action' => 'Sposta in un’altra app',

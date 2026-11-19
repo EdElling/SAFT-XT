@@ -152,6 +152,17 @@ company login.
 
 ---
 
+### Switching apps
+
+If you work with several **apps** (business applications, e.g. “Shop” and “Warehouse”), a **switcher** with the name
+of the current app appears to the left of the search. It lists the apps you have access to; a click switches the app
+and opens its dashboard. The choice is kept after signing out.
+
+The current app determines what you see: the menus of that app (plus dashboard, documentation, reports and – depending
+on your permissions – the administration), the dashboard layout, the reports and, under **Documentation**, the app's
+manual if there is one. If you open a table or report of another app through a link or bookmark, SAFT switches there by
+itself. With access to only one app, no switcher appears.
+
 ## 4. Working with data
 
 ### 4.1 The table view
@@ -502,6 +513,7 @@ appear in the field tree under the link's label, e.g. "Contacts › Person (Rese
 
 | Term | Explanation |
 |---|---|
+| **App** | business application, e.g. “Shop” or “Warehouse”: tables, menus, reports and roles that belong together; switch with the switcher at the top |
 | **Single sign-on (SSO)** | Signing in with a central company account instead of a separate password |
 | **Identity provider (IdP)** | The service that performs the sign-in with SSO, e.g. Microsoft Entra ID |
 | **Entra ID** | Microsoft's identity service (formerly Azure Active Directory) |

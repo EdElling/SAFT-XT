@@ -1232,6 +1232,26 @@ Si può eliminare solo un’app vuota.
 formule sulle tabelle figlie sono possibili solo all’interno di un’app. Il designer di tabelle offre solo tabelle della
 stessa app; l’assistente IA delle tabelle vede solo il modello dati dell’app scelta.
 
+**Accesso e app attuale:** ha accesso a un’app chi ha un ruolo di quell’app oppure – tramite un qualsiasi ruolo o
+direttamente – diritti sui dati di una sua tabella o diritti di un plugin di quell’app; il super-admin ha tutte le app.
+Con più app compare in alto il **selettore** (vedi [guida per gli utenti](USER_GUIDE.it.md#cambiare-app)). L’app
+attuale determina:
+
+- **Navigazione:** voci di sistema (dashboard, documentazione, report, amministrazione) e i menu di quell’app.
+- **Dashboard:** disposizione per app; riquadri dei report solo nella loro app.
+- **Report:** elenco e tabelle di base nell’editor di quell’app. I diritti *Report: visualizzare, creare, modificare,
+  eliminare, assistente* valgono per app – tramite un ruolo di quell’app o un ruolo di sistema.
+- **Documentazione e assistente di guida:** i manuali generali, il manuale di quell’app e quelli dei suoi plugin; con
+  «l’assistente di guida conosce il modello dati» solo le tabelle di quell’app.
+
+**Manuale di un’app:** nella pagina **App**, **«Manuale»** carica un file Markdown per lingua (sostituire o rimuovere);
+se manca una lingua, vale il tedesco. I titoli di livello 2 e 3 formano l’indice. La demo «Negozio» porta con sé un
+manuale.
+
+**Plugin:** un plugin appartiene all’app che contiene tutte le tabelle di cui ha bisogno (ad es. i plugin di magazzino
+all’app con le tabelle di magazzino); i plugin senza tabelle valgono per tutte le app. I loro manuali compaiono solo
+nella loro app.
+
 **Spostare in un’altra app:** le tabelle cambiano app insieme alle loro voci di menu, ai report (con quella tabella di
 base), ai collegamenti tra tabelle e alle attività; dati, file e nomi tecnici restano invariati. Tre vie portano allo
 stesso dialogo:

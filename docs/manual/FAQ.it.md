@@ -31,7 +31,8 @@
 ### Non vedo una tabella nel menu.
 
 Non avete il diritto di lettura, non esiste una voce di menu oppure il vostro ruolo nasconde la voce. Rivolgetevi
-all’amministrazione (Ruoli → Diritti sui dati o voci di menu, oppure Menu).
+all’amministrazione (Ruoli → Diritti sui dati o voci di menu, oppure Menu). Se la tabella appartiene a un’altra **app**, passate prima a
+quell’app con il selettore in alto.
 
 ### Sotto un ordine non compaiono righe.
 

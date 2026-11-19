@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Browser;
 
+use App\Apps\CurrentApp;
+use App\Dashboard\DashboardLayout;
 use App\DynamicData\DataMenu;
 use App\Models\DynamicRecord;
 use App\Models\Role;
@@ -209,7 +211,8 @@ class DashboardTest extends DuskTestCase
     public function test_cards_are_rearranged_hidden_and_kept_after_reload(): void
     {
         $admin = $this->superAdmin();
-        $layout = fn (): array => (array) $admin->fresh()->dashboard_layout;
+        // Anordnung der aktuellen App (seit B-107 je App gespeichert).
+        $layout = fn (): array => (array) DashboardLayout::forApp($admin->fresh()->dashboard_layout, (string) (app(CurrentApp::class)->id($admin->fresh()) ?? 'none'));
 
         $this->browse(function (Browser $browser) use ($layout): void {
             $this->login($browser, self::ADMIN)->resize(1400, 1000);

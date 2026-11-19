@@ -116,6 +116,11 @@ final class PanelAppearance
             .'.dark .saft-file-thumb{border-color:var(--gray-700)}'
             .'.saft-file-link{display:inline-flex;align-items:center;gap:.25rem;color:var(--primary-600)}.dark .saft-file-link{color:var(--primary-400)}'
             .'.saft-file-link:hover{text-decoration:underline}.saft-file-icon{width:1rem;height:1rem;flex-shrink:0}'
+            .'.saft-app-switcher{display:inline-flex;align-items:center;gap:.5rem;padding:.375rem .625rem;border-radius:.5rem;font-size:.875rem;font-weight:600;color:var(--gray-700);border:1px solid var(--gray-200);background:#fff;max-width:16rem}'
+            .'.dark .saft-app-switcher{color:var(--gray-200);border-color:var(--gray-700);background:var(--gray-900)}'
+            .'.saft-app-switcher:hover{background:var(--gray-50)}.dark .saft-app-switcher:hover{background:var(--gray-800)}'
+            .'.saft-app-switcher-icon{width:1.25rem;height:1.25rem;color:var(--primary-600);flex-shrink:0}.saft-app-switcher-chevron{width:1rem;height:1rem;color:var(--gray-400);flex-shrink:0}'
+            .'.saft-app-switcher-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
             .'.saft-file-more{font-size:.75rem;color:var(--gray-500);cursor:pointer}.saft-file-more:hover{text-decoration:underline}'
             // Vorschau im Overlay (resources/views/filament/file-preview.blade.php), über den Dialogen von Filament.
             .'.saft-file-preview{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:1rem}'

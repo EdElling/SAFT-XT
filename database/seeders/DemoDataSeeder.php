@@ -46,7 +46,7 @@ class DemoDataSeeder extends Seeder
     /** App der Demo (B-107); der Schlüssel ist fest, damit wiederholtes Einspielen dieselbe App trifft. */
     public function demoAppDefinition(): array
     {
-        return ['uuid' => '8f0c6a52-6d0e-4c8e-9a43-5b1c2f6e0a01', 'name' => ['de' => 'Shop (Demo)', 'en' => 'Shop (demo)', 'fr' => 'Boutique (démo)', 'it' => 'Negozio (demo)'], 'prefix' => null, 'icon' => 'heroicon-o-shopping-cart', 'sort_order' => 500];
+        return ['uuid' => '8f0c6a52-6d0e-4c8e-9a43-5b1c2f6e0a01', 'name' => ['de' => 'Shop (Demo)', 'en' => 'Shop (demo)', 'fr' => 'Boutique (démo)', 'it' => 'Negozio (demo)'], 'prefix' => null, 'icon' => 'heroicon-o-shopping-cart', 'sort_order' => 500, 'manual' => 'shop'];
     }
 
     public function run(DynamicSchemaService $schema, DataMenu $menu): void
@@ -86,6 +86,8 @@ class DemoDataSeeder extends Seeder
         if ($group instanceof Menu) {
             $this->seedReport($group);
         }
+
+        $this->seedDemoManual();
     }
 
     /**

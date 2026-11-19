@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Help;
 
 use App\Ai\ChatClient;
+use App\Apps\CurrentApp;
 use App\Auth\RoleSimulation;
 use App\Documentation\Documentation;
 use App\Exceptions\BusinessRuleException;
@@ -14,6 +15,7 @@ use App\Help\HelpAssistant;
 use App\Help\ManualSource;
 use App\Livewire\HelpAssistantChat;
 use App\Models\AiHelpConversation;
+use App\Models\App;
 use App\Models\Role;
 use App\Models\User;
 use App\Settings\AppSettings;
@@ -148,7 +150,7 @@ class HelpAssistantTest extends DynamicDataTestCase
         $this->service()->createTable(['name' => 'gehaelter', 'label' => 'Gehälter'], [['name' => 'betrag', 'label' => 'Betrag', 'type' => 'integer']]);
         $user = $this->user(['help.assistant', 'data.kunden.view']);
 
-        $this->fake->push('A')->push('B')->push('C');
+        $this->fake->push('A')->push('B')->push('C')->push('D')->push('E');
         $this->assistant()->ask($user, null, 'Frage');
         $this->assertStringNotContainsString('Data model of this installation', $this->systemText(), 'Ohne Schalter kein Datenmodell.');
 
@@ -161,10 +163,23 @@ class HelpAssistantTest extends DynamicDataTestCase
         $this->assertStringContainsString('Gold', $schema);
         $this->assertStringNotContainsString('gehaelter', $schema, 'Nur Tabellen mit Leserecht.');
 
+        // Nur Tabellen der aktuellen App (B-107), auch mit Leserecht auf Tabellen anderer Apps.
+        $other = App::query()->create(['name' => ['de' => 'Andere'], 'sort_order' => 9]);
+        $this->service()->createTable(['app_id' => $other->id, 'name' => 'bestellungen', 'label' => 'Bestellungen'], [['name' => 'nummer', 'label' => 'Nummer', 'type' => 'string']]);
+        $user->givePermissionTo('data.bestellungen.view');
+        app(HelpAssistant::class)->ask($user->fresh(), null, 'Frage');
+        $this->assertStringNotContainsString('bestellungen', end($this->fake->calls)['system'][1]['text']);
+        app(CurrentApp::class)->switch($user->fresh(), $other);
+        app(HelpAssistant::class)->ask($user->fresh(), null, 'Frage');
+        $text = end($this->fake->calls)['system'][1]['text'];
+        $this->assertStringContainsString('bestellungen', $text);
+        $this->assertStringNotContainsString('kunden', $text);
+
+        app(CurrentApp::class)->switch($user->fresh(), self::ensureTestApp());
         $settings->ai_send_choices = false;
         $settings->save();
-        app(HelpAssistant::class)->ask($user, null, 'Frage');
-        $this->assertStringNotContainsString('Gold', $this->fake->calls[2]['system'][1]['text'], 'Auswahlwerte nur, wenn freigegeben.');
+        app(HelpAssistant::class)->ask($user->fresh(), null, 'Frage');
+        $this->assertStringNotContainsString('Gold', end($this->fake->calls)['system'][1]['text'], 'Auswahlwerte nur, wenn freigegeben.');
     }
 
     public function test_limits_errors_and_foreign_conversations(): void

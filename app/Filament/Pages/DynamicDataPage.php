@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Apps\CurrentApp;
 use App\DynamicData\Cascade\CascadePath;
 use App\DynamicData\Cascade\CascadeResolver;
 use App\DynamicData\DataAccess;
@@ -22,6 +23,7 @@ use App\Livewire\DynamicDetailTable;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\User;
 use App\Plugins\Api\DataAction;
 use App\Plugins\PluginRegistry;
 use Filament\Pages\Page;
@@ -114,6 +116,8 @@ class DynamicDataPage extends Page implements HasTable
 
         abort_unless($customTable->is_active, 404);
         abort_unless(DataAccess::current($customTable, 'view'), 403);
+        // Link auf eine Tabelle einer anderen App: in diese App wechseln (B-107).
+        app(CurrentApp::class)->follow(($user = auth()->user()) instanceof User ? $user : null, $customTable->app_id);
         $this->restoreRememberedTableState();
 
         if ($customTable->isExternal()) {

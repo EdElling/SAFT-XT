@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Apps\CurrentApp;
 use App\Dashboard\DashboardLayout;
 use App\Filament\Widgets\ReportCardWidget;
 use App\Models\User;
@@ -139,13 +140,20 @@ class Dashboard extends BaseDashboard
     /** @param  array<string, mixed>|null  $layout */
     private function save(?array $layout): void
     {
-        $this->user()?->forceFill(['dashboard_layout' => $layout])->save();
+        $user = $this->user();
+        $user?->forceFill(['dashboard_layout' => DashboardLayout::withApp($user->dashboard_layout, $this->appKey(), $layout)])->save();
     }
 
     /** @return array{left: list<string>, right: list<string>, full: list<string>, hidden: list<string>} */
     public function layout(): array
     {
-        return DashboardLayout::resolve($this->cards(), $this->user()?->fresh()?->dashboard_layout);
+        return DashboardLayout::resolve($this->cards(), DashboardLayout::forApp($this->user()?->fresh()?->dashboard_layout, $this->appKey()));
+    }
+
+    /** Anordnung je App (B-107); ohne App ein eigener Schlüssel. */
+    private function appKey(): string
+    {
+        return (string) (app(CurrentApp::class)->id($this->user()) ?? 'none');
     }
 
     // --- Karten -------------------------------------------------------------------------------
@@ -190,7 +198,11 @@ class Dashboard extends BaseDashboard
         $user = $this->user();
 
         if ($user !== null && ReportCardWidget::canView()) {
-            foreach ($user->dashboardReports()->orderBy('reports.name')->get() as $report) {
+            // Nur Auswertungen der aktuellen App (B-107).
+            $appId = app(CurrentApp::class)->id($user);
+
+            // Auswertungen ohne App (Grundtabelle fehlt) erscheinen überall.
+            foreach ($user->dashboardReports()->where(static fn ($q) => $q->whereNull('reports.app_id')->orWhere('reports.app_id', $appId ?? 0))->orderBy('reports.name')->get() as $report) {
                 if (! $user->can('view', $report)) {
                     continue;
                 }

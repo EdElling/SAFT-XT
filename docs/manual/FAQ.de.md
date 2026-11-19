@@ -31,7 +31,8 @@
 ### Ich sehe eine Tabelle nicht im Menü.
 
 Sie haben kein Leserecht dafür, es gibt keinen Menüeintrag, oder Ihre Rolle blendet den Eintrag aus. Wenden Sie sich
-an die Administration (Rollen → Datenrechte bzw. Menüeinträge, oder Menüs).
+an die Administration (Rollen → Datenrechte bzw. Menüeinträge, oder Menüs). Gehört die Tabelle zu einer anderen **App**, wechseln Sie
+zuerst mit dem Umschalter oben in diese App.
 
 ### Unter einer Bestellung erscheinen keine Positionen.
 

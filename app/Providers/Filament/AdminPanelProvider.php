@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Apps\CurrentApp;
 use App\Auth\RoleSimulation;
 use App\Auth\SaftAppAuthentication;
 use App\Filament\Actions\ChangePasswordAction;
@@ -73,6 +74,15 @@ class AdminPanelProvider extends PanelProvider
             // Eigene Stile und der persönliche Kontrastmodus (siehe PanelAppearance).
             ->renderHook(PanelsRenderHook::STYLES_AFTER, fn (): string => PanelAppearance::styles().PanelAppearance::themeScript())
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => PanelAppearance::headScript())
+            // Umschalter der aktuellen App (B-107), nur bei mehr als einer zugänglichen App.
+            ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_BEFORE, static function (): string {
+                $user = auth()->user();
+                $apps = app(CurrentApp::class)->accessible($user instanceof User ? $user : null);
+
+                return $apps->count() > 1
+                    ? view('filament.app-switcher', ['apps' => $apps, 'current' => app(CurrentApp::class)->get($user)])->render()
+                    : '';
+            })
             // Vorschau von Bildern und PDF aus Dateifeldern (B-021).
             ->renderHook(PanelsRenderHook::BODY_END, fn (): string => view('filament.file-preview')->render())
             // Hilfe-Assistent (Knopf „?“), nur wenn eingerichtet, eingeschaltet und mit Recht.

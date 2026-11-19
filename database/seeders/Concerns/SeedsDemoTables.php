@@ -11,6 +11,7 @@ use App\DynamicData\Formula\Recalculator;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Reports\ReportResource;
 use App\Models\App;
+use App\Models\AppManual;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -36,7 +37,7 @@ trait SeedsDemoTables
     /**
      * App der Demo: uuid (fest), name je Sprache, prefix, icon, sort_order.
      *
-     * @return array{uuid: string, name: array<string, string>, prefix: string|null, icon: string, sort_order: int}
+     * @return array{uuid: string, name: array<string, string>, prefix: string|null, icon: string, sort_order: int, manual?: string}
      */
     abstract public function demoAppDefinition(): array;
 
@@ -149,8 +150,31 @@ trait SeedsDemoTables
         }
 
         $definition = $this->demoAppDefinition();
+        unset($definition['manual']);
 
         return App::query()->firstOrCreate(['uuid' => $definition['uuid']], $definition);
+    }
+
+    /**
+     * Handbuch der Demo-App aus database/seeders/manuals/<name>/<sprache>.md (B-107). Nur fehlende Sprachen werden
+     * angelegt; ein über die Seite „Apps“ geändertes Handbuch bleibt.
+     */
+    public function seedDemoManual(): void
+    {
+        $name = $this->demoAppDefinition()['manual'] ?? null;
+
+        if (! is_string($name) || ! is_dir($directory = database_path('seeders/manuals/'.$name))) {
+            return;
+        }
+
+        $app = $this->demoApp();
+
+        foreach (glob($directory.'/*.md') ?: [] as $file) {
+            AppManual::query()->firstOrCreate(
+                ['app_id' => $app->id, 'locale' => basename($file, '.md')],
+                ['content' => (string) file_get_contents($file)],
+            );
+        }
     }
 
     /** @param  array<string, string>  $labels  Bezeichnung je Sprache */

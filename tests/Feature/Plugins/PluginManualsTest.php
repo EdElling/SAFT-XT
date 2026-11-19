@@ -5,16 +5,21 @@ declare(strict_types=1);
 namespace Tests\Feature\Plugins;
 
 use App\Ai\ChatClient;
+use App\Apps\CurrentApp;
+use App\Apps\PluginApps;
 use App\Documentation\Documentation;
 use App\Filament\Pages\DocumentationPage;
 use App\Help\HelpAssistant;
+use App\Models\App;
 use App\Plugins\Api\Manual;
 use App\Plugins\Context\SchemaExporter;
 use App\Plugins\Context\SchemaMarkdown;
 use App\Plugins\PluginInspector;
+use App\Plugins\PluginRegistry;
 use App\Plugins\PluginStates;
 use App\Plugins\SaftPlugin;
 use App\Plugins\Testing\PluginTestCase;
+use App\Services\DynamicSchemaService;
 use App\Settings\AppSettings;
 use Tests\Fakes\FakeChatClient;
 
@@ -150,5 +155,22 @@ class PluginManualsTest extends PluginTestCase
 
         $this->assertArrayHasKey('Handbuch „Falsch“: ungültige Kennung (Kleinbuchstaben, Ziffern und Bindestriche).', $messages);
         $this->assertArrayHasKey('Handbuch „fehlt“: die englische Fassung gibt/es/nicht/en.md fehlt.', $messages);
+    }
+
+    public function test_manuals_of_an_apps_plugin_appear_only_in_that_app(): void
+    {
+        $this->warehouse();
+        $warehouseApp = App::query()->orderBy('id')->firstOrFail();
+        $shop = App::query()->create(['name' => ['de' => 'Shop'], 'sort_order' => 9]);
+        app(DynamicSchemaService::class)->createTable(['app_id' => $shop->id, 'name' => 'kunden', 'label' => 'Kunden'], [['name' => 'firma', 'label' => 'Firma', 'type' => 'string']]);
+        $user = $this->actingWithPermissions(['lager-umbuchung.execute', 'data.lager_artikel.view', 'data.kunden.view']);
+
+        $this->assertSame($warehouseApp->id, app(PluginApps::class)->appIdFor(app(PluginRegistry::class)->get('lager-umbuchung')));
+
+        app(CurrentApp::class)->switch($user, $shop);
+        $this->assertNotContains(self::TRANSFER, Documentation::visibleFor($user), 'Lager-Plugin gehört nicht zum Shop.');
+
+        app(CurrentApp::class)->switch($user, $warehouseApp);
+        $this->assertContains(self::TRANSFER, Documentation::visibleFor($user));
     }
 }

@@ -31,7 +31,8 @@
 ### I cannot see a table in the menu.
 
 You have no read permission for it, there is no menu entry, or your role hides the entry. Contact your administrator
-(Roles → Data permissions or Menu entries, or Menus).
+(Roles → Data permissions or Menu entries, or Menus). If the table belongs to another **app**, first switch to
+that app with the switcher at the top.
 
 ### No lines appear below an order.
 

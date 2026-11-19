@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'app_manual' => 'Manuel :app',
     'title' => 'Documentation',
     'search' => 'Rechercher dans la documentation …',
     'no_results' => 'Aucun résultat.',

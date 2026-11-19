@@ -39,7 +39,9 @@ class AppForm
                     ->helperText(__('apps.prefix_help'))
                     ->maxLength(20)
                     ->regex('/^[a-z][a-z0-9]*_?$/i'),
-                TextInput::make('sort_order')->label(__('common.sort_order'))->integer()->minValue(0)->default(0),
+                // Neue Apps ans Ende der Reihenfolge (Umschalter, Listen).
+                TextInput::make('sort_order')->label(__('common.sort_order'))->integer()->minValue(0)
+                    ->default(static fn (): int => ((int) App::query()->max('sort_order')) + 10),
                 IconPicker::make('icon')->label(__('apps.icon')),
             ]),
         ]);

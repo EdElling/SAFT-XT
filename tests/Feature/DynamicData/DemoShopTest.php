@@ -7,6 +7,7 @@ namespace Tests\Feature\DynamicData;
 use App\DynamicData\DataMenu;
 use App\DynamicData\DynamicDataNamespace;
 use App\Filament\Resources\Reports\ReportResource;
+use App\Models\AppManual;
 use App\Models\CustomTable;
 use App\Models\Menu;
 use App\Models\Report;
@@ -24,6 +25,8 @@ class DemoShopTest extends DynamicDataTestCase
         $this->seed(DemoDataSeeder::class);
 
         $shop = Menu::query()->whereNull('parent_id')->where('label->de', 'Shop (Demo)')->sole();
+        // Handbuch der Shop-App in vier Sprachen (B-107), auch nach wiederholtem Einspielen nur einmal.
+        $this->assertEqualsCanonicalizing(['de', 'en', 'fr', 'it'], AppManual::query()->where('app_id', app(DemoDataSeeder::class)->demoApp()->id)->pluck('locale')->all());
         $this->assertSame(DemoDataSeeder::SHOP_GROUP, $shop->getTranslations('label'));
         $this->assertEqualsCanonicalizing(
             ['artikel', 'kunden', 'bestellungen', 'bestellpositionen'],

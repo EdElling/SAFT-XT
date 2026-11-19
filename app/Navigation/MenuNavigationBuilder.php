@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Navigation;
 
+use App\Apps\CurrentApp;
 use App\Auth\RoleSimulation;
 use App\DynamicData\DataMenu;
 use App\DynamicData\Diagram\DataModelGraphBuilder;
@@ -51,9 +52,12 @@ final class MenuNavigationBuilder
             return $builder;
         }
 
+        // System-Einträge und die Menüs der aktuellen App (B-107).
+        $appId = app(CurrentApp::class)->id($user);
         $menus = Menu::query()
             ->active()
             ->visibleFor($user)
+            ->where(static fn ($q) => $q->whereNull('app_id')->when($appId !== null, static fn ($q) => $q->orWhere('app_id', $appId)))
             ->orderBy('sort_order')
             ->orderedByLabel()
             ->get();
@@ -183,6 +187,7 @@ final class MenuNavigationBuilder
             $user->getKey(),
             app()->getLocale(),
             app(RoleSimulation::class)->active()?->all(),
+            app(CurrentApp::class)->id($user),
             app(PluginStates::class)->fingerprint(),
             $fingerprint?->entries,
             $fingerprint?->changed,

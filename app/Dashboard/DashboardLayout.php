@@ -69,6 +69,42 @@ final class DashboardLayout
         return $layout;
     }
 
+    /**
+     * Anordnung einer App aus users.dashboard_layout (B-107: je App unter „apps“). Eine frühere Anordnung ohne Apps
+     * gilt als Vorgabe für jede App.
+     *
+     * @param  array<string, mixed>|null  $saved
+     * @return array<string, mixed>|null
+     */
+    public static function forApp(?array $saved, string $app): ?array
+    {
+        if ($saved === null) {
+            return null;
+        }
+
+        if (! array_key_exists('apps', $saved)) {
+            return $saved;
+        }
+
+        return $saved['apps'][$app] ?? ($saved['default'] ?? null);
+    }
+
+    /**
+     * users.dashboard_layout mit der Anordnung einer App; eine frühere Anordnung ohne Apps bleibt als Vorgabe.
+     *
+     * @param  array<string, mixed>|null  $saved
+     * @param  array<string, mixed>|null  $layout
+     * @return array<string, mixed>
+     */
+    public static function withApp(?array $saved, string $app, ?array $layout): array
+    {
+        $saved ??= [];
+        $result = array_key_exists('apps', $saved) ? $saved : ['apps' => [], 'default' => $saved === [] ? null : $saved];
+        $result['apps'][$app] = $layout;
+
+        return $result;
+    }
+
     /** Darf eine Karte dieser Breite in diesen Bereich? */
     public static function fits(string $span, string $column): bool
     {

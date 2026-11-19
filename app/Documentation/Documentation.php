@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Documentation;
 
+use App\Apps\CurrentApp;
+use App\Apps\PluginApps;
+use App\Models\App;
 use App\Models\User;
 use App\Plugins\Api\Manual;
 use App\Plugins\PluginDependencies;
@@ -42,23 +45,49 @@ final class Documentation
     public static function visibleFor(?User $user): array
     {
         $core = array_filter(array_keys(self::DOCS), fn (string $doc): bool => $doc !== 'admin' || self::isAdmin($user));
-        $plugins = array_filter(self::pluginManuals(), static fn (array $entry): bool => $user !== null && (
-            $entry['manual']->permissions === []
-            || array_filter($entry['manual']->permissions, static fn (string $permission): bool => $user->can($permission)) !== []
-        ));
+        // Handbücher von Plugins einer App nur in dieser App (B-107, PluginApps).
+        $currentApp = $user === null ? null : app(CurrentApp::class)->id($user);
+        $plugins = array_filter(self::pluginManuals(), static fn (array $entry): bool => $user !== null
+            && app(PluginApps::class)->belongsTo($entry['plugin'], $currentApp)
+            && (
+                $entry['manual']->permissions === []
+                || array_filter($entry['manual']->permissions, static fn (string $permission): bool => $user->can($permission)) !== []
+            ));
 
-        return [...array_values($core), ...array_keys($plugins)];
+        // Handbuch der aktuellen App (B-107): nur solange diese App die aktuelle ist.
+        $app = $user === null ? null : app(CurrentApp::class)->get($user);
+        $own = $app !== null && isset(self::appManuals()[self::APP_PREFIX.$app->id]) ? [self::APP_PREFIX.$app->id] : [];
+
+        return [...array_values($core), ...$own, ...array_keys($plugins)];
     }
 
     /** Alle Handbücher, auch nicht sichtbare (Kennungen). @return list<string> */
     public static function keys(): array
     {
-        return [...array_keys(self::DOCS), ...array_keys(self::pluginManuals())];
+        return [...array_keys(self::DOCS), ...array_keys(self::appManuals()), ...array_keys(self::pluginManuals())];
+    }
+
+    /** Kennung eines App-Handbuchs: „app-<id>“, zugleich Präfix der Anker. */
+    public const string APP_PREFIX = 'app-';
+
+    /**
+     * Apps mit Handbuch (B-107), je Anfrage einmal geladen.
+     *
+     * @return array<string, App>
+     */
+    public static function appManuals(): array
+    {
+        return once(static fn (): array => App::query()->whereHas('manuals')->with('manuals')->orderBy('sort_order')->get()
+            ->mapWithKeys(static fn (App $app): array => [self::APP_PREFIX.$app->id => $app])->all());
     }
 
     /** Titel eines Handbuchs in der Sprache der Oberfläche. */
     public static function label(string $doc): string
     {
+        if (($app = self::appManuals()[$doc] ?? null) !== null) {
+            return __('documentation.app_manual', ['app' => (string) $app->name]);
+        }
+
         $entry = self::pluginManuals()[$doc] ?? null;
 
         if ($entry === null) {
@@ -119,6 +148,12 @@ final class Documentation
     public static function language(?string $doc = null): string
     {
         $locale = app()->getLocale();
+
+        if ($doc !== null && ($app = self::appManuals()[$doc] ?? null) !== null) {
+            $locales = $app->manuals->pluck('locale')->all();
+
+            return in_array($locale, $locales, true) ? $locale : (in_array((string) config('locales.default'), $locales, true) ? (string) config('locales.default') : (string) ($locales[0] ?? $locale));
+        }
 
         if ($doc !== null && ($entry = self::pluginManuals()[$doc] ?? null) !== null) {
             return basename((string) self::pluginFile($entry['plugin'], $entry['manual'], $locale), '.md');
@@ -224,6 +259,11 @@ final class Documentation
     /** Markdown ohne Kopf (Titel, Sprachwahl, eigenes Inhaltsverzeichnis): alles nach der zweiten Trennlinie. */
     private static function body(string $doc): string
     {
+        // Handbuch einer App: ganzer Text, ohne eine Überschrift der Ebene 1 am Anfang.
+        if (($app = self::appManuals()[$doc] ?? null) !== null) {
+            return (string) preg_replace('/\A\s*# [^\n]*\n/', '', (string) $app->manual(self::language($doc)));
+        }
+
         $file = self::path($doc, self::language($doc));
 
         // Handbücher aus Plugins: ganze Datei, ohne eine Überschrift der Ebene 1 am Anfang (der Reiter trägt den Titel).

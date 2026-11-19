@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Apps\CurrentApp;
 use App\DynamicData\Diagram\DataModelGraph;
 use App\DynamicData\Diagram\DataModelGraphBuilder;
 use App\DynamicData\Diagram\MermaidErRenderer;
@@ -45,7 +46,7 @@ class DataModelPage extends Page
     public function mount(int|string $menu): void
     {
         $this->menuId = (int) $menu;
-        $this->entry();
+        app(CurrentApp::class)->follow(($user = auth()->user()) instanceof User ? $user : null, $this->entry()->app_id);
     }
 
     /** Eintrag muss existieren, aktiv sein, auf diese Seite zeigen und für den Benutzer sichtbar sein. */

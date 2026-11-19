@@ -31,7 +31,8 @@
 ### Je ne vois pas une table dans le menu.
 
 Vous n’avez pas le droit de lecture, il n’existe pas d’entrée de menu, ou votre rôle masque l’entrée. Adressez-vous à
-l’administration (Rôles → Droits sur les données ou entrées de menu, ou Menus).
+l’administration (Rôles → Droits sur les données ou entrées de menu, ou Menus). Si la table appartient à une autre **app**, passez d’abord à
+cette app avec le sélecteur en haut.
 
 ### Aucune ligne n’apparaît sous une commande.
 

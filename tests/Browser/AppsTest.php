@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Browser;
 
+use App\Documentation\Documentation;
+use App\DynamicData\DataMenu;
 use App\Models\App;
+use App\Models\AppManual;
 use App\Models\CustomTable;
 use App\Models\Role;
+use App\Models\User;
 use App\Services\DynamicSchemaService;
 use Facebook\WebDriver\WebDriverBy;
 use Laravel\Dusk\Browser;
@@ -60,7 +64,7 @@ class AppsTest extends DuskTestCase
             $this->assertTrue($locked->getAttribute('disabled') !== null || str_contains((string) $locked->getAttribute('class'), 'fi-disabled'), 'Löschen gesperrt.');
             $browser->clickAtXPath(sprintf($row, 'Fahrzeuge'))->waitFor('.fi-modal-window', 15);
             $this->clickVisibleButton($browser, 'Löschen');
-            $browser->waitUntilMissingText('Fahrzeuge', 15);
+            $browser->waitUntilMissing('tr.fi-ta-row:nth-child(3)', 15);
             $this->assertFalse(App::query()->where('prefix', 'fahrzeuge')->exists());
         });
     }
@@ -152,5 +156,55 @@ class AppsTest extends DuskTestCase
 
         $this->assertSame(2, CustomTable::query()->whereIn('name', ['kunden', 'bestellungen'])->where('app_id', $this->second->id)->count());
         $this->assertEqualsCanonicalizing(['data.kunden.view', 'data.bestellungen.view'], Role::findByName('vertrieb-hr')->permissions->pluck('name')->all());
+    }
+
+    /** FAP-05 */
+    public function test_switcher_changes_navigation_and_a_link_switches_back(): void
+    {
+        app(DataMenu::class)->ensure(CustomTable::query()->where('name', 'kunden')->firstOrFail());
+        app(DataMenu::class)->ensure(CustomTable::query()->where('name', 'hr_mitarbeitende')->firstOrFail());
+        $sales = Role::query()->create(['name' => 'vertrieb', 'guard_name' => 'web', 'app_id' => $this->first->id]);
+        $sales->givePermissionTo('data.kunden.view');
+        $hr = Role::query()->create(['name' => 'personal', 'guard_name' => 'web', 'app_id' => $this->second->id]);
+        $hr->givePermissionTo('data.hr_mitarbeitende.view');
+        $this->activeUser('zwei@example.com')->assignRole([$sales, $hr, User::ROLE_DEFAULT]);
+
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, 'zwei@example.com')->visit('/admin')->waitFor('.saft-app-switcher', 15)
+                ->assertSeeIn('.saft-app-switcher', $this->first->getTranslation('name', 'de'))
+                ->assertSeeIn('.fi-sidebar', 'Kunden')
+                ->assertDontSeeIn('.fi-sidebar', 'Mitarbeitende');
+
+            $browser->click('.saft-app-switcher')->waitFor('[data-app-switch="'.$this->second->id.'"]', 15)
+                ->click('[data-app-switch="'.$this->second->id.'"]')
+                ->waitForTextIn('.saft-app-switcher', 'Personal', 15)
+                ->assertSeeIn('.fi-sidebar', 'Mitarbeitende')
+                ->assertDontSeeIn('.fi-sidebar', 'Kunden');
+
+            // Lesezeichen auf eine Tabelle der anderen App: wechselt dorthin.
+            $browser->visit('/admin/data/kunden')->waitForText('Firma', 15)
+                ->assertSeeIn('.saft-app-switcher', $this->first->getTranslation('name', 'de'))
+                ->assertSeeIn('.fi-sidebar', 'Kunden');
+        });
+    }
+
+    /** FAP-06 */
+    public function test_app_manual_appears_only_in_its_app(): void
+    {
+        AppManual::query()->create(['app_id' => $this->second->id, 'locale' => 'de', 'content' => "# Personal\n\n## Abwesenheiten erfassen\n\nSo geht es.\n"]);
+        $tab = '[data-doc-tab="'.Documentation::APP_PREFIX.$this->second->id.'"]';
+
+        $this->browse(function (Browser $browser) use ($tab): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/documentation')->waitForText('Anwenderhandbuch', 15)
+                ->assertMissing($tab);
+
+            $browser->click('.saft-app-switcher')->waitFor('[data-app-switch="'.$this->second->id.'"]', 15)
+                ->click('[data-app-switch="'.$this->second->id.'"]')
+                ->waitForTextIn('.saft-app-switcher', 'Personal', 15)
+                ->visit('/admin/documentation')->waitFor($tab, 15)
+                ->assertSeeIn($tab, 'Handbuch Personal')
+                ->click($tab)
+                ->waitForText('Abwesenheiten erfassen', 15);
+        });
     }
 }

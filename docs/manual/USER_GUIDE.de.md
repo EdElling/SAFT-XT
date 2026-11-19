@@ -157,6 +157,17 @@ Firmen-Login abgemeldet.
 
 ---
 
+### Apps umschalten
+
+Arbeiten Sie mit mehreren **Apps** (Fachanwendungen, z. B. „Shop“ und „Lager“), steht links neben der Suche ein
+**Umschalter** mit dem Namen der aktuellen App. Er listet die Apps, zu denen Sie Zugang haben; ein Klick wechselt die
+App und öffnet ihr Dashboard. Die Wahl bleibt auch nach dem Abmelden erhalten.
+
+Die aktuelle App bestimmt, was Sie sehen: die Menüs dieser App (dazu Dashboard, Dokumentation, Auswertungen und – je
+nach Rechten – die Administration), die Anordnung des Dashboards, die Auswertungen und unter **Dokumentation** das
+Handbuch der App, sofern es eines gibt. Öffnen Sie über einen Link oder ein Lesezeichen eine Tabelle oder Auswertung
+einer anderen App, wechselt SAFT von selbst dorthin. Mit Zugang zu nur einer App erscheint kein Umschalter.
+
 ## 4. Mit Daten arbeiten
 
 ### 4.1 Die Tabellenansicht
@@ -531,6 +542,7 @@ unter der Bezeichnung der Verknüpfung, z. B. „Kontakte › Person (Forschung)
 
 | Begriff | Erklärung |
 |---|---|
+| **App** | Fachanwendung, z. B. „Shop“ oder „Lager“: Tabellen, Menüs, Auswertungen und Rollen, die zusammengehören; Wechsel über den Umschalter oben |
 | **Single Sign-On (SSO)** | Anmeldung über ein zentrales Firmenkonto statt eines eigenen Passworts |
 | **Identity Provider (IdP)** | Der Dienst, der beim SSO die Anmeldung durchführt, z. B. Microsoft Entra ID |
 | **Entra ID** | Microsofts Identitätsdienst (früher Azure Active Directory) |

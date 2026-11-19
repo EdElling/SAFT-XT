@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reports\Pages;
 
+use App\Apps\CurrentApp;
 use App\DynamicData\Export\ExportFormat;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Reports\ReportResource;
@@ -36,6 +37,7 @@ class ViewReport extends Page
     {
         $this->record = $this->resolveRecord($record);
         abort_unless(auth()->user()?->can('view', $this->record) ?? false, 403);
+        app(CurrentApp::class)->follow(($user = auth()->user()) instanceof User ? $user : null, $this->record->getAttribute('app_id'));
     }
 
     public function getTitle(): string|Htmlable

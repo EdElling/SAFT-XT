@@ -1912,6 +1912,8 @@ public function manuals(): array
   permission, the data permissions *view* on stock movements and stock levels – so the manual is also visible to people
   who only record movements.
 - If the plugin is resting or switched off, its manual disappears from online help and assistant.
+- **App (B-107):** if all tables from `requiredTables()` are in one app, the plugin belongs to it; its manual then only
+  appears while that app is the current one. Plugins without tables apply to all apps.
 
 **Step 3 – check:** `php artisan saft:plugins --check lager-tafel` reports “Manual “manual” in de, en, fr, it” or missing
 files. Then look at the tab under **Documentation**.

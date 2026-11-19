@@ -88,6 +88,27 @@ class Menu extends BaseMenu
         });
 
         // Datenmodell-Einträge verweisen auf sich selbst; die Seite ermittelt daraus ihre Gruppe.
+        // Neue App einer Gruppe (z. B. im Menüformular): Untergruppen und Einträge darunter ziehen mit – ausser
+        // Dateneinträgen, die immer zur App ihrer Tabelle gehören (B-107).
+        static::saved(static function (self $menu): void {
+            if ($menu->route !== null || ! $menu->wasChanged('app_id')) {
+                return;
+            }
+
+            $queue = [(int) $menu->id];
+
+            while ($queue !== []) {
+                $children = self::query()->whereIn('parent_id', $queue)->get(['id', 'route']);
+                $ids = $children->filter(static fn (self $c): bool => $c->route !== DataMenu::ROUTE)->pluck('id')->all();
+
+                if ($ids !== []) {
+                    self::query()->whereKey($ids)->update(['app_id' => $menu->app_id]);
+                }
+
+                $queue = $children->whereNull('route')->pluck('id')->map(static fn (mixed $id): int => (int) $id)->all();
+            }
+        });
+
         static::saved(static function (self $menu): void {
             $own = ['menu' => (int) $menu->id];
 

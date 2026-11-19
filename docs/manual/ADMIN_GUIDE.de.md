@@ -1211,6 +1211,25 @@ Löschen lässt sich nur eine leere App.
 und Formeln über Kind-Tabellen sind nur innerhalb einer App möglich. Der Table-Designer bietet nur Tabellen derselben
 App an; der KI-Tabellenassistent sieht nur das Datenmodell der gewählten App.
 
+**Zugang und aktuelle App:** Zugang zu einer App hat, wer eine Rolle dieser App hat oder – über irgendeine Rolle oder
+direkt – Datenrechte auf eine ihrer Tabellen bzw. Rechte eines Plugins dieser App; der Super-Admin hat alle Apps. Mit
+mehreren Apps erscheint oben der **Umschalter** (siehe [Anwenderhandbuch](USER_GUIDE.de.md#apps-umschalten)). Die
+aktuelle App bestimmt:
+
+- **Navigation:** System-Einträge (Dashboard, Dokumentation, Auswertungen, Administration) und die Menüs dieser App.
+- **Dashboard:** Anordnung je App; Kacheln von Auswertungen nur in ihrer App.
+- **Auswertungen:** Liste und Grundtabellen im Editor aus dieser App. Die Rechte *Auswertungen: anzeigen, anlegen,
+  bearbeiten, löschen, Assistent* gelten je App – über eine Rolle dieser App oder eine Systemrolle.
+- **Dokumentation und Hilfe-Assistent:** die allgemeinen Handbücher, das Handbuch dieser App und die Handbücher ihrer
+  Plugins; mit „Hilfe-Assistent kennt das Datenmodell“ nur die Tabellen dieser App.
+
+**Handbuch einer App:** Auf der Seite **Apps** lädt **„Handbuch“** eine Markdown-Datei je Sprache hoch (ersetzen oder
+entfernen); fehlt eine Sprache, gilt Deutsch. Überschriften der Ebenen 2 und 3 bilden das Inhaltsverzeichnis. Die
+Demo „Shop“ bringt ein Handbuch mit.
+
+**Plugins:** Ein Plugin gehört zu der App, in der alle Tabellen liegen, die es braucht (z. B. die Lager-Plugins zur App
+mit den Lager-Tabellen); Plugins ohne Tabellen gelten für alle Apps. Ihre Handbücher erscheinen nur in ihrer App.
+
 **In andere App verschieben:** Tabellen wechseln samt Menüeinträgen, Auswertungen (mit dieser Grundtabelle),
 Tabellenverknüpfungen und Aufgaben in eine andere App; Daten, Dateien und technische Namen bleiben unverändert. Drei
 Wege führen zum selben Dialog:

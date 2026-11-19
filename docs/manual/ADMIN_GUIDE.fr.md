@@ -1262,6 +1262,26 @@ Seule une app vide peut être supprimée.
 de » et les formules sur les tables enfants ne sont possibles qu’au sein d’une app. Le concepteur de tables ne propose
 que les tables de la même app ; l’assistant IA des tables ne voit que le modèle de données de l’app choisie.
 
+**Accès et app actuelle :** a accès à une app la personne qui a un rôle de cette app ou – par n’importe quel rôle ou
+directement – des droits sur les données d’une de ses tables ou des droits d’un plugin de cette app ; le super-admin a
+toutes les apps. Avec plusieurs apps, le **sélecteur** apparaît en haut (voir [guide utilisateur](USER_GUIDE.fr.md#changer-dapp)).
+L’app actuelle détermine :
+
+- **Navigation :** entrées système (tableau de bord, documentation, rapports, administration) et menus de cette app.
+- **Tableau de bord :** disposition par app ; tuiles de rapports seulement dans leur app.
+- **Rapports :** liste et tables de base de l’éditeur de cette app. Les droits *Rapports : afficher, créer, modifier,
+  supprimer, assistant* valent par app – via un rôle de cette app ou un rôle système.
+- **Documentation et assistant d’aide :** les manuels généraux, le manuel de cette app et ceux de ses plugins ; avec
+  « l’assistant d’aide connaît le modèle de données », seulement les tables de cette app.
+
+**Manuel d’une app :** sur la page **Apps**, **« Manuel »** téléverse un fichier Markdown par langue (remplacer ou
+supprimer) ; si une langue manque, l’allemand s’applique. Les titres de niveaux 2 et 3 forment la table des matières. La
+démo « Boutique » apporte un manuel.
+
+**Plugins :** un plugin appartient à l’app qui contient toutes les tables dont il a besoin (p. ex. les plugins
+d’entrepôt à l’app des tables d’entrepôt) ; les plugins sans tables valent pour toutes les apps. Leurs manuels
+n’apparaissent que dans leur app.
+
 **Déplacer vers une autre app :** les tables changent d’app avec leurs entrées de menu, rapports (avec cette table de
 base), liaisons de tables et tâches ; données, fichiers et noms techniques restent inchangés. Trois chemins mènent au
 même dialogue :

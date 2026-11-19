@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $deleted_at
  * @property bool|null $high_contrast
  * @property array|null $dashboard_layout
+ * @property int|null $current_app_id
  * @property string|null $theme
  * @property string|null $number_format
  * @property string|null $app_authentication_secret
@@ -43,6 +44,7 @@ class User extends \Illuminate\Foundation\Auth\User
     protected $table = 'users';
 
     protected $casts = [
+        'current_app_id' => 'int',
         'email_verified_at' => 'datetime',
         'is_active' => 'bool',
         'ai_daily_limit' => 'int',
@@ -69,6 +71,7 @@ class User extends \Illuminate\Foundation\Auth\User
         'ai_daily_limit',
         'high_contrast',
         'number_format',
+        'current_app_id',
     ];
 
     public function social_accounts(): HasMany

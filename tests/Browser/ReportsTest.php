@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Browser;
 
+use App\Apps\CurrentApp;
+use App\Dashboard\DashboardLayout;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\Report;
@@ -185,7 +187,12 @@ class ReportsTest extends DuskTestCase
             $browser->script('window.scrollTo(0, 0);');
             $this->clickVisibleButton($browser->pause(300), 'Dashboard anpassen')->waitFor('[data-dashboard-editor]', 15);
             $this->dragInSteps($browser, '[data-dashboard-card="'.$key.'"] [data-dashboard-handle]', '[data-dashboard-column="full"] [data-dashboard-card="RecentChangesWidget"]');
-            $browser->waitUsing(15, 200, fn (): bool => in_array($key, (array) (User::query()->where('email', self::ADMIN)->sole()->dashboard_layout['full'] ?? []), true))
+            $stored = static function (): array {
+                $admin = User::query()->where('email', self::ADMIN)->sole();
+
+                return (array) DashboardLayout::forApp($admin->dashboard_layout, (string) (app(CurrentApp::class)->id($admin) ?? 'none'));
+            };
+            $browser->waitUsing(15, 200, fn (): bool => in_array($key, (array) ($stored()['full'] ?? []), true))
                 ->assertPresent('[data-dashboard-column="full"] [data-dashboard-card="'.$key.'"]');
         });
     }

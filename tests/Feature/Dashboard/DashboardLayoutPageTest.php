@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Dashboard;
 
+use App\Apps\CurrentApp;
+use App\Dashboard\DashboardLayout;
 use App\Filament\Pages\Dashboard;
 use App\Models\Report;
 use App\Models\User;
@@ -29,6 +31,14 @@ class DashboardLayoutPageTest extends TestCase
         $this->actingAs($this->user);
     }
 
+    /** Gespeicherte Anordnung der aktuellen App (seit B-107 je App). @return array<string, mixed>|null */
+    private function storedLayout(): ?array
+    {
+        $user = $this->user->fresh();
+
+        return DashboardLayout::forApp($user->dashboard_layout, (string) (app(CurrentApp::class)->id($user) ?? 'none'));
+    }
+
     public function test_edit_mode_moves_hides_shows_and_resets_and_is_kept_for_the_user(): void
     {
         $page = Livewire::test(Dashboard::class);
@@ -50,21 +60,21 @@ class DashboardLayoutPageTest extends TestCase
         // assertEquals: MySQL sortiert JSON-Schlüssel; die Reihenfolge innerhalb der Listen zählt weiterhin.
         $this->assertEquals(
             ['left' => ['MyLoginsWidget'], 'right' => ['MyChangesWidget', 'LastLoginWidget', 'AccountWidget'], 'full' => ['RecentChangesWidget'], 'hidden' => []],
-            $this->user->fresh()->dashboard_layout,
+            $this->storedLayout(),
         );
 
         // Ausblenden und wieder einblenden.
         $page->call('hideCard', 'MyChangesWidget')->assertSeeHtml('data-show-card="MyChangesWidget"');
-        $this->assertSame(['MyChangesWidget'], $this->user->fresh()->dashboard_layout['hidden']);
+        $this->assertSame(['MyChangesWidget'], $this->storedLayout()['hidden']);
         $this->assertStringNotContainsString('data-dashboard-card="MyChangesWidget"', Livewire::test(Dashboard::class)->html());
         $page->call('showCard', 'MyChangesWidget');
-        $this->assertSame([], $this->user->fresh()->dashboard_layout['hidden']);
+        $this->assertSame([], $this->storedLayout()['hidden']);
 
         // Wieder eingeblendet in die kürzere Spalte; neue Sitzung, gleiche Anordnung.
         $this->assertSame(['MyLoginsWidget', 'MyChangesWidget'], Livewire::test(Dashboard::class)->instance()->layout()['left']);
 
         $page->callAction('resetDashboard');
-        $this->assertNull($this->user->fresh()->dashboard_layout);
+        $this->assertNull($this->storedLayout());
         $this->assertSame($default, Livewire::test(Dashboard::class)->instance()->layout());
 
         $page->callAction('finishDashboard')->assertSet('editing', false)->assertDontSeeHtml('data-dashboard-editor');

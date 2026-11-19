@@ -79,6 +79,20 @@ class App extends BaseApp
         return $ids->count() === 1 ? (int) $ids->first() : null;
     }
 
+    public function manuals(): HasMany
+    {
+        return $this->hasMany(AppManual::class);
+    }
+
+    /** Handbuch in der Sprache, sonst in der Vorgabesprache; null, wenn es keines gibt. */
+    public function manual(?string $locale = null): ?string
+    {
+        $manuals = $this->manuals->keyBy('locale');
+        $manual = $manuals->get($locale ?? app()->getLocale()) ?? $manuals->get((string) config('locales.default')) ?? $manuals->first();
+
+        return $manual?->content;
+    }
+
     public function customTables(): HasMany
     {
         return $this->hasMany(CustomTable::class);

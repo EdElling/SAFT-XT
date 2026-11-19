@@ -15,6 +15,23 @@ return [
     'delete_only_empty' => 'Nur leere Apps lassen sich löschen.',
     'system' => 'System',
     'app_help' => 'Gehört zu dieser Fachanwendung; Verknüpfungen sind nur innerhalb einer App möglich.',
+    'switch' => [
+        'label' => 'Aktuelle App wechseln',
+        'none' => 'Keine App',
+    ],
+    'manual' => [
+        'action' => 'Handbuch',
+        'heading' => 'Handbuch der App „:app“',
+        'description' => 'Eine Markdown-Datei je Sprache. Es erscheint unter „Dokumentation“ und im Hilfe-Assistenten, solange die App die aktuelle ist; fehlt eine Sprache, gilt Deutsch.',
+        'submit' => 'Speichern',
+        'present' => 'Vorhanden – eine neue Datei ersetzt es.',
+        'missing' => 'Noch keines.',
+        'remove' => 'Entfernen',
+        'hint' => 'Überschriften der Ebenen 2 und 3 (##, ###) bilden das Inhaltsverzeichnis; eine Überschrift der Ebene 1 am Anfang entfällt (der Reiter trägt den Namen der App).',
+        'not_utf8' => 'Die Datei für :language ist nicht in UTF-8 gespeichert.',
+        'saved' => 'Handbuch gespeichert.',
+        'saved_body' => 'Es erscheint unter „Dokumentation“, solange diese App die aktuelle ist.',
+    ],
     'move' => [
         'submit' => 'Verschieben',
         'action' => 'In andere App verschieben',

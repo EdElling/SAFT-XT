@@ -1175,6 +1175,25 @@ Only an empty app can be deleted.
 child tables are only possible within one app. The table designer only offers tables of the same app; the AI table
 assistant only sees the data model of the chosen app.
 
+**Access and current app:** a person has access to an app if they have a role of that app or – through any role or
+directly – data permissions on one of its tables or permissions of a plugin of that app; the super admin has all apps.
+With several apps the **switcher** appears at the top (see [user guide](USER_GUIDE.md#switching-apps)). The current
+app determines:
+
+- **Navigation:** system entries (dashboard, documentation, reports, administration) and the menus of that app.
+- **Dashboard:** layout per app; report cards only in their app.
+- **Reports:** list and base tables in the editor from that app. The permissions *Reports: view, create, edit, delete,
+  assistant* apply per app – through a role of that app or a system role.
+- **Documentation and help assistant:** the general manuals, the app's manual and the manuals of its plugins; with
+  “Help assistant knows the data model” only the tables of that app.
+
+**Manual of an app:** on the **Apps** page, **“Manual”** uploads one Markdown file per language (replace or remove); if a
+language is missing, German is used. Level 2 and 3 headings form the table of contents. The “Shop” demo comes with a
+manual.
+
+**Plugins:** a plugin belongs to the app that holds all tables it needs (e.g. the warehouse plugins to the app with the
+warehouse tables); plugins without tables apply to all apps. Their manuals appear only in their app.
+
 **Move to another app:** tables change app together with their menu entries, reports (with that base table), table
 links and tasks; data, files and technical names stay unchanged. Three ways lead to the same dialog:
 

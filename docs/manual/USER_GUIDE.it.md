@@ -155,6 +155,17 @@ dall’account aziendale.
 
 ---
 
+### Cambiare app
+
+Se lavorate con più **app** (applicazioni specialistiche, ad es. «Negozio» e «Magazzino»), a sinistra della ricerca
+compare un **selettore** con il nome dell’app attuale. Elenca le app a cui avete accesso; un clic cambia app e ne apre
+la dashboard. La scelta resta anche dopo la disconnessione.
+
+L’app attuale determina ciò che vedete: i menu di quell’app (più dashboard, documentazione, report e – secondo i
+diritti – l’amministrazione), la disposizione della dashboard, i report e, sotto **Documentazione**, il manuale
+dell’app se esiste. Se aprite una tabella o un report di un’altra app tramite un link o un segnalibro, SAFT vi passa da
+sé. Con accesso a una sola app il selettore non compare.
+
 ## 4. Lavorare con i dati
 
 ### 4.1 La vista tabella
@@ -528,6 +539,7 @@ l’etichetta del collegamento, ad es. «Contatti › Persona (Ricerca) › Cogn
 
 | Concetto | Spiegazione |
 |---|---|
+| **App** | applicazione specialistica, ad es. «Negozio» o «Magazzino»: tabelle, menu, report e ruoli che vanno insieme; si cambia con il selettore in alto |
 | **Single sign-on (SSO)** | Accesso tramite un account aziendale centrale invece di una password propria |
 | **Provider di identità (IdP)** | Il servizio che esegue l’accesso con il single sign-on, ad es. Microsoft Entra ID |
 | **Entra ID** | Il servizio di identità di Microsoft (in precedenza Azure Active Directory) |

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Apps\Tables;
 
+use App\Filament\Resources\Apps\Actions\AppManualAction;
 use App\Filament\Support\MoveToAppAction;
 use App\Models\App;
 use Filament\Actions\DeleteAction;
@@ -39,6 +40,7 @@ class AppsTable
             ->recordActions([
                 EditAction::make(),
                 MoveToAppAction::forApp(),
+                AppManualAction::make(),
                 DeleteAction::make()
                     ->disabled(fn (App $record): bool => ! $record->isEmpty())
                     ->tooltip(fn (App $record): ?string => $record->isEmpty() ? null : __('apps.delete_only_empty')),

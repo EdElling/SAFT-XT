@@ -342,6 +342,8 @@ final class AppMover
         }
 
         if ($movedGroup === null) {
+            // Untergruppen der Zielgruppe gehören zur Ziel-App (Einträge können in ihnen liegen).
+            Menu::query()->whereKey($this->subtree($parent))->whereNull('route')->update(['app_id' => $target->id]);
             app(DataMenu::class)->ensureDataModel($parent);
         }
 

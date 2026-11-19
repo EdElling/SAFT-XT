@@ -8,12 +8,14 @@ use App\Ai\AiConfig;
 use App\Ai\AiUsage;
 use App\Ai\ChatClient;
 use App\Ai\ChatReply;
+use App\Apps\CurrentApp;
 use App\Documentation\Documentation;
 use App\DynamicData\DataPermissions;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Roles\Schemas\RoleForm;
 use App\Models\AiHelpConversation;
 use App\Models\AiHelpMessage;
+use App\Models\CustomTable;
 use App\Models\User;
 use App\Navigation\MenuNavigationBuilder;
 use App\Plugins\Context\SchemaExporter;
@@ -28,7 +30,7 @@ use Throwable;
 
 /**
  * Hilfe-Assistent: beantwortet Fragen aus den Wissensquellen, die die Person sehen darf (heute die Handbücher der
- * Online-Hilfe), auf Wunsch mit dem Datenmodell (Tabellen und Felder mit Leserecht) – nie mit Datensätzen. Die
+ * Online-Hilfe), auf Wunsch mit dem Datenmodell (Tabellen und Felder der aktuellen App mit Leserecht) – nie mit Datensätzen. Die
  * Unterhaltungen werden gespeichert; ans Modell gehen nur die letzten Nachrichten, die Handbücher zwischengespeichert.
  */
 final class HelpAssistant
@@ -291,9 +293,13 @@ final class HelpAssistant
     {
         $exporter = app(SchemaExporter::class);
         $schema = $exporter->export();
+        // Nur Tabellen der aktuellen App (B-107) – wie Menü und Handbücher.
+        $appId = app(CurrentApp::class)->id($user);
+        $inApp = $appId === null ? [] : CustomTable::query()->where('app_id', $appId)->pluck('name')->all();
         $schema['tables'] = array_values(array_filter(
             $schema['tables'],
-            static fn (array $t): bool => ($t['is_active'] ?? true) && $user->can(DataPermissions::name((string) $t['name'], 'view')),
+            static fn (array $t): bool => ($t['is_active'] ?? true) && in_array((string) $t['name'], $inApp, true)
+                && $user->can(DataPermissions::name((string) $t['name'], 'view')),
         ));
 
         if ($schema['tables'] === []) {

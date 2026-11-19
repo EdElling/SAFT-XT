@@ -15,6 +15,23 @@ return [
     'delete_only_empty' => 'Only empty apps can be deleted.',
     'system' => 'System',
     'app_help' => 'Belongs to this business application; relations are only possible within one app.',
+    'switch' => [
+        'label' => 'Switch the current app',
+        'none' => 'No app',
+    ],
+    'manual' => [
+        'action' => 'Manual',
+        'heading' => 'Manual of the app “:app”',
+        'description' => 'One Markdown file per language. It appears under “Documentation” and in the help assistant while the app is the current one; if a language is missing, German is used.',
+        'submit' => 'Save',
+        'present' => 'Present – a new file replaces it.',
+        'missing' => 'None yet.',
+        'remove' => 'Remove',
+        'hint' => 'Level 2 and 3 headings (##, ###) form the table of contents; a level 1 heading at the start is dropped (the tab shows the app name).',
+        'not_utf8' => 'The file for :language is not saved in UTF-8.',
+        'saved' => 'Manual saved.',
+        'saved_body' => 'It appears under “Documentation” while this app is the current one.',
+    ],
     'move' => [
         'submit' => 'Move',
         'action' => 'Move to another app',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Reports\Pages;
 
 use App\Ai\AiConfig;
+use App\Apps\CurrentApp;
 use App\DynamicData\Schema\FieldType;
 use App\Exceptions\BusinessRuleException;
 use App\ExternalData\Snapshots\SnapshotService;
@@ -94,6 +95,8 @@ class ReportDesigner extends Page
         if ($record !== null) {
             $report = Report::query()->when($user !== null, fn ($q) => $q->visibleTo($user))->findOrFail($record);
             abort_unless($user?->can('update', $report) ?? false, 403);
+            // Bearbeiten über einen Link: in die App der Auswertung wechseln (B-107).
+            app(CurrentApp::class)->follow($user, $report->app_id);
             $this->recordId = $report->id;
             $this->state = DesignerState::fromDefinition($report->definitionObject())->toArray();
             $this->form->fill(['name' => $report->name, 'description' => $report->description, 'is_shared' => $report->is_shared]);

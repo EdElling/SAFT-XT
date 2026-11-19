@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Reports\Tables;
 
+use App\Apps\CurrentApp;
 use App\Filament\Resources\Reports\ReportResource;
 use App\Filament\Support\AppFilter;
 use App\Models\CustomTable;
@@ -173,7 +174,16 @@ final class ReportsTable
     /** @return list<int> */
     private static function runnableIds(): array
     {
-        return once(fn (): array => self::computeRunnableIds());
+        // Einmal je Anfrage, Person und App (nach einem Wechsel der App neu berechnet).
+        $user = auth()->user();
+        $key = 'saft.reports.runnable.'.($user instanceof User ? $user->id.'.'.(app(CurrentApp::class)->id($user) ?? 'none') : 'guest');
+        $attributes = request()->attributes;
+
+        if (! $attributes->has($key)) {
+            $attributes->set($key, self::computeRunnableIds());
+        }
+
+        return $attributes->get($key);
     }
 
     /** @return list<int> */
@@ -187,7 +197,10 @@ final class ReportsTable
 
         $runner = app(ReportRunner::class);
 
-        return Report::query()->visibleTo($user)->get()
+        // Nur Auswertungen der aktuellen App (B-107).
+        $appId = app(CurrentApp::class)->id($user);
+
+        return Report::query()->visibleTo($user)->where(static fn ($q) => $q->whereNull('app_id')->orWhere('app_id', $appId ?? 0))->get()
             ->filter(fn (Report $report): bool => $report->isOwnedBy($user) || $runner->canRun($report, $user))
             ->modelKeys();
     }

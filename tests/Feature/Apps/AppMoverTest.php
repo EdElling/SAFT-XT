@@ -194,4 +194,34 @@ class AppMoverTest extends DynamicDataTestCase
             ->assertHasNoTableActionErrors();
         $this->assertSame($this->source->id, CustomTable::query()->where('name', 'notizen')->value('app_id'));
     }
+
+    public function test_moving_tables_takes_subgroups_of_their_group_along(): void
+    {
+        // Gruppe „Verkauf“ mit Untergruppe „Stammdaten“, darin Kunden.
+        $sub = Menu::create(['parent_id' => $this->sales->id, 'label' => ['de' => 'Stammdaten'], 'sort_order' => 5]);
+        Menu::query()->where('route', DataMenu::ROUTE)->where('route_parameters->table', 'kunden')->update(['parent_id' => $sub->id]);
+
+        $this->mover()->move(['bestellungen', 'kunden', 'positionen'], $this->target, null, [$this->role->id => AppMover::ROLE_DROP], movedGroup: $this->sales->fresh());
+
+        $this->assertSame($this->target->id, $this->sales->fresh()->app_id);
+        $this->assertSame($this->target->id, $sub->fresh()->app_id, 'Untergruppe zieht mit.');
+        $this->assertSame([$this->target->id], Menu::query()->where('parent_id', $sub->id)->pluck('app_id')->unique()->values()->all());
+    }
+
+    public function test_new_app_of_a_group_and_moving_into_an_existing_group_cover_subgroups(): void
+    {
+        // Wie in der Praxis: Gruppe im Menüformular einer App zuordnen, dann die Tabellen in diese Gruppe verschieben.
+        $sub = Menu::create(['parent_id' => $this->sales->id, 'label' => ['de' => 'Stammdaten'], 'sort_order' => 5]);
+        Menu::query()->where('route', DataMenu::ROUTE)->where('route_parameters->table', 'kunden')->update(['parent_id' => $sub->id]);
+
+        $this->sales->fresh()->update(['app_id' => $this->target->id]);
+        $this->assertSame($this->target->id, $sub->fresh()->app_id, 'Untergruppe folgt der Gruppe.');
+        $this->assertSame($this->source->id, Menu::query()->where('route', DataMenu::ROUTE)->where('route_parameters->table', 'kunden')->value('app_id'), 'Dateneintrag folgt seiner Tabelle.');
+
+        $sub->update(['app_id' => $this->source->id]);
+        $this->mover()->move(['bestellungen', 'kunden', 'positionen'], $this->target, $this->sales->id, [$this->role->id => AppMover::ROLE_DROP]);
+
+        $this->assertSame($this->target->id, $sub->fresh()->app_id, 'Untergruppe der Zielgruppe gehört zur Ziel-App.');
+        $this->assertSame($this->target->id, Menu::query()->where('route', DataMenu::ROUTE)->where('route_parameters->table', 'kunden')->value('app_id'));
+    }
 }

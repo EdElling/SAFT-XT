@@ -40,6 +40,7 @@ Ausdrücklich **kein** Ziel: Mandantenfähigkeit (getrennte Organisationen, getr
 | Geplante Aufgaben (nicht System) | `app_id` |
 | Plugins | einer App zugeordnet, je App aktiv/inaktiv; Code bleibt plattformweit (keine echte Abschottung möglich) |
 | KI-Kontext | Tabellen-, Auswertungs- und Hilfe-Assistent sehen nur die aktuelle App (Tabellen, Menüs, Rollen, Handbücher ihrer Plugins) |
+| Handbücher | System-Handbücher überall; Handbuch der App (Markdown je Sprache, Seite „Apps“) und Handbücher ihrer Plugins nur in dieser App – in „Dokumentation“ und im Hilfe-Assistenten. Teil der App-Definition (Etappe 4); ein KI-App-Designer kann es erzeugen |
 | Protokolle, Datenstände | global, mit Filter nach App |
 
 ## 4. Die App-Definition als gemeinsame Grundlage
@@ -164,9 +165,9 @@ Tabellen-Assistenten), Diagramm aus einer Definition, Änderungsplan.
 |---|---|---|
 | 1a Fundament | Tabelle `apps`; `app_id` an Tabellen, Menüs, Auswertungen, Tabellenverknüpfungen, Rollen, Aufgaben; **stabile Schlüssel** an allen Objekten; minimale Umstellung („Bestehende Daten“); Demo-Seeder legen ihre Apps an; Seite „Apps“; App-Auswahl in Formularen (nur wo nicht ableitbar), Filter in Listen; Grenze zwischen Apps (Verknüpfungen, Übernehmen aus, Formeln, Auswertungen nur innerhalb einer App); Präfix-Vorschlag; **Rolle kopieren**; Import alter Pakete mit Ziel-App | gross |
 | 1b Verschieben | **In andere App verschieben** (Abschnitt 5a: mehrere Tabellen oder eine Menügruppe in einem Schritt, Prüfung auf den Endzustand, Rollenrechte übertragen); verbleibende Verweise über die App-Grenze verhindern das Verschieben, bis Etappe 5 sie erlaubt | mittel |
-| 2 Umschalten | aktuelle App, Umschalter in der Titelzeile, Navigation und Dashboard je App (Navigations-Cache je App), Zugang über Rollen; Rechte wie „Auswertungen anlegen“ oder „Exportieren“ wirken je App | mittel |
+| 2 Umschalten | aktuelle App, Umschalter in der Titelzeile, Navigation und Dashboard je App (Navigations-Cache je App), Zugang über Rollen, Datenrechte und Plugin-Rechte; Rechte der Auswertungen je App; Handbuch je App; Plugins und Datenmodell des Hilfe-Assistenten je App (Plugin-App aus requiredTables) | mittel |
 | 3 Lebenszyklus | aktivieren, deaktivieren, entfernen (Abhängigkeiten, Sicherung, Bestätigung); „Demo-Daten zurücksetzen“ wird „App-Daten zurücksetzen“ | mittel |
-| 4 App-Definition | Format `saft-app/1`: aus dem aktuellen Stand erzeugen, exportieren, als neue App installieren, Ausgangsstand speichern; Diagramm aus einer Definition; Seite „Apps“ ersetzt „Konfiguration übertragen“ | mittel |
+| 4 App-Definition | Format `saft-app/1`: aus dem aktuellen Stand erzeugen, exportieren, als neue App installieren, Ausgangsstand speichern; Diagramm aus einer Definition; Seite „Apps“ ersetzt „Konfiguration übertragen“. Beim Export **zuerst die App wählen**, dann ihre Objekte; System-Menüs (Dashboard, Dokumentation, Auswertungen, Administration) und Systemrollen werden nie angeboten | mittel |
 | 5 Schnittstellen | Freigabe von Tabellen/Feldern, Verweise aus anderen Apps nur darauf, Vertragsschutz, „Verwendet in“ über Apps | mittel |
 | 6 Änderungsplan | Vergleich, Einstufung, Konflikte, Vorschau, Ausführen; Aktualisieren einer installierten App aus einem Paket (löst B-001 ab) | gross |
 | 7 Plugins und KI | Plugin-Zuordnung und -Aktivierung je App, Plugin-API 1.9 (Plugin schlägt seine App vor), KI-Kontext je App | mittel |

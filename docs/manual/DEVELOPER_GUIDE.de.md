@@ -1939,6 +1939,8 @@ public function manuals(): array
 - **`permissions`**: Wer eines dieser Rechte hat, sieht das Handbuch. Lager-Umbuchung nennt neben seinem eigenen Recht
   die Datenrechte *anzeigen* auf Lagerbewegungen und Bestände – so sieht das Handbuch auch, wer nur Bewegungen erfasst.
 - Ruht das Plugin oder ist es ausgeschaltet, verschwindet sein Handbuch aus Online-Hilfe und Assistent.
+- **App (B-107):** Liegen alle Tabellen aus `requiredTables()` in einer App, gehört das Plugin zu ihr; sein Handbuch
+  erscheint dann nur, solange diese App die aktuelle ist. Plugins ohne Tabellen gelten für alle Apps.
 
 **Schritt 3 – prüfen:** `php artisan saft:plugins --check lager-tafel` meldet „Handbuch „manual“ in de, en, fr, it“ bzw.
 fehlende Dateien. Danach unter **Dokumentation** den Reiter ansehen.

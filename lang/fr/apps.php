@@ -15,6 +15,23 @@ return [
     'delete_only_empty' => 'Seules les apps vides peuvent être supprimées.',
     'system' => 'Système',
     'app_help' => 'Appartient à cette application métier ; les liaisons ne sont possibles qu’au sein d’une app.',
+    'switch' => [
+        'label' => 'Changer d’app',
+        'none' => 'Aucune app',
+    ],
+    'manual' => [
+        'action' => 'Manuel',
+        'heading' => 'Manuel de l’app « :app »',
+        'description' => 'Un fichier Markdown par langue. Il apparaît sous « Documentation » et dans l’assistant d’aide tant que l’app est l’app actuelle ; si une langue manque, l’allemand s’applique.',
+        'submit' => 'Enregistrer',
+        'present' => 'Présent – un nouveau fichier le remplace.',
+        'missing' => 'Pas encore.',
+        'remove' => 'Supprimer',
+        'hint' => 'Les titres de niveaux 2 et 3 (##, ###) forment la table des matières ; un titre de niveau 1 au début est omis (l’onglet porte le nom de l’app).',
+        'not_utf8' => 'Le fichier pour :language n’est pas enregistré en UTF-8.',
+        'saved' => 'Manuel enregistré.',
+        'saved_body' => 'Il apparaît sous « Documentation » tant que cette app est l’app actuelle.',
+    ],
     'move' => [
         'submit' => 'Déplacer',
         'action' => 'Déplacer vers une autre app',

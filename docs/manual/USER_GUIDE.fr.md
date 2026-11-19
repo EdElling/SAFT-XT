@@ -161,6 +161,17 @@ déconnecté du compte de l’entreprise.
 
 ---
 
+### Changer d’app
+
+Si vous travaillez avec plusieurs **apps** (applications métier, p. ex. « Boutique » et « Entrepôt »), un **sélecteur**
+avec le nom de l’app actuelle apparaît à gauche de la recherche. Il liste les apps auxquelles vous avez accès ; un clic
+change d’app et ouvre son tableau de bord. Le choix est conservé après la déconnexion.
+
+L’app actuelle détermine ce que vous voyez : les menus de cette app (plus tableau de bord, documentation, rapports et –
+selon vos droits – l’administration), la disposition du tableau de bord, les rapports et, sous **Documentation**, le
+manuel de l’app s’il en existe un. Si vous ouvrez une table ou un rapport d’une autre app via un lien ou un favori, SAFT
+y bascule de lui-même. Avec l’accès à une seule app, aucun sélecteur n’apparaît.
+
 ## 4. Travailler avec les données
 
 ### 4.1 La vue tableau
@@ -546,6 +557,7 @@ champs sous le libellé de la liaison, p. ex. « Contacts › Personne (Recherch
 
 | Notion | Explication |
 |---|---|
+| **App** | application métier, p. ex. « Boutique » ou « Entrepôt » : tables, menus, rapports et rôles qui vont ensemble ; changement via le sélecteur en haut |
 | **Authentification unique (SSO)** | Connexion via un compte d’entreprise central au lieu d’un mot de passe propre |
 | **Fournisseur d’identité (IdP)** | Le service qui effectue la connexion lors de l’authentification unique, p. ex. Microsoft Entra ID |
 | **Entra ID** | Le service d’identité de Microsoft (anciennement Azure Active Directory) |

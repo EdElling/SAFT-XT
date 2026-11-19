@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reports\Editor;
 
+use App\Apps\CurrentApp;
 use App\DynamicData\DataAccess;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
@@ -54,8 +55,11 @@ final class FieldCatalog
      */
     public function baseTableOptions(?User $user): array
     {
+        // Grundtabellen nur aus der aktuellen App (B-107).
+        $appId = $user === null ? null : app(CurrentApp::class)->id($user);
+
         return $this->tables()
-            ->filter(fn (CustomTable $t): bool => $this->listed($t, $user))
+            ->filter(fn (CustomTable $t): bool => $this->listed($t, $user) && ($user === null || $t->app_id === $appId))
             ->sortBy(fn (CustomTable $t): string => mb_strtolower((string) $t->label))
             ->map(fn (CustomTable $t): array => [
                 'id' => $t->id,
