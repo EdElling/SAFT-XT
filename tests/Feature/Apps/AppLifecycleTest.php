@@ -285,9 +285,9 @@ class AppLifecycleTest extends DynamicDataTestCase
         $this->artisan('tasks:run-due')->assertSuccessful();
 
         $this->assertNull(App::query()->find($this->sales->id));
-        $this->assertFalse($this->appSchema()->hasTable('kunden'));
-        $this->assertFalse($this->appSchema()->hasTable('bestellungen'));
-        $this->assertTrue($this->appSchema()->hasTable('hr_mitarbeitende'), 'Andere Apps bleiben.');
+        $this->assertFalse($this->appSchema()->hasTable($this->qualified('kunden')));
+        $this->assertFalse($this->appSchema()->hasTable($this->qualified('bestellungen')));
+        $this->assertTrue($this->appSchema()->hasTable($this->qualified('hr_mitarbeitende')), 'Andere Apps bleiben.');
         $this->assertSame(0, CustomTable::query()->whereIn('name', ['kunden', 'bestellungen'])->count());
         $this->assertSame(0, Report::query()->count());
         $this->assertSame(0, ScheduledTask::query()->where('name', 'Aufräumen')->count());
