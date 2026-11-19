@@ -184,8 +184,9 @@ wird ein Eintrag verschoben, zeigt er automatisch die neue Gruppe. Es gilt:
 - Wie jeder Eintrag lässt sich auch dieser über ein **Recht** einschränken. Das Diagramm passt sich dem
   Farbschema (hell/dunkel) an; breite Diagramme lassen sich seitlich verschieben.
 
-**Bezeichnung je Sprache:** Jeder Eintrag hat ein Feld für **Deutsch** (Pflicht) und je eines für **English**,
-**Français** und **Italiano**. Bleibt ein Feld leer, erscheint in dieser Sprache die deutsche Bezeichnung. Die
+**Bezeichnung je Sprache:** Die Bezeichnung hat einen Reiter je Sprache: **Deutsch** (Pflicht), **English**,
+**Français** und **Italiano**. Bleibt ein Feld leer, erscheint in dieser Sprache die deutsche Bezeichnung; darauf
+weist ein grauer Platzhalter im leeren Feld hin („Leer lassen, um Deutsch zu verwenden.“). Die
 mitgelieferten Einträge sind bereits in allen vier Sprachen benannt. Einträge, die der Table-Designer für eine Tabelle anlegt, übernehmen deren Anzeigenamen
 in allen Sprachen und folgen ihm bei jeder Änderung.
 
@@ -216,8 +217,11 @@ Hier legen Sie eigene Tabellen an – ohne Programmierung.
 ![Table-Designer](images/de/09-table-designer.png)
 
 **Mehrsprachig:** Anzeigename und Beschreibung einer Tabelle, die Bezeichnung jedes Felds und die Anzeige der
-Auswahlwerte haben ein Feld je Sprache. Deutsch ist beim Anzeigenamen und bei der Bezeichnung Pflicht, die übrigen
-Sprachen sind freiwillig; ohne sie erscheint der deutsche Text. Der technische Name und die gespeicherten
+Auswahlwerte haben je Sprache einen Reiter (Deutsch, English, Français, Italiano); Anzeigename und Beschreibung stehen
+unter denselben Reitern untereinander. Das gilt ebenso für alle anderen übersetzbaren Texte der Administration
+(Menüeinträge, Apps, Tabellenverknüpfungen, Regelmeldungen, Table-Connector). Deutsch ist beim Anzeigenamen und bei
+der Bezeichnung Pflicht, die übrigen Sprachen sind freiwillig; ohne sie erscheint der deutsche Text – der graue
+Platzhalter im leeren Feld erinnert daran. Der technische Name und die gespeicherten
 Auswahlwerte gelten für alle Sprachen.
 
 **Tabelle anlegen:**
@@ -932,7 +936,7 @@ landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bz
 | Assistent | Wo | Recht | Kann |
 |---|---|---|---|
 | **Auswertungen** | Auswertungs-Editor, Feld „Auswertung beschreiben“ | Auswertungen: Assistent nutzen | Grundtabelle, Zeilen, Spalten, Werte, Filter, Sortierung, Anzahl Zeilen und Darstellung wählen; berechnete Werte und Spalten sowie Kennzahlen aus Werten mit Formeln bilden; Rückfragen stellen; einen Vorschlag auf Zuruf ändern |
-| **Tabellen** | Table-Designer: beim Anlegen „Tabelle beschreiben“, bei bestehenden Tabellen **Mit KI anpassen** | Table-Designer: Assistent nutzen | Neue Tabelle mit App (im Text genannt, sonst die gewählte; ist beides offen, fragt er nach), Menügruppe dieser App, Symbol, Feldern, Typen (auch Dateifelder mit Arten, Grösse und Anzahl), Auswahloptionen, Verknüpfungen zu bestehenden Tabellen und Bezeichnungen in allen vier Sprachen; bei bestehenden Tabellen neue Felder, auf Wunsch ein anderes Symbol, Bezeichnungen, Pflicht/eindeutig/durchsuchbar/sortierbar, weitere Auswahloptionen und Anzeigefelder von Verknüpfungen (Vorschau in Worten, dann **Übernehmen**). Typ ändern, umbenennen, löschen und Regeln bleiben Handarbeit |
+| **Tabellen** | Table-Designer: beim Anlegen „Tabelle beschreiben“, bei bestehenden Tabellen **Mit KI anpassen** | Table-Designer: Assistent nutzen | Neue Tabelle mit App (im Text genannt, sonst die gewählte; ist beides offen, fragt er nach), Menügruppe dieser App, Symbol, Feldern, Typen (auch Dateifelder mit Arten, Grösse und Anzahl), Auswahloptionen, Verknüpfungen zu bestehenden Tabellen, Feldregeln (Minimum/Maximum, Länge, E-Mail, URL) und Bezeichnungen in allen vier Sprachen. Bei bestehenden Tabellen im Gespräch (Dialog mit Verlauf; Rückfragen und Hinweise erscheinen dort, ein weiterer Wunsch verfeinert den Vorschlag, **Übernehmen** führt ihn aus, **Neu beginnen** leert den Verlauf): neue Felder, auf Wunsch ein anderes Symbol, Bezeichnungen, Pflicht/eindeutig/durchsuchbar/sortierbar, weitere Auswahloptionen, Anzeigefelder von Verknüpfungen, Feldregeln setzen oder entfernen und neue Tabellenregeln (z. B. „Lieferdatum nicht vor Bestelldatum“). Eine Regel auf dieselben zwei Felder ersetzt die vorhandene; widersprüchliche oder nie erfüllbare Regeln schlägt er nicht vor, sondern erklärt, warum. Typ ändern, umbenennen, löschen, vorhandene Regeln ändern oder entfernen und eigene Regelmeldungen bleiben Handarbeit |
 | **Hilfe** | Knopf **?** in der Kopfzeile; **Dokumentation** › Reiter **KI-Assistent** | Hilfe: Assistent nutzen | Beantwortet Fragen zur Bedienung aus den Handbüchern, die die Person sehen darf, mit Verweisen auf die Abschnitte; schlägt nichts vor und ändert nichts |
 
 ### Einrichten

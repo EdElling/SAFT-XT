@@ -49,14 +49,19 @@ final class TableProposalSchema
             'add' => ['type' => 'array', 'items' => self::field()],
             'change' => ['type' => 'array', 'items' => self::object([
                 'name' => ['type' => 'string'],
-                'label' => self::nullable(self::translations()),
+                // Leere Bezeichnungen bzw. Anzeigefelder = unverändert (spart „oder null“ für die Grammatik-Grenze).
+                'label' => self::translations(),
                 'required' => self::nullable(['type' => 'boolean']),
                 'unique' => self::nullable(['type' => 'boolean']),
                 'searchable' => self::nullable(['type' => 'boolean']),
                 'sortable' => self::nullable(['type' => 'boolean']),
                 'add_choices' => ['type' => 'array', 'items' => self::choice()],
-                'relation_display' => self::nullable(['type' => 'array', 'items' => ['type' => 'string']]),
+                'relation_display' => ['type' => 'array', 'items' => ['type' => 'string']],
+                // Geänderte Feldregeln als Text (RuleText), „max=“ entfernt; leer = unverändert.
+                'rules' => ['type' => 'string'],
             ])],
+            // Neue Tabellenregeln als Text (RuleText), z. B. „ende >= beginn“.
+            'add_rules' => ['type' => 'array', 'items' => ['type' => 'string']],
         ]);
     }
 
@@ -72,7 +77,10 @@ final class TableProposalSchema
 
         $options = match ($type) {
             'string' => ['length' => is_int($field['length'] ?? null) && $field['length'] > 0 ? $field['length'] : 255],
-            'decimal' => ['precision' => is_int($field['precision'] ?? null) ? $field['precision'] : 12, 'scale' => is_int($field['scale'] ?? null) ? $field['scale'] : 2],
+            // Genauigkeit 0 = Vorgabe 12,2; mit Genauigkeit gilt die angegebene Zahl der Nachkommastellen (auch 0).
+            'decimal' => is_int($field['precision'] ?? null) && $field['precision'] > 0
+                ? ['precision' => $field['precision'], 'scale' => is_int($field['scale'] ?? null) ? $field['scale'] : 2]
+                : ['precision' => 12, 'scale' => 2],
             'select' => ['options' => array_map(fn (array $c): array => ['value' => (string) ($c['value'] ?? ''), 'label' => self::cleanTranslations($c['label'] ?? null)], array_values(array_filter((array) ($field['choices'] ?? []), 'is_array')))],
             'relation' => ['table' => (string) ($field['relation_table'] ?? ''), 'display_fields' => array_values(array_map('strval', (array) ($field['relation_display'] ?? []))), 'separator' => ' '],
             // Grenzen prüft der FieldDefinitionNormalizer beim Anlegen.
@@ -89,7 +97,7 @@ final class TableProposalSchema
             'name' => (string) ($field['name'] ?? ''),
             'type' => $type,
             'options' => $options,
-            'validation_rules' => [],
+            'validation_rules' => self::fieldRules($field['rules'] ?? null),
             'is_required' => (bool) ($field['required'] ?? false),
             // Dateifelder sind weder eindeutig noch durchsuchbar noch sortierbar.
             'is_unique' => $type !== 'file' && (bool) ($field['unique'] ?? false),
@@ -98,6 +106,20 @@ final class TableProposalSchema
             'show_in_table' => true,
             'show_in_form' => true,
         ];
+    }
+
+    /**
+     * Feldregeln aus dem Text des Assistenten; Ungültiges meldet TableAssistant (hier leer).
+     *
+     * @return array<string, mixed>
+     */
+    public static function fieldRules(mixed $text): array
+    {
+        try {
+            return RuleText::merge([], RuleText::fieldRules((string) $text));
+        } catch (\InvalidArgumentException) {
+            return [];
+        }
     }
 
     /** @return array<string, string> */
@@ -117,15 +139,18 @@ final class TableProposalSchema
             'unique' => ['type' => 'boolean'],
             'searchable' => ['type' => 'boolean'],
             'sortable' => ['type' => 'boolean'],
-            'length' => self::nullable(['type' => 'integer']),
-            'precision' => self::nullable(['type' => 'integer']),
-            'scale' => self::nullable(['type' => 'integer']),
+            // Einfache Werte statt „oder null“ (Grammatik-Grenze von Anthropic): 0 bzw. "" = trifft nicht zu.
+            'length' => ['type' => 'integer'],
+            'precision' => ['type' => 'integer'],
+            'scale' => ['type' => 'integer'],
             'choices' => ['type' => 'array', 'items' => self::choice()],
-            'relation_table' => self::nullable(['type' => 'string']),
+            'relation_table' => ['type' => 'string'],
             'relation_display' => ['type' => 'array', 'items' => ['type' => 'string']],
             'file_kinds' => ['type' => 'array', 'items' => ['type' => 'string', 'enum' => [...array_keys(FileKinds::MIMES), FileKinds::ANY]]],
-            'max_mb' => self::nullable(['type' => 'integer']),
-            'max_files' => self::nullable(['type' => 'integer']),
+            'max_mb' => ['type' => 'integer'],
+            'max_files' => ['type' => 'integer'],
+            // Feldregeln als kurzer Text (RuleText), z. B. „min=1; max=3“; leer = keine.
+            'rules' => ['type' => 'string'],
         ]);
     }
 

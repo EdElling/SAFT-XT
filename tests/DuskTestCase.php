@@ -198,6 +198,18 @@ abstract class DuskTestCase extends BaseTestCase
             ->click(self::SELECTOR_SUBMIT);
     }
 
+    /**
+     * Table-Designer (Bearbeiten): zur Feldliste scrollen, die erst sichtbar lädt. Die ersten Reiter der Seite sind die
+     * Sprachen von Anzeigename und Beschreibung, die Feldliste steht unter den letzten Reitern.
+     */
+    protected function openFieldList(Browser $browser): Browser
+    {
+        $browser->waitForText('Verwendet in', 15);
+        $browser->script("[...document.querySelectorAll('.fi-tabs')].pop().scrollIntoView()");
+
+        return $browser->waitForText('Feld hinzufügen', 15);
+    }
+
     protected function login(Browser $browser, string $email, string $password = 'password'): Browser
     {
         $browser->visit('/admin/login');

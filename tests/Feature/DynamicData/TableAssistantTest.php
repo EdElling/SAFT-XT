@@ -6,6 +6,7 @@ namespace Tests\Feature\DynamicData;
 
 use App\Ai\AiUsage;
 use App\DynamicData\Assistant\TableAssistant;
+use App\DynamicData\Rules\TableRuleNormalizer;
 use App\DynamicData\Schema\FieldType;
 use App\Filament\Resources\CustomTables\Pages\CreateCustomTable;
 use App\Filament\Resources\CustomTables\Pages\EditCustomTable;
@@ -167,7 +168,8 @@ class TableAssistantTest extends DynamicDataTestCase
 
         Livewire::test(EditCustomTable::class, ['record' => $table->id])
             ->callAction('aiAdjust', ['prompt' => 'Eintrittsdatum, Verein, E-Mail eindeutig, Kategorie Junior, Code eindeutig'])
-            ->assertActionMounted('aiApply')
+            ->assertActionMounted('aiAdjust')
+            ->assertSet('aiMessages.1.role', 'assistant')
             ->assertSet('aiSummary', [
                 'Neu: Eintrittsdatum (Datum)',
                 'Neu: Verein_id (Verknüpfung → vereine)',
@@ -175,7 +177,7 @@ class TableAssistantTest extends DynamicDataTestCase
                 'Ändern: Kategorie – 1 weitere Auswahloptionen',
                 'Ändern: Code – eindeutig an',
             ])
-            ->callMountedAction()
+            ->callAction(TestAction::make('aiApply'))
             ->assertNotified('Nicht alles übernommen:');
 
         $table->refresh();
@@ -220,8 +222,11 @@ class TableAssistantTest extends DynamicDataTestCase
             ->assertDontSeeHtml('data-table-assistant')
             ->assertActionVisible('aiAdjust')
             ->callAction('aiAdjust', ['prompt' => 'Ort als Zahl'])
-            ->assertActionNotMounted('aiApply')
-            ->assertNotified('Rückfrage:');
+            // Rückfrage im Dialog (keine Benachrichtigung), kein Vorschlag zum Übernehmen.
+            ->assertActionMounted('aiAdjust')
+            ->assertSet('aiMessages', [['role' => 'user', 'text' => 'Ort als Zahl'], ['role' => 'assistant', 'text' => 'Typänderungen bitte von Hand im Table-Designer.']])
+            ->assertSet('aiChanges', null)
+            ->assertNotNotified();
 
         // Ohne Recht: weder Eingabefeld noch Aktion.
         $this->actingAs($this->userWithPermissions(['custom_tables.view', 'custom_tables.create', 'custom_tables.update']));
@@ -326,9 +331,149 @@ class TableAssistantTest extends DynamicDataTestCase
         $this->fake->push(['kind' => 'changes', 'question' => null, 'icon' => 'flag', 'add' => [], 'change' => []]);
         Livewire::test(EditCustomTable::class, ['record' => $table->id])
             ->callAction('aiAdjust', ['prompt' => 'Bitte ein Fahnen-Symbol'])
-            ->assertActionMounted('aiApply')
+            ->assertActionMounted('aiAdjust')
+            ->assertSet('aiMessages.1.role', 'assistant')
             ->assertSet('aiSummary', [__('tables_assistant.summary.icon', ['icon' => 'flag'])])
-            ->callMountedAction();
+            ->callAction(TestAction::make('aiApply'));
         $this->assertSame('heroicon-o-flag', $table->fresh()->icon);
+    }
+
+    public function test_field_rules_are_proposed_when_creating(): void
+    {
+        $proposal = fn (string $rules): array => $this->members(['fields' => [
+            $this->field('nachname', 'string', ['rules' => 'max_length=40']),
+            $this->field('menge', 'integer', ['rules' => $rules]),
+        ]]);
+
+        // Unbekannte Regel wird korrigiert.
+        $this->fake->push($proposal('maximum=3'))->push($proposal('min=1; max=3'));
+        $page = Livewire::test(CreateCustomTable::class)
+            ->set('assistantPrompt', 'Mitglieder, Menge maximal 3')
+            ->call('askTableAssistant')
+            ->assertSet('assistantReplyKind', 'proposal');
+        $this->assertStringContainsString('Regel „maximum“ gibt es nicht', end($this->fake->requests[1]['messages'])['content']);
+
+        $page->call('create')->assertHasNoFormErrors();
+        $fields = CustomTable::query()->where('name', 'mitglieder')->sole()->fields->keyBy('name');
+        $this->assertEquals(['min' => 1, 'max' => 3], $fields['menge']->validation_rules);
+        $this->assertEquals(['max_length' => 40], $fields['nachname']->validation_rules);
+    }
+
+    public function test_field_and_table_rules_are_added_to_an_existing_table(): void
+    {
+        $this->service()->createTable(['name' => 'anfragepositionen', 'label' => ['de' => 'Anfragepositionen']], [
+            ['name' => 'menge', 'label' => ['de' => 'Menge'], 'type' => 'integer', 'validation_rules' => ['min' => 1]],
+            ['name' => 'beginn', 'label' => ['de' => 'Beginn'], 'type' => 'date'],
+        ]);
+        $table = CustomTable::query()->where('name', 'anfragepositionen')->sole();
+        $change = fn (string $name, array $overrides): array => [...['name' => $name, 'label' => $this->t(''), 'required' => null, 'unique' => null, 'searchable' => null, 'sortable' => null, 'add_choices' => [], 'relation_display' => [], 'rules' => ''], ...$overrides];
+        $proposal = fn (array $rules): array => [
+            'kind' => 'changes', 'question' => '', 'icon' => '',
+            'add' => [$this->field('ende', 'date', ['label' => $this->t('Ende')])],
+            'change' => [$change('menge', ['rules' => 'max=3'])],
+            'add_rules' => $rules,
+        ];
+
+        // Datum mit Zahl vergleichen geht nicht: Korrektur; die neue Spalte „ende“ ist in Regeln schon nutzbar.
+        $this->fake->push($proposal(['ende >= menge']))->push($proposal(['ende >= beginn', 'menge > 0']));
+
+        Livewire::test(EditCustomTable::class, ['record' => $table->id])
+            ->callAction('aiAdjust', ['prompt' => 'Menge maximal 3, Feld Ende, Ende nicht vor Beginn, Menge grösser 0'])
+            ->assertActionMounted('aiAdjust')
+            ->assertSet('aiMessages.1.role', 'assistant')
+            ->assertSet('aiSummary', [
+                'Neu: Ende (Datum)',
+                'Ändern: Menge – Regeln: Maximum 3',
+                'Regel: Ende ≥ Beginn',
+                'Regel: Menge > 0',
+            ])
+            ->callAction(TestAction::make('aiApply'))
+            ->assertNotified(__('tables_assistant.applied_all'));
+        $this->assertStringContainsString('Tabellenregel', end($this->fake->requests[1]['messages'])['content']);
+
+        $table->refresh()->load('fields');
+        $this->assertEquals(['min' => 1, 'max' => 3], $table->fields->firstWhere('name', 'menge')->validation_rules);
+        $this->assertSame(['Ende ≥ Beginn', 'Menge > 0'], array_map(fn ($rule): string => TableRuleNormalizer::describe($rule, $table), $table->tableRules()));
+    }
+
+    public function test_a_table_rule_on_the_same_fields_replaces_the_existing_one(): void
+    {
+        $this->service()->createTable(['name' => 'bestellungen', 'label' => ['de' => 'Bestellungen']], [
+            ['name' => 'bestelldatum', 'label' => ['de' => 'Bestelldatum'], 'type' => 'date'],
+            ['name' => 'lieferdatum', 'label' => ['de' => 'Lieferdatum'], 'type' => 'date'],
+        ]);
+        $table = CustomTable::query()->where('name', 'bestellungen')->sole();
+        $this->service()->updateTable($table->load('fields'), ['validation_rules' => [[
+            'left' => 'lieferdatum', 'operator' => '>=', 'right_kind' => 'field', 'right_field' => 'bestelldatum', 'when_filled' => true, 'message' => ['de' => 'Zu früh'],
+        ]]]);
+        $rules = fn (array $rules): array => ['kind' => 'changes', 'question' => '', 'icon' => '', 'add' => [], 'change' => [], 'add_rules' => $rules];
+
+        // Die gleiche Regel nochmals: Korrektur; dann „>“ statt „≥“: ersetzt die vorhandene.
+        $this->fake->push($rules(['lieferdatum >= bestelldatum']))->push($rules(['lieferdatum > bestelldatum']));
+
+        Livewire::test(EditCustomTable::class, ['record' => $table->id])
+            ->callAction('aiAdjust', ['prompt' => 'Lieferdatum > Bestelldatum'])
+            ->assertSet('aiSummary', ['Regel ändern: Lieferdatum ≥ Bestelldatum → Lieferdatum > Bestelldatum'])
+            ->callAction(TestAction::make('aiApply'));
+        $this->assertStringContainsString('lieferdatum >= bestelldatum', $this->fake->sentText(), 'Vorhandene Regeln im Kontext.');
+        $this->assertStringContainsString(__('tables_assistant.errors.table_rule_exists'), end($this->fake->requests[1]['messages'])['content']);
+
+        $saved = $table->fresh()->tableRules();
+        $this->assertCount(1, $saved);
+        $this->assertSame('>', $saved[0]->operator);
+        $this->assertSame(['de' => 'Zu früh'], $saved[0]->message, 'Eigene Meldung bleibt.');
+    }
+
+    public function test_adjusting_is_a_conversation_in_the_dialog(): void
+    {
+        $table = CustomTable::query()->where('name', 'vereine')->sole();
+        $this->fake->push(['kind' => 'changes', 'question' => '', 'icon' => 'flag', 'add' => [], 'change' => [], 'add_rules' => []])
+            ->push(['kind' => 'question', 'question' => 'Welche Farbe?', 'icon' => '', 'add' => [], 'change' => [], 'add_rules' => []]);
+
+        $page = Livewire::test(EditCustomTable::class, ['record' => $table->id])
+            ->callAction('aiAdjust', ['prompt' => 'Fahnen-Symbol'])
+            ->assertActionMounted('aiAdjust')
+            ->assertSet('mountedActions.0.data.prompt', null)
+            // Zweiter Wunsch im selben Dialog: Rückfrage erscheint im Verlauf, der Vorschlag bleibt übernehmbar.
+            ->set('mountedActions.0.data.prompt', 'Und farbig?')
+            ->callMountedAction()
+            ->assertActionMounted('aiAdjust')
+            ->assertSet('aiMessages.3', ['role' => 'assistant', 'text' => 'Welche Farbe?'])
+            ->assertNotSet('aiChanges', null);
+        $this->assertCount(4, $page->get('aiMessages'));
+
+        // Der offene Dialog zeigt den Verlauf samt Vorschlag (Livewire-Tests rendern Modals nicht: Schema direkt).
+        $instance = $page->instance();
+        $html = (string) $instance->getSchema($instance->getMountedActionSchemaName())?->toHtml();
+        $this->assertStringContainsString('data-table-assistant-preview', $html);
+        $this->assertStringContainsString(e(__('tables_assistant.summary.icon', ['icon' => 'flag'])), $html);
+        $this->assertStringContainsString('Welche Farbe?', $html);
+
+        $page->callAction(TestAction::make('aiReset'))
+            ->assertSet('aiMessages', [])
+            ->assertSet('aiChanges', null)
+            ->assertSet('aiHistory', []);
+    }
+
+    public function test_a_rule_written_the_other_way_round_replaces_the_existing_one(): void
+    {
+        $this->service()->createTable(['name' => 'bestellungen', 'label' => ['de' => 'Bestellungen']], [
+            ['name' => 'bestelldatum', 'label' => ['de' => 'Bestelldatum'], 'type' => 'date'],
+            ['name' => 'lieferdatum', 'label' => ['de' => 'Lieferdatum'], 'type' => 'date'],
+        ]);
+        $table = CustomTable::query()->where('name', 'bestellungen')->sole();
+        $this->service()->updateTable($table->load('fields'), ['validation_rules' => [[
+            'left' => 'bestelldatum', 'operator' => '<', 'right_kind' => 'field', 'right_field' => 'lieferdatum', 'when_filled' => true, 'message' => [],
+        ]]]);
+        $this->fake->push(['kind' => 'changes', 'question' => '', 'icon' => '', 'add' => [], 'change' => [], 'add_rules' => ['lieferdatum >= bestelldatum']]);
+
+        Livewire::test(EditCustomTable::class, ['record' => $table->id])
+            ->callAction('aiAdjust', ['prompt' => 'Lieferdatum frühestens am Bestelldatum'])
+            ->assertSet('aiSummary', ['Regel ändern: Bestelldatum < Lieferdatum → Bestelldatum ≤ Lieferdatum'])
+            ->callAction(TestAction::make('aiApply'));
+
+        $saved = $table->fresh()->tableRules();
+        $this->assertCount(1, $saved, 'Keine zweite, widersprüchliche Regel.');
+        $this->assertSame(['bestelldatum', '<=', 'lieferdatum'], [$saved[0]->left->fieldName(), $saved[0]->operator, $saved[0]->right->fieldName()]);
     }
 }

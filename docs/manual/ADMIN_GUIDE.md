@@ -178,8 +178,9 @@ group. The following applies:
 - Like every entry, this one can be restricted by a **permission**. The diagram follows the colour scheme
   (light/dark); wide diagrams can be scrolled sideways.
 
-**Label per language:** Every entry has a field for **Deutsch** (required) and one each for **English**,
-**Français** and **Italiano**. If a field stays empty, the German label appears in that language. The entries
+**Label per language:** The label has one tab per language: **Deutsch** (required), **English**, **Français** and
+**Italiano**. If a field stays empty, the German label appears in that language; a grey placeholder in the empty field
+points this out (“Leave empty to use Deutsch.”). The entries
 supplied with the application are already named in all four languages. Entries that the table designer creates for
 a table take over its display name in all languages and follow it whenever it changes.
 
@@ -210,8 +211,11 @@ This is where you create your own tables, without programming.
 ![Table designer](images/en/09-table-designer.png)
 
 **Multilingual:** The display name and description of a table, the label of every field and the display of
-selection values have one field per language. German is required for the display name and the label; the other
-languages are optional, and without them the German text appears. The technical name and the stored selection
+selection values have one tab per language (Deutsch, English, Français, Italiano); display name and description are
+listed one below the other under the same tabs. This also applies to all other translatable texts of the
+administration (menu entries, apps, table links, rule messages, table connector). German is required for the display
+name and the label; the other languages are optional, and without them the German text appears – the grey placeholder
+in the empty field is a reminder. The technical name and the stored selection
 values apply to all languages.
 
 **Creating a table:**
@@ -902,7 +906,7 @@ in the editor or form, is checked there and only takes effect with **Save** or *
 | Assistant | Where | Permission | Can |
 |---|---|---|---|
 | **Reports** | Report editor, field "Describe the report" | Reports: use assistant | Choose base table, rows, columns, values, filters, sorting, number of rows and display; build calculated values and columns as well as figures from values with formulas; ask back; change a proposal on request |
-| **Tables** | Table designer: "Describe the table" when creating, **Adjust with AI** for existing tables | Table designer: use assistant | New table with app (named in the text, otherwise the chosen one; if both are open, it asks), menu group of that app, icon, fields, types (including file fields with kinds, size and number), choices, relations to existing tables and labels in all four languages; for existing tables new fields, a different icon on request, labels, required/unique/searchable/sortable, further choices and display fields of relations (preview in words, then **Apply**). Changing types, renaming, deleting and rules stay manual |
+| **Tables** | Table designer: "Describe the table" when creating, **Adjust with AI** for existing tables | Table designer: use assistant | New table with app (named in the text, otherwise the chosen one; if both are open, it asks), menu group of that app, icon, fields, types (including file fields with kinds, size and number), choices, relations to existing tables, field rules (minimum/maximum, length, e-mail, URL) and labels in all four languages. For existing tables as a conversation (dialog with history; questions and notes appear there, a further request refines the proposal, **Apply** carries it out, **Start over** clears the history): new fields, a different icon on request, labels, required/unique/searchable/sortable, further choices, display fields of relations, setting or removing field rules and new table rules (e.g. “delivery date not before order date”). A rule on the same two fields replaces the existing one; contradictory or unfulfillable rules are not proposed – the assistant explains why. Changing types, renaming, deleting, changing or removing existing rules and own rule messages stay manual |
 | **Help** | **?** button in the header; **Documentation** › tab **AI assistant** | Help: use assistant | Answers questions about using SAFT from the manuals the person may see, with references to the sections; proposes nothing and changes nothing |
 
 ### Setup

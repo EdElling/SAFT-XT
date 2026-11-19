@@ -275,6 +275,10 @@ class LanguageTest extends DuskTestCase
         $this->browse(function (Browser $browser): void {
             $this->login($browser, self::ADMIN)->visit('/admin/menus/create')->waitFor('input[id="form.label.de"]', 15)
                 ->type('input[id="form.label.de"]', 'Berichte')
+                // Sprachen als Reiter: zuerst „English“ öffnen.
+                ->clickAtXPath("//*[@data-translatable-tabs]//button[contains(., 'English')]")
+                ->waitFor('input[id="form.label.en"]', 15)
+                ->assertAttribute('input[id="form.label.en"]', 'placeholder', 'Leer lassen, um Deutsch zu verwenden.')
                 ->type('input[id="form.label.en"]', 'Reports');
             $browser->clickAtXPath("//label[contains(., 'Externe URL')]")->waitFor('input[id="form.url"]', 15)
                 ->type('input[id="form.url"]', 'https://example.com')

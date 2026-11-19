@@ -332,10 +332,8 @@ class DataEntryTest extends DuskTestCase
         $field = CustomField::query()->where('custom_table_id', $this->daten->id)->where('name', 'status')->firstOrFail();
 
         $this->browse(function (Browser $browser) use ($field): void {
-            $this->login($browser, self::ADMIN)->visit("/admin/table-designer/{$this->daten->id}/edit")
-                ->waitFor('.fi-tabs', 15)
-                ->scrollIntoView('.fi-tabs')
-                ->waitForText('Feld hinzufügen', 15)
+            $this->login($browser, self::ADMIN)->visit("/admin/table-designer/{$this->daten->id}/edit");
+            $this->openFieldList($browser)
                 ->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., 'status')]//*[self::button or self::a][contains(., 'Bearbeiten')]")
                 ->waitFor('input[id$=".value"]', 15)
                 ->clickAtXPath("(//*[contains(@class, 'fi-fo-repeater')]//button[contains(@title, 'öschen')])[2]")

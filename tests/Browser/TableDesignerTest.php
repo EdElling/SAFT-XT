@@ -73,10 +73,7 @@ class TableDesignerTest extends DuskTestCase
             $this->login($browser, self::ADMIN);
         }
 
-        return $browser->visit("/admin/table-designer/{$table->id}/edit")
-            ->waitFor('.fi-tabs', 15)
-            ->scrollIntoView('.fi-tabs')
-            ->waitForText('Feld hinzufügen', 15);
+        return $this->openFieldList($browser->visit("/admin/table-designer/{$table->id}/edit"));
     }
 
     private function openNewField(Browser $browser): Browser

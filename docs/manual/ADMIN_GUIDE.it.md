@@ -186,8 +186,9 @@ viene spostata, mostra automaticamente il nuovo gruppo. Vale quanto segue:
 - Come ogni voce, anche questa si può limitare con un **diritto**. Il diagramma si adatta allo schema di colori
   (chiaro/scuro); i diagrammi larghi si possono spostare lateralmente.
 
-**Etichetta per lingua:** ogni voce ha un campo per **Deutsch** (obbligatorio) e uno ciascuno per **English**,
-**Français** e **Italiano**. Se un campo resta vuoto, in quella lingua compare l’etichetta tedesca. Le voci fornite
+**Etichetta per lingua:** l’etichetta ha una scheda per lingua: **Deutsch** (obbligatorio), **English**, **Français**
+e **Italiano**. Se un campo resta vuoto, in quella lingua compare l’etichetta tedesca; lo ricorda un testo grigio nel
+campo vuoto («Lasciare vuoto per usare Deutsch.»). Le voci fornite
 sono già denominate in tutte e quattro le lingue. Le voci che il Designer di tabelle crea per una tabella riprendono
 il suo nome visualizzato in tutte le lingue e lo seguono a ogni modifica.
 
@@ -219,8 +220,11 @@ Qui create tabelle proprie – senza programmazione.
 ![Designer di tabelle](images/it/09-table-designer.png)
 
 **Multilingue:** nome visualizzato e descrizione di una tabella, l’etichetta di ogni campo e la visualizzazione dei
-valori di selezione hanno un campo per lingua. Il tedesco è obbligatorio per il nome visualizzato e l’etichetta, le
-altre lingue sono facoltative; senza di esse compare il testo tedesco. Il nome tecnico e i valori di selezione
+valori di selezione hanno una scheda per lingua (Deutsch, English, Français, Italiano); nome visualizzato e
+descrizione stanno uno sotto l’altro sotto le stesse schede. Lo stesso vale per tutti gli altri testi traducibili
+dell’amministrazione (voci di menu, app, collegamenti di tabelle, messaggi delle regole, Connettore di tabelle). Il
+tedesco è obbligatorio per il nome visualizzato e l’etichetta, le altre lingue sono facoltative; senza di esse compare
+il testo tedesco – lo ricorda il testo grigio nel campo vuoto. Il nome tecnico e i valori di selezione
 salvati valgono per tutte le lingue.
 
 **Creare una tabella:**
@@ -949,7 +953,7 @@ risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effe
 | Assistente | Dove | Diritto | Può |
 |---|---|---|---|
 | **Report** | editor dei report, campo «Descrivere il report» | Report: usare l’assistente | scegliere tabella di base, righe, colonne, valori, filtri, ordinamento, numero di righe e visualizzazione; creare valori e colonne calcolati e indicatori dai valori con formule; porre domande; modificare una proposta su richiesta |
-| **Tabelle** | Designer di tabelle: «Descrivere la tabella» alla creazione, **Adattare con l’IA** per le tabelle esistenti | Designer di tabelle: usare l’assistente | nuova tabella con app (indicata nel testo, altrimenti quella scelta; se mancano entrambe, chiede), gruppo di menu di quell’app, icona, campi, tipi (anche campi file con tipi, dimensione e numero), opzioni di selezione, collegamenti a tabelle esistenti ed etichette in tutte e quattro le lingue; per le tabelle esistenti nuovi campi, su richiesta un’altra icona, etichette, obbligatorio/univoco/ricercabile/ordinabile, altre opzioni di selezione e campi visualizzati dei collegamenti (anteprima a parole, poi **Importa**). Cambiare tipo, rinominare, eliminare e le regole restano lavoro manuale |
+| **Tabelle** | Designer di tabelle: «Descrivere la tabella» alla creazione, **Adattare con l’IA** per le tabelle esistenti | Designer di tabelle: usare l’assistente | nuova tabella con app (indicata nel testo, altrimenti quella scelta; se mancano entrambe, chiede), gruppo di menu di quell’app, icona, campi, tipi (anche campi file con tipi, dimensione e numero), opzioni di selezione, collegamenti a tabelle esistenti, regole di campo (minimo/massimo, lunghezza, e-mail, URL) ed etichette in tutte e quattro le lingue. Per le tabelle esistenti come conversazione (dialogo con cronologia; domande e indicazioni vi compaiono, un’altra richiesta affina la proposta, **Applicare** la esegue, **Ricominciare** svuota la cronologia): nuovi campi, su richiesta un’altra icona, etichette, obbligatorio/univoco/ricercabile/ordinabile, altre opzioni di selezione, campi visualizzati dei collegamenti, impostare o rimuovere regole di campo e nuove regole di tabella (ad es. «data di consegna non prima della data dell’ordine»). Una regola sugli stessi due campi sostituisce quella esistente; regole contraddittorie o mai soddisfacibili non vengono proposte – l’assistente spiega perché. Cambiare tipo, rinominare, eliminare, modificare o rimuovere regole esistenti e i messaggi propri delle regole restano lavoro manuale |
 | **Aiuto** | pulsante **?** nell’intestazione; **Documentazione** › scheda **Assistente IA** | Aiuto: usare l’assistente | risponde alle domande sull’uso in base ai manuali che la persona può vedere, con rimandi alle sezioni; non propone nulla e non modifica nulla |
 
 ### Configurazione

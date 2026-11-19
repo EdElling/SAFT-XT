@@ -74,31 +74,34 @@ class CustomTableForm
                                 }
                             })
                             ->columnSpanFull(),
-                        TranslatableInputs::make('label', __('tables.form.display_name'), required: true, configure: static function ($input, string $locale): void {
-                            if ($locale !== config('locales.default')) {
-                                return;
-                            }
-
-                            TableLabelHint::apply($input, $locale);
-
-                            // Technischen Namen aus der Bezeichnung der Vorgabesprache vorschlagen.
-                            $input->live(onBlur: true)->afterStateUpdated(function (Get $get, Set $set, ?string $state, string $operation): void {
-                                if ($operation === 'create' && blank($get('name'))) {
-                                    $set('name', AppSelect::prefix($get('app_id')).FieldForm::suggestName((string) $state));
+                        // Anzeigename und Beschreibung kompakt: ein Reiter je Sprache.
+                        TranslatableInputs::tabs([
+                            ['name' => 'label', 'label' => __('tables.form.display_name'), 'required' => true, 'configure' => static function ($input, string $locale): void {
+                                if ($locale !== config('locales.default')) {
+                                    return;
                                 }
-                            });
-                        }),
+
+                                TableLabelHint::apply($input, $locale);
+
+                                // Technischen Namen aus der Bezeichnung der Vorgabesprache vorschlagen.
+                                $input->live(onBlur: true)->afterStateUpdated(function (Get $get, Set $set, ?string $state, string $operation): void {
+                                    if ($operation === 'create' && blank($get('name'))) {
+                                        $set('name', AppSelect::prefix($get('app_id')).FieldForm::suggestName((string) $state));
+                                    }
+                                });
+                            }],
+                            ['name' => 'description', 'label' => __('common.description'), 'multiline' => true],
+                        ]),
                         TableNameRule::apply(TextInput::make('name'), physical: true)
                             ->label(__('tables.form.technical_name'))
                             ->helperText(fn (string $operation): string => $operation === 'create'
-                                ? __('tables.form.technical_name_help')
-                                : __('tables.form.technical_name_fixed', ['namespace' => app(DynamicDataNamespace::class)->name()]))
+                                    ? __('tables.form.technical_name_help')
+                                    : __('tables.form.technical_name_fixed', ['namespace' => app(DynamicDataNamespace::class)->name()]))
                             ->required()
                             ->maxLength(63)
                             ->disabledOn('edit')
                             ->dehydrated(fn (string $operation): bool => $operation === 'create')
                             ->rule(FieldForm::identifierRule(table: true)),
-                        TranslatableInputs::make('description', __('common.description'), multiline: true),
                         IconPicker::make('icon')
                             ->placeholder('heroicon-o-table-cells'),
                         Toggle::make('is_active')
@@ -109,7 +112,7 @@ class CustomTableForm
                             ->disabled(fn (?CustomTable $record): bool => $record?->is_active && app(PluginDependencies::class)->hint($record->name) !== null)
                             ->dehydrated()
                             ->helperText(fn (?CustomTable $record): string => ($record?->exists ? app(PluginDependencies::class)->hint($record->name) : null)
-                                ?? __('tables.form.inactive_help')),
+                                    ?? __('tables.form.inactive_help')),
                         Toggle::make('export_enabled')
                             ->label(__('tables.form.export_enabled'))
                             ->default(false)

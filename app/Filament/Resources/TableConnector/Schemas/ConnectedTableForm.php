@@ -155,11 +155,15 @@ class ConnectedTableForm
                 ]))
                     ->visibleOn('edit')
                     ->columnSpanFull(),
-                TranslatableInputs::make('label', __('tables.form.display_name'), required: true, configure: static function ($input, string $locale): void {
-                    if ($locale === config('locales.default')) {
-                        TableLabelHint::apply($input, $locale);
-                    }
-                }),
+                // Anzeigename und Beschreibung unter denselben Sprachreitern.
+                TranslatableInputs::tabs([
+                    ['name' => 'label', 'label' => __('tables.form.display_name'), 'required' => true, 'configure' => static function ($input, string $locale): void {
+                        if ($locale === config('locales.default')) {
+                            TableLabelHint::apply($input, $locale);
+                        }
+                    }],
+                    ['name' => 'description', 'label' => __('common.description'), 'multiline' => true, 'maxLength' => 5000],
+                ]),
                 TableNameRule::apply(TextInput::make('name'), physical: false)
                     ->label(__('tables.form.technical_name'))
                     ->helperText(__('table_connector.form.name_help'))
@@ -175,7 +179,6 @@ class ConnectedTableForm
                     ->options(fn (?CustomTable $record): array => $record?->fields->where('is_active', true)->mapWithKeys(fn (CustomField $f): array => [$f->name => $f->name])->all() ?? [])
                     ->placeholder(__('table_connector.form.no_key'))
                     ->visibleOn('edit'),
-                TranslatableInputs::make('description', __('common.description'), multiline: true, maxLength: 5000),
                 AppSelect::make()->visibleOn('create'),
                 MenuGroupSelect::make(app: fn (Get $get): mixed => $get('app_id'))
                     ->visibleOn('create'),

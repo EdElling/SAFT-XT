@@ -8,6 +8,8 @@ use App\Ai\AiConfig;
 use App\Ai\AiConversation;
 use App\Ai\AiUsage;
 use App\DynamicData\DataMenu;
+use App\DynamicData\Rules\TableRule;
+use App\DynamicData\Rules\TableRuleNormalizer;
 use App\DynamicData\Schema\FieldDefinitionNormalizer;
 use App\DynamicData\Schema\FieldType;
 use App\Exceptions\BusinessRuleException;
@@ -55,8 +57,15 @@ final class TableAssistant
         (attachments such as photos, contracts or documents: file_kinds = images, pdf, office, text or any; max_mb =
         maximum size per file, 1-200, usually 10; max_files = 1-50, 1 for a single photo or contract).
         Flags: required, unique (not for text, boolean and file), searchable (string, text, select), sortable (an index
-        for fields often filtered or sorted; not for text and file). Use null for length/precision/scale/max_mb/max_files
-        when they do not apply, empty lists for choices/relation_display/file_kinds when they do not apply.
+        for fields often filtered or sorted; not for text and file). Use 0 for length/precision/scale/max_mb/max_files
+        and "" for relation_table when they do not apply, empty lists for choices/relation_display/file_kinds when they do
+        not apply.
+
+        Field rules (only when the user asks for limits or formats) go into "rules" as short text, separated by ";":
+        min=<number> and max=<number> (integer, decimal), min_length=<n> and max_length=<n> (string, text), email and url
+        (string only), e.g. "min=1; max=3" for "quantity at most 3". Empty "" for no rules. Rules that compare two fields
+        or a field with a fixed value for the whole table (e.g. "end not before start") are table rules: they can only be
+        added to an existing table (Adjust with AI) – when creating, leave them out.
 
         Create relations only when the description asks for them or clearly implies them (e.g. "belongs to a club" and a
         table for clubs exists). Use only existing tables and fields from the data model. Keep tables focused: the
@@ -82,9 +91,23 @@ final class TableAssistant
         with only the properties to change, all others null: label (all languages), required, unique, searchable,
         sortable, add_choices (new choices of a select field) and relation_display (fields shown for a relation). Field
         types, technical names and deleting fields cannot be changed – if the user asks for that, set kind to
-        "question" and explain briefly that this must be done by hand in the table designer. Set icon (the table's
+        "question" and explain briefly that this must be done by hand in the table designer. In "change", rules changes
+        field rules of an existing field ("max=3"; "max=" removes the maximum; "" = unchanged). In "add_rules" list new
+        table rules as "<field> <operator> <field or value>" with technical field names and the operators =, <>, <, <=,
+        >, >= (only = and <> for text, choice and yes/no fields), e.g. "ende >= beginn" or "menge > 0"; dates as
+        YYYY-MM-DD. Fields used must be of the same kind (numbers, dates, text). The table's existing rules are listed in
+        table.rules – do not repeat them. A new rule with the same two fields replaces the existing one (e.g. "lieferdatum
+        > bestelldatum" replaces "lieferdatum >= bestelldatum"). Other changes and removing rules are done by hand –
+        explain that briefly. If a requested rule contradicts another rule of the table (existing or new) or can never be
+        fulfilled (e.g. "lieferdatum > bestelldatum" together with "lieferdatum < bestelldatum", or "menge > 5" with a
+        maximum of 3), do not propose it: set kind to "question" and explain in one or two sentences why it makes no
+        sense. A rule on the same two fields replaces the existing one; if the new comparison is the opposite of the
+        existing one (e.g. "<" instead of ">"), ask first whether the existing rule should really be replaced. Set icon (the table's
         icon, from "icons" in the data model) only when the user asks for a (different) icon, otherwise "".
         TXT;
+
+    /** Vergleich mit vertauschten Seiten: a < b ⇔ b > a. */
+    private const array FLIPPED = ['=' => '=', '<>' => '<>', '<' => '>', '<=' => '>=', '>' => '<', '>=' => '<='];
 
     /** App, deren Tabellen der Assistent sieht (B-107); null = alle. */
     private ?int $appId = null;
@@ -185,6 +208,17 @@ final class TableAssistant
                 $results[] = ['ok' => true, 'text' => __('tables_assistant.applied.changed', ['field' => (string) $field->label])];
             } catch (BusinessRuleException $e) {
                 $results[] = ['ok' => false, 'text' => (string) $field->label.': '.$e->getMessage()];
+            }
+        }
+
+        // Neue Tabellenregeln zu den vorhandenen (nach den Feldern, damit neue Felder schon da sind).
+        if (($rules = $changes['rules'] ?? []) !== []) {
+            try {
+                $fresh = ($table->fresh() ?? $table)->load('fields');
+                $service->updateTable($fresh, ['validation_rules' => $this->planTableRules($fresh, $rules)['rows']]);
+                $results[] = ['ok' => true, 'text' => trans_choice('tables_assistant.applied.rules', count($rules), ['count' => count($rules)])];
+            } catch (BusinessRuleException $e) {
+                $results[] = ['ok' => false, 'text' => $e->getMessage()];
             }
         }
 
@@ -351,6 +385,9 @@ final class TableAssistant
         return [
             'name' => $table->name,
             'label' => $table->getTranslations('label'),
+            // Vorhandene Tabellenregeln (B-110), damit der Assistent sie nicht doppelt anlegt.
+            'rules' => array_map(static fn (array $row): string => $row['left'].' '.$row['operator'].' '
+                .($row['right_kind'] === TableRuleNormalizer::KIND_FIELD ? $row['right_field'] : (string) ($row['right_value'] ?? $row['right_date'])), TableRuleNormalizer::toRows($table)),
             'fields' => $table->fields->where('is_active', true)->map(fn (CustomField $f): array => [
                 'name' => $f->name,
                 'label' => $f->getTranslations('label'),
@@ -413,6 +450,7 @@ final class TableAssistant
         }
 
         foreach ($fields as $field) {
+            $errors = [...$errors, ...$this->ruleTextProblems($field)];
             $errors = [...$errors, ...$this->fieldProblems(TableProposalSchema::toFormField($field), null)];
 
             // Verknüpfungen nur innerhalb der App (B-107).
@@ -476,8 +514,9 @@ final class TableAssistant
         $changes = array_values(array_filter((array) ($proposal['change'] ?? []), 'is_array'));
 
         $icon = $proposal['icon'] ?? null;
+        $tableRules = array_values(array_filter(array_map('strval', (array) ($proposal['add_rules'] ?? [])), 'filled'));
 
-        if ($adds === [] && $changes === [] && blank($icon)) {
+        if ($adds === [] && $changes === [] && blank($icon) && $tableRules === []) {
             $errors[] = __('tables_assistant.errors.no_changes');
         }
 
@@ -489,7 +528,7 @@ final class TableAssistant
             if (in_array($add['name'] ?? null, $existing, true)) {
                 $errors[] = __('tables_assistant.errors.field_exists', ['name' => (string) $add['name']]);
             } else {
-                $errors = [...$errors, ...$this->fieldProblems(TableProposalSchema::toFormField($add), $table)];
+                $errors = [...$errors, ...$this->ruleTextProblems($add), ...$this->fieldProblems(TableProposalSchema::toFormField($add), $table)];
             }
         }
 
@@ -502,10 +541,29 @@ final class TableAssistant
                 continue;
             }
 
+            if (($ruleErrors = $this->ruleTextProblems($change)) !== []) {
+                $errors = [...$errors, ...$ruleErrors];
+
+                continue;
+            }
+
             try {
                 $this->normalizer->normalize([...$this->current($field), ...$this->changeData($field, $change)], $table);
             } catch (BusinessRuleException $e) {
                 $errors[] = __('tables_assistant.errors.field', ['name' => $field->name, 'error' => $e->getMessage()]);
+            }
+        }
+
+        // Neue Tabellenregeln: gegen die Tabelle samt neuer Felder prüfen, zusammen mit den vorhandenen Regeln.
+        if ($tableRules !== []) {
+            try {
+                $plan = $this->planTableRules($this->withAddedFields($table, $adds), $tableRules);
+
+                if ($plan['added'] === [] && $plan['replaced'] === []) {
+                    $errors[] = __('tables_assistant.errors.table_rule_exists');
+                }
+            } catch (BusinessRuleException $e) {
+                $errors[] = __('tables_assistant.errors.table_rule', ['error' => $e->getMessage()]);
             }
         }
 
@@ -520,6 +578,7 @@ final class TableAssistant
     {
         return [
             'icon' => IconCatalog::fromAssistant($proposal['icon'] ?? null),
+            'rules' => array_values(array_filter(array_map('strval', (array) ($proposal['add_rules'] ?? [])), 'filled')),
             'add' => array_map(TableProposalSchema::toFormField(...), array_values(array_filter((array) ($proposal['add'] ?? []), 'is_array'))),
             'change' => array_values(array_filter(array_map(function (array $change) use ($table): ?array {
                 $field = $table->fields->firstWhere('name', $change['name'] ?? null);
@@ -540,8 +599,10 @@ final class TableAssistant
     {
         $data = [];
 
-        if (($label = TableProposalSchema::cleanTranslations($change['label'] ?? null)) !== []) {
-            $data['label'] = [...$field->getTranslations('label'), ...$label];
+        // Nur echte Änderungen: Das Modell wiederholt die Bezeichnung oft unverändert (Pflichtfeld im Schema).
+        if (($label = TableProposalSchema::cleanTranslations($change['label'] ?? null)) !== []
+            && ($merged = [...$field->getTranslations('label'), ...$label]) != $field->getTranslations('label')) {
+            $data['label'] = $merged;
         }
 
         foreach (['required' => 'is_required', 'unique' => 'is_unique', 'searchable' => 'is_searchable', 'sortable' => 'is_sortable'] as $key => $attribute) {
@@ -562,8 +623,23 @@ final class TableAssistant
             }
         }
 
-        if ($field->type === FieldType::Relation && is_array($change['relation_display'] ?? null) && $change['relation_display'] !== []) {
+        if ($field->type === FieldType::Relation && is_array($change['relation_display'] ?? null) && $change['relation_display'] !== []
+            && array_values(array_map('strval', $change['relation_display'])) !== array_values((array) ($field->optionsArray()['display_fields'] ?? []))) {
             $data['options'] = [...$field->optionsArray(), 'display_fields' => array_values(array_map('strval', $change['relation_display']))];
+        }
+
+        // Feldregeln (B-110): Änderungen auf die vorhandenen Regeln; nur wenn sich etwas ändert.
+        if (filled($change['rules'] ?? null)) {
+            try {
+                $current = (array) ($field->validation_rules ?? []);
+                $merged = RuleText::merge($current, RuleText::fieldRules((string) $change['rules']));
+
+                if ($merged != $current) {
+                    $data['validation_rules'] = $merged;
+                }
+            } catch (\InvalidArgumentException) {
+                // meldet ruleTextProblems()
+            }
         }
 
         return $data;
@@ -582,7 +658,113 @@ final class TableAssistant
     }
 
     /**
-     * @param  array{add: list<array<string, mixed>>, change: list<array{name: string, data: array<string, mixed>}>}  $changes
+     * Feldregeln in Textform prüfen (Schreibweise); Werte prüft danach der FieldDefinitionNormalizer.
+     *
+     * @param  array<string, mixed>  $field  vorgeschlagenes Feld oder Änderung
+     * @return list<string>
+     */
+    private function ruleTextProblems(array $field): array
+    {
+        try {
+            RuleText::fieldRules((string) ($field['rules'] ?? ''));
+
+            return [];
+        } catch (\InvalidArgumentException $e) {
+            return [__('tables_assistant.errors.rule', ['name' => (string) ($field['name'] ?? ''), 'rule' => $e->getMessage()])];
+        }
+    }
+
+    /**
+     * Neue Tabellenregeln zu den vorhandenen: Eine Regel mit denselben zwei Feldern ersetzt die vorhandene (nur der
+     * Vergleich ändert sich, Meldung und „nur wenn gefüllt“ bleiben); eine gleiche Regel wird nicht doppelt angelegt.
+     * Geprüft wird die ganze Liste wie bei der Eingabe von Hand.
+     *
+     * @param  list<string>  $texts
+     * @return array{rows: list<array<string, mixed>>, added: list<TableRule>, replaced: list<array{0: TableRule, 1: TableRule}>}
+     *
+     * @throws BusinessRuleException
+     */
+    private function planTableRules(CustomTable $table, array $texts): array
+    {
+        $rows = TableRuleNormalizer::toRows($table);
+        $added = [];
+        $replaced = [];
+
+        foreach ($texts as $text) {
+            try {
+                $row = RuleText::tableRow($text, $table);
+            } catch (\InvalidArgumentException) {
+                throw new BusinessRuleException(__('tables_assistant.errors.table_rule_text', ['rule' => $text]));
+            }
+
+            // Gleiches Feldpaar in beiden Schreibrichtungen: „bestelldatum < lieferdatum“ entspricht „lieferdatum > bestelldatum“.
+            $index = null;
+
+            if ($row['right_kind'] === TableRuleNormalizer::KIND_FIELD) {
+                foreach ($rows as $i => $r) {
+                    if ($r['right_kind'] !== TableRuleNormalizer::KIND_FIELD) {
+                        continue;
+                    }
+
+                    if ($r['left'] === $row['left'] && $r['right_field'] === $row['right_field']) {
+                        $index = $i;
+
+                        break;
+                    }
+
+                    if ($r['left'] === $row['right_field'] && $r['right_field'] === $row['left']) {
+                        // In der Schreibrichtung der vorhandenen Regel ausdrücken.
+                        $row = [...$row, 'left' => $r['left'], 'right_field' => $r['right_field'], 'operator' => self::FLIPPED[$row['operator']]];
+                        $index = $i;
+
+                        break;
+                    }
+                }
+            }
+
+            if ($index === null) {
+                if (! in_array($row, $rows, false)) {
+                    $rows[] = $row;
+                    $added[] = count($rows) - 1;
+                }
+
+                continue;
+            }
+
+            if ($rows[$index]['operator'] !== $row['operator']) {
+                $replaced[] = [$rows[$index], $index];
+                $rows[$index]['operator'] = $row['operator'];
+            }
+        }
+
+        $rules = array_map(TableRule::fromArray(...), app(TableRuleNormalizer::class)->normalize($table, $rows));
+
+        return [
+            'rows' => $rows,
+            'added' => array_map(static fn (int $i): TableRule => $rules[$i], $added),
+            'replaced' => array_map(fn (array $r): array => [TableRule::fromArray(app(TableRuleNormalizer::class)->normalize($table, [$r[0]])[0]), $rules[$r[1]]], $replaced),
+        ];
+    }
+
+    /**
+     * Die Tabelle mit den vorgeschlagenen neuen Feldern (nicht gespeichert), damit neue Tabellenregeln sie verwenden können.
+     *
+     * @param  list<array<string, mixed>>  $adds  vorgeschlagene Felder (Antwort oder Formularzustand)
+     */
+    private function withAddedFields(CustomTable $table, array $adds): CustomTable
+    {
+        $virtual = clone $table;
+        $added = array_map(static function (array $add): CustomField {
+            $form = isset($add['options']) ? $add : TableProposalSchema::toFormField($add);
+
+            return new CustomField(['name' => (string) $form['name'], 'type' => FieldType::from((string) $form['type']), 'label' => $form['label'] ?? [], 'options' => $form['options'] ?? [], 'is_active' => true]);
+        }, $adds);
+
+        return $virtual->setRelation('fields', $table->fields->concat($added)->values());
+    }
+
+    /**
+     * @param  array{add: list<array<string, mixed>>, change: list<array{name: string, data: array<string, mixed>}>, rules?: list<string>}  $changes
      * @return list<string>
      */
     private function summary(CustomTable $table, array $changes): array
@@ -597,7 +779,7 @@ final class TableAssistant
             $lines[] = __('tables_assistant.summary.add', [
                 'field' => Translations::pick($add['label'] ?? null, (string) $add['name']),
                 'type' => FieldType::from((string) $add['type'])->label().($add['type'] === 'relation' ? ' → '.((string) ($add['options']['table'] ?? '')) : ''),
-            ]);
+            ]).(($add['validation_rules'] ?? []) !== [] ? ' – '.RuleText::describeField((array) $add['validation_rules']) : '');
         }
 
         foreach ($changes['change'] as $change) {
@@ -622,7 +804,35 @@ final class TableAssistant
                 $parts[] = __('tables_assistant.summary.display', ['fields' => implode(', ', $change['data']['options']['display_fields'])]);
             }
 
+            if (array_key_exists('validation_rules', $change['data'])) {
+                $before = (array) ($field?->validation_rules ?? []);
+                $after = (array) $change['data']['validation_rules'];
+                $changed = [];
+
+                foreach (array_unique([...array_keys($before), ...array_keys($after)]) as $key) {
+                    if (($before[$key] ?? null) != ($after[$key] ?? null)) {
+                        $changed[$key] = $after[$key] ?? null;
+                    }
+                }
+
+                $parts[] = __('tables_assistant.summary.rules', ['rules' => RuleText::describeField($changed)]);
+            }
+
             $lines[] = __('tables_assistant.summary.change', ['field' => (string) ($field?->label ?? $change['name']), 'what' => implode(', ', $parts)]);
+        }
+
+        if (($changes['rules'] ?? []) !== []) {
+            $virtual = $this->withAddedFields($table, $changes['add']);
+
+            $plan = $this->planTableRules($virtual, $changes['rules']);
+
+            foreach ($plan['replaced'] as [$old, $new]) {
+                $lines[] = __('tables_assistant.summary.table_rule_changed', ['old' => TableRuleNormalizer::describe($old, $virtual), 'new' => TableRuleNormalizer::describe($new, $virtual)]);
+            }
+
+            foreach ($plan['added'] as $rule) {
+                $lines[] = __('tables_assistant.summary.table_rule', ['rule' => TableRuleNormalizer::describe($rule, $virtual)]);
+            }
         }
 
         return $lines;

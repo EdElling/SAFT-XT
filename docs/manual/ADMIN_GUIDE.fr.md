@@ -191,8 +191,9 @@ dans plusieurs groupes, et si une entrée est déplacée, elle montre automatiqu
 - Comme toute entrée, celle-ci peut être restreinte par un **droit**. Le diagramme s’adapte au thème de couleurs
   (clair/sombre) ; les diagrammes larges peuvent être déplacés latéralement.
 
-**Libellé par langue :** chaque entrée a un champ pour **Deutsch** (obligatoire) et un pour **English**,
-**Français** et **Italiano**. Si un champ reste vide, le libellé allemand s’affiche dans cette langue. Les entrées
+**Libellé par langue :** le libellé a un onglet par langue : **Deutsch** (obligatoire), **English**, **Français** et
+**Italiano**. Si un champ reste vide, le libellé allemand s’affiche dans cette langue ; un texte gris dans le champ vide
+le rappelle (« Laisser vide pour utiliser Deutsch. »). Les entrées
 fournies sont déjà nommées dans les quatre langues. Les entrées que le Concepteur de tables crée pour une table
 reprennent son nom affiché dans toutes les langues et le suivent à chaque modification.
 
@@ -225,8 +226,11 @@ Vous créez ici vos propres tables – sans programmation.
 ![Concepteur de tables](images/fr/09-table-designer.png)
 
 **Multilingue :** le nom affiché et la description d’une table, le libellé de chaque champ et l’affichage des valeurs
-de sélection ont un champ par langue. L’allemand est obligatoire pour le nom affiché et le libellé, les autres langues
-sont facultatives ; sans elles, le texte allemand s’affiche. Le nom technique et les valeurs de sélection enregistrées
+de sélection ont un onglet par langue (Deutsch, English, Français, Italiano) ; nom affiché et description figurent
+l’un sous l’autre sous les mêmes onglets. Il en va de même pour tous les autres textes traduisibles de
+l’administration (entrées de menu, apps, liaisons de tables, messages de règles, Connecteur de tables). L’allemand est
+obligatoire pour le nom affiché et le libellé, les autres langues sont facultatives ; sans elles, le texte allemand
+s’affiche – le texte gris dans le champ vide le rappelle. Le nom technique et les valeurs de sélection enregistrées
 valent pour toutes les langues.
 
 **Créer une table :**
@@ -975,7 +979,7 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
 | Assistant | Où | Droit | Peut |
 |---|---|---|---|
 | **Rapports** | éditeur de rapports, champ « Décrire le rapport » | Rapports : utiliser l’assistant | choisir la table de base, les lignes, colonnes, valeurs, filtres, le tri, le nombre de lignes et l’affichage ; créer des valeurs et colonnes calculées ainsi que des indicateurs à partir des valeurs avec des formules ; poser des questions ; modifier une proposition sur demande |
-| **Tables** | Concepteur de tables : « Décrire la table » à la création, **Adapter avec l’IA** pour les tables existantes | Concepteur de tables : utiliser l’assistant | nouvelle table avec app (nommée dans le texte, sinon celle choisie ; si les deux manquent, il demande), groupe de menu de cette app, icône, champs, types (y compris champs de fichiers avec types, taille et nombre), options de sélection, liaisons vers des tables existantes et libellés dans les quatre langues ; pour les tables existantes nouveaux champs, une autre icône sur demande, libellés, obligatoire/unique/recherchable/triable, options de sélection supplémentaires et champs affichés des liaisons (aperçu en mots, puis **Reprendre**). Changer de type, renommer, supprimer et les règles restent manuels |
+| **Tables** | Concepteur de tables : « Décrire la table » à la création, **Adapter avec l’IA** pour les tables existantes | Concepteur de tables : utiliser l’assistant | nouvelle table avec app (nommée dans le texte, sinon celle choisie ; si les deux manquent, il demande), groupe de menu de cette app, icône, champs, types (y compris champs de fichiers avec types, taille et nombre), options de sélection, liaisons vers des tables existantes, règles de champ (minimum/maximum, longueur, e-mail, URL) et libellés dans les quatre langues. Pour les tables existantes sous forme de conversation (dialogue avec historique ; questions et remarques y apparaissent, un autre souhait affine la proposition, **Appliquer** l’exécute, **Recommencer** vide l’historique) : nouveaux champs, une autre icône sur demande, libellés, obligatoire/unique/recherchable/triable, options de sélection supplémentaires, champs affichés des liaisons, définir ou supprimer des règles de champ et nouvelles règles de table (p. ex. « date de livraison pas avant la date de commande »). Une règle sur les deux mêmes champs remplace l’existante ; les règles contradictoires ou jamais remplissables ne sont pas proposées – l’assistant explique pourquoi. Changer de type, renommer, supprimer, modifier ou supprimer des règles existantes et les messages de règles propres restent manuels |
 | **Aide** | bouton **?** dans l’en-tête ; **Documentation** › onglet **Assistant IA** | Aide : utiliser l’assistant | répond aux questions sur l’utilisation à partir des manuels que la personne peut voir, avec renvois aux sections ; ne propose rien et ne modifie rien |
 
 ### Configuration

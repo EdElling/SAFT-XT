@@ -329,8 +329,7 @@ class SystemTest extends DuskTestCase
         $table = $this->customers();
 
         $this->browse(function (Browser $browser) use ($table): void {
-            $this->login($browser, self::ADMIN)->visit("/admin/table-designer/{$table->id}/edit")
-                ->waitFor('.fi-tabs', 15)->scrollIntoView('.fi-tabs')->waitForText('Feld hinzufügen', 15);
+            $this->openFieldList($this->login($browser, self::ADMIN)->visit("/admin/table-designer/{$table->id}/edit"));
 
             $this->clickVisibleButton($browser, 'Feld hinzufügen')->waitFor('[id="mountedActionSchema0.label.de"]', 15);
             $browser->type('[id="mountedActionSchema0.label.de"]', 'Telefon')->type('[id="mountedActionSchema0.name"]', 'telefon');
@@ -354,8 +353,7 @@ class SystemTest extends DuskTestCase
 
         $this->browse(function (Browser $first, Browser $second) use ($table): void {
             foreach ([[$first, 'Feld Eins', 'feld_eins'], [$second, 'Feld Zwei', 'feld_zwei']] as [$browser, $label, $name]) {
-                $this->login($browser, self::ADMIN)->visit("/admin/table-designer/{$table->id}/edit")
-                    ->waitFor('.fi-tabs', 15)->scrollIntoView('.fi-tabs')->waitForText('Feld hinzufügen', 15);
+                $this->openFieldList($this->login($browser, self::ADMIN)->visit("/admin/table-designer/{$table->id}/edit"));
                 $this->clickVisibleButton($browser, 'Feld hinzufügen')->waitFor('[id="mountedActionSchema0.label.de"]', 15);
                 $browser->type('[id="mountedActionSchema0.label.de"]', $label)->type('[id="mountedActionSchema0.name"]', $name)->pause(800);
             }

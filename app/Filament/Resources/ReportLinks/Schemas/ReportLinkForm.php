@@ -33,11 +33,8 @@ class ReportLinkForm
         return $schema
             ->columns(1)
             ->components([
-                TranslatableInputs::make('label', __('report_links.label'), required: true, configure: static function ($input, string $locale): void {
-                    if ($locale === config('locales.default')) {
-                        $input->helperText(__('report_links.label_help'));
-                    }
-                }),
+                // Erklärung in jedem Sprachreiter (der Rückfall-Hinweis steht als Platzhalter im Feld).
+                TranslatableInputs::make('label', __('report_links.label'), required: true, configure: static fn ($input) => $input->helperText(__('report_links.label_help'))),
                 Section::make(__('report_links.source'))
                     ->columns(2)
                     ->schema([

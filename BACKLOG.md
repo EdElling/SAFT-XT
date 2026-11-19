@@ -8,8 +8,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-1. **B-110** Regeln über den Tabellen-Assistenten
-2. **B-107** Apps (Fachanwendungen) – Etappe 4 (App-Definition, Export/Import je App; ersetzt „Konfiguration übertragen“)
+1. **B-107** Apps (Fachanwendungen) – Etappe 4 (App-Definition, Export/Import je App; ersetzt „Konfiguration übertragen“)
 
 ## Apps (Fachanwendungen)
 
@@ -32,7 +31,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 |---|---|---|---|---|
 | B-010 | Externe Datenbank als interne Tabellen übernehmen | DDL-Schema oder Datenbank-Dump bzw. angebundene Tabellen (Table-Connector) als Tabellen des Table-Designers übernehmen, mit Verknüpfungen und optional Daten. Empfohlener Weg: „Als interne Tabellen übernehmen“ aus dem Table-Connector. | offen | – |
 | B-011 | KI-Assistent für mehrere verknüpfte Tabellen | Der Assistent im Table-Designer schlägt ein ganzes Datenmodell (mehrere Tabellen mit Verknüpfungen) vor. | offen | – |
-| B-110 | Regeln über den Tabellen-Assistenten | Der KI-Assistent im Table-Designer schlägt beim Erstellen und Ändern auch Regeln vor: Feldregeln (Minimum/Maximum, Mindest-/Höchstlänge, E-Mail, URL) und Tabellenregeln (Feld mit Feld oder Wert vergleichen, optional eigene Meldung in vier Sprachen), z. B. „Menge in Abfragepositionen maximal 3“ oder „Ende nicht vor Beginn“. Prüfung über dieselben Klassen wie von Hand, Vorschau je Regel beim Ändern. Nicht: Plugin-Regeln, Formeln, „Übernehmen aus“, Vorgabewerte. | geplant (nach B-107 Etappe 3) | – |
+| B-110 | Regeln über den Tabellen-Assistenten | Der KI-Assistent im Table-Designer schlägt beim Erstellen und Ändern auch Regeln vor: Feldregeln (Minimum/Maximum, Mindest-/Höchstlänge, E-Mail, URL) und Tabellenregeln (Feld mit Feld oder Wert vergleichen, optional eigene Meldung in vier Sprachen), z. B. „Menge in Abfragepositionen maximal 3“ oder „Ende nicht vor Beginn“. Prüfung über dieselben Klassen wie von Hand, Vorschau je Regel beim Ändern. Nicht: Plugin-Regeln, Formeln, „Übernehmen aus“, Vorgabewerte. | umgesetzt (Feld- und Tabellenregeln beim Erstellen bzw. Anpassen, Regel auf dieselben Felder ersetzt die vorhandene, Widersprüche werden erklärt; dazu „Mit KI anpassen“ als Gespräch im Dialog und Sprachreiter mit Platzhalter für alle übersetzbaren Texte) | B-107 Etappe 3 |
 
 ## Fehlende Grundfunktionen
 

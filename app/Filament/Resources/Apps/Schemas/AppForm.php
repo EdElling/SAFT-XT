@@ -21,19 +21,22 @@ class AppForm
         return $schema->columns(1)->components([
             Section::make()->columns(2)->schema([
                 // Präfix aus dem Namen vorschlagen, solange keines eingetragen ist.
-                TranslatableInputs::make('name', __('apps.name'), required: true, maxLength: 120, configure: static function ($input, string $locale): void {
-                    if ($locale !== config('locales.default')) {
-                        return;
-                    }
-
-                    // Folgt dem Namen, solange es leer ist oder noch dem Vorschlag aus dem bisherigen Namen entspricht.
-                    $input->live(onBlur: true)->afterStateUpdated(static function (Get $get, Set $set, ?string $state, ?string $old, string $operation): void {
-                        if ($operation === 'create' && (blank($get('prefix')) || $get('prefix') === self::suggestPrefix((string) $old))) {
-                            $set('prefix', self::suggestPrefix((string) $state));
+                // Name und Beschreibung unter denselben Sprachreitern.
+                TranslatableInputs::tabs([
+                    ['name' => 'name', 'label' => __('apps.name'), 'required' => true, 'maxLength' => 120, 'configure' => static function ($input, string $locale): void {
+                        if ($locale !== config('locales.default')) {
+                            return;
                         }
-                    });
-                })->columnSpanFull(),
-                TranslatableInputs::make('description', __('apps.description'), multiline: true, maxLength: 2000)->columnSpanFull(),
+
+                        // Folgt dem Namen, solange es leer ist oder noch dem Vorschlag aus dem bisherigen Namen entspricht.
+                        $input->live(onBlur: true)->afterStateUpdated(static function (Get $get, Set $set, ?string $state, ?string $old, string $operation): void {
+                            if ($operation === 'create' && (blank($get('prefix')) || $get('prefix') === self::suggestPrefix((string) $old))) {
+                                $set('prefix', self::suggestPrefix((string) $state));
+                            }
+                        });
+                    }],
+                    ['name' => 'description', 'label' => __('apps.description'), 'multiline' => true, 'maxLength' => 2000],
+                ]),
                 TextInput::make('prefix')
                     ->label(__('apps.prefix'))
                     ->helperText(__('apps.prefix_help'))

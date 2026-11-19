@@ -121,6 +121,8 @@ final class PanelAppearance
             .'.saft-app-switcher:hover{background:var(--gray-50)}.dark .saft-app-switcher:hover{background:var(--gray-800)}'
             .'.saft-app-switcher-icon{width:1.25rem;height:1.25rem;color:var(--primary-600);flex-shrink:0}.saft-app-switcher-chevron{width:1rem;height:1rem;color:var(--gray-400);flex-shrink:0}'
             .'.saft-app-switcher-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+            // Rückfall-Hinweis übersetzbarer Texte als Platzhalter: grau und kursiv (TranslatableInputs).
+            .'.saft-translation-fallback::placeholder{font-style:italic;color:var(--gray-400)}.dark .saft-translation-fallback::placeholder{color:var(--gray-500)}'
             .'.saft-file-more{font-size:.75rem;color:var(--gray-500);cursor:pointer}.saft-file-more:hover{text-decoration:underline}'
             // Vorschau im Overlay (resources/views/filament/file-preview.blade.php), über den Dialogen von Filament.
             .'.saft-file-preview{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:1rem}'
