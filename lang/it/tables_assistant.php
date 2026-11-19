@@ -19,6 +19,7 @@ return [
     'applied_all' => 'Tutte le modifiche sono state applicate.',
     'applied_some' => 'Non tutto è stato applicato:',
     'summary' => [
+        'icon' => 'Icona «:icon»',
         'add' => 'Nuovo: :field (:type)',
         'change' => 'Modificare: :field – :what',
         'on' => ':what attivo',
@@ -34,13 +35,18 @@ return [
         'sortable' => 'ordinabile',
     ],
     'applied' => [
+        'icon' => 'Icona modificata.',
         'added' => 'Campo :field aggiunto.',
         'changed' => 'Campo :field modificato.',
     ],
     'errors' => [
+        'icon' => 'L’icona «:icon» non esiste; usare solo nomi della lista «icons».',
         'invalid' => 'Nessuna proposta valida: :errors. Descrivere in modo più preciso o completare a mano.',
         'name_taken' => 'Il nome «:name» è già in uso (:owner).',
-        'menu_group' => 'Il gruppo di menu :id non esiste.',
+        'menu_group' => 'Il gruppo di menu :id non esiste in questa app.',
+        'app' => 'L’app :id non esiste.',
+        'app_missing' => 'Nessuna app indicata: chiedere a quale app appartiene la tabella.',
+        'relation_app' => 'Campo :name: la tabella :table appartiene a un’altra app; i collegamenti sono possibili solo all’interno di un’app.',
         'no_fields' => 'La tabella richiede almeno un campo.',
         'duplicate_field' => 'Il campo «:name» compare due volte.',
         'field' => 'Campo «:name»: :error',

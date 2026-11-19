@@ -122,8 +122,14 @@ eigenen Rechte wieder her (auch die Abmeldung beendet die Ansicht). Die Datenban
 stehen im Änderungsprotokoll. Achtung: Was die Rolle darf, wird während der Ansicht wirklich gespeichert – mit Ihnen
 als Verursacher.
 
-**App und Kopie** (B-107): Jede Rolle gehört zu einer [App](#16-apps-fachanwendungen); Datenrechte und Menüeinträge
-zeigt das Formular nur für Tabellen dieser App. Die Systemrollen *super-admin* und *benutzer* gehören zu keiner App und
+**App und Kopie** (B-107): Jede Rolle gehört zu einer [App](#16-apps-fachanwendungen); Datenrechte, Menüeinträge und
+die Rechte von Plugins zeigt das Formular nur für diese App (die allgemeinen Rechte von SAFT immer). Ohne gewählte App
+erscheint statt der Datenrechte der Hinweis, zuerst die App zu wählen. Hat die Rolle noch Rechte **ausserhalb** ihrer
+App – auf Tabellen oder Plugins anderer Apps, etwa nach einem Wechsel der App oder aus der Zeit vor den Apps, oder auf
+gelöschte Tabellen –, stehen sie zuunterst im Abschnitt **„Rechte ausserhalb dieser App“**: Tabellen als Matrix nach
+App gegliedert, nur mit den vorhandenen Rechten (angehakt), Plugin-Rechte und gelöschte Tabellen als Liste. Dort lassen
+sie sich nur entfernen (Haken weg, speichern), nicht hinzufügen. Wechseln Sie die App einer Rolle, bleiben alle Rechte
+erhalten, bis Sie sie dort abwählen. Die Systemrollen *super-admin* und *benutzer* gehören zu keiner App und
 enthalten nur app-übergreifende Rechte (z. B. Dashboard, Hilfe); Datenrechte vergeben Sie über die Rollen der Apps.
 **Kopieren** (in der Liste und beim Bearbeiten) legt eine neue Rolle mit Namen und Ziel-App an – mit denselben Rechten
 (Datenrechte nur für Tabellen der Ziel-App) und ausgeblendeten Menüeinträgen, ohne Mitglieder.
@@ -864,7 +870,7 @@ deren **Parameter** und einen **Zeitplan**:
 | Datenbank sichern (System) | Dateien aus Dateifeldern mitsichern (Vorgabe an) | Sicherung wie `php artisan db:backup` nach `storage/backups`, die Dateien aus Dateifeldern als ZIP daneben (nur wenn sie auf dem Server liegen); scheitert sie, nennt der Lauf den Grund und die Glocke meldet es den Super-Admins; Vorgabe täglich 02:30 |
 | Sicherungen aufräumen (System) | Sicherungen aufbewahren (Tage, Vorgabe 14); mindestens behalten (Vorgabe 3) | löscht ältere Sicherungen in `storage/backups` (eine Sicherung und ihr ZIP zählen als eine), die neuesten bleiben immer; Vorgabe täglich 02:45 |
 | Dateien aufräumen (System) | – | löscht verwaiste Dateien aus Dateifeldern: Uploads aus abgebrochenen Formularen, Dateien von Datensätzen, die es nicht mehr gibt, und Dateien ohne Eintrag – jeweils erst nach 24 Stunden; fehlende Dateien nennt der Lauf nur; Vorgabe täglich 03:00 |
-| Demo-Daten zurücksetzen (System) | Demos (Shop, Lager, Forschung); vorher sichern (Vorgabe an) | löscht die **Daten** der gewählten Demos und lädt den Auslieferungsstand neu – Tabellen, Menüs, Auswertungen und Rechte bleiben; angehängte Dateien der Demo-Tabellen werden gelöscht (vorher mitgesichert). Für öffentliche Demos; ausgeliefert ausgeschaltet und nur wirksam, wenn der Server es mit `DEMO_RESET=true` erlaubt (sonst „übersprungen“); Vorgabe täglich 04:00 |
+| App-Daten zurücksetzen (System) | Apps (die installierten Demo-Apps, mit dem Namen ihrer App); vorher sichern (Vorgabe an) | löscht die **Daten** der gewählten Apps und lädt den Auslieferungsstand neu – Tabellen, Menüs, Auswertungen und Rechte bleiben; angehängte Dateien der Demo-Tabellen werden gelöscht (vorher mitgesichert). Für öffentliche Demos; ausgeliefert ausgeschaltet und nur wirksam, wenn der Server es mit `DEMO_RESET=true` erlaubt (sonst „übersprungen“); Vorgabe täglich 04:00 |
 
 Plugins können weitere Arten mitbringen; sie erscheinen unter **Neu** bei „Art“. Das Beispiel-Plugin *Lager-Tafel* bringt
 **Lager: Inventur-Erinnerung** (meldet Bestände, die seit einer einstellbaren Zahl von Tagen nicht gezählt wurden, im
@@ -926,7 +932,7 @@ landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bz
 | Assistent | Wo | Recht | Kann |
 |---|---|---|---|
 | **Auswertungen** | Auswertungs-Editor, Feld „Auswertung beschreiben“ | Auswertungen: Assistent nutzen | Grundtabelle, Zeilen, Spalten, Werte, Filter, Sortierung, Anzahl Zeilen und Darstellung wählen; berechnete Werte und Spalten sowie Kennzahlen aus Werten mit Formeln bilden; Rückfragen stellen; einen Vorschlag auf Zuruf ändern |
-| **Tabellen** | Table-Designer: beim Anlegen „Tabelle beschreiben“, bei bestehenden Tabellen **Mit KI anpassen** | Table-Designer: Assistent nutzen | Neue Tabelle mit Feldern, Typen (auch Dateifelder mit Arten, Grösse und Anzahl), Auswahloptionen, Verknüpfungen zu bestehenden Tabellen und Bezeichnungen in allen vier Sprachen; bei bestehenden Tabellen neue Felder, Bezeichnungen, Pflicht/eindeutig/durchsuchbar/sortierbar, weitere Auswahloptionen und Anzeigefelder von Verknüpfungen (Vorschau in Worten, dann **Übernehmen**). Typ ändern, umbenennen und löschen bleibt Handarbeit |
+| **Tabellen** | Table-Designer: beim Anlegen „Tabelle beschreiben“, bei bestehenden Tabellen **Mit KI anpassen** | Table-Designer: Assistent nutzen | Neue Tabelle mit App (im Text genannt, sonst die gewählte; ist beides offen, fragt er nach), Menügruppe dieser App, Symbol, Feldern, Typen (auch Dateifelder mit Arten, Grösse und Anzahl), Auswahloptionen, Verknüpfungen zu bestehenden Tabellen und Bezeichnungen in allen vier Sprachen; bei bestehenden Tabellen neue Felder, auf Wunsch ein anderes Symbol, Bezeichnungen, Pflicht/eindeutig/durchsuchbar/sortierbar, weitere Auswahloptionen und Anzeigefelder von Verknüpfungen (Vorschau in Worten, dann **Übernehmen**). Typ ändern, umbenennen, löschen und Regeln bleiben Handarbeit |
 | **Hilfe** | Knopf **?** in der Kopfzeile; **Dokumentation** › Reiter **KI-Assistent** | Hilfe: Assistent nutzen | Beantwortet Fragen zur Bedienung aus den Handbüchern, die die Person sehen darf, mit Verweisen auf die Abschnitte; schlägt nichts vor und ändert nichts |
 
 ### Einrichten
@@ -959,7 +965,8 @@ landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bz
 - **Übertragen** werden der eingegebene Text, die letzten Gesprächsrunden (für Nachfragen wie „nur 2026“) und das
   **Datenmodell**: beim Auswertungs-Assistenten die Tabellen und Felder, die die Person auswerten darf (Bezeichnungen,
   technische Namen, Typen, Verknüpfungen; Werte von Auswahlfeldern nur mit der Einstellung oben), beim
-  Tabellen-Assistenten der Aufbau der Tabellen des Table-Designers.
+  Tabellen-Assistenten der Aufbau der Tabellen des Table-Designers (beim Anlegen aller Apps, je mit ihrer App, dazu die
+  Apps, ihre Menügruppen und die Namen der verfügbaren Symbole; beim Anpassen nur die App der Tabelle).
 - **Hilfe-Assistent:** die Frage, die letzten sechs Nachrichten der Unterhaltung, Titel und Adresse der Seite, auf
   der die Person gerade ist, und die Handbücher, die sie in der Online-Hilfe sieht (Anwenderhandbuch, Häufige Fragen,
   mit einem Administrationsrecht das Administratorhandbuch), ihre **eigenen Rollen und Rechte** (damit der Assistent
@@ -1193,7 +1200,8 @@ Tabellen, Menüs, Auswertungen, Verknüpfungen, Rollen und Aufgaben:
 | Präfix für Tabellen | wird beim Anlegen von Tabellen dem technischen Namen vorangestellt, z. B. `hr` → `hr_abwesenheiten`. Beim Anlegen einer App aus dem Namen vorgeschlagen; eine spätere Änderung gilt nur für neue Tabellen |
 | Symbol, Sortierung | Darstellung in Listen |
 
-Löschen lässt sich nur eine leere App.
+Die Spalte **Status** zeigt *Aktiv*, *Inaktiv*, *Entfernen ab …* oder *Entfernen fehlgeschlagen* (die Meldung als
+Tooltip). **Löschen** gibt es nur für leere Apps; Apps mit Inhalt werden deaktiviert und entfernt (unten).
 
 **Wo die App gewählt wird – und wo sie sich ergibt:**
 
@@ -1209,7 +1217,9 @@ Löschen lässt sich nur eine leere App.
 
 **Grenze zwischen Apps:** Verknüpfungsfelder, Tabellenverknüpfungen für Auswertungen und damit auch „Übernehmen aus“
 und Formeln über Kind-Tabellen sind nur innerhalb einer App möglich. Der Table-Designer bietet nur Tabellen derselben
-App an; der KI-Tabellenassistent sieht nur das Datenmodell der gewählten App.
+App an. Der KI-Tabellenassistent wählt beim Anlegen die App aus dem Text (sonst die gewählte) und verwendet nur
+Menügruppen und Tabellen dieser App; beim Anpassen sieht er nur die App der Tabelle. Die Listen von Table-Designer und
+Table-Connector zeigen die App als Spalte mit Filter.
 
 **Zugang und aktuelle App:** Zugang zu einer App hat, wer eine Rolle dieser App hat oder – über irgendeine Rolle oder
 direkt – Datenrechte auf eine ihrer Tabellen bzw. Rechte eines Plugins dieser App; der Super-Admin hat alle Apps. Mit
@@ -1247,6 +1257,29 @@ werden entfernt. Für jede Rolle mit Rechten auf die Tabellen wählen Sie: **neu
 mit dem Präfix der Ziel-App, z. B. `vertrieb-lager`), Übertragen auf eine bestehende Rolle der Ziel-App – beide mit den
 Mitgliedern, damit niemand den Zugriff verliert – oder Rechte entfernen. Das Verschieben steht im Änderungsprotokoll.
 
+**Deaktivieren und aktivieren:** Im Aktionsmenü (drei Punkte) einer App; Recht *Apps: verwalten*. Eine deaktivierte
+App verschwindet für alle ausser dem Super-Admin: nicht mehr im Umschalter, keine Menüs, Auswertungen und Kacheln, kein
+Zugriff auf ihre Tabellen (auch nicht über Links, Auswertungen oder Export); ihre geplanten Aufgaben werden
+übersprungen (mit Vermerk). Daten, Rollen und Rechte bleiben unverändert – Aktivieren stellt alles wieder her. Der
+Super-Admin sieht sie im Umschalter mit dem Vermerk „(inaktiv)“, etwa um eine neue App vor der Freigabe aufzubauen.
+
+**Entfernen (mit Inhalt):** Nur der **Super-Admin** – ein Recht dafür gibt es nicht, es lässt sich also keiner Rolle
+zuteilen – und nur bei einer **deaktivierten** App. **„Entfernen …“** im Aktionsmenü fragt zweimal:
+
+1. **Übersicht:** was endgültig gelöscht wird (Tabellen mit Anzahl Datensätze und ihren Dateien, Anbindungen des
+   Table-Connectors – die externe Tabelle bleibt –, Menüeinträge, Auswertungen, Tabellenverknüpfungen, Aufgaben, Rollen
+   mit Anzahl Personen, Handbuch), wer danach keine App mehr hat und was das Entfernen verhindert (z. B. Plugins, die
+   Tabellen der App brauchen – sie müssen vorher deinstalliert werden). Häkchen „geprüft“.
+2. **Bestätigen:** den Namen der App eintippen.
+
+Damit ist das Entfernen nur **vorgemerkt**: Es läuft frühestens **10 Minuten** später – mit Scheduler automatisch, ohne
+Cron (z. B. Webhosting) über **„Jetzt entfernen“**, das nach Ablauf erscheint. Bis dahin nimmt **„Entfernen abbrechen“**
+es zurück; aktivieren lässt sich die App erst nach dem Abbrechen. Beim Ausführen sichert SAFT zuerst Datenbank und
+Dateien (wie `db:backup`, Name der Sicherung in der Meldung), dann werden Aufgaben, Auswertungen, Verknüpfungen, Menüs,
+Rollen, Tabellen mit Daten und Dateien, das Handbuch und die App gelöscht; die aktuelle App und die Dashboard-Anordnung
+der Personen werden bereinigt. Scheitert ein Schritt, bleibt die Vormerkung mit der Meldung stehen (Status *Entfernen
+fehlgeschlagen*); ein neuer Versuch setzt fort. Vormerken, Abbrechen und Entfernen stehen im Änderungsprotokoll.
+
 **Nach dem Update:** Bestehende Installationen erhalten eine App „Bestehende Daten“ mit allen vorhandenen Tabellen,
 Menüs, Auswertungen, Rollen und Aufgaben; System-Menüs, Systemrollen und System-Aufgaben bleiben ohne App. Neue
 Installationen beginnen ohne App; die Demo-Daten legen je eine eigene App an (Shop, Lager, Forschung). Aufteilen lässt sich „Bestehende Daten“ mit „In andere App verschieben“
@@ -1266,6 +1299,6 @@ Installationen beginnen ohne App; die Demo-Daten legen je eine eigene App an (Sh
 | Systemprotokoll | anzeigen (Logdatei des Servers, nur lesen) |
 | Plugins | anzeigen; verwalten (Menüeinträge anlegen, Aufräumen); die Rechte der Plugins selbst stehen unter ihrem Namen |
 | Konfiguration | anzeigen (Seite und Menüeintrag); exportieren; einspielen |
-| Apps | anzeigen; verwalten (anlegen, bearbeiten, leere löschen) |
+| Apps | anzeigen; verwalten (anlegen, bearbeiten, aktivieren und deaktivieren, leere löschen). Apps mit Inhalt entfernen: nur der Super-Admin |
 | Hilfe | Assistent nutzen (Hilfe-Assistent) |
 | Daten je Tabelle (Datenrechte-Matrix) | anzeigen, anlegen, bearbeiten, löschen, exportieren, importieren; bei angebundenen externen Tabellen Schreibrechte nur, wenn freigeschaltet |

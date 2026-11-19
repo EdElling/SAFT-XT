@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\DynamicData;
 
+use App\Models\App;
 use App\Models\CustomTable;
 use App\Models\User;
 
 /**
  * Rechte auf Datensätze einer Designer-Tabelle (data.<tabelle>.<aktion>).
- * Inaktive Tabellen sind für niemanden nutzbar.
+ * Inaktive Tabellen sind für niemanden nutzbar, Tabellen einer deaktivierten App nur für den Super-Admin (B-107).
  */
 final class DataAccess
 {
@@ -17,6 +18,7 @@ final class DataAccess
     {
         return $user !== null
             && $table->is_active
+            && (App::isActiveId($table->app_id) || $user->isSuperAdmin())
             && in_array($action, DataPermissions::ACTIONS, true)
             && $table->supports($action)
             && $user->can(DataPermissions::name($table->name, $action));

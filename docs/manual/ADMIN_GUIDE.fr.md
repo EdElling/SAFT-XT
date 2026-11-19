@@ -127,7 +127,14 @@ reste inchangée, le début et la fin figurent dans le journal des modifications
 est réellement enregistré pendant la vue – avec vous comme auteur.
 
 **App et copie** (B-107) : chaque rôle appartient à une [app](#16-apps-applications-métier) ; le formulaire n’affiche
-les droits sur les données et les entrées de menu que pour les tables de cette app. Les rôles système *super-admin* et
+les droits sur les données, les entrées de menu et les droits des plugins que pour cette app (les droits généraux de
+SAFT toujours). Sans app choisie, une indication invite à choisir d’abord l’app à la place des droits sur les données.
+Si le rôle a encore des droits **en dehors** de son app – sur des tables ou plugins d’autres apps, p. ex. après un
+changement d’app ou d’avant les apps, ou sur des tables supprimées –, ils figurent en bas dans la section **« Droits en
+dehors de cette app »** : les tables sous forme de matrice regroupée par app, uniquement avec les droits existants
+(cochés), les droits de plugins et les tables supprimées sous forme de liste. On peut seulement les y retirer (décocher,
+enregistrer), pas en ajouter. Si vous changez l’app d’un rôle, tous les droits sont conservés jusqu’à ce que vous les y
+décochiez. Les rôles système *super-admin* et
 *benutzer* n’appartiennent à aucune app et ne contiennent que des droits communs (p. ex. tableau de bord, aide) ;
 attribuez les droits sur les données via les rôles des apps. **Copier** (dans la liste et en modification) crée un
 nouveau rôle avec un nom et une app cible – avec les mêmes droits (droits sur les données seulement pour les tables de
@@ -903,7 +910,7 @@ devant le libellé.
 | Sauvegarder la base de données (système) | sauvegarder aussi les fichiers des champs de fichiers (activé par défaut) | sauvegarde comme `php artisan db:backup` vers `storage/backups`, les fichiers des champs de fichiers en ZIP à côté (seulement s’ils se trouvent sur le serveur) ; en cas d’échec, l’exécution en indique la raison et la cloche avertit les super-admins ; par défaut tous les jours à 02:30 |
 | Nettoyer les sauvegardes (système) | conserver les sauvegardes (jours, 14 par défaut) ; conserver au moins (3 par défaut) | supprime les sauvegardes plus anciennes dans `storage/backups` (une sauvegarde et son ZIP comptent pour une), les plus récentes restent toujours ; par défaut tous les jours à 02:45 |
 | Nettoyer les fichiers (système) | – | supprime les fichiers orphelins des champs de fichiers : téléversements de formulaires interrompus, fichiers d’enregistrements qui n’existent plus et fichiers sans entrée – chaque fois seulement après 24 heures ; l’exécution ne fait que signaler les fichiers manquants ; par défaut tous les jours à 03:00 |
-| Réinitialiser les données de démo (système) | démos (Boutique, Entrepôt, Recherche) ; sauvegarder auparavant (activé par défaut) | supprime les **données** des démos choisies et recharge l’état livré – tables, menus, analyses et droits restent ; les fichiers joints des tables de démo sont supprimés (sauvegardés auparavant). Pour les démos publiques ; livrée désactivée et effective seulement si le serveur l’autorise avec `DEMO_RESET=true` (sinon « ignorée ») ; par défaut tous les jours à 04:00 |
+| Réinitialiser les données d’app (système) | apps (les apps de démo installées, avec le nom de leur app) ; sauvegarder auparavant (activé par défaut) | supprime les **données** des apps choisies et recharge l’état livré – tables, menus, analyses et droits restent ; les fichiers joints des tables de démo sont supprimés (sauvegardés auparavant). Pour les démos publiques ; livrée désactivée et effective seulement si le serveur l’autorise avec `DEMO_RESET=true` (sinon « ignorée ») ; par défaut tous les jours à 04:00 |
 
 Les plugins peuvent apporter d’autres types ; ils apparaissent sous **Nouveau** dans « Type ». Le plugin d’exemple
 *Tableau des stocks* apporte **Entrepôt : rappel d’inventaire** (signale dans le journal les stocks non comptés depuis
@@ -968,7 +975,7 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
 | Assistant | Où | Droit | Peut |
 |---|---|---|---|
 | **Rapports** | éditeur de rapports, champ « Décrire le rapport » | Rapports : utiliser l’assistant | choisir la table de base, les lignes, colonnes, valeurs, filtres, le tri, le nombre de lignes et l’affichage ; créer des valeurs et colonnes calculées ainsi que des indicateurs à partir des valeurs avec des formules ; poser des questions ; modifier une proposition sur demande |
-| **Tables** | Concepteur de tables : « Décrire la table » à la création, **Adapter avec l’IA** pour les tables existantes | Concepteur de tables : utiliser l’assistant | nouvelle table avec champs, types (y compris champs de fichiers avec types, taille et nombre), options de sélection, liaisons vers des tables existantes et libellés dans les quatre langues ; pour les tables existantes nouveaux champs, libellés, obligatoire/unique/recherchable/triable, options de sélection supplémentaires et champs affichés des liaisons (aperçu en mots, puis **Reprendre**). Changer de type, renommer et supprimer restent manuels |
+| **Tables** | Concepteur de tables : « Décrire la table » à la création, **Adapter avec l’IA** pour les tables existantes | Concepteur de tables : utiliser l’assistant | nouvelle table avec app (nommée dans le texte, sinon celle choisie ; si les deux manquent, il demande), groupe de menu de cette app, icône, champs, types (y compris champs de fichiers avec types, taille et nombre), options de sélection, liaisons vers des tables existantes et libellés dans les quatre langues ; pour les tables existantes nouveaux champs, une autre icône sur demande, libellés, obligatoire/unique/recherchable/triable, options de sélection supplémentaires et champs affichés des liaisons (aperçu en mots, puis **Reprendre**). Changer de type, renommer, supprimer et les règles restent manuels |
 | **Aide** | bouton **?** dans l’en-tête ; **Documentation** › onglet **Assistant IA** | Aide : utiliser l’assistant | répond aux questions sur l’utilisation à partir des manuels que la personne peut voir, avec renvois aux sections ; ne propose rien et ne modifie rien |
 
 ### Configuration
@@ -1003,7 +1010,9 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
 - **Sont transmis** le texte saisi, les derniers échanges de la conversation (pour des précisions comme
   « seulement 2026 ») et le **modèle de données** : pour l’assistant des rapports, les tables et champs que la personne
   peut analyser (libellés, noms techniques, types, liaisons ; valeurs des champs de sélection uniquement avec le
-  réglage ci-dessus), pour l’assistant des tables, la structure des tables du Concepteur de tables.
+  réglage ci-dessus), pour l’assistant des tables, la structure des tables du Concepteur de tables (à la création, de toutes les
+  apps, chacune avec son app, plus les apps, leurs groupes de menu et les noms des icônes disponibles ; à l’adaptation,
+  seulement l’app de la table).
 - **Assistant d’aide :** la question, les six derniers messages de la conversation, le titre et l’adresse de la page
   où se trouve la personne et les manuels qu’elle voit dans l’aide en ligne (guide utilisateur, questions fréquentes,
   avec un droit d’administration le guide d’administration), ses **propres rôles et droits** (pour que l’assistant puisse
@@ -1244,7 +1253,8 @@ tables, menus, rapports, liaisons, rôles et tâches :
 | Préfixe des tables | placé devant le nom technique des nouvelles tables, p. ex. `hr` → `hr_absences`. Proposé à partir du nom lors de la création d’une app ; une modification ultérieure ne vaut que pour les nouvelles tables |
 | Icône, tri | affichage dans les listes |
 
-Seule une app vide peut être supprimée.
+La colonne **Statut** indique *Active*, *Inactive*, *Retrait dès …* ou *Échec du retrait* (le message en info-bulle).
+**Supprimer** n’existe que pour les apps vides ; les apps avec contenu sont désactivées puis retirées (ci-dessous).
 
 **Où l’app se choisit – et où elle découle :**
 
@@ -1260,7 +1270,10 @@ Seule une app vide peut être supprimée.
 
 **Frontière entre apps :** les champs de liaison, les liaisons de tables pour les rapports et donc aussi « Reprendre
 de » et les formules sur les tables enfants ne sont possibles qu’au sein d’une app. Le concepteur de tables ne propose
-que les tables de la même app ; l’assistant IA des tables ne voit que le modèle de données de l’app choisie.
+que les tables de la même app ; à la création, l’assistant IA des tables reprend l’app du
+texte (sinon celle choisie) et n’utilise que les groupes de menu et tables de cette app ; à l’adaptation, il ne voit
+que l’app de la table. Les listes du Concepteur de tables et du Connecteur de tables affichent l’app en colonne avec un
+filtre.
 
 **Accès et app actuelle :** a accès à une app la personne qui a un rôle de cette app ou – par n’importe quel rôle ou
 directement – des droits sur les données d’une de ses tables ou des droits d’un plugin de cette app ; le super-admin a
@@ -1300,6 +1313,31 @@ les groupes vides de l’ancienne app sont supprimés. Pour chaque rôle ayant d
 à un rôle existant de l’app cible – les deux avec les membres, pour que personne ne perde l’accès – ou retrait des
 droits. Le déplacement figure dans le journal des modifications.
 
+**Désactiver et activer :** dans le menu d’actions (trois points) d’une app ; droit *Apps : gérer*. Une app désactivée
+disparaît pour tous sauf le super-admin : plus dans le sélecteur, ni menus, analyses ou tuiles, aucun accès à ses tables
+(ni par des liens, analyses ou exports) ; ses tâches planifiées sont ignorées (avec mention). Données, rôles et droits
+restent inchangés – activer rétablit tout. Le super-admin la voit dans le sélecteur avec la mention « (inactive) »,
+p. ex. pour construire une nouvelle app avant de la publier.
+
+**Retirer (avec contenu) :** uniquement le **super-admin** – il n’existe pas de droit pour cela, il ne peut donc être
+attribué à aucun rôle – et uniquement pour une app **désactivée**. **« Retirer … »** dans le menu d’actions demande deux
+fois :
+
+1. **Aperçu :** ce qui est définitivement supprimé (tables avec nombre d’enregistrements et leurs fichiers, connexions
+   du Connecteur de tables – la table externe reste –, entrées de menu, analyses, liaisons de tables, tâches, rôles avec
+   nombre de personnes, manuel), qui n’aura ensuite plus aucune app et ce qui empêche le retrait (p. ex. des plugins qui
+   ont besoin de tables de l’app – ils doivent d’abord être désinstallés). Case « vérifié ».
+2. **Confirmer :** saisir le nom de l’app.
+
+Le retrait est alors seulement **planifié** : il s’exécute au plus tôt **10 minutes** plus tard – automatiquement avec un
+planificateur, sans cron (p. ex. hébergement web) via **« Retirer maintenant »**, qui apparaît une fois le délai écoulé.
+D’ici là, **« Annuler le retrait »** revient en arrière ; l’app ne peut être activée qu’après l’annulation. À
+l’exécution, SAFT sauvegarde d’abord la base de données et les fichiers (comme `db:backup`, nom de la sauvegarde dans le
+message), puis supprime tâches, analyses, liaisons, menus, rôles, tables avec données et fichiers, le manuel et l’app ;
+l’app actuelle et la disposition du tableau de bord des personnes sont nettoyées. Si une étape échoue, la planification
+reste avec le message (statut *Échec du retrait*) ; une nouvelle tentative reprend. Planification, annulation et retrait
+figurent dans le journal des modifications.
+
 **Après la mise à jour :** les installations existantes reçoivent une app « Données existantes » avec toutes les
 tables, menus, rapports, rôles et tâches existants ; les menus, rôles et tâches système restent sans app. Les nouvelles
 installations commencent sans app ; les données de démo créent chacune leur propre app (Boutique, Entrepôt, Recherche). « Données existantes » se répartit avec « Déplacer vers une autre
@@ -1319,6 +1357,6 @@ app » (ci-dessus).
 | Journal système | afficher (fichier journal du serveur, lecture seule) |
 | Plugins | afficher ; gérer (créer les entrées de menu, nettoyer) ; les droits propres aux plugins figurent sous leur nom |
 | Configuration | afficher (page et entrée de menu) ; exporter ; importer |
-| Apps | afficher ; gérer (créer, modifier, supprimer les apps vides) |
+| Apps | afficher ; gérer (créer, modifier, activer et désactiver, supprimer les apps vides). Retirer des apps avec contenu : uniquement le super-admin |
 | Aide | utiliser l’assistant (assistant d’aide) |
 | Données par table (matrice des droits sur les données) | afficher, créer, modifier, supprimer, exporter, importer ; pour les tables externes liées, droits d’écriture uniquement s’ils sont activés |

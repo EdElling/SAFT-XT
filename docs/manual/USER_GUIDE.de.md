@@ -166,7 +166,7 @@ App und öffnet ihr Dashboard. Die Wahl bleibt auch nach dem Abmelden erhalten.
 Die aktuelle App bestimmt, was Sie sehen: die Menüs dieser App (dazu Dashboard, Dokumentation, Auswertungen und – je
 nach Rechten – die Administration), die Anordnung des Dashboards, die Auswertungen und unter **Dokumentation** das
 Handbuch der App, sofern es eines gibt. Öffnen Sie über einen Link oder ein Lesezeichen eine Tabelle oder Auswertung
-einer anderen App, wechselt SAFT von selbst dorthin. Mit Zugang zu nur einer App erscheint kein Umschalter.
+einer anderen App, wechselt SAFT von selbst dorthin. Mit Zugang zu nur einer App erscheint kein Umschalter. Eine von der Administration deaktivierte App wird nicht angeboten.
 
 ## 4. Mit Daten arbeiten
 

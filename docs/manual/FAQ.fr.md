@@ -24,6 +24,7 @@
    - [Comment transmettre une vue précise à quelqu’un ?](#comment-transmettre-une-vue-précise-à-quelquun-)
    - [Un fichier ne se téléverse pas.](#un-fichier-ne-se-téléverse-pas)
    - [Une table manque dans le choix d’une liaison.](#une-table-manque-dans-le-choix-dune-liaison)
+   - [Une app a disparu du sélecteur.](#une-app-a-disparu-du-sélecteur)
 
 ---
 ## Questions fréquentes
@@ -98,3 +99,8 @@ extension est refusé. Si même de petits fichiers autorisés échouent, la limi
 
 Les liaisons ne sont possibles qu’entre tables de la même app (guide administrateur, chapitre 16). Si la table voulue
 appartient à une autre app, créez la nouvelle table dans cette app – ou étendez cette app.
+
+### Une app a disparu du sélecteur.
+
+L’administration l’a désactivée – p. ex. pour des travaux ou avant de la retirer. Ses données sont conservées ; dès
+qu’elle est réactivée, elle réapparaît comme avant. Renseignez-vous auprès de l’administration.

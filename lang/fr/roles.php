@@ -73,6 +73,10 @@ return [
         'menu_entries' => 'Entrées de menu',
         'menu_entries_help' => 'Entrées de type table de données que ce rôle voit dans le menu. Les nouvelles entrées sont visibles. Affichage uniquement : les droits sur les données déterminent si la table peut être consultée ; avec plusieurs rôles, il suffit d’un rôle avec droit de lecture qui affiche l’entrée.',
         'inactive_entry' => 'inactive',
+        'choose_app_first' => 'Choisissez d’abord l’app : les droits sur les données s’appliquent aux tables de cette app.',
+        'other_permissions' => 'Droits en dehors de cette app',
+        'other_permissions_help' => 'Droits existants sur des tables ou plugins d’autres apps (ou sur des tables supprimées). Ils peuvent seulement être retirés ici : décocher et enregistrer.',
+        'table_deleted' => 'table supprimée',
     ],
     'matrix' => [
         'tabs' => [

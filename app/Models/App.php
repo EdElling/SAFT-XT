@@ -9,6 +9,7 @@ use App\Models\Base\App as BaseApp;
 use App\Models\Concerns\HasAuditLog;
 use App\Models\Concerns\HasStableKey;
 use App\Models\Concerns\HasTranslatedAttributes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -40,14 +41,61 @@ class App extends BaseApp
         'scheduledTasks' => 'tasks',
     ];
 
+    /** Schlüssel des Anfrage-Caches der inaktiven Apps. */
+    private const string INACTIVE_CACHE = 'saft.apps.inactive';
+
     protected static function booted(): void
     {
-        // Nur leere Apps lassen sich löschen; Entfernen samt Inhalt kommt mit dem Lebenszyklus (Etappe 3).
+        // Direkt löschen nur leere Apps; samt Inhalt entfernt AppRemover (Etappe 3), der vorher alles abbaut.
         static::deleting(static function (self $app): void {
             if (! $app->isEmpty()) {
                 throw new BusinessRuleException(__('apps.not_empty', ['name' => (string) $app->name]));
             }
         });
+
+        // Solange das Entfernen vorgemerkt ist, bleibt die App inaktiv.
+        static::saving(static function (self $app): void {
+            if ($app->is_active && $app->removal_due_at !== null) {
+                throw new BusinessRuleException(__('apps.removal.cancel_first'));
+            }
+        });
+
+        static::saved(static fn (): mixed => request()->attributes->remove(self::INACTIVE_CACHE));
+        static::deleted(static fn (): mixed => request()->attributes->remove(self::INACTIVE_CACHE));
+    }
+
+    /** @return list<int> IDs der deaktivierten Apps (einmal je Anfrage gelesen) */
+    public static function inactiveIds(): array
+    {
+        $attributes = request()->attributes;
+
+        if (! $attributes->has(self::INACTIVE_CACHE)) {
+            $attributes->set(self::INACTIVE_CACHE, self::query()->where('is_active', false)->pluck('id')->map(static fn (mixed $id): int => (int) $id)->all());
+        }
+
+        return $attributes->get(self::INACTIVE_CACHE);
+    }
+
+    /** Ist die App aktiv? Ohne App (System) immer. */
+    public static function isActiveId(?int $id): bool
+    {
+        return $id === null || ! in_array($id, self::inactiveIds(), true);
+    }
+
+    public function removalPending(): bool
+    {
+        return $this->removal_due_at !== null;
+    }
+
+    /** Vorgemerkt und die Wartezeit ist abgelaufen. */
+    public function removalDue(): bool
+    {
+        return $this->removal_due_at !== null && $this->removal_due_at->lte(now());
+    }
+
+    public function removalRequester(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'removal_requested_by');
     }
 
     /**

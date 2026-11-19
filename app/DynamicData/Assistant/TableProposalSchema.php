@@ -27,9 +27,11 @@ final class TableProposalSchema
         return self::object([
             'kind' => ['type' => 'string', 'enum' => ['table', 'question']],
             'question' => self::nullable(['type' => 'string']),
+            'app' => self::nullable(['type' => 'integer']),
             'name' => ['type' => 'string'],
             'label' => self::translations(),
             'description' => self::nullable(self::translations()),
+            'icon' => self::nullable(['type' => 'string']),
             'menu_group' => self::nullable(['type' => 'string']),
             'fields' => ['type' => 'array', 'items' => self::field()],
         ]);
@@ -40,7 +42,10 @@ final class TableProposalSchema
     {
         return self::object([
             'kind' => ['type' => 'string', 'enum' => ['changes', 'question']],
-            'question' => self::nullable(['type' => 'string']),
+            // Einfache Texte statt „Text oder null“: Das Schema der Änderungen liegt an der Grenze der Anthropic-
+            // Grammatik („compiled grammar is too large“). Leer = keine Rückfrage bzw. Symbol unverändert.
+            'question' => ['type' => 'string'],
+            'icon' => ['type' => 'string'],
             'add' => ['type' => 'array', 'items' => self::field()],
             'change' => ['type' => 'array', 'items' => self::object([
                 'name' => ['type' => 'string'],

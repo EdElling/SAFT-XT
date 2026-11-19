@@ -170,7 +170,7 @@ change d’app et ouvre son tableau de bord. Le choix est conservé après la d�
 L’app actuelle détermine ce que vous voyez : les menus de cette app (plus tableau de bord, documentation, rapports et –
 selon vos droits – l’administration), la disposition du tableau de bord, les rapports et, sous **Documentation**, le
 manuel de l’app s’il en existe un. Si vous ouvrez une table ou un rapport d’une autre app via un lien ou un favori, SAFT
-y bascule de lui-même. Avec l’accès à une seule app, aucun sélecteur n’apparaît.
+y bascule de lui-même. Avec l’accès à une seule app, aucun sélecteur n’apparaît. Une app désactivée par l’administration n’est pas proposée.
 
 ## 4. Travailler avec les données
 

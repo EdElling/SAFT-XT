@@ -638,6 +638,100 @@ final class DynamicSchemaService
         app(RecordFiles::class)->removeStored($files);
     }
 
+    /**
+     * Was das gemeinsame Löschen dieser Tabellen verhindert (B-107, App entfernen): Plugins, die eine davon brauchen,
+     * Verknüpfungen oder Summen aus Tabellen ausserhalb. Verweise untereinander sind erlaubt.
+     *
+     * @param  Collection<int, CustomTable>  $tables
+     * @return list<string> Meldungen; leer = möglich
+     */
+    public function dropTablesBlockers(Collection $tables): array
+    {
+        $names = $tables->pluck('name')->all();
+        $ids = $tables->pluck('id')->all();
+        $blockers = [];
+        $dependencies = app(PluginDependencies::class);
+
+        foreach ($names as $name) {
+            if (($plugins = $dependencies->usedBy($name)) !== []) {
+                $blockers[] = __('tables.errors.table_required_by_plugin', ['name' => $name, 'plugins' => $dependencies->names($plugins)]);
+            }
+        }
+
+        $outside = CustomField::query()
+            ->where('type', FieldType::Relation->value)
+            ->whereIn('options->table', $names)
+            ->whereNotIn('custom_table_id', $ids)
+            ->with('custom_table')
+            ->get();
+
+        if ($outside->isNotEmpty()) {
+            $blockers[] = __('tables.errors.still_referenced', ['fields' => $outside->map(fn (CustomField $f): string => $f->custom_table->name.'.'.$f->name)->implode(', ')]);
+        }
+
+        foreach ($names as $name) {
+            $formula = $this->aggregatesOver($name)->first(fn (CustomField $f): bool => ! in_array($f->custom_table_id, $ids, true));
+
+            if ($formula !== null) {
+                $blockers[] = __('tables.errors.used_in_aggregate', ['name' => $name, 'field' => $formula->custom_table->name.'.'.$formula->name]);
+            }
+        }
+
+        return $blockers;
+    }
+
+    /**
+     * Löscht mehrere Designer-Tabellen gemeinsam samt Daten und Dateien (B-107, App entfernen): zuerst die
+     * Fremdschlüssel untereinander, dann jede Tabelle wie dropTable(). Wiederholbar: Bereits Entferntes wird übersprungen.
+     *
+     * @param  Collection<int, CustomTable>  $tables
+     */
+    public function dropTables(Collection $tables): void
+    {
+        foreach ($tables as $table) {
+            $this->assertDesigner($table);
+        }
+
+        if (($blockers = $this->dropTablesBlockers($tables)) !== []) {
+            $this->fail(implode(' ', $blockers));
+        }
+
+        // 1. Fremdschlüssel untereinander, damit sich jede Tabelle einzeln löschen lässt.
+        foreach ($tables as $table) {
+            $relations = $table->fields()->where('type', FieldType::Relation->value)->get();
+            $qualified = $this->namespace->qualify($table->name);
+
+            if ($relations->isEmpty() || ! $this->schema()->hasTable($qualified)) {
+                continue;
+            }
+
+            $existing = array_column($this->schema()->getForeignKeys($qualified), 'name');
+
+            $this->mutate($table->name, function () use ($relations, $qualified, $existing): void {
+                foreach ($relations as $field) {
+                    if (in_array($field->indexName('fk'), $existing, true)) {
+                        $this->schema()->table($qualified, fn (Blueprint $b) => $b->dropForeign($field->indexName('fk')));
+                    }
+                }
+            });
+        }
+
+        // 2. Tabellen mit Metadaten, Rechten, Menüeinträgen und Dateien.
+        foreach ($tables as $table) {
+            $files = RecordFile::query()->where('custom_table_id', $table->id)->get();
+
+            $this->mutate($table->name, function () use ($table): void {
+                $this->schema()->dropIfExists($this->namespace->qualify($table->name));
+                $table->fields()->get()->each->delete();
+                $this->permissions->remove($table);
+                $this->menu->remove($table);
+                $table->delete();
+            });
+
+            app(RecordFiles::class)->removeStored($files);
+        }
+    }
+
     // --- intern ------------------------------------------------------------------------
 
     /**

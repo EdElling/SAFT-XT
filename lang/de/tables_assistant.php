@@ -19,6 +19,7 @@ return [
     'applied_all' => 'Alle Änderungen übernommen.',
     'applied_some' => 'Nicht alles übernommen:',
     'summary' => [
+        'icon' => 'Symbol „:icon“',
         'add' => 'Neu: :field (:type)',
         'change' => 'Ändern: :field – :what',
         'on' => ':what an',
@@ -34,13 +35,18 @@ return [
         'sortable' => 'sortierbar',
     ],
     'applied' => [
+        'icon' => 'Symbol geändert.',
         'added' => 'Feld :field ergänzt.',
         'changed' => 'Feld :field geändert.',
     ],
     'errors' => [
+        'icon' => 'Das Symbol „:icon“ gibt es nicht; nur Namen aus der Liste „icons“ verwenden.',
         'invalid' => 'Kein gültiger Vorschlag: :errors. Bitte genauer beschreiben oder von Hand ergänzen.',
         'name_taken' => 'Der Name „:name“ ist schon vergeben (:owner).',
-        'menu_group' => 'Menügruppe :id gibt es nicht.',
+        'menu_group' => 'Menügruppe :id gibt es in dieser App nicht.',
+        'app' => 'App :id gibt es nicht.',
+        'app_missing' => 'Keine App angegeben: bitte nachfragen, in welche App die Tabelle gehört.',
+        'relation_app' => 'Feld :name: Die Tabelle :table gehört zu einer anderen App; Verknüpfungen sind nur innerhalb einer App möglich.',
         'no_fields' => 'Die Tabelle braucht mindestens ein Feld.',
         'duplicate_field' => 'Feld „:name“ kommt doppelt vor.',
         'field' => 'Feld „:name“: :error',

@@ -8,13 +8,15 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-1. **B-107** Apps (Fachanwendungen) – Etappe 3 (Lebenszyklus: aktivieren, deaktivieren, entfernen)
+1. **B-110** Regeln über den Tabellen-Assistenten
+2. **B-107** Apps (Fachanwendungen) – Etappe 4 (App-Definition, Export/Import je App; ersetzt „Konfiguration übertragen“)
 
 ## Apps (Fachanwendungen)
 
 | Nr. | Thema | Beschreibung | Status | Bezug |
 |---|---|---|---|---|
-| B-107 | Apps (Fachanwendungen) | Mehrere Fachanwendungen nebeneinander: Tabellen, Menüs, Auswertungen, Rollen, Dashboard, Aufgaben, Plugins und KI-Kontext je App; Umschalten in der Titelzeile; Verweise zwischen Apps nur über freigegebene Schnittstellen; App-Definition `saft-app/1` mit stabilen Schlüsseln als Grundlage für Pakete, Aktualisieren (Änderungsplan) und KI-App-Designer; Seite „Apps“ ersetzt „Konfiguration übertragen“. Acht Etappen, siehe [Konzept](docs/concept/APPS.md). | in Arbeit (Etappe 2 umgesetzt: Umschalter, aktuelle App je Person, Navigation, Dashboard und Auswertungen je App, Rechte für Auswertungen je App, Handbuch je App in Dokumentation und Hilfe-Assistent, Plugins und Datenmodell des Hilfe-Assistenten je App; Etappe 1b umgesetzt: In andere App verschieben – Auswahl oder ganze Menügruppe, Prüfung auf den Endzustand, Menüs, Auswertungen, Rollenrechte mit Mitgliedern; Etappe 1a umgesetzt: Tabelle `apps`, App-Zuordnung und stabile Schlüssel, Umstellung „Bestehende Daten“, Seite „Apps“, Grenze zwischen Apps, Präfix, Rolle kopieren, Import mit Ziel-App; „App-Einstellungen“ heisst „Globale Einstellungen“) | ersetzt B-001 |
+| B-107 | Apps (Fachanwendungen) | Mehrere Fachanwendungen nebeneinander: Tabellen, Menüs, Auswertungen, Rollen, Dashboard, Aufgaben, Plugins und KI-Kontext je App; Umschalten in der Titelzeile; Verweise zwischen Apps nur über freigegebene Schnittstellen; App-Definition `saft-app/1` mit stabilen Schlüsseln als Grundlage für Pakete, Aktualisieren (Änderungsplan) und KI-App-Designer; Seite „Apps“ ersetzt „Konfiguration übertragen“. Acht Etappen, siehe [Konzept](docs/concept/APPS.md). | in Arbeit (Etappe 3 umgesetzt: aktivieren und deaktivieren, Entfernen samt Inhalt nur durch den Super-Admin – zweifach bestätigt, nach 10 Minuten Wartezeit, mit Sicherung –, „App-Daten zurücksetzen“, Rollenformular nach der gewählten App mit Rechten ausserhalb nur zum Entfernen, App-Spalte im Table-Connector, KI-Tabellenassistent mit App und Symbol; Etappe 2 umgesetzt: Umschalter, aktuelle App je Person, Navigation, Dashboard und Auswertungen je App, Rechte für Auswertungen je App, Handbuch je App in Dokumentation und Hilfe-Assistent, Plugins und Datenmodell des Hilfe-Assistenten je App; Etappe 1b umgesetzt: In andere App verschieben – Auswahl oder ganze Menügruppe, Prüfung auf den Endzustand, Menüs, Auswertungen, Rollenrechte mit Mitgliedern; Etappe 1a umgesetzt: Tabelle `apps`, App-Zuordnung und stabile Schlüssel, Umstellung „Bestehende Daten“, Seite „Apps“, Grenze zwischen Apps, Präfix, Rolle kopieren, Import mit Ziel-App; „App-Einstellungen“ heisst „Globale Einstellungen“) | ersetzt B-001 |
+| B-109 | Eigene Datenbank je App | Je App optional eine eigene Datenbank (PostgreSQL, MariaDB oder MySQL) mit den Verbindungsdaten in den Einstellungen der App, auf demselben oder einem anderen Datenbankserver. Gründe: getrennte Sicherungen je App, Datensicherheit, flexiblere Infrastruktur. Zu klären: Verweise und Auswertungen über App-Grenzen (Schnittstellen, Etappe 5), Transaktionen über zwei Datenbanken, Umzug einer bestehenden App, Sicherung und Wiederherstellung je App, Datenbankart je App mit den Grenzen des Table-Designers. | offen | B-107 |
 
 ## Konfiguration übertragen
 
@@ -30,6 +32,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 |---|---|---|---|---|
 | B-010 | Externe Datenbank als interne Tabellen übernehmen | DDL-Schema oder Datenbank-Dump bzw. angebundene Tabellen (Table-Connector) als Tabellen des Table-Designers übernehmen, mit Verknüpfungen und optional Daten. Empfohlener Weg: „Als interne Tabellen übernehmen“ aus dem Table-Connector. | offen | – |
 | B-011 | KI-Assistent für mehrere verknüpfte Tabellen | Der Assistent im Table-Designer schlägt ein ganzes Datenmodell (mehrere Tabellen mit Verknüpfungen) vor. | offen | – |
+| B-110 | Regeln über den Tabellen-Assistenten | Der KI-Assistent im Table-Designer schlägt beim Erstellen und Ändern auch Regeln vor: Feldregeln (Minimum/Maximum, Mindest-/Höchstlänge, E-Mail, URL) und Tabellenregeln (Feld mit Feld oder Wert vergleichen, optional eigene Meldung in vier Sprachen), z. B. „Menge in Abfragepositionen maximal 3“ oder „Ende nicht vor Beginn“. Prüfung über dieselben Klassen wie von Hand, Vorschau je Regel beim Ändern. Nicht: Plugin-Regeln, Formeln, „Übernehmen aus“, Vorgabewerte. | geplant (nach B-107 Etappe 3) | – |
 
 ## Fehlende Grundfunktionen
 

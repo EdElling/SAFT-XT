@@ -207,4 +207,113 @@ class AppsTest extends DuskTestCase
                 ->waitForText('Abwesenheiten erfassen', 15);
         });
     }
+
+    /** Aktionsmenü (drei Punkte) in der Zeile einer App öffnen. */
+    private function openRowActions(Browser $browser, string $app): Browser
+    {
+        return $browser->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., '{$app}')]//*[contains(@class, 'fi-dropdown-trigger')]//button")
+            ->pause(400);
+    }
+
+    /** FAP-07 */
+    public function test_deactivated_app_is_hidden_for_users_and_marked_for_the_super_admin(): void
+    {
+        app(DataMenu::class)->ensure(CustomTable::query()->where('name', 'kunden')->firstOrFail());
+        $hr = Role::query()->create(['name' => 'personal', 'guard_name' => 'web', 'app_id' => $this->second->id]);
+        $hr->givePermissionTo('data.hr_mitarbeitende.view');
+        $sales = Role::query()->create(['name' => 'vertrieb', 'guard_name' => 'web', 'app_id' => $this->first->id]);
+        $sales->givePermissionTo('data.kunden.view');
+        $this->activeUser('zwei@example.com')->assignRole([$sales, $hr, User::ROLE_DEFAULT]);
+
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/apps')->waitForText('Personal', 15);
+            $this->openRowActions($browser, 'Personal');
+            $this->clickVisibleButton($browser, 'Deaktivieren');
+            $browser->waitFor('.fi-modal-window', 15);
+            $this->clickVisibleButton($browser, 'Bestätigen');
+            $browser->waitForText('App „Personal“ deaktiviert.', 15)
+                ->waitForTextIn('tr.fi-ta-row:nth-child(2)', 'Inaktiv', 15);
+            $this->assertFalse($this->second->fresh()->is_active);
+
+            // Super-Admin: im Umschalter weiterhin, als inaktiv markiert (Titelzeile nach dem Neuladen).
+            $browser->refresh()->waitFor('.saft-app-switcher', 15)->click('.saft-app-switcher')->waitFor('[data-app-switch="'.$this->second->id.'"]', 15)
+                ->assertSeeIn('[data-app-switch="'.$this->second->id.'"]', '(inaktiv)');
+        });
+
+        $this->browse(function (Browser $browser): void {
+            $browser->logout();
+            // Person mit Rollen in beiden Apps: nur noch eine App, also kein Umschalter; kein Zugriff auf die Tabelle.
+            $this->login($browser, 'zwei@example.com')->visit('/admin')->waitFor('.fi-sidebar', 15)
+                ->assertMissing('.saft-app-switcher')
+                ->assertSeeIn('.fi-sidebar', 'Kunden')
+                ->visit('/admin/data/hr_mitarbeitende')
+                ->waitForText('403', 15);
+        });
+    }
+
+    /** FAP-08 */
+    public function test_removal_is_confirmed_twice_delayed_cancellable_and_then_runs(): void
+    {
+        $this->second->update(['is_active' => false]);
+
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/apps')->waitForText('Personal', 15);
+            $this->openRowActions($browser, 'Personal');
+            $this->clickVisibleButton($browser, 'Entfernen …');
+            // 1. Abfrage: Übersicht und Häkchen.
+            $browser->waitFor('[data-app-removal-overview]', 15)
+                ->assertSeeIn('[data-app-removal-overview]', 'Tabelle „Mitarbeitende“ (hr_mitarbeitende) mit 0 Datensätzen')
+                ->check('.fi-modal-window input[type="checkbox"][id$="understood"]');
+            $this->clickVisibleButton($browser, 'Weiter');
+            // 2. Abfrage: Name eintippen (falsch, dann richtig).
+            $browser->waitFor('.fi-modal-window input[id$="confirmation"]', 15)
+                ->type('.fi-modal-window input[id$="confirmation"]', 'Personalx');
+            $this->clickVisibleButton($browser, 'Entfernen vormerken');
+            $browser->waitForText('Der eingegebene Name stimmt nicht', 15)
+                ->clear('.fi-modal-window input[id$="confirmation"]')
+                ->type('.fi-modal-window input[id$="confirmation"]', 'Personal');
+            $this->clickVisibleButton($browser, 'Entfernen vormerken');
+            $browser->waitForText('Entfernen von „Personal“ vorgemerkt', 15)
+                ->waitForTextIn('tr.fi-ta-row:nth-child(2)', 'Entfernen ab', 15);
+            $this->assertTrue($this->second->fresh()->removalPending());
+
+            // Abbrechen.
+            $this->openRowActions($browser, 'Personal');
+            $this->clickVisibleButton($browser, 'Entfernen abbrechen');
+            $browser->waitForText('Entfernen von „Personal“ abgebrochen.', 15);
+            $this->assertFalse($this->second->fresh()->removalPending());
+
+            // Erneut vormerken, Wartezeit abgelaufen (in der Datenbank vorgestellt): „Jetzt entfernen“.
+            $this->second->forceFill(['removal_due_at' => now()->subMinute(), 'removal_requested_by' => User::query()->where('email', self::ADMIN)->value('id')])->save();
+            $browser->visit('/admin/apps')->waitForText('Personal', 15);
+            $this->openRowActions($browser, 'Personal');
+            $this->clickVisibleButton($browser, 'Jetzt entfernen');
+            $browser->waitFor('.fi-modal-window', 15);
+            $this->clickVisibleButton($browser, 'Bestätigen');
+            $browser->waitForText('App „Personal“ entfernt.', 60);
+        });
+
+        $this->assertNull(App::query()->find($this->second->id));
+        $this->assertNull(CustomTable::query()->where('name', 'hr_mitarbeitende')->first());
+    }
+
+    /** FAP-09 */
+    public function test_role_shows_permissions_outside_its_app_as_matrix_for_removal(): void
+    {
+        $role = Role::query()->create(['name' => 'vertrieb', 'guard_name' => 'web', 'app_id' => $this->first->id]);
+        $role->givePermissionTo(['data.kunden.view', 'data.hr_mitarbeitende.view', 'data.hr_mitarbeitende.update']);
+
+        $this->browse(function (Browser $browser) use ($role): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/roles/'.$role->id.'/edit')->waitForText('Rechte ausserhalb dieser App', 15)
+                ->assertPresent('[data-matrix-cell="hr_mitarbeitende.view"]')
+                ->assertPresent('[data-matrix-cell="hr_mitarbeitende.update"]')
+                ->assertMissing('[data-matrix-cell="hr_mitarbeitende.create"]')
+                ->assertChecked('[data-matrix-cell="hr_mitarbeitende.update"]')
+                ->uncheck('[data-matrix-cell="hr_mitarbeitende.update"]')->pause(400);
+            $this->clickVisibleButton($browser, 'Speichern');
+            $browser->waitForText('Gespeichert', 15);
+        });
+
+        $this->assertEqualsCanonicalizing(['data.kunden.view', 'data.hr_mitarbeitende.view'], $role->fresh()->permissions->pluck('name')->all());
+    }
 }

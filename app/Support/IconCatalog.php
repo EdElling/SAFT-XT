@@ -36,6 +36,33 @@ final class IconCatalog
         ], self::$groups ??= self::load());
     }
 
+    /** Präfix der Symbole, die der Tabellen-Assistent vorschlägt (Heroicons, Strichvariante). */
+    public const string ASSISTANT_PREFIX = 'heroicon-o-';
+
+    /**
+     * Kurznamen der Symbole für den Tabellen-Assistenten, z. B. „users“ für heroicon-o-users.
+     *
+     * @return list<string>
+     */
+    public static function assistantNames(): array
+    {
+        foreach (self::groups() as $group) {
+            if ($group['key'] === self::HEROICON_STYLES['o']) {
+                return array_values(array_map(static fn (string $icon): string => substr($icon, strlen(self::ASSISTANT_PREFIX)), $group['icons']));
+            }
+        }
+
+        return [];
+    }
+
+    /** Kurzname des Assistenten → vollständiger Name; null, wenn leer oder unbekannt. */
+    public static function fromAssistant(mixed $name): ?string
+    {
+        $name = is_string($name) ? strtolower(trim($name)) : '';
+
+        return $name !== '' && in_array($name, self::assistantNames(), true) ? self::ASSISTANT_PREFIX.$name : null;
+    }
+
     /** Gruppe (Reiter), zu der ein Icon-Name gehört; null, wenn unbekannt. */
     public static function groupOf(?string $icon): ?string
     {

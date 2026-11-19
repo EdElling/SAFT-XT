@@ -164,7 +164,7 @@ la dashboard. La scelta resta anche dopo la disconnessione.
 L’app attuale determina ciò che vedete: i menu di quell’app (più dashboard, documentazione, report e – secondo i
 diritti – l’amministrazione), la disposizione della dashboard, i report e, sotto **Documentazione**, il manuale
 dell’app se esiste. Se aprite una tabella o un report di un’altra app tramite un link o un segnalibro, SAFT vi passa da
-sé. Con accesso a una sola app il selettore non compare.
+sé. Con accesso a una sola app il selettore non compare. Un’app disattivata dall’amministrazione non viene proposta.
 
 ## 4. Lavorare con i dati
 

@@ -205,7 +205,7 @@ the last 2 MB are read; files `laravel.log` and `laravel-YYYY-MM-DD.log` (log ch
 **System tasks for backups and demos:** *Back up database* (02:30, with the files from file fields), *Clean up
 backups* (02:45, 14 days, at least 3; a backup and its ZIP count as one) and *Clean up files* (03:00) run from
 installation on; the scheduler thus replaces a separate cron entry for `db:backup`. If you still have such
-an entry, remove it or switch off the task, otherwise backups are made twice. *Reset demo data* is destructive:
+an entry, remove it or switch off the task, otherwise backups are made twice. *Reset app data* is destructive:
 delivered switched off and, even when switched on, only effective with `DEMO_RESET=true` in `.env` – set this only on
 public demo or training systems.
 
@@ -260,7 +260,7 @@ shows all available commands, `php artisan help <command>` the options of a comm
 | `php artisan table-connector:connect <connection>` | Bulk link on the console (without the web server's time limit) | `--all` or `--table=` (repeatable), `--app=` (ID of the app), `--schema=`, `--prefix=`, `--menu-group=` (ID or `none`), `--role=` (repeatable), `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--no-details` |
 | `php artisan tasks:list` | Scheduled tasks with schedule, next and last run; last scheduler call | – |
 | `php artisan tasks:run <ID>` | Run one scheduled task immediately (the schedule stays) | – |
-| `php artisan tasks:run-due` | Run due scheduled tasks; called by the scheduler every minute | – |
+| `php artisan tasks:run-due` | Run due scheduled tasks and app removals scheduled by the super admin (after the 10-minute waiting time); called by the scheduler every minute. Without a scheduler, removals run via “Remove now” on the Apps page | – |
 | `php artisan saft:plugins` | Lists the installed plugins with version and compatibility and creates their permissions (also runs after every `migrate`) | – |
 | `php artisan saft:plugins --check [id]` | Checks plugins before delivery (ID, API, permissions, menu, plugin API only); exit code 1 on errors | – |
 | `php artisan saft:plugin-context` | Developer context for plugins (AGENTS.md, API reference, schema; no data) | `--output=`, `--tables=` (repeatable), `--without-external`, `--zip` |

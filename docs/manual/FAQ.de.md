@@ -24,6 +24,7 @@
    - [Wie gebe ich jemandem eine bestimmte Ansicht weiter?](#wie-gebe-ich-jemandem-eine-bestimmte-ansicht-weiter)
    - [Eine Datei lässt sich nicht hochladen.](#eine-datei-lässt-sich-nicht-hochladen)
    - [Bei einer Verknüpfung fehlt eine Tabelle in der Auswahl.](#bei-einer-verknüpfung-fehlt-eine-tabelle-in-der-auswahl)
+   - [Eine App ist aus dem Umschalter verschwunden.](#eine-app-ist-aus-dem-umschalter-verschwunden)
 
 ---
 ## Häufige Fragen
@@ -97,3 +98,8 @@ Scheitern auch kleine erlaubte Dateien, ist die Grenze des Servers zu klein (Sys
 
 Verknüpfungen sind nur zwischen Tabellen derselben App möglich (Administratorhandbuch, Kapitel 16). Gehört die
 gewünschte Tabelle zu einer anderen App, legen Sie die neue Tabelle in deren App an – oder erweitern Sie diese App.
+
+### Eine App ist aus dem Umschalter verschwunden.
+
+Die Administration hat sie deaktiviert – etwa für Umbauten oder bevor sie entfernt wird. Ihre Daten bleiben erhalten; sobald
+sie wieder aktiviert ist, erscheint sie wie zuvor. Fragen Sie bei der Administration nach.

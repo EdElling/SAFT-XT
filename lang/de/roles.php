@@ -73,6 +73,10 @@ return [
         'menu_entries' => 'Menüeinträge',
         'menu_entries_help' => 'Einträge vom Typ Datentabelle, die diese Rolle im Menü sieht. Neue Einträge sind sichtbar. Nur Darstellung: Ob die Tabelle angezeigt werden darf, legen die Datenrechte fest; bei mehreren Rollen genügt eine Rolle mit Leserecht, die den Eintrag zeigt.',
         'inactive_entry' => 'inaktiv',
+        'choose_app_first' => 'Zuerst die App wählen: Die Datenrechte gelten für die Tabellen dieser App.',
+        'other_permissions' => 'Rechte ausserhalb dieser App',
+        'other_permissions_help' => 'Vorhandene Rechte auf Tabellen oder Plugins anderer Apps (oder gelöschter Tabellen). Sie lassen sich hier nur entfernen: Haken weg und speichern.',
+        'table_deleted' => 'Tabelle gelöscht',
     ],
     'matrix' => [
         'tabs' => [

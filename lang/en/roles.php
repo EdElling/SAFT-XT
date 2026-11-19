@@ -73,6 +73,10 @@ return [
         'menu_entries' => 'Menu entries',
         'menu_entries_help' => 'Entries of type data table that this role sees in the menu. New entries are visible. Display only: whether the table may be viewed is set by the data permissions; with several roles, one role with read permission that shows the entry is enough.',
         'inactive_entry' => 'inactive',
+        'choose_app_first' => 'Choose the app first: data permissions apply to the tables of that app.',
+        'other_permissions' => 'Permissions outside this app',
+        'other_permissions_help' => 'Existing permissions on tables or plugins of other apps (or of deleted tables). They can only be removed here: untick and save.',
+        'table_deleted' => 'table deleted',
     ],
     'matrix' => [
         'tabs' => [

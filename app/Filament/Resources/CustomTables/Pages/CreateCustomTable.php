@@ -60,9 +60,9 @@ class CreateCustomTable extends CreateRecord
         $this->assistantPrompt = '';
 
         if ($result->status === TableAssistantResult::PROPOSAL) {
-            // Die gewählte App bleibt (B-107); der Vorschlag betrifft Tabelle und Felder, der Name bekommt ihr Präfix.
-            $appId = $this->form->getRawState()['app_id'] ?? null;
+            // App aus dem Vorschlag (im Text genannt), sonst die gewählte (B-107); der Name bekommt ihr Präfix.
             $proposal = $result->proposal ?? [];
+            $appId = $proposal['app_id'] ?? $this->form->getRawState()['app_id'] ?? null;
             $prefix = AppSelect::prefix($appId);
 
             if ($prefix !== '' && filled($proposal['name'] ?? null) && ! str_starts_with((string) $proposal['name'], $prefix)) {

@@ -24,6 +24,7 @@
    - [How do I pass on a specific view to someone?](#how-do-i-pass-on-a-specific-view-to-someone)
    - [A file cannot be uploaded.](#a-file-cannot-be-uploaded)
    - [A table is missing from the choice for a relation.](#a-table-is-missing-from-the-choice-for-a-relation)
+   - [An app has disappeared from the switcher.](#an-app-has-disappeared-from-the-switcher)
 
 ---
 ## Frequently asked questions
@@ -94,3 +95,8 @@ files fail, the server's limit is too low (system administration: `upload_max_fi
 
 Relations are only possible between tables of the same app (administrator guide, chapter 16). If the table you want
 belongs to another app, create the new table in that app – or extend that app.
+
+### An app has disappeared from the switcher.
+
+The administration has deactivated it – e.g. for rework or before it is removed. Its data is kept; as soon as it is
+activated again, it appears as before. Ask the administration.

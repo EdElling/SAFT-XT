@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tasks\Types;
 
 use App\Database\DatabaseBackup;
+use App\Models\App;
 use App\Tasks\TaskResult;
 use App\Tasks\TaskSkipped;
 use App\Tasks\TaskType;
@@ -51,8 +52,10 @@ final readonly class DemoResetTask implements TaskType
             CheckboxList::make('demos')
                 ->label(__('tasks.fields.demos'))
                 ->helperText(__('tasks.fields.demos_help'))
-                ->options(collect(array_keys(self::DEMOS))->mapWithKeys(static fn (string $key): array => [$key => __("tasks.demo_reset.demos.{$key}")])->all())
-                ->default(array_keys(self::DEMOS))
+                // Nur installierte Demo-Apps, mit dem Namen ihrer App (B-107); Gespeichertes anderer bleibt unsichtbar.
+                ->options(fn (): array => $this->installed())
+                ->default(fn (): array => array_keys($this->installed()))
+                ->afterStateHydrated(fn (CheckboxList $component, mixed $state): mixed => $component->state(array_values(array_intersect((array) $state, array_keys($this->installed())))))
                 ->required(),
             Toggle::make('backup')
                 ->label(__('tasks.fields.demo_backup'))
@@ -62,7 +65,34 @@ final readonly class DemoResetTask implements TaskType
 
     public function describe(array $parameters): string
     {
-        return implode(', ', array_map(static fn (string $key): string => __("tasks.demo_reset.demos.{$key}"), $this->demos($parameters)));
+        return implode(', ', array_map(fn (string $key): string => $this->appLabel($key), $this->demos($parameters)));
+    }
+
+    /**
+     * Installierte Demo-Apps (alle Tabellen vorhanden) als Schlüssel => Name der App.
+     *
+     * @return array<string, string>
+     */
+    private function installed(): array
+    {
+        $installed = [];
+
+        foreach (self::DEMOS as $key => $class) {
+            if (app($class)->demoInstalled()) {
+                $installed[$key] = $this->appLabel($key);
+            }
+        }
+
+        return $installed;
+    }
+
+    /** Name der App der Demo (erkannt am stabilen Schlüssel), sonst die feste Bezeichnung. */
+    private function appLabel(string $key): string
+    {
+        $uuid = app(self::DEMOS[$key])->demoAppDefinition()['uuid'] ?? null;
+        $app = $uuid === null ? null : App::query()->where('uuid', $uuid)->first();
+
+        return $app !== null ? (string) $app->name : __("tasks.demo_reset.demos.{$key}");
     }
 
     public function run(array $parameters): TaskResult
@@ -101,7 +131,7 @@ final readonly class DemoResetTask implements TaskType
         }
 
         $message = __('tasks.results.demo_reset', [
-            'demos' => implode(', ', array_map(static fn (string $key, int $count): string => __("tasks.demo_reset.demos.{$key}")." ({$count})", array_keys($records), $records)),
+            'demos' => implode(', ', array_map(fn (string $key, int $count): string => $this->appLabel($key)." ({$count})", array_keys($records), $records)),
         ]);
 
         return new TaskResult($backup === null ? $message : $message.' '.__('tasks.results.demo_reset_backup', ['file' => $backup]), ['records' => $records, 'backup' => $backup]);

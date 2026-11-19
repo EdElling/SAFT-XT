@@ -161,7 +161,7 @@ and opens its dashboard. The choice is kept after signing out.
 The current app determines what you see: the menus of that app (plus dashboard, documentation, reports and – depending
 on your permissions – the administration), the dashboard layout, the reports and, under **Documentation**, the app's
 manual if there is one. If you open a table or report of another app through a link or bookmark, SAFT switches there by
-itself. With access to only one app, no switcher appears.
+itself. With access to only one app, no switcher appears. An app deactivated by the administration is not offered.
 
 ## 4. Working with data
 

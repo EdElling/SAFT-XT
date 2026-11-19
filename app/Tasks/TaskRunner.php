@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tasks;
 
 use App\Exceptions\BusinessRuleException;
+use App\Models\App;
 use App\Models\ScheduledTask;
 use App\Models\TaskRun;
 use App\Models\User;
@@ -64,6 +65,7 @@ final readonly class TaskRunner
 
             try {
                 $this->assertPluginActive($task);
+                $this->assertAppActive($task);
                 $result = $task->type()->run($task->parameterValues());
 
                 return $this->finish($task, $run, ScheduledTask::SUCCESS, $result->message, $result->data);
@@ -94,6 +96,14 @@ final readonly class TaskRunner
     }
 
     /** Läuft der Scheduler (letzter Aufruf innerhalb von tasks.heartbeat_minutes)? */
+    /** Aufgaben einer deaktivierten App laufen nicht (B-107, Etappe 3). */
+    private function assertAppActive(ScheduledTask $task): void
+    {
+        if (! App::isActiveId($task->app_id)) {
+            throw new TaskSkipped(__('tasks.app_inactive', ['app' => (string) $task->app?->name]));
+        }
+    }
+
     public function schedulerAlive(): bool
     {
         $last = $this->lastHeartbeat();

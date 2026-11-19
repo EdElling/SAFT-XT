@@ -125,7 +125,13 @@ termina la vista). Il database resta invariato, inizio e fine figurano nel regis
 ruolo può fare viene davvero salvato durante la vista – con voi come autore.
 
 **App e copia** (B-107): ogni ruolo appartiene a un’[app](#16-app-applicazioni-specialistiche); il modulo mostra
-diritti sui dati e voci di menu solo per le tabelle di quell’app. I ruoli di sistema *super-admin* e *benutzer* non
+diritti sui dati, voci di menu e diritti dei plugin solo per quell’app (i diritti generali di SAFT sempre). Senza app
+scelta, al posto dei diritti sui dati compare l’indicazione di scegliere prima l’app. Se il ruolo ha ancora diritti
+**al di fuori** della sua app – su tabelle o plugin di altre app, ad es. dopo un cambio di app o da prima delle app, o
+su tabelle eliminate –, compaiono in fondo nella sezione **«Diritti al di fuori di questa app»**: le tabelle come
+matrice raggruppata per app, solo con i diritti esistenti (spuntati), i diritti dei plugin e le tabelle eliminate come
+elenco. Lì si possono solo rimuovere (togliere la spunta, salvare), non aggiungere. Se cambiate l’app di un ruolo, tutti
+i diritti restano finché non li togliete lì. I ruoli di sistema *super-admin* e *benutzer* non
 appartengono ad alcuna app e contengono solo diritti comuni (ad es. dashboard, guida); i diritti sui dati si assegnano
 tramite i ruoli delle app. **Copia** (nell’elenco e in modifica) crea un nuovo ruolo con nome e app di destinazione –
 con gli stessi diritti (diritti sui dati solo per le tabelle dell’app di destinazione) e le voci di menu nascoste,
@@ -881,7 +887,7 @@ ha un **tipo**, i relativi **parametri** e una **pianificazione**:
 | Eseguire il backup del database (sistema) | salvare anche i file dei campi file (predefinito attivo) | backup come `php artisan db:backup` in `storage/backups`, i file dei campi file come ZIP accanto (solo se si trovano sul server); se non riesce, l’esecuzione ne indica il motivo e la campanella avvisa i super-admin; predefinito ogni giorno alle 02:30 |
 | Ripulire i backup (sistema) | conservare i backup (giorni, predefinito 14); conservare almeno (predefinito 3) | elimina i backup più vecchi in `storage/backups` (un backup e il suo ZIP contano come uno), i più recenti restano sempre; predefinito ogni giorno alle 02:45 |
 | Ripulire i file (sistema) | – | elimina i file orfani dei campi file: caricamenti da moduli interrotti, file di record che non esistono più e file senza voce – ogni volta solo dopo 24 ore; l’esecuzione segnala soltanto i file mancanti; predefinito ogni giorno alle 03:00 |
-| Ripristinare i dati demo (sistema) | demo (Negozio, Magazzino, Ricerca); eseguire prima il backup (predefinito attivo) | elimina i **dati** delle demo scelte e ricarica lo stato di consegna – tabelle, menu, analisi e diritti restano; i file allegati delle tabelle demo vengono eliminati (salvati prima). Per demo pubbliche; consegnata disattivata ed efficace solo se il server lo consente con `DEMO_RESET=true` (altrimenti «saltata»); predefinito ogni giorno alle 04:00 |
+| Reimpostare i dati dell’app (sistema) | app (le app demo installate, con il nome della loro app); eseguire prima il backup (predefinito attivo) | elimina i **dati** delle app scelte e ricarica lo stato di consegna – tabelle, menu, analisi e diritti restano; i file allegati delle tabelle demo vengono eliminati (salvati prima). Per demo pubbliche; consegnata disattivata ed efficace solo se il server lo consente con `DEMO_RESET=true` (altrimenti «saltata»); predefinito ogni giorno alle 04:00 |
 
 I plugin possono aggiungere altri tipi; compaiono in **Nuovo** alla voce «Tipo». Il plugin di esempio *Tabellone delle
 giacenze* aggiunge **Magazzino: promemoria inventario** (segnala nel registro le giacenze non contate da un numero di
@@ -943,7 +949,7 @@ risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effe
 | Assistente | Dove | Diritto | Può |
 |---|---|---|---|
 | **Report** | editor dei report, campo «Descrivere il report» | Report: usare l’assistente | scegliere tabella di base, righe, colonne, valori, filtri, ordinamento, numero di righe e visualizzazione; creare valori e colonne calcolati e indicatori dai valori con formule; porre domande; modificare una proposta su richiesta |
-| **Tabelle** | Designer di tabelle: «Descrivere la tabella» alla creazione, **Adattare con l’IA** per le tabelle esistenti | Designer di tabelle: usare l’assistente | nuova tabella con campi, tipi (anche campi file con tipi, dimensione e numero), opzioni di selezione, collegamenti a tabelle esistenti ed etichette in tutte e quattro le lingue; per le tabelle esistenti nuovi campi, etichette, obbligatorio/univoco/ricercabile/ordinabile, altre opzioni di selezione e campi visualizzati dei collegamenti (anteprima a parole, poi **Importa**). Cambiare tipo, rinominare ed eliminare restano lavoro manuale |
+| **Tabelle** | Designer di tabelle: «Descrivere la tabella» alla creazione, **Adattare con l’IA** per le tabelle esistenti | Designer di tabelle: usare l’assistente | nuova tabella con app (indicata nel testo, altrimenti quella scelta; se mancano entrambe, chiede), gruppo di menu di quell’app, icona, campi, tipi (anche campi file con tipi, dimensione e numero), opzioni di selezione, collegamenti a tabelle esistenti ed etichette in tutte e quattro le lingue; per le tabelle esistenti nuovi campi, su richiesta un’altra icona, etichette, obbligatorio/univoco/ricercabile/ordinabile, altre opzioni di selezione e campi visualizzati dei collegamenti (anteprima a parole, poi **Importa**). Cambiare tipo, rinominare, eliminare e le regole restano lavoro manuale |
 | **Aiuto** | pulsante **?** nell’intestazione; **Documentazione** › scheda **Assistente IA** | Aiuto: usare l’assistente | risponde alle domande sull’uso in base ai manuali che la persona può vedere, con rimandi alle sezioni; non propone nulla e non modifica nulla |
 
 ### Configurazione
@@ -978,7 +984,8 @@ risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effe
 - **Vengono trasmessi** il testo inserito, gli ultimi scambi della conversazione (per precisazioni come «solo 2026») e
   il **modello di dati**: per l’assistente dei report le tabelle e i campi che la persona può analizzare (etichette,
   nomi tecnici, tipi, collegamenti; valori dei campi di selezione solo con l’impostazione sopra), per l’assistente
-  delle tabelle la struttura delle tabelle del Designer di tabelle.
+  delle tabelle la struttura delle tabelle del Designer di tabelle (alla creazione di tutte le app, ognuna con la sua
+  app, più le app, i loro gruppi di menu e i nomi delle icone disponibili; nell’adattamento solo l’app della tabella).
 - **Assistente di aiuto:** la domanda, gli ultimi sei messaggi della conversazione, titolo e indirizzo della pagina in
   cui si trova la persona e i manuali che vede nell’aiuto in linea (guida utente, domande frequenti, con un diritto di
   amministrazione la guida per amministratori), i suoi **ruoli e diritti** (così l’assistente può dire quale diritto
@@ -1214,7 +1221,8 @@ loro tabelle, menu, report, collegamenti, ruoli e attività:
 | Prefisso delle tabelle | anteposto al nome tecnico delle nuove tabelle, ad es. `hr` → `hr_assenze`. Proposto dal nome alla creazione di un’app; una modifica successiva vale solo per le nuove tabelle |
 | Icona, ordinamento | visualizzazione negli elenchi |
 
-Si può eliminare solo un’app vuota.
+La colonna **Stato** mostra *Attiva*, *Inattiva*, *Rimozione dalle …* o *Rimozione non riuscita* (il messaggio come
+tooltip). **Elimina** esiste solo per app vuote; le app con contenuto vengono disattivate e rimosse (sotto).
 
 **Dove si sceglie l’app – e dove deriva:**
 
@@ -1230,7 +1238,9 @@ Si può eliminare solo un’app vuota.
 
 **Confine tra app:** campi di collegamento, collegamenti tra tabelle per i report e quindi anche «Riprendi da» e le
 formule sulle tabelle figlie sono possibili solo all’interno di un’app. Il designer di tabelle offre solo tabelle della
-stessa app; l’assistente IA delle tabelle vede solo il modello dati dell’app scelta.
+stessa app; alla creazione l’assistente IA delle tabelle prende l’app
+dal testo (altrimenti quella scelta) e usa solo gruppi di menu e tabelle di quell’app; nell’adattamento vede solo l’app
+della tabella. Gli elenchi del Designer di tabelle e del Connettore di tabelle mostrano l’app come colonna con filtro.
 
 **Accesso e app attuale:** ha accesso a un’app chi ha un ruolo di quell’app oppure – tramite un qualsiasi ruolo o
 direttamente – diritti sui dati di una sua tabella o diritti di un plugin di quell’app; il super-admin ha tutte le app.
@@ -1270,6 +1280,29 @@ quello attuale); i gruppi vuoti della vecchia app vengono rimossi. Per ogni ruol
 `vertrieb-lager`), trasferimento a un ruolo esistente dell’app di destinazione – entrambi con i membri, così nessuno
 perde l’accesso – oppure rimozione dei diritti. Lo spostamento compare nel registro modifiche.
 
+**Disattivare e attivare:** nel menu delle azioni (tre puntini) di un’app; diritto *App: gestire*. Un’app disattivata
+scompare per tutti tranne il super-admin: non più nel selettore, né menu, report o riquadri, nessun accesso alle sue
+tabelle (nemmeno tramite link, report o esportazione); le sue attività pianificate vengono saltate (con annotazione).
+Dati, ruoli e diritti restano invariati – attivare ripristina tutto. Il super-admin la vede nel selettore con la
+dicitura «(inattiva)», ad es. per costruire una nuova app prima di rilasciarla.
+
+**Rimuovere (con contenuto):** solo il **super-admin** – non esiste un diritto per questo, quindi non si può assegnare a
+nessun ruolo – e solo per un’app **disattivata**. **«Rimuovi …»** nel menu delle azioni chiede due volte:
+
+1. **Panoramica:** cosa viene eliminato definitivamente (tabelle con numero di record e i loro file, collegamenti del
+   Connettore di tabelle – la tabella esterna resta –, voci di menu, report, collegamenti di tabelle, attività, ruoli
+   con numero di persone, manuale), chi non avrà più alcuna app e cosa impedisce la rimozione (ad es. plugin che
+   necessitano di tabelle dell’app – vanno prima disinstallati). Spunta «controllato».
+2. **Confermare:** digitare il nome dell’app.
+
+La rimozione è allora solo **pianificata**: avviene al più presto **10 minuti** dopo – automaticamente con uno
+scheduler, senza cron (ad es. web hosting) tramite **«Rimuovi ora»**, che compare allo scadere del tempo. Fino ad allora
+**«Annulla rimozione»** la revoca; l’app si può attivare solo dopo l’annullamento. All’esecuzione SAFT salva prima
+database e file (come `db:backup`, nome del backup nel messaggio), poi elimina attività, report, collegamenti, menu,
+ruoli, tabelle con dati e file, il manuale e l’app; l’app attuale e la disposizione della dashboard delle persone
+vengono ripulite. Se un passo non riesce, la pianificazione resta con il messaggio (stato *Rimozione non riuscita*); un
+nuovo tentativo riprende. Pianificazione, annullamento e rimozione sono registrati nel registro delle modifiche.
+
 **Dopo l’aggiornamento:** le installazioni esistenti ricevono un’app «Dati esistenti» con tutte le tabelle, i menu, i
 report, i ruoli e le attività esistenti; menu, ruoli e attività di sistema restano senza app. Le nuove installazioni
 iniziano senza app; i dati demo creano ciascuno la propria app (Negozio, Magazzino, Ricerca). «Dati esistenti» si suddivide con «Sposta in un’altra app» (sopra).
@@ -1288,6 +1321,6 @@ iniziano senza app; i dati demo creano ciascuno la propria app (Negozio, Magazzi
 | Registro di sistema | visualizzare (file di log del server, sola lettura) |
 | Plugin | visualizzare; gestire (creare voci di menu, pulire); i diritti propri dei plugin compaiono sotto il loro nome |
 | Configurazione | visualizzare (pagina e voce di menu); esportare; importare |
-| App | visualizzare; gestire (creare, modificare, eliminare app vuote) |
+| App | visualizzare; gestire (creare, modificare, attivare e disattivare, eliminare app vuote). Rimuovere app con contenuto: solo il super-admin |
 | Aiuto | usare l’assistente (assistente di aiuto) |
 | Dati per tabella (matrice dei diritti sui dati) | visualizzare, creare, modificare, eliminare, esportare, importare; per le tabelle esterne collegate diritti di scrittura solo se abilitati |

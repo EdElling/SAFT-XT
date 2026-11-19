@@ -20,6 +20,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $prefix
  * @property int $sort_order
  * @property bool $is_active
+ * @property Carbon|null $removal_due_at
+ * @property int|null $removal_requested_by
+ * @property string|null $removal_error
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -30,6 +33,8 @@ class App extends Model
     protected $casts = [
         'sort_order' => 'int',
         'is_active' => 'bool',
+        'removal_due_at' => 'datetime',
+        'removal_requested_by' => 'int',
     ];
 
     protected $fillable = [
@@ -40,5 +45,8 @@ class App extends Model
         'prefix',
         'sort_order',
         'is_active',
+        'removal_due_at',
+        'removal_requested_by',
+        'removal_error',
     ];
 }

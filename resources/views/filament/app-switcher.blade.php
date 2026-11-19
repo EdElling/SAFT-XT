@@ -7,7 +7,7 @@
             @else
                 {{ svg('heroicon-o-squares-2x2', 'saft-app-switcher-icon') }}
             @endif
-            <span class="saft-app-switcher-name">{{ $current?->name ?? __('apps.switch.none') }}</span>
+            <span class="saft-app-switcher-name">{{ $current?->name ?? __('apps.switch.none') }}@if ($current && ! $current->is_active) ({{ __('apps.inactive') }})@endif</span>
             {{ svg('heroicon-m-chevron-down', 'saft-app-switcher-chevron') }}
         </button>
     </x-slot>
@@ -22,7 +22,7 @@
                 :color="$app->id === $current?->id ? 'primary' : 'gray'"
                 data-app-switch="{{ $app->id }}"
             >
-                {{ $app->name }}
+                {{ $app->name }}@unless ($app->is_active) <span class="saft-app-switcher-inactive">({{ __('apps.inactive') }})</span>@endunless
             </x-filament::dropdown.list.item>
         @endforeach
     </x-filament::dropdown.list>

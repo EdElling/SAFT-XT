@@ -73,6 +73,10 @@ return [
         'menu_entries' => 'Voci di menu',
         'menu_entries_help' => 'Voci di tipo tabella dati che questo ruolo vede nel menu. Le nuove voci sono visibili. Solo visualizzazione: se la tabella può essere visualizzata lo stabiliscono i diritti sui dati; con più ruoli basta un ruolo con diritto di lettura che mostri la voce.',
         'inactive_entry' => 'inattiva',
+        'choose_app_first' => 'Scegliere prima l’app: i diritti sui dati valgono per le tabelle di questa app.',
+        'other_permissions' => 'Diritti al di fuori di questa app',
+        'other_permissions_help' => 'Diritti esistenti su tabelle o plugin di altre app (o su tabelle eliminate). Qui possono solo essere rimossi: togliere la spunta e salvare.',
+        'table_deleted' => 'tabella eliminata',
     ],
     'matrix' => [
         'tabs' => [

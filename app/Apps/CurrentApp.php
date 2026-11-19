@@ -32,8 +32,9 @@ final class CurrentApp
 
         $query = App::query()->orderBy('sort_order')->orderBy('id');
 
+        // Deaktivierte Apps (Etappe 3) nur für den Super-Admin, etwa um eine neue App vor der Freigabe aufzubauen.
         if (! $user->isSuperAdmin()) {
-            $query->whereIn('id', $this->appIds($user));
+            $query->whereIn('id', $this->appIds($user))->where('is_active', true);
         }
 
         return $query->get();

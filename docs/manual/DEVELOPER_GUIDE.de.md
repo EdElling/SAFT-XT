@@ -356,6 +356,12 @@ final class MinimumStockWidget extends StatsOverviewWidget implements DashboardW
 an und löscht sie nie automatisch. In der Rollenverwaltung erscheinen sie als „<Name des Plugins>: <Bezeichnung>“.
 Rollen erhalten sie dort wie jedes andere Recht; der Super-Admin hat sie automatisch.
 
+**Apps (B-107):** Gehört das Plugin zu einer App (alle Tabellen aus `requiredTables()` in einer App), bietet die
+Rollenverwaltung seine Rechte nur Rollen dieser App an; Rollen anderer Apps sehen vorhandene Rechte nur noch zum
+Entfernen. Ist die App **deaktiviert**, gelten Datenrechte auf ihre Tabellen nur noch für den Super-Admin
+(`->can()` liefert sonst `false`), und geplante Aufgaben der App werden übersprungen. Eine App, deren Tabellen ein
+installiertes Plugin braucht, lässt sich nicht entfernen – zuerst das Plugin deinstallieren.
+
 Brauchen Sie zusätzlich **Datenrechte** auf Tabellen des Table-Designers (z. B. „Bestände: bearbeiten“), prüfen Sie diese
 in Ihrem Code (siehe [Kapitel 9](#9-auf-daten-zugreifen)) und nennen Sie sie in der Beschreibung des Plugins,
 damit die Administration sie mit vergibt.

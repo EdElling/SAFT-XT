@@ -452,8 +452,8 @@ Damit laufen auch die tägliche Sicherung und das Aufräumen der Sicherungen. Be
 [Systemadministration, Kapitel 4](SYSADMIN_GUIDE.de.md#4-geplante-aufgaben-und-cron).
 
 **Öffentliche Demo jede Nacht zurücksetzen:** `DEMO_RESET=true` in `.env`, dann `php artisan optimize`, und unter
-*Administration › Betrieb › Geplante Aufgaben* die Aufgabe **Demo-Daten zurücksetzen** einschalten. Sie lädt um 04:00 die Daten
-der gewählten Demos neu; Änderungen der Besucher an den Demo-Daten sind danach weg, alles andere bleibt.
+*Administration › Betrieb › Geplante Aufgaben* die Aufgabe **App-Daten zurücksetzen** einschalten. Sie lädt um 04:00 die Daten
+der gewählten Demo-Apps neu; Änderungen der Besucher an den Demo-Daten sind danach weg, alles andere bleibt.
 
 **Updates** (Ablauf wie in [Abschnitt 9](#9-updates-einspielen), mit dem Kommandozeilen-PHP):
 

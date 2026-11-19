@@ -24,6 +24,7 @@
    - [Come posso inviare a qualcuno una vista precisa?](#come-posso-inviare-a-qualcuno-una-vista-precisa)
    - [Un file non si riesce a caricare.](#un-file-non-si-riesce-a-caricare)
    - [In un collegamento manca una tabella nella scelta.](#in-un-collegamento-manca-una-tabella-nella-scelta)
+   - [Un’app è scomparsa dal selettore.](#unapp-è-scomparsa-dal-selettore)
 
 ---
 ## Domande frequenti
@@ -97,3 +98,8 @@ sistema: `upload_max_filesize` e `post_max_size`).
 
 I collegamenti sono possibili solo tra tabelle della stessa app (guida per amministratori, capitolo 16). Se la tabella
 desiderata appartiene a un’altra app, create la nuova tabella in quell’app – oppure estendete quell’app.
+
+### Un’app è scomparsa dal selettore.
+
+L’amministrazione l’ha disattivata – ad es. per lavori o prima di rimuoverla. I suoi dati restano; non appena viene
+riattivata, ricompare come prima. Chiedete all’amministrazione.

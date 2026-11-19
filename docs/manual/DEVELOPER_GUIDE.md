@@ -349,6 +349,12 @@ final class MinimumStockWidget extends StatsOverviewWidget implements DashboardW
 `php artisan saft:plugins` and never deletes them automatically. In role management they appear as
 “<plugin name>: <label>”. Roles receive them there like any other permission; the super admin has them automatically.
 
+**Apps (B-107):** if the plugin belongs to an app (all tables from `requiredTables()` in one app), role management
+offers its permissions only to roles of that app; roles of other apps see existing permissions only for removal. If the
+app is **deactivated**, data permissions on its tables only apply to the super admin (`->can()` otherwise returns
+`false`), and scheduled tasks of the app are skipped. An app whose tables an installed plugin needs cannot be removed –
+uninstall the plugin first.
+
 If you also need **data permissions** on table designer tables (e.g. “Stock levels: edit”), check them in your code
 (see [chapter 9](#9-accessing-data)) and mention them in the plugin description so that the administration grants
 them as well.

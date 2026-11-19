@@ -7,6 +7,7 @@ namespace App\Filament\Resources\TableConnector\Tables;
 use App\Exceptions\BusinessRuleException;
 use App\ExternalData\SchemaComparison;
 use App\Filament\Pages\DynamicDataPage;
+use App\Filament\Support\AppFilter;
 use App\Models\CustomTable;
 use App\Support\AppLocale;
 use Filament\Actions\Action;
@@ -50,7 +51,7 @@ class ConnectedTablesTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('databaseConnection')->withCount('fields'))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['databaseConnection', 'app'])->withCount('fields'))
             ->columns([
                 TextColumn::make('label')->label(__('tables.form.display_name'))
                     ->searchable(query: fn (Builder $query, string $search): Builder => $query->where(function (Builder $q) use ($search): void {
@@ -59,6 +60,7 @@ class ConnectedTablesTable
                         }
                     })),
                 TextColumn::make('name')->label(__('tables.list.name'))->fontFamily('mono')->searchable(),
+                AppFilter::column(),
                 TextColumn::make('databaseConnection.name')->label(__('table_connector.form.connection'))->sortable(),
                 TextColumn::make('external_table')
                     ->label(__('table_connector.list.source'))
@@ -90,6 +92,7 @@ class ConnectedTablesTable
             ->defaultSort(fn (Builder $query): Builder => $query->orderBy('label->'.app()->getLocale())->orderBy('label->'.config('locales.default')))
             // „Abgleich“ wird je Zeile live in der externen Datenbank ermittelt und ist daher nicht filterbar.
             ->filters([
+                AppFilter::make(),
                 SelectFilter::make('database_connection_id')
                     ->label(__('table_connector.form.connection'))
                     ->relationship('databaseConnection', 'name')

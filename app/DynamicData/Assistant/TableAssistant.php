@@ -13,12 +13,14 @@ use App\DynamicData\Schema\FieldType;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\CustomTables\Schemas\FieldForm;
 use App\Filament\Support\TableNameRule;
+use App\Models\App;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\User;
 use App\Reports\Assistant\AssistantClient;
 use App\Services\DynamicSchemaService;
 use App\Settings\AppSettings;
+use App\Support\IconCatalog;
 use App\Support\Translations;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -42,6 +44,8 @@ final class TableAssistant
         characters, singular or plural noun in the language of the user, e.g. "mitglieder"), a label and an optional
         description, each in all languages of the schema (de, en, fr, it – translate them), and an optional menu group
         (the id of an existing group, or null). Every table automatically has an id and timestamps – never add them.
+        Choose a fitting icon for the table from "icons" in the data model (e.g. "users" for members, "truck" for
+        deliveries); use exactly one of these names, or null.
 
         Fields have a technical name (same rules as table names), a label in all languages and a type:
         string (short text; length 1-10000, default 255), text (long text), integer, decimal (precision 1-38, scale ≤
@@ -63,16 +67,30 @@ final class TableAssistant
         when the user asks for a change, otherwise start over.
         TXT;
 
+    /** Nur für neue Tabellen (B-107): Jede Tabelle gehört zu einer App. */
+    private const string APP_INSTRUCTIONS = <<<'TXT'
+        Every table belongs to exactly one app (business application, see "apps" in the data model). Set app to the id of
+        the app the user names in the request; otherwise to the app of the current form state (form.app). If neither
+        names an app and there is more than one app, set kind to "question" and ask in which app the table belongs,
+        listing the app names. The menu group and the tables of relations must belong to the chosen app (see "app" of
+        each menu group and table); groups and tables of other apps cannot be used. Do not put the app prefix into the
+        technical name – it is added automatically.
+        TXT;
+
     private const string CHANGE_INSTRUCTIONS = <<<'TXT'
         Here you change an existing table. In "add" list new fields; in "change" list existing fields (by technical name)
         with only the properties to change, all others null: label (all languages), required, unique, searchable,
         sortable, add_choices (new choices of a select field) and relation_display (fields shown for a relation). Field
         types, technical names and deleting fields cannot be changed – if the user asks for that, set kind to
-        "question" and explain briefly that this must be done by hand in the table designer.
+        "question" and explain briefly that this must be done by hand in the table designer. Set icon (the table's
+        icon, from "icons" in the data model) only when the user asks for a (different) icon, otherwise "".
         TXT;
 
     /** App, deren Tabellen der Assistent sieht (B-107); null = alle. */
     private ?int $appId = null;
+
+    /** Neue Tabelle: Datenmodell aller Apps, je Tabelle und Gruppe mit ihrer App (B-107). */
+    private bool $allApps = false;
 
     public function __construct(
         private readonly AssistantClient $client,
@@ -92,15 +110,16 @@ final class TableAssistant
      */
     public function proposeTable(User $user, string $text, array $form, array $history = []): TableAssistantResult
     {
-        // Datenmodell nur der gewählten App (B-107): Verknüpfungen sind nur innerhalb einer App möglich.
-        $this->appId = filled($form['app_id'] ?? null) ? (int) $form['app_id'] : null;
+        // Datenmodell aller Apps (B-107): Die App kann im Text genannt sein; Gruppe und Verknüpfungen müssen zu ihr passen.
+        $this->allApps = true;
+        $formApp = filled($form['app_id'] ?? null) ? (int) $form['app_id'] : null;
 
         $this->assertCanAsk($user, $text);
         $request = $this->request($text, ['form' => $this->formForModel($form)]);
 
-        return $this->run($user, $text, [self::INSTRUCTIONS], $history, $request, TableProposalSchema::table(), function (array $proposal): array {
-            return $this->tableProblems($proposal);
-        }, fn (array $proposal): array => [$this->toForm($proposal), []]);
+        return $this->run($user, $text, [self::INSTRUCTIONS, self::APP_INSTRUCTIONS], $history, $request, TableProposalSchema::table(), function (array $proposal) use ($formApp): array {
+            return $this->tableProblems($proposal, $formApp);
+        }, fn (array $proposal): array => [$this->toForm($proposal, $formApp), []]);
     }
 
     /**
@@ -128,13 +147,22 @@ final class TableAssistant
     /**
      * Vorgeschlagene Änderungen ausführen, einzeln über den Table-Designer (Änderungsprotokoll wie von Hand).
      *
-     * @param  array{add: list<array<string, mixed>>, change: list<array{name: string, data: array<string, mixed>}>}  $changes
+     * @param  array{icon?: string|null, add: list<array<string, mixed>>, change: list<array{name: string, data: array<string, mixed>}>}  $changes
      * @return list<array{ok: bool, text: string}>
      */
     public function apply(CustomTable $table, array $changes): array
     {
         $service = app(DynamicSchemaService::class);
         $results = [];
+
+        if (filled($changes['icon'] ?? null)) {
+            try {
+                $service->updateTable($table, ['icon' => (string) $changes['icon']]);
+                $results[] = ['ok' => true, 'text' => __('tables_assistant.applied.icon')];
+            } catch (BusinessRuleException $e) {
+                $results[] = ['ok' => false, 'text' => $e->getMessage()];
+            }
+        }
 
         foreach ($changes['add'] ?? [] as $field) {
             try {
@@ -235,6 +263,10 @@ final class TableAssistant
     /** @return array<string, mixed> Tabellen des Table-Designers (nur Struktur) und Menügruppen */
     private function dataModel(): array
     {
+        if ($this->allApps) {
+            return $this->dataModelOfAllApps();
+        }
+
         return [
             'tables' => CustomTable::query()->designer()->when($this->appId !== null, fn ($q) => $q->where('app_id', $this->appId))->with('fields')->orderBy('name')->get()->map(fn (CustomTable $t): array => [
                 'name' => $t->name,
@@ -242,13 +274,60 @@ final class TableAssistant
                 'fields' => $t->fields->where('is_active', true)->map(fn (CustomField $f): array => ['name' => $f->name, 'label' => (string) $f->label, 'type' => $f->type->value])->values()->all(),
             ])->all(),
             'menu_groups' => collect(app(DataMenu::class)->groupOptions($this->appId))->map(fn (string $label, string $id): array => ['id' => $id, 'label' => trim($label)])->values()->all(),
+            'icons' => IconCatalog::assistantNames(),
         ];
+    }
+
+    /**
+     * Neue Tabelle (B-107): Apps, Tabellen und Menügruppen aller Apps, je mit ihrer App; ohne Systemgruppen.
+     *
+     * @return array<string, mixed>
+     */
+    private function dataModelOfAllApps(): array
+    {
+        $apps = App::query()->orderBy('sort_order')->orderBy('id')->get();
+        $groups = [];
+
+        foreach ($apps as $app) {
+            foreach (app(DataMenu::class)->groupOptions($app->id) as $id => $label) {
+                $groups[] = ['id' => (string) $id, 'label' => trim($label), 'app' => $app->id];
+            }
+        }
+
+        return [
+            'apps' => $apps->map(fn (App $app): array => ['id' => $app->id, 'name' => (string) $app->name, 'prefix' => $app->tablePrefix()])->all(),
+            'tables' => CustomTable::query()->designer()->whereNotNull('app_id')->with('fields')->orderBy('name')->get()->map(fn (CustomTable $t): array => [
+                'name' => $t->name,
+                'label' => (string) $t->label,
+                'app' => $t->app_id,
+                'fields' => $t->fields->where('is_active', true)->map(fn (CustomField $f): array => ['name' => $f->name, 'label' => (string) $f->label, 'type' => $f->type->value])->values()->all(),
+            ])->all(),
+            'menu_groups' => $groups,
+            'icons' => IconCatalog::assistantNames(),
+        ];
+    }
+
+    /**
+     * App des Vorschlags: genannte, sonst die des Formulars, sonst die einzige; null = offen.
+     *
+     * @param  array<string, mixed>  $proposal
+     */
+    private function proposedApp(array $proposal, ?int $formApp): ?int
+    {
+        $proposed = $proposal['app'] ?? null;
+
+        if (is_numeric($proposed) && App::query()->whereKey((int) $proposed)->exists()) {
+            return (int) $proposed;
+        }
+
+        return $formApp ?? App::onlyId();
     }
 
     /** @param  array<string, mixed>  $form */
     private function formForModel(array $form): array
     {
         return [
+            'app' => filled($form['app_id'] ?? null) ? (int) $form['app_id'] : null,
             'name' => $form['name'] ?? null,
             'label' => $form['label'] ?? null,
             'description' => $form['description'] ?? null,
@@ -291,9 +370,16 @@ final class TableAssistant
      * @param  array<string, mixed>  $proposal
      * @return list<string>
      */
-    private function tableProblems(array $proposal): array
+    private function tableProblems(array $proposal, ?int $formApp = null): array
     {
         $errors = [];
+        $appId = $this->proposedApp($proposal, $formApp);
+
+        if (is_numeric($proposal['app'] ?? null) && ! App::query()->whereKey((int) $proposal['app'])->exists()) {
+            $errors[] = __('tables_assistant.errors.app', ['id' => (string) $proposal['app']]);
+        } elseif ($appId === null) {
+            $errors[] = __('tables_assistant.errors.app_missing');
+        }
         $name = (string) ($proposal['name'] ?? '');
 
         $fail = function (string $message) use (&$errors): void {
@@ -305,7 +391,12 @@ final class TableAssistant
             $errors[] = __('tables_assistant.errors.name_taken', ['name' => $name, 'owner' => $owner]);
         }
 
-        if (filled($proposal['menu_group'] ?? null) && ! array_key_exists((string) $proposal['menu_group'], app(DataMenu::class)->groupOptions())) {
+        if (filled($proposal['icon'] ?? null) && IconCatalog::fromAssistant($proposal['icon']) === null) {
+            $errors[] = __('tables_assistant.errors.icon', ['icon' => (string) $proposal['icon']]);
+        }
+
+        // Nur Gruppen der App (keine Systemgruppen wie die Administration).
+        if (filled($proposal['menu_group'] ?? null) && ($appId === null || ! array_key_exists((string) $proposal['menu_group'], app(DataMenu::class)->groupOptions($appId)))) {
             $errors[] = __('tables_assistant.errors.menu_group', ['id' => (string) $proposal['menu_group']]);
         }
 
@@ -323,6 +414,13 @@ final class TableAssistant
 
         foreach ($fields as $field) {
             $errors = [...$errors, ...$this->fieldProblems(TableProposalSchema::toFormField($field), null)];
+
+            // Verknüpfungen nur innerhalb der App (B-107).
+            $target = ($field['type'] ?? null) === 'relation' ? CustomTable::query()->where('name', (string) ($field['relation_table'] ?? ''))->first() : null;
+
+            if ($target !== null && $appId !== null && $target->app_id !== $appId) {
+                $errors[] = __('tables_assistant.errors.relation_app', ['name' => (string) ($field['name'] ?? ''), 'table' => $target->name]);
+            }
         }
 
         return $errors;
@@ -332,13 +430,14 @@ final class TableAssistant
      * @param  array<string, mixed>  $proposal
      * @return array<string, mixed> Formularzustand
      */
-    private function toForm(array $proposal): array
+    private function toForm(array $proposal, ?int $formApp = null): array
     {
         return [
+            'app_id' => $this->proposedApp($proposal, $formApp),
             'label' => TableProposalSchema::cleanTranslations($proposal['label'] ?? null),
             'name' => (string) ($proposal['name'] ?? ''),
             'description' => TableProposalSchema::cleanTranslations($proposal['description'] ?? null),
-            'icon' => null,
+            'icon' => IconCatalog::fromAssistant($proposal['icon'] ?? null),
             'is_active' => true,
             'export_enabled' => false,
             'menu_group' => filled($proposal['menu_group'] ?? null) ? (string) $proposal['menu_group'] : null,
@@ -376,8 +475,14 @@ final class TableAssistant
         $adds = array_values(array_filter((array) ($proposal['add'] ?? []), 'is_array'));
         $changes = array_values(array_filter((array) ($proposal['change'] ?? []), 'is_array'));
 
-        if ($adds === [] && $changes === []) {
+        $icon = $proposal['icon'] ?? null;
+
+        if ($adds === [] && $changes === [] && blank($icon)) {
             $errors[] = __('tables_assistant.errors.no_changes');
+        }
+
+        if (filled($icon) && IconCatalog::fromAssistant($icon) === null) {
+            $errors[] = __('tables_assistant.errors.icon', ['icon' => (string) $icon]);
         }
 
         foreach ($adds as $add) {
@@ -414,6 +519,7 @@ final class TableAssistant
     private function toChanges(CustomTable $table, array $proposal): array
     {
         return [
+            'icon' => IconCatalog::fromAssistant($proposal['icon'] ?? null),
             'add' => array_map(TableProposalSchema::toFormField(...), array_values(array_filter((array) ($proposal['add'] ?? []), 'is_array'))),
             'change' => array_values(array_filter(array_map(function (array $change) use ($table): ?array {
                 $field = $table->fields->firstWhere('name', $change['name'] ?? null);
@@ -482,6 +588,10 @@ final class TableAssistant
     private function summary(CustomTable $table, array $changes): array
     {
         $lines = [];
+
+        if (filled($changes['icon'] ?? null)) {
+            $lines[] = __('tables_assistant.summary.icon', ['icon' => substr((string) $changes['icon'], strlen(IconCatalog::ASSISTANT_PREFIX))]);
+        }
 
         foreach ($changes['add'] as $add) {
             $lines[] = __('tables_assistant.summary.add', [

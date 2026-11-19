@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Roles\Schemas;
 
+use App\Apps\PluginApps;
 use App\Apps\SystemObjects;
 use App\DynamicData\DataMenu;
 use App\DynamicData\DataPermissions;
 use App\Filament\Forms\Components\DataPermissionMatrix;
 use App\Filament\Support\AppSelect;
+use App\Models\App;
 use App\Models\CustomTable;
 use App\Models\Menu;
 use App\Models\Role;
@@ -19,6 +21,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Lang;
@@ -52,7 +55,23 @@ class RoleForm
                             ->required(fn (?Role $record): bool => ! SystemObjects::isSystemRole($record?->name))
                             ->disabled(fn (?Role $record): bool => SystemObjects::isSystemRole($record?->name))
                             ->placeholder(__('apps.system'))
-                            ->helperText(__('roles.form.app_help')),
+                            ->helperText(__('roles.form.app_help'))
+                            // Rechte von Plugins der bisherigen App sind nun „ausserhalb“: aus der Liste nehmen (sie
+                            // bleiben gespeichert und erscheinen im eigenen Abschnitt).
+                            ->afterStateUpdated(function (Set $set, Get $get, mixed $state, ?Role $record): void {
+                                // Angebotene Rechte der neuen App: bisherige Auswahl plus gespeicherte Rechte der Rolle, die nun
+                                // dazugehören (z. B. eines Plugins der neuen App) – sonst gingen sie beim Speichern verloren.
+                                $stored = $record?->permissions()->pluck('permissions.id')->map(static fn (mixed $id): string => (string) $id)->all() ?? [];
+                                $set('permissions', array_values(array_intersect(
+                                    array_unique([...array_map('strval', (array) $get('permissions')), ...$stored]),
+                                    array_map('strval', array_keys(self::permissionOptions(self::appId($state)))),
+                                )));
+                                // Was nun ausserhalb liegt, ist zunächst behalten (angehakt).
+                                $set('other_permissions', array_map('strval', array_keys(self::otherPermissionOptions($record, self::appId($state)))));
+                                // Menüeinträge der neuen App: sichtbar, ausser die Rolle blendet sie bereits aus.
+                                $hidden = $record?->hiddenMenus()->pluck('menus.id')->all() ?? [];
+                                $set('visible_menus', array_values(array_map('strval', array_diff(array_keys(self::dataMenuOptions(self::appId($state))), $hidden))));
+                            }),
                     ]),
                 Section::make(__('common.permissions'))
                     ->description(__('roles.form.permissions_help'))
@@ -64,21 +83,29 @@ class RoleForm
                                 'name',
                                 // Ohne data.*: Filament entfernt beim Speichern nur Rechte dieser
                                 // Abfrage – die Datenrechte-Matrix bleibt so unberührt.
-                                modifyQueryUsing: fn (Builder $query): Builder => $query
+                                // Ohne Rechte von Plugins anderer Apps: diese bleiben ebenso unberührt (eigener Abschnitt).
+                                modifyQueryUsing: fn (Builder $query, Get $get): Builder => $query
                                     ->where('guard_name', 'web')
                                     ->where('name', 'not like', DataPermissions::PREFIX.'%')
+                                    ->whereNotIn('name', self::otherAppPluginPermissions(self::appId($get('app_id'))))
                                     ->orderBy('name'),
                             )
                             // Nach der angezeigten Bezeichnung sortiert (nicht nach dem technischen Namen):
                             // die Rechte eines Bereichs stehen beieinander, spaltenweise von oben nach unten.
-                            ->options(fn (): array => self::permissionOptions())
+                            ->options(fn (Get $get): array => self::permissionOptions(self::appId($get('app_id'))))
                             ->columns(4)
                             ->bulkToggleable()
                             ->searchable(),
                     ]),
                 Section::make(__('roles.form.data_permissions'))
                     ->description(__('roles.form.data_permissions_help'))
-                    ->schema([DataPermissionMatrix::make('data_permissions')->hiddenLabel()->app(fn (Get $get): mixed => $get('app_id'))])
+                    ->schema([
+                        Callout::make(__('roles.form.choose_app_first'))
+                            ->warning()
+                            ->visible(fn (Get $get): bool => blank($get('app_id'))),
+                        DataPermissionMatrix::make('data_permissions')->hiddenLabel()->app(fn (Get $get): mixed => $get('app_id'))
+                            ->visible(fn (Get $get): bool => filled($get('app_id'))),
+                    ])
                     // Systemrollen enthalten nur app-übergreifende Rechte (B-107).
                     ->visible(fn (?Role $record): bool => CustomTable::query()->exists() && ! SystemObjects::isSystemRole($record?->name)),
                 Callout::make(__('roles.form.system_role_hint'))
@@ -109,6 +136,31 @@ class RoleForm
                             }),
                     ])
                     ->visible(fn (Get $get, ?Role $record): bool => ! SystemObjects::isSystemRole($record?->name) && self::dataMenuOptions(self::appId($get('app_id'))) !== []),
+                // Vorhandene Rechte ausserhalb der App der Rolle: Tabellen anderer Apps als Matrix (nur vorhandene Rechte,
+                // nur zum Entfernen), Plugins anderer Apps und gelöschte Tabellen als Liste – damit sich ältere Rollen
+                // bereinigen lassen. Steht zuletzt, damit es nach den übrigen Rechten gespeichert wird.
+                Section::make(__('roles.form.other_permissions'))
+                    ->description(__('roles.form.other_permissions_help'))
+                    ->schema([
+                        DataPermissionMatrix::make('other_data_permissions')->hiddenLabel()->outside()->app(fn (Get $get): mixed => $get('app_id'))
+                            ->visible(fn (DataPermissionMatrix $component): bool => $component->tables()->isNotEmpty()),
+                        CheckboxList::make('other_permissions')
+                            ->hiddenLabel()
+                            ->options(fn (Get $get, ?Role $record): array => self::otherPermissionOptions($record, self::appId($get('app_id'))))
+                            ->columns(2)
+                            ->bulkToggleable()
+                            ->dehydrated(false)
+                            ->afterStateHydrated(fn (CheckboxList $component, Get $get, ?Role $record): mixed => $component->state(array_map('strval', array_keys(self::otherPermissionOptions($record, self::appId($get('app_id')))))))
+                            ->saveRelationshipsUsing(function (CheckboxList $component, Get $get, Role $record): void {
+                                $offered = array_keys(self::otherPermissionOptions($record, self::appId($get('app_id'))));
+                                $removed = array_diff($offered, array_map('intval', (array) $component->getState()));
+
+                                if ($removed !== []) {
+                                    $record->permissions()->detach($removed);
+                                }
+                            }),
+                    ])
+                    ->visible(fn (Get $get, ?Role $record): bool => self::hasOutside($record, self::appId($get('app_id')))),
             ]);
     }
 
@@ -119,7 +171,8 @@ class RoleForm
      */
     private static function dataMenuOptions(?int $appId): array
     {
-        return once(static fn (): array => Menu::query()
+        // Kein once(): Es unterscheidet nicht zuverlässig nach der App, die im Formular wechseln kann.
+        return Menu::query()
             ->where('route', DataMenu::ROUTE)
             ->where('app_id', $appId ?? 0)
             ->with('parent')
@@ -132,7 +185,7 @@ class RoleForm
                 (int) $menu->id => ($menu->parent ? $menu->parent->label.' › ' : '').$menu->label
                     .($menu->is_active ? '' : ' ('.__('roles.form.inactive_entry').')'),
             ])
-            ->all());
+            ->all();
     }
 
     private static function appId(mixed $value): ?int
@@ -146,11 +199,12 @@ class RoleForm
      *
      * @return array<int, string>
      */
-    public static function permissionOptions(): array
+    public static function permissionOptions(?int $appId = null): array
     {
         $options = Permission::query()
             ->where('guard_name', 'web')
             ->where('name', 'not like', DataPermissions::PREFIX.'%')
+            ->whereNotIn('name', self::otherAppPluginPermissions($appId))
             ->pluck('name', 'id')
             ->map(fn (string $name): string => self::label($name))
             ->all();
@@ -159,6 +213,83 @@ class RoleForm
         uasort($options, fn (string $a, string $b): int => (int) $collator->compare($a, $b));
 
         return $options;
+    }
+
+    /**
+     * Rechte von Plugins, die zu einer anderen App gehören (PluginApps); Plugins ohne App gelten überall.
+     *
+     * @return list<string>
+     */
+    public static function otherAppPluginPermissions(?int $appId): array
+    {
+        $apps = app(PluginApps::class);
+
+        return array_merge([], ...array_values(array_map(
+            static fn ($plugin): array => $apps->belongsTo($plugin, $appId) ? [] : $plugin->permissionNames(),
+            app(PluginRegistry::class)->all(),
+        )));
+    }
+
+    /** Hat die Rolle Rechte ausserhalb der App (Tabellen anderer Apps, Plugins anderer Apps, gelöschte Tabellen)? */
+    private static function hasOutside(?Role $role, ?int $appId): bool
+    {
+        if ($role === null || ! $role->exists) {
+            return false;
+        }
+
+        $tables = $role->permissions()->where('name', 'like', DataPermissions::PREFIX.'%')->pluck('name')
+            ->map(static fn (string $name): string => Str::beforeLast(Str::after($name, DataPermissions::PREFIX), '.'))->unique()->all();
+        $foreignTables = $tables !== [] && CustomTable::query()->whereIn('name', $tables)
+            ->when($appId !== null, static fn ($q) => $q->where(static fn ($q) => $q->whereNull('app_id')->orWhere('app_id', '!=', $appId)))
+            ->exists();
+
+        return $foreignTables || self::otherPermissionOptions($role, $appId) !== [];
+    }
+
+    /**
+     * Rechte der Rolle ausserhalb ihrer App, die nicht in der Matrix stehen, als id => Bezeichnung: Rechte von Plugins
+     * anderer Apps und Datenrechte gelöschter Tabellen.
+     *
+     * @return array<int, string>
+     */
+    public static function otherPermissionOptions(?Role $role, ?int $appId): array
+    {
+        if ($role === null || ! $role->exists) {
+            return [];
+        }
+
+        $existingTables = CustomTable::query()->pluck('name')->all();
+        $pluginPermissions = self::otherAppPluginPermissions($appId);
+        $options = [];
+
+        foreach ($role->permissions()->get(['permissions.id', 'permissions.name']) as $permission) {
+            $name = (string) $permission->name;
+            $foreign = str_starts_with($name, DataPermissions::PREFIX)
+                ? ! in_array(Str::beforeLast(Str::after($name, DataPermissions::PREFIX), '.'), $existingTables, true)
+                : in_array($name, $pluginPermissions, true);
+
+            if ($foreign) {
+                $options[(int) $permission->id] = self::label($name).self::appSuffix($name);
+            }
+        }
+
+        asort($options, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return $options;
+    }
+
+    /** „ (App Lager)“ bzw. „ (Tabelle gelöscht)“ hinter einem Recht ausserhalb der App. */
+    private static function appSuffix(string $permission): string
+    {
+        if (($plugin = app(PluginRegistry::class)->forPermission($permission)) !== null) {
+            $app = App::query()->find(app(PluginApps::class)->appIdFor($plugin));
+
+            return $app === null ? '' : ' ('.$app->name.')';
+        }
+
+        $table = CustomTable::query()->where('name', Str::beforeLast(Str::after($permission, DataPermissions::PREFIX), '.'))->first();
+
+        return $table === null ? ' ('.__('roles.form.table_deleted').')' : ' ('.($table->app?->name ?? __('apps.system')).')';
     }
 
     public static function label(string $permission): string

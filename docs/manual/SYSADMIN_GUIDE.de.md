@@ -212,7 +212,7 @@ SSH-Zugang, z. B. auf Webspaces. Gelesen werden höchstens die letzten 2 MB; Dat
 *Sicherungen aufräumen* (02:45, 14 Tage, mindestens 3; Sicherung und ZIP zählen als eine) und *Dateien aufräumen*
 (03:00) laufen ab Installation; damit ersetzt der Scheduler einen eigenen Cron-Eintrag für `db:backup`.
 Wer noch einen solchen Eintrag hat, entfernt ihn oder schaltet die Aufgabe aus, sonst wird doppelt gesichert.
-*Demo-Daten zurücksetzen* ist zerstörerisch: ausgeliefert ausgeschaltet und auch eingeschaltet nur wirksam mit
+*App-Daten zurücksetzen* ist zerstörerisch: ausgeliefert ausgeschaltet und auch eingeschaltet nur wirksam mit
 `DEMO_RESET=true` in `.env` – setzen Sie das nur auf öffentlichen Demo- oder Schulungssystemen.
 
 ## 5. KI-Funktionen
@@ -266,7 +266,7 @@ Alle Befehle im Hauptverzeichnis von SAFT ausführen, auf einem Produktionsserve
 | `php artisan table-connector:connect <verbindung>` | Massenverknüpfung auf der Konsole (ohne Zeitlimit des Webservers) | `--all` bzw. `--table=` (mehrfach), `--app=` (ID der App), `--schema=`, `--prefix=`, `--menu-group=` (ID oder `none`), `--role=` (mehrfach), `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--no-details` |
 | `php artisan tasks:list` | Geplante Aufgaben mit Zeitplan, nächstem und letztem Lauf; letzter Aufruf des Schedulers | – |
 | `php artisan tasks:run <ID>` | Eine geplante Aufgabe sofort ausführen (der Zeitplan bleibt) | – |
-| `php artisan tasks:run-due` | Fällige geplante Aufgaben ausführen; ruft der Scheduler jede Minute auf | – |
+| `php artisan tasks:run-due` | Fällige geplante Aufgaben und vom Super-Admin vorgemerkte App-Entfernungen ausführen (nach der Wartezeit von 10 Minuten); ruft der Scheduler jede Minute auf. Ohne Scheduler laufen Entfernungen über „Jetzt entfernen“ auf der Seite Apps | – |
 | `php artisan saft:plugins` | Listet die installierten Plugins mit Version und Kompatibilität und legt ihre Rechte an (läuft auch nach jedem `migrate`) | – |
 | `php artisan saft:plugins --check [id]` | Prüft Plugins vor der Auslieferung (Kennung, API, Rechte, Menü, nur Plugin-API); Exit-Code 1 bei Fehlern | – |
 | `php artisan saft:plugin-context` | Entwickler-Kontext für Plugins (AGENTS.md, API-Referenz, Schema; ohne Daten) | `--output=`, `--tables=` (mehrfach), `--without-external`, `--zip` |

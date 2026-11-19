@@ -120,7 +120,13 @@ permissions (signing out also ends the view). The database stays unchanged; star
 activity log. Note: what the role is allowed to do is really saved during the view – with you as the causer.
 
 **App and copy** (B-107): each role belongs to an [app](#16-apps-business-applications); the form shows data
-permissions and menu entries only for tables of that app. The system roles *super-admin* and *benutzer* belong to no
+permissions, menu entries and plugin permissions only for that app (the general SAFT permissions always). Without a
+chosen app, a hint to choose the app first appears instead of the data permissions. If the role still has permissions
+**outside** its app – on tables or plugins of other apps, e.g. after changing the app or from before apps existed, or on
+deleted tables – they are listed at the bottom in the section **“Permissions outside this app”**: tables as a matrix
+grouped by app, with only the existing permissions (ticked), plugin permissions and deleted tables as a list. There they
+can only be removed (untick, save), not added. If you change the app of a role, all permissions are kept until you
+untick them there. The system roles *super-admin* and *benutzer* belong to no
 app and contain only app-wide permissions (e.g. dashboard, help); grant data permissions through the roles of the apps.
 **Copy** (in the list and when editing) creates a new role with a name and target app – with the same permissions (data
 permissions only for tables of the target app) and hidden menu entries, without members.
@@ -838,7 +844,7 @@ foreign key). For large connected tables the source field should have an index i
 | Back up database (system) | include files from file fields (default on) | backup like `php artisan db:backup` to `storage/backups`, the files from file fields as a ZIP alongside (only if they are stored on the server); if it fails, the run names the reason and the bell notifies the super admins; default daily 02:30 |
 | Clean up backups (system) | keep backups (days, default 14); always keep at least (default 3) | deletes older backups in `storage/backups` (a backup and its ZIP count as one), the newest always stay; default daily 02:45 |
 | Clean up files (system) | – | deletes orphaned files from file fields: uploads from cancelled forms, files of records that no longer exist and files without entry – each only after 24 hours; the run only names missing files; default daily 03:00 |
-| Reset demo data (system) | demos (Shop, Warehouse, Research); back up first (default on) | deletes the **data** of the chosen demos and reloads the delivered state – tables, menus, reports and permissions stay; attached files of the demo tables are deleted (backed up first). For public demos; delivered switched off and only effective if the server allows it with `DEMO_RESET=true` (otherwise "skipped"); default daily 04:00 |
+| Reset app data (system) | apps (the installed demo apps, with the name of their app); back up first (default on) | deletes the **data** of the chosen apps and reloads the delivered state – tables, menus, reports and permissions stay; attached files of the demo tables are deleted (backed up first). For public demos; delivered switched off and only effective if the server allows it with `DEMO_RESET=true` (otherwise "skipped"); default daily 04:00 |
 
 Plugins can bring further kinds; they appear under **New** in "Type". The example plugin *Stock board* brings
 **Warehouse: stocktaking reminder** (reports stock not counted for a configurable number of days in the run log) and
@@ -896,7 +902,7 @@ in the editor or form, is checked there and only takes effect with **Save** or *
 | Assistant | Where | Permission | Can |
 |---|---|---|---|
 | **Reports** | Report editor, field "Describe the report" | Reports: use assistant | Choose base table, rows, columns, values, filters, sorting, number of rows and display; build calculated values and columns as well as figures from values with formulas; ask back; change a proposal on request |
-| **Tables** | Table designer: "Describe the table" when creating, **Adjust with AI** for existing tables | Table designer: use assistant | New table with fields, types (including file fields with kinds, size and number), choices, relations to existing tables and labels in all four languages; for existing tables new fields, labels, required/unique/searchable/sortable, further choices and display fields of relations (preview in words, then **Apply**). Changing types, renaming and deleting stay manual |
+| **Tables** | Table designer: "Describe the table" when creating, **Adjust with AI** for existing tables | Table designer: use assistant | New table with app (named in the text, otherwise the chosen one; if both are open, it asks), menu group of that app, icon, fields, types (including file fields with kinds, size and number), choices, relations to existing tables and labels in all four languages; for existing tables new fields, a different icon on request, labels, required/unique/searchable/sortable, further choices and display fields of relations (preview in words, then **Apply**). Changing types, renaming, deleting and rules stay manual |
 | **Help** | **?** button in the header; **Documentation** › tab **AI assistant** | Help: use assistant | Answers questions about using SAFT from the manuals the person may see, with references to the sections; proposes nothing and changes nothing |
 
 ### Setup
@@ -929,7 +935,8 @@ in the editor or form, is checked there and only takes effect with **Save** or *
 - **Transmitted** are the text entered, the last rounds of the conversation (for follow-ups like "only 2026") and the
   **data model**: for the report assistant the tables and fields the person may evaluate (labels, technical names,
   types, relations; values of selection fields only with the setting above), for the table assistant the structure of
-  the table designer's tables.
+  the table designer's tables (when creating, of all apps, each with its app, plus the apps, their menu groups and the
+  names of the available icons; when adjusting, only the app of the table).
 - **Help assistant:** the question, the last six messages of the conversation, title and address of the page the
   person is on, and the manuals they see in the online help (user guide, frequently asked questions, with an
   administration permission the administrator guide), their **own roles and permissions** (so the assistant can say
@@ -1157,7 +1164,8 @@ tables, menus, reports, links, roles and tasks:
 | Table prefix | put in front of the technical name of new tables, e.g. `hr` → `hr_absences`. Suggested from the name when an app is created; a later change only applies to new tables |
 | Icon, sort order | display in lists |
 
-Only an empty app can be deleted.
+The **Status** column shows *Active*, *Inactive*, *Removal from …* or *Removal failed* (the message as tooltip).
+**Delete** exists only for empty apps; apps with content are deactivated and removed (below).
 
 **Where the app is chosen – and where it follows:**
 
@@ -1172,8 +1180,10 @@ Only an empty app can be deleted.
 | Scheduled task | for a table: its app; otherwise chosen; system tasks without an app |
 
 **Boundary between apps:** relation fields, table links for reports and therefore also “Copy from” and formulas over
-child tables are only possible within one app. The table designer only offers tables of the same app; the AI table
-assistant only sees the data model of the chosen app.
+child tables are only possible within one app. The table designer only offers tables of the same app. When creating,
+the AI table assistant takes the app from the text (otherwise the chosen one) and only uses menu groups and tables of
+that app; when adjusting, it only sees the app of the table. The lists of the table designer and the table connector
+show the app as a column with a filter.
 
 **Access and current app:** a person has access to an app if they have a role of that app or – through any role or
 directly – data permissions on one of its tables or permissions of a plugin of that app; the super admin has all apps.
@@ -1209,6 +1219,29 @@ role with permissions on the tables you choose: **new role in the target app** (
 prefix, e.g. `vertrieb-lager`), transfer to an existing role of the target app – both with the members, so nobody loses
 access – or remove the permissions. Moving is recorded in the activity log.
 
+**Deactivate and activate:** in the action menu (three dots) of an app; permission *Apps: manage*. A deactivated app
+disappears for everyone except the super admin: no longer in the switcher, no menus, reports or cards, no access to its
+tables (not via links, reports or export either); its scheduled tasks are skipped (with a note). Data, roles and
+permissions stay unchanged – activating restores everything. The super admin sees it in the switcher marked
+“(inactive)”, e.g. to build a new app before releasing it.
+
+**Remove (with content):** only the **super admin** – there is no permission for it, so it cannot be granted to any
+role – and only for a **deactivated** app. **“Remove …”** in the action menu asks twice:
+
+1. **Overview:** what is deleted permanently (tables with number of records and their files, table connector
+   connections – the external table stays –, menu entries, reports, table links, tasks, roles with number of people,
+   manual), who will no longer have any app, and what prevents the removal (e.g. plugins that need tables of the app –
+   they must be uninstalled first). Tick “checked”.
+2. **Confirm:** type the name of the app.
+
+The removal is then only **scheduled**: it runs no earlier than **10 minutes** later – automatically with a scheduler,
+without cron (e.g. web hosting) via **“Remove now”**, which appears once the time has passed. Until then **“Cancel
+removal”** withdraws it; the app can only be activated after cancelling. When running, SAFT first backs up database and
+files (like `db:backup`, name of the backup in the message), then deletes tasks, reports, links, menus, roles, tables
+with data and files, the manual and the app; the current app and dashboard layout of people are cleaned up. If a step
+fails, the scheduled removal stays with the message (status *Removal failed*); a new attempt continues. Scheduling,
+cancelling and removing are recorded in the change log.
+
 **After the update:** existing installations get an app “Existing data” with all existing tables, menus, reports,
 roles and tasks; system menus, system roles and system tasks stay without an app. New installations start without an
 app; the demo data create one app each (Shop, Warehouse, Research). “Existing data” can be split with “Move to another app” (above).
@@ -1227,6 +1260,6 @@ app; the demo data create one app each (Shop, Warehouse, Research). “Existing 
 | System log | view (log file of the server, read only) |
 | Plugins | view; manage (create menu entries, clean up); the plugins' own permissions are listed under their name |
 | Configuration | view (page and menu entry); export; import |
-| Apps | view; manage (create, edit, delete empty ones) |
+| Apps | view; manage (create, edit, activate and deactivate, delete empty ones). Removing apps with content: super admin only |
 | Help | use assistant (help assistant) |
 | Data per table (data permissions matrix) | view, create, edit, delete, export, import; for linked external tables write permissions only if enabled |

@@ -448,7 +448,7 @@ This also runs the daily backup and the clean-up of backups. For coarser interva
 [System administration, chapter 4](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron).
 
 **Reset a public demo every night:** `DEMO_RESET=true` in `.env`, then `php artisan optimize`, and switch on the task
-**Reset demo data** under *Administration › Operations › Scheduled tasks*. At 04:00 it reloads the data of the chosen demos;
+**Reset app data** under *Administration › Operations › Scheduled tasks*. At 04:00 it reloads the data of the chosen demo apps;
 visitors' changes to the demo data are gone afterwards, everything else stays.
 
 **Updates** (procedure as in [section 9](#9-installing-updates), with the command-line PHP):

@@ -10,8 +10,10 @@ use App\DynamicData\Schema\FieldType;
 use App\Filament\Resources\CustomTables\Pages\CreateCustomTable;
 use App\Filament\Resources\CustomTables\Pages\EditCustomTable;
 use App\Filament\Resources\CustomTables\Schemas\CustomTableForm;
+use App\Models\App;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\Menu;
 use App\Models\User;
 use App\Reports\Assistant\AssistantClient;
 use App\Settings\AppSettings;
@@ -254,5 +256,79 @@ class TableAssistantTest extends DynamicDataTestCase
         $this->assertFalse($fields['foto']->is_unique || $fields['foto']->is_sortable);
         $this->assertSame(['kinds' => ['pdf'], 'max_mb' => 10, 'max_files' => 1], $fields['vertrag']->options);
         $this->assertStringContainsString('file_kinds = images', $this->fake->sentText());
+    }
+
+    public function test_the_app_comes_from_the_request_and_is_asked_for_when_open(): void
+    {
+        // Zwei Apps: „Verwaltung“ (mit „vereine“) und „Lagerverwaltung“ mit Präfix und Gruppe „Sales“; dazu eine Systemgruppe.
+        $first = self::ensureTestApp();
+        $lager = App::query()->create(['name' => ['de' => 'Lagerverwaltung'], 'prefix' => 'lager', 'sort_order' => 2]);
+        $sales = Menu::query()->create(['label' => ['de' => 'Sales'], 'app_id' => $lager->id, 'sort_order' => 1]);
+        $system = Menu::query()->create(['label' => ['de' => 'Administration'], 'sort_order' => 99]);
+        $customers = fn (array $overrides = []): array => $this->members([
+            'name' => 'kunden', 'label' => $this->t('Kunden', 'Customers'), 'fields' => [$this->field('firma', 'string')], ...$overrides,
+        ]);
+
+        // Im Text genannt: App und Gruppe gesetzt, Name mit Präfix; das Modell kennt Apps, Gruppen und Tabellen je App.
+        $this->fake->push($customers(['app' => $lager->id, 'menu_group' => (string) $sales->id]));
+        Livewire::test(CreateCustomTable::class)
+            ->fillForm(['app_id' => null])
+            ->set('assistantPrompt', 'Erstelle in der Gruppe Sales der App Lagerverwaltung eine Tabelle Kunden')
+            ->call('askTableAssistant')
+            ->assertSet('assistantReplyKind', 'proposal')
+            ->assertFormSet(['app_id' => $lager->id, 'menu_group' => (string) $sales->id, 'name' => 'lager_kunden']);
+        $sent = $this->fake->sentText();
+        // Das Datenmodell steckt als Text in der Anfrage: Anführungszeichen maskiert.
+        $this->assertStringContainsString('\\"apps\\":', $sent);
+        $this->assertStringContainsString('Lagerverwaltung', $sent);
+        $this->assertStringNotContainsString('\\"label\\":\\"Administration\\"', $sent, 'Keine Systemgruppen.');
+        $this->assertStringContainsString('\\"label\\":\\"Sales\\"', $sent);
+
+        // Keine App genannt und keine gewählt: Korrektur, dann Rückfrage.
+        $this->fake->push($customers(['app' => null]))
+            ->push(['kind' => 'question', 'question' => 'In welcher App: Verwaltung oder Lagerverwaltung?', 'app' => null, 'name' => '', 'label' => $this->t(''), 'description' => null, 'menu_group' => null, 'fields' => []]);
+        Livewire::test(CreateCustomTable::class)
+            ->fillForm(['app_id' => null])
+            ->set('assistantPrompt', 'Eine Tabelle Kunden')
+            ->call('askTableAssistant')
+            ->assertSet('assistantReplyKind', 'question');
+        $this->assertStringContainsString(__('tables_assistant.errors.app_missing'), end($this->fake->requests[array_key_last($this->fake->requests)]['messages'])['content']);
+
+        // Systemgruppe und Verknüpfung in eine andere App werden zurückgewiesen.
+        $bad = $customers(['app' => $lager->id, 'menu_group' => (string) $system->id, 'fields' => [
+            $this->field('verein_id', 'relation', ['relation_table' => 'vereine', 'relation_display' => ['name']]),
+        ]]);
+        $this->fake->push($bad)->push($bad);
+        Livewire::test(CreateCustomTable::class)
+            ->set('assistantPrompt', 'Kunden im Lager mit Verein')
+            ->call('askTableAssistant')
+            ->assertSet('assistantReplyKind', 'error');
+        $correction = end($this->fake->requests[array_key_last($this->fake->requests)]['messages'])['content'];
+        $this->assertStringContainsString(__('tables_assistant.errors.menu_group', ['id' => (string) $system->id]), $correction);
+        $this->assertStringContainsString('verein_id', $correction);
+        $this->assertSame($first->id, CustomTable::query()->where('name', 'vereine')->value('app_id'));
+    }
+
+    public function test_icon_is_proposed_from_the_installed_icons(): void
+    {
+        // Neue Tabelle: unbekanntes Symbol wird korrigiert, bekanntes als heroicon-o-… übernommen.
+        $this->fake->push($this->members(['icon' => 'vereinsfahne']))->push($this->members(['icon' => 'users']));
+        Livewire::test(CreateCustomTable::class)
+            ->set('assistantPrompt', 'Mitglieder eines Vereins')
+            ->call('askTableAssistant')
+            ->assertSet('assistantReplyKind', 'proposal')
+            ->assertFormSet(['icon' => 'heroicon-o-users']);
+        $this->assertStringContainsString(__('tables_assistant.errors.icon', ['icon' => 'vereinsfahne']), end($this->fake->requests[1]['messages'])['content']);
+        $this->assertStringContainsString('truck', $this->fake->sentText(), 'Die Liste der Symbole ist im Kontext.');
+
+        // Bestehende Tabelle: nur das Symbol ändern.
+        $table = CustomTable::query()->where('name', 'vereine')->sole();
+        $this->fake->push(['kind' => 'changes', 'question' => null, 'icon' => 'flag', 'add' => [], 'change' => []]);
+        Livewire::test(EditCustomTable::class, ['record' => $table->id])
+            ->callAction('aiAdjust', ['prompt' => 'Bitte ein Fahnen-Symbol'])
+            ->assertActionMounted('aiApply')
+            ->assertSet('aiSummary', [__('tables_assistant.summary.icon', ['icon' => 'flag'])])
+            ->callMountedAction();
+        $this->assertSame('heroicon-o-flag', $table->fresh()->icon);
     }
 }

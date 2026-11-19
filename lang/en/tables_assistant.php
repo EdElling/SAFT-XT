@@ -19,6 +19,7 @@ return [
     'applied_all' => 'All changes applied.',
     'applied_some' => 'Not everything was applied:',
     'summary' => [
+        'icon' => 'Icon “:icon”',
         'add' => 'New: :field (:type)',
         'change' => 'Change: :field – :what',
         'on' => ':what on',
@@ -34,13 +35,18 @@ return [
         'sortable' => 'sortable',
     ],
     'applied' => [
+        'icon' => 'Icon changed.',
         'added' => 'Field :field added.',
         'changed' => 'Field :field changed.',
     ],
     'errors' => [
+        'icon' => 'The icon “:icon” does not exist; use only names from the list “icons”.',
         'invalid' => 'No valid suggestion: :errors. Please describe it more precisely or complete it by hand.',
         'name_taken' => 'The name ":name" is already in use (:owner).',
-        'menu_group' => 'Menu group :id does not exist.',
+        'menu_group' => 'Menu group :id does not exist in this app.',
+        'app' => 'App :id does not exist.',
+        'app_missing' => 'No app given: ask which app the table belongs to.',
+        'relation_app' => 'Field :name: table :table belongs to another app; links are only possible within one app.',
         'no_fields' => 'The table needs at least one field.',
         'duplicate_field' => 'Field ":name" appears twice.',
         'field' => 'Field ":name": :error',
