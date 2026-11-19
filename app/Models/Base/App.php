@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property array|null $description
  * @property string|null $icon
  * @property string|null $prefix
+ * @property string|null $version
  * @property int $sort_order
  * @property bool $is_active
  * @property Carbon|null $removal_due_at
@@ -43,6 +44,7 @@ class App extends Model
         'description',
         'icon',
         'prefix',
+        'version',
         'sort_order',
         'is_active',
         'removal_due_at',

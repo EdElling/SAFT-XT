@@ -1166,10 +1166,12 @@ tables, menus, reports, links, roles and tasks:
 |---|---|
 | Name, description | in all languages |
 | Table prefix | put in front of the technical name of new tables, e.g. `hr` → `hr_absences`. Suggested from the name when an app is created; a later change only applies to new tables |
+| Version | free text, e.g. “1.2”; included in the export and the file name |
 | Icon, sort order | display in lists |
 
 The **Status** column shows *Active*, *Inactive*, *Removal from …* or *Removal failed* (the message as tooltip).
-**Delete** exists only for empty apps; apps with content are deactivated and removed (below).
+The action menu (three dots) contains **Data model**, **Export …**, deactivate/activate, remove and – only for empty
+apps – **Delete**; apps with content are deactivated and removed (below).
 
 **Where the app is chosen – and where it follows:**
 
@@ -1223,6 +1225,17 @@ role with permissions on the tables you choose: **new role in the target app** (
 prefix, e.g. `vertrieb-lager`), transfer to an existing role of the target app – both with the members, so nobody loses
 access – or remove the permissions. Moving is recorded in the activity log.
 
+**Data model:** shows the diagram of all tables of the app with their relations (like the “Data model” page of a menu
+group, with “Show fields”); only tables you may read appear.
+
+**Export:** downloads the app as an **app definition** (file `<prefix>-<version>.saft-app.json`, format `saft-app/1`;
+permission *Apps: export*). Always included are the tables with fields, rules and details, the table links and the
+menus of the app; optional are reports (shared and own), roles with permissions, scheduled tasks and the manual. Never
+included are records, credentials of database connections (connected tables only as a reference), system menus,
+system roles and system tasks. Every object carries its stable key so that an installed app can be updated later.
+SAFT checks the file for consistency before downloading; the export is recorded in the change log. Installing from such
+a file follows with the next step (until then packages via “Transfer configuration”).
+
 **Deactivate and activate:** in the action menu (three dots) of an app; permission *Apps: manage*. A deactivated app
 disappears for everyone except the super admin: no longer in the switcher, no menus, reports or cards, no access to its
 tables (not via links, reports or export either); its scheduled tasks are skipped (with a note). Data, roles and
@@ -1264,6 +1277,6 @@ app; the demo data create one app each (Shop, Warehouse, Research). “Existing 
 | System log | view (log file of the server, read only) |
 | Plugins | view; manage (create menu entries, clean up); the plugins' own permissions are listed under their name |
 | Configuration | view (page and menu entry); export; import |
-| Apps | view; manage (create, edit, activate and deactivate, delete empty ones). Removing apps with content: super admin only |
+| Apps | view; manage (create, edit, activate and deactivate, delete empty ones); export. Removing apps with content: super admin only |
 | Help | use assistant (help assistant) |
 | Data per table (data permissions matrix) | view, create, edit, delete, export, import; for linked external tables write permissions only if enabled |

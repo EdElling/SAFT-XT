@@ -26,7 +26,17 @@ final class DataModelGraphBuilder
 {
     public function build(Menu $entry, User $user): DataModelGraph
     {
-        $tables = $this->readable($this->tableNamesBelow($entry->parent_id, $user), $user);
+        return $this->buildForTables($this->tableNamesBelow($entry->parent_id, $user), $user);
+    }
+
+    /**
+     * Datenmodell bestimmter Tabellen, z. B. aller Tabellen einer App (B-107); gleiche Regeln wie build().
+     *
+     * @param  list<string>  $names
+     */
+    public function buildForTables(array $names, User $user): DataModelGraph
+    {
+        $tables = $this->readable($names, $user);
         $outside = [];
         $hidden = [];
         $edges = [];

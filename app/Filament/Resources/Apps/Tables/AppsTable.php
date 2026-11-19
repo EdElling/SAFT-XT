@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Apps\Tables;
 
 use App\Filament\Resources\Apps\Actions\AppLifecycleActions;
 use App\Filament\Resources\Apps\Actions\AppManualAction;
+use App\Filament\Resources\Apps\Actions\ExportAppAction;
 use App\Filament\Support\MoveToAppAction;
 use App\Models\App;
 use Filament\Actions\ActionGroup;
@@ -61,11 +62,13 @@ class AppsTable
                 EditAction::make(),
                 MoveToAppAction::forApp(),
                 AppManualAction::make(),
-                // Leere Apps direkt löschen; mit Inhalt deaktivieren und „Entfernen …“ (nur Super-Admin).
-                DeleteAction::make()
-                    ->disabled(fn (App $record): bool => ! $record->isEmpty())
-                    ->tooltip(fn (App $record): ?string => $record->isEmpty() ? null : __('apps.delete_only_empty')),
-                ActionGroup::make(AppLifecycleActions::make()),
+                ActionGroup::make([
+                    ExportAppAction::dataModel(),
+                    ExportAppAction::make(),
+                    ...AppLifecycleActions::make(),
+                    // Leere Apps direkt löschen; mit Inhalt deaktivieren und „Entfernen …“ (nur Super-Admin).
+                    DeleteAction::make()->visible(fn (App $record): bool => $record->isEmpty()),
+                ]),
             ])
             ->filters([
                 TernaryFilter::make('is_active')->label(__('common.active')),

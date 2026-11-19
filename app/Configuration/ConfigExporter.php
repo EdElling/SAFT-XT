@@ -91,7 +91,7 @@ final class ConfigExporter
     }
 
     /** @return array<string, mixed> */
-    private function link(ReportLink $link): array
+    public function link(ReportLink $link): array
     {
         return [
             'label' => $link->getTranslations('label'),
@@ -303,10 +303,10 @@ final class ConfigExporter
      * Plugins, ohne die Teile des Pakets nicht funktionieren: Rechte und Menürechte eines Plugins, Menüeinträge auf
      * Seiten eines Plugins, Prüfregeln und Formelfunktionen in Feldern.
      *
-     * @param  array<string, mixed>  $package
+     * @param  array<string, mixed>  $package  braucht roles, menus und tables (auch App-Definition, B-107)
      * @return array<string, string> Kennung => installierte Version
      */
-    private function requiredPlugins(array $package): array
+    public function requiredPlugins(array $package): array
     {
         $ids = [];
         $permissions = [...array_merge([], ...array_column($package['roles'], 'permissions')), ...array_filter(array_column($package['menus'], 'permission_name'))];

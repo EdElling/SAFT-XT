@@ -12,8 +12,8 @@ use App\Models\CustomTable;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\DynamicSchemaService;
-use Facebook\WebDriver\WebDriverBy;
 use Laravel\Dusk\Browser;
+use Spatie\Activitylog\Models\Activity;
 use Tests\DuskTestCase;
 
 /** Apps (Fachanwendungen, Bereich FAP, B-107). */
@@ -57,12 +57,15 @@ class AppsTest extends DuskTestCase
             $this->clickVisibleButton($browser, 'Erstellen');
             $browser->waitUsing(15, 100, static fn (): bool => App::query()->where('prefix', 'fahrzeuge')->exists());
 
-            // Liste: Personal hat eine Tabelle und lässt sich nicht löschen, die neue App schon.
+            // Aktionsmenü: Personal hat eine Tabelle, „Löschen“ fehlt (dafür „Entfernen …“); die leere App lässt sich löschen.
             $browser->visit('/admin/apps')->waitForText('Fahrzeuge', 15);
-            $row = "//tr[contains(@class, 'fi-ta-row')][contains(., '%s')]//button[contains(., 'Löschen')]";
-            $locked = $browser->driver->findElement(WebDriverBy::xpath(sprintf($row, 'Personal')));
-            $this->assertTrue($locked->getAttribute('disabled') !== null || str_contains((string) $locked->getAttribute('class'), 'fi-disabled'), 'Löschen gesperrt.');
-            $browser->clickAtXPath(sprintf($row, 'Fahrzeuge'))->waitFor('.fi-modal-window', 15);
+            $this->openRowActions($browser, 'Personal');
+            $this->assertSame([], array_filter($browser->elements('.fi-dropdown-panel button'), static fn ($b): bool => $b->isDisplayed() && trim($b->getText()) === 'Löschen'));
+            // Neu laden schliesst das offene Menü (es läge sonst über dem nächsten Knopf).
+            $browser->visit('/admin/apps')->waitForText('Fahrzeuge', 15);
+            $this->openRowActions($browser, 'Fahrzeuge');
+            $this->clickVisibleButton($browser, 'Löschen');
+            $browser->waitFor('.fi-modal-window', 15);
             $this->clickVisibleButton($browser, 'Löschen');
             $browser->waitUntilMissing('tr.fi-ta-row:nth-child(3)', 15);
             $this->assertFalse(App::query()->where('prefix', 'fahrzeuge')->exists());
@@ -315,5 +318,38 @@ class AppsTest extends DuskTestCase
         });
 
         $this->assertEqualsCanonicalizing(['data.kunden.view', 'data.hr_mitarbeitende.view'], $role->fresh()->permissions->pluck('name')->all());
+    }
+
+    /** FAP-10 */
+    public function test_export_dialog_and_data_model_of_an_app(): void
+    {
+        app(DynamicSchemaService::class)->createTable(['app_id' => $this->second->id, 'name' => 'hr_abwesenheiten', 'label' => 'Abwesenheiten'], [
+            ['name' => 'person_id', 'label' => 'Person', 'type' => 'relation', 'options' => ['table' => 'hr_mitarbeitende', 'display_fields' => ['name']]],
+        ]);
+
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/apps')->waitForText('Personal', 15);
+
+            // Datenmodell: Diagramm mit den Tabellen der App.
+            $this->openRowActions($browser, 'Personal');
+            $browser->clickLink('Datenmodell')
+                ->waitForText('Datenmodell: Personal', 15)
+                ->waitFor('.saft-data-model svg', 20)
+                ->assertSeeIn('.saft-data-model', 'Mitarbeitende')
+                ->assertSeeIn('.saft-data-model', 'Abwesenheiten')
+                ->assertDontSeeIn('.saft-data-model', 'Kunden');
+
+            // Export: Dialog mit den wählbaren Teilen; Herunterladen ohne Fehlermeldung.
+            $browser->visit('/admin/apps')->waitForText('Personal', 15);
+            $this->openRowActions($browser, 'Personal');
+            $this->clickVisibleButton($browser, 'Exportieren …');
+            $browser->waitForText('App „Personal“ exportieren', 15)
+                ->assertSee('Rollen mit Rechten')
+                ->assertSee('Handbuch');
+            $this->clickVisibleButton($browser, 'Herunterladen');
+            $browser->pause(1500)->assertDontSee('nicht stimmig');
+        });
+
+        $this->assertSame(1, Activity::query()->where('event', 'exported')->where('subject_id', $this->second->id)->count());
     }
 }

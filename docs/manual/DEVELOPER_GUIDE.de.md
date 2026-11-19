@@ -782,6 +782,28 @@ public function test_orders_page(): void
 }
 ```
 
+### App-Definition (`saft-app/1`)
+
+Seit B-107 lässt sich eine ganze App als Definition exportieren (Seite **Apps** › Aktionsmenü › **Exportieren …**,
+Recht *Apps: exportieren*). Die Datei beschreibt die App vollständig und ist die gemeinsame Grundlage für Pakete, das
+spätere Aktualisieren und KI-Werkzeuge; massgeblich bleibt die Datenbank, die Definition wird bei jedem Export neu
+erzeugt (`App\Apps\Definition\AppDefinition`).
+
+| Schlüssel | Inhalt |
+|---|---|
+| `format`, `saft`, `api`, `exported_at` | `saft-app/1`, SAFT- und API-Version, Zeitpunkt |
+| `app` | `key`, Name und Beschreibung je Sprache, Symbol, Präfix, Version, Handbuch je Sprache (Markdown) |
+| `plugins` | benötigte Plugins mit installierter Version |
+| `tables` | Tabellen im Eingabeformat des Table-Designers wie `saft-schema/1` (Felder mit Optionen und Feldregeln, Tabellenregeln, Details), zusätzlich `key` je Tabelle und Feld |
+| `external_tables` | angebundene Tabellen nur als Verweis (Name, Bezeichnung, Name der Verbindung – ohne Zugangsdaten) |
+| `report_links`, `reports`, `menus`, `roles`, `tasks` | wie im Konfigurationspaket, je mit `key`; Menüs mit Pfad („Lager › Artikel“), Eltern vor Kindern |
+
+Jedes Objekt trägt seinen **stabilen Schlüssel** (`key`, UUID), der sich beim Umbenennen nicht ändert. Verweise stehen
+als Namen („bestellungen.kunde_id“, Menüpfad), damit die Datei lesbar bleibt. Nicht enthalten sind Datensätze,
+Zugangsdaten, Systemmenüs, Systemrollen und System-Aufgaben. `App\Apps\Definition\AppDefinitionValidator::errors()`
+prüft eine Definition (Pflichtangaben, Schlüssel, Feldtypen, Verweise innerhalb der App) und meldet Fehler mit Pfad,
+z. B. `tables[2].fields[5].type: Unbekannter Feldtyp „foo“.`
+
 ## 16. Sicherheit
 
 Ein Plugin ist Programmcode, der mit allen Rechten von SAFT läuft. Die Administration sollte nur Plugins aus

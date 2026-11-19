@@ -80,7 +80,16 @@ class DataModelPage extends Page
     /** @return array<string, mixed> */
     protected function getViewData(): array
     {
-        $graph = $this->graph();
+        return self::viewDataFor($this->graph());
+    }
+
+    /**
+     * Daten der Ansicht für ein Datenmodell (auch für das Datenmodell einer App, AppDataModelPage).
+     *
+     * @return array<string, mixed>
+     */
+    public static function viewDataFor(DataModelGraph $graph): array
+    {
         $renderer = app(MermaidErRenderer::class);
 
         return [

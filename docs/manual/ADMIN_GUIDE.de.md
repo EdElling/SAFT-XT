@@ -1202,10 +1202,12 @@ Tabellen, Menüs, Auswertungen, Verknüpfungen, Rollen und Aufgaben:
 |---|---|
 | Name, Beschreibung | in allen Sprachen |
 | Präfix für Tabellen | wird beim Anlegen von Tabellen dem technischen Namen vorangestellt, z. B. `hr` → `hr_abwesenheiten`. Beim Anlegen einer App aus dem Namen vorgeschlagen; eine spätere Änderung gilt nur für neue Tabellen |
+| Version | frei wählbar, z. B. „1.2“; steht im Export und im Dateinamen |
 | Symbol, Sortierung | Darstellung in Listen |
 
 Die Spalte **Status** zeigt *Aktiv*, *Inaktiv*, *Entfernen ab …* oder *Entfernen fehlgeschlagen* (die Meldung als
-Tooltip). **Löschen** gibt es nur für leere Apps; Apps mit Inhalt werden deaktiviert und entfernt (unten).
+Tooltip). Im Aktionsmenü (drei Punkte) stehen **Datenmodell**, **Exportieren …**, Deaktivieren/Aktivieren, Entfernen und – nur bei
+leeren Apps – **Löschen**; Apps mit Inhalt werden deaktiviert und entfernt (unten).
 
 **Wo die App gewählt wird – und wo sie sich ergibt:**
 
@@ -1261,6 +1263,18 @@ werden entfernt. Für jede Rolle mit Rechten auf die Tabellen wählen Sie: **neu
 mit dem Präfix der Ziel-App, z. B. `vertrieb-lager`), Übertragen auf eine bestehende Rolle der Ziel-App – beide mit den
 Mitgliedern, damit niemand den Zugriff verliert – oder Rechte entfernen. Das Verschieben steht im Änderungsprotokoll.
 
+**Datenmodell:** zeigt das Diagramm aller Tabellen der App mit ihren Verknüpfungen (wie die Seite „Datenmodell“ einer
+Menügruppe, mit „Felder anzeigen“); es erscheinen nur Tabellen, die Sie lesen dürfen.
+
+**Exportieren:** lädt die App als **App-Definition** herunter (Datei `<präfix>-<version>.saft-app.json`, Format
+`saft-app/1`; Recht *Apps: exportieren*). Immer dabei sind die Tabellen mit Feldern, Regeln und Details, die
+Tabellenverknüpfungen und die Menüs der App; wählbar sind Auswertungen (freigegebene und eigene), Rollen mit Rechten,
+geplante Aufgaben und das Handbuch. Nie enthalten sind Datensätze, Zugangsdaten von Datenbankverbindungen (angebundene
+Tabellen nur als Verweis), Systemmenüs, Systemrollen und System-Aufgaben. Jedes Objekt trägt seinen stabilen Schlüssel,
+damit sich eine installierte App später aktualisieren lässt. SAFT prüft die Datei vor dem Herunterladen auf
+Stimmigkeit; der Export steht im Änderungsprotokoll. Installieren aus einer solchen Datei folgt mit dem nächsten
+Schritt (bis dahin Pakete über „Konfiguration übertragen“).
+
 **Deaktivieren und aktivieren:** Im Aktionsmenü (drei Punkte) einer App; Recht *Apps: verwalten*. Eine deaktivierte
 App verschwindet für alle ausser dem Super-Admin: nicht mehr im Umschalter, keine Menüs, Auswertungen und Kacheln, kein
 Zugriff auf ihre Tabellen (auch nicht über Links, Auswertungen oder Export); ihre geplanten Aufgaben werden
@@ -1303,6 +1317,6 @@ Installationen beginnen ohne App; die Demo-Daten legen je eine eigene App an (Sh
 | Systemprotokoll | anzeigen (Logdatei des Servers, nur lesen) |
 | Plugins | anzeigen; verwalten (Menüeinträge anlegen, Aufräumen); die Rechte der Plugins selbst stehen unter ihrem Namen |
 | Konfiguration | anzeigen (Seite und Menüeintrag); exportieren; einspielen |
-| Apps | anzeigen; verwalten (anlegen, bearbeiten, aktivieren und deaktivieren, leere löschen). Apps mit Inhalt entfernen: nur der Super-Admin |
+| Apps | anzeigen; verwalten (anlegen, bearbeiten, aktivieren und deaktivieren, leere löschen); exportieren. Apps mit Inhalt entfernen: nur der Super-Admin |
 | Hilfe | Assistent nutzen (Hilfe-Assistent) |
 | Daten je Tabelle (Datenrechte-Matrix) | anzeigen, anlegen, bearbeiten, löschen, exportieren, importieren; bei angebundenen externen Tabellen Schreibrechte nur, wenn freigeschaltet |

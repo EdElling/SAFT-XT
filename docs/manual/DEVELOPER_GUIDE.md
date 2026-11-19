@@ -768,6 +768,28 @@ public function test_orders_page(): void
 }
 ```
 
+### App definition (`saft-app/1`)
+
+Since B-107 a whole app can be exported as a definition (**Apps** page › action menu › **Export …**, permission
+*Apps: export*). The file describes the app completely and is the common basis for packages, later updates and AI
+tools; the database remains authoritative, the definition is generated anew with every export
+(`App\Apps\Definition\AppDefinition`).
+
+| Key | Content |
+|---|---|
+| `format`, `saft`, `api`, `exported_at` | `saft-app/1`, SAFT and API version, time |
+| `app` | `key`, name and description per language, icon, prefix, version, manual per language (Markdown) |
+| `plugins` | required plugins with installed version |
+| `tables` | tables in the input format of the table designer like `saft-schema/1` (fields with options and field rules, table rules, details), plus `key` per table and field |
+| `external_tables` | connected tables only as a reference (name, label, name of the connection – without credentials) |
+| `report_links`, `reports`, `menus`, `roles`, `tasks` | as in the configuration package, each with `key`; menus with path (“Lager › Artikel”), parents before children |
+
+Every object carries its **stable key** (`key`, UUID), which does not change on renaming. References are given as names
+(“bestellungen.kunde_id”, menu path) so that the file stays readable. Not included are records, credentials, system
+menus, system roles and system tasks. `App\Apps\Definition\AppDefinitionValidator::errors()` checks a definition
+(required data, keys, field types, references within the app) and reports errors with a path, e.g.
+`tables[2].fields[5].type: Unknown field type “foo”.`
+
 ## 16. Security
 
 A plugin is program code that runs with all of SAFT's rights. The administration should only install plugins from a

@@ -1255,10 +1255,12 @@ tables, menus, rapports, liaisons, rôles et tâches :
 |---|---|
 | Nom, description | dans toutes les langues |
 | Préfixe des tables | placé devant le nom technique des nouvelles tables, p. ex. `hr` → `hr_absences`. Proposé à partir du nom lors de la création d’une app ; une modification ultérieure ne vaut que pour les nouvelles tables |
+| Version | texte libre, p. ex. « 1.2 » ; figure dans l’export et dans le nom du fichier |
 | Icône, tri | affichage dans les listes |
 
 La colonne **Statut** indique *Active*, *Inactive*, *Retrait dès …* ou *Échec du retrait* (le message en info-bulle).
-**Supprimer** n’existe que pour les apps vides ; les apps avec contenu sont désactivées puis retirées (ci-dessous).
+Le menu d’actions (trois points) contient **Modèle de données**, **Exporter …**, désactiver/activer, retirer et –
+uniquement pour les apps vides – **Supprimer** ; les apps avec contenu sont désactivées puis retirées (ci-dessous).
 
 **Où l’app se choisit – et où elle découle :**
 
@@ -1317,6 +1319,18 @@ les groupes vides de l’ancienne app sont supprimés. Pour chaque rôle ayant d
 à un rôle existant de l’app cible – les deux avec les membres, pour que personne ne perde l’accès – ou retrait des
 droits. Le déplacement figure dans le journal des modifications.
 
+**Modèle de données :** affiche le diagramme de toutes les tables de l’app avec leurs liaisons (comme la page « Modèle
+de données » d’un groupe de menu, avec « Afficher les champs ») ; seules les tables que vous pouvez lire apparaissent.
+
+**Exporter :** télécharge l’app sous forme de **définition d’app** (fichier `<préfixe>-<version>.saft-app.json`, format
+`saft-app/1` ; droit *Apps : exporter*). Toujours inclus : les tables avec champs, règles et détails, les liaisons de
+tables et les menus de l’app ; au choix : rapports (partagés et propres), rôles avec droits, tâches planifiées et
+manuel. Jamais inclus : enregistrements, identifiants des connexions de base de données (tables connectées seulement
+comme référence), menus, rôles et tâches système. Chaque objet porte sa clé stable afin qu’une app installée puisse être
+mise à jour plus tard. SAFT vérifie la cohérence du fichier avant le téléchargement ; l’export figure dans le journal
+des modifications. L’installation à partir d’un tel fichier suit à l’étape suivante (d’ici là, paquets via
+« Transférer la configuration »).
+
 **Désactiver et activer :** dans le menu d’actions (trois points) d’une app ; droit *Apps : gérer*. Une app désactivée
 disparaît pour tous sauf le super-admin : plus dans le sélecteur, ni menus, analyses ou tuiles, aucun accès à ses tables
 (ni par des liens, analyses ou exports) ; ses tâches planifiées sont ignorées (avec mention). Données, rôles et droits
@@ -1361,6 +1375,6 @@ app » (ci-dessus).
 | Journal système | afficher (fichier journal du serveur, lecture seule) |
 | Plugins | afficher ; gérer (créer les entrées de menu, nettoyer) ; les droits propres aux plugins figurent sous leur nom |
 | Configuration | afficher (page et entrée de menu) ; exporter ; importer |
-| Apps | afficher ; gérer (créer, modifier, activer et désactiver, supprimer les apps vides). Retirer des apps avec contenu : uniquement le super-admin |
+| Apps | afficher ; gérer (créer, modifier, activer et désactiver, supprimer les apps vides) ; exporter. Retirer des apps avec contenu : uniquement le super-admin |
 | Aide | utiliser l’assistant (assistant d’aide) |
 | Données par table (matrice des droits sur les données) | afficher, créer, modifier, supprimer, exporter, importer ; pour les tables externes liées, droits d’écriture uniquement s’ils sont activés |

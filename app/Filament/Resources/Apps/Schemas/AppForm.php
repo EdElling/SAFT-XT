@@ -42,6 +42,11 @@ class AppForm
                     ->helperText(__('apps.prefix_help'))
                     ->maxLength(20)
                     ->regex('/^[a-z][a-z0-9]*_?$/i'),
+                // Version der App (B-107, Etappe 4a): frei wählbar, steht in der exportierten App-Definition.
+                TextInput::make('version')
+                    ->label(__('apps.version'))
+                    ->helperText(__('apps.version_help'))
+                    ->maxLength(30),
                 // Neue Apps ans Ende der Reihenfolge (Umschalter, Listen).
                 TextInput::make('sort_order')->label(__('common.sort_order'))->integer()->minValue(0)
                     ->default(static fn (): int => ((int) App::query()->max('sort_order')) + 10),

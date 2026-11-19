@@ -1223,10 +1223,12 @@ loro tabelle, menu, report, collegamenti, ruoli e attività:
 |---|---|
 | Nome, descrizione | in tutte le lingue |
 | Prefisso delle tabelle | anteposto al nome tecnico delle nuove tabelle, ad es. `hr` → `hr_assenze`. Proposto dal nome alla creazione di un’app; una modifica successiva vale solo per le nuove tabelle |
+| Versione | testo libero, ad es. «1.2»; figura nell’esportazione e nel nome del file |
 | Icona, ordinamento | visualizzazione negli elenchi |
 
 La colonna **Stato** mostra *Attiva*, *Inattiva*, *Rimozione dalle …* o *Rimozione non riuscita* (il messaggio come
-tooltip). **Elimina** esiste solo per app vuote; le app con contenuto vengono disattivate e rimosse (sotto).
+tooltip). Il menu delle azioni (tre puntini) contiene **Modello di dati**, **Esporta …**, disattivare/attivare, rimuovere
+e – solo per app vuote – **Elimina**; le app con contenuto vengono disattivate e rimosse (sotto).
 
 **Dove si sceglie l’app – e dove deriva:**
 
@@ -1284,6 +1286,18 @@ quello attuale); i gruppi vuoti della vecchia app vengono rimossi. Per ogni ruol
 `vertrieb-lager`), trasferimento a un ruolo esistente dell’app di destinazione – entrambi con i membri, così nessuno
 perde l’accesso – oppure rimozione dei diritti. Lo spostamento compare nel registro modifiche.
 
+**Modello di dati:** mostra il diagramma di tutte le tabelle dell’app con i loro collegamenti (come la pagina «Modello
+di dati» di un gruppo di menu, con «Mostra campi»); compaiono solo le tabelle che potete leggere.
+
+**Esportare:** scarica l’app come **definizione dell’app** (file `<prefisso>-<versione>.saft-app.json`, formato
+`saft-app/1`; diritto *App: esportare*). Sempre inclusi: le tabelle con campi, regole e dettagli, i collegamenti di
+tabelle e i menu dell’app; a scelta: report (condivisi e propri), ruoli con diritti, attività pianificate e manuale. Mai
+inclusi: record, credenziali delle connessioni ai database (tabelle collegate solo come riferimento), menu, ruoli e
+attività di sistema. Ogni oggetto porta la sua chiave stabile, affinché un’app installata possa essere aggiornata in
+seguito. SAFT controlla la coerenza del file prima del download; l’esportazione è registrata nel registro delle
+modifiche. L’installazione da un tale file segue con il passo successivo (fino ad allora pacchetti tramite
+«Trasferire la configurazione»).
+
 **Disattivare e attivare:** nel menu delle azioni (tre puntini) di un’app; diritto *App: gestire*. Un’app disattivata
 scompare per tutti tranne il super-admin: non più nel selettore, né menu, report o riquadri, nessun accesso alle sue
 tabelle (nemmeno tramite link, report o esportazione); le sue attività pianificate vengono saltate (con annotazione).
@@ -1325,6 +1339,6 @@ iniziano senza app; i dati demo creano ciascuno la propria app (Negozio, Magazzi
 | Registro di sistema | visualizzare (file di log del server, sola lettura) |
 | Plugin | visualizzare; gestire (creare voci di menu, pulire); i diritti propri dei plugin compaiono sotto il loro nome |
 | Configurazione | visualizzare (pagina e voce di menu); esportare; importare |
-| App | visualizzare; gestire (creare, modificare, attivare e disattivare, eliminare app vuote). Rimuovere app con contenuto: solo il super-admin |
+| App | visualizzare; gestire (creare, modificare, attivare e disattivare, eliminare app vuote); esportare. Rimuovere app con contenuto: solo il super-admin |
 | Aiuto | usare l’assistente (assistente di aiuto) |
 | Dati per tabella (matrice dei diritti sui dati) | visualizzare, creare, modificare, eliminare, esportare, importare; per le tabelle esterne collegate diritti di scrittura solo se abilitati |
