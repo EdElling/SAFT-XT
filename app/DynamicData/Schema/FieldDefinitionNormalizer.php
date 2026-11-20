@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Schema;
 
+use App\Apps\AppInterfaces;
 use App\DynamicData\Files\FileKinds;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Formula\Printer;
@@ -139,6 +140,11 @@ final class FieldDefinitionNormalizer
             $this->fail(__('tables.errors.copy_source', ['source' => $value]));
         }
 
+        // Aus einer Tabelle einer anderen App nur freigegebene Felder (Schnittstelle).
+        if ($owner !== null && AppInterfaces::foreign($target, $owner->app_id) && ! $source->is_shared) {
+            $this->fail(__('apps.errors.not_shared_field', ['field' => (string) $sourceName, 'table' => (string) $target->label]));
+        }
+
         return [CopySource::OPTION => $value];
     }
 
@@ -160,8 +166,31 @@ final class FieldDefinitionNormalizer
 
         // Kreisbezug mit anderen berechneten Feldern der Tabelle?
         FormulaAnalyzer::assertNoCycle($fields, $name, $compiled['ast']);
+        $this->assertFormulaWithinInterfaces($compiled['ast'], $owner);
 
         return ['result' => $result, ...$size, 'formula' => Printer::print($compiled['ast']), 'ast' => $compiled['ast']];
+    }
+
+    /**
+     * Formeln über App-Grenzen (B-107, Schnittstellen): keine Summen und Zählungen über Kind-Tabellen einer anderen App.
+     * Felder einer verknüpften Eltern-Tabelle liest eine Formel ohnehin nicht (nur innerhalb von Summen).
+     *
+     * @param  array<string, mixed>  $ast
+     */
+    private function assertFormulaWithinInterfaces(array $ast, ?CustomTable $owner): void
+    {
+        if ($owner === null) {
+            return;
+        }
+
+        foreach (FormulaAnalyzer::aggregates($ast) as $aggregate) {
+            $child = CustomTable::query()->where('name', (string) $aggregate['table'])->first();
+
+            if ($child !== null && AppInterfaces::foreign($child, $owner->app_id)) {
+                $this->fail(__('apps.errors.cross_app_aggregate', ['table' => (string) $child->label]));
+            }
+        }
+
     }
 
     /**
@@ -268,8 +297,10 @@ final class FieldDefinitionNormalizer
             $this->fail(__('tables.errors.unknown_target', ['table' => $tableName]));
         }
 
-        // Verknüpfungen nur innerhalb einer App (B-107); über App-Grenzen später nur über freigegebene Schnittstellen.
-        if ($owner !== null && $target->app_id !== $owner->app_id) {
+        // Verknüpfungen innerhalb einer App; über App-Grenzen nur auf freigegebene Tabellen (B-107, Schnittstellen).
+        $foreign = $owner !== null && AppInterfaces::foreign($target, $owner->app_id);
+
+        if ($foreign && ! $target->is_shared) {
             $this->fail(__('apps.errors.cross_app_relation', ['table' => (string) $target->label, 'app' => (string) $target->app?->name]));
         }
 
@@ -282,6 +313,10 @@ final class FieldDefinitionNormalizer
 
             if (! $display instanceof CustomField || $display->type === FieldType::Relation) {
                 $this->fail(__('tables.errors.unknown_display_field', ['field' => $displayField, 'table' => $tableName]));
+            }
+
+            if ($foreign && ! $display->is_shared) {
+                $this->fail(__('apps.errors.not_shared_field', ['field' => $displayField, 'table' => (string) $target->label]));
             }
         }
 

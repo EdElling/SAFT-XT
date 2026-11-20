@@ -55,14 +55,44 @@ final class CurrentApp
         $fromPlugins = $permissions
             ->map(static fn ($permission): ?int => ($plugin = $plugins->forPermission($permission->name)) === null ? null : app(PluginApps::class)->appIdFor($plugin))
             ->filter()->all();
-        $tables = $permissions
-            ->map(static fn ($permission): ?string => str_starts_with($permission->name, DataPermissions::PREFIX)
-                ? explode('.', substr($permission->name, strlen(DataPermissions::PREFIX)))[0]
-                : null)
-            ->filter()->unique()->values()->all();
-        $fromData = $tables === [] ? [] : CustomTable::query()->whereIn('name', $tables)->whereNotNull('app_id')->pluck('app_id')->all();
+        $table = static fn (string $permission): ?string => str_starts_with($permission, DataPermissions::PREFIX)
+            ? explode('.', substr($permission, strlen(DataPermissions::PREFIX)))[0]
+            : null;
+        $tables = $permissions->map(static fn ($permission): ?string => $table($permission->name))->filter()->unique()->values()->all();
+        $byName = $tables === [] ? collect() : CustomTable::query()->whereIn('name', $tables)->whereNotNull('app_id')->get(['name', 'app_id', 'is_shared'])->keyBy('name');
+
+        // Leserecht auf eine freigegebene Tabelle (Schnittstelle) über die Rolle einer anderen App gibt keinen Zugang zur
+        // App der Tabelle – sonst stünde jede genutzte App im Umschalter.
+        $viaOtherApp = [];
+
+        foreach ($user->roles as $role) {
+            foreach ($role->permissions as $permission) {
+                $target = $byName->get((string) $table($permission->name));
+
+                if ($target !== null && $target->is_shared && $role->app_id !== null && $role->app_id !== $target->app_id) {
+                    $viaOtherApp[$permission->name] = true;
+                }
+            }
+        }
+
+        $direct = $user->getDirectPermissions()->pluck('name')->all();
+        $fromData = [];
+
+        foreach ($user->roles->flatMap->permissions->concat($user->getDirectPermissions()) as $permission) {
+            $target = $byName->get((string) $table($permission->name));
+
+            if ($target !== null && (! isset($viaOtherApp[$permission->name]) || in_array($permission->name, $direct, true) || self::heldByOwnRole($user, $permission->name, $target->app_id))) {
+                $fromData[] = $target->app_id;
+            }
+        }
 
         return array_values(array_unique(array_map('intval', [...$fromRoles, ...$fromData, ...$fromPlugins])));
+    }
+
+    /** Hat die Person das Recht (auch) über eine Rolle der App der Tabelle oder eine Systemrolle? */
+    private static function heldByOwnRole(User $user, string $permission, int $appId): bool
+    {
+        return $user->roles->contains(static fn ($role): bool => ($role->app_id === null || $role->app_id === $appId) && $role->permissions->contains('name', $permission));
     }
 
     public function get(?User $user): ?App

@@ -108,6 +108,13 @@ class RoleForm
                     ])
                     // Systemrollen enthalten nur app-übergreifende Rechte (B-107).
                     ->visible(fn (?Role $record): bool => CustomTable::query()->exists() && ! SystemObjects::isSystemRole($record?->name)),
+                // Freigegebene Tabellen anderer Apps (B-107, Schnittstellen): nur „Anzeigen“ – zum Öffnen der fremden Tabelle;
+                // die freigegebenen Felder in Verknüpfungen sieht man auch ohne dieses Recht.
+                Section::make(__('roles.form.shared_permissions'))
+                    ->description(__('roles.form.shared_permissions_help'))
+                    ->schema([DataPermissionMatrix::make('shared_permissions')->hiddenLabel()->shared()->app(fn (Get $get): mixed => $get('app_id'))])
+                    ->visible(fn (Get $get, ?Role $record): bool => ! SystemObjects::isSystemRole($record?->name) && filled($get('app_id'))
+                        && CustomTable::query()->where('is_shared', true)->whereNotNull('app_id')->where('app_id', '!=', (int) $get('app_id'))->exists()),
                 Callout::make(__('roles.form.system_role_hint'))
                     ->info()
                     ->visible(fn (?Role $record): bool => SystemObjects::isSystemRole($record?->name)),
@@ -237,11 +244,14 @@ class RoleForm
             return false;
         }
 
-        $tables = $role->permissions()->where('name', 'like', DataPermissions::PREFIX.'%')->pluck('name')
-            ->map(static fn (string $name): string => Str::beforeLast(Str::after($name, DataPermissions::PREFIX), '.'))->unique()->all();
-        $foreignTables = $tables !== [] && CustomTable::query()->whereIn('name', $tables)
+        $names = $role->permissions()->where('name', 'like', DataPermissions::PREFIX.'%')->pluck('name')->all();
+        $tables = array_values(array_unique(array_map(static fn (string $name): string => Str::beforeLast(Str::after($name, DataPermissions::PREFIX), '.'), $names)));
+        $foreign = $tables === [] ? collect() : CustomTable::query()->whereIn('name', $tables)
             ->when($appId !== null, static fn ($q) => $q->where(static fn ($q) => $q->whereNull('app_id')->orWhere('app_id', '!=', $appId)))
-            ->exists();
+            ->get(['name', 'app_id', 'is_shared']);
+        // Leserecht auf freigegebene Tabellen anderer Apps steht im eigenen Abschnitt (Schnittstellen), nicht hier.
+        $foreignTables = $foreign->contains(static fn (CustomTable $table): bool => ! ($appId !== null && $table->is_shared && $table->app_id !== null)
+            || array_diff(array_filter($names, static fn (string $n): bool => str_starts_with($n, DataPermissions::PREFIX.$table->name.'.')), [DataPermissions::PREFIX.$table->name.'.view']) !== []);
 
         return $foreignTables || self::otherPermissionOptions($role, $appId) !== [];
     }

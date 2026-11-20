@@ -77,6 +77,22 @@ class DataPermissionMatrix extends Field
         return $this;
     }
 
+    /** Freigegebene Tabellen anderer Apps (B-107, Schnittstellen): nur „Anzeigen“, vergeben und entziehen. */
+    private bool $shared = false;
+
+    public function shared(bool $shared = true): static
+    {
+        $this->shared = $shared;
+
+        return $this;
+    }
+
+    /** Leserecht auf eine freigegebene Tabelle einer anderen App gehört in den Abschnitt der Freigaben. */
+    private function inSharedSection(CustomTable $table, mixed $appId): bool
+    {
+        return filled($appId) && $table->is_shared && $table->app_id !== null && $table->app_id !== (int) $appId;
+    }
+
     public function outside(bool $outside = true): static
     {
         $this->outside = $outside;
@@ -93,6 +109,13 @@ class DataPermissionMatrix extends Field
 
         $appId = $this->evaluate($this->app);
 
+        if ($this->shared) {
+            return $this->tables = filled($appId)
+                ? CustomTable::query()->where('is_shared', true)->whereNotNull('app_id')->where('app_id', '!=', (int) $appId)->with(['app', 'databaseConnection:id,name'])->get()
+                    ->sortBy(fn (CustomTable $table): string => mb_strtolower((string) $table->label))->values()
+                : collect();
+        }
+
         $query = $this->outside
             ? CustomTable::query()
                 ->whereIn('name', array_keys($this->granted()))
@@ -103,6 +126,8 @@ class DataPermissionMatrix extends Field
         return $this->tables = $query
             ->with('databaseConnection:id,name')
             ->get()
+            // Ausserhalb: Freigaben mit nur „Anzeigen“ stehen im eigenen Abschnitt.
+            ->reject(fn (CustomTable $table): bool => $this->outside && $this->inSharedSection($table, $appId) && $this->actionsFor($table) === [])
             ->sortBy(fn (CustomTable $table): string => mb_strtolower((string) $table->label))
             ->values();
     }
@@ -114,7 +139,17 @@ class DataPermissionMatrix extends Field
             ? array_values(array_filter(self::ACTIONS, static fn (string $action): bool => in_array($action, self::EXTERNAL_ACTIONS, true) || $table->supports($action)))
             : self::ACTIONS;
 
-        return $this->outside ? array_values(array_intersect($supported, $this->granted()[$table->name] ?? [])) : $supported;
+        if ($this->shared) {
+            return ['view'];
+        }
+
+        if (! $this->outside) {
+            return $supported;
+        }
+
+        $granted = array_values(array_intersect($supported, $this->granted()[$table->name] ?? []));
+
+        return $this->inSharedSection($table, $this->evaluate($this->app)) ? array_values(array_diff($granted, ['view'])) : $granted;
     }
 
     /** @return array<string, list<string>> gespeicherte Datenrechte der Rolle: Tabelle => Rechte */
@@ -157,8 +192,8 @@ class DataPermissionMatrix extends Field
             // Eigene Tabellen nach Menügruppe (gleich benannte, z. B. „Artikel“ in Shop und Lager, bleiben
             // unterscheidbar), verknüpfte nach Datenbankverbindung.
             $group = match (true) {
-                // Ausserhalb der App: nach App gruppiert.
-                $this->outside => (string) ($table->app?->name ?? __('apps.system')),
+                // Ausserhalb der App und Freigaben anderer Apps: nach App gruppiert.
+                $this->outside || $this->shared => (string) ($table->app?->name ?? __('apps.system')),
                 $table->isExternal() => (string) ($table->databaseConnection?->name ?? '–'),
                 default => $menuGroups[$table->name] ?? __('roles.matrix.no_menu'),
             };

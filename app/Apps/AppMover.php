@@ -64,10 +64,18 @@ final class AppMover
         $blockers = [];
         $suggested = [];
 
+        // Freigegebene Tabellen (Schnittstellen, Etappe 5): Verknüpfungen darauf dürfen über die App-Grenze reichen,
+        // solange die freigegebene Tabelle selbst in ihrer App bleibt.
+        $shared = CustomTable::query()->where('is_shared', true)->pluck('name')->all();
+
         foreach ($this->references() as [$kind, $from, $to, $what]) {
             $inside = $tables->has($from) || $tables->has($to);
 
             if (! $inside || ($final[$from] ?? null) === ($final[$to] ?? null)) {
+                continue;
+            }
+
+            if ($kind === 'relation' && in_array($to, $shared, true) && ! $tables->has($to)) {
                 continue;
             }
 

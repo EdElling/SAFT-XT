@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Apps\Actions;
 
+use App\Apps\AppInterfaces;
 use App\Apps\AppRemover;
 use App\Exceptions\BusinessRuleException;
 use App\Models\App;
@@ -37,7 +38,10 @@ final class AppLifecycleActions
             ->color('warning')
             ->visible(fn (App $record): bool => $record->is_active && Gate::allows('update', $record))
             ->requiresConfirmation()
-            ->modalDescription(fn (App $record): string => __('apps.lifecycle.deactivate_confirm', ['name' => (string) $record->name]))
+            ->modalDescription(fn (App $record): string => __('apps.lifecycle.deactivate_confirm', ['name' => (string) $record->name])
+                // Genutzte Schnittstelle (Etappe 5): verweisende Felder anderer Apps zeigen danach „nicht verfügbar“.
+                .(($used = array_merge([], ...array_column(app(AppInterfaces::class)->offeredBy($record), 'usages'))) === []
+                    ? '' : ' '.__('apps.interfaces.deactivate_hint', ['usages' => implode(', ', $used)])))
             ->action(function (App $record): void {
                 $record->update(['is_active' => false]);
                 Notification::make()->success()->title(__('apps.lifecycle.deactivated', ['name' => (string) $record->name]))->send();

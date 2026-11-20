@@ -87,8 +87,16 @@ Damit Verweise zwischen Apps robust sind (und dieselbe Logik später der REST-AP
   Grenzen. Die Seite „Verwendet in“ zeigt die Nutzer.
 - Eine App mit genutzter Schnittstelle lässt sich nicht entfernen; Deaktivieren zeigt einen Hinweis (verweisende Felder
   zeigen dann „nicht verfügbar“ statt Fehler).
-- Rechte: Lesen über die Schnittstelle braucht weiterhin das Leserecht auf die Tabelle; eine Rolle einer App kann dafür
-  ausdrücklich Leserechte auf freigegebene Tabellen anderer Apps erhalten (sonst bleiben Rollen je App getrennt).
+- Rechte (entschieden 20.11.2026): Die **freigegebenen Felder** sind in Verknüpfungen und Auswertungen ohne eigenes Recht
+  sichtbar (z. B. der Name des verknüpften Kunden). Die fremde Tabelle selbst öffnen (Liste, Vorschau) geht nur mit
+  ihrem Leserecht; dafür hat die Rechtematrix einer Rolle den Abschnitt „Freigegebene Tabellen anderer Apps“ (nur
+  *Anzeigen*). Sonst bleiben Rollen je App getrennt.
+- Freigabe gilt für **alle Apps** (gezielte Freigabe für einzelne Apps später möglich).
+- Ist die freigebende App deaktiviert, zeigen verweisende Felder **„nicht verfügbar“**.
+- Umsetzung in zwei Teilen: **5a** Freigeben, Verknüpfen, Schutz, Rechte, Lebenszyklus; **5b** Auswertungen und
+  Tabellenverknüpfungen über Schnittstellen, App-Definition (`requires`), Version, KI-Tabellenassistent.
+- Später (B-109, eigene Datenbank je App): Verknüpfungen über App-Grenzen sind heute Fremdschlüssel in derselben
+  Datenbank; mit getrennten Datenbanken müssten sie ohne Fremdschlüssel auskommen.
 - Die Schnittstelle ist Teil der App-Definition und hat eine **Version**; inkompatible Änderungen erhöhen sie und
   werden beim Aktualisieren als Bruch gemeldet.
 

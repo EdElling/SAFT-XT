@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $description
  * @property string|null $icon
  * @property bool $is_active
+ * @property bool $is_shared
  * @property bool $export_enabled
  * @property bool $import_enabled
  * @property bool $allow_create
@@ -50,6 +51,7 @@ class CustomTable extends Model
     protected $casts = [
         'app_id' => 'int',
         'is_active' => 'bool',
+        'is_shared' => 'bool',
         'export_enabled' => 'bool',
         'import_enabled' => 'bool',
         'allow_create' => 'bool',
@@ -78,6 +80,7 @@ class CustomTable extends Model
         'description',
         'icon',
         'is_active',
+        'is_shared',
         'export_enabled',
         'import_enabled',
         'allow_create',

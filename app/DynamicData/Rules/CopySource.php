@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Rules;
 
+use App\Apps\AppInterfaces;
 use App\DynamicData\Schema\FieldType;
 use App\Models\CustomField;
 use App\Models\CustomTable;
@@ -70,8 +71,11 @@ final class CopySource
 
             $source = CustomTable::query()->designer()->with('fields')->where('name', (string) ($relation->optionsArray()['table'] ?? ''))->first();
 
+            // Tabelle einer anderen App: nur freigegebene Felder (B-107, Schnittstellen).
+            $foreign = $source !== null && AppInterfaces::foreign($source, $owner->app_id);
+
             foreach ($source?->fields ?? [] as $field) {
-                if ($field->is_active && self::compatible($target, $field->valueType())) {
+                if ($field->is_active && (! $foreign || $field->is_shared) && self::compatible($target, $field->valueType())) {
                     $options[$relation->name.'.'.$field->name] = $relation->label.' → '.$field->label;
                 }
             }

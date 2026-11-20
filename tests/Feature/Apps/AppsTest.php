@@ -104,7 +104,7 @@ class AppsTest extends DynamicDataTestCase
             $this->service()->addField($staff, ['name' => 'kunde_id', 'label' => 'Kunde', 'type' => 'relation', 'options' => ['table' => 'kunden', 'display_fields' => ['name']]]);
             $this->fail('Verknüpfung über die App-Grenze angelegt.');
         } catch (BusinessRuleException $e) {
-            $this->assertStringContainsString('nur zu Tabellen derselben App', $e->getMessage());
+            $this->assertStringContainsString('ist nicht freigegeben', $e->getMessage());
         }
 
         $this->service()->addField($kunden, ['name' => 'betreuer_id', 'label' => 'Betreuer', 'type' => 'relation', 'options' => ['table' => 'kunden', 'display_fields' => ['name']]]);

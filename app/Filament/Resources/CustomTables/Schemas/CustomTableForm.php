@@ -6,6 +6,7 @@ namespace App\Filament\Resources\CustomTables\Schemas;
 
 use App\Ai\AiConfig;
 use App\Ai\AiUsage;
+use App\Apps\AppInterfaces;
 use App\DynamicData\Assistant\TableAssistant;
 use App\DynamicData\DataMenu;
 use App\DynamicData\DetailRelations;
@@ -20,6 +21,7 @@ use App\Filament\Support\MenuGroupSelect;
 use App\Filament\Support\TableLabelHint;
 use App\Filament\Support\TableNameRule;
 use App\Filament\Support\TranslatableInputs;
+use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\User;
@@ -151,6 +153,7 @@ class CustomTableForm
                             }),
                     ]),
                 self::rulesSection(),
+                self::interfaceSection(),
                 Section::make(__('tables.form.details'))
                     ->description(__('tables.form.details_help'))
                     ->visibleOn('edit')
@@ -201,6 +204,53 @@ class CustomTableForm
      * Eigene Regeln auf Tabellenebene, z. B. „Lieferdatum ≥ Bestelldatum“ oder „Menge > 0“.
      * Nur beim Bearbeiten: Die Felder müssen gespeichert sein.
      */
+    /**
+     * Schnittstelle (B-107, Etappe 5): Tabelle für andere Apps freigeben (nur lesend) und die freigegebenen Felder wählen;
+     * darunter, wer sie nutzt. Nur beim Bearbeiten (die Felder müssen gespeichert sein).
+     */
+    private static function interfaceSection(): Section
+    {
+        return Section::make(__('apps.interfaces.section'))
+            ->description(__('apps.interfaces.section_help'))
+            ->visibleOn('edit')
+            ->collapsible()
+            ->collapsed(fn (?CustomTable $record): bool => ! $record?->is_shared)
+            ->schema([
+                Toggle::make('is_shared')
+                    ->label(__('apps.interfaces.shared'))
+                    // Genutzt von anderen Apps: Freigabe lässt sich nicht zurücknehmen – Schalter gesperrt, Hinweis unten.
+                    ->disabled(fn (?CustomTable $record): bool => $record !== null && $record->is_shared && app(AppInterfaces::class)->usages($record) !== [])
+                    ->live()
+                    // Neu freigegeben: durchsuchbare Felder vorschlagen (meist die, die andere als Anzeige brauchen).
+                    ->afterStateUpdated(function (Get $get, Set $set, bool $state, ?CustomTable $record): void {
+                        if ($state && $record !== null && (array) $get('shared_fields') === []) {
+                            $set('shared_fields', $record->fields()->where('is_active', true)->where('is_searchable', true)->pluck('name')->all());
+                        }
+                    }),
+                // Genutzte Felder (andere Apps verweisen darauf) sind fest freigegeben: als Text, nicht in der Auswahl.
+                Text::make(fn (?CustomTable $record): string => __('apps.interfaces.fields_locked', [
+                    'fields' => implode(', ', array_map(static fn (string $name): string => (string) ($record?->fields->firstWhere('name', $name)?->label ?? $name).' ('.$name.')', $record === null ? [] : app(AppInterfaces::class)->usedFields($record))),
+                ]))
+                    ->visible(fn (?CustomTable $record): bool => $record !== null && app(AppInterfaces::class)->usedFields($record) !== []),
+                CheckboxList::make('shared_fields')
+                    ->label(__('apps.interfaces.fields'))
+                    ->helperText(__('apps.interfaces.fields_help'))
+                    ->options(function (?CustomTable $record): array {
+                        $used = $record === null ? [] : app(AppInterfaces::class)->usedFields($record);
+
+                        return $record === null ? [] : $record->fields()->where('is_active', true)->whereNotIn('name', $used)->orderBy('sort_order')->get()
+                            ->mapWithKeys(fn (CustomField $f): array => [$f->name => (string) $f->label.' ('.$f->name.')'])->all();
+                    })
+                    ->columns(3)
+                    ->bulkToggleable()
+                    ->visible(fn (Get $get): bool => (bool) $get('is_shared')),
+                Text::make(fn (?CustomTable $record): string => ($usages = $record === null ? [] : app(AppInterfaces::class)->usages($record)) === []
+                    ? __('apps.interfaces.unused')
+                    : __('apps.interfaces.used_by_locked', ['usages' => implode(', ', $usages), 'fields' => implode(', ', app(AppInterfaces::class)->usedFields($record))]))
+                    ->visible(fn (Get $get, ?CustomTable $record): bool => (bool) $get('is_shared') || (bool) $record?->is_shared),
+            ]);
+    }
+
     private static function rulesSection(): Section
     {
         $group = static fn (?CustomTable $record, ?string $field): ?string => RuleFieldTypes::group($record?->fields->firstWhere('name', $field)?->type);

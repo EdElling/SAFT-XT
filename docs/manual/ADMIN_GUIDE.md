@@ -125,7 +125,9 @@ chosen app, a hint to choose the app first appears instead of the data permissio
 deleted tables – they are listed at the bottom in the section **“Permissions outside this app”**: tables as a matrix
 grouped by app, with only the existing permissions (ticked), plugin permissions and deleted tables as a list. There they
 can only be removed (untick, save), not added. If you change the app of a role, all permissions are kept until you
-untick them there. The system roles *super-admin* and *benutzer* belong to no
+untick them there. Read permissions on **shared tables of other apps** (interfaces,
+[chapter 15](#15-apps-business-applications)) are granted in the separate section “Shared tables of other apps” – only
+*View*, for opening the other table; everyone sees the shared fields in relations even without this permission. The system roles *super-admin* and *benutzer* belong to no
 app and contain only app-wide permissions (e.g. dashboard, help); grant data permissions through the roles of the apps.
 **Copy** (in the list and when editing) creates a new role with a name and target app – with the same permissions (data
 permissions only for tables of the target app) and hidden menu entries, without members.
@@ -1124,7 +1126,7 @@ tables, menus, reports, links, roles and tasks:
 The **Status** column shows *Active*, *Inactive*, *Removal from …* or *Removal failed* (the message as tooltip),
 **Installed** the baseline of an installed app and **Notes** lasting warnings such as “Plugin missing: …” or connected
 tables without connection.
-The action menu (three dots) contains **Data model**, **Export …**, deactivate/activate, remove and – only for empty
+The action menu (three dots) contains **Data model**, **Interfaces**, **Export …**, deactivate/activate, remove and – only for empty
 apps – **Delete**; apps with content are deactivated and removed (below).
 
 **Where the app is chosen – and where it follows:**
@@ -1139,11 +1141,33 @@ apps – **Delete**; apps with content are deactivated and removed (below).
 | Role | chosen (see [Roles](#2-roles-and-permissions)); *super-admin* and *benutzer* are system roles without an app |
 | Scheduled task | for a table: its app; otherwise chosen; system tasks without an app |
 
-**Boundary between apps:** relation fields, table links for reports and therefore also “Copy from” and formulas over
-child tables are only possible within one app. The table designer only offers tables of the same app. When creating,
-the AI table assistant takes the app from the text (otherwise the chosen one) and only uses menu groups and tables of
-that app; when adjusting, it only sees the app of the table. The lists of the table designer and the table connector
-show the app as a column with a filter.
+**Boundary between apps:** relation fields, table links for reports, “Copy from” and formulas over child tables exist
+within one app – across the app boundary only to **shared** tables (interfaces, below). The table designer offers tables
+of the same app and shared tables of other apps with their name. When creating, the AI table assistant takes the app
+from the text (otherwise the chosen one) and only uses menu groups and tables of that app; when adjusting, it only sees
+the app of the table. The lists of the table designer and the table connector show the app as a column with a filter.
+
+**Interfaces:** An app can **share** individual tables with all other apps – read only. In the table designer (edit
+table, section **Interface**) switch on “Share with other apps” and choose the **shared fields** (suggested: the
+searchable ones; the ID always belongs to them). Other apps can then:
+
+- refer to the table with a **relation field** (in the choice “Item (Warehouse)”); only shared fields are available as
+  display fields,
+- fetch a shared value into their own table with **“Copy from”**.
+
+Creating, changing or deleting in the other app's table is not possible through the interface; there are no totals over
+child tables of another app, and “Details” only offers tables of the own app. The shared fields are visible in relations
+to everyone who sees the own record; opening the other table itself (list, preview) needs its read permission – granted
+in the role in the section “Shared tables of other apps”.
+
+What another app uses is a **contract**: the table cannot be deactivated, deleted, moved to another app or withdrawn
+from sharing, used fields cannot be deleted, renamed, changed in type or deselected (the switch is then locked, used
+fields are listed as “Permanently shared” above the choice, the section names the users); an app with a used interface
+cannot be removed. Taking an unused field out of the sharing raises the **version** of the app's interface. If the
+sharing app is **deactivated**, the referring fields show “not available” and the choice stays empty (the super admin
+still sees the values); the confirmation when deactivating points this out. On the **Apps** page the column
+**Interfaces** shows the number of shared tables and the action **Interfaces** (dots menu) what the app shares, who uses
+it and what it uses from other apps itself.
 
 **Access and current app:** a person has access to an app if they have a role of that app or – through any role or
 directly – data permissions on one of its tables or permissions of a plugin of that app; the super admin has all apps.

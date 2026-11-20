@@ -97,8 +97,10 @@ extension est refusé. Si même de petits fichiers autorisés échouent, la limi
 
 ### Une table manque dans le choix d’une liaison.
 
-Les liaisons ne sont possibles qu’entre tables de la même app (guide administrateur, chapitre 15). Si la table voulue
-appartient à une autre app, créez la nouvelle table dans cette app – ou étendez cette app.
+Les liaisons existent entre tables de la même app ; les tables d’une autre app n’apparaissent que si cette app les a
+**partagées comme interface** – alors avec le nom de l’app entre parenthèses, et seuls les champs partagés sont proposés
+comme champs affichés (guide administrateur, chapitre 15). Si la table manque, demandez à l’administration de la
+partager – ou créez la nouvelle table dans cette app.
 
 ### Une app a disparu du sélecteur.
 

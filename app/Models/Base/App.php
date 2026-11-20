@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $icon
  * @property string|null $prefix
  * @property string|null $version
+ * @property int $interface_version
  * @property int $sort_order
  * @property bool $is_active
  * @property Carbon|null $removal_due_at
@@ -33,6 +34,7 @@ class App extends Model
 
     protected $casts = [
         'sort_order' => 'int',
+        'interface_version' => 'int',
         'is_active' => 'bool',
         'removal_due_at' => 'datetime',
         'removal_requested_by' => 'int',
@@ -45,6 +47,7 @@ class App extends Model
         'icon',
         'prefix',
         'version',
+        'interface_version',
         'sort_order',
         'is_active',
         'removal_due_at',

@@ -128,7 +128,9 @@ App – auf Tabellen oder Plugins anderer Apps, etwa nach einem Wechsel der App 
 gelöschte Tabellen –, stehen sie zuunterst im Abschnitt **„Rechte ausserhalb dieser App“**: Tabellen als Matrix nach
 App gegliedert, nur mit den vorhandenen Rechten (angehakt), Plugin-Rechte und gelöschte Tabellen als Liste. Dort lassen
 sie sich nur entfernen (Haken weg, speichern), nicht hinzufügen. Wechseln Sie die App einer Rolle, bleiben alle Rechte
-erhalten, bis Sie sie dort abwählen. Die Systemrollen *super-admin* und *benutzer* gehören zu keiner App und
+erhalten, bis Sie sie dort abwählen. Leserechte auf **freigegebene Tabellen anderer Apps** (Schnittstellen,
+[Kapitel 15](#15-apps-fachanwendungen)) vergeben Sie im eigenen Abschnitt „Freigegebene Tabellen anderer Apps“ – nur
+*Anzeigen*, zum Öffnen der fremden Tabelle; die freigegebenen Felder in Verknüpfungen sehen alle auch ohne dieses Recht. Die Systemrollen *super-admin* und *benutzer* gehören zu keiner App und
 enthalten nur app-übergreifende Rechte (z. B. Dashboard, Hilfe); Datenrechte vergeben Sie über die Rollen der Apps.
 **Kopieren** (in der Liste und beim Bearbeiten) legt eine neue Rolle mit Namen und Ziel-App an – mit denselben Rechten
 (Datenrechte nur für Tabellen der Ziel-App) und ausgeblendeten Menüeinträgen, ohne Mitglieder.
@@ -1156,7 +1158,7 @@ Tabellen, Menüs, Auswertungen, Verknüpfungen, Rollen und Aufgaben:
 
 Die Spalte **Status** zeigt *Aktiv*, *Inaktiv*, *Entfernen ab …* oder *Entfernen fehlgeschlagen* (die Meldung als
 Tooltip), **Installiert** den Ausgangsstand einer installierten App und **Hinweise** dauernde Warnungen wie „Plugin
-fehlt: …“ oder angebundene Tabellen ohne Verbindung. Im Aktionsmenü (drei Punkte) stehen **Datenmodell**, **Exportieren …**, Deaktivieren/Aktivieren, Entfernen und – nur bei
+fehlt: …“ oder angebundene Tabellen ohne Verbindung. Im Aktionsmenü (drei Punkte) stehen **Datenmodell**, **Schnittstellen**, **Exportieren …**, Deaktivieren/Aktivieren, Entfernen und – nur bei
 leeren Apps – **Löschen**; Apps mit Inhalt werden deaktiviert und entfernt (unten).
 
 **Wo die App gewählt wird – und wo sie sich ergibt:**
@@ -1171,11 +1173,35 @@ leeren Apps – **Löschen**; Apps mit Inhalt werden deaktiviert und entfernt (u
 | Rolle | wählen (siehe [Rollen](#2-rollen-und-rechte)); *super-admin* und *benutzer* sind Systemrollen ohne App |
 | Geplante Aufgabe | zu einer Tabelle: deren App; sonst wählen; System-Aufgaben ohne App |
 
-**Grenze zwischen Apps:** Verknüpfungsfelder, Tabellenverknüpfungen für Auswertungen und damit auch „Übernehmen aus“
-und Formeln über Kind-Tabellen sind nur innerhalb einer App möglich. Der Table-Designer bietet nur Tabellen derselben
-App an. Der KI-Tabellenassistent wählt beim Anlegen die App aus dem Text (sonst die gewählte) und verwendet nur
-Menügruppen und Tabellen dieser App; beim Anpassen sieht er nur die App der Tabelle. Die Listen von Table-Designer und
-Table-Connector zeigen die App als Spalte mit Filter.
+**Grenze zwischen Apps:** Verknüpfungsfelder, Tabellenverknüpfungen für Auswertungen, „Übernehmen aus“ und Formeln über
+Kind-Tabellen gibt es innerhalb einer App – über die App-Grenze nur auf **freigegebene** Tabellen (Schnittstellen,
+unten). Der Table-Designer bietet Tabellen derselben App an und freigegebene Tabellen anderer Apps mit deren Namen. Der
+KI-Tabellenassistent wählt beim Anlegen die App aus dem Text (sonst die gewählte) und verwendet nur Menügruppen und
+Tabellen dieser App; beim Anpassen sieht er nur die App der Tabelle. Die Listen von Table-Designer und Table-Connector
+zeigen die App als Spalte mit Filter.
+
+**Schnittstellen:** Eine App kann einzelne Tabellen für alle anderen Apps **freigeben** – nur lesend. Im Table-Designer
+(Tabelle bearbeiten, Abschnitt **Schnittstelle**) schalten Sie „Für andere Apps freigeben“ ein und wählen die
+**freigegebenen Felder** (vorgeschlagen: die durchsuchbaren; die ID gehört immer dazu). Andere Apps können dann:
+
+- mit einem **Verknüpfungsfeld** auf die Tabelle verweisen (in der Auswahl „Artikel (Lagerverwaltung)“); als
+  Anzeigefelder gibt es nur freigegebene Felder,
+- mit **„Übernehmen aus“** einen freigegebenen Wert in ihre eigene Tabelle holen.
+
+In der fremden Tabelle selbst anlegen, ändern oder löschen geht über die Schnittstelle nicht; Summen über Kind-Tabellen
+einer anderen App gibt es nicht, und unter „Details“ erscheinen nur Tabellen der eigenen App. Die freigegebenen Felder
+sind in Verknüpfungen für alle sichtbar, die den eigenen Datensatz sehen; die fremde Tabelle selbst öffnen (Liste,
+Vorschau) braucht ihr Leserecht – vergeben in der Rolle im Abschnitt „Freigegebene Tabellen anderer Apps“.
+
+Was eine andere App nutzt, ist **Vertrag**: Die Tabelle lässt sich nicht deaktivieren, löschen, in eine andere App
+verschieben oder aus der Freigabe nehmen, genutzte Felder nicht löschen, umbenennen, im Typ ändern oder abwählen (der
+Schalter ist dann gesperrt, genutzte Felder stehen als „Fest freigegeben“ über der Auswahl, der Abschnitt nennt die
+Nutzer); eine App mit genutzter Schnittstelle lässt sich nicht entfernen. Nimmt man ein unbenutztes Feld aus der
+Freigabe, steigt die **Version** der Schnittstelle der App. Ist die freigebende App **deaktiviert**, zeigen die
+verweisenden Felder „nicht verfügbar“, die Auswahl bleibt leer (der Super-Admin sieht weiterhin die Werte); beim
+Deaktivieren weist die Rückfrage darauf hin. Auf der Seite **Apps** zeigt die Spalte **Schnittstellen** die Zahl der
+freigegebenen Tabellen und die Aktion **Schnittstellen** (Punkte-Menü), was die App freigibt, wer es nutzt und was sie
+selbst von anderen Apps nutzt.
 
 **Zugang und aktuelle App:** Zugang zu einer App hat, wer eine Rolle dieser App hat oder – über irgendeine Rolle oder
 direkt – Datenrechte auf eine ihrer Tabellen bzw. Rechte eines Plugins dieser App; der Super-Admin hat alle Apps. Mit

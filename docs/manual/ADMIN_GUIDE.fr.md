@@ -133,7 +133,10 @@ changement d’app ou d’avant les apps, ou sur des tables supprimées –, ils
 dehors de cette app »** : les tables sous forme de matrice regroupée par app, uniquement avec les droits existants
 (cochés), les droits de plugins et les tables supprimées sous forme de liste. On peut seulement les y retirer (décocher,
 enregistrer), pas en ajouter. Si vous changez l’app d’un rôle, tous les droits sont conservés jusqu’à ce que vous les y
-décochiez. Les rôles système *super-admin* et
+décochiez. Les droits de lecture sur les **tables partagées d’autres apps**
+(interfaces, [chapitre 15](#15-apps-applications-métier)) s’attribuent dans la section « Tables partagées d’autres apps » –
+seulement *Afficher*, pour ouvrir la table étrangère ; tous voient les champs partagés dans les liaisons même sans ce
+droit. Les rôles système *super-admin* et
 *benutzer* n’appartiennent à aucune app et ne contiennent que des droits communs (p. ex. tableau de bord, aide) ;
 attribuez les droits sur les données via les rôles des apps. **Copier** (dans la liste et en modification) crée un
 nouveau rôle avec un nom et une app cible – avec les mêmes droits (droits sur les données seulement pour les tables de
@@ -1212,7 +1215,7 @@ tables, menus, rapports, liaisons, rôles et tâches :
 La colonne **Statut** indique *Active*, *Inactive*, *Retrait dès …* ou *Échec du retrait* (le message en info-bulle),
 **Installée** l’état de référence d’une app installée et **Remarques** des avertissements durables comme « Plugin
 manquant : … » ou des tables connectées sans connexion.
-Le menu d’actions (trois points) contient **Modèle de données**, **Exporter …**, désactiver/activer, retirer et –
+Le menu d’actions (trois points) contient **Modèle de données**, **Interfaces**, **Exporter …**, désactiver/activer, retirer et –
 uniquement pour les apps vides – **Supprimer** ; les apps avec contenu sont désactivées puis retirées (ci-dessous).
 
 **Où l’app se choisit – et où elle découle :**
@@ -1227,12 +1230,36 @@ uniquement pour les apps vides – **Supprimer** ; les apps avec contenu sont d�
 | Rôle | à choisir (voir [Rôles](#2-rôles-et-droits)) ; *super-admin* et *benutzer* sont des rôles système sans app |
 | Tâche planifiée | liée à une table : son app ; sinon à choisir ; tâches système sans app |
 
-**Frontière entre apps :** les champs de liaison, les liaisons de tables pour les rapports et donc aussi « Reprendre
-de » et les formules sur les tables enfants ne sont possibles qu’au sein d’une app. Le concepteur de tables ne propose
-que les tables de la même app ; à la création, l’assistant IA des tables reprend l’app du
-texte (sinon celle choisie) et n’utilise que les groupes de menu et tables de cette app ; à l’adaptation, il ne voit
-que l’app de la table. Les listes du Concepteur de tables et du Connecteur de tables affichent l’app en colonne avec un
-filtre.
+**Frontière entre apps :** les champs de liaison, les liaisons de tables pour les rapports, « Reprendre de » et les
+formules sur les tables enfants existent au sein d’une app – au-delà de la frontière seulement vers des tables
+**partagées** (interfaces, ci-dessous). Le Concepteur de tables propose les tables de la même app et les tables partagées
+d’autres apps avec leur nom. À la création, l’assistant IA des tables reprend l’app du texte (sinon celle choisie) et
+n’utilise que les groupes de menu et tables de cette app ; à l’adaptation, il ne voit que l’app de la table. Les listes
+du Concepteur de tables et du Connecteur de tables affichent l’app en colonne avec un filtre.
+
+**Interfaces :** une app peut **partager** des tables avec toutes les autres apps – en lecture seule. Dans le Concepteur
+de tables (modifier la table, section **Interface**), activez « Partager avec d’autres apps » et choisissez les **champs
+partagés** (proposés : ceux qui sont recherchables ; l’ID en fait toujours partie). Les autres apps peuvent alors :
+
+- référencer la table par un **champ de liaison** (dans le choix « Article (Gestion de stock) ») ; seuls les champs
+  partagés sont disponibles comme champs affichés,
+- reprendre une valeur partagée dans leur propre table avec **« Reprendre de »**.
+
+Créer, modifier ou supprimer dans la table de l’autre app n’est pas possible via l’interface ; il n’y a pas de sommes
+sur les tables enfants d’une autre app, et « Détails » ne propose que les tables de sa propre app. Les champs partagés
+sont visibles dans les liaisons pour tous ceux qui voient leur propre enregistrement ; ouvrir la table étrangère
+elle-même (liste, aperçu) nécessite son droit de lecture – attribué dans le rôle, section « Tables partagées d’autres
+apps ».
+
+Ce qu’une autre app utilise est un **contrat** : la table ne peut être ni désactivée, ni supprimée, ni déplacée dans une
+autre app, ni retirée du partage ; les champs utilisés ne peuvent être ni supprimés, ni renommés, ni changés de type, ni
+désélectionnés (l’interrupteur est alors verrouillé, les champs utilisés figurent comme « Partagés de façon fixe »
+au-dessus du choix, la section nomme les utilisateurs) ; une app dont l’interface est utilisée ne peut pas être retirée.
+Retirer un champ non utilisé du partage augmente la **version** de l’interface de l’app. Si l’app qui partage est
+**désactivée**, les champs qui y renvoient affichent « non disponible » et le choix reste vide (le super-admin voit
+toujours les valeurs) ; la confirmation lors de la désactivation le signale. Sur la page **Apps**, la colonne
+**Interfaces** indique le nombre de tables partagées et l’action **Interfaces** (menu à points) ce que l’app partage,
+qui l’utilise et ce qu’elle utilise elle-même d’autres apps.
 
 **Accès et app actuelle :** a accès à une app la personne qui a un rôle de cette app ou – par n’importe quel rôle ou
 directement – des droits sur les données d’une de ses tables ou des droits d’un plugin de cette app ; le super-admin a

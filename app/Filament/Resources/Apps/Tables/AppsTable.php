@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Apps\Tables;
 
+use App\Apps\AppInterfaces;
 use App\Filament\Resources\Apps\Actions\AppLifecycleActions;
 use App\Filament\Resources\Apps\Actions\AppManualAction;
 use App\Filament\Resources\Apps\Actions\ExportAppAction;
@@ -11,6 +12,7 @@ use App\Filament\Support\MoveToAppAction;
 use App\Models\App;
 use App\Models\CustomTable;
 use App\Plugins\PluginRegistry;
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -53,6 +55,12 @@ class AppsTable
                     ->description(fn (App $record): ?string => filled($record->description) ? (string) $record->description : null)
                     ->wrap(),
                 TextColumn::make('prefix')->label(__('apps.prefix'))->placeholder('–'),
+                // Schnittstellen (Etappe 5): Zahl der freigegebenen Tabellen.
+                TextColumn::make('interfaces_count')
+                    ->label(__('apps.interfaces.column'))
+                    ->state(fn (App $record): int => $record->customTables()->where('is_shared', true)->count())
+                    ->alignment(Alignment::End)
+                    ->toggleable(),
                 // Ausgangsstand (Etappe 4b): zuletzt installiert als Version am … (bzw. als Kopie).
                 TextColumn::make('installed')
                     ->label(__('apps.installed.label'))
@@ -96,6 +104,17 @@ class AppsTable
                 AppManualAction::make(),
                 ActionGroup::make([
                     ExportAppAction::dataModel(),
+                    Action::make('interfaces')
+                        ->label(__('apps.interfaces.action'))
+                        ->icon('heroicon-o-arrows-right-left')
+                        ->modalHeading(fn (App $record): string => __('apps.interfaces.heading', ['name' => (string) $record->name]))
+                        ->modalContent(fn (App $record) => view('filament.apps.interfaces', [
+                            'offered' => app(AppInterfaces::class)->offeredBy($record),
+                            'uses' => app(AppInterfaces::class)->usedBy($record),
+                            'version' => $record->interface_version,
+                        ]))
+                        ->modalSubmitAction(false)
+                        ->modalCancelActionLabel(__('common.close')),
                     ExportAppAction::make(),
                     ...AppLifecycleActions::make(),
                     // Leere Apps direkt löschen; mit Inhalt deaktivieren und „Entfernen …“ (nur Super-Admin).

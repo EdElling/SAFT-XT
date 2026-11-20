@@ -74,6 +74,8 @@ return [
         'menu_entries_help' => 'Entries of type data table that this role sees in the menu. New entries are visible. Display only: whether the table may be viewed is set by the data permissions; with several roles, one role with read permission that shows the entry is enough.',
         'inactive_entry' => 'inactive',
         'choose_app_first' => 'Choose the app first: data permissions apply to the tables of that app.',
+        'shared_permissions' => 'Shared tables of other apps',
+        'shared_permissions_help' => 'Tables that other apps share as an interface. Their shared fields appear in relations even without a permission; “View” allows opening the table itself (list, preview).',
         'other_permissions' => 'Permissions outside this app',
         'other_permissions_help' => 'Existing permissions on tables or plugins of other apps (or of deleted tables). They can only be removed here: untick and save.',
         'table_deleted' => 'table deleted',

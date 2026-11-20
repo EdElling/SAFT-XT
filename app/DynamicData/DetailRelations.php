@@ -38,8 +38,13 @@ final class DetailRelations
      */
     public static function fieldCandidates(string $parentTable): Collection
     {
+        // Nur Kind-Tabellen derselben App: Verknüpfungen anderer Apps auf eine freigegebene Tabelle (B-107,
+        // Schnittstellen) bringen deren Datensätze nicht als Details in diese App.
+        $appId = CustomTable::query()->where('name', $parentTable)->value('app_id');
+
         return self::referencing($parentTable)
-            ->filter(fn (CustomField $f): bool => $f->is_active && $f->custom_table->is_active)
+            ->filter(fn (CustomField $f): bool => $f->is_active && $f->custom_table->is_active
+                && ($appId === null || $f->custom_table->app_id === null || $f->custom_table->app_id === $appId))
             ->values();
     }
 

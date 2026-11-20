@@ -389,4 +389,36 @@ class AppsTest extends DuskTestCase
         $this->assertSame(['hr2_mitarbeitende'], $copy->customTables()->pluck('name')->all());
         File::delete($path);
     }
+
+    /** FAP-13 */
+    public function test_table_is_shared_and_linked_from_another_app(): void
+    {
+        $staff = CustomTable::query()->where('name', 'hr_mitarbeitende')->sole();
+
+        $this->browse(function (Browser $browser) use ($staff): void {
+            // Freigeben im Table-Designer: Schalter an, vorgeschlagene Felder, speichern.
+            $this->login($browser, self::ADMIN)->visit('/admin/table-designer/'.$staff->id.'/edit')->waitForText('Schnittstelle', 15)
+                ->clickAtXPath("//*[contains(@class, 'fi-section')][.//*[contains(., 'Schnittstelle')]]//*[contains(@class, 'fi-section-header')]")
+                ->waitForText('Für andere Apps freigeben', 15)
+                ->clickAtXPath("//label[contains(., 'Für andere Apps freigeben')]//button | //*[contains(., 'Für andere Apps freigeben')]/ancestor::*[contains(@class,'fi-fo-field')][1]//button[@role='switch']")
+                ->waitForText('Freigegebene Felder', 15)
+                ->clickAtXPath("//label[contains(., 'Name (name)')]//input[@type='checkbox']")
+                ->pause(400);
+            $this->clickVisibleButton($browser, 'Speichern');
+            $browser->waitForText('Gespeichert', 15);
+        });
+
+        $staff->refresh();
+        $this->assertTrue($staff->is_shared);
+        $this->assertSame(['name'], $staff->fields()->where('is_shared', true)->pluck('name')->all());
+
+        // Verknüpfung aus der anderen App; danach ist die Freigabe gesperrt.
+        app(DynamicSchemaService::class)->addField(CustomTable::query()->where('name', 'kunden')->sole(), ['name' => 'betreuer_id', 'label' => 'Betreuer', 'type' => 'relation', 'options' => ['table' => 'hr_mitarbeitende', 'display_fields' => ['name']]]);
+
+        $this->browse(function (Browser $browser) use ($staff): void {
+            $browser->visit('/admin/table-designer/'.$staff->id.'/edit')->waitForText('Schnittstelle', 15)
+                ->waitForText('Fest freigegeben, weil von anderen Apps genutzt: Name (name)', 15)
+                ->assertSee('kunden.betreuer_id');
+        });
+    }
 }

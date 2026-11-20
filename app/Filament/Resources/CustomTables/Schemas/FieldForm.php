@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\CustomTables\Schemas;
 
+use App\Apps\AppInterfaces;
 use App\DynamicData\Files\FileKinds;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\RelationDisplay;
@@ -283,8 +284,9 @@ final class FieldForm
                     ->columnSpanFull(),
                 Select::make('options.table')
                     ->label(__('tables.fields.relation_table'))
-                    // Nur Tabellen derselben App (B-107); beim Anlegen einer Tabelle die im Formular gewählte.
-                    ->options(fn (Get $get): array => CustomTable::labelOptions(designerOnly: true, appId: $owner?->app_id ?? (filled($app = $get('../../app_id')) ? (int) $app : null)))
+                    // Tabellen derselben App (B-107) und freigegebene Tabellen anderer Apps (Schnittstellen, mit App-Namen);
+                    // beim Anlegen einer Tabelle zählt die im Formular gewählte App.
+                    ->options(fn (Get $get): array => self::relationTargets($owner?->app_id ?? (filled($app = $get('../../app_id')) ? (int) $app : null)))
                     ->live()
                     ->afterStateUpdated(fn (Set $set) => $set('options.display_fields', []))
                     ->required($is(FieldType::Relation))
@@ -298,6 +300,8 @@ final class FieldForm
                     ->options(fn (Get $get): array => CustomField::query()
                         ->whereHas('custom_table', fn ($q) => $q->where('name', (string) $get('options.table')))
                         ->where('type', '!=', FieldType::Relation->value)
+                        // Tabelle einer anderen App: nur freigegebene Felder (Schnittstelle).
+                        ->when(self::foreignTarget((string) $get('options.table'), $owner?->app_id ?? (filled($app = $get('../../app_id')) ? (int) $app : null)), fn ($q) => $q->where('is_shared', true))
                         ->orderBy('sort_order')
                         ->get()
                         ->mapWithKeys(fn (CustomField $field): array => [$field->name => (string) $field->label])
@@ -601,5 +605,34 @@ final class FieldForm
         ));
 
         return $described === [] ? __('tables.fields.plugin_checks_help') : implode(' · ', $described);
+    }
+
+    /**
+     * Ziele einer Verknüpfung: Tabellen des Table-Designers derselben App und freigegebene Tabellen anderer Apps
+     * (B-107, Schnittstellen) mit dem Namen ihrer App.
+     *
+     * @return array<string, string>
+     */
+    private static function relationTargets(?int $appId): array
+    {
+        $own = CustomTable::labelOptions(designerOnly: true, appId: $appId);
+
+        if ($appId === null) {
+            return $own;
+        }
+
+        $shared = CustomTable::query()->designer()->where('is_shared', true)->whereNotNull('app_id')->where('app_id', '!=', $appId)->with('app')->get()
+            ->mapWithKeys(static fn (CustomTable $t): array => [$t->name => (string) $t->label.' ('.$t->app?->name.')'])
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->all();
+
+        return $own + $shared;
+    }
+
+    private static function foreignTarget(string $table, ?int $appId): bool
+    {
+        $target = $table === '' ? null : CustomTable::query()->where('name', $table)->first();
+
+        return $target !== null && AppInterfaces::foreign($target, $appId);
     }
 }

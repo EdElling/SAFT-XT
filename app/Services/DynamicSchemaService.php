@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Apps\AppInterfaces;
 use App\DynamicData\DataMenu;
 use App\DynamicData\DataPermissions;
 use App\DynamicData\DetailRelations;
@@ -160,6 +161,7 @@ final class DynamicSchemaService
 
         if (array_key_exists('is_active', $data) && ! $data['is_active'] && $table->is_active) {
             $this->assertNotRequiredByPlugin($table->name);
+            $this->assertNotUsedByOtherApps($table);
         }
 
         if (array_key_exists('detail_field_ids', $data)) {
@@ -251,6 +253,7 @@ final class DynamicSchemaService
             // Felder, die ein Plugin braucht: Name, Typ und „aktiv“ bleiben.
             if ($renamed || $new['type'] !== $field->type || (! $new['is_active'] && $field->is_active)) {
                 $this->assertNotRequiredByPlugin($table->name, $field->name);
+                $this->assertNotUsedByOtherApps($table, $field->name);
             }
 
             // Vor jeder DDL prüfen: MySQL könnte die bereits ausgeführten Schritte nicht zurückrollen.
@@ -566,6 +569,7 @@ final class DynamicSchemaService
         $this->mutate($table->name, function () use ($field, $table, $confirmation): void {
             $this->assertDestructionConfirmed($field->is_active, $field->name, $confirmation, __('tables.what.field'));
             $this->assertNotRequiredByPlugin($table->name, $field->name);
+            $this->assertNotUsedByOtherApps($table, $field->name);
 
             if ($this->rulesUsing($table, $field->name) !== []) {
                 $this->fail(__('tables.errors.used_in_rule', ['name' => $field->name]));
@@ -612,6 +616,7 @@ final class DynamicSchemaService
         $this->mutate($table->name, function () use ($table, $confirmation): void {
             $this->assertDestructionConfirmed($table->is_active, $table->name, $confirmation, __('tables.what.table'));
             $this->assertNotRequiredByPlugin($table->name);
+            $this->assertNotUsedByOtherApps($table);
 
             $referencedBy = CustomField::query()
                 ->where('type', FieldType::Relation->value)
@@ -1064,6 +1069,55 @@ final class DynamicSchemaService
         if (! hash_equals($name, $confirmation)) {
             $this->fail(__('tables.errors.confirmation', ['name' => $name]));
         }
+    }
+
+    /**
+     * Schnittstelle einer Tabelle (B-107, Etappe 5): für andere Apps freigeben und die freigegebenen Felder wählen. Was
+     * andere Apps nutzen, lässt sich nicht zurücknehmen; nimmt man unbenutzte Freigaben zurück, steigt die Version der
+     * Schnittstelle der App (unverträgliche Änderung).
+     *
+     * @param  list<string>  $fields  technische Namen der freigegebenen Felder
+     */
+    public function updateInterface(CustomTable $table, bool $shared, array $fields): void
+    {
+        $this->assertDesigner($table);
+        $table->loadMissing('fields');
+        $fields = $shared ? array_values(array_intersect($table->fields->pluck('name')->all(), $fields)) : [];
+        $before = $table->is_shared ? $table->fields->where('is_shared', true)->pluck('name')->all() : [];
+        $removed = array_values(array_diff($before, $fields));
+
+        if ($table->is_shared && ! $shared) {
+            $this->assertNotUsedByOtherApps($table);
+        }
+
+        foreach ($removed as $field) {
+            $this->assertNotUsedByOtherApps($table, $field);
+        }
+
+        DB::transaction(function () use ($table, $shared, $fields, $removed): void {
+            $table->fill(['is_shared' => $shared])->save();
+
+            foreach ($table->fields as $field) {
+                $field->fill(['is_shared' => $shared && in_array($field->name, $fields, true)])->save();
+            }
+
+            if ($removed !== [] && $table->app !== null) {
+                $table->app->increment('interface_version');
+            }
+        });
+    }
+
+    /** Nutzt eine andere App die Tabelle bzw. das Feld über ihre Schnittstelle? Dann ist es Vertrag (B-107, Etappe 5). */
+    private function assertNotUsedByOtherApps(CustomTable $table, ?string $field = null): void
+    {
+        if (! $table->is_shared || ($usages = app(AppInterfaces::class)->usages($table, $field)) === []) {
+            return;
+        }
+
+        $this->fail(__($field === null ? 'apps.errors.interface_table_used' : 'apps.errors.interface_field_used', [
+            'name' => $field ?? $table->name,
+            'usages' => implode(', ', $usages),
+        ]));
     }
 
     /** Tabelle bzw. Feld wird von einem installierten Plugin gebraucht (SaftPlugin::requiredTables()). */

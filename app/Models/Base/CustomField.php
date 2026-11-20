@@ -32,6 +32,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $show_in_table
  * @property bool $show_in_form
  * @property bool $is_active
+ * @property bool $is_shared
  * @property int $sort_order
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -52,6 +53,7 @@ class CustomField extends Model
         'show_in_table' => 'bool',
         'show_in_form' => 'bool',
         'is_active' => 'bool',
+        'is_shared' => 'bool',
         'is_read_only' => 'bool',
         'is_generated' => 'bool',
         'sort_order' => 'int',
@@ -73,6 +75,7 @@ class CustomField extends Model
         'show_in_table',
         'show_in_form',
         'is_active',
+        'is_shared',
         'is_read_only',
         'is_generated',
         'sort_order',

@@ -93,8 +93,10 @@ files fail, the server's limit is too low (system administration: `upload_max_fi
 
 ### A table is missing from the choice for a relation.
 
-Relations are only possible between tables of the same app (administrator guide, chapter 15). If the table you want
-belongs to another app, create the new table in that app – or extend that app.
+Relations exist between tables of the same app; tables of another app only appear if that app has **shared them as an
+interface** – then with the app name in brackets, and only the shared fields are offered as display fields
+(administrator guide, chapter 15). If the table is missing, ask the administration to share it – or create the new
+table in that app.
 
 ### An app has disappeared from the switcher.
 

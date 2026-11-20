@@ -130,7 +130,10 @@ scelta, al posto dei diritti sui dati compare l’indicazione di scegliere prima
 su tabelle eliminate –, compaiono in fondo nella sezione **«Diritti al di fuori di questa app»**: le tabelle come
 matrice raggruppata per app, solo con i diritti esistenti (spuntati), i diritti dei plugin e le tabelle eliminate come
 elenco. Lì si possono solo rimuovere (togliere la spunta, salvare), non aggiungere. Se cambiate l’app di un ruolo, tutti
-i diritti restano finché non li togliete lì. I ruoli di sistema *super-admin* e *benutzer* non
+i diritti restano finché non li togliete lì. I diritti di lettura sulle **tabelle condivise di altre app** (interfacce,
+[capitolo 15](#15-app-applicazioni-specialistiche)) si assegnano nella sezione «Tabelle condivise di altre app» – solo
+*Visualizzare*, per aprire la tabella altrui; tutti vedono i campi condivisi nei collegamenti anche senza questo
+diritto. I ruoli di sistema *super-admin* e *benutzer* non
 appartengono ad alcuna app e contengono solo diritti comuni (ad es. dashboard, guida); i diritti sui dati si assegnano
 tramite i ruoli delle app. **Copia** (nell’elenco e in modifica) crea un nuovo ruolo con nome e app di destinazione –
 con gli stessi diritti (diritti sui dati solo per le tabelle dell’app di destinazione) e le voci di menu nascoste,
@@ -1180,7 +1183,7 @@ loro tabelle, menu, report, collegamenti, ruoli e attività:
 
 La colonna **Stato** mostra *Attiva*, *Inattiva*, *Rimozione dalle …* o *Rimozione non riuscita* (il messaggio come
 tooltip), **Installata** lo stato di partenza di un’app installata e **Indicazioni** avvisi duraturi come «Plugin
-mancante: …» o tabelle collegate senza connessione. Il menu delle azioni (tre puntini) contiene **Modello di dati**, **Esporta …**, disattivare/attivare, rimuovere
+mancante: …» o tabelle collegate senza connessione. Il menu delle azioni (tre puntini) contiene **Modello di dati**, **Interfacce**, **Esporta …**, disattivare/attivare, rimuovere
 e – solo per app vuote – **Elimina**; le app con contenuto vengono disattivate e rimosse (sotto).
 
 **Dove si sceglie l’app – e dove deriva:**
@@ -1195,11 +1198,34 @@ e – solo per app vuote – **Elimina**; le app con contenuto vengono disattiva
 | Ruolo | da scegliere (vedi [Ruoli](#2-ruoli-e-diritti)); *super-admin* e *benutzer* sono ruoli di sistema senza app |
 | Attività pianificata | relativa a una tabella: la sua app; altrimenti da scegliere; attività di sistema senza app |
 
-**Confine tra app:** campi di collegamento, collegamenti tra tabelle per i report e quindi anche «Riprendi da» e le
-formule sulle tabelle figlie sono possibili solo all’interno di un’app. Il designer di tabelle offre solo tabelle della
-stessa app; alla creazione l’assistente IA delle tabelle prende l’app
-dal testo (altrimenti quella scelta) e usa solo gruppi di menu e tabelle di quell’app; nell’adattamento vede solo l’app
-della tabella. Gli elenchi del Designer di tabelle e del Connettore di tabelle mostrano l’app come colonna con filtro.
+**Confine tra app:** campi di collegamento, collegamenti tra tabelle per i report, «Riprendi da» e le formule sulle
+tabelle figlie esistono all’interno di un’app – oltre il confine solo verso tabelle **condivise** (interfacce, sotto).
+Il designer di tabelle offre le tabelle della stessa app e le tabelle condivise di altre app con il loro nome. Alla
+creazione l’assistente IA delle tabelle prende l’app dal testo (altrimenti quella scelta) e usa solo gruppi di menu e
+tabelle di quell’app; nell’adattamento vede solo l’app della tabella. Gli elenchi del Designer di tabelle e del
+Connettore di tabelle mostrano l’app come colonna con filtro.
+
+**Interfacce:** un’app può **condividere** singole tabelle con tutte le altre app – in sola lettura. Nel Designer di
+tabelle (modificare la tabella, sezione **Interfaccia**) attivate «Condividere con altre app» e scegliete i **campi
+condivisi** (proposti: quelli ricercabili; l’ID ne fa sempre parte). Le altre app possono allora:
+
+- riferirsi alla tabella con un **campo di collegamento** (nella scelta «Articolo (Gestione magazzino)»); come campi
+  visualizzati ci sono solo campi condivisi,
+- riprendere un valore condiviso nella propria tabella con **«Riprendi da»**.
+
+Creare, modificare o eliminare nella tabella dell’altra app tramite l’interfaccia non è possibile; non ci sono somme su
+tabelle figlie di un’altra app, e «Dettagli» offre solo tabelle della propria app. I campi condivisi sono visibili nei
+collegamenti a tutti coloro che vedono il proprio record; aprire la tabella altrui stessa (elenco, anteprima) richiede
+il suo diritto di lettura – assegnato nel ruolo, sezione «Tabelle condivise di altre app».
+
+Ciò che un’altra app usa è un **contratto**: la tabella non si può disattivare, eliminare, spostare in un’altra app né
+togliere dalla condivisione; i campi usati non si possono eliminare, rinominare, cambiare di tipo né deselezionare (il
+selettore è allora bloccato, i campi usati figurano come «Condivisi in modo fisso» sopra la scelta, la sezione nomina gli
+utilizzatori); un’app con interfaccia usata non si può rimuovere. Togliere un campo non usato dalla condivisione aumenta
+la **versione** dell’interfaccia dell’app. Se l’app che condivide è **disattivata**, i campi che vi rimandano mostrano
+«non disponibile» e la scelta resta vuota (il super-admin vede ancora i valori); la conferma alla disattivazione lo
+segnala. Nella pagina **App** la colonna **Interfacce** mostra il numero di tabelle condivise e l’azione **Interfacce**
+(menu a puntini) cosa condivide l’app, chi lo usa e cosa usa lei stessa di altre app.
 
 **Accesso e app attuale:** ha accesso a un’app chi ha un ruolo di quell’app oppure – tramite un qualsiasi ruolo o
 direttamente – diritti sui dati di una sua tabella o diritti di un plugin di quell’app; il super-admin ha tutte le app.

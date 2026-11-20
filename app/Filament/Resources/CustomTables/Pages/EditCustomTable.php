@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\CustomTables\Pages;
 
+use App\Apps\AppInterfaces;
 use App\DynamicData\Assistant\TableAssistant;
 use App\DynamicData\Assistant\TableAssistantResult;
 use App\DynamicData\DataAccess;
@@ -178,13 +179,23 @@ class EditCustomTable extends EditRecord
         /** @var CustomTable $record */
         $record = $this->getRecord();
 
-        return [...$data, 'validation_rules' => TableRuleNormalizer::toRows($record->loadMissing('fields'))];
+        return [...$data, 'validation_rules' => TableRuleNormalizer::toRows($record->loadMissing('fields')),
+            // Schnittstelle (B-107): freigegebene Felder; neu freigegeben sind die Anzeigefelder vorgeschlagen.
+            // Genutzte Felder stehen fest als Text darüber, nicht in der Auswahl.
+            'shared_fields' => $record->fields->where('is_shared', true)->pluck('name')->diff(app(AppInterfaces::class)->usedFields($record))->values()->all()];
     }
 
     /** @param CustomTable $record */
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        return app(DynamicSchemaService::class)->updateTable($record, Arr::only($data, ['label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled', 'detail_field_ids', 'validation_rules']));
+        $service = app(DynamicSchemaService::class);
+        /** @var CustomTable $record */
+        // Gesperrte Felder (Freigabe genutzt) schickt das Formular nicht mit: dann gilt der bisherige Stand.
+        $interfaces = app(AppInterfaces::class);
+        $fields = array_values(array_unique([...array_map('strval', (array) ($data['shared_fields'] ?? [])), ...$interfaces->usedFields($record)]));
+        $service->updateInterface($record, (bool) ($data['is_shared'] ?? $record->is_shared), $fields);
+
+        return $service->updateTable($record->refresh(), Arr::only($data, ['label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled', 'detail_field_ids', 'validation_rules']));
     }
 
     /** Hinweis, wenn vorhandene Datensätze eine Regel schon verletzen (gespeichert wird trotzdem). */

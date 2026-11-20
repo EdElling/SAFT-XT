@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\DynamicData;
 
+use App\Models\App;
+use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -93,6 +96,10 @@ final class RelationDisplay
      */
     public static function options(Builder $query, array $options, int $limit): array
     {
+        if (self::unavailable($options)) {
+            return [];
+        }
+
         $model = $query->getModel();
         $fields = self::fields($options);
         $separator = self::separator($options);
@@ -108,12 +115,38 @@ final class RelationDisplay
     }
 
     /**
+     * Zieltabelle in einer deaktivierten App (B-107, Schnittstellen): Verweise zeigen „nicht verfügbar“, die Auswahl
+     * bleibt leer – ausser für den Super-Admin. Einmal je Anfrage und Tabelle ermittelt.
+     *
+     * @param  array<string, mixed>  $options
+     */
+    public static function unavailable(array $options): bool
+    {
+        $table = (string) ($options['table'] ?? '');
+        $key = 'saft.relation.app.'.$table;
+        $attributes = request()->attributes;
+
+        if (! $attributes->has($key)) {
+            $attributes->set($key, CustomTable::query()->where('name', $table)->value('app_id'));
+        }
+
+        $appId = $attributes->get($key);
+        $user = auth()->user();
+
+        return $appId !== null && ! App::isActiveId((int) $appId) && ! ($user instanceof User && $user->isSuperAdmin());
+    }
+
+    /**
      * Anzeige eines einzelnen Datensatzes der Zieltabelle.
      *
      * @param  array<string, mixed>  $options
      */
     public static function label(?Model $record, array $options): ?string
     {
+        if (self::unavailable($options)) {
+            return __('apps.interfaces.unavailable');
+        }
+
         if ($record === null) {
             return null;
         }

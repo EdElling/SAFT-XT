@@ -29,6 +29,7 @@ class App extends BaseApp
     protected $attributes = [
         'sort_order' => 0,
         'is_active' => true,
+        'interface_version' => 1,
     ];
 
     /** Was an einer App hängt (Relation => Übersetzungsschlüssel für die Anzeige). */
