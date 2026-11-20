@@ -8,7 +8,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-1. **B-115** Release v0.4.0, danach **B-107** Etappe 7 (KI-App-Designer) – nach einer Denkpause
+1. **B-107** Etappe 7 (KI-App-Designer) – nach einer Denkpause
 
 ## Apps (Fachanwendungen)
 
@@ -20,7 +20,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 | B-112 | Rollenformular: Menüeinträge der Hauptebene einer App | Korrektur: Im Rollenformular fehlen bei den Menüeinträgen solche, die direkt auf der Hauptebene stehen und zur App gehören (z. B. ein „Datenmodell“ ohne Gruppe in der Lagerverwaltung). Sie sollen wie die Einträge in Gruppen erscheinen und sich aus- bzw. einblenden lassen. Gefunden beim Test, 20.11.2026. | umgesetzt (alle Einträge der App mit eigenem Ziel; andere als Datentabellen ausgeblendet, wenn alle Rollen der Person aus der App sie ausblenden) | B-107 |
 | B-113 | Verlauf der Felder im Table-Designer; Admin-Tabellen nur mit Symbolen | In der Feldliste des Table-Designers fehlt die Änderungshistorie der Felder: je Feld ein Uhr-Symbol, das wie in den App-Tabellen den Verlauf (wer wann was geändert hat) als Dialog zeigt. Danach in allen Admin-Tabellen die Zeilenaktionen nur noch als Symbole mit Tooltip, ohne Text (wie in den App-Tabellen). Notiert 20.11.2026. | umgesetzt (Verlauf je Feld; alle Admin-Tabellen mit Symbolen und Tooltip, Anzeigen als Lupe, Auge zeigt den Zustand, gesperrte Symbole blasser; dazu Ausblenden gesperrt bei Nutzung über die Schnittstelle, Systemprotokoll so breit wie nötig) | – |
 | B-114 | Plugins je App (B-107 Etappe 8) | Plugin von Hand einer App zuordnen (Seite „Plugins“), wenn es keine oder Tabellen mehrerer Apps braucht; Plugin je App ein- und ausschalten; Plugin-API 1.9: Plugin schlägt beim Einrichten seine App vor bzw. bringt sie mit. Bereits umgesetzt: App aus den Tabellen des Plugins, Menüs, Rechte, Handbücher, Kacheln, Prüfregeln, Formelfunktionen und Aufgabenarten je App. | offen | B-107 |
-| B-115 | Release v0.4.0 | Apps (Fachanwendungen) Etappen 1–6 mit Schnittstellen und Aktualisieren, KI-Tabellenassistent mit Regeln und Gespräch (B-110), Bedienung (Symbole, Spaltenreihenfolge, Untermenüs, App-Reiter), B-112, B-113; KI-Auswertungsassistent und Plugin-Beiträge je App. Feature- und Browser-Tests auf GitHub (3 Datenbanken). | in Arbeit | v0.4.0 |
+| B-115 | Release v0.4.0 | Apps (Fachanwendungen) Etappen 1–6 mit Schnittstellen und Aktualisieren, KI-Tabellenassistent mit Regeln und Gespräch (B-110), Bedienung (Symbole, Spaltenreihenfolge, Untermenüs, App-Reiter), B-112, B-113; KI-Auswertungsassistent und Plugin-Beiträge je App. Feature- und Browser-Tests auf GitHub (3 Datenbanken). | umgesetzt | v0.4.0 |
 
 ## Konfiguration übertragen (abgelöst durch Apps, B-107)
 
