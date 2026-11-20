@@ -172,8 +172,7 @@ Le menu de gauche est géré ici. Chaque entrée a un **type** :
   [chapitre 2](#2-rôles-et-droits)).
 
 **Entrée de menu de type « Modèle de données » :** la page montre les tables de données du groupe dans lequel se
-trouve l’entrée – y compris tous les sous-groupes – sous forme de diagramme avec leurs liaisons. Si l’entrée se trouve
-au niveau supérieur, toutes les tables de données apparaissent. La page est générique : le même type peut être placé
+trouve l’entrée – y compris tous les sous-groupes – sous forme de diagramme avec leurs liaisons. Si l’entrée se trouve au niveau supérieur, toutes les tables de données de son app apparaissent (sans app : toutes). La page est générique : le même type peut être placé
 dans plusieurs groupes, et si une entrée est déplacée, elle montre automatiquement le nouveau groupe. Règles :
 
 - Sont affichées les tables qui ont une entrée de menu de type « Table de données » dans le groupe, et seulement

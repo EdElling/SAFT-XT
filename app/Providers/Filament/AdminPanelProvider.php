@@ -72,7 +72,7 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarFullyCollapsibleOnDesktop()
             ->databaseNotifications()
             // Eigene Stile und der persönliche Kontrastmodus (siehe PanelAppearance).
-            ->renderHook(PanelsRenderHook::STYLES_AFTER, fn (): string => PanelAppearance::styles().PanelAppearance::themeScript())
+            ->renderHook(PanelsRenderHook::STYLES_AFTER, fn (): string => PanelAppearance::styles().PanelAppearance::themeScript().PanelAppearance::submenuScript())
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => PanelAppearance::headScript())
             // Umschalter der aktuellen App (B-107), nur bei mehr als einer zugänglichen App.
             ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_BEFORE, static function (): string {

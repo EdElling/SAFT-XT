@@ -10,6 +10,7 @@ return [
     'button_help' => 'Questions about using SAFT – answered from the manuals, with references.',
     'intro' => 'Ask a question about using SAFT, e.g. “How do I export a table to Excel?”. The answer is based on the manuals and refers to the matching sections.',
     'placeholder' => 'Your question …',
+    'prefill' => 'Describe the current screen',
     'send' => 'Ask',
     'thinking' => 'The assistant is writing …',
     'new' => 'New conversation',

@@ -236,6 +236,8 @@ class DynamicDataPage extends Page implements HasTable
             ->identifier($this->rememberedTableIdentifier())
             ->query(fn () => $builder->query($customTable, $columns, toggleable: true))
             ->columns($builder->columns($customTable, $columns, toggleable: true))
+            // Reihenfolge per Drag-and-Drop im Spalten-Menü, je Person gespeichert (RemembersTableColumns).
+            ->reorderableColumns()
             ->filters([...$builder->filters($customTable), TrashedFilter::make()->visible(! $external && DataAccess::current($customTable, 'delete'))])
             ->filtersFormColumns(3)
             // Designer-Tabellen: neueste zuerst; externe Tabellen in Schlüsselreihenfolge.

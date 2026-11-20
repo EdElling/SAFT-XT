@@ -74,7 +74,7 @@ class NavigationTest extends TestCase
 
     public function test_third_level_becomes_child_item(): void
     {
-        // Untermenüs der Administration (B-066): Einträge als Kind-Einträge, Klick öffnet die erste Seite.
+        // Untermenüs der Administration (B-066): Einträge als Kind-Einträge; ohne eigene Seite klappt ein Klick auf und zu.
         $builder = app(MenuNavigationBuilder::class)->build(new NavigationBuilder, $this->superAdmin());
         $group = collect($builder->getNavigation())->first(fn (NavigationGroup $g): bool => $g->getLabel() === 'Administration');
         $item = collect($group->getItems())->first(fn (NavigationItem $i): bool => trim(strip_tags((string) $i->getLabel())) === 'Benutzer und Zugriff');
@@ -84,7 +84,7 @@ class NavigationTest extends TestCase
         $this->assertStringContainsString('saft-submenu-chevron', (string) $item->getLabel());
         $this->assertStringContainsString('<span class="saft-submenu-label">Benutzer und Zugriff</span>', (string) $item->getLabel());
         $this->assertSame('Benutzer', collect($item->getChildItems())->first()->getLabel(), 'Seiten ohne HTML.');
-        $this->assertStringEndsWith('/admin/users', (string) $item->getUrl());
+        $this->assertNull($item->getUrl(), 'Container ohne Seite: Klick klappt auf/zu (PanelAppearance::submenuScript).');
 
         // Eine vierte Ebene wird nicht angezeigt.
         $users = Menu::where('label->de', 'Benutzer')->firstOrFail();

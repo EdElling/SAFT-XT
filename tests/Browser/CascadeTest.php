@@ -220,7 +220,8 @@ class CascadeTest extends DuskTestCase
             $this->clickRow($browser, 'ACME GmbH')->waitForText('B-100', 15);
             $this->clickRow($browser, 'B-100')->waitForText('Schraube M8', 15);
 
-            $browser->clickLink('Benutzer und Zugriff')->waitForLocation('/admin/users', 15)
+            // Untermenü „Benutzer und Zugriff“ klappt per Klick auf; dann die Seiten darin.
+            $this->openSubmenuEntry($browser, 'Benutzer und Zugriff', 'Benutzer')->waitForLocation('/admin/users', 15)
                 ->clickLink('Rollen')->waitForLocation('/admin/roles', 15)
                 ->back()
                 ->back()

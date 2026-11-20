@@ -165,8 +165,7 @@ Das Menü auf der linken Seite wird hier gepflegt. Jeder Eintrag hat einen **Typ
   [Kapitel 2](#2-rollen-und-rechte)).
 
 **Menüeintrag vom Typ „Datenmodell“:** Die Seite zeigt die Datentabellen der Gruppe, in der der Eintrag steht –
-einschliesslich aller Untergruppen – als Diagramm mit ihren Verknüpfungen. Steht der Eintrag auf oberster Ebene,
-erscheinen alle Datentabellen. Die Seite ist generisch: Derselbe Typ lässt sich in mehrere Gruppen einhängen, und
+einschliesslich aller Untergruppen – als Diagramm mit ihren Verknüpfungen. Steht der Eintrag auf oberster Ebene, erscheinen alle Datentabellen seiner App (ohne App: alle). Die Seite ist generisch: Derselbe Typ lässt sich in mehrere Gruppen einhängen, und
 wird ein Eintrag verschoben, zeigt er automatisch die neue Gruppe. Es gilt:
 
 - Gezeigt werden Tabellen mit einem Menüeintrag vom Typ „Datentabelle“ in der Gruppe, und nur solche, die der

@@ -169,8 +169,7 @@ Il menu a sinistra si gestisce qui. Ogni voce ha un **tipo**:
   [capitolo 2](#2-ruoli-e-diritti)).
 
 **Voce di menu di tipo «Modello dati»:** la pagina mostra le tabelle di dati del gruppo in cui si trova la voce –
-compresi tutti i sottogruppi – come diagramma con i loro collegamenti. Se la voce si trova al livello superiore,
-compaiono tutte le tabelle di dati. La pagina è generica: lo stesso tipo si può inserire in più gruppi e, se una voce
+compresi tutti i sottogruppi – come diagramma con i loro collegamenti. Se la voce si trova al livello superiore, compaiono tutte le tabelle di dati della sua app (senza app: tutte). La pagina è generica: lo stesso tipo si può inserire in più gruppi e, se una voce
 viene spostata, mostra automaticamente il nuovo gruppo. Vale quanto segue:
 
 - Vengono mostrate le tabelle con una voce di menu di tipo «Tabella di dati» nel gruppo, e solo quelle che l’utente

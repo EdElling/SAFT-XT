@@ -217,6 +217,21 @@ abstract class DuskTestCase extends BaseTestCase
         return $this->submitLogin($browser, $email, $password)->waitFor(self::SELECTOR_SIDEBAR, 15);
     }
 
+    /** Untermenü ohne eigene Seite per Klick aufklappen und einen Eintrag darin öffnen. */
+    protected function openSubmenuEntry(Browser $browser, string $submenu, string $entry): Browser
+    {
+        $xpath = "//li[contains(@class, 'fi-sidebar-item')][.//span[contains(@class, 'saft-submenu-label')][normalize-space(.)='{$submenu}']]"
+            ."//ul[contains(@class, 'fi-sidebar-sub-group-items')]//a[normalize-space(.)='{$entry}']";
+        $visible = static fn (): bool => ($el = $browser->driver->findElements(\Facebook\WebDriver\WebDriverBy::xpath($xpath))) !== [] && $el[0]->isDisplayed();
+
+        if (! $visible()) {
+            $browser->clickLink($submenu);
+            $browser->waitUsing(15, 100, $visible);
+        }
+
+        return $browser->clickAtXPath($xpath);
+    }
+
     protected function logout(Browser $browser): Browser
     {
         return $browser

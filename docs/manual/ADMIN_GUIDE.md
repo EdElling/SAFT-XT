@@ -161,7 +161,7 @@ This is where the menu on the left is maintained. Every entry has a **type**:
   [chapter 2](#2-roles-and-permissions)).
 
 **Menu entry of type "Data model":** The page shows the data tables of the group the entry is in – including all
-subgroups – as a diagram with their relations. If the entry is on the top level, all data tables appear. The page is
+subgroups – as a diagram with their relations. If the entry is on the top level, all data tables of its app appear (without an app: all). The page is
 generic: the same type can be placed in several groups, and when an entry is moved it automatically shows the new
 group. The following applies:
 

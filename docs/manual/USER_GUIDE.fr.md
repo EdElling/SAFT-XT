@@ -117,8 +117,9 @@ déconnecté du compte de l’entreprise.
 
 - **À gauche** se trouve le **menu**. Il n’affiche que les domaines pour lesquels vous avez des droits. Sous
   **Données** se trouvent les tables, sous **Administration** les fonctions de gestion. Les entrées
-  avec une flèche **›** à droite sont des sous-menus (p. ex. *Administration › Utilisateurs et accès*) : un clic ouvre
-  leur première page et déplie les autres en dessous ; la flèche pointe alors vers le bas. La flèche **‹** à côté du nom
+  avec une flèche **›** à droite sont des sous-menus (p. ex. *Administration › Utilisateurs et accès*) : un clic les déplie et les replie comme les groupes principaux ; ouverte, la flèche pointe vers le bas. Votre
+  navigateur mémorise l’état ; le sous-menu avec la page actuelle est ouvert. Si une telle entrée a sa propre page, un
+  clic l’ouvre. La flèche **‹** à côté du nom
   de l’application masque entièrement le menu pour laisser plus de place aux tables ; le bouton **☰** au même endroit
   le fait réapparaître. Votre navigateur retient ce choix. Le menu est aussi large que son entrée la plus longue.
 - **Documentation** (dans le menu, juste sous le tableau de bord) affiche ce guide et les questions fréquentes dans
@@ -129,8 +130,8 @@ déconnecté du compte de l’entreprise.
   SAFT** indique la version, les conditions de licence et les composants tiers avec leurs licences.
 - **Assistant d’aide :** s’il est configuré et que vous en avez le droit, le bouton **?** en haut à droite ouvre une
   fenêtre où vous posez des questions sur l’utilisation, p. ex. « Comment exporter cette table ? ». La réponse s’appuie
-  sur les manuels que vous pouvez voir et renvoie aux sections correspondantes ; l’assistant sait sur quelle page vous
-  vous trouvez. Vous retrouvez les mêmes conversations sous **Documentation**, onglet **Assistant IA**, où vous rouvrez,
+  sur les manuels que vous pouvez voir et renvoie aux sections correspondantes ; l’assistant sait sur quelle page vous vous trouvez. À l’ouverture, « Décris l’écran actuel » figure déjà dans le
+  champ – il suffit d’envoyer, ou d’écrire par-dessus. Vous retrouvez les mêmes conversations sous **Documentation**, onglet **Assistant IA**, où vous rouvrez,
   poursuivez ou supprimez les conversations précédentes. Les réponses de l’IA peuvent contenir des erreurs – les
   manuels font foi.
 - Le **tableau de bord** est la page d’accueil. Les tuiles (widgets) sont disposées sur deux colonnes qui s’allongent
@@ -209,8 +210,9 @@ maître-détail se comportent de la même manière.
 >
 > L’**icône des colonnes** à droite du filtre permet d’afficher d’autres champs ou de masquer ceux prévus ; confirmez
 > avec « Appliquer les colonnes ». SAFT retient votre choix **durablement et pour vous personnellement** – par table et
-> par entrée de menu, même après la déconnexion et sur un autre ordinateur. « Réinitialiser » rétablit la
-> présélection. L’icône des colonnes existe aussi dans les listes de l’administration.
+> par entrée de menu, même après la déconnexion et sur un autre ordinateur. Vous modifiez l’**ordre** dans le même menu en tirant la poignée d’une colonne ; il est également mémorisé.
+> « Réinitialiser » rétablit la présélection. L’icône des colonnes et l’ordre existent aussi dans les tables de détail de
+> la vue maître-détail, l’icône des colonnes également dans les listes de l’administration.
 
 SAFT mémorise aussi les **filtres, la recherche, le tri et les lignes par page** des vues de données **durablement
 et pour vous personnellement** – par table et entrée de menu, même après la déconnexion. Lorsque vous rouvrez une
@@ -228,11 +230,14 @@ Les tableaux servent à la **lecture**. Un clic sur une ligne sélectionne l’e
 
 | Icône | Fonction |
 |---|---|
+| **Afficher** (œil) | Le formulaire avec tous les champs, verrouillé – champs calculés compris. |
 | **Modifier** (crayon) | Ouvre le formulaire de saisie dans une fenêtre ; **Sauvegarder les modifications** ou **Annuler** ramène directement au tableau. |
+| **Historique** (horloge) | Qui a modifié quoi et quand. |
 | **Supprimer** (corbeille) | Supprime après une question de sécurité. |
-| **Afficher** (œil) | À la place de « Modifier » si vous ne pouvez que lire : le formulaire avec tous les champs, verrouillé. |
 | **Restaurer** | Pour les enregistrements supprimés, à la place de « Modifier » et « Supprimer ». |
-| **…** | Menu avec **Afficher** et **Historique** (qui a modifié quoi et quand). |
+| Icônes de plugins | Fonctions issues de plugins ; l’infobulle nomme aussi le plugin. |
+
+Sans droit de modification, « Modifier » et « Supprimer » manquent.
 
 **Sur smartphone**, ouvrez l’enregistrement via **« Détails »** dans une fenêtre qui glisse depuis la droite :
 

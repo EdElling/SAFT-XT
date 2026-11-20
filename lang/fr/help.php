@@ -10,6 +10,7 @@ return [
     'button_help' => 'Questions sur l’utilisation – réponses tirées des manuels, avec renvois.',
     'intro' => 'Posez une question sur l’utilisation, p. ex. « Comment exporter une table vers Excel ? ». La réponse s’appuie sur les manuels et renvoie aux sections correspondantes.',
     'placeholder' => 'Votre question …',
+    'prefill' => 'Décris l’écran actuel',
     'send' => 'Demander',
     'thinking' => 'L’assistant rédige …',
     'new' => 'Nouvelle conversation',

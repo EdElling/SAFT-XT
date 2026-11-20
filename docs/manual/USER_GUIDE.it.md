@@ -114,8 +114,8 @@ dall’account aziendale.
 
 - **A sinistra** si trova il **menu**. Mostra solo le aree per le quali avete diritti. Sotto **Dati** trovate le
   tabelle, sotto **Amministrazione** le funzioni di gestione. Le voci con una freccia
-  **›** a destra sono sottomenu (ad es. *Amministrazione › Utenti e accesso*): un clic apre la loro prima pagina e
-  mostra le altre sotto; la freccia punta allora verso il basso. Con la freccia **‹** accanto al nome dell’applicazione
+  **›** a destra sono sottomenu (ad es. *Amministrazione › Utenti e accesso*): un clic li apre e li chiude come i gruppi principali; aperta, la freccia punta verso il basso. Il browser ricorda lo
+  stato; il sottomenu con la pagina attuale è aperto. Se una tale voce ha una propria pagina, un clic la apre. Con la freccia **‹** accanto al nome dell’applicazione
   nascondete del tutto il menu per avere più spazio per le tabelle; il pulsante **☰** nello stesso punto lo fa
   ricomparire. Il browser ricorda la scelta. Il menu è largo quanto la sua voce più lunga.
 - **Documentazione** (nel menu, subito sotto la dashboard) mostra questa guida e le domande frequenti
@@ -125,7 +125,8 @@ dall’account aziendale.
   versione, le condizioni di licenza e i componenti di terze parti con le relative licenze.
 - **Assistente di aiuto:** se è configurato e hai il diritto, il pulsante **?** in alto a destra apre una finestra in
   cui fai domande sull’uso, ad es. «Come esporto questa tabella?». La risposta si basa sui manuali che puoi vedere e
-  rimanda alle sezioni corrispondenti; l’assistente sa in quale pagina ti trovi. Le stesse conversazioni si trovano in
+  rimanda alle sezioni corrispondenti; l’assistente sa in quale pagina ti trovi. All’apertura nel campo c’è già «Descrivi la schermata attuale» – basta
+  inviare, oppure scriverci sopra. Le stesse conversazioni si trovano in
   **Documentazione** nella scheda **Assistente IA**, dove riapri, prosegui o elimini le conversazioni precedenti. Le
   risposte dell’IA possono contenere errori – fanno fede i manuali.
 - La **dashboard** è la pagina iniziale. I riquadri (widget) sono disposti su due colonne che crescono verso il basso
@@ -202,8 +203,9 @@ master-detail si comportano allo stesso modo.
 >
 > Con l’**icona delle colonne** a destra del filtro mostrate altri campi o nascondete quelli previsti e confermate con
 > «Applica colonne». SAFT ricorda la vostra scelta **in modo permanente e personale** – per tabella e voce di menu,
-> anche dopo l’uscita e su un altro computer. «Reimposta» ripristina la preimpostazione. L’icona delle colonne esiste
-> anche negli elenchi dell’amministrazione.
+> anche dopo l’uscita e su un altro computer. L’**ordine** si cambia nello stesso menu trascinando la maniglia di una colonna; anch’esso viene ricordato.
+> «Reimposta» ripristina la preimpostazione. Icona delle colonne e ordine esistono anche nelle tabelle di dettaglio della
+> vista master-detail, l’icona delle colonne anche negli elenchi dell’amministrazione.
 
 SAFT memorizza anche **filtri, ricerca, ordinamento e righe per pagina** delle viste dati **in modo permanente e
 personale** – per tabella e voce di menu, anche dopo la disconnessione. Riaprendo una tabella la ritrovate come l’avete
@@ -221,11 +223,14 @@ Le tabelle servono alla **lettura**. Un clic su una riga seleziona il record (ve
 
 | Icona | Funzione |
 |---|---|
+| **Visualizza** (occhio) | Il modulo con tutti i campi, bloccato – anche i campi calcolati. |
 | **Modifica** (matita) | Apre il modulo di inserimento in una finestra; **Salva** o **Annulla** riporta direttamente alla tabella. |
+| **Cronologia** (orologio) | Chi ha modificato cosa e quando. |
 | **Elimina** (cestino) | Elimina dopo una domanda di sicurezza. |
-| **Visualizza** (occhio) | Al posto di «Modifica» se potete solo leggere: il modulo con tutti i campi, bloccato. |
 | **Ripristina** | Per i record eliminati al posto di «Modifica» ed «Elimina». |
-| **…** | Menu con **Visualizza** e **Cronologia** (chi ha modificato cosa e quando). |
+| Icone dei plugin | Funzioni dei plugin; il tooltip nomina anche il plugin. |
+
+Senza diritto di modifica mancano «Modifica» ed «Elimina».
 
 **Sullo smartphone** aprite il record con **«Dettagli»** in una finestra che scorre da destra:
 

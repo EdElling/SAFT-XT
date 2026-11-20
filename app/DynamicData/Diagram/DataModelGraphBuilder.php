@@ -26,7 +26,7 @@ final class DataModelGraphBuilder
 {
     public function build(Menu $entry, User $user): DataModelGraph
     {
-        return $this->buildForTables($this->tableNamesBelow($entry->parent_id, $user), $user);
+        return $this->buildForTables($this->tableNamesBelow($entry->parent_id, $user, $entry->app_id), $user);
     }
 
     /**
@@ -95,22 +95,24 @@ final class DataModelGraphBuilder
      */
     public function hasTables(Menu $entry, User $user): bool
     {
-        $names = $this->tableNamesBelow($entry->parent_id, $user);
+        $names = $this->tableNamesBelow($entry->parent_id, $user, $entry->app_id);
 
         return $names !== [] && CustomTable::query()->active()->whereIn('name', $names)->get()
             ->contains(fn (CustomTable $table): bool => DataAccess::allows($user, $table, 'view'));
     }
 
     /**
-     * Tabellennamen der Datentabellen-Einträge unterhalb einer Gruppe (rekursiv).
+     * Tabellennamen der Datentabellen-Einträge unterhalb einer Gruppe (rekursiv). Ein Eintrag einer App (B-107) sieht
+     * nur die Menüs seiner App – auch auf der obersten Ebene, wo sonst alle Apps darunter lägen.
      *
      * @return list<string>
      */
-    private function tableNamesBelow(?int $groupId, User $user): array
+    private function tableNamesBelow(?int $groupId, User $user, ?int $appId = null): array
     {
         $byParent = Menu::query()->active()->visibleFor($user)
+            ->when($appId !== null, static fn ($q) => $q->where('app_id', $appId))
             ->orderBy('sort_order')
-            ->get(['id', 'parent_id', 'route', 'route_parameters'])
+            ->get(['id', 'parent_id', 'route', 'route_parameters', 'app_id'])
             ->groupBy(fn (Menu $menu): string => (string) ($menu->parent_id ?? 'root'));
 
         $names = [];

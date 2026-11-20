@@ -91,12 +91,15 @@ class DynamicDataPageTest extends DynamicDataTestCase
         $this->actingAs($this->superAdmin());
         $page = Livewire::test(DynamicDataPage::class, ['table' => 'projekte']);
 
-        // Bearbeiten direkt (ohne Slider), Ansehen im Menü, „Ansehen“ als Knopf nur ohne Bearbeitungsrecht.
-        $page->assertActionVisible(TestAction::make('editRow')->table($record))
-            ->assertActionHidden(TestAction::make('viewRow')->table($record))
-            ->assertActionVisible(TestAction::make('viewMore')->table($record))
+        // Symbole in der Reihenfolge Ansehen, Bearbeiten, Verlauf, Löschen (kein „…“-Menü); Bearbeiten direkt ohne Slider.
+        $page->assertActionVisible(TestAction::make('viewRow')->table($record))
+            ->assertActionVisible(TestAction::make('editRow')->table($record))
+            ->assertActionVisible(TestAction::make('historyRow')->table($record))
             ->callAction(TestAction::make('editRow')->table($record), ['titel' => 'Beta'])
             ->assertHasNoActionErrors();
+        $names = array_keys($page->instance()->getTable()->getFlatActions());
+        $desktop = array_values(array_filter($names, static fn (string $n): bool => str_ends_with($n, 'Row')));
+        $this->assertSame(['viewRow', 'editRow', 'historyRow', 'deleteRow', 'restoreRow'], $desktop);
         $this->assertSame('Beta', DynamicRecord::forTable($this->projekte)->newQuery()->value('titel'));
 
         // Umschaltung nach Breite über CSS-Klassen.

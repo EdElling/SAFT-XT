@@ -332,9 +332,9 @@ final class DynamicRecordActions
     public const string DESKTOP = 'saft-desktop-only';
 
     /**
-     * Aktionen einer Zeile (Liste und Detailtabellen). Schmal (Smartphone): „Details“ im Slider wie bisher. Breit
-     * (Desktop): direkt „Bearbeiten“ und „Löschen“ (bzw. „Ansehen“ ohne Bearbeitungsrecht, „Wiederherstellen“ bei
-     * gelöschten Datensätzen), dazu ein Menü mit „Ansehen“ und „Verlauf“; Plugin-Aktionen wie bisher in der Zeile.
+     * Aktionen einer Zeile (Liste und Detailtabellen). Schmal (Smartphone): „Details“ im Slider und die Plugin-Aktionen
+     * wie bisher. Breit (Desktop): nur Symbole mit Tooltip – Ansehen, Bearbeiten, Verlauf, Löschen (bei gelöschten
+     * Datensätzen Wiederherstellen), dann die Plugin-Aktionen.
      *
      * @param  list<string>  $locked  nicht bearbeitbare Felder (Verknüpfung zur Haupttabelle)
      * @param  list<Action>  $plugins  Aktionen aus Plugins für einen Datensatz
@@ -347,28 +347,43 @@ final class DynamicRecordActions
         }
 
         $desktop = ['class' => self::DESKTOP];
-        $editable = static fn (?DynamicRecord $record): bool => $table->supports('update') && DataAccess::current($table, 'update') && ! self::trashed($record);
         $refresh = static fn ($livewire) => $livewire->dispatch(self::REFRESH_EVENT);
-
-        // Breit nur Symbole mit Tooltip (Platz sparen), wie das „…“-Menü.
         $icon = static fn (Action $action): Action => $action->iconButton()->tooltip(fn (Action $action): string => (string) $action->getLabel())->extraAttributes($desktop);
 
         return [
+            // Smartphone: wie bisher.
             self::details($table, $locked)->extraAttributes(['class' => self::MOBILE]),
+            ...array_map(static fn (Action $plugin): Action => (clone $plugin)->name($plugin->getName().'Mobile')->extraAttributes(['class' => self::MOBILE]), $plugins),
+            // Desktop: Ansehen, Bearbeiten, Verlauf, Löschen bzw. Wiederherstellen, Plugins.
+            $icon(self::view($table, $locked, 'viewRow')),
             $icon(self::edit($table, $locked, 'editRow'))->after($refresh),
-            $icon(self::view($table, $locked, 'viewRow'))->visible(fn (?DynamicRecord $record): bool => ! $editable($record)),
+            $icon(self::history('historyRow'))->visible(self::writable($table)),
             $icon(self::delete($table, 'deleteRow'))->after(fn ($livewire, DynamicRecord $record) => $livewire->dispatch(
                 self::REFRESH_EVENT,
                 deletedFrom: $table->name,
                 deletedRecord: $table->hasSingleKey() ? (int) $record->getKey() : null,
             )),
             $icon(self::restore($table, 'restoreRow'))->after($refresh),
-            ...$plugins,
-            ActionGroup::make([
-                self::view($table, $locked, 'viewMore')->visible(fn (?DynamicRecord $record): bool => $editable($record)),
-                self::history('historyMore')->visible(self::writable($table)),
-            ])->extraAttributes($desktop),
+            ...array_map(static fn (Action $plugin): Action => self::pluginIcon($plugin), $plugins),
         ];
+    }
+
+    /** Plugin-Aktion am Desktop als Symbol; der Tooltip nennt die Bezeichnung und das Plugin. */
+    private static function pluginIcon(Action $action): Action
+    {
+        if (blank($action->getIcon())) {
+            return $action->extraAttributes(['class' => self::DESKTOP]);
+        }
+
+        $own = (fn (): mixed => $this->tooltip)->call($action);
+
+        return $action->iconButton()->extraAttributes(['class' => self::DESKTOP])
+            ->tooltip(static function (Action $action) use ($own): string {
+                $text = $own === null ? '' : trim((string) $action->evaluate($own));
+                $label = (string) $action->getLabel();
+
+                return $text !== '' ? $label.' · '.$text : $label;
+            });
     }
 
     /**

@@ -133,4 +133,26 @@ class RememberedTableStateTest extends DynamicDataTestCase
 
         $this->page()->assertOk()->assertCanSeeTableRecords([$this->alpha, $this->beta]);
     }
+
+    public function test_column_order_is_remembered_and_reset(): void
+    {
+        $this->actingAs($admin = $this->superAdmin());
+        $page = $this->page();
+        $state = $page->get('tableColumns');
+        $names = array_column($state, 'name');
+        // Wie das Spalten-Menü nach dem Ziehen (wasReordered).
+        $page->call('applyTableColumnManager', array_reverse($state), true);
+
+        // Neue Sitzung (neu anmelden): dieselbe Reihenfolge, auch in der angezeigten Tabelle.
+        $this->flushSession();
+        $fresh = $this->page();
+        $this->assertSame(array_reverse($names), array_column($fresh->get('tableColumns'), 'name'));
+        $this->assertSame(array_reverse($names), array_values(array_intersect(array_keys($fresh->instance()->getTable()->getColumns()), $names)));
+        $this->assertSame(array_reverse($names), UserTableColumn::orderFor($admin->id, $this->page()->instance()->tableColumnsPreferenceKey()));
+
+        // Vorgabe wieder hergestellt: kein Eintrag mehr.
+        $this->page()->call('applyTableColumnManager', $state);
+        $this->assertNull(UserTableColumn::orderFor($admin->id, $this->page()->instance()->tableColumnsPreferenceKey()));
+        $this->assertSame($names, array_column($this->page()->get('tableColumns'), 'name'));
+    }
 }

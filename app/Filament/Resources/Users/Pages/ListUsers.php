@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\Pages;
 
+use App\Filament\Concerns\HeaderActionsInTable;
 use App\Filament\Concerns\RemembersTableColumns;
 use App\Filament\Resources\Users\UserResource;
 use Filament\Actions\CreateAction;
@@ -11,6 +12,7 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListUsers extends ListRecords
 {
+    use HeaderActionsInTable;
     use RemembersTableColumns;
 
     protected static string $resource = UserResource::class;

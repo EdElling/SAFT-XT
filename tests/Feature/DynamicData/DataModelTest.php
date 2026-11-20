@@ -13,6 +13,7 @@ use App\Filament\Pages\DataModelPage;
 use App\Filament\Resources\Menus\Pages\CreateMenu;
 use App\Filament\Resources\Menus\Pages\EditMenu;
 use App\Filament\Resources\Menus\Schemas\MenuForm;
+use App\Models\App;
 use App\Models\CustomTable;
 use App\Models\Menu;
 use App\Models\User;
@@ -183,6 +184,24 @@ class DataModelTest extends DynamicDataTestCase
         $this->diagram->update(['parent_id' => null]);
 
         $this->assertEqualsCanonicalizing(['kunden', 'bestellungen', 'positionen', 'artikel'], array_keys($this->graph($this->superAdmin())->tables));
+    }
+
+    public function test_top_level_entry_of_an_app_shows_only_tables_of_its_app(): void
+    {
+        // Menüs dieser App; eine zweite App mit eigener Gruppe und Tabelle (B-107).
+        $app = self::ensureTestApp();
+        Menu::query()->update(['app_id' => $app->id]);
+        $other = App::query()->create(['name' => ['de' => 'Personal'], 'prefix' => 'hr', 'sort_order' => 2]);
+        $staff = app(DynamicSchemaService::class)->createTable(['app_id' => $other->id, 'name' => 'hr_mitarbeitende', 'label' => 'Mitarbeitende'], [
+            ['name' => 'name', 'label' => 'Name', 'type' => 'string'],
+        ]);
+        $group = Menu::create(['label' => 'Personal', 'app_id' => $other->id, 'sort_order' => 70]);
+        app(DataMenu::class)->create($staff, $group->id);
+        $this->diagram->update(['parent_id' => null]);
+
+        $tables = array_keys($this->graph($this->superAdmin())->tables);
+        $this->assertEqualsCanonicalizing(['kunden', 'bestellungen', 'positionen', 'artikel'], $tables);
+        $this->assertNotContains('hr_mitarbeitende', $tables);
     }
 
     public function test_mermaid_text_in_both_variants_is_escaped(): void

@@ -90,6 +90,30 @@ final class PanelAppearance
             .'});})();</script>';
     }
 
+    /**
+     * Untermenüs ohne eigene Seite (Container) per Klick auf- und zuklappen wie Hauptgruppen; der Zustand bleibt im
+     * Browser (localStorage). Ohne gespeicherten Zustand ist offen, was die aktuelle Seite enthält (CSS :has).
+     */
+    public static function submenuScript(): string
+    {
+        return '<script>(function(){'
+            ."var sel='.fi-sidebar-item:not(.fi-sidebar-item-has-url)';"
+            ."function key(li){var l=li.querySelector(':scope > .fi-sidebar-item-btn .saft-submenu-label');return 'saft.submenu.'+(l?l.textContent.trim():'');}"
+            .'function apply(){document.querySelectorAll(sel).forEach(function(li){'
+            ."if(!li.querySelector(':scope > .fi-sidebar-sub-group-items')){return;}"
+            .'var v=null;try{v=localStorage.getItem(key(li));}catch(e){}'
+            ."li.classList.toggle('saft-open',v==='1');li.classList.toggle('saft-closed',v==='0');});}"
+            ."document.addEventListener('click',function(e){"
+            ."var btn=e.target.closest(sel+' > .fi-sidebar-item-btn');if(!btn){return;}"
+            ."var li=btn.parentElement;if(!li.querySelector(':scope > .fi-sidebar-sub-group-items')){return;}"
+            .'e.preventDefault();e.stopPropagation();'
+            ."var open=getComputedStyle(li.querySelector(':scope > .fi-sidebar-sub-group-items')).display!=='none';"
+            ."li.classList.toggle('saft-open',!open);li.classList.toggle('saft-closed',open);"
+            ."try{localStorage.setItem(key(li),open?'0':'1');}catch(e){}},true);"
+            ."document.addEventListener('DOMContentLoaded',apply);document.addEventListener('livewire:navigated',apply);apply();"
+            .'})();</script>';
+    }
+
     public static function styles(): string
     {
         $highlight = self::scheme()->highlight() ?? 'var(--primary-500)';
@@ -115,6 +139,13 @@ final class PanelAppearance
             .'.fi-sidebar-item-label:has(> .saft-submenu-chevron){display:flex;align-items:center;justify-content:space-between;gap:.5rem}'
             .'.saft-submenu-chevron{width:1rem;height:1rem;flex-shrink:0;opacity:.55;transition:transform .15s ease}'
             .':is(.fi-sidebar-item.fi-active,.fi-sidebar-item.fi-sidebar-item-has-active-child-items) > .fi-sidebar-item-btn .saft-submenu-chevron{transform:rotate(90deg)}'
+            // Untermenüs ohne eigene Seite: zu, ausser sie enthalten die aktuelle Seite oder wurden geöffnet (submenuScript).
+            .'.fi-sidebar-item:not(.fi-sidebar-item-has-url) > .fi-sidebar-item-btn{cursor:pointer}'
+            .'.fi-sidebar-item:not(.fi-sidebar-item-has-url):not(.saft-open):not(:has(.fi-active)) > .fi-sidebar-sub-group-items,'
+            .'.fi-sidebar-item.saft-closed > .fi-sidebar-sub-group-items{display:none}'
+            .'.fi-sidebar-item:not(.fi-sidebar-item-has-url):not(.saft-open):not(:has(.fi-active)) > .fi-sidebar-item-btn .saft-submenu-chevron,'
+            .'.fi-sidebar-item.saft-closed > .fi-sidebar-item-btn .saft-submenu-chevron{transform:none}'
+            .'.fi-sidebar-item.saft-open > .fi-sidebar-item-btn .saft-submenu-chevron{transform:rotate(90deg)}'
             // Dateien in Listen und Details (B-021): Vorschaubilder, Symbol mit Namen.
             .'.saft-file-list{display:inline-flex;flex-wrap:wrap;align-items:center;gap:.375rem}'
             .'.saft-file-thumb{height:2.25rem;width:2.25rem;object-fit:cover;border-radius:.25rem;border:1px solid var(--gray-200)}'

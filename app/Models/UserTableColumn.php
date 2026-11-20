@@ -30,20 +30,44 @@ class UserTableColumn extends BaseUserTableColumn
             return null;
         }
 
-        // Sortiert: MySQL speichert JSON-Objekte mit eigener Schlüsselreihenfolge.
+        // Sortiert: MySQL speichert JSON-Objekte mit eigener Schlüsselreihenfolge. Die Reihenfolge der Spalten steht
+        // unter ORDER (orderFor).
+        unset($columns[self::ORDER]);
         $columns = array_map(static fn (mixed $v): bool => (bool) $v, $columns);
         ksort($columns);
 
         return $columns;
     }
 
+    /** Schlüssel der gespeicherten Spaltenreihenfolge im JSON. */
+    public const string ORDER = '_order';
+
     /**
-     * Speichert die Abweichungen; keine Abweichung = Eintrag löschen (Vorgabe gilt).
+     * Gespeicherte Reihenfolge der Spalten (Namen); null = Vorgabe.
+     *
+     * @return list<string>|null
+     */
+    public static function orderFor(int $userId, string $key): ?array
+    {
+        $columns = self::query()->where('user_id', $userId)->where('table_key', $key)->value('columns');
+        $columns = is_string($columns) ? json_decode($columns, true) : $columns;
+        $order = is_array($columns) ? ($columns[self::ORDER] ?? null) : null;
+
+        return is_array($order) && $order !== [] ? array_values(array_map('strval', $order)) : null;
+    }
+
+    /**
+     * Speichert die Abweichungen und eine abweichende Reihenfolge; keine Abweichung = Eintrag löschen (Vorgabe gilt).
      *
      * @param  array<string, bool>  $columns
+     * @param  list<string>|null  $order
      */
-    public static function remember(int $userId, string $key, array $columns): void
+    public static function remember(int $userId, string $key, array $columns, ?array $order = null): void
     {
+        if ($order !== null) {
+            $columns[self::ORDER] = $order;
+        }
+
         if ($columns === []) {
             self::query()->where('user_id', $userId)->where('table_key', $key)->delete();
 

@@ -10,6 +10,7 @@ use App\DynamicData\DetailSource;
 use App\DynamicData\Ui\DynamicRecordActions;
 use App\DynamicData\Ui\DynamicTableBuilder;
 use App\DynamicData\Ui\KeylessRow;
+use App\Filament\Concerns\RemembersTableColumns;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Plugins\Api\DataAction;
@@ -38,9 +39,11 @@ class DynamicDetailTable extends Component implements HasActions, HasSchemas, Ha
 {
     use InteractsWithActions;
     use InteractsWithSchemas;
-    use InteractsWithTable {
+    use InteractsWithTable, RemembersTableColumns {
         getTableRecordKey as private filamentTableRecordKey;
         resolveTableRecord as private filamentResolveTableRecord;
+        RemembersTableColumns::loadTableColumnsFromSession insteadof InteractsWithTable;
+        RemembersTableColumns::persistTableColumns insteadof InteractsWithTable;
     }
 
     #[Locked]
@@ -131,8 +134,10 @@ class DynamicDetailTable extends Component implements HasActions, HasSchemas, Ha
             ->identifier('detail.'.$field->id)
             ->heading($field->label())
             // Ohne Wert in der Elternspalte (nur bei Tabellenverknüpfungen möglich) gibt es keine Details.
-            ->query(fn () => $builder->query($child, null, [$fk])->when($value === null, fn ($q) => $q->whereNull($fk)->whereNotNull($fk), fn ($q) => $q->where($fk, $value)))
-            ->columns($builder->columns($child, null, [$fk]))
+            ->query(fn () => $builder->query($child, null, [$fk], toggleable: true)->when($value === null, fn ($q) => $q->whereNull($fk)->whereNotNull($fk), fn ($q) => $q->where($fk, $value)))
+            // Spaltenauswahl und Reihenfolge wie in der Liste, je Person und Detailbeziehung gespeichert.
+            ->columns($builder->columns($child, null, [$fk], toggleable: true))
+            ->reorderableColumns()
             ->filters([...$builder->filters($child, [$fk]), TrashedFilter::make()->visible(! $external && DataAccess::current($child, 'delete'))])
             ->filtersFormColumns(3)
             ->defaultSort($sort)

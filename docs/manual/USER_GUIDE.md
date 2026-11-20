@@ -111,8 +111,8 @@ company login.
 
 - The **menu** is on the **left**. It only shows the areas you have permissions for. Under **Data** you find the
   tables, under **Administration** the management functions. Entries with an arrow **›** on the right are submenus
-  (e.g. *Administration › Users and access*): a click opens their first page and expands the others below it; the
-  arrow then points down.
+  (e.g. *Administration › Users and access*): a click expands and collapses them like the main groups; open, the arrow points down. Your browser remembers the
+  state; the submenu with the current page is open. If such an entry has a page of its own, a click opens it.
   The arrow **‹** next to the application name hides the menu completely to make more room for tables; the **☰**
   button in the same place shows it again. Your browser remembers the choice. The menu is as wide as its longest
   entry.
@@ -123,7 +123,8 @@ company login.
   licence terms and the third-party components with their licences.
 - **Help assistant:** if it is set up and you have the permission, the **?** button at the top right opens a window
   where you ask questions about using SAFT, e.g. “How do I export this table?”. The answer is based on the manuals you
-  may see and refers to the matching sections; the assistant knows which page you are on. You find the same
+  may see and refers to the matching sections; the assistant knows which page you are on. When it opens, “Describe the current screen” is already in the field –
+  sending is enough, or simply type over it. You find the same
   conversations under **Documentation** in the tab **AI assistant**, where you reopen, continue or delete earlier
   conversations. AI answers may contain mistakes – the manuals are authoritative.
 - The **dashboard** is the start page. The tiles (widgets) are arranged in two columns that grow downwards
@@ -195,8 +196,9 @@ be scrolled horizontally. Summaries and detail tables in the master-detail view 
 >
 > With the **columns icon** to the right of the filter you show further fields or hide default ones and confirm with
 > "Apply columns". SAFT remembers your choice **permanently for you personally** – per table and menu entry, also
-> after signing out and on another computer. "Reset" restores the default. The columns icon is also available in the
-> lists of the administration.
+> after signing out and on another computer. You change the **order** in the same menu by dragging the handle of a column; it is remembered as well.
+> "Reset" restores the default. The columns icon and the order are also available in the detail tables of the
+> master-detail view, the columns icon also in the lists of the administration.
 
 SAFT also remembers **filters, search, sorting and rows per page** in the data views **permanently for you
 personally** – per table and menu entry, even after signing out. When you open a table again, you see it as you
@@ -213,11 +215,14 @@ buttons at the end of the row – depending on the screen width:
 
 | Icon | Function |
 |---|---|
+| **View** (eye) | The form with all fields, locked – computed fields too. |
 | **Edit** (pencil) | Opens the input form as a window; **Save** or **Cancel** leads straight back to the table. |
+| **History** (clock) | Who changed what when (e.g. “status: New → Shipped”). |
 | **Delete** (bin) | Deletes after a confirmation. |
-| **View** (eye) | Instead of “Edit” if you may only read: the form with all fields, locked. |
 | **Restore** | For deleted records instead of “Edit” and “Delete”. |
-| **…** | Menu with **View** and **History** (who changed what when). |
+| Plugin icons | Functions from plugins, e.g. *Warehouse board*; the tooltip also names the plugin. |
+
+Without edit permission “Edit” and “Delete” are missing.
 
 **On the smartphone** you open the record with **"Details"** in a window sliding in from the right:
 

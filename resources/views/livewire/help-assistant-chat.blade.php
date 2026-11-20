@@ -77,6 +77,7 @@
                           placeholder="{{ __('help.placeholder') }}"
                           aria-label="{{ __('help.placeholder') }}"
                           x-on:keydown.enter="if (! $event.shiftKey) { $event.preventDefault(); $el.form.requestSubmit() }"
+                          x-on:focus="if ($el.value === @js(__('help.prefill'))) $el.select()"
                           data-help-input></textarea>
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: .75rem">
                     <span class="saft-help-note">{{ __('help.disclaimer') }}</span>

@@ -82,10 +82,8 @@ class PluginsTest extends DuskTestCase
                 ->waitForTextIn(self::SELECTOR_SIDEBAR, 'Lager führen', 15)
                 ->assertSee('1 von 1 übernommen');
 
-            // Über das neue Untermenü „Lager führen“ (API 1.7) zur Maske: Klick öffnet seine erste Seite und klappt es auf.
-            $browser->clickLink('Lager führen')
-                ->waitForTextIn(self::SELECTOR_SIDEBAR, 'Umbuchung', 15)
-                ->waitForText('Von Lagerort', 15);
+            // Über das neue Untermenü „Lager führen“ (API 1.7) zur Maske: Klick klappt es auf, dann „Umbuchung“.
+            $this->openSubmenuEntry($browser, 'Lager führen', 'Umbuchung')->waitForText('Von Lagerort', 15);
             $this->pickOption($browser, 'form.artikel', 'Schraube');
             $browser->waitUsing(15, 100, fn (): bool => in_array((string) $this->north, $this->selectOptions($browser, 'select[id="form.von"]'), true))
                 ->assertSeeIn('select[id="form.von"]', 'Nord (Bestand: 10)')
@@ -98,11 +96,12 @@ class PluginsTest extends DuskTestCase
                 ->waitForText('4 × A-1 – Schraube von Nord nach Süd umgebucht.', 15);
         });
 
-        // Zeilenknopf „Umbuchen“ in Bestände öffnet die Maske mit Artikel und Quellort.
+        // Zeilenknopf „Umbuchen“ in Bestände (am Desktop als Symbol) öffnet die Maske mit Artikel und Quellort.
         $this->browse(function (Browser $browser): void {
+            $link = 'a.saft-desktop-only[href*="lager-umbuchung?artikel='.$this->article.'&von='.$this->south.'"]';
             $browser->visit('/admin/data/lager_bestaende')
-                ->waitFor('a[href*="lager-umbuchung?artikel='.$this->article.'&von='.$this->south.'"]', 15)
-                ->click('a[href*="lager-umbuchung?artikel='.$this->article.'&von='.$this->south.'"]')
+                ->waitFor($link, 15)
+                ->click($link)
                 ->waitForText('Von Lagerort', 15)
                 ->assertSeeIn('select[id="form.von"] option:checked', 'Süd (Bestand: 4)');
         });

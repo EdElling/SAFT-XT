@@ -336,4 +336,17 @@ class HelpAssistantTest extends DynamicDataTestCase
         $this->get(Dashboard::getUrl())->assertOk()->assertDontSee('data-help-button', false);
         $this->get(DocumentationPage::getUrl())->assertOk()->assertDontSee('data-doc-tab="assistant"', false);
     }
+
+    public function test_opening_from_a_page_prefills_the_question(): void
+    {
+        $this->actingAs($this->superAdmin());
+
+        Livewire::test(HelpAssistantChat::class, ['compact' => true])
+            ->assertSet('question', '')
+            ->call('setPage', 'Kunden', '/admin/data/kunden')
+            ->assertSet('question', __('help.prefill'))
+            ->set('question', 'Eigene Frage')
+            ->call('setPage', 'Kunden', '/admin/data/kunden')
+            ->assertSet('question', 'Eigene Frage');
+    }
 }

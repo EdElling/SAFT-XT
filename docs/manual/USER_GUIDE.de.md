@@ -114,8 +114,9 @@ Firmen-Login abgemeldet.
 
 - **Links** befindet sich das **Menü**. Es zeigt nur die Bereiche, für die Sie Rechte haben. Unter **Daten**
   finden Sie die Tabellen, unter **Administration** die Verwaltungsfunktionen. Einträge mit einem Pfeil **›** rechts sind
-  Untermenüs (z. B. *Administration › Benutzer und Zugriff*): Ein Klick öffnet ihre erste Seite und klappt die übrigen
-  darunter auf; der Pfeil zeigt dann nach unten.
+  Untermenüs (z. B. *Administration › Benutzer und Zugriff*): Ein Klick klappt sie auf und zu wie die Hauptgruppen; der Pfeil zeigt offen nach unten. Ihr Browser merkt sich den
+  Zustand; das Untermenü mit der aktuellen Seite ist offen. Hat ein solcher Eintrag selbst eine Seite, öffnet ein
+  Klick diese.
   Über den Pfeil **‹** neben dem Namen der Anwendung blenden Sie das Menü ganz aus, um mehr Platz für Tabellen zu
   haben; die Schaltfläche **☰** an derselben Stelle blendet es wieder ein. Ihr Browser merkt sich die Wahl. Das
   Menü ist so breit wie sein längster Eintrag.
@@ -126,8 +127,8 @@ Firmen-Login abgemeldet.
   Lizenzbedingungen und die Komponenten von Drittanbietern mit ihren Lizenzen.
 - **Hilfe-Assistent:** Ist er eingerichtet und haben Sie das Recht dazu, öffnet der Knopf **?** oben rechts ein
   Fenster, in dem Sie Fragen zur Bedienung stellen, z. B. „Wie exportiere ich diese Tabelle?“. Die Antwort stützt sich
-  auf die Handbücher, die Sie sehen dürfen, und verweist auf die passenden Abschnitte; der Assistent weiss, auf welcher
-  Seite Sie gerade sind. Dieselben Unterhaltungen finden Sie unter **Dokumentation** im Reiter **KI-Assistent**, wo Sie
+  auf die Handbücher, die Sie sehen dürfen, und verweist auf die passenden Abschnitte; der Assistent weiss, auf welcher Seite Sie gerade sind. Beim Öffnen steht schon „Beschreibe die aktuelle Maske“ im
+  Feld – absenden genügt, oder einfach darüber tippen. Dieselben Unterhaltungen finden Sie unter **Dokumentation** im Reiter **KI-Assistent**, wo Sie
   frühere Unterhaltungen wieder öffnen, fortsetzen oder löschen. KI-Antworten können Fehler enthalten – massgeblich
   sind die Handbücher.
 - Das **Dashboard** ist die Startseite. Die Kacheln (Widgets) stehen in zwei Spalten, die unabhängig voneinander
@@ -202,8 +203,9 @@ sich genauso.
 >
 > Über das **Spalten-Symbol** rechts neben dem Filter blenden Sie weitere Felder ein oder vorgegebene aus und
 > bestätigen mit „Spalten anwenden“. SAFT merkt sich Ihre Auswahl **dauerhaft für Sie persönlich** – je Tabelle und
-> Menüeintrag, auch nach dem Abmelden und auf einem anderen Rechner. „Zurücksetzen“ stellt die Vorgabe wieder her.
-> Das Spalten-Symbol gibt es auch in den Listen der Administration.
+> Menüeintrag, auch nach dem Abmelden und auf einem anderen Rechner. Die **Reihenfolge** ändern Sie im selben Menü durch Ziehen am Griff einer Spalte; auch sie bleibt gespeichert.
+> „Zurücksetzen“ stellt die Vorgabe wieder her. Spalten-Symbol und Reihenfolge gibt es auch in den Detailtabellen der
+> Master-Detail-Ansicht, das Spalten-Symbol zudem in den Listen der Administration.
 
 **Filter, Suche, Sortierung und Zeilen pro Seite** merkt sich SAFT in den Datenansichten ebenfalls **dauerhaft für
 Sie persönlich** – je Tabelle und Menüeintrag, auch nach dem Abmelden. Öffnen Sie also eine Tabelle wieder, sehen
@@ -221,11 +223,14 @@ Bearbeitet wird über die Schaltflächen am Ende der Zeile – je nach Bildschir
 
 | Symbol | Funktion |
 |---|---|
+| **Ansehen** (Auge) | Das Formular mit allen Feldern, gesperrt – auch berechnete Felder. |
 | **Bearbeiten** (Stift) | Öffnet das Eingabeformular als Fenster; **Speichern** bzw. **Abbrechen** führt direkt zurück zur Tabelle. |
+| **Verlauf** (Uhr) | Wer wann was geändert hat (z. B. „status: Neu → Versendet“). |
 | **Löschen** (Papierkorb) | Löscht nach einer Sicherheitsfrage. |
-| **Ansehen** (Auge) | Statt „Bearbeiten“, wenn Sie nur lesen dürfen: das Formular mit allen Feldern, gesperrt. |
 | **Wiederherstellen** | Bei gelöschten Datensätzen statt „Bearbeiten“ und „Löschen“. |
-| **…** | Menü mit **Ansehen** und **Verlauf** (wer wann was geändert hat). |
+| Plugin-Symbole | Funktionen aus Plugins, z. B. *Lager-Tafel*; der Tooltip nennt auch das Plugin. |
+
+Ohne Bearbeitungsrecht fehlen „Bearbeiten“ und „Löschen“.
 
 **Auf dem Smartphone** öffnen Sie den Datensatz über **„Details“** in einem Fenster, das von rechts einfährt:
 
@@ -243,7 +248,7 @@ Unten finden Sie (1):
 | **Wiederherstellen** | Nur bei gelöschten Datensätzen sichtbar. |
 | **Schliessen** | Schliesst das Fenster ohne Änderung. |
 
-**Neuer Datensatz:** Schaltfläche **„Neuer Datensatz“** oben rechts in der jeweiligen Liste.
+**Neuer Datensatz:** Schaltfläche **„Neuer Datensatz“** in der Kopfzeile der jeweiligen Tabelle.
 
 **Dateien anhängen:** Ein Feld vom Typ *Datei* nimmt Bilder, PDF oder andere Dokumente auf. Ziehen Sie die Dateien
 in das Feld oder klicken Sie auf **„auswählen“**; bei mehreren Dateien lässt sich die Reihenfolge durch Ziehen ändern,

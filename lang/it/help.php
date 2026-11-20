@@ -10,6 +10,7 @@ return [
     'button_help' => 'Domande sull’uso – risposte tratte dai manuali, con rimandi.',
     'intro' => 'Fai una domanda sull’uso, ad es. «Come esporto una tabella in Excel?». La risposta si basa sui manuali e rimanda alle sezioni corrispondenti.',
     'placeholder' => 'La tua domanda …',
+    'prefill' => 'Descrivi la schermata attuale',
     'send' => 'Chiedi',
     'thinking' => 'L’assistente sta scrivendo …',
     'new' => 'Nuova conversazione',

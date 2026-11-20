@@ -81,11 +81,11 @@ class NavigationTest extends DuskTestCase
         $this->browse(function (Browser $browser): void {
             $this->login($browser, 'admin@example.com');
 
-            // Rollen liegen im Untermenü „Benutzer und Zugriff“: erst aufklappen (öffnet Benutzer), dann Rollen.
-            $browser->clickLink('Benutzer und Zugriff')->waitForLocation('/admin/users', 15)
-                ->clickLink('Rollen')->waitForLocation('/admin/roles', 15)
+            // Rollen liegen im Untermenü „Benutzer und Zugriff“: Klick klappt es auf (ohne Seitenwechsel), dann Rollen.
+            $this->openSubmenuEntry($browser, 'Benutzer und Zugriff', 'Rollen')->waitForLocation('/admin/roles', 15)
                 ->clickLink('Kunden')->waitForText('ACME GmbH', 15)
-                ->back()->waitForLocation('/admin/roles', 15)->waitForText('super-admin', 15);
+                // Rollenliste wieder da (Systemrollen stehen unter dem Reiter „System“).
+                ->back()->waitForLocation('/admin/roles', 15)->waitForText('System', 15);
 
             $browser->driver->navigate()->forward();
 

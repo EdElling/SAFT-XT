@@ -51,6 +51,11 @@ final class HelpAssistantChat extends Component
     public function setPage(string $title = '', string $path = ''): void
     {
         $this->page = ['title' => mb_substr($title, 0, 200), 'path' => mb_substr($path, 0, 300)];
+
+        // Beim Öffnen über „?“: Frage zur aktuellen Maske vorbelegt (vorausgewählt, Überschreiben genügt).
+        if (trim($this->question) === '') {
+            $this->question = __('help.prefill');
+        }
     }
 
     public function ask(): void

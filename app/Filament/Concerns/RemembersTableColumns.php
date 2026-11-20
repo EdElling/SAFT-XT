@@ -35,8 +35,23 @@ trait RemembersTableColumns
         $userId = Auth::id();
         $saved = $userId === null ? null : UserTableColumn::columnsFor((int) $userId, $this->tableColumnsPreferenceKey());
 
-        if ($saved === null) {
+        $order = $userId === null ? null : UserTableColumn::orderFor((int) $userId, $this->tableColumnsPreferenceKey());
+
+        if ($saved === null && $order === null) {
             return $default;
+        }
+
+        $saved ??= [];
+
+        // Gespeicherte Reihenfolge (Drag-and-Drop im Spalten-Menü); unbekannte und neue Spalten behalten ihren Platz danach.
+        // Filament merkt sich „umsortiert“ nur in der Sitzung – nach neuem Anmelden würde es sonst die Vorgabe herstellen.
+        if ($order !== null) {
+            session()->put($this->getHasReorderedTableColumnsSessionKey(), true);
+            $position = array_flip($order);
+            $indexed = array_values($default);
+            usort($indexed, static fn (array $a, array $b): int => [$position[(string) ($a['name'] ?? '')] ?? PHP_INT_MAX, array_search($a, $default, true)]
+                <=> [$position[(string) ($b['name'] ?? '')] ?? PHP_INT_MAX, array_search($b, $default, true)]);
+            $default = $indexed;
         }
 
         return array_map(static function (array $item) use ($saved): array {
@@ -65,10 +80,12 @@ trait RemembersTableColumns
             ARRAY_FILTER_USE_BOTH,
         );
         $key = $this->tableColumnsPreferenceKey();
+        $names = static fn (array $items): array => array_values(array_map(static fn (array $item): string => (string) ($item['name'] ?? ''), $items));
+        $order = $names($this->tableColumns) === $names($this->getDefaultTableColumnState()) ? null : $names($this->tableColumns);
 
         // Nur schreiben, wenn sich etwas geändert hat (die Methode läuft bei jedem Seitenaufruf).
-        if ($deviations !== (UserTableColumn::columnsFor((int) $userId, $key) ?? [])) {
-            UserTableColumn::remember((int) $userId, $key, $deviations);
+        if ($deviations !== (UserTableColumn::columnsFor((int) $userId, $key) ?? []) || $order !== UserTableColumn::orderFor((int) $userId, $key)) {
+            UserTableColumn::remember((int) $userId, $key, $deviations, $order);
         }
     }
 

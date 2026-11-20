@@ -10,6 +10,7 @@ return [
     'button_help' => 'Fragen zur Bedienung – beantwortet aus den Handbüchern, mit Verweisen.',
     'intro' => 'Stellen Sie eine Frage zur Bedienung, z. B. „Wie exportiere ich eine Tabelle nach Excel?“. Die Antwort stützt sich auf die Handbücher und verweist auf die passenden Abschnitte.',
     'placeholder' => 'Ihre Frage …',
+    'prefill' => 'Beschreibe die aktuelle Maske',
     'send' => 'Fragen',
     'thinking' => 'Der Assistent schreibt …',
     'new' => 'Neue Unterhaltung',

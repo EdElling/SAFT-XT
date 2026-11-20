@@ -153,8 +153,10 @@ final class MenuNavigationBuilder
         }
 
         // Untermenü (aufklappbar): Pfeil rechts neben der Bezeichnung, damit es sich von Seiten unterscheidet (B-066).
+        // Ohne eigenes Ziel klappt ein Klick es auf und zu (PanelAppearance::submenuScript); mit eigenem Ziel öffnet er
+        // die Seite.
         $item = NavigationItem::make($children === [] ? $menu->label : self::submenuLabel((string) $menu->label))
-            ->url($url ?? $children[0]->getUrl())
+            ->url($url)
             ->sort($menu->sort_order)
             ->isActiveWhen($this->activeCallback($menu));
 
