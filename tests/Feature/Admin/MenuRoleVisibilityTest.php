@@ -6,6 +6,7 @@ namespace Tests\Feature\Admin;
 
 use App\DynamicData\DataMenu;
 use App\DynamicData\DataPermissions;
+use App\Filament\Pages\DataModelPage;
 use App\Filament\Resources\Roles\Pages\CreateRole;
 use App\Filament\Resources\Roles\Pages\EditRole;
 use App\Models\Activity;
@@ -160,5 +161,30 @@ class MenuRoleVisibilityTest extends TestCase
             ->assertHasNoFormErrors();
 
         $this->assertSame(0, Role::findByName('neu')->hiddenMenus()->count());
+    }
+
+    /** B-112: Einträge der Hauptebene ohne Datentabelle (z. B. Datenmodell) im Formular und im Menü. */
+    public function test_top_level_entries_of_the_app_can_be_hidden_too(): void
+    {
+        $this->actingAs($this->superAdmin());
+        $app = $this->customers->fresh()->app;
+        $model = Menu::create(['label' => 'Datenmodell global', 'route' => DataModelPage::ROUTE, 'app_id' => $app->id, 'sort_order' => 99]);
+        $role = $this->role('vertrieb');
+        $role->update(['app_id' => $app->id]);
+
+        $page = Livewire::test(EditRole::class, ['record' => $role->getRouteKey()]);
+        $this->assertEqualsCanonicalizing([$this->customers->id, $this->articles->id, $model->id], array_map('intval', $page->get('data.visible_menus')));
+        $page->fillForm(['visible_menus' => [(string) $this->customers->id, (string) $this->articles->id]])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertSame([$model->id], $role->hiddenMenus()->pluck('menus.id')->all());
+
+        // Alle Rollen der App blenden es aus: weg; eine zweite Rolle der App zeigt es: wieder da.
+        $person = User::factory()->create()->assignRole($role);
+        $this->assertContains($model->id, Menu::hiddenDataEntriesFor($person->fresh()));
+        $other = $this->role('lager');
+        $other->update(['app_id' => $app->id]);
+        $person->assignRole($other);
+        $this->assertNotContains($model->id, Menu::hiddenDataEntriesFor($person->fresh()));
     }
 }

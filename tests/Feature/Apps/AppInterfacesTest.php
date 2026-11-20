@@ -14,6 +14,7 @@ use App\DynamicData\DetailRelations;
 use App\DynamicData\RelationDisplay;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\CustomTables\Pages\EditCustomTable;
+use App\Filament\Resources\CustomTables\RelationManagers\CustomFieldsRelationManager;
 use App\Filament\Resources\Roles\Pages\EditRole;
 use App\Models\App;
 use App\Models\CustomField;
@@ -28,6 +29,7 @@ use App\Reports\InvalidReportException;
 use App\Reports\Links\ReportLinks;
 use App\Reports\ReportDefinition;
 use App\Reports\ReportRunner;
+use Filament\Actions\Testing\TestAction;
 use Livewire\Livewire;
 use Tests\Feature\DynamicData\DynamicDataTestCase;
 
@@ -365,5 +367,17 @@ class AppInterfacesTest extends DynamicDataTestCase
         $this->assertTrue($articles->is_shared);
         $this->assertSame(['name', 'preis'], $articles->fields()->where('is_shared', true)->orderBy('sort_order')->pluck('name')->all());
         $this->assertSame(1, $copied->interface_version);
+    }
+
+    public function test_field_used_by_another_app_cannot_be_hidden_in_the_designer(): void
+    {
+        $this->share(['name', 'preis']);
+        $this->relate(['name']);
+        $name = CustomField::query()->where('custom_table_id', $this->articles->id)->where('name', 'name')->sole();
+        $price = CustomField::query()->where('custom_table_id', $this->articles->id)->where('name', 'preis')->sole();
+
+        Livewire::test(CustomFieldsRelationManager::class, ['ownerRecord' => $this->articles->refresh(), 'pageClass' => EditCustomTable::class])
+            ->assertActionDisabled(TestAction::make('toggleActive')->table($name))
+            ->assertActionEnabled(TestAction::make('toggleActive')->table($price));
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\ScheduledTasks\RelationManagers;
 
 use App\Filament\Resources\ScheduledTasks\Tables\ScheduledTasksTable;
+use App\Filament\Support\RowIcons;
 use App\Models\TaskRun;
 use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -60,7 +61,7 @@ class TaskRunsRelationManager extends RelationManager
                     ->alignEnd(),
                 TextColumn::make('message')->label(__('tasks.fields.message'))->wrap(),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 // Technische Details eines Fehlschlags (Referenz, Fehler, Ort, Ablauf) – nur mit Recht tasks.details.
                 Action::make('errorDetails')
                     ->label(__('tasks.error_detail.action'))
@@ -75,7 +76,7 @@ class TaskRunsRelationManager extends RelationManager
                     ->action(function (): void {
                         abort_unless(self::canSeeDetails(), 403);
                     }),
-            ]);
+            ]));
     }
 
     public static function canSeeDetails(): bool

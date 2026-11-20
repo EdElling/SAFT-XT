@@ -6,6 +6,7 @@ namespace App\Filament\Resources\IdentityProviders\Tables;
 
 use App\Auth\Sso\IdentityProviderType;
 use App\Filament\Resources\IdentityProviders\Actions\TestConnectionAction;
+use App\Filament\Support\RowIcons;
 use App\Models\IdentityProvider;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -59,11 +60,11 @@ class IdentityProvidersTable
                     ->sortable(),
             ])
             ->defaultSort('sort_order')
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 TestConnectionAction::make(),
                 EditAction::make(),
                 DeleteAction::make()
                     ->modalDescription(__('idp.table.delete_help')),
-            ]);
+            ]));
     }
 }

@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Reports\Tables;
 use App\Apps\CurrentApp;
 use App\Filament\Resources\Reports\ReportResource;
 use App\Filament\Support\AppFilter;
+use App\Filament\Support\RowIcons;
 use App\Models\CustomTable;
 use App\Models\Report;
 use App\Models\User;
@@ -121,7 +122,7 @@ final class ReportsTable
                     ->query(fn (Builder $query): Builder => $query->where('owner_id', auth()->id())),
             ])
             // Symbolknöpfe mit Tooltip: Mit Beschriftung brauchte die Spalte über 300 px, die Tabelle scrollte.
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 EditAction::make()->iconButton()->tooltip(__('filament-actions::edit.single.label')),
                 Action::make('duplicate')
                     ->label(__('reports.ui.duplicate'))
@@ -141,7 +142,7 @@ final class ReportsTable
                         redirect(ReportResource::getUrl('edit', ['record' => $copy]));
                     }),
                 DeleteAction::make()->iconButton()->tooltip(__('filament-actions::delete.single.label')),
-            ]);
+            ]));
     }
 
     private static function sentence(Report $report): ?string

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\ReportLinks\Tables;
 
 use App\Filament\Support\AppFilter;
+use App\Filament\Support\RowIcons;
 use App\Models\ReportLink;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -40,9 +41,9 @@ class ReportLinksTable
                 TextColumn::make('updated_at')->label(__('common.changed'))->dateTime('d.m.Y H:i')->toggleable(),
                 AppFilter::column(),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 EditAction::make(),
                 DeleteAction::make(),
-            ]);
+            ]));
     }
 }

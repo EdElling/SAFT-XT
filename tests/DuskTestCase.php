@@ -249,7 +249,9 @@ abstract class DuskTestCase extends BaseTestCase
 
     protected function rowAction(Browser $browser, string $rowText, string $action): Browser
     {
-        return $browser->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., '{$rowText}')]//*[self::button or self::a][contains(., '{$action}')]");
+        // Zeilenaktionen sind meist Symbole (Bezeichnung als aria-label, B-113); sichtbare nehmen (Desktop/Smartphone).
+        return $browser->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., '{$rowText}')]//*[self::button or self::a]"
+            ."[contains(., '{$action}') or @aria-label='{$action}'][not(ancestor-or-self::*[contains(@class, 'saft-mobile-only')])]");
     }
 
     /**
@@ -497,7 +499,8 @@ abstract class DuskTestCase extends BaseTestCase
 
     protected function clickVisibleButton(Browser $browser, string $label): Browser
     {
-        $buttons = $browser->driver->findElements(WebDriverBy::xpath("//button[normalize-space(.)='{$label}']"));
+        // Auch Symbol-Knöpfe (Zeilenaktionen, B-113): Bezeichnung im aria-label.
+        $buttons = $browser->driver->findElements(WebDriverBy::xpath("//button[normalize-space(.)='{$label}' or @aria-label='{$label}']"));
 
         foreach (array_reverse($buttons) as $button) {
             if (! $button->isDisplayed()) {

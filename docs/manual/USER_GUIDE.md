@@ -215,7 +215,7 @@ buttons at the end of the row – depending on the screen width:
 
 | Icon | Function |
 |---|---|
-| **View** (eye) | The form with all fields, locked – computed fields too. |
+| **View** (magnifying glass) | The form with all fields, locked – computed fields too. |
 | **Edit** (pencil) | Opens the input form as a window; **Save** or **Cancel** leads straight back to the table. |
 | **History** (clock) | Who changed what when (e.g. “status: New → Shipped”). |
 | **Delete** (bin) | Deletes after a confirmation. |

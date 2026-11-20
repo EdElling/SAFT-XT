@@ -210,7 +210,7 @@ class RolesTest extends DuskTestCase
             $this->login($browser, self::ADMIN)->visit('/admin/roles?tab=system')->waitForText('super-admin', 15);
 
             $actions = $browser->driver->findElements(WebDriverBy::xpath(
-                "//tr[contains(@class, 'fi-ta-row')][contains(., 'super-admin')]//*[self::button or self::a][contains(., 'Bearbeiten') or contains(., 'Löschen')]",
+                "//tr[contains(@class, 'fi-ta-row')][contains(., 'super-admin')]//*[self::button or self::a][contains(., 'Bearbeiten') or contains(., 'Löschen') or @aria-label='Bearbeiten' or @aria-label='Löschen']",
             ));
             $this->assertSame([], $actions);
 

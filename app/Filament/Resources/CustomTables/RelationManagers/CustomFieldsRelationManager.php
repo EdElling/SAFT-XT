@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\CustomTables\RelationManagers;
 
+use App\Apps\AppInterfaces;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Ui\DynamicRecordActions;
 use App\Filament\Resources\CustomTables\Schemas\FieldForm;
+use App\Filament\Support\RowIcons;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -94,7 +97,7 @@ class CustomFieldsRelationManager extends RelationManager
                     ->using(fn (array $data): CustomField => app(DynamicSchemaService::class)
                         ->addField($this->ownerTable(), FieldForm::toServiceData($data))),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 // Breiter als die Vorgabe (4xl): Feldformular mit Optionen, Regeln und Verknüpfung.
                 EditAction::make()
                     ->modalWidth(Width::SevenExtraLarge)
@@ -106,13 +109,17 @@ class CustomFieldsRelationManager extends RelationManager
 
                         return $field;
                     }),
+                // Verlauf des Felds (B-113): wer wann was geändert hat.
+                DynamicRecordActions::modelHistory(),
                 Action::make('toggleActive')
                     ->label(fn (CustomField $record): string => $record->is_active ? __('tables.fields.deactivate') : __('tables.fields.activate'))
-                    ->icon(fn (CustomField $record): string => $record->is_active ? 'heroicon-o-eye-slash' : 'heroicon-o-eye')
+                    // Das Symbol zeigt den Zustand (eingeblendet: Auge, ausgeblendet: durchgestrichen), die Bezeichnung die Aktion.
+                    ->icon(fn (CustomField $record): string => $record->is_active ? 'heroicon-o-eye' : 'heroicon-o-eye-slash')
                     ->color('gray')
                     ->authorize(fn (CustomField $record): bool => auth()->user()?->can('update', $record) ?? false)
-                    ->disabled(fn (CustomField $record): bool => $record->is_active && FieldForm::pluginHint($record) !== null)
-                    ->tooltip(fn (CustomField $record): ?string => $record->is_active ? FieldForm::pluginHint($record) : null)
+                    // Gesperrt, wenn ein Plugin oder eine andere App (Schnittstelle) das Feld braucht – mit Grund im Tooltip.
+                    ->disabled(fn (CustomField $record): bool => $record->is_active && self::deactivateHint($record) !== null)
+                    ->tooltip(fn (CustomField $record): ?string => $record->is_active ? self::deactivateHint($record) : null)
                     ->requiresConfirmation(fn (CustomField $record): bool => $record->is_active)
                     ->modalDescription(fn (CustomField $record): ?string => $record->is_active
                         ? __('tables.fields.deactivate_help')
@@ -143,7 +150,7 @@ class CustomFieldsRelationManager extends RelationManager
                         app(DynamicSchemaService::class)->dropField($record, (string) $data['confirmation']);
                         Notification::make()->title(__('tables.fields.dropped', ['name' => $record->name]))->success()->send();
                     }),
-            ]);
+            ]));
     }
 
     private function ownerTable(): CustomTable
@@ -206,5 +213,18 @@ class CustomFieldsRelationManager extends RelationManager
             FieldType::Computed => '= '.($o['formula'] ?? ''),
             default => null,
         };
+    }
+
+    /** Warum sich ein Feld nicht ausblenden lässt (Plugin braucht es, andere App nutzt es), sonst null. */
+    private static function deactivateHint(CustomField $field): ?string
+    {
+        if (($plugin = FieldForm::pluginHint($field)) !== null) {
+            return $plugin;
+        }
+
+        $table = $field->custom_table;
+        $usages = $table === null ? [] : app(AppInterfaces::class)->usages($table, $field->name);
+
+        return $usages === [] ? null : __('apps.errors.interface_field_used', ['name' => $field->name, 'usages' => implode(', ', $usages)]);
     }
 }

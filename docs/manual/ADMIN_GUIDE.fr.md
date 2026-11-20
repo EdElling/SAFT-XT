@@ -98,11 +98,12 @@ Un rôle regroupe des droits. Les utilisateurs reçoivent leurs droits exclusive
   la table, la case au-dessus d’une colonne (« colonne entière ») attribue le droit pour toutes les tables visibles.
   Le **champ de recherche** filtre les lignes par libellé ou nom technique.
 
-- **Entrées de menu** – toutes les entrées de menu de type « Table de données », p. ex. « Données › Clients ». Sans
+- **Entrées de menu** – toutes les entrées de menu de l’app ayant leur propre cible, p. ex. « Données › Clients », un
+  modèle de données ou un rapport, aussi au niveau supérieur. Sans
   coche, le rôle ne voit pas l’entrée dans le menu. Les nouvelles entrées et les nouveaux rôles sont cochés, donc
   visibles. Il ne s’agit que d’affichage : les droits sur les données déterminent si la table peut être affichée. Une
-  entrée masquée reste accessible via des liens, la vue maître-détail et l’aperçu. Avec plusieurs rôles, il suffit
-  d’un rôle disposant du droit de lecture qui affiche l’entrée ; `super-admin` voit toujours toutes les entrées.
+  entrée masquée reste accessible via des liens, la vue maître-détail et l’aperçu. Avec plusieurs rôles, il suffit, pour les tables de données, d’un rôle disposant du droit de lecture qui affiche l’entrée, pour les autres
+  entrées d’un rôle de l’app ; `super-admin` voit toujours toutes les entrées.
 
 Les domaines sont enregistrés indépendamment – une modification dans l’un ne change rien dans l’autre.
 
@@ -402,8 +403,13 @@ le groupe et crée aussi une entrée supplémentaire si la table doit apparaîtr
 | Liaison | uniquement vers d’autres tables du Concepteur de tables, jamais vers des tables système |
 
 > **Désactiver plutôt que supprimer :** un champ ou une table désactivé est invisible pour les utilisateurs, mais les
-> données sont entièrement conservées. Vous récupérez un champ avec « Activer », sans confirmation. La suppression
-> définitive ne peut pas être annulée.
+> données sont entièrement conservées. Vous récupérez un champ avec « Activer », sans confirmation. La suppression définitive ne peut pas être annulée.
+>
+> **Liste des champs :** les actions sont des icônes avec infobulle sur la ligne – modifier, **historique** (horloge :
+> qui a modifié quoi et quand sur le champ), afficher/masquer et supprimer. L’œil montre l’état : ouvert pour un champ
+> actif, barré pour un champ désactivé. Si un plugin a besoin du champ ou qu’une autre app l’utilise via l’interface,
+> l’icône est verrouillée (pâle) ; l’infobulle en donne la raison. Comme ici, toutes les listes de l’administration
+> affichent leurs actions de ligne sous forme d’icônes avec infobulle ; **Afficher** est la loupe.
 
 Sous **Table physique**, vous voyez l’emplacement de stockage, le nombre d’enregistrements et d’éventuels écarts
 entre les réglages et la base de données.

@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Menus\Tables;
 
 use App\Filament\Support\AppFilter;
 use App\Filament\Support\MoveToAppAction;
+use App\Filament\Support\RowIcons;
 use App\Models\Menu;
 use App\Navigation\MenuTree;
 use App\Support\AppLocale;
@@ -77,12 +78,12 @@ class MenusTable
                 TernaryFilter::make('is_active')
                     ->label(__('common.active')),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 EditAction::make(),
                 MoveToAppAction::forGroup(),
                 DeleteAction::make()
                     ->modalDescription(__('menus.delete_children')),
-            ])
+            ]))
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->authorizeIndividualRecords('delete'),

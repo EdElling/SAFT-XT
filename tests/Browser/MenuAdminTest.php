@@ -197,7 +197,7 @@ class MenuAdminTest extends DuskTestCase
             $this->login($browser, self::ADMIN)->visit('/admin/menus')->waitFor('.fi-ta-search-field input', 15)
                 ->type('.fi-ta-search-field input', 'Alte Gruppe')
                 ->waitUsing(15, 100, fn (): bool => count($browser->elements('tr.fi-ta-row')) === 1);
-            $browser->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., 'Alte Gruppe')][not(contains(., 'Altes Kind'))]//button[contains(., 'Löschen')]")
+            $browser->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., 'Alte Gruppe')][not(contains(., 'Altes Kind'))]//button[contains(., 'Löschen') or @aria-label='Löschen']")
                 ->waitForText('Untergeordnete Einträge werden ebenfalls gelöscht', 15)
                 ->pause(300);
             $this->clickVisibleButton($browser, 'Löschen')

@@ -93,11 +93,12 @@ A role bundles permissions. Users receive permissions exclusively through roles.
   above a column ("whole column") sets the permission for all visible tables. The **search field** filters the rows
   by label or technical name.
 
-- **Menu entries**: all menu entries of type "Data table", e.g. "Data › Customers". Without a tick the role does not
+- **Menu entries**: all menu entries of the app with a target of their own, e.g. "Data › Customers", a data model or a
+  report, also on the top level. Without a tick the role does not
   see the entry in the menu. New entries and new roles are ticked, i.e. visible. This is display only: whether the
   table may be viewed is set by the data permissions. A hidden entry can still be reached through links, the
-  master-detail view and the preview. With several roles, one role with read permission that shows the entry is
-  enough; `super-admin` always sees all entries.
+  master-detail view and the preview. With several roles, for data tables one role with read permission that shows the entry is enough, for other entries
+  one role of the app; `super-admin` always sees all entries.
 
 The areas are saved independently; a change in one does not alter anything in the other.
 
@@ -376,6 +377,12 @@ further entry if the table should appear in a second place in the menu.
 
 > **Deactivate instead of delete:** A deactivated field or table is invisible to users, but the data is kept in
 > full. You bring a field back with "Activate" without confirmation. Deleting permanently cannot be undone.
+>
+> **Field list:** the actions are icons with a tooltip in the row – edit, **history** (clock: who changed what on the
+> field when), show/hide and delete. The eye shows the state: open for an active field, crossed out for a deactivated
+> one. If a plugin needs the field or another app uses it through the interface, the icon is locked (pale); the
+> tooltip names the reason. Like here, all lists of the administration show their row actions as icons with a tooltip;
+> **View** is the magnifying glass.
 
 Under **Physical table** you see the storage location, the number of records and any mismatch between the settings
 and the database.

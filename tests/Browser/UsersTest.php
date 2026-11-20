@@ -44,7 +44,8 @@ class UsersTest extends DuskTestCase
     private function rowActions(Browser $browser, string $rowText): array
     {
         return array_map(
-            static fn ($action): string => trim($action->getText()),
+            // Symbol-Knöpfe (B-113): Bezeichnung im aria-label.
+            static fn ($action): string => trim($action->getText()) !== '' ? trim($action->getText()) : trim((string) $action->getAttribute('aria-label')),
             $browser->driver->findElements(WebDriverBy::xpath(
                 "//tr[contains(@class, 'fi-ta-row')][contains(., '{$rowText}')]//*[contains(@class, 'fi-ta-actions')]//*[self::button or self::a]",
             )),
@@ -181,7 +182,7 @@ class UsersTest extends DuskTestCase
             $browser->visit('/admin/activity-log')->waitFor('.fi-ta-table', 15)
                 ->assertSee("Gelöschter Benutzer #{$this->other->id}")
                 ->assertDontSee('Unerwarteter Fehler');
-            $browser->clickAtXPath("(//tr[contains(@class, 'fi-ta-row')]//*[self::button or self::a][contains(., 'Anzeigen')])[1]")
+            $browser->clickAtXPath("(//tr[contains(@class, 'fi-ta-row')]//*[self::button or self::a][contains(., 'Anzeigen') or @aria-label='Anzeigen'])[1]")
                 ->waitForText('Beschreibung', 15)
                 ->assertDontSee('Unerwarteter Fehler');
         });
@@ -297,7 +298,7 @@ class UsersTest extends DuskTestCase
                 ->waitForText('Zeitpunkt', 15);
 
             // Name und Rollen sind getrennte Einträge derselben Sekunde, ihre Reihenfolge ist offen.
-            $entry = "(//tr[contains(@class, 'fi-ta-row')][contains(., 'geändert')]//*[self::button or self::a][contains(., 'Anzeigen')])";
+            $entry = "(//tr[contains(@class, 'fi-ta-row')][contains(., 'geändert')]//*[self::button or self::a][contains(., 'Anzeigen') or @aria-label='Anzeigen'])";
             $entries = '';
 
             foreach ([1, 2] as $number) {

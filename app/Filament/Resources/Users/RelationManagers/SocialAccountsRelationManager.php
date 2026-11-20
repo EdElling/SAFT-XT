@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\RelationManagers;
 
+use App\Filament\Support\RowIcons;
 use App\Models\SocialAccount;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -42,11 +43,11 @@ class SocialAccountsRelationManager extends RelationManager
                     ->label(__('users.sso.linked_since'))
                     ->dateTime(),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 DeleteAction::make()
                     ->label(__('users.sso.unlink'))
                     ->modalHeading(__('users.sso.unlink_heading'))
                     ->modalDescription(__('users.sso.unlink_description')),
-            ]);
+            ]));
     }
 }

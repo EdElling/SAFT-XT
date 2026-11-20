@@ -133,6 +133,10 @@ final class PanelAppearance
             // Datentabellen: schmal „Details“ im Slider, breit direkt Bearbeiten/Löschen (DynamicRecordActions::rowActions).
             .'.saft-desktop-only{display:none!important}'
             .'@media (min-width:768px){.saft-mobile-only{display:none!important}.saft-desktop-only{display:inline-flex!important}}'
+            // Gesperrte Symbol-Knöpfe in Tabellenzeilen deutlich blasser als aktive (Filament: 70 %).
+            .'.fi-ta-row :is(.fi-icon-btn.fi-disabled,.fi-icon-btn[disabled]):not(.fi-force-enabled){opacity:.5}'
+            // Systemprotokoll: Meldungen höchstens etwa 60 Zeichen breit, auch lange Wörter (Pfade) umbrechen.
+            .'.saft-log-message{max-width:40rem;overflow-wrap:anywhere}'
             // Reiter über Listen (z. B. App-Reiter, HasAppTabs) links bündig wie Titel und Tabelle, nur so breit wie nötig.
             .'.fi-resource-list-records-page .fi-tabs:not(.fi-contained){margin-inline:0;width:fit-content}'
             // Untermenüs in der Seitenleiste: Pfeil rechts, nach unten gedreht, wenn offen (MenuNavigationBuilder).
@@ -201,7 +205,7 @@ final class PanelAppearance
             // Nicht auf dem Handy und nicht in den Dashboard-Kacheln.
             .'@media (min-width:640px){'
             .':is(.saft-data-page .fi-page-content :is(.fi-ta,.fi-sc-section,.fi-sc-tabs),'
-            .'.fi-resource-list-records-page .fi-page-content .fi-ta,.fi-resource-relation-manager .fi-ta)'
+            .'.fi-resource-list-records-page .fi-page-content .fi-ta,.fi-resource-relation-manager .fi-ta,.saft-fit-table)'
             .'{width:fit-content;max-width:100%}'
             // Tabelle mit ihrer Kurzanzeige: der Behälter so breit wie die Tabelle, die Kurzanzeige füllt ihn.
             // Mindestbreite wie bei den Tabellen (unten): Im Behälter ließe sie sich nicht auflösen (100 % von

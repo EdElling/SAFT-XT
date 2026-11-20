@@ -6,6 +6,7 @@ namespace App\Filament\Resources\CustomTables\Tables;
 
 use App\Filament\Support\AppFilter;
 use App\Filament\Support\MoveToAppAction;
+use App\Filament\Support\RowIcons;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Plugins\PluginDependencies;
@@ -56,9 +57,9 @@ class CustomTablesTable
             ->filters([
                 TernaryFilter::make('is_active')->label(__('common.active')),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 EditAction::make(),
-            ])
+            ]))
             // In andere App verschieben (B-107): mehrere zusammenhängende Tabellen in einem Schritt.
             ->toolbarActions([MoveToAppAction::forTables()]);
     }

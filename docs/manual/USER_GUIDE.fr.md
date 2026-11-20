@@ -230,7 +230,7 @@ Les tableaux servent à la **lecture**. Un clic sur une ligne sélectionne l’e
 
 | Icône | Fonction |
 |---|---|
-| **Afficher** (œil) | Le formulaire avec tous les champs, verrouillé – champs calculés compris. |
+| **Afficher** (loupe) | Le formulaire avec tous les champs, verrouillé – champs calculés compris. |
 | **Modifier** (crayon) | Ouvre le formulaire de saisie dans une fenêtre ; **Sauvegarder les modifications** ou **Annuler** ramène directement au tableau. |
 | **Historique** (horloge) | Qui a modifié quoi et quand. |
 | **Supprimer** (corbeille) | Supprime après une question de sécurité. |

@@ -7,6 +7,7 @@ namespace App\Filament\Resources\DatabaseConnections\Tables;
 use App\ExternalData\ConnectionDriver;
 use App\Filament\Resources\DatabaseConnections\Actions\DeleteDatabaseConnectionAction;
 use App\Filament\Resources\DatabaseConnections\Actions\TestDatabaseConnectionAction;
+use App\Filament\Support\RowIcons;
 use App\Models\DatabaseConnection;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
@@ -56,10 +57,10 @@ class DatabaseConnectionsTable
                     ->tooltip(fn (DatabaseConnection $record): ?string => $record->last_test_message),
             ])
             ->defaultSort('name')
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 TestDatabaseConnectionAction::make(),
                 EditAction::make(),
                 DeleteDatabaseConnectionAction::make(),
-            ]);
+            ]));
     }
 }

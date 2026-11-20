@@ -335,7 +335,7 @@ class DataEntryTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($field): void {
             $this->login($browser, self::ADMIN)->visit("/admin/table-designer/{$this->daten->id}/edit");
             $this->openFieldList($browser)
-                ->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., 'status')]//*[self::button or self::a][contains(., 'Bearbeiten')]")
+                ->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., 'status')]//*[self::button or self::a][contains(., 'Bearbeiten') or @aria-label='Bearbeiten']")
                 ->waitFor('input[id$=".value"]', 15)
                 ->clickAtXPath("(//*[contains(@class, 'fi-fo-repeater')]//button[contains(@title, 'öschen')])[2]")
                 ->pause(900);

@@ -9,6 +9,7 @@ use App\ExternalData\SchemaComparison;
 use App\Filament\Pages\DynamicDataPage;
 use App\Filament\Resources\TableConnector\Actions\AssignConnectionAction;
 use App\Filament\Support\AppFilter;
+use App\Filament\Support\RowIcons;
 use App\Models\CustomTable;
 use App\Support\AppLocale;
 use Filament\Actions\Action;
@@ -124,7 +125,7 @@ class ConnectedTablesTable
                     ),
             ])
             ->filtersFormColumns(3)
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 Action::make('openData')
                     ->label(__('tables.actions.open_data'))
                     ->icon('heroicon-o-table-cells')
@@ -133,6 +134,6 @@ class ConnectedTablesTable
                     ->visible(fn (CustomTable $record): bool => $record->is_active),
                 AssignConnectionAction::make(),
                 EditAction::make(),
-            ]);
+            ]));
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\ScheduledTasks\Tables;
 
 use App\Filament\Support\AppFilter;
+use App\Filament\Support\RowIcons;
 use App\Models\ScheduledTask;
 use App\Models\TaskRun;
 use App\Models\User;
@@ -51,7 +52,7 @@ class ScheduledTasksTable
                     ->toggleable(),
                 AppFilter::column(),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 Action::make('runNow')
                     ->label(__('tasks.run_now'))
                     ->tooltip(__('tasks.run_now'))
@@ -64,7 +65,7 @@ class ScheduledTasksTable
                 EditAction::make()->iconButton()->tooltip(__('filament-actions::edit.single.label')),
                 DeleteAction::make()->iconButton()->tooltip(__('filament-actions::delete.single.label'))
                     ->visible(fn (ScheduledTask $record): bool => ! $record->is_system),
-            ]);
+            ]));
     }
 
     public static function color(string $status): string

@@ -205,18 +205,26 @@ class Menu extends BaseMenu
         $direct = $user->getDirectPermissions()->pluck('name')->all();
 
         return self::query()
-            ->where('route', DataMenu::ROUTE)
             ->whereKey($candidates)
-            ->get(['id', 'permission_name'])
+            ->get(['id', 'route', 'permission_name', 'app_id'])
             ->filter(function (self $menu) use ($roles, $direct): bool {
-                if ($menu->permission_name === null || in_array($menu->permission_name, $direct, true)) {
-                    return false;
+                // Datentabellen (mit Leserecht): zählen die Rollen, die das Recht geben.
+                if ($menu->route === DataMenu::ROUTE) {
+                    if ($menu->permission_name === null || in_array($menu->permission_name, $direct, true)) {
+                        return false;
+                    }
+
+                    $granting = $roles->filter(fn (Role $role): bool => $role->permissions->contains('name', $menu->permission_name));
+
+                    return $granting->isNotEmpty()
+                        && $granting->every(fn (Role $role): bool => $role->hiddenMenus->contains('id', $menu->id));
                 }
 
-                $granting = $roles->filter(fn (Role $role): bool => $role->permissions->contains('name', $menu->permission_name));
+                // Andere Einträge (Datenmodell, Auswertung, Seite, Link; B-112): ausgeblendet, wenn alle Rollen der Person
+                // aus der App des Eintrags ihn ausblenden.
+                $own = $roles->filter(fn (Role $role): bool => $menu->app_id !== null && $role->app_id === $menu->app_id);
 
-                return $granting->isNotEmpty()
-                    && $granting->every(fn (Role $role): bool => $role->hiddenMenus->contains('id', $menu->id));
+                return $own->isNotEmpty() && $own->every(fn (Role $role): bool => $role->hiddenMenus->contains('id', $menu->id));
             })
             ->map(fn (self $menu): int => (int) $menu->id)
             ->values()

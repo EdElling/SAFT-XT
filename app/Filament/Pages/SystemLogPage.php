@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Filament\Support\RowIcons;
 use App\Logs\LogEntry;
 use App\Logs\LogReader;
 use App\Models\User;
@@ -104,6 +105,8 @@ class SystemLogPage extends Page implements HasTable
             })
             ->searchable()
             ->searchPlaceholder(__('system_log.search'))
+            // Wie die übrigen Tabellen: nur so breit wie der Inhalt, höchstens so breit wie der Platz.
+            ->extraAttributes(['class' => 'saft-fit-table'])
             ->paginated([25, 50, 100])
             ->defaultPaginationPageOption(50)
             ->columns([
@@ -118,7 +121,9 @@ class SystemLogPage extends Page implements HasTable
                         default => 'gray',
                     })
                     ->description(static fn (array $record): string => (string) $record['environment']),
-                TextColumn::make('message')->label(__('system_log.message'))->wrap()->limit(300),
+                // Lange Meldungen (auch Pfade ohne Leerzeichen) umbrechen statt die Tabelle zu verbreitern.
+                TextColumn::make('message')->label(__('system_log.message'))->wrap()->limit(300)
+                    ->extraAttributes(['class' => 'saft-log-message']),
                 TextColumn::make('reference')->label(__('system_log.reference'))->fontFamily('mono')->placeholder('–'),
             ])
             ->filters([
@@ -126,7 +131,7 @@ class SystemLogPage extends Page implements HasTable
                     ->label(__('system_log.level'))
                     ->options(array_combine(LogReader::LEVELS, LogReader::LEVELS)),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 Action::make('show')
                     ->label(__('system_log.show'))
                     ->icon('heroicon-o-document-magnifying-glass')
@@ -136,7 +141,7 @@ class SystemLogPage extends Page implements HasTable
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel(__('system_log.close'))
                     ->modalWidth(Width::SixExtraLarge),
-            ])
+            ]))
             ->emptyStateHeading(__('system_log.empty'));
     }
 

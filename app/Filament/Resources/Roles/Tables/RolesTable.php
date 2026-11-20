@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Roles\Tables;
 
 use App\Filament\Resources\Roles\Actions\CopyRoleAction;
 use App\Filament\Support\AppFilter;
+use App\Filament\Support\RowIcons;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -41,11 +42,11 @@ class RolesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('name')
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 EditAction::make(),
                 CopyRoleAction::make(),
                 DeleteAction::make(),
-            ])
+            ]))
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->authorizeIndividualRecords('delete'),

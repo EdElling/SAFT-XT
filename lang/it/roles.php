@@ -72,7 +72,7 @@ return [
         'inactive_table' => ':table (inattiva)',
         'external_table' => ':table (esterna, sola lettura)',
         'menu_entries' => 'Voci di menu',
-        'menu_entries_help' => 'Voci di tipo tabella dati che questo ruolo vede nel menu. Le nuove voci sono visibili. Solo visualizzazione: se la tabella può essere visualizzata lo stabiliscono i diritti sui dati; con più ruoli basta un ruolo con diritto di lettura che mostri la voce.',
+        'menu_entries_help' => 'Voci dell’app che questo ruolo vede nel menu – tabelle di dati, modelli di dati, report, pagine e link, anche al livello superiore. Le nuove voci sono visibili. Solo visualizzazione: se una tabella può essere mostrata lo stabiliscono i diritti sui dati. Con più ruoli una tabella di dati resta visibile se un ruolo con diritto di lettura la mostra; le altre voci se un ruolo dell’app le mostra.',
         'inactive_entry' => 'inattiva',
         'choose_app_first' => 'Scegliere prima l’app: i diritti sui dati valgono per le tabelle di questa app.',
         'shared_permissions' => 'Tabelle condivise di altre app',

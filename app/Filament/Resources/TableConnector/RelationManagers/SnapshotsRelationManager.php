@@ -7,6 +7,7 @@ namespace App\Filament\Resources\TableConnector\RelationManagers;
 use App\Exceptions\BusinessRuleException;
 use App\ExternalData\Snapshots\SnapshotService;
 use App\Filament\Resources\ScheduledTasks\ScheduledTaskResource;
+use App\Filament\Support\RowIcons;
 use App\Models\CustomTable;
 use App\Models\DataSnapshot;
 use App\Models\ScheduledTask;
@@ -185,7 +186,7 @@ class SnapshotsRelationManager extends RelationManager
                         Notification::make()->success()->title(__('snapshots.deleted_all'))->send();
                     }),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 Action::make('deleteSnapshot')
                     ->label(__('snapshots.delete'))
                     ->icon('heroicon-o-trash')
@@ -196,6 +197,6 @@ class SnapshotsRelationManager extends RelationManager
                         app(SnapshotService::class)->delete($record, self::user());
                         Notification::make()->success()->title(__('snapshots.deleted'))->send();
                     }),
-            ]);
+            ]));
     }
 }

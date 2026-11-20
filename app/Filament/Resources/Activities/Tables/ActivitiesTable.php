@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Activities\Tables;
 
 use App\Filament\Resources\Activities\Schemas\ActivityEventColor;
 use App\Filament\Support\ActivityChanges;
+use App\Filament\Support\RowIcons;
 use App\Models\User;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
@@ -54,9 +55,9 @@ class ActivitiesTable
                         ->when($data['from'] ?? null, fn (Builder $q, string $date): Builder => $q->whereDate('created_at', '>=', $date))
                         ->when($data['until'] ?? null, fn (Builder $q, string $date): Builder => $q->whereDate('created_at', '<=', $date))),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 ViewAction::make(),
-            ]);
+            ]));
     }
 
     /**

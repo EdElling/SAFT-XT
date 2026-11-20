@@ -10,6 +10,7 @@ use App\Filament\Resources\Apps\Actions\AppManualAction;
 use App\Filament\Resources\Apps\Actions\ExportAppAction;
 use App\Filament\Resources\Apps\Actions\UpdateAppAction;
 use App\Filament\Support\MoveToAppAction;
+use App\Filament\Support\RowIcons;
 use App\Models\App;
 use App\Models\CustomTable;
 use App\Plugins\PluginRegistry;
@@ -99,7 +100,7 @@ class AppsTable
                 ...array_map(static fn (string $relation, string $label): TextColumn => $count($relation, $label), array_keys(App::PARTS), App::PARTS),
                 TextColumn::make('sort_order')->label(__('common.sort_order'))->alignment(Alignment::End)->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 EditAction::make(),
                 MoveToAppAction::forApp(),
                 AppManualAction::make(),
@@ -122,7 +123,7 @@ class AppsTable
                     // Leere Apps direkt löschen; mit Inhalt deaktivieren und „Entfernen …“ (nur Super-Admin).
                     DeleteAction::make()->visible(fn (App $record): bool => $record->isEmpty()),
                 ]),
-            ])
+            ]))
             ->filters([
                 TernaryFilter::make('is_active')->label(__('common.active')),
             ]);

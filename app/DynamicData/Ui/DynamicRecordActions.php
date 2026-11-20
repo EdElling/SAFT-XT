@@ -395,6 +395,8 @@ final class DynamicRecordActions
     {
         return ViewAction::make($name)
             ->label(__('data.actions.view'))
+            // Lupe: das Auge steht für Ein-/Ausblenden (Table-Designer).
+            ->icon('heroicon-o-magnifying-glass')
             ->schema(self::form($table, $locked))
             ->modalHeading(fn (DynamicRecord $record): string => RecordEntries::title($table, $record))
             ->authorize(fn (): bool => DataAccess::current($table, 'view'));
@@ -542,6 +544,38 @@ final class DynamicRecordActions
     /**
      * @return list<array{when: string, who: string, what: string}>
      */
+    /**
+     * Verlauf eines beliebigen protokollierten Objekts (z. B. eines Felds im Table-Designer, B-113) als Dialog.
+     */
+    public static function modelHistory(string $name = 'history'): Action
+    {
+        return Action::make($name)
+            ->label(__('data.history.label'))
+            ->icon('heroicon-o-clock')
+            ->color('gray')
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel(__('common.close'))
+            ->schema([self::historyEntry(fn (Model $record): array => self::modelHistoryRows($record))]);
+    }
+
+    /** @return list<array{when: string, who: string, what: string}> neueste zuerst, höchstens 25 */
+    public static function modelHistoryRows(Model $record): array
+    {
+        return Activity::query()
+            ->where('subject_type', $record->getMorphClass())
+            ->where('subject_id', $record->getKey())
+            ->with('causer')
+            ->orderByDesc('id')
+            ->limit(25)
+            ->get()
+            ->map(fn (Activity $a): array => [
+                'when' => AppLocale::dateTime($a->created_at) ?? '—',
+                'who' => ActivityChanges::causerLabel($a),
+                'what' => ActivityChanges::eventLabel($a->event).': '.ActivityChanges::summary($a, 200),
+            ])
+            ->all();
+    }
+
     public static function historyRows(DynamicRecord $record): array
     {
         return Activity::query()

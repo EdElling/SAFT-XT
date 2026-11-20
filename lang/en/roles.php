@@ -72,7 +72,7 @@ return [
         'inactive_table' => ':table (inactive)',
         'external_table' => ':table (external, read only)',
         'menu_entries' => 'Menu entries',
-        'menu_entries_help' => 'Entries of type data table that this role sees in the menu. New entries are visible. Display only: whether the table may be viewed is set by the data permissions; with several roles, one role with read permission that shows the entry is enough.',
+        'menu_entries_help' => 'Entries of the app this role sees in the menu – data tables, data models, reports, pages and links, also on the top level. New entries are visible. Display only: whether a table may be shown is set by the data permissions. With several roles a data table stays visible if a role with read permission shows it; other entries if a role of the app shows them.',
         'inactive_entry' => 'inactive',
         'choose_app_first' => 'Choose the app first: data permissions apply to the tables of that app.',
         'shared_permissions' => 'Shared tables of other apps',

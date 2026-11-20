@@ -72,7 +72,7 @@ return [
         'inactive_table' => ':table (inaktiv)',
         'external_table' => ':table (extern, nur lesen)',
         'menu_entries' => 'Menüeinträge',
-        'menu_entries_help' => 'Einträge vom Typ Datentabelle, die diese Rolle im Menü sieht. Neue Einträge sind sichtbar. Nur Darstellung: Ob die Tabelle angezeigt werden darf, legen die Datenrechte fest; bei mehreren Rollen genügt eine Rolle mit Leserecht, die den Eintrag zeigt.',
+        'menu_entries_help' => 'Einträge der App, die diese Rolle im Menü sieht – Datentabellen, Datenmodelle, Auswertungen, Seiten und Links, auch auf der Hauptebene. Neue Einträge sind sichtbar. Nur Darstellung: Ob eine Tabelle angezeigt werden darf, legen die Datenrechte fest. Bei mehreren Rollen bleibt eine Datentabelle sichtbar, wenn eine Rolle mit Leserecht sie zeigt; andere Einträge, wenn eine Rolle der App sie zeigt.',
         'inactive_entry' => 'inaktiv',
         'choose_app_first' => 'Zuerst die App wählen: Die Datenrechte gelten für die Tabellen dieser App.',
         'shared_permissions' => 'Freigegebene Tabellen anderer Apps',

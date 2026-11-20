@@ -223,7 +223,7 @@ Bearbeitet wird über die Schaltflächen am Ende der Zeile – je nach Bildschir
 
 | Symbol | Funktion |
 |---|---|
-| **Ansehen** (Auge) | Das Formular mit allen Feldern, gesperrt – auch berechnete Felder. |
+| **Ansehen** (Lupe) | Das Formular mit allen Feldern, gesperrt – auch berechnete Felder. |
 | **Bearbeiten** (Stift) | Öffnet das Eingabeformular als Fenster; **Speichern** bzw. **Abbrechen** führt direkt zurück zur Tabelle. |
 | **Verlauf** (Uhr) | Wer wann was geändert hat (z. B. „status: Neu → Versendet“). |
 | **Löschen** (Papierkorb) | Löscht nach einer Sicherheitsfrage. |

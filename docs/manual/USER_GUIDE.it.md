@@ -223,7 +223,7 @@ Le tabelle servono alla **lettura**. Un clic su una riga seleziona il record (ve
 
 | Icona | Funzione |
 |---|---|
-| **Visualizza** (occhio) | Il modulo con tutti i campi, bloccato – anche i campi calcolati. |
+| **Visualizza** (lente) | Il modulo con tutti i campi, bloccato – anche i campi calcolati. |
 | **Modifica** (matita) | Apre il modulo di inserimento in una finestra; **Salva** o **Annulla** riporta direttamente alla tabella. |
 | **Cronologia** (orologio) | Chi ha modificato cosa e quando. |
 | **Elimina** (cestino) | Elimina dopo una domanda di sicurezza. |

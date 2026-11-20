@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Filament\Support\RowIcons;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -74,13 +75,13 @@ class UsersTable
                     ),
                 TrashedFilter::make(),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 EditAction::make(),
                 DeleteAction::make()->modalDescription(fn (): string => __('users.delete.soft')),
                 RestoreAction::make(),
                 // Nur bei gelöschten Konten sichtbar (Filament), neben „Wiederherstellen“.
                 ForceDeleteAction::make()->modalDescription(fn (): string => __('users.delete.force')),
-            ])
+            ]))
             ->toolbarActions([
                 BulkActionGroup::make([
                     // Pro Datensatz autorisieren: verhindert z. B. Selbst-Löschung per Bulk.

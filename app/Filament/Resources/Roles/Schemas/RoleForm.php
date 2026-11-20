@@ -6,7 +6,6 @@ namespace App\Filament\Resources\Roles\Schemas;
 
 use App\Apps\PluginApps;
 use App\Apps\SystemObjects;
-use App\DynamicData\DataMenu;
 use App\DynamicData\DataPermissions;
 use App\Filament\Forms\Components\DataPermissionMatrix;
 use App\Filament\Support\AppSelect;
@@ -178,9 +177,10 @@ class RoleForm
      */
     private static function dataMenuOptions(?int $appId): array
     {
-        // Kein once(): Es unterscheidet nicht zuverlässig nach der App, die im Formular wechseln kann.
+        // Kein once(): Es unterscheidet nicht zuverlässig nach der App, die im Formular wechseln kann. Alle Einträge mit
+        // eigenem Ziel (Datentabelle, Datenmodell, Auswertung, Seite, Link), auch auf der Hauptebene (B-112); keine Gruppen.
         return Menu::query()
-            ->where('route', DataMenu::ROUTE)
+            ->where(static fn ($q) => $q->whereNotNull('route')->orWhereNotNull('url'))
             ->where('app_id', $appId ?? 0)
             ->with('parent')
             ->get()

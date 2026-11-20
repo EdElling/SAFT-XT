@@ -97,11 +97,12 @@ Un ruolo raggruppa diritti. Gli utenti ricevono diritti esclusivamente tramite r
   la casella sopra una colonna («intera colonna») assegna il diritto per tutte le tabelle visibili. Il **campo di
   ricerca** filtra le righe per etichetta o nome tecnico.
 
-- **Voci di menu** – tutte le voci di menu di tipo «Tabella di dati», ad es. «Dati › Clienti». Senza segno di spunta
+- **Voci di menu** – tutte le voci di menu dell’app con una propria destinazione, ad es. «Dati › Clienti», un modello
+  di dati o un report, anche al livello superiore. Senza segno di spunta
   il ruolo non vede la voce nel menu. Le nuove voci e i nuovi ruoli sono spuntati, quindi visibili. Si tratta solo di
   visualizzazione: se la tabella può essere mostrata lo decidono i diritti sui dati. Una voce nascosta resta
-  raggiungibile tramite link, la vista master-detail e l’anteprima. Con più ruoli basta un ruolo con diritto di lettura
-  che mostri la voce; `super-admin` vede sempre tutte le voci.
+  raggiungibile tramite link, la vista master-detail e l’anteprima. Con più ruoli basta, per le tabelle di dati, un ruolo con diritto di lettura che mostri la voce, per le altre voci un
+  ruolo dell’app; `super-admin` vede sempre tutte le voci.
 
 Le aree vengono salvate indipendentemente – una modifica in una non cambia nulla nell’altra.
 
@@ -391,8 +392,13 @@ crea anche una voce aggiuntiva se la tabella deve comparire in un secondo punto 
 | Collegamento | solo verso altre tabelle del Designer di tabelle, mai verso tabelle di sistema |
 
 > **Disattivare invece di eliminare:** un campo o una tabella disattivati sono invisibili agli utenti, ma i dati
-> restano completamente conservati. Un campo si recupera con «Abilita», senza conferma. L’eliminazione definitiva non
-> si può annullare.
+> restano completamente conservati. Un campo si recupera con «Attiva», senza conferma. L’eliminazione definitiva non si può annullare.
+>
+> **Elenco dei campi:** le azioni sono icone con tooltip nella riga – modifica, **cronologia** (orologio: chi ha
+> modificato cosa e quando sul campo), mostra/nascondi ed elimina. L’occhio mostra lo stato: aperto per un campo attivo,
+> barrato per uno disattivato. Se un plugin ha bisogno del campo o un’altra app lo usa tramite l’interfaccia, l’icona
+> è bloccata (pallida); il tooltip ne indica il motivo. Come qui, tutti gli elenchi dell’amministrazione mostrano le
+> azioni di riga come icone con tooltip; **Visualizza** è la lente.
 
 Sotto **Tabella fisica** vedete il luogo di archiviazione, il numero di record ed eventuali differenze tra le
 impostazioni e il database.

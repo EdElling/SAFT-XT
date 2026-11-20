@@ -95,11 +95,12 @@ Eine Rolle bündelt Rechte. Benutzer erhalten Rechte ausschliesslich über Rolle
   Kästchen über einer Spalte („ganze Spalte“) setzt das Recht für alle sichtbaren Tabellen. Das **Suchfeld** filtert
   die Zeilen nach Bezeichnung oder technischem Namen.
 
-- **Menüeinträge** – alle Menüeinträge vom Typ „Datentabelle“, z. B. „Daten › Kunden“. Ohne Haken sieht die Rolle den
+- **Menüeinträge** – alle Menüeinträge der App mit eigenem Ziel, z. B. „Daten › Kunden“, ein Datenmodell oder eine
+  Auswertung, auch auf der Hauptebene. Ohne Haken sieht die Rolle den
   Eintrag nicht im Menü. Neue Einträge und neue Rollen sind angehakt, also sichtbar. Das ist nur Darstellung: Ob die
   Tabelle angezeigt werden darf, legen die Datenrechte fest. Ein ausgeblendeter Eintrag bleibt über Links, die
-  Master-Detail-Ansicht und die Vorschau erreichbar. Bei mehreren Rollen genügt eine Rolle mit Leserecht, die den
-  Eintrag zeigt; `super-admin` sieht immer alle Einträge.
+  Master-Detail-Ansicht und die Vorschau erreichbar. Bei mehreren Rollen genügt bei Datentabellen eine Rolle mit Leserecht, die den Eintrag zeigt, bei anderen Einträgen
+  eine Rolle der App; `super-admin` sieht immer alle Einträge.
 
 Die Bereiche werden unabhängig gespeichert – eine Änderung im einen verändert nichts im anderen.
 
@@ -386,8 +387,13 @@ Gruppe und legt auch einen weiteren Eintrag an, wenn die Tabelle an einer zweite
 | Verknüpfung | nur zu anderen Tabellen des Table-Designers, nie zu Systemtabellen |
 
 > **Deaktivieren statt löschen:** Ein deaktiviertes Feld oder eine deaktivierte Tabelle ist für Benutzer
-> unsichtbar, die Daten bleiben aber vollständig erhalten. Ein Feld holen Sie mit „Aktivieren“ ohne Rückfrage
-> zurück. Endgültiges Löschen kann nicht rückgängig gemacht werden.
+> unsichtbar, die Daten bleiben aber vollständig erhalten. Ein Feld holen Sie mit „Aktivieren“ ohne Rückfrage zurück. Endgültiges Löschen kann nicht rückgängig gemacht werden.
+>
+> **Feldliste:** Die Aktionen stehen als Symbole mit Tooltip in der Zeile – Bearbeiten, **Verlauf** (Uhr: wer wann
+> was am Feld geändert hat), Ein-/Ausblenden und Löschen. Das Auge zeigt den Zustand: offen bei aktivem, durchgestrichen
+> bei deaktiviertem Feld. Braucht ein Plugin das Feld oder nutzt eine andere App es über die Schnittstelle, ist das
+> Symbol gesperrt (blass); der Tooltip nennt den Grund. Wie hier zeigen alle Listen der Administration ihre
+> Zeilenaktionen als Symbole mit Tooltip; **Anzeigen** ist die Lupe.
 
 Unter **Physische Tabelle** sehen Sie den Speicherort, die Anzahl Datensätze und eventuelle Abweichungen
 zwischen Einstellungen und Datenbank.

@@ -72,7 +72,7 @@ return [
         'inactive_table' => ':table (inactive)',
         'external_table' => ':table (externe, lecture seule)',
         'menu_entries' => 'Entrées de menu',
-        'menu_entries_help' => 'Entrées de type table de données que ce rôle voit dans le menu. Les nouvelles entrées sont visibles. Affichage uniquement : les droits sur les données déterminent si la table peut être consultée ; avec plusieurs rôles, il suffit d’un rôle avec droit de lecture qui affiche l’entrée.',
+        'menu_entries_help' => 'Entrées de l’app que ce rôle voit dans le menu – tables de données, modèles de données, rapports, pages et liens, aussi au niveau supérieur. Les nouvelles entrées sont visibles. Affichage seulement : les droits sur les données déterminent si une table peut être affichée. Avec plusieurs rôles, une table de données reste visible si un rôle avec droit de lecture l’affiche ; les autres entrées si un rôle de l’app les affiche.',
         'inactive_entry' => 'inactive',
         'choose_app_first' => 'Choisissez d’abord l’app : les droits sur les données s’appliquent aux tables de cette app.',
         'shared_permissions' => 'Tables partagées d’autres apps',

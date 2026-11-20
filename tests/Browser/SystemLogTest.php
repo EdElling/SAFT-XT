@@ -26,7 +26,8 @@ class SystemLogTest extends DuskTestCase
                 ->waitForText('Systemprotokoll', 15)
                 ->waitForText('Browsertest Systemprotokoll', 15)
                 ->assertSee($reference)
-                ->press('Anzeigen')
+                // Zeilenaktion als Symbol (B-113): Bezeichnung als aria-label.
+                ->click('tr.fi-ta-row button[aria-label="Anzeigen"]')
                 ->waitFor('[data-system-log-entry]', 15)
                 ->assertSeeIn('[data-system-log-entry]', 'Ablaufzeile-'.$reference);
         });

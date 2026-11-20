@@ -8,6 +8,7 @@ use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
 use App\DynamicData\TableDefinition;
 use App\ExternalData\TableConnectorService;
+use App\Filament\Support\RowIcons;
 use App\Filament\Support\TranslatableInputs;
 use App\Models\CustomField;
 use App\Models\CustomTable;
@@ -173,7 +174,7 @@ class ConnectedColumnsRelationManager extends RelationManager
                     ->disabled(fn (CustomField $record): bool => ! self::allowed('update') || self::schemaState($record) === 'missing')
                     ->updateStateUsing(fn (CustomField $record, mixed $state) => $update($record, 'is_active', $state)),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 EditAction::make()
                     ->authorize(fn (): bool => self::allowed('update'))
                     ->mutateRecordDataUsing(fn (array $data, CustomField $record): array => [...$data, 'label' => $record->getTranslations('label'), ...self::relationState($record)])
@@ -206,7 +207,7 @@ class ConnectedColumnsRelationManager extends RelationManager
                     ->visible(fn (CustomField $record): bool => self::schemaState($record) === 'missing')
                     ->authorize(fn (): bool => self::allowed('update'))
                     ->action(fn (CustomField $record) => app(TableConnectorService::class)->removeMissingField($record)),
-            ]);
+            ]));
     }
 
     /**

@@ -145,7 +145,8 @@ class ScheduledTasksTest extends DuskTestCase
                 ->visit('/admin/scheduled-tasks/'.ScheduledTask::query()->where('type', 'task_runs_prune')->value('id').'/edit')
                 ->waitForText('Läufe', 15);
             $this->scrollToRuns($admin);
-            $admin->press('Details')
+            // Zeilenaktion als Symbol (B-113).
+            $admin->click('tr.fi-ta-row button[aria-label="Details"]')
                 ->waitForText('Technische Details (Referenz TEST1234)', 15)
                 ->assertSee('Testfehler für die Anzeige')
                 ->assertSee('RuntimeException')

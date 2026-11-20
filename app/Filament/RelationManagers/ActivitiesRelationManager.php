@@ -7,6 +7,7 @@ namespace App\Filament\RelationManagers;
 use App\Filament\Resources\Activities\ActivityResource;
 use App\Filament\Resources\Activities\Schemas\ActivityInfolist;
 use App\Filament\Resources\Activities\Tables\ActivitiesTable;
+use App\Filament\Support\RowIcons;
 use Filament\Actions\ViewAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
@@ -47,8 +48,8 @@ class ActivitiesRelationManager extends RelationManager
             ->modifyQueryUsing(fn ($query) => $query->with('causer'))
             ->columns(ActivitiesTable::columns(withSubject: false))
             ->defaultSort('created_at', 'desc')
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 ViewAction::make(),
-            ]);
+            ]));
     }
 }

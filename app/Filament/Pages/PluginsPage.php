@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\DynamicData\DataMenu;
+use App\Filament\Support\RowIcons;
 use App\Models\CustomTable;
 use App\Plugins\Api\ApiManifest;
 use App\Plugins\Api\DashboardWidget;
@@ -287,7 +288,7 @@ class PluginsPage extends Page implements HasTable
                     ->placeholder(__('plugins.api.none')),
                 TextColumn::make('menus')->label(__('plugins.fields.menus')),
             ])
-            ->recordActions([
+            ->recordActions(RowIcons::of([
                 Action::make('disablePlugin')
                     ->label(__('plugins.switch.disable'))
                     ->icon('heroicon-o-power')
@@ -332,7 +333,7 @@ class PluginsPage extends Page implements HasTable
                         // Neue Einträge sofort in der Seitenleiste.
                         $this->redirect(static::getUrl(), navigate: true);
                     }),
-            ])
+            ]))
             ->emptyStateHeading(__('plugins.empty'))
             ->emptyStateDescription(__('plugins.empty_help'))
             ->emptyStateIcon('heroicon-o-puzzle-piece');
