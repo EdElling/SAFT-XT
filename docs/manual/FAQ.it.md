@@ -96,7 +96,7 @@ sistema: `upload_max_filesize` e `post_max_size`).
 
 ### In un collegamento manca una tabella nella scelta.
 
-I collegamenti sono possibili solo tra tabelle della stessa app (guida per amministratori, capitolo 16). Se la tabella
+I collegamenti sono possibili solo tra tabelle della stessa app (guida per amministratori, capitolo 15). Se la tabella
 desiderata appartiene a un’altra app, create la nuova tabella in quell’app – oppure estendete quell’app.
 
 ### Un’app è scomparsa dal selettore.

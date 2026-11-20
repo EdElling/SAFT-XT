@@ -96,7 +96,7 @@ Scheitern auch kleine erlaubte Dateien, ist die Grenze des Servers zu klein (Sys
 
 ### Bei einer Verknüpfung fehlt eine Tabelle in der Auswahl.
 
-Verknüpfungen sind nur zwischen Tabellen derselben App möglich (Administratorhandbuch, Kapitel 16). Gehört die
+Verknüpfungen sind nur zwischen Tabellen derselben App möglich (Administratorhandbuch, Kapitel 15). Gehört die
 gewünschte Tabelle zu einer anderen App, legen Sie die neue Tabelle in deren App an – oder erweitern Sie diese App.
 
 ### Eine App ist aus dem Umschalter verschwunden.

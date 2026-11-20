@@ -93,7 +93,7 @@ files fail, the server's limit is too low (system administration: `upload_max_fi
 
 ### A table is missing from the choice for a relation.
 
-Relations are only possible between tables of the same app (administrator guide, chapter 16). If the table you want
+Relations are only possible between tables of the same app (administrator guide, chapter 15). If the table you want
 belongs to another app, create the new table in that app – or extend that app.
 
 ### An app has disappeared from the switcher.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\TableConnector\Schemas;
 
+use App\DynamicData\DataMenu;
 use App\DynamicData\DetailRelations;
 use App\DynamicData\Schema\IdentifierValidator;
 use App\ExternalData\ColumnInfo;
@@ -179,7 +180,9 @@ class ConnectedTableForm
                     ->options(fn (?CustomTable $record): array => $record?->fields->where('is_active', true)->mapWithKeys(fn (CustomField $f): array => [$f->name => $f->name])->all() ?? [])
                     ->placeholder(__('table_connector.form.no_key'))
                     ->visibleOn('edit'),
-                AppSelect::make()->visibleOn('create'),
+                AppSelect::make()->visibleOn('create')
+                    // Menügruppe der neuen App vorbelegen (die bisherige gehört zu einer anderen App).
+                    ->afterStateUpdated(fn (Set $set, mixed $state): mixed => $set('menu_group', app(DataMenu::class)->defaultGroup(filled($state) ? (int) $state : null))),
                 MenuGroupSelect::make(app: fn (Get $get): mixed => $get('app_id'))
                     ->visibleOn('create'),
                 Toggle::make('export_enabled')

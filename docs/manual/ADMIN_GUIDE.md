@@ -27,8 +27,7 @@
 - [12. Scheduled tasks](#12-scheduled-tasks)
 - [13. AI functions](#13-ai-functions)
 - [14. Plugins](#14-plugins)
-- [15. Transfer configuration](#15-transfer-configuration)
-- [16. Apps (business applications)](#16-apps-business-applications)
+- [15. Apps (business applications)](#15-apps-business-applications)
 - [Appendix A – Permissions at a glance](#appendix-a--permissions-at-a-glance)
 
 ---
@@ -119,7 +118,7 @@ like another person with exactly these roles: their own reports do not count as 
 permissions (signing out also ends the view). The database stays unchanged; start and end are recorded in the
 activity log. Note: what the role is allowed to do is really saved during the view – with you as the causer.
 
-**App and copy** (B-107): each role belongs to an [app](#16-apps-business-applications); the form shows data
+**App and copy** (B-107): each role belongs to an [app](#15-apps-business-applications); the form shows data
 permissions, menu entries and plugin permissions only for that app (the general SAFT permissions always). Without a
 chosen app, a hint to choose the app first appears instead of the data permissions. If the role still has permissions
 **outside** its app – on tables or plugins of other apps, e.g. after changing the app or from before apps existed, or on
@@ -199,7 +198,7 @@ its child entries are deleted as well.
 
 > The **details** (master-detail) are not set in the menu but in the table designer.
 
-**App:** top-level entries and groups belong to an [app](#16-apps-business-applications) or – without one – to the
+**App:** top-level entries and groups belong to an [app](#15-apps-business-applications) or – without one – to the
 system; entries inside a group take its app. For data entries the form only offers tables of that app.
 
 ## 4. Table designer
@@ -301,7 +300,7 @@ For every rule you choose the **field**, the **comparison** and whether it is co
 - Renaming a field updates its rules. A field used in a rule cannot be deleted, and its type can only be changed to
   a type that still fits the rule.
 
-**App and prefix:** when creating a table you choose its [app](#16-apps-business-applications) (required if there
+**App and prefix:** when creating a table you choose its [app](#15-apps-business-applications) (required if there
 are several apps). If the app has a prefix, it is put in front of the suggested technical name; changing the app
 replaces it. Relations are only possible to tables of the same app.
 
@@ -476,7 +475,7 @@ Afterwards the file can be imported again.
 | **Emergency sign-in for super admins** | Allows super admins in SSO mode to sign in with a password via `…/admin/login?local=1`, in case the identity provider fails |
 | **Offer "Forgot password"** | Email for resetting the password (only in Local or Hybrid mode; requires configured email delivery) |
 | **Default role for new users** | Preselected when creating users and assigned to SSO users created automatically |
-| **Two-factor authentication** | **Optional**, **Required for administration** (default) or **Required for everyone**. Administration means: super admin or any permission on users, roles, menus, identity providers, settings, table designer, database connections, table connector, table links, scheduled tasks, plugins or transfer configuration. Anyone covered is taken to the setup after signing in. Exempt are sign-ins via SSO and accounts without a password (second factor at the identity provider) as well as *View as role*. |
+| **Two-factor authentication** | **Optional**, **Required for administration** (default) or **Required for everyone**. Administration means: super admin or any permission on users, roles, menus, identity providers, settings, table designer, database connections, table connector, table links, scheduled tasks, plugins or apps. Anyone covered is taken to the setup after signing in. Exempt are sign-ins via SSO and accounts without a password (second factor at the identity provider) as well as *View as role*. |
 
 Protection against lock-out: the **Single sign-on** mode can only be saved if at least one active identity provider
 has a **successful connection test**. For additional emergency exits in operations see
@@ -603,11 +602,17 @@ again. Every change is recorded in the change history; for the password only the
 > automatically; anyone allowed to create connections can address any server.
 
 **Deleting:** If no tables are linked through the connection, the usual confirmation is enough. Otherwise the dialog
-**"Delete connection and linked tables"** lists all affected tables (name in SAFT, label, external table, kind).
-After entering the connection name to confirm, the connection and its links are removed in one step – as with
-"Remove link" in the table connector: settings, permissions, menu entries and relations of other tables to them. The
-external database stays unchanged. This also requires the permission "Table connector: delete"; without it the
-dialog only shows the list.
+**"Delete connection"** lists all affected tables (name in SAFT, label, external table, kind) and asks what happens to
+them:
+
+- **Keep linked tables (without connection, inactive)** – default; permission "Table connector: edit". Tables, columns,
+  permissions, menu entries and relations stay; the tables are inactive and marked "Connection missing" in the table
+  connector. Later assign them to a (new) connection with "Assign connection …".
+- **Delete linked tables too** – permission "Table connector: delete", confirmation with the name of the connection. As
+  with "Remove link" in the table connector: settings, permissions, menu entries and relations of other tables to them
+  are removed.
+
+The external database stays unchanged in both cases.
 
 **Bulk link:** When editing a connection there are two tabs: **Connection** with the previous settings and **Bulk
 link** to link many tables at once. The second tab shows its table only after a successful connection test; before
@@ -797,6 +802,13 @@ snapshot by choosing it in the report editor; deleting and retention remain with
 **"Remove link"** removes the table from SAFT – settings, permissions, menu entries and data snapshots. The data in the
 external database remains unchanged.
 
+**Without connection:** A connected table can exist without a database connection – after deleting its connection
+with "Keep linked tables" or from an installed app whose connection does not exist here (see
+[chapter 15](#15-apps-business-applications)). The list then shows **"Connection missing"**; the table is inactive.
+**"Assign connection …"** (in the list and when editing; permission "Table connector: edit") chooses an active
+connection and compares the columns with the external table like "Re-read". Then check the columns and activate the
+table. If the comparison fails (table not found, connection not reachable), it stays without connection.
+
 > **Permissions:** Only roles with "Table connector: view/create/edit/delete" can use the table connector,
 > independently of the table designer. Who may see the data is set by the data permissions of the respective table.
 
@@ -893,7 +905,7 @@ currently not running".
 > **Permissions:** "Scheduled tasks: view/create/edit/delete"; "Run now" with "edit". For the widget additionally
 > "Dashboard widget: Scheduled tasks (status)". Changes to tasks are recorded in the activity log.
 
-**App:** tasks for a table belong to its [app](#16-apps-business-applications); for other tasks you choose the
+**App:** tasks for a table belong to its [app](#15-apps-business-applications); for other tasks you choose the
 app. System tasks belong to no app.
 
 ---
@@ -1092,67 +1104,7 @@ development packages – install them again first instead of cleaning up.
 > The plugin *Stock board* requires *Stock transfer* and shows the *Stock matrix* (stock per item and location), the *Stock board* (transfer stock by dragging) and the tile *Warehouse: stock by location* as well as two kinds of scheduled tasks (see [chapter 12](#12-scheduled-tasks)). The plugin *Swiss checks* brings the validation rules AHV number, IBAN, UID and postal code as well as the formula
 > function `rappen()`.
 
-## 15. Transfer configuration
-
-**Administration › Application › Transfer configuration** brings tables, reports, menu entries and roles from one installation to
-another – typically from the test to the production installation. Instead of rebuilding everything by hand, you export
-a **package** (a JSON file) and import it in the other installation.
-
-**What goes into the package** and what does not:
-
-| In the package | Not in the package |
-|---|---|
-| table designer tables with fields, checks, formulas, table rules and detail tables | records (including files from file fields; the preview names such fields under *Notes*) |
-| links for reports | users and their dashboard layout |
-| reports – shared ones and your own | other people's private reports |
-| menu entries (with their parent groups) | database connections and credentials |
-| roles with their permissions and hidden menu entries | global settings, scheduled tasks |
-
-All references are stored as **names**, not internal numbers – tables and fields by technical name, menu entries by
-path (e.g. "Warehouse (demo) › Warehouse operations › Stock levels"), reports by name. So the package fits any installation.
-
-**Export** (permissions *Configuration: view* and *export*), tab *Export*:
-
-1. Select tables, reports, menu entries and roles on the tabs of the same name; the number on a tab gives the selected
-   entries. Tables and reports are grouped by menu group (reports by the group
-   of their base table), menu entries by their parent entry; below each report it says which tables it needs, below each
-   menu entry its target.
-2. **Include dependencies** (default): a report brings its tables, a menu entry its table or report and parent groups,
-   a table the tables of its relations and formulas. If the switch is off, reports are greyed out as long as not all their
-   tables are selected, and menu entries as long as their table or report is missing (below each it shows the target and
-   what is missing); a note names entries already ticked – they are not added to the package.
-3. Enter a name (e.g. "Sales version 3") and **Download package**. The export is recorded in the activity log.
-
-**Import** (permissions *Configuration: view* and *import*), tab *Import*:
-
-1. Upload the package file. The **preview** shows every entry with its status:
-
-   | Status | Meaning |
-   |---|---|
-   | **new** | will be created |
-   | **identical** | already exists exactly like this – nothing to do |
-   | **different – skipped** | already exists, but differently; stays unchanged |
-   | **prerequisite missing** | e.g. a table, a parent menu entry or a plugin's page is missing; the *Notes* column says what |
-
-   Missing plugins and database connections are listed at the top under **Missing prerequisites**. Permissions that do
-   not exist in the installation (e.g. of a missing plugin) are skipped for roles and mentioned as a note.
-2. **Create new entries** creates all entries with status *new* – tables, links, reports, menus and roles in this order.
-   Imported reports belong to you; whether they are shared comes from the package.
-3. Afterwards the preview shows the created entries as *identical*. The import is recorded in the activity log.
-
-Existing entries are **never changed** – not even when they differ. To change a table in the target installation, adapt
-it there in the table designer. Connected tables (table connector) must already exist in the target installation; the
-package lists them as a prerequisite.
-
-> **Tip:** import a package into a test installation first and check the preview. For recurring transfers there are the
-> commands `saft:config-export` and `saft:config-import` (see [System administration](SYSADMIN_GUIDE.md)).
-
-**Target app when importing:** tables, top-level menu groups and roles of the package go into a chosen
-[app](#16-apps-business-applications) – an existing or a new one (suggested with the package's label); on the console
-`saft:config-import --app=<ID>` or `--new-app="Name"`. When exporting, tables and reports are listed under
-“App › menu group”.
-
-## 16. Apps (business applications)
+## 15. Apps (business applications)
 
 An **app** groups what belongs together: tables, menus, reports, table links, roles and scheduled tasks, e.g.
 “Warehouse” or “HR”. Each of these objects belongs to exactly one app; users, sign-in, global settings, AI connection,
@@ -1169,7 +1121,9 @@ tables, menus, reports, links, roles and tasks:
 | Version | free text, e.g. “1.2”; included in the export and the file name |
 | Icon, sort order | display in lists |
 
-The **Status** column shows *Active*, *Inactive*, *Removal from …* or *Removal failed* (the message as tooltip).
+The **Status** column shows *Active*, *Inactive*, *Removal from …* or *Removal failed* (the message as tooltip),
+**Installed** the baseline of an installed app and **Notes** lasting warnings such as “Plugin missing: …” or connected
+tables without connection.
 The action menu (three dots) contains **Data model**, **Export …**, deactivate/activate, remove and – only for empty
 apps – **Delete**; apps with content are deactivated and removed (below).
 
@@ -1233,8 +1187,26 @@ permission *Apps: export*). Always included are the tables with fields, rules an
 menus of the app; optional are reports (shared and own), roles with permissions, scheduled tasks and the manual. Never
 included are records, credentials of database connections (connected tables only as a reference), system menus,
 system roles and system tasks. Every object carries its stable key so that an installed app can be updated later.
-SAFT checks the file for consistency before downloading; the export is recorded in the change log. Installing from such
-a file follows with the next step (until then packages via “Transfer configuration”).
+SAFT checks the file for consistency before downloading; the export is recorded in the change log.
+
+**Install:** **“Install app …”** at the top of the page (permission *Apps: install*) uploads such a file and shows a
+**preview**: name, version and prefix, what will be created, obstacles (red) – e.g. if the app or a table of the same
+name already exists –, notes (yellow) and the diagram of the tables. It is installed as:
+
+- **new app (as exported)** – with the same stable keys so that it can be updated later; an app that is already
+  installed is refused.
+- **copy (new name and prefix)** – e.g. a test copy on the same system: the tables get the new prefix
+  (`lager_artikel` → `lager2_artikel`), as do all references to them (relations, totals in formulas, reports, menus,
+  data permissions of roles); all keys are new.
+
+The app is created **deactivated** – check it, then activate. If a role name is already taken, the role gets the prefix
+of the app (e.g. `vertrieb-lager2`); reports belong to the installing person; file fields come without files. Missing
+plugins do not prevent installing; the **Notes** column names them until they are installed. **Connected tables** are
+created inactive: if a database connection of the same name exists, they are assigned to it and compared with the
+database, otherwise they stay without connection (see [table connector](#10-table-connector), “Without connection”).
+If creating fails halfway, the app stays deactivated and can be taken down with “Remove …”. The installed state is
+saved as the **baseline** (column **Installed**, e.g. “Installed: 1.2 on 20.11.2026”) – the basis for updating later.
+Installing is recorded in the change log.
 
 **Deactivate and activate:** in the action menu (three dots) of an app; permission *Apps: manage*. A deactivated app
 disappears for everyone except the super admin: no longer in the switcher, no menus, reports or cards, no access to its
@@ -1265,18 +1237,104 @@ app; the demo data create one app each (Shop, Warehouse, Research). “Existing 
 
 ## Appendix A – Permissions at a glance
 
-| Area | Permissions |
+All permissions, grouped by topic, with the label shown when editing a [role](#2-roles-and-permissions). Users receive
+permissions only through roles. The **super admin** always has all permissions, including future ones; some actions are
+reserved for the super admin and cannot be granted to any role: **View as role** and **removing apps with content**.
+“View” is in each case the prerequisite for the other permissions of an area (page and menu entry).
+
+**Users and access**
+
+| Permission | Effect |
 |---|---|
-| Users, roles, menus, identity providers, table designer, table connector, database connections | view, create, edit, delete; table designer also import and use assistant (AI) |
-| Activity log | view |
-| Authentication settings, global settings | view, edit |
-| Dashboard widgets | per widget |
-| Reports | view, create (own), edit and delete (also other people's), use assistant (AI) |
-| Table links | view, create, edit, delete |
-| Scheduled tasks | view, create, edit (also "Run now"), delete, see technical details (error details of failed runs) |
-| System log | view (log file of the server, read only) |
-| Plugins | view; manage (create menu entries, clean up); the plugins' own permissions are listed under their name |
-| Configuration | view (page and menu entry); export; import |
-| Apps | view; manage (create, edit, activate and deactivate, delete empty ones); export. Removing apps with content: super admin only |
-| Help | use assistant (help assistant) |
-| Data per table (data permissions matrix) | view, create, edit, delete, export, import; for linked external tables write permissions only if enabled |
+| Users: view | open the list of users (Administration › Users and access › Users) |
+| Users: create | create and invite new users |
+| Users: edit | name, e-mail, roles, activation, reset the second factor |
+| Users: delete | delete users |
+| Roles: view | open the list of roles |
+| Roles: create | create new roles and copy roles |
+| Roles: edit | change the permissions, data permissions and menu entries of a role |
+| Roles: delete | delete roles (not *super-admin* and not the default role) |
+| Identity providers: view | see the providers for signing in via SSO |
+| Identity providers: create / edit / delete | set up, change, remove providers (Entra ID, SAML) |
+| Authentication settings: view / edit | sign-in mode (local, SSO, both), two-factor obligation, emergency sign-in, default role of new users, “Forgot password” |
+| Activity log: view | see all recorded changes (Administration › Operations) |
+
+**Application and operations**
+
+| Permission | Effect |
+|---|---|
+| Global settings: view / edit | name of the application, colour scheme, AI assistants (provider, model, switches) |
+| Menus: view / create / edit / delete | maintain the menu tree (groups, entries, order, permissions of entries) |
+| Apps: view | open the “Apps” page and the data model per app |
+| Apps: manage | create, edit, activate and deactivate apps, upload the manual, move tables, delete empty apps |
+| Apps: export | download an app as a file (`saft-app/1`) |
+| Apps: install | install an app from such a file, also as a copy |
+| Plugins: view | “Plugins” page with version, status and dependencies |
+| Plugins: manage | switch plugins on and off, create their menu entries, clean up leftovers of uninstalled plugins, download the development context |
+| Scheduled tasks: view | list of tasks and their runs |
+| Scheduled tasks: create / edit / delete | set up, change (also “Run now”), remove tasks |
+| Scheduled tasks: see technical details | error details of failed runs (stack trace) |
+| System log: view | read the server's log file (read only) |
+| Help: use assistant | use the AI help assistant (“?” button) |
+
+**Data modelling**
+
+| Permission | Effect |
+|---|---|
+| Table designer: view | list of tables and their structure |
+| Table designer: create | create new tables |
+| Table designer: edit | change fields, rules, details, settings of a table |
+| Table designer: delete | permanently delete fields and tables (after deactivating) |
+| Table designer: import | create a new table with data from an Excel or CSV file |
+| Table designer: use assistant | use the AI table assistant (describe the table, adjust with AI) |
+| Database connections: view / create / edit / delete | maintain and test connections to external databases |
+| Table connector: view | see connected tables and their data snapshots |
+| Table connector: create | connect external tables (also bulk linking) |
+| Table connector: edit | change connected tables, re-read, assign a connection, manage data snapshots; keep the linked tables when deleting a connection |
+| Table connector: delete | remove linked tables, also together with their connection |
+| Table links: view / create / edit / delete | links for reports between tables without a relation field |
+
+**Reports and dashboard** (the report permissions apply per app)
+
+| Permission | Effect |
+|---|---|
+| Reports: view | open shared and own reports |
+| Reports: create | create own reports |
+| Reports: edit / delete | change or delete reports – also those of other people |
+| Reports: use assistant | use the AI report assistant |
+| Dashboard widget: My last sign-in | card with the own sign-in before the current one and failed attempts since |
+| Dashboard widget: My sign-ins | card with the own recent sign-ins |
+| Dashboard widget: My recent changes | card with the own recent changes to data |
+| Dashboard widget: Changes to my account | card with changes to the own user account |
+| Dashboard widget: Recent changes (system-wide) | card with all recent changes; also needs *Activity log: view* |
+| Dashboard widget: My reports | pinned reports as cards; also needs *Reports: view* |
+| Dashboard widget: Scheduled tasks (status) | card with the state of the tasks; also needs *Scheduled tasks: view* |
+| Dashboard widget: User overview | card with the number of active and inactive users, without role and with SSO; also needs *Users: view* |
+| Dashboard widget: Sign-in activity | card with the sign-ins of all users; also needs *Users: view* |
+| Dashboard widget: Identity provider status | card with the state of the SSO providers; also needs *Identity providers: view* |
+
+**Data per table (data permission matrix)** – per table of the table designer and per connected table, granted in the
+matrix of the role:
+
+| Permission | Effect |
+|---|---|
+| View | read records; prerequisite for all other data permissions |
+| Create | enter new records |
+| Edit | change records |
+| Delete | delete records (to the trash) |
+| Export | download the list as Excel/CSV/PDF – only if export is allowed for the table |
+| Import | read new records from a file – only together with *Create* and if import is allowed |
+
+For connected external tables, *Create*, *Edit* and *Delete* exist only if writing is enabled for the table. Tables of a
+deactivated app can only be used by the super admin.
+
+**Permissions of plugins** are listed under the plugin's name, e.g.:
+
+| Permission | Effect |
+|---|---|
+| Stock transfer: Perform transfers | transfer stock between storage locations |
+| Stock board: View stock matrix | open the stock board (stock per item and location) |
+| Stock board: Transfer on the stock board | transfer directly on the stock board |
+
+The **Plugins** page shows which permissions a plugin brings; if it belongs to an app, role management offers its
+permissions only to roles of that app.

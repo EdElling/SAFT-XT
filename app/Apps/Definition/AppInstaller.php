@@ -1,0 +1,605 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Apps\Definition;
+
+use App\DynamicData\DataMenu;
+use App\DynamicData\DataPermissions;
+use App\DynamicData\Formula\FormulaAnalyzer;
+use App\DynamicData\Formula\Parser;
+use App\DynamicData\Formula\Printer;
+use App\Exceptions\BusinessRuleException;
+use App\ExternalData\TableConnectorService;
+use App\Filament\Resources\Reports\ReportResource;
+use App\Models\App;
+use App\Models\AppBaseline;
+use App\Models\AppManual;
+use App\Models\CustomField;
+use App\Models\CustomTable;
+use App\Models\DatabaseConnection;
+use App\Models\Menu;
+use App\Models\Report;
+use App\Models\ReportLink;
+use App\Models\Role;
+use App\Models\ScheduledTask;
+use App\Models\User;
+use App\Plugins\Context\SchemaExporter;
+use App\Plugins\Context\SchemaImporter;
+use App\Plugins\PluginRegistry;
+use App\Tasks\TaskRegistry;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
+use Throwable;
+
+/**
+ * Installiert eine App-Definition „saft-app/1“ als neue App (B-107, Etappe 4b) – unverändert mit ihren stabilen
+ * Schlüsseln oder als Kopie (neuer Name, neues Präfix, neue Schlüssel). Die App entsteht deaktiviert, damit man sie vor
+ * der Freigabe prüfen kann. Tabellen über den Table-Designer (SchemaImporter, mit seinen Schutzregeln); angebundene
+ * Tabellen inaktiv, mit der gleichnamigen Verbindung (und Abgleich) oder ohne Verbindung. Verweise zwischen den Objekten
+ * werden innerhalb der neuen App aufgelöst, nicht über die ganze Installation (eine Kopie hat dieselben Menüpfade und
+ * Namen von Auswertungen wie das Original). Zuletzt wird der Ausgangsstand gespeichert.
+ */
+final class AppInstaller
+{
+    /** Höchstgrösse einer Definitionsdatei. */
+    public const int MAX_BYTES = 10 * 1024 * 1024;
+
+    /** @var list<string> Hinweise beim Anlegen (z. B. Abgleich angebundener Tabellen) */
+    private array $notes = [];
+
+    public function __construct(
+        private readonly AppDefinitionValidator $validator,
+        private readonly SchemaImporter $schemaImporter,
+        private readonly References $refs,
+        private readonly PluginRegistry $plugins,
+        private readonly TaskRegistry $tasks,
+        private readonly Parser $parser,
+    ) {}
+
+    /**
+     * Datei lesen.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws BusinessRuleException
+     */
+    public function read(string $path): array
+    {
+        if (! is_file($path) || filesize($path) > self::MAX_BYTES) {
+            throw new BusinessRuleException(__('apps.install.errors.file'));
+        }
+
+        $data = json_decode((string) file_get_contents($path), true);
+
+        if (! is_array($data)) {
+            throw new BusinessRuleException(__('apps.install.errors.json'));
+        }
+
+        return $data;
+    }
+
+    /**
+     * Prüfen, was angelegt würde und was es verhindert.
+     *
+     * @param  array<string, mixed>  $definition
+     * @param  array{name: string, prefix: string}|null  $copy  als Kopie: Name und Präfix der neuen App
+     */
+    public function analyze(array $definition, ?array $copy = null): InstallAnalysis
+    {
+        $blockers = array_slice($this->validator->errors($definition), 0, 20);
+
+        if ($blockers !== []) {
+            return new InstallAnalysis($definition, $blockers, [], [], $copy !== null);
+        }
+
+        $warnings = [];
+
+        if ($copy !== null) {
+            $prefix = strtolower(rtrim(trim($copy['prefix']), '_'));
+
+            if (blank(trim($copy['name']))) {
+                $blockers[] = __('apps.install.errors.copy_name');
+            }
+
+            if (preg_match('/^[a-z][a-z0-9]{0,19}$/', $prefix) !== 1) {
+                $blockers[] = __('apps.install.errors.copy_prefix');
+            } elseif ($prefix === strtolower(rtrim((string) ($definition['app']['prefix'] ?? ''), '_'))) {
+                $blockers[] = __('apps.install.errors.copy_same_prefix');
+            }
+
+            if ($blockers !== []) {
+                return new InstallAnalysis($definition, $blockers, [], [], true);
+            }
+
+            $definition = $this->asCopy($definition, trim($copy['name']), $prefix);
+        } elseif (($existing = App::query()->where('uuid', $definition['app']['key'])->first()) !== null) {
+            $blockers[] = __('apps.install.errors.installed', ['app' => (string) $existing->name]);
+        }
+
+        // Namen sind installationsweit eindeutig.
+        foreach ([...$definition['tables'], ...$definition['external_tables']] as $table) {
+            if (($owner = CustomTable::query()->where('name', $table['name'])->first()) !== null) {
+                $blockers[] = __('apps.install.errors.table_exists', ['table' => $table['name'], 'app' => (string) ($owner->app?->name ?? __('apps.system'))]);
+            }
+
+            if (strlen((string) $table['name']) > 63) {
+                $blockers[] = __('apps.install.errors.table_name_long', ['table' => $table['name']]);
+            }
+        }
+
+        foreach (array_keys((array) ($definition['plugins'] ?? [])) as $plugin) {
+            if (! $this->plugins->has((string) $plugin)) {
+                $warnings[] = __('apps.install.warnings.plugin', ['plugin' => (string) $plugin]);
+            }
+        }
+
+        foreach ($definition['external_tables'] as $table) {
+            $connection = DatabaseConnection::query()->where('name', (string) ($table['connection'] ?? ''))->first();
+            $warnings[] = $connection === null
+                ? __('apps.install.warnings.external_unconnected', ['table' => $table['name'], 'connection' => (string) ($table['connection'] ?? '–')])
+                : __('apps.install.warnings.external_connected', ['table' => $table['name'], 'connection' => $connection->name]);
+        }
+
+        foreach ($definition['roles'] as $role) {
+            if (Role::query()->where('name', $role['name'])->exists()) {
+                $warnings[] = __('apps.install.warnings.role', ['role' => $role['name'], 'new' => $this->roleName((string) $role['name'], (string) ($definition['app']['prefix'] ?? ''))]);
+            }
+        }
+
+        foreach ($definition['tasks'] as $task) {
+            if (! $this->tasks->has((string) $task['type'])) {
+                $warnings[] = __('apps.install.warnings.task_type', ['task' => (string) ($task['name'] ?? $task['type'])]);
+            }
+        }
+
+        $files = collect($definition['tables'])->flatMap(static fn (array $t): array => array_map(static fn (array $f): string => $t['name'].'.'.$f['name'], array_filter($t['fields'], static fn (array $f): bool => ($f['type'] ?? null) === 'file')))->all();
+
+        if ($files !== []) {
+            $warnings[] = __('apps.install.warnings.files', ['fields' => implode(', ', $files)]);
+        }
+
+        return new InstallAnalysis($definition, $blockers, $warnings, [
+            'tables' => count($definition['tables']),
+            'fields' => array_sum(array_map(static fn (array $t): int => count($t['fields']), $definition['tables'])),
+            'external_tables' => count($definition['external_tables']),
+            'report_links' => count($definition['report_links']),
+            'reports' => count($definition['reports']),
+            'menus' => count($definition['menus']),
+            'roles' => count($definition['roles']),
+            'tasks' => count($definition['tasks']),
+            'manuals' => count((array) ($definition['app']['manual'] ?? [])),
+        ], $copy !== null);
+    }
+
+    /**
+     * Installieren (nach analyze ohne Hindernisse). Die App ist danach deaktiviert.
+     *
+     * @param  array{name: string, prefix: string}|null  $copy
+     *
+     * @throws BusinessRuleException
+     */
+    public function install(array $definition, ?array $copy, User $user): App
+    {
+        $analysis = $this->analyze($definition, $copy);
+
+        if (! $analysis->canInstall()) {
+            throw new BusinessRuleException(implode(' ', $analysis->blockers));
+        }
+
+        $definition = $analysis->definition;
+        $this->notes = [];
+        $data = $definition['app'];
+
+        $app = App::query()->create([
+            'uuid' => $data['key'],
+            'name' => $data['name'],
+            'description' => $data['description'] ?? null,
+            'icon' => $data['icon'] ?? null,
+            'prefix' => $data['prefix'] ?? null,
+            'version' => $data['version'] ?? null,
+            'sort_order' => ((int) App::query()->max('sort_order')) + 10,
+            'is_active' => false,
+        ]);
+
+        try {
+            // 1. Angebundene Tabellen zuerst: Verknüpfungen eigener Tabellen dürfen auf sie zeigen.
+            foreach ($definition['external_tables'] as $table) {
+                $this->external($app, $table);
+            }
+
+            // 2. Tabellen des Table-Designers (DDL; auf MySQL/MariaDB nicht transaktional, deshalb vorher geprüft).
+            if ($definition['tables'] !== []) {
+                $tables = array_map(static fn (array $t): array => [...$t, 'fields' => array_map(static function (array $f): array {
+                    unset($f['key']);
+
+                    return $f;
+                }, $t['fields'])], $definition['tables']);
+                $this->schemaImporter->import(['format' => SchemaExporter::FORMAT, 'tables' => $tables], app: $app);
+
+                foreach ($definition['tables'] as $table) {
+                    $model = CustomTable::query()->where('name', $table['name'])->firstOrFail();
+                    $model->forceFill(['uuid' => $table['key']])->saveQuietly();
+
+                    foreach ($table['fields'] as $field) {
+                        CustomField::query()->where('custom_table_id', $model->id)->where('name', $field['name'])->update(['uuid' => $field['key']]);
+                    }
+                }
+            }
+
+            $this->refs->refresh();
+
+            // 3. Alles Weitere in einer Transaktion.
+            DB::transaction(fn () => $this->objects($app, $definition, $user));
+        } catch (Throwable $e) {
+            throw new BusinessRuleException(__('apps.install.errors.partial', ['app' => (string) $app->name, 'error' => $e->getMessage()]), previous: $e);
+        }
+
+        AppBaseline::query()->create([
+            'app_id' => $app->id,
+            'kind' => $copy === null ? AppBaseline::INSTALLED : AppBaseline::COPY,
+            'version' => $data['version'] ?? null,
+            'definition' => $definition,
+            'installed_by' => $user->id,
+        ]);
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        activity('apps')->causedBy($user)->performedOn($app)->event($copy === null ? 'installed' : 'installed_copy')
+            ->withProperties(['version' => $data['version'] ?? null, 'counts' => $analysis->counts])
+            ->log(__('apps.install.log', ['name' => (string) $app->name]));
+
+        return $app;
+    }
+
+    /** @return list<string> Hinweise des letzten install() (z. B. Abgleich angebundener Tabellen) */
+    public function notes(): array
+    {
+        return $this->notes;
+    }
+
+    /** @param  array<string, mixed>  $definition */
+    private function objects(App $app, array $definition, User $user): void
+    {
+        foreach ($definition['report_links'] as $link) {
+            ReportLink::query()->create([
+                'uuid' => $link['key'],
+                'label' => $link['label'],
+                'source_table_id' => $this->refs->tableId((string) strstr((string) $link['source'], '.', true)),
+                'source_field_id' => $this->refs->fieldId((string) $link['source']),
+                'target_table_id' => $this->refs->tableId((string) $link['target_table']),
+                'target_field_id' => $link['target_field'] === null ? null : $this->refs->fieldId((string) $link['target_field']),
+            ]);
+        }
+
+        $this->refs->refresh();
+        $reports = [];
+
+        foreach ($definition['reports'] as $report) {
+            $reports[$report['name']] ??= (int) Report::query()->create([
+                'uuid' => $report['key'],
+                'name' => $report['name'],
+                'description' => $report['description'] ?? null,
+                'owner_id' => $user->id,
+                'is_shared' => (bool) ($report['is_shared'] ?? false),
+                'definition' => $this->reportDefinition((array) $report['definition']),
+            ])->id;
+        }
+
+        // Menüs: Pfade nur innerhalb der neuen App auflösen; eine Elterngruppe ausserhalb der App über ihren Pfad.
+        $menus = [];
+
+        foreach ($definition['menus'] as $menu) {
+            $parent = $menu['parent'] === null ? null : ($menus[$menu['parent']] ?? $this->refs->menuId((string) $menu['parent']));
+            $menus[$menu['path']] = (int) Menu::query()->create([
+                'uuid' => $menu['key'],
+                'app_id' => $app->id,
+                'parent_id' => $parent,
+                'label' => $menu['label'],
+                'icon' => $menu['icon'] ?? null,
+                'permission_name' => $menu['permission_name'] ?? null,
+                'sort_order' => (int) ($menu['sort_order'] ?? 0),
+                'is_active' => (bool) ($menu['is_active'] ?? true),
+                ...$this->menuTarget((array) $menu['target'], $reports, $menus),
+            ])->id;
+        }
+
+        foreach ($definition['roles'] as $role) {
+            $model = Role::query()->create(['uuid' => $role['key'], 'name' => $this->roleName((string) $role['name'], (string) ($app->prefix ?? '')), 'guard_name' => 'web', 'app_id' => $app->id]);
+            $model->syncPermissions(Permission::query()->where('guard_name', 'web')->whereIn('name', (array) $role['permissions'])->get());
+            $model->hiddenMenus()->sync(array_values(array_filter(array_map(static fn (string $path): ?int => $menus[$path] ?? null, (array) $role['hidden_menus']))));
+        }
+
+        foreach ($definition['tasks'] as $task) {
+            if (! $this->tasks->has((string) $task['type']) || ($parameters = $this->taskParameters((array) $task['parameters'])) === null) {
+                continue;
+            }
+
+            ScheduledTask::query()->create([
+                'uuid' => $task['key'],
+                'app_id' => $app->id,
+                'name' => $task['name'] ?? null,
+                'type' => $task['type'],
+                'parameters' => $parameters,
+                'frequency' => $task['frequency'],
+                'interval_hours' => $task['interval_hours'] ?? null,
+                'at_time' => $task['at_time'] ?? '03:00',
+                'weekday' => $task['weekday'] ?? null,
+                'is_active' => (bool) ($task['is_active'] ?? true),
+                'created_by' => $user->id,
+            ]);
+        }
+
+        foreach ((array) ($definition['app']['manual'] ?? []) as $locale => $content) {
+            AppManual::query()->create(['app_id' => $app->id, 'locale' => (string) $locale, 'content' => (string) $content]);
+        }
+    }
+
+    /**
+     * Angebundene Tabelle ohne Zugriff auf die externe Datenbank anlegen – inaktiv. Gibt es eine Verbindung gleichen
+     * Namens, wird sie zugeordnet und die Spalten werden mit der Datenbank abgeglichen (soweit erreichbar).
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function external(App $app, array $data): void
+    {
+        $connection = DatabaseConnection::query()->where('name', (string) ($data['connection'] ?? ''))->first();
+
+        $table = DB::transaction(static function () use ($app, $data, $connection): CustomTable {
+            $table = CustomTable::query()->create([
+                'uuid' => $data['key'],
+                'app_id' => $app->id,
+                'name' => $data['name'],
+                'source' => CustomTable::SOURCE_EXTERNAL,
+                'database_connection_id' => $connection?->id,
+                'external_schema' => $data['source']['schema'] ?? null,
+                'external_table' => $data['source']['table'],
+                'external_kind' => $data['source']['kind'] ?? null,
+                'key_columns' => (array) ($data['key_columns'] ?? []),
+                'label' => $data['label'],
+                'description' => $data['description'] ?? null,
+                'icon' => $data['icon'] ?? null,
+                'is_active' => false,
+                'export_enabled' => (bool) ($data['export_enabled'] ?? false),
+                'allow_create' => (bool) ($data['allow']['create'] ?? false),
+                'allow_update' => (bool) ($data['allow']['update'] ?? false),
+                'allow_delete' => (bool) ($data['allow']['delete'] ?? false),
+            ]);
+
+            foreach ((array) $data['fields'] as $field) {
+                $key = $field['key'];
+                unset($field['key']);
+                $table->fields()->create([...$field, 'uuid' => $key, 'options' => $field['options'] ?? [], 'validation_rules' => $field['validation_rules'] ?? null]);
+            }
+
+            app(DataPermissions::class)->ensure($table);
+
+            return $table;
+        });
+
+        if ($connection === null) {
+            return;
+        }
+
+        try {
+            foreach (app(TableConnectorService::class)->refresh($table) as $notice) {
+                $this->notes[] = $table->name.': '.$notice;
+            }
+        } catch (Throwable $e) {
+            $this->notes[] = __('apps.install.warnings.external_check_failed', ['table' => $table->name, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /** Vergebener Rollenname: mit dem Präfix der App (wie beim Verschieben), sonst durchnummeriert. */
+    private function roleName(string $name, string $prefix): string
+    {
+        if (! Role::query()->where('name', $name)->exists()) {
+            return $name;
+        }
+
+        $base = $name.'-'.(rtrim($prefix, '_') !== '' ? rtrim($prefix, '_') : 'app');
+
+        for ($candidate = $base, $i = 2; Role::query()->where('name', $candidate)->exists(); $i++) {
+            $candidate = $base.'-'.$i;
+        }
+
+        return $candidate;
+    }
+
+    /**
+     * Namen in Parametern geplanter Aufgaben → IDs dieser Installation; null, wenn das Ziel fehlt.
+     *
+     * @param  array<string, mixed>  $parameters
+     * @return array<string, mixed>|null
+     */
+    private function taskParameters(array $parameters): ?array
+    {
+        if (array_key_exists('table', $parameters)) {
+            $id = $this->refs->tableId((string) $parameters['table']);
+
+            if ($id === null) {
+                return null;
+            }
+
+            $parameters['table_id'] = $id;
+            unset($parameters['table']);
+        }
+
+        if (array_key_exists('connection', $parameters)) {
+            $id = DatabaseConnection::query()->where('name', (string) $parameters['connection'])->value('id');
+
+            if ($id === null) {
+                return null;
+            }
+
+            $parameters['connection_id'] = (int) $id;
+            unset($parameters['connection']);
+        }
+
+        return $parameters;
+    }
+
+    /**
+     * Definition einer Auswertung mit Namen → mit IDs dieser Installation.
+     *
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>
+     */
+    private function reportDefinition(array $definition): array
+    {
+        $definition['base'] = $this->refs->tableId((string) ($definition['base'] ?? ''));
+        $definition['fields'] = array_map(fn (mixed $f): mixed => is_array($f) ? [
+            ...$f,
+            'path' => array_map(fn (mixed $step): int => str_starts_with((string) $step, 'link:')
+                ? -(int) $this->refs->linkId(substr((string) $step, 5))
+                : (int) $this->refs->fieldId((string) $step), (array) ($f['path'] ?? [])),
+            'field' => (int) $this->refs->fieldId((string) ($f['field'] ?? '')),
+        ] : $f, (array) ($definition['fields'] ?? []));
+
+        return $definition;
+    }
+
+    /**
+     * @param  array<string, mixed>  $target
+     * @param  array<string, int>  $reports  Name → ID der eben angelegten Auswertungen
+     * @param  array<string, int>  $menus  Pfad → ID der eben angelegten Menüs
+     * @return array<string, mixed> route, route_parameters, url, view_config
+     */
+    private function menuTarget(array $target, array $reports, array $menus): array
+    {
+        return match ($target['type'] ?? 'group') {
+            'data' => ['route' => DataMenu::ROUTE, 'route_parameters' => ['table' => $target['table']], 'url' => null,
+                'view_config' => ($columns = array_values(array_filter(array_map(fn (string $f): ?int => $this->refs->fieldId($f), (array) ($target['columns'] ?? []))))) === [] ? null : ['columns' => $columns]],
+            'report' => ['route' => ReportResource::VIEW_ROUTE, 'route_parameters' => ['record' => (string) ($reports[(string) $target['report']] ?? 0)], 'url' => null, 'view_config' => null],
+            'route' => ['route' => $target['route'], 'route_parameters' => array_map(
+                static fn (mixed $value): mixed => is_string($value) && str_starts_with($value, 'menu:') ? ($menus[substr($value, 5)] ?? null) : $value,
+                (array) ($target['parameters'] ?? []),
+            ) ?: null, 'url' => null, 'view_config' => null],
+            'url' => ['route' => null, 'route_parameters' => null, 'url' => $target['url'], 'view_config' => null],
+            default => ['route' => null, 'route_parameters' => null, 'url' => null, 'view_config' => null],
+        };
+    }
+
+    /**
+     * Kopie: neuer Name und neues Präfix, Tabellen umbenannt (altes Präfix ersetzt, sonst vorangestellt) samt allen
+     * Verweisen darauf, neue stabile Schlüssel.
+     *
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>
+     */
+    private function asCopy(array $definition, string $name, string $prefix): array
+    {
+        $old = rtrim((string) ($definition['app']['prefix'] ?? ''), '_');
+        $old = $old === '' ? '' : $old.'_';
+        $map = [];
+
+        foreach ([...$definition['tables'], ...$definition['external_tables']] as $table) {
+            $map[$table['name']] = $prefix.'_'.($old !== '' && str_starts_with($table['name'], $old) ? substr($table['name'], strlen($old)) : $table['name']);
+        }
+
+        $table = static fn (?string $n): ?string => $n === null ? null : ($map[$n] ?? $n);
+        // „tabelle.feld“ und „quelle.feld>ziel“ (Tabellenverknüpfung)
+        $ref = static function (?string $ref) use ($table): ?string {
+            if ($ref === null || ! str_contains($ref, '.')) {
+                return $ref;
+            }
+
+            if (str_contains($ref, '>')) {
+                [$source, $target] = explode('>', $ref, 2);
+
+                return (string) $table(Str::before($source, '.')).'.'.Str::after($source, '.').'>'.$table($target);
+            }
+
+            return $table(Str::before($ref, '.')).'.'.Str::after($ref, '.');
+        };
+        $fields = fn (array $fields): array => array_map(function (array $f) use ($table): array {
+            if (isset($f['options']['table'])) {
+                $f['options']['table'] = $table((string) $f['options']['table']);
+            }
+
+            // Formeln: Kind-Tabellen von Summen und Zählungen umbenennen (im Syntaxbaum, nicht im Text).
+            if (filled($f['options']['formula'] ?? null)) {
+                $f['options']['formula'] = Printer::print($this->renameAggregates($this->parser->parse((string) $f['options']['formula']), $table));
+                unset($f['options']['ast']);
+            }
+
+            return $f;
+        }, $fields);
+
+        $definition['app'] = [...$definition['app'], 'name' => [(string) config('locales.default') => $name], 'prefix' => $prefix];
+        $definition['tables'] = array_map(static fn (array $t): array => [...$t, 'name' => $table($t['name']), 'fields' => $fields($t['fields']),
+            'details' => array_map($ref, (array) ($t['details'] ?? []))], $definition['tables']);
+        $definition['external_tables'] = array_map(static fn (array $t): array => [...$t, 'name' => $table($t['name']), 'fields' => $fields((array) $t['fields'])], $definition['external_tables']);
+        $definition['report_links'] = array_map(static fn (array $l): array => [...$l, 'source' => $ref($l['source']), 'target_table' => $table($l['target_table']), 'target_field' => $ref($l['target_field'] ?? null)], $definition['report_links']);
+        $definition['reports'] = array_map(static function (array $r) use ($table, $ref): array {
+            $r['definition']['base'] = $table($r['definition']['base'] ?? null);
+            $r['definition']['fields'] = array_map(static fn (mixed $f): mixed => is_array($f) ? [...$f,
+                'path' => array_map(static fn (mixed $s): ?string => str_starts_with((string) $s, 'link:') ? 'link:'.$ref(substr((string) $s, 5)) : $ref((string) $s), (array) ($f['path'] ?? [])),
+                'field' => $ref($f['field'] ?? null)] : $f, (array) ($r['definition']['fields'] ?? []));
+
+            return $r;
+        }, $definition['reports']);
+        $definition['menus'] = array_map(static function (array $m) use ($table, $ref): array {
+            if (($m['target']['type'] ?? null) === 'data') {
+                $m['target']['table'] = $table($m['target']['table']);
+                $m['target']['columns'] = array_map($ref, (array) ($m['target']['columns'] ?? []));
+            }
+
+            return $m;
+        }, $definition['menus']);
+        $definition['roles'] = array_map(static fn (array $r): array => [...$r, 'permissions' => array_map(static fn (string $p): string => str_starts_with($p, DataPermissions::PREFIX)
+            ? DataPermissions::PREFIX.$table(Str::beforeLast(Str::after($p, DataPermissions::PREFIX), '.')).'.'.Str::afterLast($p, '.')
+            : $p, (array) $r['permissions'])], $definition['roles']);
+        $definition['tasks'] = array_map(static fn (array $t): array => isset($t['parameters']['table'])
+            ? [...$t, 'parameters' => [...$t['parameters'], 'table' => $table($t['parameters']['table'])]] : $t, $definition['tasks']);
+
+        return $this->newKeys($definition);
+    }
+
+    /**
+     * Summen und Zählungen über Kind-Tabellen: Tabellenname im ersten Argument umbenennen.
+     *
+     * @param  array<string, mixed>  $node
+     * @param  callable(?string): ?string  $table
+     * @return array<string, mixed>
+     */
+    private function renameAggregates(array $node, callable $table): array
+    {
+        if (in_array($node['call'] ?? null, FormulaAnalyzer::AGGREGATES, true) && isset($node['args'][0])) {
+            if (isset($node['args'][0]['path'][0])) {
+                $node['args'][0]['path'][0] = $table((string) $node['args'][0]['path'][0]);
+            } elseif (isset($node['args'][0]['field'])) {
+                $node['args'][0]['field'] = $table((string) $node['args'][0]['field']);
+            }
+        }
+
+        foreach ($node as $key => $child) {
+            if (is_array($child)) {
+                $node[$key] = $this->renameAggregates($child, $table);
+            }
+        }
+
+        return $node;
+    }
+
+    /**
+     * Neue stabile Schlüssel für alle Objekte (eine Kopie ist eine eigenständige App).
+     *
+     * @param  array<string, mixed>  $value
+     * @return array<string, mixed>
+     */
+    private function newKeys(array $value): array
+    {
+        foreach ($value as $key => $item) {
+            if ($key === 'key' && is_string($item) && Str::isUuid($item)) {
+                $value[$key] = (string) Str::uuid();
+            } elseif (is_array($item) && $key !== 'options' && $key !== 'definition' && $key !== 'parameters') {
+                $value[$key] = $this->newKeys($item);
+            }
+        }
+
+        return $value;
+    }
+}

@@ -7,6 +7,7 @@ namespace App\Filament\Resources\TableConnector\Tables;
 use App\Exceptions\BusinessRuleException;
 use App\ExternalData\SchemaComparison;
 use App\Filament\Pages\DynamicDataPage;
+use App\Filament\Resources\TableConnector\Actions\AssignConnectionAction;
 use App\Filament\Support\AppFilter;
 use App\Models\CustomTable;
 use App\Support\AppLocale;
@@ -29,6 +30,10 @@ class ConnectedTablesTable
     private static function schemaCheck(CustomTable $record): string
     {
         $connection = (int) $record->database_connection_id;
+
+        if ($connection === 0) {
+            return 'no_connection';
+        }
 
         if (isset(self::$unreachable[$connection]) || ! $record->databaseConnection?->is_active) {
             return 'error';
@@ -61,7 +66,11 @@ class ConnectedTablesTable
                     })),
                 TextColumn::make('name')->label(__('tables.list.name'))->fontFamily('mono')->searchable(),
                 AppFilter::column(),
-                TextColumn::make('databaseConnection.name')->label(__('table_connector.form.connection'))->sortable(),
+                TextColumn::make('databaseConnection.name')->label(__('table_connector.form.connection'))->sortable()
+                    // Ohne Verbindung (z. B. aus einer installierten App): deutlich kennzeichnen.
+                    ->placeholder(__('table_connector.assign.missing'))
+                    ->badge(fn (CustomTable $record): bool => $record->database_connection_id === null)
+                    ->color(fn (CustomTable $record): ?string => $record->database_connection_id === null ? 'warning' : null),
                 TextColumn::make('external_table')
                     ->label(__('table_connector.list.source'))
                     ->formatStateUsing(fn (CustomTable $record): string => $record->external_schema.'.'.$record->external_table)
@@ -79,11 +88,12 @@ class ConnectedTablesTable
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'ok' => __('table_connector.list.schema_ok'),
                         'error' => __('table_connector.list.schema_error'),
+                        'no_connection' => __('table_connector.assign.missing'),
                         default => trans_choice('table_connector.list.schema_changes', (int) $state, ['count' => $state]),
                     })
                     ->color(fn (string $state): string => match ($state) {
                         'ok' => 'success',
-                        'error' => 'gray',
+                        'error', 'no_connection' => 'gray',
                         default => 'warning',
                     }),
                 TextColumn::make('fields_count')->label(__('table_connector.columns.title'))->numeric()->alignEnd(),
@@ -122,6 +132,7 @@ class ConnectedTablesTable
                     ->color('gray')
                     ->url(fn (CustomTable $record): string => DynamicDataPage::urlFor($record->name))
                     ->visible(fn (CustomTable $record): bool => $record->is_active),
+                AssignConnectionAction::make(),
                 EditAction::make(),
             ]);
     }

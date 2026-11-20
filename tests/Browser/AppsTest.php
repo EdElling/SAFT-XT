@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Browser;
 
+use App\Apps\Definition\AppDefinition;
 use App\Documentation\Documentation;
 use App\DynamicData\DataMenu;
 use App\Models\App;
@@ -12,6 +13,7 @@ use App\Models\CustomTable;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\DynamicSchemaService;
+use Illuminate\Support\Facades\File;
 use Laravel\Dusk\Browser;
 use Spatie\Activitylog\Models\Activity;
 use Tests\DuskTestCase;
@@ -351,5 +353,40 @@ class AppsTest extends DuskTestCase
         });
 
         $this->assertSame(1, Activity::query()->where('event', 'exported')->where('subject_id', $this->second->id)->count());
+    }
+
+    /** FAP-11 */
+    public function test_app_is_installed_as_a_copy_from_an_exported_file(): void
+    {
+        $definition = app(AppDefinition::class)->build($this->second->fresh());
+        $path = storage_path('framework/testing/hr.saft-app.json');
+        File::ensureDirectoryExists(dirname($path));
+        File::put($path, (string) json_encode($definition));
+
+        $this->browse(function (Browser $browser) use ($path): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/apps')->waitForText('Personal', 15);
+            $this->clickVisibleButton($browser, 'App installieren …');
+            $browser->waitFor('.fi-modal-window .filepond--root', 15)
+                ->attach('.fi-modal-window .filepond--root input[type="file"]', $path)
+                ->waitUntil("document.querySelectorAll('.filepond--item[data-filepond-item-state=\"idle\"], .filepond--item[data-filepond-item-state=\"processing-complete\"]').length >= 1", 30);
+            $this->clickVisibleButton($browser, 'Weiter');
+
+            // Vorschau: gleiche App schon installiert – als Kopie mit vorgeschlagenem Namen und Präfix.
+            $browser->waitFor('[data-app-install-preview]', 15)
+                ->assertSeeIn('[data-app-install-blockers]', 'bereits installiert')
+                ->assertSeeIn('[data-app-install-counts]', '1 Tabelle')
+                ->waitFor('.fi-modal-window .saft-data-model svg', 20)
+                ->clickAtXPath("//label[contains(., 'Kopie (neuer Name und Präfix)')]")
+                ->waitFor('.fi-modal-window input[id$="copy_prefix"]', 15)
+                ->assertInputValue('.fi-modal-window input[id$="copy_prefix"]', 'hr2')
+                ->waitUntilMissing('[data-app-install-blockers]', 15);
+            $this->clickVisibleButton($browser, 'Installieren');
+            $browser->waitForText('App „Personal (Kopie)“ installiert (deaktiviert).', 30);
+        });
+
+        $copy = App::query()->where('prefix', 'hr2')->sole();
+        $this->assertFalse($copy->is_active);
+        $this->assertSame(['hr2_mitarbeitende'], $copy->customTables()->pluck('name')->all());
+        File::delete($path);
     }
 }

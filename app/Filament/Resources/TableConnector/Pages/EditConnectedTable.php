@@ -9,6 +9,7 @@ use App\ExternalData\SchemaComparison;
 use App\ExternalData\TableConnectorService;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Filament\Pages\DynamicDataPage;
+use App\Filament\Resources\TableConnector\Actions\AssignConnectionAction;
 use App\Filament\Resources\TableConnector\TableConnectorResource;
 use App\Filament\Support\CreateMenuEntryAction;
 use App\Models\CustomTable;
@@ -104,6 +105,7 @@ class EditConnectedTable extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            AssignConnectionAction::make()->after(fn () => $this->redirect(static::getUrl(['record' => $this->getRecord()]))),
             Action::make('openData')
                 ->label(__('tables.actions.open_data'))
                 ->icon('heroicon-o-table-cells')

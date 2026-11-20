@@ -27,8 +27,7 @@
 - [12. Geplante Aufgaben](#12-geplante-aufgaben)
 - [13. KI-Funktionen](#13-ki-funktionen)
 - [14. Plugins](#14-plugins)
-- [15. Konfiguration übertragen](#15-konfiguration-übertragen)
-- [16. Apps (Fachanwendungen)](#16-apps-fachanwendungen)
+- [15. Apps (Fachanwendungen)](#15-apps-fachanwendungen)
 - [Anhang A – Rechte im Überblick](#anhang-a--rechte-im-überblick)
 
 ---
@@ -122,7 +121,7 @@ eigenen Rechte wieder her (auch die Abmeldung beendet die Ansicht). Die Datenban
 stehen im Änderungsprotokoll. Achtung: Was die Rolle darf, wird während der Ansicht wirklich gespeichert – mit Ihnen
 als Verursacher.
 
-**App und Kopie** (B-107): Jede Rolle gehört zu einer [App](#16-apps-fachanwendungen); Datenrechte, Menüeinträge und
+**App und Kopie** (B-107): Jede Rolle gehört zu einer [App](#15-apps-fachanwendungen); Datenrechte, Menüeinträge und
 die Rechte von Plugins zeigt das Formular nur für diese App (die allgemeinen Rechte von SAFT immer). Ohne gewählte App
 erscheint statt der Datenrechte der Hinweis, zuerst die App zu wählen. Hat die Rolle noch Rechte **ausserhalb** ihrer
 App – auf Tabellen oder Plugins anderer Apps, etwa nach einem Wechsel der App oder aus der Zeit vor den Apps, oder auf
@@ -205,7 +204,7 @@ Löschen eines Eintrags werden seine Untereinträge mitgelöscht.
 
 > Die **Details** (Master-Detail) werden nicht im Menü, sondern im Table-Designer eingestellt.
 
-**App:** Oberste Einträge und Gruppen gehören zu einer [App](#16-apps-fachanwendungen) oder – ohne Angabe – zum
+**App:** Oberste Einträge und Gruppen gehören zu einer [App](#15-apps-fachanwendungen) oder – ohne Angabe – zum
 System; Einträge in einer Gruppe übernehmen deren App. Für Dateneinträge bietet das Formular nur Tabellen dieser App an.
 
 ## 4. Table-Designer
@@ -312,7 +311,7 @@ Dateien hinzukamen oder entfernt wurden.
 - Wird ein Feld umbenannt, ändern sich seine Regeln mit. Ein Feld, das eine Regel verwendet, lässt sich nicht löschen,
   und sein Typ nur in einen Typ ändern, der weiter zur Regel passt.
 
-**App und Präfix:** Beim Anlegen wählen Sie die [App](#16-apps-fachanwendungen) der Tabelle (bei mehreren Apps
+**App und Präfix:** Beim Anlegen wählen Sie die [App](#15-apps-fachanwendungen) der Tabelle (bei mehreren Apps
 Pflicht). Hat die App ein Präfix, steht es vor dem vorgeschlagenen technischen Namen; ein Wechsel der App ersetzt es.
 Verknüpfungen sind nur zu Tabellen derselben App möglich.
 
@@ -490,7 +489,7 @@ löschen](#tabelle-oder-feld-endgültig-löschen)). Danach lässt sich die Datei
 | **Notfall-Anmeldung für Super-Admins** | Erlaubt Super-Admins im SSO-Modus die Anmeldung per Passwort über `…/admin/login?local=1` – für den Fall, dass der Identity Provider ausfällt |
 | **„Passwort vergessen“ anbieten** | E-Mail zum Zurücksetzen des Passworts (nur bei Modus Lokal oder Hybrid; erfordert konfigurierten Mailversand) |
 | **Standardrolle für neue Benutzer** | wird beim Anlegen vorausgewählt und bei automatisch angelegten SSO-Benutzern vergeben |
-| **Zwei-Faktor-Anmeldung** | **Freiwillig**, **Pflicht für Administration** (Vorgabe) oder **Pflicht für alle**. Als Administration gilt: Super-Admin oder ein beliebiges Recht auf Benutzer, Rollen, Menüs, Identity Provider, Einstellungen, Table-Designer, Datenbankverbindungen, Table-Connector, Tabellenverknüpfungen, geplante Aufgaben, Plugins oder Konfiguration übertragen. Wer unter die Pflicht fällt, wird nach der Anmeldung zur Einrichtung geführt. Ausgenommen sind Anmeldungen per SSO und Konten ohne Passwort (zweiter Faktor beim Identity Provider) sowie *Ansicht als Rolle*. |
+| **Zwei-Faktor-Anmeldung** | **Freiwillig**, **Pflicht für Administration** (Vorgabe) oder **Pflicht für alle**. Als Administration gilt: Super-Admin oder ein beliebiges Recht auf Benutzer, Rollen, Menüs, Identity Provider, Einstellungen, Table-Designer, Datenbankverbindungen, Table-Connector, Tabellenverknüpfungen, geplante Aufgaben, Plugins oder Apps. Wer unter die Pflicht fällt, wird nach der Anmeldung zur Einrichtung geführt. Ausgenommen sind Anmeldungen per SSO und Konten ohne Passwort (zweiter Faktor beim Identity Provider) sowie *Ansicht als Rolle*. |
 
 Schutz vor Aussperren: Der Modus **Single Sign-On** lässt sich nur speichern, wenn mindestens ein aktiver
 Identity Provider einen **erfolgreichen Verbindungstest** hat. Zusätzliche Notausgänge für den Betrieb siehe
@@ -619,11 +618,17 @@ in der Auswahl gesperrt.
 > erhält niemand automatisch; wer Verbindungen anlegen darf, kann beliebige Server ansprechen.
 
 **Löschen:** Sind über die Verbindung keine Tabellen angebunden, genügt die übliche Rückfrage. Andernfalls zeigt der
-Dialog **„Verbindung und Anbindungen löschen“** alle betroffenen Tabellen (Name in SAFT, Bezeichnung, externe
-Tabelle, Art). Nach Eingabe des Verbindungsnamens zur Bestätigung werden Verbindung und Anbindungen in einem Schritt
-entfernt – wie bei „Anbindung entfernen“ im Table-Connector: Einstellungen, Rechte, Menüeinträge und Verknüpfungen
-anderer Tabellen auf sie. Die externe Datenbank bleibt unverändert. Dafür ist zusätzlich das Recht
-„Table-Connector: löschen“ nötig; ohne dieses zeigt der Dialog die Liste nur an.
+Dialog **„Verbindung löschen“** alle betroffenen Tabellen (Name in SAFT, Bezeichnung, externe Tabelle, Art) und fragt,
+was mit ihnen geschieht:
+
+- **Anbindungen behalten (ohne Verbindung, inaktiv)** – Vorgabe; Recht „Table-Connector: bearbeiten“. Tabellen,
+  Spalten, Rechte, Menüeinträge und Verknüpfungen bleiben; die Tabellen sind inaktiv und im Table-Connector mit
+  „Verbindung fehlt“ gekennzeichnet. Später ordnet man sie mit „Verbindung zuordnen …“ einer (neuen) Verbindung zu.
+- **Anbindungen mitlöschen** – Recht „Table-Connector: löschen“, Bestätigung mit dem Namen der Verbindung. Wie bei
+  „Anbindung entfernen“ im Table-Connector: Einstellungen, Rechte, Menüeinträge und Verknüpfungen anderer Tabellen auf
+  sie werden entfernt.
+
+Die externe Datenbank bleibt in beiden Fällen unverändert.
 
 **Massenverknüpfung:** Beim Bearbeiten einer Verbindung gibt es zwei Reiter: **Verbindung** mit den bisherigen
 Einstellungen und **Massenverknüpfung**, um viele Tabellen auf einmal anzubinden. Der zweite Reiter zeigt seine
@@ -820,6 +825,14 @@ Table-Connector vorbehalten.
 **„Anbindung entfernen“** entfernt die Tabelle aus SAFT – Einstellungen, Rechte, Menüeinträge und Datenstände. Die
 Daten in der externen Datenbank bleiben unverändert.
 
+**Ohne Verbindung:** Eine angebundene Tabelle kann ohne Datenbankverbindung bestehen – nach dem Löschen ihrer Verbindung
+mit „Anbindungen behalten“ oder aus einer installierten App, deren Verbindung es hier nicht gibt (siehe
+[Kapitel 15](#15-apps-fachanwendungen)). Die Liste zeigt dann **„Verbindung fehlt“**; die Tabelle ist inaktiv.
+**„Verbindung zuordnen …“** (in der Liste und beim Bearbeiten; Recht „Table-Connector: bearbeiten“) wählt eine aktive
+Verbindung und gleicht die Spalten mit der externen Tabelle ab wie „Neu einlesen“. Danach prüfen Sie die Spalten und
+aktivieren die Tabelle. Scheitert der Abgleich (Tabelle nicht gefunden, Verbindung nicht erreichbar), bleibt sie ohne
+Verbindung.
+
 > **Rechte:** Den Table-Connector bedienen nur Rollen mit „Table-Connector: anzeigen/anlegen/bearbeiten/löschen“,
 > unabhängig vom Table-Designer. Wer die Daten sehen darf, legen die Datenrechte der jeweiligen Tabelle fest.
 
@@ -923,7 +936,7 @@ Server (siehe [Systemadministration](SYSADMIN_GUIDE.de.md#4-geplante-aufgaben-un
 > Widget zusätzlich „Dashboard-Widget: Geplante Aufgaben (Status)“. Änderungen an Aufgaben stehen im
 > Änderungsprotokoll.
 
-**App:** Aufgaben zu einer Tabelle gehören zu deren [App](#16-apps-fachanwendungen); für andere Aufgaben wählen
+**App:** Aufgaben zu einer Tabelle gehören zu deren [App](#15-apps-fachanwendungen); für andere Aufgaben wählen
 Sie die App. System-Aufgaben gehören zu keiner App.
 
 ---
@@ -1123,71 +1136,7 @@ etwa nach einem Update ohne die Entwicklungspakete –, installieren Sie sie zue
 > Artikel. Das Plugin *Lager-Tafel* braucht *Lager-Umbuchung* und zeigt den *Lagerspiegel* (Bestand je Artikel und Lagerort), die *Lagertafel* (Bestand per Ziehen umbuchen) und die Kachel *Lager: Bestand je Lagerort* sowie zwei Arten geplanter Aufgaben (siehe [Kapitel 12](#12-geplante-aufgaben)). Das Plugin *CH-Prüfungen* bringt die Prüfregeln AHV-Nummer, IBAN, UID und Postleitzahl sowie die
 > Formelfunktion `rappen()` mit.
 
-## 15. Konfiguration übertragen
-
-**Administration › Anwendung › Konfiguration übertragen** bringt Tabellen, Auswertungen, Menüeinträge und Rollen von einer
-Installation in eine andere – typisch von der Test- in die Produktionsinstallation. Statt alles von Hand nachzubauen,
-exportieren Sie ein **Paket** (eine JSON-Datei) und spielen es in der anderen Installation ein.
-
-**Was ins Paket kommt** und was nicht:
-
-| Im Paket | Nicht im Paket |
-|---|---|
-| Tabellen des Table-Designers mit Feldern, Prüfungen, Formeln, Tabellenregeln und Detailtabellen | Datensätze (auch Dateien aus Dateifeldern; die Vorschau nennt solche Felder unter *Hinweise*) |
-| Verknüpfungen für Auswertungen | Benutzer und ihre Dashboard-Anordnung |
-| Auswertungen – freigegebene und Ihre eigenen | private Auswertungen anderer |
-| Menüeinträge (mit den übergeordneten Gruppen) | Datenbankverbindungen und Zugangsdaten |
-| Rollen mit ihren Rechten und ausgeblendeten Menüeinträgen | Globale Einstellungen, geplante Aufgaben |
-
-Alle Verweise stehen im Paket als **Namen**, nicht als interne Nummern – Tabellen und Felder mit ihrem technischen
-Namen, Menüeinträge mit ihrem Pfad (z. B. „Lager (Demo) › Lager führen › Bestände“), Auswertungen mit ihrem Namen. So passt das Paket
-in jede Installation.
-
-**Exportieren** (Rechte *Konfiguration: anzeigen* und *exportieren*), Reiter *Exportieren*:
-
-1. Tabellen, Auswertungen, Menüeinträge und Rollen auf den gleichnamigen Reitern auswählen; die Zahl am Reiter nennt die
-   gewählten Einträge. Tabellen und Auswertungen sind nach Menügruppe gegliedert
-   (Auswertungen nach der Gruppe ihrer Grundtabelle), Menüeinträge nach dem übergeordneten Eintrag; unter jeder
-   Auswertung steht, welche Tabellen sie braucht, unter jedem Menüeintrag sein Ziel.
-2. **Abhängigkeiten mitnehmen** (Standard): Eine Auswertung bringt ihre Tabellen mit, ein Menüeintrag seine Tabelle oder
-   Auswertung und die übergeordneten Gruppen, eine Tabelle die Tabellen ihrer Verknüpfungen und Formeln. Ist der
-   Schalter aus, sind Auswertungen ausgegraut, solange nicht alle ihre Tabellen gewählt sind, und Menüeinträge, solange ihre
-   Tabelle bzw. Auswertung fehlt (darunter steht jeweils das Ziel und was fehlt); schon angehakte nennt ein Hinweis – sie
-   kommen nicht ins Paket.
-3. Eine Bezeichnung angeben (z. B. „Verkauf Version 3“) und **Paket herunterladen**. Der Export steht im
-   Änderungsprotokoll.
-
-**Einspielen** (Rechte *Konfiguration: anzeigen* und *einspielen*), Reiter *Einspielen*:
-
-1. Paketdatei hochladen. Die **Vorschau** zeigt jeden Eintrag mit seinem Zustand:
-
-   | Zustand | Bedeutung |
-   |---|---|
-   | **neu** | wird angelegt |
-   | **identisch** | gibt es schon genau so – nichts zu tun |
-   | **abweichend – wird übersprungen** | gibt es schon, aber anders; bleibt unverändert |
-   | **Voraussetzung fehlt** | z. B. eine Tabelle, ein übergeordneter Menüeintrag oder die Seite eines Plugins fehlt; die Spalte *Hinweise* nennt was |
-
-   Fehlende Plugins und Datenbankverbindungen stehen oben unter **Fehlende Voraussetzungen**. Rechte, die es in der
-   Installation nicht gibt (etwa eines fehlenden Plugins), werden bei Rollen übergangen und als Hinweis genannt.
-2. **Neue Einträge anlegen** legt alle Einträge mit Zustand *neu* an – Tabellen, Verknüpfungen, Auswertungen, Menüs und
-   Rollen in dieser Reihenfolge. Eingespielte Auswertungen gehören Ihnen; ob sie freigegeben sind, kommt aus dem Paket.
-3. Danach zeigt die Vorschau die angelegten Einträge als *identisch*. Das Einspielen steht im Änderungsprotokoll.
-
-Vorhandene Einträge werden **nie verändert** – auch nicht, wenn sie abweichen. Wer eine Tabelle in der Zielinstallation
-ändern will, passt sie dort im Table-Designer an. Angebundene Tabellen (Table-Connector) müssen in der
-Zielinstallation bereits angelegt sein; das Paket nennt sie als Voraussetzung.
-
-> **Tipp:** Spielen Sie ein Paket zuerst in einer Testinstallation ein und prüfen Sie die Vorschau. Für wiederkehrende
-> Übertragungen gibt es die Befehle `saft:config-export` und `saft:config-import` (siehe
-> [Systemadministration](SYSADMIN_GUIDE.de.md)).
-
-**Ziel-App beim Einspielen:** Tabellen, oberste Menügruppen und Rollen des Pakets kommen in eine gewählte
-[App](#16-apps-fachanwendungen) – eine bestehende oder eine neue (vorgeschlagen mit der Bezeichnung des Pakets); auf
-der Konsole `saft:config-import --app=<ID>` bzw. `--new-app="Name"`. Beim Export stehen Tabellen und Auswertungen
-unter „App › Menügruppe“.
-
-## 16. Apps (Fachanwendungen)
+## 15. Apps (Fachanwendungen)
 
 Eine **App** fasst zusammen, was fachlich zusammengehört: Tabellen, Menüs, Auswertungen, Tabellenverknüpfungen, Rollen
 und geplante Aufgaben, z. B. „Lager“ oder „Personal“. Jedes dieser Objekte gehört zu genau einer App; gemeinsam für
@@ -1206,7 +1155,8 @@ Tabellen, Menüs, Auswertungen, Verknüpfungen, Rollen und Aufgaben:
 | Symbol, Sortierung | Darstellung in Listen |
 
 Die Spalte **Status** zeigt *Aktiv*, *Inaktiv*, *Entfernen ab …* oder *Entfernen fehlgeschlagen* (die Meldung als
-Tooltip). Im Aktionsmenü (drei Punkte) stehen **Datenmodell**, **Exportieren …**, Deaktivieren/Aktivieren, Entfernen und – nur bei
+Tooltip), **Installiert** den Ausgangsstand einer installierten App und **Hinweise** dauernde Warnungen wie „Plugin
+fehlt: …“ oder angebundene Tabellen ohne Verbindung. Im Aktionsmenü (drei Punkte) stehen **Datenmodell**, **Exportieren …**, Deaktivieren/Aktivieren, Entfernen und – nur bei
 leeren Apps – **Löschen**; Apps mit Inhalt werden deaktiviert und entfernt (unten).
 
 **Wo die App gewählt wird – und wo sie sich ergibt:**
@@ -1272,8 +1222,27 @@ Tabellenverknüpfungen und die Menüs der App; wählbar sind Auswertungen (freig
 geplante Aufgaben und das Handbuch. Nie enthalten sind Datensätze, Zugangsdaten von Datenbankverbindungen (angebundene
 Tabellen nur als Verweis), Systemmenüs, Systemrollen und System-Aufgaben. Jedes Objekt trägt seinen stabilen Schlüssel,
 damit sich eine installierte App später aktualisieren lässt. SAFT prüft die Datei vor dem Herunterladen auf
-Stimmigkeit; der Export steht im Änderungsprotokoll. Installieren aus einer solchen Datei folgt mit dem nächsten
-Schritt (bis dahin Pakete über „Konfiguration übertragen“).
+Stimmigkeit; der Export steht im Änderungsprotokoll.
+
+**Installieren:** **„App installieren …“** oben auf der Seite (Recht *Apps: installieren*) lädt eine solche Datei hoch
+und zeigt eine **Vorschau**: Name, Version und Präfix, was angelegt wird, Hinderungsgründe (rot) – etwa wenn die App oder
+eine gleichnamige Tabelle schon da ist –, Hinweise (gelb) und das Diagramm der Tabellen. Installiert wird als:
+
+- **neue App (wie exportiert)** – mit denselben stabilen Schlüsseln, damit sie sich später aktualisieren lässt; eine schon
+  installierte App wird abgelehnt.
+- **Kopie (neuer Name und Präfix)** – z. B. eine Testkopie auf demselben System: Die Tabellen bekommen das neue Präfix
+  (`lager_artikel` → `lager2_artikel`), ebenso alle Verweise darauf (Verknüpfungen, Summen in Formeln, Auswertungen,
+  Menüs, Datenrechte der Rollen); alle Schlüssel sind neu.
+
+Die App entsteht **deaktiviert** – prüfen, dann aktivieren. Ist ein Rollenname schon vergeben, erhält die Rolle das
+Präfix der App (z. B. `vertrieb-lager2`); Auswertungen gehören der installierenden Person; Dateifelder kommen ohne
+Dateien. Fehlende Plugins verhindern das Installieren nicht; die Spalte **Hinweise** nennt sie, bis sie installiert
+sind. **Angebundene Tabellen** werden inaktiv angelegt: Gibt es eine Datenbankverbindung gleichen Namens, werden sie ihr
+zugeordnet und mit der Datenbank abgeglichen, sonst bleiben sie ohne Verbindung (siehe
+[Table-Connector](#10-table-connector), „Ohne Verbindung“). Scheitert das Anlegen mittendrin, bleibt die App deaktiviert
+stehen und lässt sich mit „Entfernen …“ abbauen. Der installierte Stand wird als **Ausgangsstand** gespeichert
+(Spalte **Installiert**, z. B. „Installiert: 1.2 am 20.11.2026“) – Grundlage für das spätere Aktualisieren. Installieren
+steht im Änderungsprotokoll.
 
 **Deaktivieren und aktivieren:** Im Aktionsmenü (drei Punkte) einer App; Recht *Apps: verwalten*. Eine deaktivierte
 App verschwindet für alle ausser dem Super-Admin: nicht mehr im Umschalter, keine Menüs, Auswertungen und Kacheln, kein
@@ -1305,18 +1274,104 @@ Installationen beginnen ohne App; die Demo-Daten legen je eine eigene App an (Sh
 
 ## Anhang A – Rechte im Überblick
 
-| Bereich | Rechte |
+Alle Rechte, nach Themen gruppiert, mit der Bezeichnung, wie sie beim Bearbeiten einer [Rolle](#2-rollen-und-rechte)
+erscheint. Benutzer erhalten Rechte nur über Rollen. Der **Super-Admin** hat immer alle Rechte, auch künftige; einige
+Aktionen bleiben ihm vorbehalten und lassen sich keiner Rolle zuteilen: **Ansicht als Rolle** und **Apps mit Inhalt
+entfernen**. „Anzeigen“ ist jeweils Voraussetzung für die übrigen Rechte eines Bereichs (Seite und Menüeintrag).
+
+**Benutzer und Zugriff**
+
+| Recht | Wirkung |
 |---|---|
-| Benutzer, Rollen, Menüs, Identity Provider, Table-Designer, Table-Connector, Datenbankverbindungen | anzeigen, anlegen, bearbeiten, löschen; Table-Designer zusätzlich importieren und Assistent nutzen (KI) |
-| Änderungsprotokoll | anzeigen |
-| Einstellungen Authentifizierung, Globale Einstellungen | anzeigen, bearbeiten |
-| Dashboard-Widgets | je Widget |
-| Auswertungen | anzeigen, anlegen (eigene), bearbeiten und löschen (auch fremde), Assistent nutzen (KI) |
-| Tabellenverknüpfungen | anzeigen, anlegen, bearbeiten, löschen |
-| Geplante Aufgaben | anzeigen, anlegen, bearbeiten (auch „Jetzt ausführen“), löschen, technische Details sehen (Fehlerdetails fehlgeschlagener Läufe) |
-| Systemprotokoll | anzeigen (Logdatei des Servers, nur lesen) |
-| Plugins | anzeigen; verwalten (Menüeinträge anlegen, Aufräumen); die Rechte der Plugins selbst stehen unter ihrem Namen |
-| Konfiguration | anzeigen (Seite und Menüeintrag); exportieren; einspielen |
-| Apps | anzeigen; verwalten (anlegen, bearbeiten, aktivieren und deaktivieren, leere löschen); exportieren. Apps mit Inhalt entfernen: nur der Super-Admin |
-| Hilfe | Assistent nutzen (Hilfe-Assistent) |
-| Daten je Tabelle (Datenrechte-Matrix) | anzeigen, anlegen, bearbeiten, löschen, exportieren, importieren; bei angebundenen externen Tabellen Schreibrechte nur, wenn freigeschaltet |
+| Benutzer: anzeigen | Liste der Benutzer öffnen (Administration › Benutzer und Zugriff › Benutzer) |
+| Benutzer: anlegen | neue Benutzer anlegen und einladen |
+| Benutzer: bearbeiten | Name, E-Mail, Rollen, Aktivierung, zweiten Faktor zurücksetzen |
+| Benutzer: löschen | Benutzer löschen |
+| Rollen: anzeigen | Liste der Rollen öffnen |
+| Rollen: anlegen | neue Rollen anlegen und Rollen kopieren |
+| Rollen: bearbeiten | Rechte, Datenrechte und Menüeinträge einer Rolle ändern |
+| Rollen: löschen | Rollen löschen (nicht *super-admin* und nicht die Standardrolle) |
+| Identity Provider: anzeigen | Anbieter für die Anmeldung per SSO ansehen |
+| Identity Provider: anlegen / bearbeiten / löschen | Anbieter (Entra ID, SAML) einrichten, ändern, entfernen |
+| Einstellungen Authentifizierung: anzeigen / bearbeiten | Anmeldeart (lokal, SSO, beides), Zwei-Faktor-Pflicht, Notfall-Anmeldung, Standardrolle neuer Benutzer, „Passwort vergessen“ |
+| Änderungsprotokoll: anzeigen | alle protokollierten Änderungen sehen (Administration › Betrieb) |
+
+**Anwendung und Betrieb**
+
+| Recht | Wirkung |
+|---|---|
+| Globale Einstellungen: anzeigen / bearbeiten | Name der Anwendung, Farbschema, KI-Assistenten (Anbieter, Modell, Schalter) |
+| Menüs: anzeigen / anlegen / bearbeiten / löschen | den Menübaum pflegen (Gruppen, Einträge, Reihenfolge, Rechte der Einträge) |
+| Apps: anzeigen | Seite „Apps“ und Datenmodell je App öffnen |
+| Apps: verwalten | Apps anlegen, bearbeiten, aktivieren und deaktivieren, Handbuch hochladen, Tabellen verschieben, leere Apps löschen |
+| Apps: exportieren | eine App als Datei (`saft-app/1`) herunterladen |
+| Apps: installieren | eine App aus einer solchen Datei installieren, auch als Kopie |
+| Plugins: anzeigen | Seite „Plugins“ mit Version, Status und Abhängigkeiten |
+| Plugins: verwalten | Plugins ein- und ausschalten, ihre Menüeinträge anlegen, Reste deinstallierter Plugins aufräumen, Kontext für Entwicklung herunterladen |
+| Geplante Aufgaben: anzeigen | Liste der Aufgaben und ihrer Läufe |
+| Geplante Aufgaben: anlegen / bearbeiten / löschen | Aufgaben einrichten, ändern (auch „Jetzt ausführen“), entfernen |
+| Geplante Aufgaben: technische Details sehen | Fehlerdetails fehlgeschlagener Läufe (Stack-Trace) |
+| Systemprotokoll: anzeigen | die Logdatei des Servers lesen (nur lesen) |
+| Hilfe: Assistent nutzen | den KI-Hilfe-Assistenten (Knopf „?“) verwenden |
+
+**Daten modellieren**
+
+| Recht | Wirkung |
+|---|---|
+| Table-Designer: anzeigen | Liste der Tabellen und ihr Aufbau |
+| Table-Designer: anlegen | neue Tabellen anlegen |
+| Table-Designer: bearbeiten | Felder, Regeln, Details, Einstellungen einer Tabelle ändern |
+| Table-Designer: löschen | Felder und Tabellen endgültig löschen (nach dem Deaktivieren) |
+| Table-Designer: importieren | eine neue Tabelle samt Daten aus einer Excel- oder CSV-Datei anlegen |
+| Table-Designer: Assistent nutzen | den KI-Tabellenassistenten (Tabelle beschreiben, Mit KI anpassen) verwenden |
+| Datenbankverbindungen: anzeigen / anlegen / bearbeiten / löschen | Verbindungen zu externen Datenbanken pflegen und testen |
+| Table-Connector: anzeigen | angebundene Tabellen und ihre Datenstände ansehen |
+| Table-Connector: anlegen | externe Tabellen anbinden (auch Massenverknüpfung) |
+| Table-Connector: bearbeiten | angebundene Tabellen ändern, neu einlesen, Verbindung zuordnen, Datenstände verwalten; beim Löschen einer Verbindung die Anbindungen behalten |
+| Table-Connector: löschen | Anbindungen entfernen, auch zusammen mit ihrer Verbindung |
+| Tabellenverknüpfungen: anzeigen / anlegen / bearbeiten / löschen | Verknüpfungen für Auswertungen zwischen Tabellen ohne Verknüpfungsfeld |
+
+**Auswertungen und Dashboard** (die Rechte für Auswertungen gelten je App)
+
+| Recht | Wirkung |
+|---|---|
+| Auswertungen: anzeigen | freigegebene und eigene Auswertungen öffnen |
+| Auswertungen: anlegen | eigene Auswertungen erstellen |
+| Auswertungen: bearbeiten / löschen | Auswertungen ändern bzw. löschen – auch die anderer Personen |
+| Auswertungen: Assistent nutzen | den KI-Auswertungsassistenten verwenden |
+| Dashboard-Widget: Meine letzte Anmeldung | Kachel mit der eigenen Anmeldung vor der aktuellen und den fehlgeschlagenen Versuchen seither |
+| Dashboard-Widget: Meine Anmeldungen | Kachel mit den eigenen letzten Anmeldungen |
+| Dashboard-Widget: Meine letzten Änderungen | Kachel mit den eigenen letzten Änderungen an Daten |
+| Dashboard-Widget: Änderungen an meinem Konto | Kachel mit Änderungen am eigenen Benutzerkonto |
+| Dashboard-Widget: Letzte Änderungen (systemweit) | Kachel mit allen letzten Änderungen; braucht zusätzlich *Änderungsprotokoll: anzeigen* |
+| Dashboard-Widget: Meine Auswertungen | angeheftete Auswertungen als Kacheln; braucht zusätzlich *Auswertungen: anzeigen* |
+| Dashboard-Widget: Geplante Aufgaben (Status) | Kachel mit dem Zustand der Aufgaben; braucht zusätzlich *Geplante Aufgaben: anzeigen* |
+| Dashboard-Widget: Benutzerübersicht | Kachel mit der Zahl aktiver und inaktiver Benutzer, ohne Rolle und mit SSO; braucht zusätzlich *Benutzer: anzeigen* |
+| Dashboard-Widget: Anmeldeaktivität | Kachel mit den Anmeldungen aller Benutzer; braucht zusätzlich *Benutzer: anzeigen* |
+| Dashboard-Widget: Identity-Provider-Status | Kachel mit dem Zustand der SSO-Anbieter; braucht zusätzlich *Identity Provider: anzeigen* |
+
+**Daten je Tabelle (Datenrechte-Matrix)** – je Tabelle des Table-Designers und je angebundene Tabelle, vergeben in der
+Matrix der Rolle:
+
+| Recht | Wirkung |
+|---|---|
+| Anzeigen | Datensätze lesen; Voraussetzung für alle weiteren Datenrechte |
+| Anlegen | neue Datensätze erfassen |
+| Bearbeiten | Datensätze ändern |
+| Löschen | Datensätze löschen (in den Papierkorb) |
+| Exportieren | Liste als Excel/CSV/PDF herunterladen – nur wenn der Export für die Tabelle erlaubt ist |
+| Importieren | neue Datensätze aus einer Datei einlesen – nur zusammen mit *Anlegen* und wenn der Import erlaubt ist |
+
+Bei angebundenen externen Tabellen gibt es *Anlegen*, *Bearbeiten* und *Löschen* nur, wenn das Schreiben für die Tabelle
+freigeschaltet ist. Tabellen einer deaktivierten App sind nur für den Super-Admin nutzbar.
+
+**Rechte von Plugins** stehen unter dem Namen des Plugins, z. B.:
+
+| Recht | Wirkung |
+|---|---|
+| Lager-Umbuchung: Umbuchungen ausführen | Bestand zwischen Lagerorten umbuchen |
+| Lager-Tafel: Lagerspiegel anzeigen | die Lagertafel (Bestand je Artikel und Ort) öffnen |
+| Lager-Tafel: Auf der Lagertafel umbuchen | direkt in der Lagertafel umbuchen |
+
+Welche Rechte ein Plugin mitbringt, zeigt die Seite **Plugins**; gehört es zu einer App, bietet die Rollenverwaltung
+seine Rechte nur Rollen dieser App an.

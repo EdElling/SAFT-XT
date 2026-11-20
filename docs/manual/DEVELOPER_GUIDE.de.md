@@ -118,9 +118,10 @@ wird die Anwendung aufgebaut und erprobt, im **Echtsystem** läuft sie.
    1. Plugins installieren ([Installieren, aktualisieren, entfernen](#13-installieren-aktualisieren-entfernen),
       [Systemadministration, Kapitel 7](SYSADMIN_GUIDE.de.md#7-plugins)) – mit Sicherung und im Wartungsmodus. Danach
       sind sie eingeschaltet; ihre Rechte gibt es ab jetzt.
-   2. Im Testsystem die [Konfiguration exportieren](ADMIN_GUIDE.de.md#15-konfiguration-übertragen) und im Echtsystem
-      einspielen: Tabellen, Auswertungen, Menüeinträge und Rollen. Die Vorschau meldet fehlende Plugins als
-      „Voraussetzung fehlt“.
+   2. Im Testsystem die [App exportieren](ADMIN_GUIDE.de.md#15-apps-fachanwendungen) und im Echtsystem installieren:
+      Tabellen, Auswertungen, Menüs, Rollen und Aufgaben der App. Die Vorschau warnt vor fehlenden Plugins; die App
+      entsteht deaktiviert und wird nach der Prüfung aktiviert. (Eine schon installierte App aktualisieren folgt in
+      einer späteren Version.)
    3. Auf der Seite [Plugins](ADMIN_GUIDE.de.md#14-plugins) prüfen, dass alle *aktiv* sind, und Menüvorschläge
       übernehmen, die nicht schon mit dem Paket kamen.
 

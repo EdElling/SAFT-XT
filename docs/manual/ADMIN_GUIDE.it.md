@@ -27,8 +27,7 @@
 - [12. Attività pianificate](#12-attività-pianificate)
 - [13. Funzioni IA](#13-funzioni-ia)
 - [14. Plugin](#14-plugin)
-- [15. Trasferire la configurazione](#15-trasferire-la-configurazione)
-- [16. App (applicazioni specialistiche)](#16-app-applicazioni-specialistiche)
+- [15. App (applicazioni specialistiche)](#15-app-applicazioni-specialistiche)
 - [Allegato A – Panoramica dei diritti](#allegato-a--panoramica-dei-diritti)
 
 ---
@@ -124,7 +123,7 @@ propri. Una banda gialla in alto indica il ruolo; **Termina** nella banda ripris
 termina la vista). Il database resta invariato, inizio e fine figurano nel registro modifiche. Attenzione: ciò che il
 ruolo può fare viene davvero salvato durante la vista – con voi come autore.
 
-**App e copia** (B-107): ogni ruolo appartiene a un’[app](#16-app-applicazioni-specialistiche); il modulo mostra
+**App e copia** (B-107): ogni ruolo appartiene a un’[app](#15-app-applicazioni-specialistiche); il modulo mostra
 diritti sui dati, voci di menu e diritti dei plugin solo per quell’app (i diritti generali di SAFT sempre). Senza app
 scelta, al posto dei diritti sui dati compare l’indicazione di scegliere prima l’app. Se il ruolo ha ancora diritti
 **al di fuori** della sua app – su tabelle o plugin di altre app, ad es. dopo un cambio di app o da prima delle app, o
@@ -207,7 +206,7 @@ vengono eliminate anche le sue sottovoci.
 
 > I **dettagli** (master-detail) non si impostano nel menu, ma nel Designer di tabelle.
 
-**App:** voci e gruppi di primo livello appartengono a un’[app](#16-app-applicazioni-specialistiche) o – senza
+**App:** voci e gruppi di primo livello appartengono a un’[app](#15-app-applicazioni-specialistiche) o – senza
 app – al sistema; le voci di un gruppo ne riprendono l’app. Per le voci di dati il modulo offre solo tabelle di
 quell’app.
 
@@ -314,7 +313,7 @@ un **altro campo** o con un **valore fisso**:
 - Se un campo viene rinominato, le sue regole seguono. Un campo usato da una regola non si può eliminare e il suo tipo
   si può cambiare solo in un tipo che resta compatibile con la regola.
 
-**App e prefisso:** alla creazione scegliete l’[app](#16-app-applicazioni-specialistiche) della tabella
+**App e prefisso:** alla creazione scegliete l’[app](#15-app-applicazioni-specialistiche) della tabella
 (obbligatoria se ci sono più app). Se l’app ha un prefisso, precede il nome tecnico proposto; cambiare app lo
 sostituisce. I collegamenti sono possibili solo con tabelle della stessa app.
 
@@ -495,7 +494,7 @@ campo](#eliminare-definitivamente-una-tabella-o-un-campo)). In seguito il file s
 | **Accesso di emergenza per i super amministratori** | consente ai super-admin, in modalità SSO, l’accesso con password tramite `…/admin/login?local=1` – nel caso in cui il provider di identità non funzioni |
 | **Offri «Password dimenticata»** | e-mail per reimpostare la password (solo in modalità Locale o Ibrido; richiede l’invio di e-mail configurato) |
 | **Ruolo predefinito per i nuovi utenti** | preselezionato alla creazione e assegnato agli utenti SSO creati automaticamente |
-| **Autenticazione a due fattori** | **Facoltativa**, **Obbligatoria per l’amministrazione** (predefinito) o **Obbligatoria per tutti**. Vale come amministrazione: super-admin o qualsiasi diritto su utenti, ruoli, menu, provider di identità, impostazioni, designer di tabelle, connessioni ai database, connettore di tabelle, collegamenti tra tabelle, attività pianificate, plugin o trasferimento della configurazione. Chi vi rientra viene portato alla configurazione dopo l’accesso. Sono esclusi gli accessi tramite SSO e gli account senza password (secondo fattore presso il provider di identità) nonché *Vista come ruolo*. |
+| **Autenticazione a due fattori** | **Facoltativa**, **Obbligatoria per l’amministrazione** (predefinito) o **Obbligatoria per tutti**. Vale come amministrazione: super-admin o qualsiasi diritto su utenti, ruoli, menu, provider di identità, impostazioni, designer di tabelle, connessioni ai database, connettore di tabelle, collegamenti tra tabelle, attività pianificate, plugin o app. Chi vi rientra viene portato alla configurazione dopo l’accesso. Sono esclusi gli accessi tramite SSO e gli account senza password (secondo fattore presso il provider di identità) nonché *Vista come ruolo*. |
 
 Protezione contro il blocco: la modalità **Single sign-on** si può salvare solo se almeno un provider di identità attivo
 ha un **test di connessione riuscito**. Per altre vie d’uscita d’emergenza nell’esercizio vedere
@@ -626,11 +625,18 @@ ancora testato». Ogni modifica figura nella cronologia; per la password solo il
 > visualizzare/creare/modificare/eliminare»; chi può creare connessioni può contattare qualsiasi server.
 
 **Eliminare:** se tramite la connessione non sono collegate tabelle, basta la consueta conferma. Altrimenti la
-finestra **«Elimina connessione e tabelle collegate»** mostra tutte le tabelle interessate (nome in SAFT, etichetta,
-tabella esterna, tipo). Dopo aver inserito il nome della connessione come conferma, connessione e tabelle collegate
-vengono rimosse in un solo passaggio – come con «Rimuovi collegamento» nel Connettore di tabelle: impostazioni,
-diritti, voci di menu e collegamenti di altre tabelle verso di esse. Il database esterno resta invariato. Serve in
-più il diritto «Connettore di tabelle: eliminare»; senza di esso la finestra mostra solo l’elenco.
+finestra **«Elimina connessione»** mostra tutte le tabelle interessate (nome in SAFT, etichetta, tabella esterna, tipo)
+e chiede cosa succede loro:
+
+- **Mantenere le tabelle collegate (senza connessione, inattive)** – predefinito; diritto «Connettore di tabelle:
+  modificare». Tabelle, colonne, diritti, voci di menu e collegamenti restano; le tabelle sono inattive e contrassegnate
+  «Connessione mancante» nel Connettore di tabelle. Più tardi assegnarle a una (nuova) connessione con «Assegnare
+  connessione …».
+- **Eliminare anche le tabelle collegate** – diritto «Connettore di tabelle: eliminare», conferma con il nome della
+  connessione. Come con «Rimuovi collegamento» nel Connettore di tabelle: impostazioni, diritti, voci di menu e
+  collegamenti di altre tabelle verso di esse vengono rimossi.
+
+Il database esterno resta in ogni caso invariato.
 
 **Collegamento multiplo:** modificando una connessione ci sono due schede: **Connessione** con le impostazioni
 consuete e **Collegamento multiplo**, per collegare molte tabelle in una volta. La seconda scheda mostra la sua
@@ -835,6 +841,14 @@ conservazione restano riservate al Connettore di tabelle.
 **«Rimuovi collegamento»** rimuove la tabella da SAFT – impostazioni, diritti, voci di menu e stati dei dati. I dati
 nel database esterno restano invariati.
 
+**Senza connessione:** una tabella collegata può esistere senza connessione al database – dopo l’eliminazione della sua
+connessione con «Mantenere le tabelle collegate» o da un’app installata la cui connessione qui non esiste (vedi
+[capitolo 15](#15-app-applicazioni-specialistiche)). L’elenco mostra allora **«Connessione mancante»**; la tabella è
+inattiva. **«Assegnare connessione …»** (nell’elenco e in modifica; diritto «Connettore di tabelle: modificare») sceglie
+una connessione attiva e confronta le colonne con la tabella esterna come «Rileggi». Controllate poi le colonne e
+attivate la tabella. Se il confronto non riesce (tabella non trovata, connessione non raggiungibile), resta senza
+connessione.
+
 > **Diritti:** il Connettore di tabelle lo usano solo i ruoli con «Connettore di tabelle:
 > visualizzare/creare/modificare/eliminare», indipendentemente dal Designer di tabelle. Chi può vedere i dati lo
 > stabiliscono i diritti sui dati della rispettiva tabella.
@@ -940,7 +954,7 @@ attività pianificate al momento non vengono eseguite».
 > widget in più «Widget della dashboard: Attività pianificate (stato)». Le modifiche alle attività figurano nel
 > registro modifiche.
 
-**App:** le attività relative a una tabella appartengono alla sua [app](#16-app-applicazioni-specialistiche);
+**App:** le attività relative a una tabella appartengono alla sua [app](#15-app-applicazioni-specialistiche);
 per le altre attività scegliete l’app. Le attività di sistema non appartengono ad alcuna app.
 
 ---
@@ -1146,69 +1160,7 @@ dopo un aggiornamento senza i pacchetti di sviluppo –, reinstallateli prima in
 > mostra gli articoli interessati. Il plugin *Tabellone delle giacenze* richiede *Trasferimento di magazzino* e mostra la *Matrice delle giacenze* (giacenza per articolo e ubicazione), il *Tabellone delle giacenze* (trasferire la giacenza trascinandola) e il riquadro *Magazzino: giacenza per ubicazione* nonché due tipi di attività pianificate (vedi [capitolo 12](#12-attività-pianificate)). Il plugin *Verifiche svizzere* aggiunge le regole di verifica numero AVS, IBAN, IDI e
 > numero postale nonché la funzione per formule `rappen()`.
 
-## 15. Trasferire la configurazione
-
-**Amministrazione › Applicazione › Trasferire la configurazione** porta tabelle, analisi, voci di menu e ruoli da un’installazione a
-un’altra – tipicamente dall’installazione di test a quella di produzione. Invece di ricostruire tutto a mano, esportate
-un **pacchetto** (un file JSON) e lo importate nell’altra installazione.
-
-**Cosa entra nel pacchetto** e cosa no:
-
-| Nel pacchetto | Non nel pacchetto |
-|---|---|
-| tabelle del designer di tabelle con campi, verifiche, formule, regole di tabella e tabelle di dettaglio | record (compresi i file dei campi file; l’anteprima indica tali campi sotto *Note*) |
-| collegamenti per le analisi | utenti e disposizione della loro dashboard |
-| analisi – condivise e le vostre | analisi private di altre persone |
-| voci di menu (con i gruppi superiori) | connessioni ai database e credenziali |
-| ruoli con i loro diritti e le voci di menu nascoste | impostazioni globali, attività pianificate |
-
-Tutti i riferimenti sono salvati come **nomi**, non come numeri interni – tabelle e campi con il nome tecnico, voci di
-menu con il percorso (p. es. «Magazzino (demo) › Gestione del magazzino › Giacenze»), analisi con il nome. Così il pacchetto va bene per qualsiasi
-installazione.
-
-**Esportare** (diritti *Configurazione: visualizzare* ed *esportare*), scheda *Esporta*:
-
-1. Scegliere tabelle, analisi, voci di menu e ruoli nelle schede omonime; il numero sulla scheda indica le voci scelte.
-   Tabelle e analisi sono raggruppate per gruppo di menu (le analisi
-   secondo il gruppo della loro tabella di base), le voci di menu secondo la voce superiore; sotto ogni analisi è indicato
-   di quali tabelle ha bisogno, sotto ogni voce di menu la sua destinazione.
-2. **Includi le dipendenze** (predefinito): un’analisi porta le sue tabelle, una voce di menu la sua tabella o analisi e
-   i gruppi superiori, una tabella le tabelle dei suoi collegamenti e formule. Se l’opzione è disattivata, le analisi sono in grigio finché
-   non sono scelte tutte le loro tabelle, e le voci di menu finché manca la loro tabella o analisi (sotto è indicata la
-   destinazione e cosa manca); una nota nomina le voci già spuntate – non entrano nel pacchetto.
-3. Indicare un nome (p. es. «Vendite versione 3») e **Scarica il pacchetto**. L’esportazione viene registrata nel
-   registro modifiche.
-
-**Importare** (diritti *Configurazione: visualizzare* e *importare*), scheda *Importa*:
-
-1. Caricare il file del pacchetto. L’**anteprima** mostra ogni voce con il suo stato:
-
-   | Stato | Significato |
-   |---|---|
-   | **nuovo** | verrà creato |
-   | **identico** | esiste già esattamente così – nulla da fare |
-   | **diverso – ignorato** | esiste già, ma diversamente; resta invariato |
-   | **prerequisito mancante** | p. es. manca una tabella, una voce di menu superiore o la pagina di un plugin; la colonna *Note* dice cosa |
-
-   Plugin e connessioni mancanti compaiono in alto sotto **Prerequisiti mancanti**. I diritti che non esistono
-   nell’installazione (p. es. di un plugin mancante) vengono ignorati per i ruoli e segnalati come nota.
-2. **Crea le nuove voci** crea tutte le voci con stato *nuovo* – tabelle, collegamenti, analisi, menu e ruoli in
-   quest’ordine. Le analisi importate appartengono a voi; la condivisione deriva dal pacchetto.
-3. In seguito l’anteprima mostra le voci create come *identiche*. L’importazione viene registrata nel registro modifiche.
-
-Le voci esistenti non vengono **mai modificate** – nemmeno se differiscono. Per modificare una tabella
-nell’installazione di destinazione, adattatela lì nel designer di tabelle. Le tabelle collegate (connettore di tabelle)
-devono già esistere nell’installazione di destinazione; il pacchetto le indica come prerequisito.
-
-> **Suggerimento:** importate un pacchetto prima in un’installazione di test e controllate l’anteprima. Per
-> trasferimenti ricorrenti esistono i comandi `saft:config-export` e `saft:config-import`.
-
-**App di destinazione all’importazione:** tabelle, gruppi di menu di primo livello e ruoli del pacchetto
-finiscono in un’[app](#16-app-applicazioni-specialistiche) scelta – esistente o nuova (proposta con il nome del
-pacchetto); da console `saft:config-import --app=<ID>` o `--new-app="Nome"`. All’esportazione tabelle e report
-figurano sotto «App › gruppo di menu».
-
-## 16. App (applicazioni specialistiche)
+## 15. App (applicazioni specialistiche)
 
 Un’**app** raggruppa ciò che va insieme: tabelle, menu, report, collegamenti tra tabelle, ruoli e attività pianificate,
 ad es. «Magazzino» o «Personale». Ognuno di questi oggetti appartiene esattamente a un’app; utenti, accesso,
@@ -1227,7 +1179,8 @@ loro tabelle, menu, report, collegamenti, ruoli e attività:
 | Icona, ordinamento | visualizzazione negli elenchi |
 
 La colonna **Stato** mostra *Attiva*, *Inattiva*, *Rimozione dalle …* o *Rimozione non riuscita* (il messaggio come
-tooltip). Il menu delle azioni (tre puntini) contiene **Modello di dati**, **Esporta …**, disattivare/attivare, rimuovere
+tooltip), **Installata** lo stato di partenza di un’app installata e **Indicazioni** avvisi duraturi come «Plugin
+mancante: …» o tabelle collegate senza connessione. Il menu delle azioni (tre puntini) contiene **Modello di dati**, **Esporta …**, disattivare/attivare, rimuovere
 e – solo per app vuote – **Elimina**; le app con contenuto vengono disattivate e rimosse (sotto).
 
 **Dove si sceglie l’app – e dove deriva:**
@@ -1295,8 +1248,26 @@ tabelle e i menu dell’app; a scelta: report (condivisi e propri), ruoli con di
 inclusi: record, credenziali delle connessioni ai database (tabelle collegate solo come riferimento), menu, ruoli e
 attività di sistema. Ogni oggetto porta la sua chiave stabile, affinché un’app installata possa essere aggiornata in
 seguito. SAFT controlla la coerenza del file prima del download; l’esportazione è registrata nel registro delle
-modifiche. L’installazione da un tale file segue con il passo successivo (fino ad allora pacchetti tramite
-«Trasferire la configurazione»).
+modifiche.
+
+**Installare:** **«Installa app …»** in alto nella pagina (diritto *App: installare*) carica un tale file e mostra
+un’**anteprima**: nome, versione e prefisso, cosa verrà creato, impedimenti (in rosso) – ad es. se l’app o una tabella
+con lo stesso nome esiste già –, indicazioni (in giallo) e il diagramma delle tabelle. Si installa come:
+
+- **nuova app (come esportata)** – con le stesse chiavi stabili, affinché possa essere aggiornata in seguito; un’app già
+  installata viene rifiutata.
+- **copia (nuovo nome e prefisso)** – ad es. una copia di prova sullo stesso sistema: le tabelle ricevono il nuovo
+  prefisso (`lager_artikel` → `lager2_artikel`), così come tutti i riferimenti a esse (collegamenti, somme nelle formule,
+  report, menu, diritti sui dati dei ruoli); tutte le chiavi sono nuove.
+
+L’app viene creata **disattivata** – controllarla, poi attivarla. Se un nome di ruolo è già preso, il ruolo riceve il
+prefisso dell’app (ad es. `vertrieb-lager2`); i report appartengono a chi installa; i campi file arrivano senza file. I
+plugin mancanti non impediscono l’installazione; la colonna **Indicazioni** li nomina finché non sono installati. Le
+**tabelle collegate** vengono create inattive: se esiste una connessione con lo stesso nome, vengono assegnate a essa e
+confrontate con il database, altrimenti restano senza connessione (vedi [Connettore di tabelle](#10-connettore-di-tabelle),
+«Senza connessione»). Se la creazione non riesce a metà, l’app resta disattivata e si può smontare con «Rimuovi …». Lo
+stato installato viene salvato come **stato di partenza** (colonna **Installata**, ad es. «Installata: 1.2 il 20.11.2026»)
+– base per il futuro aggiornamento. L’installazione è registrata nel registro delle modifiche.
 
 **Disattivare e attivare:** nel menu delle azioni (tre puntini) di un’app; diritto *App: gestire*. Un’app disattivata
 scompare per tutti tranne il super-admin: non più nel selettore, né menu, report o riquadri, nessun accesso alle sue
@@ -1327,18 +1298,104 @@ iniziano senza app; i dati demo creano ciascuno la propria app (Negozio, Magazzi
 
 ## Allegato A – Panoramica dei diritti
 
-| Area | Diritti |
+Tutti i diritti, raggruppati per tema, con l’etichetta mostrata modificando un [ruolo](#2-ruoli-e-diritti). Gli utenti
+ricevono diritti solo tramite ruoli. Il **super-admin** ha sempre tutti i diritti, anche quelli futuri; alcune azioni gli
+sono riservate e non si possono assegnare a nessun ruolo: **Visualizza come ruolo** e **rimuovere app con contenuto**.
+«Visualizzare» è sempre il presupposto per gli altri diritti di un ambito (pagina e voce di menu).
+
+**Utenti e accesso**
+
+| Diritto | Effetto |
 |---|---|
-| Utenti, ruoli, menu, provider di identità, Designer di tabelle, Connettore di tabelle, connessioni ai database | visualizzare, creare, modificare, eliminare; Designer di tabelle in più importare e usare l’assistente (IA) |
-| Registro modifiche | visualizzare |
-| Impostazioni di autenticazione, impostazioni globali | visualizzare, modificare |
-| Widget della dashboard | per widget |
-| Report | visualizzare, creare (propri), modificare ed eliminare (anche altrui), usare l’assistente (IA) |
-| Collegamenti tra tabelle | visualizzare, creare, modificare, eliminare |
-| Attività pianificate | visualizzare, creare, modificare (anche «Esegui ora»), eliminare, vedere i dettagli tecnici (dettagli degli errori delle esecuzioni non riuscite) |
-| Registro di sistema | visualizzare (file di log del server, sola lettura) |
-| Plugin | visualizzare; gestire (creare voci di menu, pulire); i diritti propri dei plugin compaiono sotto il loro nome |
-| Configurazione | visualizzare (pagina e voce di menu); esportare; importare |
-| App | visualizzare; gestire (creare, modificare, attivare e disattivare, eliminare app vuote); esportare. Rimuovere app con contenuto: solo il super-admin |
-| Aiuto | usare l’assistente (assistente di aiuto) |
-| Dati per tabella (matrice dei diritti sui dati) | visualizzare, creare, modificare, eliminare, esportare, importare; per le tabelle esterne collegate diritti di scrittura solo se abilitati |
+| Utenti: visualizzare | aprire l’elenco degli utenti (Amministrazione › Utenti e accesso › Utenti) |
+| Utenti: creare | creare e invitare nuovi utenti |
+| Utenti: modificare | nome, e-mail, ruoli, attivazione, reimpostare il secondo fattore |
+| Utenti: eliminare | eliminare utenti |
+| Ruoli: visualizzare | aprire l’elenco dei ruoli |
+| Ruoli: creare | creare nuovi ruoli e copiare ruoli |
+| Ruoli: modificare | modificare diritti, diritti sui dati e voci di menu di un ruolo |
+| Ruoli: eliminare | eliminare ruoli (non *super-admin* né il ruolo predefinito) |
+| Provider di identità: visualizzare | vedere i provider per l’accesso tramite SSO |
+| Provider di identità: creare / modificare / eliminare | configurare, modificare, rimuovere provider (Entra ID, SAML) |
+| Impostazioni di autenticazione: visualizzare / modificare | modalità di accesso (locale, SSO, entrambi), obbligo di due fattori, accesso di emergenza, ruolo predefinito dei nuovi utenti, «Password dimenticata» |
+| Registro modifiche: visualizzare | vedere tutte le modifiche registrate (Amministrazione › Esercizio) |
+
+**Applicazione ed esercizio**
+
+| Diritto | Effetto |
+|---|---|
+| Impostazioni globali: visualizzare / modificare | nome dell’applicazione, schema di colori, assistenti IA (provider, modello, interruttori) |
+| Menu: visualizzare / creare / modificare / eliminare | curare l’albero dei menu (gruppi, voci, ordine, diritti delle voci) |
+| App: visualizzare | aprire la pagina «App» e il modello di dati per app |
+| App: gestire | creare, modificare, attivare e disattivare app, caricare il manuale, spostare tabelle, eliminare app vuote |
+| App: esportare | scaricare un’app come file (`saft-app/1`) |
+| App: installare | installare un’app da un tale file, anche come copia |
+| Plugin: visualizzare | pagina «Plugin» con versione, stato e dipendenze |
+| Plugin: gestire | attivare e disattivare plugin, creare le loro voci di menu, ripulire i resti di plugin disinstallati, scaricare il contesto per lo sviluppo |
+| Attività pianificate: visualizzare | elenco delle attività e delle loro esecuzioni |
+| Attività pianificate: creare / modificare / eliminare | configurare, modificare (anche «Esegui ora»), rimuovere attività |
+| Attività pianificate: vedere i dettagli tecnici | dettagli degli errori delle esecuzioni fallite (stack trace) |
+| Registro di sistema: visualizzare | leggere il file di log del server (sola lettura) |
+| Aiuto: usare l’assistente | usare l’assistente IA di aiuto (pulsante «?») |
+
+**Modellare i dati**
+
+| Diritto | Effetto |
+|---|---|
+| Designer di tabelle: visualizzare | elenco delle tabelle e loro struttura |
+| Designer di tabelle: creare | creare nuove tabelle |
+| Designer di tabelle: modificare | modificare campi, regole, dettagli, impostazioni di una tabella |
+| Designer di tabelle: eliminare | eliminare definitivamente campi e tabelle (dopo la disattivazione) |
+| Designer di tabelle: importare | creare una nuova tabella con dati da un file Excel o CSV |
+| Designer di tabelle: usare l’assistente | usare l’assistente IA delle tabelle (descrivere la tabella, adattare con l’IA) |
+| Connessioni ai database: visualizzare / creare / modificare / eliminare | curare e testare le connessioni a database esterni |
+| Connettore di tabelle: visualizzare | vedere le tabelle collegate e le loro istantanee di dati |
+| Connettore di tabelle: creare | collegare tabelle esterne (anche collegamento in blocco) |
+| Connettore di tabelle: modificare | modificare tabelle collegate, rileggere, assegnare una connessione, gestire le istantanee; mantenere le tabelle collegate eliminando una connessione |
+| Connettore di tabelle: eliminare | rimuovere tabelle collegate, anche insieme alla loro connessione |
+| Collegamenti tra tabelle: visualizzare / creare / modificare / eliminare | collegamenti per i report tra tabelle senza campo di collegamento |
+
+**Report e dashboard** (i diritti sui report valgono per app)
+
+| Diritto | Effetto |
+|---|---|
+| Report: visualizzare | aprire report condivisi e propri |
+| Report: creare | creare report propri |
+| Report: modificare / eliminare | modificare o eliminare report – anche quelli di altre persone |
+| Report: usare l’assistente | usare l’assistente IA dei report |
+| Widget della dashboard: Il mio ultimo accesso | riquadro con il proprio accesso prima di quello attuale e i tentativi falliti da allora |
+| Widget della dashboard: I miei accessi | riquadro con i propri ultimi accessi |
+| Widget della dashboard: Le mie ultime modifiche | riquadro con le proprie ultime modifiche ai dati |
+| Widget della dashboard: Modifiche al mio account | riquadro con le modifiche al proprio account |
+| Widget della dashboard: Ultime modifiche (intero sistema) | riquadro con tutte le ultime modifiche; richiede anche *Registro modifiche: visualizzare* |
+| Widget della dashboard: I miei report | report fissati come riquadri; richiede anche *Report: visualizzare* |
+| Widget della dashboard: Attività pianificate (stato) | riquadro con lo stato delle attività; richiede anche *Attività pianificate: visualizzare* |
+| Widget della dashboard: Panoramica utenti | riquadro con il numero di utenti attivi e inattivi, senza ruolo e con SSO; richiede anche *Utenti: visualizzare* |
+| Widget della dashboard: Attività di accesso | riquadro con gli accessi di tutti gli utenti; richiede anche *Utenti: visualizzare* |
+| Widget della dashboard: Stato dei provider di identità | riquadro con lo stato dei provider SSO; richiede anche *Provider di identità: visualizzare* |
+
+**Dati per tabella (matrice dei diritti sui dati)** – per ogni tabella del designer e per ogni tabella collegata,
+assegnati nella matrice del ruolo:
+
+| Diritto | Effetto |
+|---|---|
+| Visualizzare | leggere i record; presupposto per tutti gli altri diritti sui dati |
+| Creare | inserire nuovi record |
+| Modificare | modificare record |
+| Eliminare | eliminare record (nel cestino) |
+| Esportare | scaricare l’elenco come Excel/CSV/PDF – solo se l’esportazione è consentita per la tabella |
+| Importare | leggere nuovi record da un file – solo insieme a *Creare* e se l’importazione è consentita |
+
+Per le tabelle esterne collegate *Creare*, *Modificare* ed *Eliminare* esistono solo se la scrittura è abilitata per la
+tabella. Le tabelle di un’app disattivata sono utilizzabili solo dal super-admin.
+
+**I diritti dei plugin** compaiono sotto il nome del plugin, ad es.:
+
+| Diritto | Effetto |
+|---|---|
+| Trasferimento di magazzino: Eseguire trasferimenti | trasferire giacenze tra ubicazioni |
+| Tabellone delle giacenze: Visualizzare la matrice delle giacenze | aprire il tabellone delle giacenze (giacenza per articolo e ubicazione) |
+| Tabellone delle giacenze: Trasferire sul tabellone delle giacenze | trasferire direttamente sul tabellone |
+
+La pagina **Plugin** mostra quali diritti porta un plugin; se appartiene a un’app, la gestione dei ruoli offre i suoi
+diritti solo ai ruoli di quell’app.

@@ -158,4 +158,13 @@ return [
         'status' => ['connected' => 'liée', 'read_only' => 'lecture seule', 'skipped' => 'ignorée', 'failed' => 'erreur'],
         'columns' => ['table' => 'Table', 'kind' => 'Type', 'key' => 'Clé', 'proposed' => 'Nom dans SAFT', 'connected' => 'Liée sous', 'result' => 'Résultat', 'note' => 'Remarque'],
     ],
+    'assign' => [
+        'action' => 'Attribuer une connexion …',
+        'heading' => 'Attribuer « :table » à une connexion',
+        'help' => 'Source : :source. SAFT compare les colonnes avec la table externe (comme « Relire ») ; la table reste inactive jusqu’à ce que vous l’activiez.',
+        'missing' => 'Connexion manquante',
+        'failed' => 'Attribution impossible – la table reste sans connexion.',
+        'done' => '« :table » attribuée et comparée.',
+        'done_body' => 'Vérifiez les colonnes et activez la table.',
+    ],
 ];

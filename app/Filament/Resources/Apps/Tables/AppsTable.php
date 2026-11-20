@@ -9,6 +9,8 @@ use App\Filament\Resources\Apps\Actions\AppManualAction;
 use App\Filament\Resources\Apps\Actions\ExportAppAction;
 use App\Filament\Support\MoveToAppAction;
 use App\Models\App;
+use App\Models\CustomTable;
+use App\Plugins\PluginRegistry;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -20,6 +22,19 @@ use Illuminate\Support\Str;
 
 class AppsTable
 {
+    /** @return list<string> Hinweise zu einer App, die bestehen bleiben, bis sie behoben sind */
+    public static function notices(App $app): array
+    {
+        $plugins = app(PluginRegistry::class);
+        $missing = array_values(array_filter($app->baseline()?->requiredPlugins() ?? [], static fn (string $id): bool => ! $plugins->has($id)));
+        $unconnected = $app->customTables()->where('source', CustomTable::SOURCE_EXTERNAL)->whereNull('database_connection_id')->count();
+
+        return array_values(array_filter([
+            $missing === [] ? null : __('apps.notices.plugins', ['plugins' => implode(', ', $missing)]),
+            $unconnected === 0 ? null : trans_choice('apps.notices.unconnected', $unconnected, ['count' => $unconnected]),
+        ]));
+    }
+
     public static function configure(Table $table): Table
     {
         // Spaltenname wie das Zählattribut von withCount: custom_tables_count für customTables.
@@ -38,6 +53,23 @@ class AppsTable
                     ->description(fn (App $record): ?string => filled($record->description) ? (string) $record->description : null)
                     ->wrap(),
                 TextColumn::make('prefix')->label(__('apps.prefix'))->placeholder('–'),
+                // Ausgangsstand (Etappe 4b): zuletzt installiert als Version am … (bzw. als Kopie).
+                TextColumn::make('installed')
+                    ->label(__('apps.installed.label'))
+                    ->state(fn (App $record): ?string => ($baseline = $record->baseline()) === null ? null : __('apps.installed.'.$baseline->kind, [
+                        'version' => $baseline->version ?? '–',
+                        'date' => $baseline->created_at?->format('d.m.Y'),
+                    ]))
+                    ->placeholder('–')
+                    ->toggleable(),
+                // Dauernde Hinweise: fehlende Plugins (aus dem Ausgangsstand), angebundene Tabellen ohne Verbindung.
+                TextColumn::make('notices')
+                    ->label(__('apps.notices.label'))
+                    ->state(fn (App $record): array => self::notices($record))
+                    ->badge()
+                    ->color('warning')
+                    ->listWithLineBreaks()
+                    ->placeholder(''),
                 // Status (Etappe 3): aktiv, inaktiv, Entfernen vorgemerkt oder fehlgeschlagen.
                 TextColumn::make('status')
                     ->label(__('apps.status.label'))

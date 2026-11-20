@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Apps\Pages;
 
+use App\Filament\Resources\Apps\Actions\InstallAppAction;
 use App\Filament\Resources\Apps\AppResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
@@ -19,6 +20,6 @@ class ListApps extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()];
+        return [InstallAppAction::make(), CreateAction::make()];
     }
 }

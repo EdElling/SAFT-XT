@@ -158,4 +158,13 @@ return [
         'status' => ['connected' => 'linked', 'read_only' => 'read-only', 'skipped' => 'skipped', 'failed' => 'error'],
         'columns' => ['table' => 'Table', 'kind' => 'Type', 'key' => 'Key', 'proposed' => 'Name in SAFT', 'connected' => 'Linked as', 'result' => 'Result', 'note' => 'Note'],
     ],
+    'assign' => [
+        'action' => 'Assign connection …',
+        'heading' => 'Assign “:table” to a connection',
+        'help' => 'Source: :source. SAFT compares the columns with the external table (like “Re-read”); the table stays inactive until you activate it.',
+        'missing' => 'Connection missing',
+        'failed' => 'Assigning not possible – the table stays without connection.',
+        'done' => '“:table” assigned and compared.',
+        'done_body' => 'Check the columns and activate the table.',
+    ],
 ];

@@ -97,7 +97,7 @@ extension est refusé. Si même de petits fichiers autorisés échouent, la limi
 
 ### Une table manque dans le choix d’une liaison.
 
-Les liaisons ne sont possibles qu’entre tables de la même app (guide administrateur, chapitre 16). Si la table voulue
+Les liaisons ne sont possibles qu’entre tables de la même app (guide administrateur, chapitre 15). Si la table voulue
 appartient à une autre app, créez la nouvelle table dans cette app – ou étendez cette app.
 
 ### Une app a disparu du sélecteur.

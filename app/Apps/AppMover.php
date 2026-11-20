@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Apps;
 
-use App\Configuration\ConfigExporter;
+use App\Apps\Definition\DefinitionParts;
 use App\DynamicData\DataMenu;
 use App\DynamicData\DataPermissions;
 use App\DynamicData\Schema\FieldType;
@@ -41,7 +41,7 @@ final class AppMover
     /** Zielgruppe: neue Gruppe mit dem Namen der bisherigen. */
     public const string GROUP_NEW = 'new';
 
-    public function __construct(private readonly ConfigExporter $exporter) {}
+    public function __construct(private readonly DefinitionParts $exporter) {}
 
     /**
      * Was beim Verschieben geschieht und was es verhindert.

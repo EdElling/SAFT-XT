@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Apps\Definition;
 
 use App\Apps\PluginApps;
-use App\Configuration\ConfigExporter;
-use App\Configuration\References;
 use App\Models\App;
 use App\Models\AppManual;
 use App\Models\CustomField;
 use App\Models\CustomTable;
+use App\Models\DatabaseConnection;
 use App\Models\Menu;
 use App\Models\Report;
 use App\Models\ReportLink;
@@ -38,7 +37,7 @@ final readonly class AppDefinition
     public const array PARTS = ['reports', 'roles', 'tasks', 'manual'];
 
     public function __construct(
-        private ConfigExporter $config,
+        private DefinitionParts $config,
         private SchemaExporter $schema,
         private References $refs,
         private PluginRegistry $plugins,
@@ -74,16 +73,11 @@ final readonly class AppDefinition
             ],
             'plugins' => [],
             'tables' => $designer->isEmpty() ? [] : $this->tables($designer->pluck('name')->all(), $designer->keyBy('name')->all()),
-            'external_tables' => $tables->filter(static fn (CustomTable $t): bool => $t->isExternal())->map(static fn (CustomTable $t): array => [
-                'key' => (string) $t->uuid,
-                'name' => $t->name,
-                'label' => $t->getTranslations('label'),
-                'connection' => $t->databaseConnection?->name,
-            ])->values()->all(),
+            'external_tables' => $tables->filter(static fn (CustomTable $t): bool => $t->isExternal())->map(fn (CustomTable $t): array => $this->external($t))->values()->all(),
             'report_links' => ReportLink::query()->where('app_id', $app->id)->orderBy('id')->get()
                 ->map(fn (ReportLink $link): array => ['key' => (string) $link->uuid, ...$this->config->link($link)])->all(),
             'reports' => in_array('reports', $parts, true)
-                ? ConfigExporter::exportableReports($user)->where('app_id', $app->id)->orderBy('name')->get()
+                ? DefinitionParts::exportableReports($user)->where('app_id', $app->id)->orderBy('name')->get()
                     ->map(fn (Report $report): array => ['key' => (string) $report->uuid, ...$this->config->report($report)])->all()
                 : [],
             // Ohne Auswertungen fehlen auch die Menüeinträge auf Auswertungen (sie zeigten sonst ins Leere).
@@ -98,7 +92,7 @@ final readonly class AppDefinition
                         'key' => (string) $task->uuid,
                         'name' => $task->name,
                         'type' => $task->type,
-                        'parameters' => (array) ($task->parameters ?? []),
+                        'parameters' => self::taskParameters((array) ($task->parameters ?? [])),
                         'frequency' => $task->frequency,
                         'interval_hours' => $task->interval_hours,
                         'at_time' => $task->at_time,
@@ -119,6 +113,60 @@ final readonly class AppDefinition
         $definition['plugins'] = $this->requiredPlugins($app, $definition);
 
         return $definition;
+    }
+
+    /** Felder einer angebundenen Tabelle, wie sie der Table-Connector anlegt (ohne interne IDs). */
+    private const array EXTERNAL_FIELD_KEYS = ['type', 'external_type', 'is_read_only', 'is_generated', 'is_required', 'is_unique', 'is_searchable', 'is_sortable', 'show_in_table', 'show_in_form', 'is_active', 'sort_order'];
+
+    /**
+     * Angebundene Tabelle mit Quelle und Spalten, damit sie sich ohne erreichbare Datenbank anlegen lässt; Name der
+     * Verbindung als Verweis, nie ihre Zugangsdaten.
+     *
+     * @return array<string, mixed>
+     */
+    private function external(CustomTable $table): array
+    {
+        return [
+            'key' => (string) $table->uuid,
+            'name' => $table->name,
+            'label' => $table->getTranslations('label'),
+            'description' => $table->getTranslations('description') ?: null,
+            'icon' => $table->icon,
+            'connection' => $table->databaseConnection?->name,
+            'source' => ['schema' => $table->external_schema, 'table' => $table->external_table, 'kind' => $table->external_kind],
+            'key_columns' => $table->keyColumns(),
+            'allow' => ['create' => (bool) $table->allow_create, 'update' => (bool) $table->allow_update, 'delete' => (bool) $table->allow_delete],
+            'export_enabled' => (bool) $table->export_enabled,
+            'fields' => $table->fields->sortBy('sort_order')->values()->map(static fn (CustomField $f): array => [
+                'key' => (string) $f->uuid,
+                'name' => $f->name,
+                'label' => $f->getTranslations('label'),
+                ...array_map(static fn (mixed $v): mixed => $v instanceof \BackedEnum ? $v->value : $v, $f->only(self::EXTERNAL_FIELD_KEYS)),
+                'options' => $f->optionsArray() ?: null,
+                'validation_rules' => (array) ($f->validation_rules ?? []) ?: null,
+            ])->all(),
+        ];
+    }
+
+    /**
+     * Interne IDs in Parametern geplanter Aufgaben als Namen (gelten so auch in einer anderen Installation).
+     *
+     * @param  array<string, mixed>  $parameters
+     * @return array<string, mixed>
+     */
+    private static function taskParameters(array $parameters): array
+    {
+        if (isset($parameters['table_id'])) {
+            $parameters['table'] = CustomTable::query()->whereKey($parameters['table_id'])->value('name');
+            unset($parameters['table_id']);
+        }
+
+        if (isset($parameters['connection_id'])) {
+            $parameters['connection'] = DatabaseConnection::query()->whereKey($parameters['connection_id'])->value('name');
+            unset($parameters['connection_id']);
+        }
+
+        return $parameters;
     }
 
     /** Dateiname für den Download, z. B. „lager-1.2.saft-app.json“. */

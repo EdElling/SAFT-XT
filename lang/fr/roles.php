@@ -23,7 +23,6 @@ return [
         'tasks' => 'Tâches planifiées',
         'plugins' => 'Plugins',
         'apps' => 'Apps',
-        'configuration' => 'Configuration',
         'help' => 'Aide',
     ],
     'actions' => [
@@ -36,6 +35,7 @@ return [
         'import' => 'importer',
         'assistant' => 'utiliser l’assistant',
         'manage' => 'gérer',
+        'install' => 'installer',
         'last_login' => 'Ma dernière connexion',
         'my_logins' => 'Mes connexions',
         'my_changes' => 'Mes dernières modifications',

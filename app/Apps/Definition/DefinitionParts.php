@@ -2,92 +2,37 @@
 
 declare(strict_types=1);
 
-namespace App\Configuration;
+namespace App\Apps\Definition;
 
 use App\DynamicData\DataMenu;
-use App\DynamicData\Formula\FormulaAnalyzer;
-use App\DynamicData\Formula\Parser;
-use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Validation\FieldRuleCheck;
 use App\Filament\Resources\Reports\ReportResource;
-use App\Models\CustomField;
-use App\Models\CustomTable;
 use App\Models\Menu;
 use App\Models\Report;
 use App\Models\ReportLink;
 use App\Models\Role;
 use App\Models\User;
-use App\Plugins\Api\ApiManifest;
-use App\Plugins\Context\SchemaExporter;
 use App\Plugins\PluginRegistry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Route;
 use ReflectionClass;
-use Throwable;
 
 /**
- * Konfigurationspaket „saft-config/1“: Tabellen des Table-Designers, Verknüpfungen für Auswertungen, Auswertungen,
- * Menüs und Rollen – alle Verweise als Namen (References), damit es in eine andere Installation passt. Keine
- * Datensätze, Benutzer, Zugangsdaten, App-Einstellungen; Auswertungen nur freigegebene und eigene.
+ * Bausteine der App-Definition (B-107): Tabellenverknüpfungen, Auswertungen, Menüs und Rollen mit Verweisen als Namen
+ * (References), benötigte Plugins und die von einer Auswertung verwendeten Tabellen. Hervorgegangen aus dem früheren
+ * Konfigurationspaket („Konfiguration übertragen“, abgelöst durch Export und Installieren von Apps).
  */
-final class ConfigExporter
+final class DefinitionParts
 {
-    public const string FORMAT = 'saft-config/1';
-
     public function __construct(
         private readonly References $refs,
-        private readonly SchemaExporter $schema,
         private readonly PluginRegistry $plugins,
-        private readonly Parser $parser,
     ) {}
 
     /** Auswertungen, die exportiert werden dürfen: freigegebene und eigene. */
     public static function exportableReports(?User $user): Builder
     {
         return Report::query()->where(static fn ($q) => $q->where('is_shared', true)->orWhere('owner_id', $user?->id ?? 0));
-    }
-
-    /**
-     * @param  list<string>  $tables  technische Namen
-     * @param  list<int>  $reports  IDs
-     * @param  list<int>  $menus  IDs
-     * @param  list<int>  $roles  IDs
-     * @return array<string, mixed>
-     */
-    public function export(array $tables = [], array $reports = [], array $menus = [], array $roles = [], bool $dependencies = true, ?User $user = null, string $label = ''): array
-    {
-        $this->refs->refresh();
-        $reports = self::exportableReports($user)->whereIn('id', $reports)->pluck('id')->map(static fn (mixed $id): int => (int) $id)->all();
-        $menus = array_map('intval', $menus);
-        $links = [];
-
-        if ($dependencies) {
-            [$tables, $reports, $menus, $links] = $this->withDependencies($tables, $reports, $menus, $user);
-        }
-
-        $all = CustomTable::query()->whereIn('name', $tables)->get();
-        $designer = $all->reject(static fn (CustomTable $t): bool => $t->isExternal())->pluck('name')->all();
-        $external = $all->filter(static fn (CustomTable $t): bool => $t->isExternal());
-
-        $package = [
-            'format' => self::FORMAT,
-            'label' => $label,
-            'saft' => (string) config('saft.version'),
-            'api' => ApiManifest::current(),
-            'created_at' => now()->toIso8601String(),
-            'source' => (string) config('app.name'),
-            'requires' => ['plugins' => [], 'connections' => $external->map(static fn (CustomTable $t): ?string => $t->databaseConnection?->name)->filter()->unique()->values()->all()],
-            'tables' => $designer === [] ? [] : $this->schema->export($designer, false)['tables'],
-            'external_tables' => $external->pluck('name')->sort()->values()->all(),
-            'report_links' => ReportLink::query()->whereIn('id', $links)->orderBy('id')->get()->map(fn (ReportLink $l): array => $this->link($l))->all(),
-            'reports' => Report::query()->whereIn('id', $reports)->orderBy('name')->get()->map(fn (Report $r): array => $this->report($r))->all(),
-            'menus' => $this->menus($menus),
-            'roles' => Role::query()->whereIn('id', $roles)->with(['permissions', 'hiddenMenus'])->orderBy('name')->get()->map(fn (Role $r): array => $this->role($r))->all(),
-        ];
-
-        $package['requires']['plugins'] = $this->requiredPlugins($package);
-
-        return $package;
     }
 
     /** @return array<string, mixed> */
@@ -118,29 +63,6 @@ final class ConfigExporter
             'is_shared' => (bool) $report->is_shared,
             'definition' => $definition,
         ];
-    }
-
-    /**
-     * Menüeinträge mit allen Vorfahren, Eltern vor Kindern.
-     *
-     * @param  list<int>  $ids
-     * @return list<array<string, mixed>>
-     */
-    private function menus(array $ids): array
-    {
-        $menus = Menu::query()->get()->keyBy('id');
-        $selected = [];
-
-        foreach ($ids as $id) {
-            for ($current = $menus->get($id); $current !== null; $current = $menus->get((int) $current->parent_id)) {
-                $selected[(int) $current->id] = $current;
-            }
-        }
-
-        $rows = array_map(fn (Menu $m): array => $this->menu($m), array_values($selected));
-        usort($rows, static fn (array $a, array $b): int => [substr_count($a['path'], ' › '), $a['sort_order'], $a['path']] <=> [substr_count($b['path'], ' › '), $b['sort_order'], $b['path']]);
-
-        return $rows;
     }
 
     /** @return array<string, mixed> */
@@ -182,65 +104,6 @@ final class ConfigExporter
     }
 
     /**
-     * Abhängigkeiten ergänzen: Auswertungen → Tabellen und Verknüpfungen, Menüeinträge → Tabelle bzw. Auswertung,
-     * Tabellen → Zieltabellen ihrer Verknüpfungen und Kind-Tabellen ihrer Formeln.
-     *
-     * @param  list<string>  $tables
-     * @param  list<int>  $reports
-     * @param  list<int>  $menus
-     * @return array{0: list<string>, 1: list<int>, 2: list<int>, 3: list<int>}
-     */
-    private function withDependencies(array $tables, array $reports, array $menus, ?User $user): array
-    {
-        $links = [];
-
-        foreach (Menu::query()->whereIn('id', $menus)->get() as $menu) {
-            $parameters = (array) ($menu->route_parameters ?? []);
-
-            if ($menu->route === DataMenu::ROUTE && isset($parameters['table'])) {
-                $tables[] = (string) $parameters['table'];
-            } elseif ($menu->route === ReportResource::VIEW_ROUTE && isset($parameters['record'])) {
-                $reports[] = (int) $parameters['record'];
-            }
-        }
-
-        $reports = self::exportableReports($user)->whereIn('id', $reports)->pluck('id')->map(static fn (mixed $id): int => (int) $id)->all();
-
-        foreach (Report::query()->whereIn('id', $reports)->get() as $report) {
-            ['tables' => $used, 'links' => $via] = $this->reportUses($report);
-            $tables = [...$tables, ...$used];
-            $links = [...$links, ...$via];
-        }
-
-        // Tabellen: Verknüpfungsziele und Kind-Tabellen von Formeln, transitiv.
-        $known = CustomTable::query()->pluck('name')->all();
-        $queue = array_values(array_unique(array_filter($tables)));
-        $tables = [];
-
-        while ($queue !== []) {
-            $name = array_shift($queue);
-
-            if (in_array($name, $tables, true) || ! in_array($name, $known, true)) {
-                continue;
-            }
-
-            $tables[] = $name;
-
-            foreach (CustomField::query()->whereHas('custom_table', static fn ($q) => $q->where('name', $name))->get() as $field) {
-                if ($field->type === FieldType::Relation) {
-                    $queue[] = (string) ($field->optionsArray()['table'] ?? '');
-                } elseif ($field->type === FieldType::Computed) {
-                    $queue = [...$queue, ...$this->formulaTables((string) ($field->optionsArray()['formula'] ?? ''))];
-                }
-            }
-        }
-
-        sort($tables);
-
-        return [$tables, array_values(array_unique($reports)), $menus, array_values(array_unique($links))];
-    }
-
-    /**
      * Tabellen (Grundtabelle zuerst) und Verknüpfungen für Auswertungen, die eine Auswertung verwendet.
      *
      * @return array{tables: list<string>, links: list<int>}
@@ -267,36 +130,6 @@ final class ConfigExporter
         }
 
         return ['tables' => array_values(array_unique(array_filter($tables))), 'links' => array_values(array_unique($links))];
-    }
-
-    /** @return list<string> Kind-Tabellen, über die eine Formel zusammenfasst */
-    private function formulaTables(string $formula): array
-    {
-        try {
-            $ast = $formula === '' ? [] : $this->parser->parse($formula);
-        } catch (Throwable) {
-            return [];
-        }
-
-        $found = [];
-        $walk = static function (array $node) use (&$walk, &$found): void {
-            if (isset($node['path'][0])) {
-                $found[] = (string) $node['path'][0];
-            }
-
-            if (in_array($node['call'] ?? null, FormulaAnalyzer::AGGREGATES, true) && isset($node['args'][0]['field'])) {
-                $found[] = (string) $node['args'][0]['field'];
-            }
-
-            foreach ($node as $child) {
-                if (is_array($child)) {
-                    $walk($child);
-                }
-            }
-        };
-        $walk($ast);
-
-        return $found;
     }
 
     /**

@@ -7,6 +7,7 @@ namespace App\Filament\Resources\CustomTables\Schemas;
 use App\Ai\AiConfig;
 use App\Ai\AiUsage;
 use App\DynamicData\Assistant\TableAssistant;
+use App\DynamicData\DataMenu;
 use App\DynamicData\DetailRelations;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Rules\RuleFieldTypes;
@@ -71,6 +72,8 @@ class CustomTableForm
                             ->afterStateUpdated(function (Get $get, Set $set, mixed $state, mixed $old, string $operation): void {
                                 if ($operation === 'create') {
                                     $set('name', AppSelect::switchPrefix($get('name'), $old, $state));
+                                    // Menügruppe der neuen App vorbelegen (die bisherige gehört zu einer anderen App).
+                                    $set('menu_group', app(DataMenu::class)->defaultGroup(filled($state) ? (int) $state : null));
                                 }
                             })
                             ->columnSpanFull(),

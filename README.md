@@ -80,9 +80,8 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
   as files, e.g. for Claude Code or Cursor)
 
 ### Other
-- **Transfer configuration:** export tables, reports, menu entries and roles as a package and import them into another
-  installation, e.g. from test to production – with preview, only new entries are created; also on the console
-  (`saft:config-export`, `saft:config-import`)
+- **Transfer apps:** export an app (tables, reports, menus, roles, tasks, manual) as a file and install it in another
+  installation, e.g. from test to production – with preview and diagram, also as a copy with a new prefix
 - **Global settings:** display name and colour scheme of the application (branding); connection of external AI models for
   the assistants (provider, model, encrypted API key, daily limit, connection test); personal settings such as language,
   number format and contrast mode under “My settings”

@@ -22,7 +22,8 @@ final class CreateMenuEntryAction
             ->modalHeading(__('tables.actions.create_menu_entry'))
             ->modalWidth('md')
             ->modalSubmitActionLabel(__('filament-actions::create.single.modal.actions.create.label'))
-            ->schema([MenuGroupSelect::make(required: true)])
+            // Nur Gruppen der App der Tabelle (B-107): DataMenu::create() lehnt andere ab.
+            ->schema([MenuGroupSelect::make(required: true, app: fn (CustomTable $record): ?int => $record->app_id)])
             ->action(function (CustomTable $record, array $data): void {
                 app(DataMenu::class)->create($record, (string) $data['menu_group']);
                 Notification::make()->title(__('tables.actions.menu_entry_created'))->success()->send();

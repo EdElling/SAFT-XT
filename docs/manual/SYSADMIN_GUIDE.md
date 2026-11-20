@@ -64,7 +64,7 @@ Notes:
 - **Apps (from 0.4):** after the update, `php artisan migrate` assigns all existing tables, menus, reports, roles and
   tasks to an app “Existing data”; system roles, system menus and system tasks stay without an app. Splitting into
   separate apps is then done in the interface (see
-  [Administrator guide, chapter 16](ADMIN_GUIDE.md#16-apps-business-applications)). The menu entry “App settings” has
+  [Administrator guide, chapter 15](ADMIN_GUIDE.md#15-apps-business-applications)). The menu entry “App settings” has
   been called “Global settings” since then.
 - **Orphaned files** (uploads from cancelled forms, files of records deleted outside SAFT) are removed after 24 hours by
   the system task *Clean up files* or `php artisan files:prune`.
@@ -264,8 +264,6 @@ shows all available commands, `php artisan help <command>` the options of a comm
 | `php artisan saft:plugins` | Lists the installed plugins with version and compatibility and creates their permissions (also runs after every `migrate`) | – |
 | `php artisan saft:plugins --check [id]` | Checks plugins before delivery (ID, API, permissions, menu, plugin API only); exit code 1 on errors | – |
 | `php artisan saft:plugin-context` | Developer context for plugins (AGENTS.md, API reference, schema; no data) | `--output=`, `--tables=` (repeatable), `--without-external`, `--zip` |
-| `php artisan saft:config-export <file>` | Writes a configuration package: tables, shared reports, menu entries, roles (see administrator guide, "Transfer configuration") | `--all` or `--tables=`, `--reports=` (names), `--menus=` (path, e.g. "Data › Sales"), `--roles=` (each repeatable), `--without-dependencies`, `--label=` |
-| `php artisan saft:config-import <file>` | Imports a package: creates only new entries, existing ones stay; shows the preview first | `--dry-run` check only; `--app=<ID>` into this app or `--new-app="Name"` into a new one (without: the only existing one) |
 | `php artisan saft:third-party-notices` | Generates `THIRD_PARTY_NOTICES.md` (all third-party components with version, license, copyright and license texts, including the libraries inside the Mermaid bundle). Run it on the development machine after every package update and commit the file; a test checks it is complete | needs `node_modules` |
 | `php artisan external-demo:install` | Creates the external demo research database and a database connection for it and links its tables (`fdb_…`) | `--driver=pgsql\|mysql\|mariadb\|sqlsrv`, `--database=`, `--name=`, `--without-connection`, `--without-tables` |
 

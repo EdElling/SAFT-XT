@@ -27,8 +27,7 @@
 - [12. Tâches planifiées](#12-tâches-planifiées)
 - [13. Fonctions IA](#13-fonctions-ia)
 - [14. Plugins](#14-plugins)
-- [15. Transférer la configuration](#15-transférer-la-configuration)
-- [16. Apps (applications métier)](#16-apps-applications-métier)
+- [15. Apps (applications métier)](#15-apps-applications-métier)
 - [Annexe A – Aperçu des droits](#annexe-a--aperçu-des-droits)
 
 ---
@@ -126,7 +125,7 @@ rôles : leurs propres rapports ne comptent alors pas comme les leurs. Une bande
 reste inchangée, le début et la fin figurent dans le journal des modifications. Attention : ce que le rôle peut faire
 est réellement enregistré pendant la vue – avec vous comme auteur.
 
-**App et copie** (B-107) : chaque rôle appartient à une [app](#16-apps-applications-métier) ; le formulaire n’affiche
+**App et copie** (B-107) : chaque rôle appartient à une [app](#15-apps-applications-métier) ; le formulaire n’affiche
 les droits sur les données, les entrées de menu et les droits des plugins que pour cette app (les droits généraux de
 SAFT toujours). Sans app choisie, une indication invite à choisir d’abord l’app à la place des droits sur les données.
 Si le rôle a encore des droits **en dehors** de son app – sur des tables ou plugins d’autres apps, p. ex. après un
@@ -213,7 +212,7 @@ entrée supprime aussi ses sous-entrées.
 
 > Les **détails** (maître-détail) ne se configurent pas dans le menu, mais dans le Concepteur de tables.
 
-**App :** les entrées et groupes de premier niveau appartiennent à une [app](#16-apps-applications-métier) ou –
+**App :** les entrées et groupes de premier niveau appartiennent à une [app](#15-apps-applications-métier) ou –
 sans app – au système ; les entrées d’un groupe reprennent son app. Pour les entrées de données, le formulaire ne
 propose que les tables de cette app.
 
@@ -322,7 +321,7 @@ enregistrement, p. ex. « date de livraison ≥ date de commande » ou « quanti
 - Si un champ est renommé, ses règles suivent. Un champ utilisé par une règle ne peut pas être supprimé, et son type
   ne peut être changé que vers un type qui reste compatible avec la règle.
 
-**App et préfixe :** lors de la création, vous choisissez l’[app](#16-apps-applications-métier) de la table
+**App et préfixe :** lors de la création, vous choisissez l’[app](#15-apps-applications-métier) de la table
 (obligatoire s’il y a plusieurs apps). Si l’app a un préfixe, il précède le nom technique proposé ; changer d’app le
 remplace. Les liaisons ne sont possibles qu’avec des tables de la même app.
 
@@ -508,7 +507,7 @@ champ](#supprimer-définitivement-une-table-ou-un-champ)). Le fichier peut ensui
 | **Connexion d’urgence pour les super-administrateurs** | Permet aux super-admins, en mode SSO, de se connecter par mot de passe via `…/admin/login?local=1` – au cas où le fournisseur d’identité serait en panne |
 | **Proposer « Mot de passe oublié »** | e-mail pour réinitialiser le mot de passe (uniquement en mode Local ou Hybride ; nécessite un envoi d’e-mails configuré) |
 | **Rôle par défaut des nouveaux utilisateurs** | présélectionné à la création et attribué aux utilisateurs SSO créés automatiquement |
-| **Authentification à deux facteurs** | **Facultative**, **Obligatoire pour l’administration** (par défaut) ou **Obligatoire pour tous**. Est considéré comme administration : super-admin ou tout droit sur les utilisateurs, rôles, menus, fournisseurs d’identité, paramètres, concepteur de tables, connexions aux bases de données, connecteur de tables, liaisons de tables, tâches planifiées, plugins ou transfert de configuration. Les personnes concernées sont conduites à la configuration après la connexion. Sont exemptées les connexions par SSO et les comptes sans mot de passe (second facteur chez le fournisseur d’identité) ainsi que *Vue en tant que rôle*. |
+| **Authentification à deux facteurs** | **Facultative**, **Obligatoire pour l’administration** (par défaut) ou **Obligatoire pour tous**. Est considéré comme administration : super-admin ou tout droit sur les utilisateurs, rôles, menus, fournisseurs d’identité, paramètres, concepteur de tables, connexions aux bases de données, connecteur de tables, liaisons de tables, tâches planifiées, plugins ou apps. Les personnes concernées sont conduites à la configuration après la connexion. Sont exemptées les connexions par SSO et les comptes sans mot de passe (second facteur chez le fournisseur d’identité) ainsi que *Vue en tant que rôle*. |
 
 Protection contre le verrouillage : le mode **Authentification unique** ne peut être enregistré que si au moins un
 fournisseur d’identité actif a un **test de connexion réussi**. Pour d’autres issues de secours en exploitation, voir
@@ -647,11 +646,18 @@ mot de passe, seulement le fait qu’il a été modifié.
 > quel serveur.
 
 **Supprimer :** si aucune table n’est liée via la connexion, la confirmation habituelle suffit. Sinon, la boîte de
-dialogue **« Supprimer la connexion et les tables liées »** affiche toutes les tables concernées (nom dans SAFT,
-libellé, table externe, type). Après saisie du nom de la connexion pour confirmer, la connexion et les tables liées
-sont supprimées en une étape – comme avec « Supprimer la connexion » dans le Connecteur de tables : réglages, droits,
-entrées de menu et liaisons d’autres tables vers elles. La base de données externe reste inchangée. Le droit
-« Connecteur de tables : supprimer » est en plus nécessaire ; sans lui, la boîte de dialogue n’affiche que la liste.
+dialogue **« Supprimer la connexion »** affiche toutes les tables concernées (nom dans SAFT, libellé, table externe,
+type) et demande ce qu’elles deviennent :
+
+- **Conserver les tables liées (sans connexion, inactives)** – par défaut ; droit « Connecteur de tables : modifier ».
+  Tables, colonnes, droits, entrées de menu et liaisons restent ; les tables sont inactives et marquées « Connexion
+  manquante » dans le Connecteur de tables. Plus tard, les attribuer à une (nouvelle) connexion avec « Attribuer une
+  connexion … ».
+- **Supprimer aussi les tables liées** – droit « Connecteur de tables : supprimer », confirmation avec le nom de la
+  connexion. Comme avec « Supprimer la connexion » dans le Connecteur de tables : réglages, droits, entrées de menu et
+  liaisons d’autres tables vers elles sont retirés.
+
+La base de données externe reste inchangée dans les deux cas.
 
 **Liaison groupée :** lors de la modification d’une connexion, il y a deux onglets : **Connexion** avec les réglages
 habituels et **Liaison groupée** pour lier de nombreuses tables en une fois. Le deuxième onglet n’affiche sa table
@@ -858,6 +864,14 @@ l’éditeur de rapports ; la suppression et la conservation restent réservées
 **« Supprimer la connexion »** retire la table de SAFT – réglages, droits, entrées de menu et états des données. Les
 données de la base de données externe restent inchangées.
 
+**Sans connexion :** une table connectée peut exister sans connexion de base de données – après la suppression de sa
+connexion avec « Conserver les tables liées » ou issue d’une app installée dont la connexion n’existe pas ici (voir
+[chapitre 15](#15-apps-applications-métier)). La liste affiche alors **« Connexion manquante »** ; la table est
+inactive. **« Attribuer une connexion … »** (dans la liste et en modification ; droit « Connecteur de tables :
+modifier ») choisit une connexion active et compare les colonnes avec la table externe comme « Relire ». Vérifiez
+ensuite les colonnes et activez la table. Si la comparaison échoue (table introuvable, connexion injoignable), elle
+reste sans connexion.
+
 > **Droits :** seuls les rôles ayant « Connecteur de tables : afficher/créer/modifier/supprimer » utilisent le
 > Connecteur de tables, indépendamment du Concepteur de tables. Les droits sur les données de chaque table déterminent
 > qui peut voir les données.
@@ -965,7 +979,7 @@ sont actuellement pas exécutées » figure au-dessus de la liste.
 > « modifier ». Pour le widget, en plus « Widget du tableau de bord : Tâches planifiées (état) ». Les modifications des
 > tâches figurent dans le journal des modifications.
 
-**App :** les tâches liées à une table appartiennent à son [app](#16-apps-applications-métier) ; pour les autres
+**App :** les tâches liées à une table appartiennent à son [app](#15-apps-applications-métier) ; pour les autres
 tâches, vous choisissez l’app. Les tâches système n’appartiennent à aucune app.
 
 ---
@@ -1177,70 +1191,7 @@ d’abord au lieu de nettoyer.
 > *Entrepôt : stock minimum* du tableau de bord affiche les articles concernés. Le plugin *Tableau des stocks* nécessite *Transfert de stock* et affiche la *Matrice des stocks* (stock par article et emplacement), le *Tableau des stocks* (transférer le stock en le faisant glisser) et la tuile *Entrepôt : stock par emplacement* ainsi que deux types de tâches planifiées (voir [chapitre 12](#12-tâches-planifiées)). Le plugin *Contrôles suisses* apporte
 > les règles de validation numéro AVS, IBAN, IDE et numéro postal ainsi que la fonction de formule `rappen()`.
 
-## 15. Transférer la configuration
-
-**Administration › Application › Transférer la configuration** transfère des tables, analyses, entrées de menu et rôles d’une
-installation à une autre – typiquement de l’installation de test vers la production. Au lieu de tout reconstruire à la
-main, vous exportez un **paquet** (un fichier JSON) et l’importez dans l’autre installation.
-
-**Ce que contient le paquet** et ce qu’il ne contient pas :
-
-| Dans le paquet | Pas dans le paquet |
-|---|---|
-| tables du concepteur de tables avec champs, contrôles, formules, règles de table et tables de détail | enregistrements (y compris les fichiers des champs de fichiers ; l’aperçu nomme ces champs sous *Remarques*) |
-| liens pour les analyses | utilisateurs et disposition de leur tableau de bord |
-| analyses – partagées et les vôtres | analyses privées d’autres personnes |
-| entrées de menu (avec leurs groupes parents) | connexions aux bases de données et identifiants |
-| rôles avec leurs droits et entrées de menu masquées | paramètres globaux, tâches planifiées |
-
-Toutes les références figurent sous forme de **noms**, pas de numéros internes – tables et champs par leur nom
-technique, entrées de menu par leur chemin (p. ex. « Entrepôt (démo) › Gestion de l’entrepôt › Stocks »), analyses par leur nom. Le paquet
-convient ainsi à toute installation.
-
-**Exporter** (droits *Configuration : afficher* et *exporter*), onglet *Exporter* :
-
-1. Choisir des tables, analyses, entrées de menu et rôles dans les onglets du même nom ; le nombre sur l’onglet indique
-   les entrées choisies. Tables et analyses sont regroupées par groupe de menu (les
-   analyses selon le groupe de leur table de base), les entrées de menu selon l’entrée parente ; sous chaque analyse
-   figurent les tables dont elle a besoin, sous chaque entrée de menu sa cible.
-2. **Inclure les dépendances** (par défaut) : une analyse apporte ses tables, une entrée de menu sa table ou son analyse
-   et les groupes parents, une table les tables de ses liaisons et formules. Si l’option est désactivée, les analyses sont grisées tant que
-   toutes leurs tables ne sont pas choisies, et les entrées de menu tant que leur table ou analyse manque (en dessous figurent
-   la cible et ce qui manque) ; une remarque nomme les entrées déjà cochées – elles ne vont pas dans le paquet.
-3. Indiquer un nom (p. ex. « Ventes version 3 ») puis **Télécharger le paquet**. L’export est consigné dans le journal
-   des modifications.
-
-**Importer** (droits *Configuration : afficher* et *importer*), onglet *Importer* :
-
-1. Téléverser le fichier du paquet. L’**aperçu** montre chaque entrée avec son état :
-
-   | État | Signification |
-   |---|---|
-   | **nouveau** | sera créé |
-   | **identique** | existe déjà exactement ainsi – rien à faire |
-   | **différent – ignoré** | existe déjà, mais autrement ; reste inchangé |
-   | **prérequis manquant** | p. ex. une table, une entrée de menu parente ou la page d’un plugin manque ; la colonne *Remarques* précise quoi |
-
-   Les plugins et connexions manquants figurent en haut sous **Prérequis manquants**. Les droits qui n’existent pas dans
-   l’installation (p. ex. d’un plugin manquant) sont ignorés pour les rôles et signalés en remarque.
-2. **Créer les nouvelles entrées** crée toutes les entrées à l’état *nouveau* – tables, liens, analyses, menus et rôles
-   dans cet ordre. Les analyses importées vous appartiennent ; leur partage provient du paquet.
-3. Ensuite, l’aperçu affiche les entrées créées comme *identiques*. L’import est consigné dans le journal des
-   modifications.
-
-Les entrées existantes ne sont **jamais modifiées** – même si elles diffèrent. Pour modifier une table dans
-l’installation cible, adaptez-la là-bas dans le concepteur de tables. Les tables connectées (connecteur de tables)
-doivent déjà exister dans l’installation cible ; le paquet les indique comme prérequis.
-
-> **Conseil :** importez d’abord un paquet dans une installation de test et vérifiez l’aperçu. Pour des transferts
-> réguliers, il existe les commandes `saft:config-export` et `saft:config-import`.
-
-**App cible lors de l’import :** les tables, groupes de menu de premier niveau et rôles du paquet vont dans une
-[app](#16-apps-applications-métier) choisie – existante ou nouvelle (proposée avec le libellé du paquet) ; en console
-`saft:config-import --app=<ID>` ou `--new-app="Nom"`. À l’export, tables et rapports figurent sous
-« App › groupe de menu ».
-
-## 16. Apps (applications métier)
+## 15. Apps (applications métier)
 
 Une **app** regroupe ce qui va ensemble sur le plan métier : tables, menus, rapports, liaisons de tables, rôles et
 tâches planifiées, p. ex. « Entrepôt » ou « Personnel ». Chacun de ces objets appartient à exactement une app ; les
@@ -1258,7 +1209,9 @@ tables, menus, rapports, liaisons, rôles et tâches :
 | Version | texte libre, p. ex. « 1.2 » ; figure dans l’export et dans le nom du fichier |
 | Icône, tri | affichage dans les listes |
 
-La colonne **Statut** indique *Active*, *Inactive*, *Retrait dès …* ou *Échec du retrait* (le message en info-bulle).
+La colonne **Statut** indique *Active*, *Inactive*, *Retrait dès …* ou *Échec du retrait* (le message en info-bulle),
+**Installée** l’état de référence d’une app installée et **Remarques** des avertissements durables comme « Plugin
+manquant : … » ou des tables connectées sans connexion.
 Le menu d’actions (trois points) contient **Modèle de données**, **Exporter …**, désactiver/activer, retirer et –
 uniquement pour les apps vides – **Supprimer** ; les apps avec contenu sont désactivées puis retirées (ci-dessous).
 
@@ -1328,8 +1281,27 @@ tables et les menus de l’app ; au choix : rapports (partagés et propres), rô
 manuel. Jamais inclus : enregistrements, identifiants des connexions de base de données (tables connectées seulement
 comme référence), menus, rôles et tâches système. Chaque objet porte sa clé stable afin qu’une app installée puisse être
 mise à jour plus tard. SAFT vérifie la cohérence du fichier avant le téléchargement ; l’export figure dans le journal
-des modifications. L’installation à partir d’un tel fichier suit à l’étape suivante (d’ici là, paquets via
-« Transférer la configuration »).
+des modifications.
+
+**Installer :** **« Installer une app … »** en haut de la page (droit *Apps : installer*) téléverse un tel fichier et
+affiche un **aperçu** : nom, version et préfixe, ce qui sera créé, obstacles (en rouge) – p. ex. si l’app ou une table de
+même nom existe déjà –, remarques (en jaune) et le diagramme des tables. L’installation se fait comme :
+
+- **nouvelle app (telle qu’exportée)** – avec les mêmes clés stables afin qu’elle puisse être mise à jour plus tard ;
+  une app déjà installée est refusée.
+- **copie (nouveau nom et préfixe)** – p. ex. une copie de test sur le même système : les tables reçoivent le nouveau
+  préfixe (`lager_artikel` → `lager2_artikel`), de même que toutes les références à elles (liaisons, sommes dans les
+  formules, rapports, menus, droits sur les données des rôles) ; toutes les clés sont nouvelles.
+
+L’app est créée **désactivée** – la vérifier, puis l’activer. Si un nom de rôle est déjà pris, le rôle reçoit le préfixe
+de l’app (p. ex. `vertrieb-lager2`) ; les rapports appartiennent à la personne qui installe ; les champs de fichiers
+arrivent sans fichiers. Des plugins manquants n’empêchent pas l’installation ; la colonne **Remarques** les nomme jusqu’à
+leur installation. Les **tables connectées** sont créées inactives : s’il existe une connexion de même nom, elles lui
+sont attribuées et comparées avec la base de données, sinon elles restent sans connexion (voir
+[Connecteur de tables](#10-connecteur-de-tables), « Sans connexion »). Si la création échoue en cours de route, l’app
+reste désactivée et peut être retirée avec « Retirer … ». L’état installé est enregistré comme **état de référence**
+(colonne **Installée**, p. ex. « Installée : 1.2 le 20.11.2026 ») – base de la future mise à jour. L’installation figure
+dans le journal des modifications.
 
 **Désactiver et activer :** dans le menu d’actions (trois points) d’une app ; droit *Apps : gérer*. Une app désactivée
 disparaît pour tous sauf le super-admin : plus dans le sélecteur, ni menus, analyses ou tuiles, aucun accès à ses tables
@@ -1363,18 +1335,105 @@ app » (ci-dessus).
 
 ## Annexe A – Aperçu des droits
 
-| Domaine | Droits |
+Tous les droits, regroupés par thème, avec le libellé affiché lors de la modification d’un [rôle](#2-rôles-et-droits).
+Les utilisateurs reçoivent des droits uniquement par des rôles. Le **super-admin** a toujours tous les droits, y compris
+les futurs ; certaines actions lui sont réservées et ne peuvent être attribuées à aucun rôle : **Afficher en tant que rôle**
+et **retirer des apps avec contenu**. « Afficher » est chaque fois la condition des autres droits d’un domaine (page et
+entrée de menu).
+
+**Utilisateurs et accès**
+
+| Droit | Effet |
 |---|---|
-| Utilisateurs, rôles, menus, fournisseurs d’identité, Concepteur de tables, Connecteur de tables, connexions aux bases de données | afficher, créer, modifier, supprimer ; Concepteur de tables en plus importer et utiliser l’assistant (IA) |
-| Journal des modifications | afficher |
-| Paramètres d’authentification, paramètres globaux | afficher, modifier |
-| Widgets du tableau de bord | par widget |
-| Rapports | afficher, créer (ses propres), modifier et supprimer (aussi ceux d’autrui), utiliser l’assistant (IA) |
-| Liaisons de tables | afficher, créer, modifier, supprimer |
-| Tâches planifiées | afficher, créer, modifier (aussi « Exécuter maintenant »), supprimer, voir les détails techniques (détails d’erreur des exécutions échouées) |
-| Journal système | afficher (fichier journal du serveur, lecture seule) |
-| Plugins | afficher ; gérer (créer les entrées de menu, nettoyer) ; les droits propres aux plugins figurent sous leur nom |
-| Configuration | afficher (page et entrée de menu) ; exporter ; importer |
-| Apps | afficher ; gérer (créer, modifier, activer et désactiver, supprimer les apps vides) ; exporter. Retirer des apps avec contenu : uniquement le super-admin |
-| Aide | utiliser l’assistant (assistant d’aide) |
-| Données par table (matrice des droits sur les données) | afficher, créer, modifier, supprimer, exporter, importer ; pour les tables externes liées, droits d’écriture uniquement s’ils sont activés |
+| Utilisateurs: afficher | ouvrir la liste des utilisateurs (Administration › Utilisateurs et accès › Utilisateurs) |
+| Utilisateurs: créer | créer et inviter de nouveaux utilisateurs |
+| Utilisateurs: modifier | nom, e-mail, rôles, activation, réinitialiser le second facteur |
+| Utilisateurs: supprimer | supprimer des utilisateurs |
+| Rôles: afficher | ouvrir la liste des rôles |
+| Rôles: créer | créer de nouveaux rôles et copier des rôles |
+| Rôles: modifier | modifier les droits, droits sur les données et entrées de menu d’un rôle |
+| Rôles: supprimer | supprimer des rôles (pas *super-admin* ni le rôle par défaut) |
+| Fournisseurs d’identité: afficher | voir les fournisseurs pour la connexion par SSO |
+| Fournisseurs d’identité: créer / modifier / supprimer | configurer, modifier, retirer des fournisseurs (Entra ID, SAML) |
+| Paramètres d’authentification: afficher / modifier | mode de connexion (local, SSO, les deux), obligation à deux facteurs, connexion d’urgence, rôle par défaut des nouveaux utilisateurs, « Mot de passe oublié » |
+| Journal des modifications: afficher | voir toutes les modifications enregistrées (Administration › Exploitation) |
+
+**Application et exploitation**
+
+| Droit | Effet |
+|---|---|
+| Paramètres globaux: afficher / modifier | nom de l’application, palette de couleurs, assistants IA (fournisseur, modèle, interrupteurs) |
+| Menus: afficher / créer / modifier / supprimer | gérer l’arborescence des menus (groupes, entrées, ordre, droits des entrées) |
+| Apps: afficher | ouvrir la page « Apps » et le modèle de données par app |
+| Apps: gérer | créer, modifier, activer et désactiver des apps, téléverser le manuel, déplacer des tables, supprimer les apps vides |
+| Apps: exporter | télécharger une app sous forme de fichier (`saft-app/1`) |
+| Apps: installer | installer une app à partir d’un tel fichier, aussi comme copie |
+| Plugins: afficher | page « Plugins » avec version, état et dépendances |
+| Plugins: gérer | activer et désactiver des plugins, créer leurs entrées de menu, nettoyer les restes de plugins désinstallés, télécharger le contexte de développement |
+| Tâches planifiées: afficher | liste des tâches et de leurs exécutions |
+| Tâches planifiées: créer / modifier / supprimer | configurer, modifier (aussi « Exécuter maintenant »), retirer des tâches |
+| Tâches planifiées: voir les détails techniques | détails des erreurs des exécutions échouées (trace) |
+| Journal système: afficher | lire le fichier journal du serveur (lecture seule) |
+| Aide: utiliser l’assistant | utiliser l’assistant d’aide IA (bouton « ? ») |
+
+**Modéliser les données**
+
+| Droit | Effet |
+|---|---|
+| Concepteur de tables: afficher | liste des tables et leur structure |
+| Concepteur de tables: créer | créer de nouvelles tables |
+| Concepteur de tables: modifier | modifier les champs, règles, détails, paramètres d’une table |
+| Concepteur de tables: supprimer | supprimer définitivement des champs et des tables (après désactivation) |
+| Concepteur de tables: importer | créer une nouvelle table avec des données à partir d’un fichier Excel ou CSV |
+| Concepteur de tables: utiliser l’assistant | utiliser l’assistant IA des tables (décrire la table, adapter avec l’IA) |
+| Connexions aux bases de données: afficher / créer / modifier / supprimer | gérer et tester les connexions aux bases de données externes |
+| Connecteur de tables: afficher | voir les tables connectées et leurs instantanés de données |
+| Connecteur de tables: créer | connecter des tables externes (aussi liaison en masse) |
+| Connecteur de tables: modifier | modifier les tables connectées, relire, attribuer une connexion, gérer les instantanés ; conserver les tables liées lors de la suppression d’une connexion |
+| Connecteur de tables: supprimer | retirer des tables liées, aussi avec leur connexion |
+| Liaisons de tables: afficher / créer / modifier / supprimer | liaisons pour les rapports entre tables sans champ de liaison |
+
+**Rapports et tableau de bord** (les droits sur les rapports valent par app)
+
+| Droit | Effet |
+|---|---|
+| Rapports: afficher | ouvrir les rapports partagés et propres |
+| Rapports: créer | créer ses propres rapports |
+| Rapports: modifier / supprimer | modifier ou supprimer des rapports – aussi ceux d’autres personnes |
+| Rapports: utiliser l’assistant | utiliser l’assistant IA des rapports |
+| Widget du tableau de bord: Ma dernière connexion | tuile avec sa propre connexion avant l’actuelle et les tentatives échouées depuis |
+| Widget du tableau de bord: Mes connexions | tuile avec ses dernières connexions |
+| Widget du tableau de bord: Mes dernières modifications | tuile avec ses dernières modifications de données |
+| Widget du tableau de bord: Modifications de mon compte | tuile avec les modifications de son propre compte |
+| Widget du tableau de bord: Dernières modifications (tout le système) | tuile avec toutes les dernières modifications ; nécessite aussi *Journal des modifications: afficher* |
+| Widget du tableau de bord: Mes rapports | rapports épinglés comme tuiles ; nécessite aussi *Rapports: afficher* |
+| Widget du tableau de bord: Tâches planifiées (état) | tuile avec l’état des tâches ; nécessite aussi *Tâches planifiées: afficher* |
+| Widget du tableau de bord: Aperçu des utilisateurs | tuile avec le nombre d’utilisateurs actifs et inactifs, sans rôle et avec SSO ; nécessite aussi *Utilisateurs: afficher* |
+| Widget du tableau de bord: Activité de connexion | tuile avec les connexions de tous les utilisateurs ; nécessite aussi *Utilisateurs: afficher* |
+| Widget du tableau de bord: État des fournisseurs d’identité | tuile avec l’état des fournisseurs SSO ; nécessite aussi *Fournisseurs d’identité: afficher* |
+
+**Données par table (matrice des droits sur les données)** – par table du Concepteur de tables et par table connectée,
+attribués dans la matrice du rôle :
+
+| Droit | Effet |
+|---|---|
+| Afficher | lire les enregistrements ; condition de tous les autres droits sur les données |
+| Créer | saisir de nouveaux enregistrements |
+| Modifier | modifier des enregistrements |
+| Supprimer | supprimer des enregistrements (dans la corbeille) |
+| Exporter | télécharger la liste en Excel/CSV/PDF – seulement si l’export est autorisé pour la table |
+| Importer | lire de nouveaux enregistrements depuis un fichier – seulement avec *Créer* et si l’import est autorisé |
+
+Pour les tables externes connectées, *Créer*, *Modifier* et *Supprimer* n’existent que si l’écriture est activée pour la
+table. Les tables d’une app désactivée ne sont utilisables que par le super-admin.
+
+**Les droits des plugins** figurent sous le nom du plugin, p. ex. :
+
+| Droit | Effet |
+|---|---|
+| Transfert de stock: Effectuer des transferts | transférer du stock entre emplacements |
+| Tableau des stocks: Afficher la matrice des stocks | ouvrir le tableau des stocks (stock par article et emplacement) |
+| Tableau des stocks: Transférer sur le tableau des stocks | transférer directement sur le tableau des stocks |
+
+La page **Plugins** indique les droits qu’apporte un plugin ; s’il appartient à une app, la gestion des rôles ne propose
+ses droits qu’aux rôles de cette app.

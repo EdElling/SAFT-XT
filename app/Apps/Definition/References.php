@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Configuration;
+namespace App\Apps\Definition;
 
 use App\Models\CustomField;
 use App\Models\CustomTable;

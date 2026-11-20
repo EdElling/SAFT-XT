@@ -158,4 +158,13 @@ return [
         'status' => ['connected' => 'collegata', 'read_only' => 'sola lettura', 'skipped' => 'saltata', 'failed' => 'errore'],
         'columns' => ['table' => 'Tabella', 'kind' => 'Tipo', 'key' => 'Chiave', 'proposed' => 'Nome in SAFT', 'connected' => 'Collegata come', 'result' => 'Risultato', 'note' => 'Nota'],
     ],
+    'assign' => [
+        'action' => 'Assegnare connessione …',
+        'heading' => 'Assegnare «:table» a una connessione',
+        'help' => 'Origine: :source. SAFT confronta le colonne con la tabella esterna (come «Rileggi»); la tabella resta inattiva finché non la attivate.',
+        'missing' => 'Connessione mancante',
+        'failed' => 'Assegnazione non possibile – la tabella resta senza connessione.',
+        'done' => '«:table» assegnata e confrontata.',
+        'done_body' => 'Controllate le colonne e attivate la tabella.',
+    ],
 ];

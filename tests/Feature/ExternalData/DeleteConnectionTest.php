@@ -7,6 +7,7 @@ namespace Tests\Feature\ExternalData;
 use App\DynamicData\Schema\FieldType;
 use App\Exceptions\BusinessRuleException;
 use App\ExternalData\TableConnectorService;
+use App\Filament\Resources\DatabaseConnections\Actions\DeleteDatabaseConnectionAction;
 use App\Filament\Resources\DatabaseConnections\Pages\EditDatabaseConnection;
 use App\Filament\Resources\DatabaseConnections\Pages\ListDatabaseConnections;
 use App\Models\CustomTable;
@@ -88,20 +89,38 @@ class DeleteConnectionTest extends TestCase
             ->mountAction('delete')
             ->assertMountedActionModalSee([__('db_connections.delete.heading'), 'leute', 'orgs', ExternalResearchDatabase::SCHEMA.'.personen'])
             ->assertMountedActionModalDontSee(__('db_connections.delete.not_allowed'))
-            ->setActionData(['confirmation' => ''])
+            ->assertActionDataSet(['tables' => DeleteDatabaseConnectionAction::KEEP])
+            ->setActionData(['tables' => DeleteDatabaseConnectionAction::DELETE, 'confirmation' => ''])
             ->callMountedAction()
             ->assertHasActionErrors(['confirmation' => 'required']);
 
         $this->assertModelExists($this->connection);
 
         Livewire::test(EditDatabaseConnection::class, ['record' => $this->connection->getKey()])
-            ->callAction('delete', ['confirmation' => 'Forschung'])
+            ->callAction('delete', ['tables' => DeleteDatabaseConnectionAction::DELETE, 'confirmation' => 'Forschung'])
             ->assertHasNoActionErrors()
             ->assertNotified(trans_choice('db_connections.delete.done', 2, ['name' => 'Forschung', 'count' => 2]))
             ->assertRedirect();
 
         $this->assertModelMissing($this->connection);
         $this->assertSame(0, CustomTable::query()->external()->count());
+    }
+
+    public function test_linked_tables_can_be_kept_without_connection(): void
+    {
+        $this->connectPeopleAndOrganisations();
+        $this->actingAs($this->superAdmin());
+
+        Livewire::test(EditDatabaseConnection::class, ['record' => $this->connection->getKey()])
+            ->callAction('delete', ['tables' => DeleteDatabaseConnectionAction::KEEP])
+            ->assertHasNoActionErrors()
+            ->assertNotified(trans_choice('db_connections.delete.done_kept', 2, ['name' => 'Forschung', 'count' => 2]));
+
+        $this->assertModelMissing($this->connection);
+        $kept = CustomTable::query()->external()->orderBy('name')->get();
+        $this->assertSame(['leute', 'orgs'], $kept->pluck('name')->all());
+        $this->assertTrue($kept->every(fn (CustomTable $t): bool => $t->database_connection_id === null && ! $t->is_active), 'Ohne Verbindung und inaktiv.');
+        $this->assertNotEmpty($kept->first()->fields, 'Spalten bleiben.');
     }
 
     public function test_without_table_connector_right_the_links_are_listed_but_not_deleted(): void
@@ -113,7 +132,7 @@ class DeleteConnectionTest extends TestCase
             ->mountAction('delete')
             ->assertMountedActionModalSee(['leute', __('db_connections.delete.not_allowed')])
             ->callMountedAction()
-            ->assertNotified(__('db_connections.delete.not_allowed'));
+            ->assertHasActionErrors(['tables']);
 
         $this->assertModelExists($this->connection);
         $this->assertSame(2, CustomTable::query()->external()->count());

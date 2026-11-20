@@ -65,6 +65,14 @@ final class AppDefinitionValidator
 
         foreach ((array) ($definition['external_tables'] ?? []) as $i => $table) {
             $this->key("external_tables[{$i}].key", $table['key'] ?? null);
+
+            if (blank(($table['source'] ?? [])['table'] ?? null)) {
+                $this->fail("external_tables[{$i}].source.table", __('apps.definition.errors.missing'));
+            }
+
+            foreach ((array) ($table['fields'] ?? []) as $j => $field) {
+                $this->key("external_tables[{$i}].fields[{$j}].key", $field['key'] ?? null);
+            }
         }
 
         $this->relations((array) ($definition['tables'] ?? []), $known);

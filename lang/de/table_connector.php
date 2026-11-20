@@ -158,4 +158,13 @@ return [
         'status' => ['connected' => 'angebunden', 'read_only' => 'nur lesbar', 'skipped' => 'übersprungen', 'failed' => 'Fehler'],
         'columns' => ['table' => 'Tabelle', 'kind' => 'Art', 'key' => 'Schlüssel', 'proposed' => 'Name in SAFT', 'connected' => 'Angebunden als', 'result' => 'Ergebnis', 'note' => 'Hinweis'],
     ],
+    'assign' => [
+        'action' => 'Verbindung zuordnen …',
+        'heading' => '„:table“ einer Verbindung zuordnen',
+        'help' => 'Quelle: :source. SAFT gleicht die Spalten mit der externen Tabelle ab (wie „Neu einlesen“); die Tabelle bleibt inaktiv, bis Sie sie aktivieren.',
+        'missing' => 'Verbindung fehlt',
+        'failed' => 'Zuordnen nicht möglich – die Tabelle bleibt ohne Verbindung.',
+        'done' => '„:table“ zugeordnet und abgeglichen.',
+        'done_body' => 'Prüfen Sie die Spalten und aktivieren Sie die Tabelle.',
+    ],
 ];

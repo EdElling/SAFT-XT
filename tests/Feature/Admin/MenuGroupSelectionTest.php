@@ -9,6 +9,7 @@ use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\CustomTables\Pages\CreateCustomTable;
 use App\Filament\Resources\CustomTables\Pages\EditCustomTable;
 use App\Filament\Resources\TableConnector\Pages\CreateConnectedTable;
+use App\Models\App;
 use App\Models\CustomTable;
 use App\Models\Menu;
 use App\Services\DynamicSchemaService;
@@ -150,6 +151,54 @@ class MenuGroupSelectionTest extends TestCase
             ->assertHasNoFormErrors();
 
         $this->assertSame([$this->research->id], $this->parents('forschung_projekte'));
+    }
+
+    public function test_changing_the_app_preselects_its_data_group(): void
+    {
+        // Zwei Apps mit je einer Gruppe „Daten“: Ohne gewählte App gälte die erste; nach der Wahl der zweiten deren Gruppe.
+        $first = self::ensureTestApp();
+        $second = App::query()->create(['name' => ['de' => 'Zweite'], 'prefix' => 'zw', 'sort_order' => 99]);
+        $this->data->update(['app_id' => $first->id]);
+        $secondData = Menu::create(['app_id' => $second->id, 'label' => ['de' => 'Daten'], 'sort_order' => 700, 'is_active' => true]);
+        $this->prepareExternalDatabase();
+        $connection = $this->researchConnection();
+        $this->actingAs($this->superAdmin());
+
+        Livewire::test(CreateConnectedTable::class)
+            ->fillForm(['database_connection_id' => $connection->id])
+            ->fillForm(['external_table' => 'projekte'])
+            ->fillForm(['app_id' => $second->id])
+            ->assertFormSet(['menu_group' => (string) $secondData->id])
+            ->call('create')
+            ->assertHasNoFormErrors();
+        $this->assertSame([$secondData->id], $this->parents('forschung_projekte'));
+
+        Livewire::test(CreateCustomTable::class)
+            ->fillForm(['app_id' => $second->id])
+            ->assertFormSet(['menu_group' => (string) $secondData->id])
+            ->fillForm(['label' => ['de' => 'Notizen'], 'name' => 'zw_notizen', 'fields' => [['label' => ['de' => 'Titel'], 'name' => 'titel', 'type' => 'string']]])
+            ->call('create')
+            ->assertHasNoFormErrors();
+        $this->assertSame([$secondData->id], $this->parents('zw_notizen'));
+    }
+
+    public function test_menu_entry_is_added_later_in_a_group_of_the_tables_app(): void
+    {
+        $first = self::ensureTestApp();
+        $second = App::query()->create(['name' => ['de' => 'Zweite'], 'prefix' => 'zw', 'sort_order' => 99]);
+        $this->data->update(['app_id' => $first->id]);
+        $group = Menu::create(['app_id' => $second->id, 'label' => ['de' => 'Forschung (MS SQL)'], 'sort_order' => 700, 'is_active' => true]);
+        $table = app(DynamicSchemaService::class)->createTable(['app_id' => $second->id, 'name' => 'zw_personen', 'label' => 'Personen'], [['name' => 'name', 'type' => 'string']]);
+        $this->actingAs($this->superAdmin());
+
+        // Vorbelegt ist „Daten (wird angelegt)“ der App der Tabelle, angeboten nur deren Gruppen.
+        Livewire::test(EditCustomTable::class, ['record' => $table->getRouteKey()])
+            ->mountAction('createMenuEntry')
+            ->assertActionDataSet(['menu_group' => DataMenu::NEW_DATA_GROUP])
+            ->setActionData(['menu_group' => (string) $group->id])
+            ->callMountedAction()
+            ->assertHasNoActionErrors();
+        $this->assertSame([$group->id], $this->parents('zw_personen'));
     }
 
     /** @return list<int> Gruppen der Menüeinträge einer Tabelle */

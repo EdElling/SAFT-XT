@@ -80,9 +80,9 @@ PostgreSQL, MySQL oder MariaDB.
   Dateien, z. B. für Claude Code oder Cursor)
 
 ### Sonstiges
-- **Konfiguration übertragen:** Tabellen, Auswertungen, Menüeinträge und Rollen als Paket exportieren und in einer
-  anderen Installation einspielen, z. B. von Test nach Produktion – mit Vorschau, nur Neues wird angelegt; auch auf der
-  Konsole (`saft:config-export`, `saft:config-import`)
+- **Apps übertragen:** eine App (Tabellen, Auswertungen, Menüs, Rollen, Aufgaben, Handbuch) als Datei exportieren und in
+  einer anderen Installation installieren, z. B. von Test nach Produktion – mit Vorschau und Diagramm, auch als Kopie
+  mit neuem Präfix
 - **Globale Einstellungen:** Anzeigename und Farbschema der Anwendung (Branding); Anbindung externer KI-Modelle für die
   Assistenten (Anbieter, Modell, verschlüsselter API-Schlüssel, Tageslimit, Verbindungstest); persönliche Einstellungen
   wie Sprache, Zahlenformat und Kontrastmodus unter „Meine Einstellungen“

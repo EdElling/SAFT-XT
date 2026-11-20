@@ -718,21 +718,25 @@ final class TableConnectorService
 
     /**
      * Löscht eine Datenbankverbindung samt allen darüber angebundenen Tabellen (je Tabelle wie
-     * disconnect()). Sind Tabellen angebunden, muss der Name der Verbindung exakt bestätigt werden.
+     * disconnect()). Sind Tabellen angebunden, muss der Name der Verbindung exakt bestätigt werden. Mit $keepTables
+     * bleiben die Anbindungen ohne Verbindung und inaktiv erhalten (keine Bestätigung nötig).
      * Alles oder nichts; die externe Datenbank bleibt unverändert.
      *
      * @return int Anzahl der entfernten Anbindungen
      */
-    public function deleteConnection(DatabaseConnection $connection, ?string $confirmation = null): int
+    public function deleteConnection(DatabaseConnection $connection, ?string $confirmation = null, bool $keepTables = false): int
     {
         $tables = $connection->customTables()->get();
 
-        if ($tables->isNotEmpty() && trim((string) $confirmation) !== $connection->name) {
+        if (! $keepTables && $tables->isNotEmpty() && trim((string) $confirmation) !== $connection->name) {
             $this->fail(__('db_connections.delete.confirmation', ['name' => $connection->name]));
         }
 
-        DB::transaction(function () use ($connection, $tables): void {
-            $tables->each(fn (CustomTable $table) => $this->disconnect($table));
+        DB::transaction(function () use ($connection, $tables, $keepTables): void {
+            // Behalten (B-107, Etappe 4b): Anbindungen ohne Verbindung und inaktiv; später „Verbindung zuordnen“.
+            $tables->each(fn (CustomTable $table) => $keepTables
+                ? $table->forceFill(['database_connection_id' => null, 'is_active' => false])->save()
+                : $this->disconnect($table));
             $connection->delete();
         });
 

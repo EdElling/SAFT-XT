@@ -127,6 +127,17 @@ class App extends BaseApp
         return $ids->count() === 1 ? (int) $ids->first() : null;
     }
 
+    public function baselines(): HasMany
+    {
+        return $this->hasMany(AppBaseline::class);
+    }
+
+    /** Zuletzt gespeicherter Ausgangsstand (Installation), oder null. */
+    public function baseline(): ?AppBaseline
+    {
+        return $this->baselines()->latest('id')->first();
+    }
+
     public function manuals(): HasMany
     {
         return $this->hasMany(AppManual::class);

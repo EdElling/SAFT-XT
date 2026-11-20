@@ -65,7 +65,7 @@ Hinweise:
 - **Apps (ab 0.4):** Nach dem Update ordnet `php artisan migrate` alle vorhandenen Tabellen, Menüs, Auswertungen,
   Rollen und Aufgaben einer App „Bestehende Daten“ zu; Systemrollen, System-Menüs und System-Aufgaben bleiben ohne App.
   Aufteilen in eigene Apps geschieht danach in der Oberfläche (siehe
-  [Administratorhandbuch, Kapitel 16](ADMIN_GUIDE.de.md#16-apps-fachanwendungen)). Der Menüeintrag „App-Einstellungen“
+  [Administratorhandbuch, Kapitel 15](ADMIN_GUIDE.de.md#15-apps-fachanwendungen)). Der Menüeintrag „App-Einstellungen“
   heisst seither „Globale Einstellungen“.
 - **Verwaiste Dateien** (Uploads aus abgebrochenen Formularen, Dateien von Datensätzen, die ausserhalb von SAFT gelöscht
   wurden) räumt die System-Aufgabe *Dateien aufräumen* bzw. `php artisan files:prune` nach 24 Stunden weg.
@@ -270,8 +270,6 @@ Alle Befehle im Hauptverzeichnis von SAFT ausführen, auf einem Produktionsserve
 | `php artisan saft:plugins` | Listet die installierten Plugins mit Version und Kompatibilität und legt ihre Rechte an (läuft auch nach jedem `migrate`) | – |
 | `php artisan saft:plugins --check [id]` | Prüft Plugins vor der Auslieferung (Kennung, API, Rechte, Menü, nur Plugin-API); Exit-Code 1 bei Fehlern | – |
 | `php artisan saft:plugin-context` | Entwickler-Kontext für Plugins (AGENTS.md, API-Referenz, Schema; ohne Daten) | `--output=`, `--tables=` (mehrfach), `--without-external`, `--zip` |
-| `php artisan saft:config-export <datei>` | Konfigurationspaket schreiben: Tabellen, freigegebene Auswertungen, Menüeinträge, Rollen (siehe Administratorhandbuch, „Konfiguration übertragen“) | `--all` oder `--tables=`, `--reports=` (Namen), `--menus=` (Pfad, z. B. „Daten › Verkauf“), `--roles=` (je mehrfach), `--without-dependencies`, `--label=` |
-| `php artisan saft:config-import <datei>` | Paket einspielen: legt nur Neues an, Vorhandenes bleibt; zeigt zuerst die Vorschau | `--dry-run` nur prüfen; `--app=<ID>` in diese App bzw. `--new-app="Name"` in eine neue (ohne Angabe: die einzige vorhandene) |
 | `php artisan saft:third-party-notices` | Erzeugt `THIRD_PARTY_NOTICES.md` (alle Komponenten von Drittanbietern mit Version, Lizenz, Copyright und Lizenztexten, auch die Bibliotheken im Mermaid-Bundle). Nach jedem Paket-Update auf dem Entwickler-Rechner ausführen und die Datei committen; ein Test prüft die Vollständigkeit | braucht `node_modules` |
 | `php artisan external-demo:install` | Legt die externe Demo-Forschungsdatenbank und eine Datenbankverbindung dafür an und bindet ihre Tabellen an (`fdb_…`) | `--driver=pgsql\|mysql\|mariadb\|sqlsrv`, `--database=`, `--name=`, `--without-connection`, `--without-tables` |
 

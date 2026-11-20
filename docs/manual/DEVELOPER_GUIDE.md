@@ -113,9 +113,10 @@ the chapters with the details. Work happens in two installations: the applicatio
    1. Install the plugins ([installing, updating, removing](#13-installing-updating-removing),
       [system administration, chapter 7](SYSADMIN_GUIDE.md#7-plugins)) – with a backup and in maintenance mode.
       Afterwards they are switched on; their permissions exist from now on.
-   2. In the test system [export the configuration](ADMIN_GUIDE.md#15-transfer-configuration) and import it in the
-      production system: tables, reports, menu entries and roles. The preview reports missing plugins as
-      “prerequisite missing”.
+   2. In the test system [export the app](ADMIN_GUIDE.md#15-apps-business-applications) and install it in the production
+      system: tables, reports, menus, roles and tasks of the app. The preview warns about missing plugins; the app is
+      created deactivated and activated after checking. (Updating an app that is already installed follows in a later
+      version.)
    3. On the [Plugins](ADMIN_GUIDE.md#14-plugins) page check that all are *active*, and adopt menu suggestions that did
       not come with the package.
 

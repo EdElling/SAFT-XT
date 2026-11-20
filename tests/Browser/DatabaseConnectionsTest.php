@@ -206,8 +206,10 @@ class DatabaseConnectionsTest extends DuskTestCase
                 ->assertPresent('[data-affected-table="del_orgs"]')
                 ->assertPresent('[data-affected-table="del_personen"]')
                 ->assertSee('forschung.personen')
+                ->clickAtXPath("//label[contains(., 'Anbindungen mitlöschen')]")
+                ->waitFor('input[id$="confirmation"]', 15)
                 ->type('input[id$="confirmation"]', 'Forschung');
-            $this->clickVisibleButton($browser, 'Verbindung und Anbindungen löschen')
+            $this->clickVisibleButton($browser, 'Verbindung löschen')
                 ->waitForText('Verbindung „Forschung“ und 2 Anbindungen gelöscht.', 20)
                 ->waitForLocation('/admin/database-connections', 15);
         });
