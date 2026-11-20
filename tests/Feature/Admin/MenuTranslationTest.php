@@ -136,6 +136,7 @@ class MenuTranslationTest extends TestCase
         $users = Menu::where('label->de', 'Benutzer')->firstOrFail();
 
         Livewire::test(ListMenus::class)
+            ->set('activeTab', 'all')
             ->searchTable('Activity')
             ->assertCanSeeTableRecords([Menu::where('label->de', 'Änderungsprotokoll')->firstOrFail()])
             ->assertCanNotSeeTableRecords([$users, $admin])

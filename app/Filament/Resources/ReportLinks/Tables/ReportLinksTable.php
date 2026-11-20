@@ -40,7 +40,6 @@ class ReportLinksTable
                 TextColumn::make('updated_at')->label(__('common.changed'))->dateTime('d.m.Y H:i')->toggleable(),
                 AppFilter::column(),
             ])
-            ->filters([AppFilter::make()])
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),

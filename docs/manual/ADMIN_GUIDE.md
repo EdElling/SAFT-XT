@@ -1147,7 +1147,10 @@ within one app – across the app boundary only to **shared** tables (interfaces
 of the same app and shared tables of other apps with their name. When creating, the AI table assistant takes the app
 from the text (otherwise the chosen one) and only uses menu groups of that app; it sets relations to tables of that app or to shared tables of other apps (display
 only shared fields); when adjusting, it only sees
-the app of the table. The lists of the table designer and the table connector show the app as a column with a filter.
+the app of the table. The administration lists – table designer, table connector, table links, roles, menus and scheduled tasks – choose
+the app with **tabs** above the table (order as on the “Apps” page, with the number of entries); the current app of the
+title bar is preselected. Roles, menus and tasks also have “System” (entries without an app), all lists “All” with the
+column “App”.
 
 **Interfaces:** An app can **share** individual tables with all other apps – read only. In the table designer (edit
 table, section **Interface**) switch on “Share with other apps” and choose the **shared fields** (suggested: the

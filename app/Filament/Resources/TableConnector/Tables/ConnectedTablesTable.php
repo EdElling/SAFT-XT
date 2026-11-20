@@ -102,7 +102,6 @@ class ConnectedTablesTable
             ->defaultSort(fn (Builder $query): Builder => $query->orderBy('label->'.app()->getLocale())->orderBy('label->'.config('locales.default')))
             // „Abgleich“ wird je Zeile live in der externen Datenbank ermittelt und ist daher nicht filterbar.
             ->filters([
-                AppFilter::make(),
                 SelectFilter::make('database_connection_id')
                     ->label(__('table_connector.form.connection'))
                     ->relationship('databaseConnection', 'name')

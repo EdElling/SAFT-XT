@@ -1178,8 +1178,10 @@ leeren Apps – **Löschen**; Apps mit Inhalt werden deaktiviert und entfernt (u
 Kind-Tabellen gibt es innerhalb einer App – über die App-Grenze nur auf **freigegebene** Tabellen (Schnittstellen,
 unten). Der Table-Designer bietet Tabellen derselben App an und freigegebene Tabellen anderer Apps mit deren Namen. Der
 KI-Tabellenassistent wählt beim Anlegen die App aus dem Text (sonst die gewählte) und verwendet nur Menügruppen dieser App; Verknüpfungen setzt er auf Tabellen dieser App oder auf freigegebene Tabellen
-anderer Apps (Anzeige nur freigegebene Felder); beim Anpassen sieht er nur die App der Tabelle. Die Listen von Table-Designer und Table-Connector
-zeigen die App als Spalte mit Filter.
+anderer Apps (Anzeige nur freigegebene Felder); beim Anpassen sieht er nur die App der Tabelle. Die Listen der Administration – Table-Designer, Table-Connector, Tabellenverknüpfungen, Rollen, Menüs und Geplante
+Aufgaben – wählen die App über **Reiter** über der Tabelle (Reihenfolge wie auf der Seite „Apps“, mit der Anzahl
+Einträge); vorgewählt ist die aktuelle App der Titelleiste. Rollen, Menüs und Aufgaben haben zusätzlich „System“
+(Einträge ohne App), alle Listen „Alle“ mit der Spalte „App“.
 
 **Schnittstellen:** Eine App kann einzelne Tabellen für alle anderen Apps **freigeben** – nur lesend. Im Table-Designer
 (Tabelle bearbeiten, Abschnitt **Schnittstelle**) schalten Sie „Für andere Apps freigeben“ ein und wählen die

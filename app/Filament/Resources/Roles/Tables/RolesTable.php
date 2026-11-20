@@ -41,7 +41,6 @@ class RolesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('name')
-            ->filters([AppFilter::make(system: true)])
             ->recordActions([
                 EditAction::make(),
                 CopyRoleAction::make(),

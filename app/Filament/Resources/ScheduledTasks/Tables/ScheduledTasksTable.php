@@ -51,7 +51,6 @@ class ScheduledTasksTable
                     ->toggleable(),
                 AppFilter::column(),
             ])
-            ->filters([AppFilter::make(system: true)])
             ->recordActions([
                 Action::make('runNow')
                     ->label(__('tasks.run_now'))

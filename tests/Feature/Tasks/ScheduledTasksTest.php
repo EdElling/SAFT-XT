@@ -237,6 +237,7 @@ class ScheduledTasksTest extends TestCase
 
         Livewire::test(ListScheduledTasks::class)
             ->assertOk()
+            ->set('activeTab', 'all')
             ->assertSee('Datenstände bereinigen')
             ->assertSee('täglich um 03:15')
             ->assertSee('Der Scheduler lief seit über 15 Minuten nicht');
@@ -269,13 +270,13 @@ class ScheduledTasksTest extends TestCase
             ->assertHasFormErrors(['at_time']);
 
         // Jetzt ausführen.
-        Livewire::test(ListScheduledTasks::class)->callAction(TestAction::make('runNow')->table($task));
+        Livewire::test(ListScheduledTasks::class)->set('activeTab', 'all')->callAction(TestAction::make('runNow')->table($task));
         $this->assertSame(TaskRun::MANUAL, $task->runs()->sole()->trigger);
         $this->assertSame($user->id, $task->runs()->sole()->triggered_by);
 
         // System-Aufgaben lassen sich nicht löschen, wohl aber anpassen; System-Arten lassen sich nicht neu anlegen.
         $system = ScheduledTask::query()->where('type', 'task_runs_prune')->sole();
-        Livewire::test(ListScheduledTasks::class)->assertActionHidden(TestAction::make('delete')->table($system));
+        Livewire::test(ListScheduledTasks::class)->set('activeTab', 'system')->assertActionHidden(TestAction::make('delete')->table($system));
         Livewire::test(EditScheduledTask::class, ['record' => $system->id])
             ->assertFormSet(['parameters.days' => 90])
             ->fillForm(['parameters.days' => 120])

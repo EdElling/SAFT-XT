@@ -54,7 +54,6 @@ class CustomTablesTable
             ])
             ->defaultSort(fn (Builder $query): Builder => $query->orderBy('label->'.app()->getLocale())->orderBy('label->'.config('locales.default')))
             ->filters([
-                AppFilter::make(),
                 TernaryFilter::make('is_active')->label(__('common.active')),
             ])
             ->recordActions([

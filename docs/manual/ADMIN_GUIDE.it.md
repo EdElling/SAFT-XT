@@ -1203,8 +1203,10 @@ e – solo per app vuote – **Elimina**; le app con contenuto vengono disattiva
 tabelle figlie esistono all’interno di un’app – oltre il confine solo verso tabelle **condivise** (interfacce, sotto).
 Il designer di tabelle offre le tabelle della stessa app e le tabelle condivise di altre app con il loro nome. Alla
 creazione l’assistente IA delle tabelle prende l’app dal testo (altrimenti quella scelta) e usa solo gruppi di menu di quell’app; crea collegamenti verso tabelle di quell’app o verso tabelle condivise di altre
-app (visualizzando solo campi condivisi); nell’adattamento vede solo l’app della tabella. Gli elenchi del Designer di tabelle e del
-Connettore di tabelle mostrano l’app come colonna con filtro.
+app (visualizzando solo campi condivisi); nell’adattamento vede solo l’app della tabella. Gli elenchi dell’amministrazione – Designer di tabelle, Connettore di tabelle, collegamenti tra tabelle, ruoli, menu e
+attività pianificate – scelgono l’app tramite **schede** sopra la tabella (ordine come nella pagina «App», con il numero
+di voci); è preselezionata l’app attuale della barra del titolo. Ruoli, menu e attività hanno inoltre «Sistema» (voci
+senza app), tutti gli elenchi «Tutte» con la colonna «App».
 
 **Interfacce:** un’app può **condividere** singole tabelle con tutte le altre app – in sola lettura. Nel Designer di
 tabelle (modificare la tabella, sezione **Interfaccia**) attivate «Condividere con altre app» e scegliete i **campi

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\ScheduledTasks\Pages;
 
+use App\Filament\Concerns\HasAppTabs;
 use App\Filament\Resources\ScheduledTasks\ScheduledTaskResource;
 use App\Models\ScheduledTask;
 use App\Tasks\TaskRunner;
@@ -13,6 +14,13 @@ use Illuminate\Support\HtmlString;
 
 class ListScheduledTasks extends ListRecords
 {
+    use HasAppTabs;
+
+    protected function appTabsWithSystem(): bool
+    {
+        return true;
+    }
+
     protected static string $resource = ScheduledTaskResource::class;
 
     public function getSubheading(): string|HtmlString|null

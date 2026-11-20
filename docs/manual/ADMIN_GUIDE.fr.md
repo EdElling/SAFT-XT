@@ -1236,8 +1236,10 @@ formules sur les tables enfants existent au sein d’une app – au-delà de la 
 **partagées** (interfaces, ci-dessous). Le Concepteur de tables propose les tables de la même app et les tables partagées
 d’autres apps avec leur nom. À la création, l’assistant IA des tables reprend l’app du texte (sinon celle choisie) et
 n’utilise que les groupes de menu de cette app ; il crée les liaisons vers des tables de cette app ou vers des tables
-partagées d’autres apps (affichage uniquement de champs partagés) ; à l’adaptation, il ne voit que l’app de la table. Les listes
-du Concepteur de tables et du Connecteur de tables affichent l’app en colonne avec un filtre.
+partagées d’autres apps (affichage uniquement de champs partagés) ; à l’adaptation, il ne voit que l’app de la table. Les listes de l’administration – Concepteur de tables, Connecteur de tables, liaisons de tables, rôles, menus et tâches
+planifiées – choisissent l’app par des **onglets** au-dessus de la table (ordre comme sur la page « Apps », avec le
+nombre d’entrées) ; l’app actuelle de la barre de titre est présélectionnée. Rôles, menus et tâches ont en plus
+« Système » (entrées sans app), toutes les listes « Toutes » avec la colonne « App ».
 
 **Interfaces :** une app peut **partager** des tables avec toutes les autres apps – en lecture seule. Dans le Concepteur
 de tables (modifier la table, section **Interface**), activez « Partager avec d’autres apps » et choisissez les **champs

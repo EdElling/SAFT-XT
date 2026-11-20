@@ -81,7 +81,6 @@ final class ReportsTable
                 AppFilter::column(),
             ])
             ->filters([
-                AppFilter::make(),
                 SelectFilter::make('visual')
                     ->label(__('reports.ui.visual'))
                     ->options(fn (): array => collect(ReportDefinition::VISUALS)->mapWithKeys(fn (string $v): array => [$v => __('reports.visuals.'.$v)])->all())

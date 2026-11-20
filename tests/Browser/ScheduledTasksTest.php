@@ -38,7 +38,7 @@ class ScheduledTasksTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser): void {
             $this->login($browser, self::ADMIN)
-                ->visit('/admin/scheduled-tasks')
+                ->visit('/admin/scheduled-tasks?tab=system')
                 ->waitForText('Laufprotokoll bereinigen', 15)
                 ->assertSee('Datenstände bereinigen')
                 ->assertSee('täglich um 03:30')

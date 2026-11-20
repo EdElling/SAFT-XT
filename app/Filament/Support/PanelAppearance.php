@@ -106,6 +106,8 @@ final class PanelAppearance
             // Prüfregeln aus Plugins in der Auswahl „Weitere Prüfungen“: Symbol, Regel, Plugin (grau).
             .'.saft-plugin-option{display:inline-flex;align-items:center;gap:.3rem}'
             .'.saft-plugin-option-source{opacity:.65;font-size:.85em}'
+            // Reiter über Listen (z. B. App-Reiter, HasAppTabs) links bündig wie Titel und Tabelle, nur so breit wie nötig.
+            .'.fi-resource-list-records-page .fi-tabs:not(.fi-contained){margin-inline:0;width:fit-content}'
             // Untermenüs in der Seitenleiste: Pfeil rechts, nach unten gedreht, wenn offen (MenuNavigationBuilder).
             .'.fi-sidebar-item-label:has(> .saft-submenu-chevron){display:flex;align-items:center;justify-content:space-between;gap:.5rem}'
             .'.saft-submenu-chevron{width:1rem;height:1rem;flex-shrink:0;opacity:.55;transition:transform .15s ease}'

@@ -13,6 +13,7 @@ return [
     'icon' => 'Icona',
     'description_page' => 'Le applicazioni specialistiche raggruppano tabelle, menu, report, ruoli e attività che vanno insieme. Le app vuote si possono eliminare; le app con contenuto può rimuoverle solo il super-admin (prima disattivarle).',
     'delete_only_empty' => 'Si possono eliminare solo app vuote. App con contenuto: disattivare, poi «Rimuovi …» (solo super-admin).',
+    'tabs' => ['all' => 'Tutte'],
     'system' => 'Sistema',
     'app_help' => 'Appartiene a questa applicazione specialistica; i collegamenti sono possibili solo all’interno di un’app.',
     'switch' => [

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\ReportLinks\Pages;
 
+use App\Filament\Concerns\HasAppTabs;
 use App\Filament\Resources\ReportLinks\ReportLinkResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListReportLinks extends ListRecords
 {
+    use HasAppTabs;
+
     protected static string $resource = ReportLinkResource::class;
 
     public function getSubheading(): ?string

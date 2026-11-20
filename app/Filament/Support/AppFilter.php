@@ -8,7 +8,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 
-/** Filter und Spalte „App“ für die Listen der Administration (B-107). */
+/** Filter und Spalte „App“ für die Listen der Administration (B-107); die meisten Listen wählen die App über Reiter (HasAppTabs). */
 final class AppFilter
 {
     private const string SYSTEM = 'system';
@@ -30,11 +30,13 @@ final class AppFilter
             });
     }
 
+    /** Spalte „App“; in Listen mit App-Reitern (HasAppTabs) nur unter „Alle“. */
     public static function column(): TextColumn
     {
         return TextColumn::make('app.name')
             ->label(__('apps.app'))
             ->placeholder(__('apps.system'))
+            ->visible(static fn (mixed $livewire): bool => ! method_exists($livewire, 'showsAllApps') || $livewire->showsAllApps())
             ->toggleable();
     }
 }

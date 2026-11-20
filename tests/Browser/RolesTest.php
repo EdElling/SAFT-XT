@@ -207,7 +207,7 @@ class RolesTest extends DuskTestCase
         $role = Role::findByName(User::ROLE_SUPER_ADMIN, 'web');
 
         $this->browse(function (Browser $browser) use ($role): void {
-            $this->login($browser, self::ADMIN)->visit('/admin/roles')->waitForText('super-admin', 15);
+            $this->login($browser, self::ADMIN)->visit('/admin/roles?tab=system')->waitForText('super-admin', 15);
 
             $actions = $browser->driver->findElements(WebDriverBy::xpath(
                 "//tr[contains(@class, 'fi-ta-row')][contains(., 'super-admin')]//*[self::button or self::a][contains(., 'Bearbeiten') or contains(., 'Löschen')]",
@@ -222,7 +222,7 @@ class RolesTest extends DuskTestCase
     public function test_default_role_cannot_be_deleted(): void
     {
         $this->browse(function (Browser $browser): void {
-            $this->login($browser, self::ADMIN)->visit('/admin/roles')->waitForText(User::ROLE_DEFAULT, 15);
+            $this->login($browser, self::ADMIN)->visit('/admin/roles?tab=system')->waitForText(User::ROLE_DEFAULT, 15);
             $this->rowAction($browser, User::ROLE_DEFAULT, 'Löschen')->waitForText('Abbrechen', 15)->pause(300);
             $this->clickVisibleButton($browser, 'Löschen')->waitForText('Standardrolle', 15);
 

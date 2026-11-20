@@ -13,6 +13,7 @@ return [
     'icon' => 'Icône',
     'description_page' => 'Les applications métier regroupent les tables, menus, rapports, rôles et tâches qui vont ensemble. Les apps vides peuvent être supprimées ; seul le super-admin peut retirer une app avec contenu (la désactiver d’abord).',
     'delete_only_empty' => 'Seules les apps vides peuvent être supprimées. Apps avec contenu : désactiver, puis « Retirer … » (super-admin uniquement).',
+    'tabs' => ['all' => 'Toutes'],
     'system' => 'Système',
     'app_help' => 'Appartient à cette application métier ; les liaisons ne sont possibles qu’au sein d’une app.',
     'switch' => [

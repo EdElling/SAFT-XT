@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\CustomTables\Pages;
 
+use App\Filament\Concerns\HasAppTabs;
 use App\Filament\Concerns\RemembersTableColumns;
 use App\Filament\Resources\CustomTables\CustomTableResource;
 use Filament\Actions\Action;
@@ -12,6 +13,7 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListCustomTables extends ListRecords
 {
+    use HasAppTabs;
     use RemembersTableColumns;
 
     protected static string $resource = CustomTableResource::class;

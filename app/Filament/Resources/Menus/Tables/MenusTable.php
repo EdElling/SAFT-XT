@@ -66,7 +66,6 @@ class MenusTable
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
             ->filters([
-                AppFilter::make(system: true),
                 SelectFilter::make('parent_id')
                     ->label(__('menus.parent'))
                     ->options(fn (): array => [self::ROOT => __('menus.root')] + $tree()->parentOptions())

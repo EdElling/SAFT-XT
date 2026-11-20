@@ -10,8 +10,10 @@ use App\DynamicData\DataAccess;
 use App\DynamicData\DataMenu;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Apps\Pages\ListApps;
+use App\Filament\Resources\CustomTables\Pages\ListCustomTables;
 use App\Filament\Resources\Roles\Pages\CreateRole;
 use App\Filament\Resources\Roles\Pages\EditRole;
+use App\Filament\Resources\Roles\Pages\ListRoles;
 use App\Filament\Resources\TableConnector\Pages\ListConnectedTables;
 use App\Models\App;
 use App\Models\AppManual;
@@ -186,13 +188,26 @@ class AppLifecycleTest extends DynamicDataTestCase
         $this->assertSame($this->hr->id, $this->salesRole->fresh()->app_id);
     }
 
-    public function test_connected_tables_list_shows_and_filters_the_app(): void
+    public function test_admin_lists_choose_the_app_by_tabs(): void
     {
-        $this->actingAs($this->superAdmin());
+        $admin = $this->superAdmin();
+        $this->actingAs($admin);
+        app(CurrentApp::class)->switch($admin, $this->hr);
 
-        Livewire::test(ListConnectedTables::class)
-            ->assertTableColumnExists('app.name')
-            ->assertTableFilterExists('app_id');
+        // Reiter je App in der Reihenfolge der Seite „Apps“, „System“ (wo es Einträge ohne App gibt) und „Alle“;
+        // vorgewählt die aktuelle App, die Spalte „App“ nur unter „Alle“.
+        Livewire::test(ListCustomTables::class)
+            ->assertSet('activeTab', 'app-'.$this->hr->id)
+            ->assertCanSeeTableRecords([$this->staff])
+            ->assertCanNotSeeTableRecords([$this->customers])
+            ->assertTableColumnHidden('app.name')
+            ->set('activeTab', 'all')
+            ->assertCanSeeTableRecords([$this->staff, $this->customers])
+            ->assertTableColumnVisible('app.name');
+        $this->assertSame(['app-'.$this->sales->id, 'app-'.$this->hr->id, 'all'], array_keys(Livewire::test(ListCustomTables::class)->instance()->getTabs()));
+        $this->assertArrayHasKey('system', Livewire::test(ListRoles::class)->instance()->getTabs());
+
+        $this->assertNull(Livewire::test(ListConnectedTables::class)->instance()->getTable()->getFilter('app_id'), 'Kein Filter „App“ mehr.');
     }
 
     public function test_a_deactivated_app_is_hidden_except_for_the_super_admin_and_its_tasks_skip(): void
