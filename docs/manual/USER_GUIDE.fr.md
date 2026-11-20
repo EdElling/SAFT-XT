@@ -276,7 +276,8 @@ Fonctionnement :
 
 1. **Cliquer sur une ligne** : dans la liste (ici *Clients*), cliquez sur un enregistrement. Il est **mis en
    évidence en couleur**.
-2. **Aperçu** : en dessous apparaissent les principales informations du client sélectionné, pour chaque champ le nom
+2. **Aperçu** : en dessous apparaissent les informations du client sélectionné – les champs dont les colonnes sont visibles dans la
+   liste (y compris celles affichées par vous-même) et les champs obligatoires –, pour chaque champ le nom
    et à côté la valeur, dans jusqu’à trois blocs côte à côte (nombres alignés à droite, longs textes sur plusieurs
    lignes) …
 3. **… et ses détails** : ici le tableau de ses **commandes**. Si vous y cliquez sur une commande, elle est aussi mise

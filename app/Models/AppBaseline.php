@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Ausgangsstand einer App (B-107, Etappe 4b): die App-Definition, wie sie installiert wurde, mit Version, Art
- * (installiert/Kopie), Zeitpunkt und Person. Bezugspunkt für das Aktualisieren (Etappe 6); die Folge der
+ * (installiert/Kopie/aktualisiert), Zeitpunkt und Person. Bezugspunkt für das Aktualisieren (Etappe 6); die Folge der
  * Ausgangsstände ergibt den Verlauf. Kein Änderungsprotokoll: Das Installieren protokolliert sich selbst.
  */
 class AppBaseline extends BaseAppBaseline
@@ -17,6 +17,9 @@ class AppBaseline extends BaseAppBaseline
     public const string INSTALLED = 'installed';
 
     public const string COPY = 'copy';
+
+    /** Aus einem Paket aktualisiert (Etappe 6): das angewendete Paket ist der neue Ausgangsstand. */
+    public const string UPDATED = 'updated';
 
     public function app(): BelongsTo
     {

@@ -378,8 +378,8 @@ Gruppe und legt auch einen weiteren Eintrag an, wenn die Tabelle an einer zweite
 | Änderung | Regel |
 |---|---|
 | Feld umbenennen | jederzeit, Daten bleiben erhalten |
-| Typ ändern | verlustfrei jederzeit (z. B. Ganzzahl → Dezimalzahl, Text → mehrzeiliger Text, Datum → Datum und Uhrzeit); sonst nur, wenn die Spalte leer ist |
-| Textlänge | vergrössern jederzeit, verkleinern nur bei leerer Spalte |
+| Typ ändern | verlustfrei jederzeit (z. B. Ganzzahl → Dezimalzahl, Text → mehrzeiliger Text, Datum → Datum und Uhrzeit); mehrzeiliger → einzeiliger Text, wenn alle Werte in die Länge passen; sonst nur, wenn die Spalte leer ist |
+| Textlänge | vergrössern jederzeit, verkleinern nur, wenn alle vorhandenen Werte in die neue Länge passen (sonst nennt die Meldung, wie viele zu lang sind) |
 | „Eindeutig“ einschalten | nur, wenn die vorhandenen Daten keine Duplikate enthalten |
 | Wert aus einer Auswahlliste entfernen | jederzeit; ist der Wert in Gebrauch, erscheint eine Warnung mit der Anzahl der Datensätze. Sie behalten ihren Wert, beim nächsten Bearbeiten muss aber ein gültiger gewählt werden. |
 | Feld löschen | erst **deaktivieren**, dann „Endgültig löschen“ mit Eingabe des Spaltennamens |
@@ -1159,7 +1159,7 @@ Tabellen, Menüs, Auswertungen, Verknüpfungen, Rollen und Aufgaben:
 
 Die Spalte **Status** zeigt *Aktiv*, *Inaktiv*, *Entfernen ab …* oder *Entfernen fehlgeschlagen* (die Meldung als
 Tooltip), **Installiert** den Ausgangsstand einer installierten App und **Hinweise** dauernde Warnungen wie „Plugin
-fehlt: …“ oder angebundene Tabellen ohne Verbindung. Im Aktionsmenü (drei Punkte) stehen **Datenmodell**, **Schnittstellen**, **Exportieren …**, Deaktivieren/Aktivieren, Entfernen und – nur bei
+fehlt: …“ oder angebundene Tabellen ohne Verbindung. Im Aktionsmenü (drei Punkte) stehen **Datenmodell**, **Schnittstellen**, **Exportieren …**, **Aktualisieren …**, Deaktivieren/Aktivieren, Entfernen und – nur bei
 leeren Apps – **Löschen**; Apps mit Inhalt werden deaktiviert und entfernt (unten).
 
 **Wo die App gewählt wird – und wo sie sich ergibt:**
@@ -1286,6 +1286,54 @@ installieren bzw. freigeben. Ist die andere App deaktiviert oder hat ihre Schnit
 Felder sind aber da), gibt es nur einen Hinweis. Eine Kopie verweist weiter auf dieselbe Tabelle der anderen App; ihre
 eigenen Freigaben übernimmt sie, mit Version 1.
 
+**Aktualisieren:** Eine installierte App bringen Sie mit **„Aktualisieren …“** (Aktionsmenü der App, Recht *Apps:
+aktualisieren*) auf den Stand einer neueren Datei derselben App. Das Zusammenspiel:
+
+```
+Entwicklung (Quelle) ──Exportieren──▶ Datei 1.0 ──„App installieren“, neue App──▶ Produktion
+        │ weiterentwickeln                                                          ▲
+        └──────────────Exportieren──▶ Datei 1.1 ──────────„Aktualisieren …“──────────┘
+```
+
+- **Dieselbe App** erkennt SAFT am **App-Schlüssel**, jedes Objekt (Tabelle, Feld, Auswertung, Menü, Rolle …) an seinem
+  eigenen Schlüssel – nicht am Namen. Ein umbenanntes Feld bleibt so dasselbe Feld, die Daten bleiben.
+- Aktualisieren lässt sich daher nur eine App, die **aus derselben Quelle stammt**: als „neue App (wie exportiert)“
+  installiert, mit denselben Schlüsseln. Eine **Kopie** (neuer Name und Präfix) bekommt neue Schlüssel und ist danach
+  eine eigenständige App – sie lässt sich nur aus ihren eigenen Exporten aktualisieren, nie das Original aus einer Kopie
+  oder umgekehrt. Wer auf demselben System eine Testfassung entwickeln will, die später das Original aktualisiert,
+  braucht dafür ein zweites System (Test), auf dem die App als neue App installiert ist.
+- **Schlüssel nie von Hand ändern:** Ersetzt man in der Datei den App-Schlüssel, erscheinen alle Tabellen der Datei
+  als neu und alle Tabellen der installierten App als „im Paket entfernt“ – das Aktualisieren würde sie deaktivieren
+  bzw. (auf Wahl) mit ihren Daten löschen.
+
+**Der Änderungsplan** vergleicht drei Stände: den **Ausgangsstand** (Stand der letzten Installation bzw. Aktualisierung,
+Spalte „Installiert“), den **aktuellen Stand** in SAFT und das **Paket**. Was nur das Paket ändert, wird übernommen;
+was nur in SAFT angepasst wurde, bleibt; haben beide dieselbe Eigenschaft verschieden geändert, ist es ein
+**Konflikt** – nicht vorgewählt, ohne Wahl bleibt der Stand in SAFT. Tabellen und Felder, die seit dem Ausgangsstand in
+SAFT angelegt wurden und im Paket fehlen, stehen unter „Nur in SAFT, bleibt unverändert“ und werden nie entfernt. Eine
+App ohne Ausgangsstand (hier erstellt) lässt sich ebenfalls aktualisieren; dann ist jede Abweichung ein Konflikt.
+
+Die **Vorschau** nennt Versionen, Hinderungsgründe (z. B. Datei einer anderen App, fehlende Schnittstelle) und Hinweise
+(z. B. keine neuere Version) und listet die Schritte mit ihrer Einstufung:
+
+| Einstufung | Bedeutung | Beispiele |
+|---|---|---|
+| sicher (vorgewählt) | keine Daten betroffen | neue Tabelle oder neues Feld, Bezeichnung, Merkmale, neue Auswahlwerte, Reihenfolge |
+| heikel (vorgewählt) | vorhandene Daten oder Abläufe betroffen, nichts geht verloren | Typänderung mit Werten, technischer Name, Pflicht oder eindeutig bei vorhandenen Daten, Feldregeln, die vorhandene Werte verletzen, Formel, wegfallende Auswahlwerte, Tabellenregeln, Deaktivieren |
+| zerstörend (nicht vorgewählt) | Daten gehen verloren | Feld oder Tabelle mit Daten löschen – nur mit zusätzlicher Bestätigung |
+
+Fehlt ein Feld oder eine Tabelle mit Daten im Paket, wird es zuerst nur **deaktiviert** (Daten bleiben); Löschen ist ein
+eigener Schritt. Ohne Daten wird direkt gelöscht. **Nicht ausführbar** (mit Grund) sind Änderungen, die der
+Table-Designer ablehnen würde – etwa eine Typänderung, bei der Werte verloren gingen (z. B. „1 Wert ist länger als 30
+Zeichen“) – und Änderungen an Schnittstellen, die andere Apps nutzen. Unterschiede in Tabellenverknüpfungen,
+Auswertungen, Menüs, Rollen, Aufgaben, Handbuch und angebundenen Tabellen zeigt die Vorschau vorerst nur an.
+
+**Ausführen:** Vorher wird eine Sicherung angelegt; dann laufen die gewählten Schritte über die Operationen des
+Table-Designers mit allen Schutzregeln (neue Tabellen und Felder, Änderungen, Freigaben, zuletzt Deaktivieren und
+Löschen). Danach ist das Paket der neue Ausgangsstand und seine Version die Version der App. Scheitert ein Schritt,
+bricht das Aktualisieren ab und meldet, wie viele Schritte schon ausgeführt sind und wo die Sicherung liegt; dieselbe
+Datei nochmals gewählt zeigt nur noch den Rest. Aktualisieren steht im Änderungsprotokoll.
+
 **Deaktivieren und aktivieren:** Im Aktionsmenü (drei Punkte) einer App; Recht *Apps: verwalten*. Eine deaktivierte
 App verschwindet für alle ausser dem Super-Admin: nicht mehr im Umschalter, keine Menüs, Auswertungen und Kacheln, kein
 Zugriff auf ihre Tabellen (auch nicht über Links, Auswertungen oder Export); ihre geplanten Aufgaben werden
@@ -1348,6 +1396,7 @@ entfernen**. „Anzeigen“ ist jeweils Voraussetzung für die übrigen Rechte e
 | Apps: verwalten | Apps anlegen, bearbeiten, aktivieren und deaktivieren, Handbuch hochladen, Tabellen verschieben, leere Apps löschen |
 | Apps: exportieren | eine App als Datei (`saft-app/1`) herunterladen |
 | Apps: installieren | eine App aus einer solchen Datei installieren, auch als Kopie |
+| Apps: aktualisieren | eine installierte App aus einer neueren Datei derselben App aktualisieren (Änderungsplan) |
 | Plugins: anzeigen | Seite „Plugins“ mit Version, Status und Abhängigkeiten |
 | Plugins: verwalten | Plugins ein- und ausschalten, ihre Menüeinträge anlegen, Reste deinstallierter Plugins aufräumen, Kontext für Entwicklung herunterladen |
 | Geplante Aufgaben: anzeigen | Liste der Aufgaben und ihrer Läufe |

@@ -265,7 +265,8 @@ master-detail mostra queste relazioni **su un’unica pagina, una sotto l’altr
 Funziona così:
 
 1. **Cliccare su una riga**: nell’elenco (qui *Clienti*) cliccate su un record. Viene **evidenziato a colori**.
-2. **Anteprima breve**: sotto compaiono i dati principali del cliente selezionato, per ogni campo il nome e accanto il
+2. **Anteprima breve**: sotto compaiono i dati del cliente selezionato – i campi le cui colonne sono visibili nell’elenco (anche quelle
+   mostrate da voi) e i campi obbligatori –, per ogni campo il nome e accanto il
    valore, in fino a tre blocchi affiancati (numeri allineati a destra, testi lunghi a capo) …
 3. **… e i suoi dettagli**: qui la tabella dei suoi **ordini**. Se lì cliccate su un ordine, viene evidenziato anche
    quello …

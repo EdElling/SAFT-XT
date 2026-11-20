@@ -444,4 +444,30 @@ class ManualTestFindingsTest extends DynamicDataTestCase
         $this->assertSame(422, $type->status());
         $this->assertNotSame('errors.db.value_out_of_range', __('errors.db.value_out_of_range'));
     }
+
+    /** Datensatzansicht unter der Liste: dieselben Felder wie die sichtbaren Spalten, auch selbst eingeblendete. */
+    public function test_record_panel_follows_the_visible_columns(): void
+    {
+        $this->actingAs($this->superAdmin());
+        $customers = $this->service()->createTable(['name' => 'kunden', 'label' => 'Kunden'], [['name' => 'firma', 'label' => 'Firma', 'type' => 'string']]);
+        $orders = $this->service()->createTable(['name' => 'bestellungen', 'label' => 'Bestellungen'], [
+            ['name' => 'nummer', 'label' => 'Nummer', 'type' => 'string'],
+            ['name' => 'kunde_id', 'label' => 'Kunde', 'type' => 'relation', 'options' => ['table' => 'kunden', 'display_fields' => ['firma']]],
+            ['name' => 'bemerkung', 'label' => 'Bemerkung', 'type' => 'text', 'show_in_table' => false],
+        ]);
+        $customer = DynamicRecord::forTable($customers)->create(['firma' => 'Muster AG']);
+        $order = DynamicRecord::forTable($orders)->create(['nummer' => 'B-1', 'kunde_id' => $customer->id, 'bemerkung' => 'Bitte vor 10 Uhr liefern']);
+
+        $page = Livewire::test(DynamicDataPage::class, ['table' => 'bestellungen'])
+            ->set('selection', (string) $order->id)
+            ->assertSee('B-1')
+            ->assertDontSee('Bitte vor 10 Uhr liefern');
+        // Verknüpfungsfeld (Spalte „kunde_id__label“) auch in der Kurzanzeige.
+        $summary = static fn (string $html): string => (string) strstr($html, 'Bestellungen: B-1');
+        $this->assertStringContainsString('Muster AG', $summary($page->html()));
+
+        $state = array_map(static fn (array $item): array => $item['name'] === 'bemerkung' ? [...$item, 'isToggled' => true] : $item, $page->get('tableColumns'));
+        $page->call('applyTableColumnManager', $state);
+        $this->assertStringContainsString('Bitte vor 10 Uhr liefern', $summary($page->html()), 'Eingeblendet: auch in der Kurzanzeige.');
+    }
 }

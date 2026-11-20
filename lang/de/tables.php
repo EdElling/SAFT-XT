@@ -156,6 +156,7 @@ return [
         'external_table' => '„:name“ ist eine angebundene externe Tabelle und wird im Table-Connector gepflegt.',
         'used_as_display_field' => 'Das Feld „:name“ wird von einer Verknüpfung als Anzeigefeld verwendet.',
         'still_referenced' => 'Die Tabelle wird noch verknüpft von: :fields.',
+        'too_long' => '{1} „:name“: 1 Wert ist länger als :length Zeichen (längster: :longest) – bitte zuerst kürzen.|[2,*] „:name“: :count Werte sind länger als :length Zeichen (längster: :longest) – bitte zuerst kürzen.',
         'type_change' => 'Die Änderung von „:name“ (:from → :to) würde vorhandene Daten verändern und ist nur bei leerer Spalte möglich.',
         'not_unique' => '„:name“ kann nicht eindeutig werden: vorhandene Datensätze enthalten doppelte Werte.',
         'index_length' => '„:name“ ist eindeutig oder sortierbar und darf in dieser Datenbank höchstens :max Zeichen lang sein. Kürzer wählen oder die Eigenschaft abschalten.',

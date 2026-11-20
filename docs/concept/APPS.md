@@ -161,6 +161,15 @@ Einstufung, Vorschau und Konflikterkennung. Nach dem Ausführen wird der neue St
 Der Plan ist ein eigenständiger Baustein (Eingabe: zwei Definitionen; Ausgabe: Schritte), damit Pakete, KI-Designer
 und später die REST-API dieselbe Logik nutzen.
 
+Entschieden für Etappe 6 (20.11.2026): Entfernt das Paket ein Feld oder eine Tabelle mit Daten, wird standardmässig nur
+deaktiviert; Löschen ist ein eigener, nicht vorgewählter Schritt mit Bestätigung. Apps ohne Ausgangsstand lassen sich
+aktualisieren (passender App-Schlüssel), jede Abweichung ist dann ein Konflikt. Konflikte: Vorauswahl „behalten“.
+Ältere oder gleiche Version nur Hinweis. Seit dem Ausgangsstand in SAFT angelegte Objekte bleiben („Nur in SAFT“).
+Nach dem Ausführen ist das Paket der neue Ausgangsstand, auch wenn Konflikte „behalten“ wurden. Aufteilung: **6a**
+Plan für alle Teile, Ausführen für App, Tabellen, Felder; **6b** Ausführen für Tabellenverknüpfungen, Auswertungen,
+Menüs, Rollen, Aufgaben, Handbuch, angebundene Tabellen. Aktualisieren geht nur aus derselben Quelle (App-Schlüssel);
+eine Kopie ist eigenständig – Übernahme aus einer Kopie über Namen: B-111.
+
 ## 7. KI-App-Designer (Perspektive, nicht Teil der ersten Etappen)
 
 Aus einem Fachkonzept (Text) entwirft der Assistent eine App-Definition, zuerst nur das Datenmodell. SAFT zeigt sie als

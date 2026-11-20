@@ -20,11 +20,13 @@ final class RecordEntries
      * Felder als Blöcke „Name | Wert“ (siehe FieldBlocks).
      *
      * @param  bool  $compact  nur Felder "In Tabelle anzeigen" und Pflichtfelder
+     * @param  list<string>|null  $visible  kompakt: die sichtbaren Spalten der Liste (Spaltenauswahl der Person) statt
+     *                                      „In Tabelle anzeigen“
      */
-    public static function blocks(CustomTable $table, DynamicRecord $record, bool $compact = false, int $maxBlocks = FieldBlocks::MAX_BLOCKS): View
+    public static function blocks(CustomTable $table, DynamicRecord $record, bool $compact = false, int $maxBlocks = FieldBlocks::MAX_BLOCKS, ?array $visible = null): View
     {
         return FieldBlocks::make($table->fields
-            ->filter(fn (CustomField $f): bool => $f->is_active && (! $compact || $f->show_in_table || $f->is_required))
+            ->filter(fn (CustomField $f): bool => $f->is_active && (! $compact || $f->is_required || ($visible === null ? $f->show_in_table : in_array($f->name, $visible, true))))
             ->map(fn (CustomField $f): array => [
                 'label' => (string) $f->label,
                 'value' => DynamicValueFormatter::display($f, $record),

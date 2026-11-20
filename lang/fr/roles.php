@@ -36,6 +36,7 @@ return [
         'assistant' => 'utiliser l’assistant',
         'manage' => 'gérer',
         'install' => 'installer',
+        'upgrade' => 'mettre à jour',
         'last_login' => 'Ma dernière connexion',
         'my_logins' => 'Mes connexions',
         'my_changes' => 'Mes dernières modifications',

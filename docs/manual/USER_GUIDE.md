@@ -257,7 +257,8 @@ these relationships **one below the other on one page**:
 How it works:
 
 1. **Click a row**: in the list (here *Customers*), click a record. It is **highlighted in colour**.
-2. **Summary**: below it, the most important data of the selected customer appears, per field the name with the
+2. **Summary**: below it, the data of the selected customer appears – the fields whose columns are visible in the list (also ones
+   you showed yourself) and the required fields –, per field the name with the
    value next to it, in up to three blocks side by side (numbers right-aligned, long texts wrapped) …
 3. **… and its details**: here the table of its **orders**. If you click an order there, it is highlighted as well …
 4. **… and its details appear below**: here the **order lines**.

@@ -366,8 +366,8 @@ further entry if the table should appear in a second place in the menu.
 | Change | Rule |
 |---|---|
 | Rename a field | at any time, data is kept |
-| Change the type | at any time if lossless (e.g. integer → decimal, text → multi-line text, date → date and time); otherwise only if the column is empty |
-| Text length | increase at any time, reduce only if the column is empty |
+| Change the type | at any time if lossless (e.g. integer → decimal, text → multi-line text, date → date and time); multi-line → single-line text if all values fit the length; otherwise only if the column is empty |
+| Text length | increase at any time, reduce only if all existing values fit the new length (otherwise the message says how many are too long) |
 | Switch on "Unique" | only if the existing data contains no duplicates |
 | Remove a value from a selection list | at any time; if the value is in use, a warning shows the number of records. They keep their value, but a valid one must be chosen when they are next edited. |
 | Delete a field | first **deactivate**, then "Delete permanently" by entering the column name |
@@ -1127,7 +1127,7 @@ tables, menus, reports, links, roles and tasks:
 The **Status** column shows *Active*, *Inactive*, *Removal from …* or *Removal failed* (the message as tooltip),
 **Installed** the baseline of an installed app and **Notes** lasting warnings such as “Plugin missing: …” or connected
 tables without connection.
-The action menu (three dots) contains **Data model**, **Interfaces**, **Export …**, deactivate/activate, remove and – only for empty
+The action menu (three dots) contains **Data model**, **Interfaces**, **Export …**, **Update …**, deactivate/activate, remove and – only for empty
 apps – **Delete**; apps with content are deactivated and removed (below).
 
 **Where the app is chosen – and where it follows:**
@@ -1245,6 +1245,53 @@ used field is not shared, installing is prevented – install or share the other
 deactivated or its interface has a different version (but the fields are there), there is only a note. A copy keeps
 referring to the same table of the other app; it takes its own shares along, with version 1.
 
+**Update:** You bring an installed app to the state of a newer file of the same app with **“Update …”** (action menu
+of the app, permission *Apps: update*). How it fits together:
+
+```
+Development (source) ──Export──▶ file 1.0 ──“Install app”, new app──▶ Production
+        │ develop further                                             ▲
+        └──────────────Export──▶ file 1.1 ────────“Update …”───────────┘
+```
+
+- SAFT recognises **the same app** by the **app key**, every object (table, field, report, menu, role …) by its own
+  key – not by its name. A renamed field thus stays the same field, the data is kept.
+- Only an app that **comes from the same source** can therefore be updated: installed as “new app (as exported)”, with
+  the same keys. A **copy** (new name and prefix) gets new keys and is an independent app afterwards – it can only be
+  updated from its own exports, never the original from a copy or vice versa. Developing a test version that later
+  updates the original needs a second system (test) on which the app is installed as a new app.
+- **Never change keys by hand:** if you replace the app key in the file, all tables of the file appear as new and all
+  tables of the installed app as “removed in the package” – updating would deactivate them or (on choice) delete them
+  with their data.
+
+**The change plan** compares three states: the **baseline** (state of the last install or update, column “Installed”),
+the **current state** in SAFT and the **package**. What only the package changes is taken over; what was only adjusted
+in SAFT stays; if both changed the same property differently, it is a **conflict** – not preselected, without a choice
+the state in SAFT stays. Tables and fields created in SAFT since the baseline and missing in the package are listed under
+“Only in SAFT, stays unchanged” and are never removed. An app without a baseline (created here) can be updated as well;
+then every difference is a conflict.
+
+The **preview** names versions, obstacles (e.g. file of another app, missing interface) and notes (e.g. no newer
+version) and lists the steps with their rating:
+
+| Rating | Meaning | Examples |
+|---|---|---|
+| safe (preselected) | no data affected | new table or field, label, properties, new choices, order |
+| risky (preselected) | existing data or processes affected, nothing is lost | type change with values, technical name, required or unique with existing data, field rules that existing values violate, formula, dropped choices, table rules, deactivating |
+| destructive (not preselected) | data is lost | deleting a field or table with data – only with an additional confirmation |
+
+If a field or table with data is missing in the package, it is first only **deactivated** (data kept); deleting is a
+separate step. Without data it is deleted directly. **Not possible** (with a reason) are changes the table designer
+would refuse – e.g. a type change that would lose values (e.g. “1 value is longer than 30 characters”) – and changes to
+interfaces other apps use. Differences in table links, reports, menus, roles, tasks, manual and connected tables are
+only shown in the preview for now.
+
+**Running:** a backup is made first; then the selected steps run through the operations of the table designer with all
+protection rules (new tables and fields, changes, sharing, finally deactivating and deleting). Afterwards the package is
+the new baseline and its version the version of the app. If a step fails, updating stops and reports how many steps
+have already been run and where the backup is; choosing the same file again shows only the rest. Updating is recorded
+in the change log.
+
 **Deactivate and activate:** in the action menu (three dots) of an app; permission *Apps: manage*. A deactivated app
 disappears for everyone except the super admin: no longer in the switcher, no menus, reports or cards, no access to its
 tables (not via links, reports or export either); its scheduled tasks are skipped (with a note). Data, roles and
@@ -1306,6 +1353,7 @@ reserved for the super admin and cannot be granted to any role: **View as role**
 | Apps: manage | create, edit, activate and deactivate apps, upload the manual, move tables, delete empty apps |
 | Apps: export | download an app as a file (`saft-app/1`) |
 | Apps: install | install an app from such a file, also as a copy |
+| Apps: update | update an installed app from a newer file of the same app (change plan) |
 | Plugins: view | “Plugins” page with version, status and dependencies |
 | Plugins: manage | switch plugins on and off, create their menu entries, clean up leftovers of uninstalled plugins, download the development context |
 | Scheduled tasks: view | list of tasks and their runs |

@@ -8,6 +8,7 @@ use App\Apps\Definition\AppDefinition;
 use App\Documentation\Documentation;
 use App\DynamicData\DataMenu;
 use App\Models\App;
+use App\Models\AppBaseline;
 use App\Models\AppManual;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -16,6 +17,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\DynamicSchemaService;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Laravel\Dusk\Browser;
 use Spatie\Activitylog\Models\Activity;
 use Tests\DuskTestCase;
@@ -460,5 +462,43 @@ class AppsTest extends DuskTestCase
             $browser->waitFor('.fi-modal-window', 15)
                 ->waitForText('Auswertung „Betreuung“', 15);
         });
+    }
+
+    /** FAP-16 */
+    public function test_app_is_updated_from_a_newer_package_with_a_change_plan(): void
+    {
+        // Ausgangsstand wie nach dem Installieren; das Paket bringt ein neues Feld und eine neue Bezeichnung.
+        $admin = User::query()->where('email', self::ADMIN)->sole();
+        $definition = app(AppDefinition::class)->build($this->second->fresh(), AppDefinition::PARTS, $admin);
+        AppBaseline::query()->create(['app_id' => $this->second->id, 'kind' => AppBaseline::INSTALLED, 'version' => '1.0', 'definition' => $definition, 'installed_by' => $admin->id]);
+        $definition['app']['version'] = '1.1';
+        $definition['tables'][0]['fields'][0]['label'] = ['de' => 'Vor- und Nachname'];
+        $definition['tables'][0]['fields'][] = ['key' => (string) Str::uuid(), 'name' => 'abteilung', 'label' => ['de' => 'Abteilung'], 'type' => 'string', 'sort_order' => 9];
+        $path = storage_path('framework/testing/hr-1.1.saft-app.json');
+        File::ensureDirectoryExists(dirname($path));
+        File::put($path, (string) json_encode($definition));
+
+        $this->browse(function (Browser $browser) use ($path): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/apps')->waitForText('Personal', 15);
+            $this->openRowActions($browser, 'Personal');
+            $this->clickVisibleButton($browser, 'Aktualisieren …');
+            $browser->waitFor('.fi-modal-window .filepond--root', 15)
+                ->attach('.fi-modal-window .filepond--root input[type="file"]', $path)
+                ->waitUntil("document.querySelectorAll('.filepond--item[data-filepond-item-state=\"idle\"], .filepond--item[data-filepond-item-state=\"processing-complete\"]').length >= 1", 30);
+            $this->clickVisibleButton($browser, 'Weiter');
+
+            // Plan: zwei sichere, vorgewählte Schritte.
+            $browser->waitFor('[data-app-update-plan]', 15)
+                ->assertSeeIn('[data-app-update-versions]', 'Paket: 1.1')
+                ->waitForText('Feld · Mitarbeitende › abteilung: neu', 15)
+                ->assertSee('Bezeichnung Name → Vor- und Nachname');
+            $this->assertCount(2, $browser->elements('.fi-modal-window input[type="checkbox"]:checked'));
+            $this->clickVisibleButton($browser, 'Gewählte Schritte ausführen');
+            $browser->waitForText('App „Personal“ aktualisiert', 60);
+        });
+
+        $this->assertSame('1.1', $this->second->fresh()->version);
+        $this->assertTrue(CustomTable::query()->where('name', 'hr_mitarbeitende')->sole()->fields()->where('name', 'abteilung')->exists());
+        File::delete($path);
     }
 }

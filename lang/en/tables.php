@@ -156,6 +156,7 @@ return [
         'external_table' => '":name" is a linked external table and is maintained in the table connector.',
         'used_as_display_field' => 'The field “:name” is used as display field by a relation.',
         'still_referenced' => 'The table is still referenced by: :fields.',
+        'too_long' => '{1} “:name”: 1 value is longer than :length characters (longest: :longest) – please shorten it first.|[2,*] “:name”: :count values are longer than :length characters (longest: :longest) – please shorten them first.',
         'type_change' => 'Changing “:name” (:from → :to) would alter existing data and is only possible when the column is empty.',
         'not_unique' => '“:name” cannot become unique: existing records contain duplicate values.',
         'index_length' => '“:name” is unique or sortable and may be at most :max characters long in this database. Choose a shorter length or switch the property off.',

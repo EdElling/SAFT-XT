@@ -155,16 +155,44 @@ class DynamicSchemaServiceTest extends DynamicDataTestCase
         $this->assertMatchesRegularExpression('/^bigint(\(20\))?$/', collect($this->appSchema()->getColumns($this->qualified('projekte')))->firstWhere('name', 'status')['type']);
     }
 
-    public function test_string_length_can_grow_but_not_shrink_with_data(): void
+    public function test_string_length_can_grow_and_shrink_only_while_all_values_fit(): void
     {
         $table = $this->projects();
         $titel = $table->fields()->where('name', 'titel')->first();
-        DynamicRecord::forTable($table)->create(['titel' => 'x']);
+        DynamicRecord::forTable($table)->create(['titel' => 'Zwölf Zeichen']);
 
         $this->service()->updateField($titel, ['options' => ['length' => 200]]);
+        $this->service()->updateField($titel->fresh(), ['options' => ['length' => 13]]);
+        $this->assertSame(13, $titel->fresh()->optionsArray()['length']);
 
-        $this->expectException(BusinessRuleException::class);
-        $this->service()->updateField($titel->fresh(), ['options' => ['length' => 50]]);
+        try {
+            $this->service()->updateField($titel->fresh(), ['options' => ['length' => 5]]);
+            $this->fail('Ablehnung erwartet');
+        } catch (BusinessRuleException $e) {
+            $this->assertStringContainsString('1 Wert ist länger als 5 Zeichen (längster: 13)', $e->getMessage());
+        }
+
+        $this->assertSame('Zwölf Zeichen', DynamicRecord::forTableName('projekte')->newQuery()->value('titel'));
+    }
+
+    public function test_multi_line_text_becomes_single_line_when_all_values_fit(): void
+    {
+        $table = $this->service()->createTable(['name' => 'notizen'], [['name' => 'text', 'type' => 'text']]);
+        $text = $table->fields()->where('name', 'text')->sole();
+        DynamicRecord::forTable($table)->create(['text' => 'kurz']);
+        $long = DynamicRecord::forTable($table)->create(['text' => str_repeat('x', 40)]);
+
+        try {
+            $this->service()->updateField($text, ['type' => 'string', 'options' => ['length' => 30]]);
+            $this->fail('Ablehnung erwartet');
+        } catch (BusinessRuleException $e) {
+            $this->assertStringContainsString('1 Wert ist länger als 30 Zeichen (längster: 40)', $e->getMessage());
+        }
+
+        $long->forceDelete();
+        $this->service()->updateField($text->fresh(), ['type' => 'string', 'options' => ['length' => 30]]);
+        $this->assertSame(['string', 'kurz'], [$text->fresh()->type->value, DynamicRecord::forTableName('notizen')->newQuery()->value('text')]);
+        $this->assertSame([], app(SchemaVerifier::class)->issues());
     }
 
     public function test_unique_ignores_soft_deleted_rows_and_detects_existing_duplicates(): void

@@ -271,7 +271,8 @@ So funktioniert es:
 
 1. **Zeile anklicken** – In der Liste (hier *Kunden*) klicken Sie auf einen Datensatz. Er wird **farbig
    hervorgehoben**.
-2. **Kurzanzeige** – Darunter erscheinen die wichtigsten Angaben des ausgewählten Kunden, je Feld der Name und
+2. **Kurzanzeige** – Darunter erscheinen die Angaben des ausgewählten Kunden – die Felder, deren Spalten in der Liste sichtbar sind (auch
+   selbst eingeblendete), und die Pflichtfelder –, je Feld der Name und
    daneben der Wert, in bis zu drei Blöcken nebeneinander (Zahlen rechtsbündig, lange Texte umbrochen) …
 3. **… und seine Details** – hier die Tabelle seiner **Bestellungen**. Klicken Sie dort auf eine Bestellung,
    wird auch sie hervorgehoben …

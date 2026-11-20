@@ -156,6 +156,7 @@ return [
         'external_table' => '«:name» è una tabella esterna collegata e si gestisce nel connettore di tabelle.',
         'used_as_display_field' => 'Il campo «:name» è usato come campo visualizzato da un collegamento.',
         'still_referenced' => 'La tabella è ancora referenziata da: :fields.',
+        'too_long' => '{1} «:name»: 1 valore supera :length caratteri (il più lungo: :longest) – accorciarlo prima.|[2,*] «:name»: :count valori superano :length caratteri (il più lungo: :longest) – accorciarli prima.',
         'type_change' => 'La modifica di «:name» (:from → :to) altererebbe i dati esistenti ed è possibile solo con la colonna vuota.',
         'not_unique' => '«:name» non può diventare univoco: i record esistenti contengono valori duplicati.',
         'index_length' => '«:name» è univoco o ordinabile e in questo database può avere al massimo :max caratteri. Scegliere una lunghezza minore o disattivare la proprietà.',

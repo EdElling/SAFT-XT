@@ -383,8 +383,8 @@ crea anche una voce aggiuntiva se la tabella deve comparire in un secondo punto 
 | Modifica | Regola |
 |---|---|
 | Rinominare un campo | in qualsiasi momento, i dati restano |
-| Cambiare il tipo | senza perdita di dati in qualsiasi momento (ad es. numero intero → numero decimale, testo → testo su più righe, data → data e ora); altrimenti solo se la colonna è vuota |
-| Lunghezza del testo | aumentare in qualsiasi momento, ridurre solo con la colonna vuota |
+| Cambiare il tipo | senza perdita di dati in qualsiasi momento (ad es. numero intero → numero decimale, testo → testo su più righe, data → data e ora); testo su più righe → su una riga se tutti i valori stanno nella lunghezza; altrimenti solo se la colonna è vuota |
+| Lunghezza del testo | aumentare in qualsiasi momento, ridurre solo se tutti i valori esistenti stanno nella nuova lunghezza (altrimenti il messaggio indica quanti sono troppo lunghi) |
 | Attivare «Univoco» | solo se i dati esistenti non contengono duplicati |
 | Rimuovere un valore da un elenco di selezione | in qualsiasi momento; se il valore è in uso, compare un avviso con il numero di record. Questi mantengono il loro valore, ma alla modifica successiva occorre sceglierne uno valido. |
 | Eliminare un campo | prima **disattivare**, poi «Elimina definitivamente» inserendo il nome della colonna |
@@ -1184,7 +1184,7 @@ loro tabelle, menu, report, collegamenti, ruoli e attività:
 
 La colonna **Stato** mostra *Attiva*, *Inattiva*, *Rimozione dalle …* o *Rimozione non riuscita* (il messaggio come
 tooltip), **Installata** lo stato di partenza di un’app installata e **Indicazioni** avvisi duraturi come «Plugin
-mancante: …» o tabelle collegate senza connessione. Il menu delle azioni (tre puntini) contiene **Modello di dati**, **Interfacce**, **Esporta …**, disattivare/attivare, rimuovere
+mancante: …» o tabelle collegate senza connessione. Il menu delle azioni (tre puntini) contiene **Modello di dati**, **Interfacce**, **Esporta …**, **Aggiorna …**, disattivare/attivare, rimuovere
 e – solo per app vuote – **Elimina**; le app con contenuto vengono disattivate e rimosse (sotto).
 
 **Dove si sceglie l’app – e dove deriva:**
@@ -1310,6 +1310,53 @@ o un campo usato non è condiviso, l’installazione è impedita – installare 
 app è disattivata o la sua interfaccia ha un’altra versione (ma i campi ci sono), c’è solo un avviso. Una copia
 continua a rimandare alla stessa tabella dell’altra app; riprende le proprie condivisioni, con la versione 1.
 
+**Aggiornare:** con **«Aggiorna …»** (menu delle azioni dell’app, diritto *App: aggiornare*) un’app installata viene
+portata allo stato di un file più recente della stessa app. Il principio:
+
+```
+Sviluppo (fonte) ──Esporta──▶ file 1.0 ──«Installa app», nuova──▶ Produzione
+        │ sviluppare oltre                                          ▲
+        └──────────Esporta──▶ file 1.1 ───────«Aggiorna …»───────────┘
+```
+
+- SAFT riconosce **la stessa app** dalla **chiave dell’app**, ogni oggetto (tabella, campo, report, menu, ruolo …)
+  dalla propria chiave – non dal nome. Un campo rinominato resta così lo stesso campo, i dati restano.
+- Si può quindi aggiornare solo un’app **proveniente dalla stessa fonte**: installata come «nuova app (come
+  esportata)», con le stesse chiavi. Una **copia** (nuovo nome e prefisso) riceve nuove chiavi ed è poi un’app
+  indipendente – si aggiorna solo dai propri export, mai l’originale da una copia o viceversa. Per sviluppare una
+  versione di test che poi aggiorni l’originale serve un secondo sistema (test) su cui l’app è installata come nuova app.
+- **Non modificare mai le chiavi a mano:** se nel file si sostituisce la chiave dell’app, tutte le tabelle del file
+  appaiono come nuove e tutte quelle dell’app installata come «rimosse nel pacchetto» – l’aggiornamento le
+  disattiverebbe o (su scelta) le eliminerebbe con i loro dati.
+
+**Il piano delle modifiche** confronta tre stati: lo **stato di riferimento** (ultima installazione o aggiornamento,
+colonna «Installata»), lo **stato attuale** in SAFT e il **pacchetto**. Ciò che modifica solo il pacchetto viene
+ripreso; ciò che è stato adattato solo in SAFT resta; se entrambi hanno modificato la stessa proprietà in modo diverso, è
+un **conflitto** – non preselezionato, senza scelta resta lo stato in SAFT. Tabelle e campi creati in SAFT dallo stato
+di riferimento e assenti dal pacchetto figurano sotto «Solo in SAFT, resta invariato» e non vengono mai rimossi. Anche
+un’app senza stato di riferimento (creata qui) si può aggiornare; ogni differenza è allora un conflitto.
+
+L’**anteprima** indica versioni, impedimenti (ad es. file di un’altra app, interfaccia mancante) e avvisi (ad es. nessuna
+versione più recente) ed elenca i passi con la loro classificazione:
+
+| Classificazione | Significato | Esempi |
+|---|---|---|
+| sicuro (preselezionato) | nessun dato toccato | nuova tabella o nuovo campo, etichetta, proprietà, nuovi valori di scelta, ordine |
+| delicato (preselezionato) | dati o processi esistenti toccati, nulla va perso | cambio di tipo con valori, nome tecnico, obbligatorio o univoco con dati esistenti, regole del campo violate da valori esistenti, formula, valori di scelta eliminati, regole della tabella, disattivazione |
+| distruttivo (non preselezionato) | si perdono dati | eliminare un campo o una tabella con dati – solo con una conferma aggiuntiva |
+
+Se nel pacchetto manca un campo o una tabella con dati, viene prima solo **disattivato** (i dati restano);
+l’eliminazione è un passo a sé. Senza dati viene eliminato direttamente. **Non possibili** (con motivo) sono le
+modifiche che il Designer di tabelle rifiuterebbe – ad es. un cambio di tipo che perderebbe valori (ad es. «1 valore
+supera 30 caratteri») – e le modifiche a interfacce usate da altre app. Le differenze in collegamenti tra tabelle,
+report, menu, ruoli, attività, manuale e tabelle collegate per ora sono solo mostrate.
+
+**Esecuzione:** prima viene creato un salvataggio; poi i passi scelti passano per le operazioni del Designer di tabelle
+con tutte le regole di protezione (nuove tabelle e campi, modifiche, condivisioni, infine disattivazione ed
+eliminazione). Dopo, il pacchetto è il nuovo stato di riferimento e la sua versione la versione dell’app. Se un passo
+fallisce, l’aggiornamento si interrompe e indica quanti passi sono già stati eseguiti e dove si trova il salvataggio;
+scegliendo di nuovo lo stesso file si vede solo il resto. L’aggiornamento figura nel registro delle modifiche.
+
 **Disattivare e attivare:** nel menu delle azioni (tre puntini) di un’app; diritto *App: gestire*. Un’app disattivata
 scompare per tutti tranne il super-admin: non più nel selettore, né menu, report o riquadri, nessun accesso alle sue
 tabelle (nemmeno tramite link, report o esportazione); le sue attività pianificate vengono saltate (con annotazione).
@@ -1371,6 +1418,7 @@ sono riservate e non si possono assegnare a nessun ruolo: **Visualizza come ruol
 | App: gestire | creare, modificare, attivare e disattivare app, caricare il manuale, spostare tabelle, eliminare app vuote |
 | App: esportare | scaricare un’app come file (`saft-app/1`) |
 | App: installare | installare un’app da un tale file, anche come copia |
+| App: aggiornare | aggiornare un’app installata da un file più recente della stessa app (piano delle modifiche) |
 | Plugin: visualizzare | pagina «Plugin» con versione, stato e dipendenze |
 | Plugin: gestire | attivare e disattivare plugin, creare le loro voci di menu, ripulire i resti di plugin disinstallati, scaricare il contesto per lo sviluppo |
 | Attività pianificate: visualizzare | elenco delle attività e delle loro esecuzioni |

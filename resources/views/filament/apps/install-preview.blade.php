@@ -15,7 +15,7 @@
     @if ($analysis->blockers !== [])
         <div class="rounded-lg bg-danger-50 p-3 text-danger-700 dark:bg-danger-500/10 dark:text-danger-400" data-app-install-blockers>
             <p class="font-semibold">{{ __('apps.install.blocked') }}</p>
-            <ul class="list-disc ps-5">
+            <ul style="list-style: disc; padding-inline-start: 1.5rem;">
                 @foreach ($analysis->blockers as $blocker)
                     <li>{{ $blocker }}</li>
                 @endforeach
@@ -26,7 +26,7 @@
     @if ($analysis->counts !== [])
         <div>
             <p class="font-semibold">{{ __('apps.install.creates') }}</p>
-            <ul class="list-disc ps-5" data-app-install-counts>
+            <ul style="list-style: disc; padding-inline-start: 1.5rem;" data-app-install-counts>
                 @foreach ($analysis->counts as $part => $count)
                     @if ($count > 0)
                         <li>{{ trans_choice('apps.install.count.'.$part, $count, ['count' => $count]) }}</li>
@@ -40,7 +40,7 @@
     @if ($analysis->requires !== [])
         <div>
             <p class="font-semibold">{{ __('apps.install.requires') }}</p>
-            <ul class="list-disc ps-5" data-app-install-requires>
+            <ul style="list-style: disc; padding-inline-start: 1.5rem;" data-app-install-requires>
                 @foreach ($analysis->requires as $required)
                     <li>{{ $required }}</li>
                 @endforeach
@@ -51,7 +51,7 @@
     @if ($analysis->warnings !== [])
         <div class="rounded-lg bg-warning-50 p-3 text-warning-800 dark:bg-warning-500/10 dark:text-warning-400" data-app-install-warnings>
             <p class="font-semibold">{{ __('apps.install.notes') }}</p>
-            <ul class="list-disc ps-5">
+            <ul style="list-style: disc; padding-inline-start: 1.5rem;">
                 @foreach ($analysis->warnings as $warning)
                     <li>{{ $warning }}</li>
                 @endforeach

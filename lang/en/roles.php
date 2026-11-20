@@ -36,6 +36,7 @@ return [
         'assistant' => 'use assistant',
         'manage' => 'manage',
         'install' => 'install',
+        'upgrade' => 'update',
         'last_login' => 'My last sign-in',
         'my_logins' => 'My sign-ins',
         'my_changes' => 'My recent changes',

@@ -8,6 +8,7 @@ use App\Apps\AppInterfaces;
 use App\Filament\Resources\Apps\Actions\AppLifecycleActions;
 use App\Filament\Resources\Apps\Actions\AppManualAction;
 use App\Filament\Resources\Apps\Actions\ExportAppAction;
+use App\Filament\Resources\Apps\Actions\UpdateAppAction;
 use App\Filament\Support\MoveToAppAction;
 use App\Models\App;
 use App\Models\CustomTable;
@@ -116,6 +117,7 @@ class AppsTable
                         ->modalSubmitAction(false)
                         ->modalCancelActionLabel(__('common.close')),
                     ExportAppAction::make(),
+                    UpdateAppAction::make(),
                     ...AppLifecycleActions::make(),
                     // Leere Apps direkt löschen; mit Inhalt deaktivieren und „Entfernen …“ (nur Super-Admin).
                     DeleteAction::make()->visible(fn (App $record): bool => $record->isEmpty()),

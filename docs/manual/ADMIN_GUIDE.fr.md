@@ -394,8 +394,8 @@ le groupe et crée aussi une entrée supplémentaire si la table doit apparaîtr
 | Modification | Règle |
 |---|---|
 | Renommer un champ | à tout moment, les données sont conservées |
-| Changer le type | sans perte à tout moment (p. ex. nombre entier → nombre décimal, texte → texte sur plusieurs lignes, date → date et heure) ; sinon uniquement si la colonne est vide |
-| Longueur du texte | augmenter à tout moment, réduire uniquement si la colonne est vide |
+| Changer le type | sans perte à tout moment (p. ex. nombre entier → nombre décimal, texte → texte sur plusieurs lignes, date → date et heure) ; texte sur plusieurs lignes → sur une ligne si toutes les valeurs tiennent dans la longueur ; sinon uniquement si la colonne est vide |
+| Longueur du texte | augmenter à tout moment, réduire uniquement si toutes les valeurs existantes tiennent dans la nouvelle longueur (sinon le message indique combien sont trop longues) |
 | Activer « Unique » | uniquement si les données existantes ne contiennent pas de doublons |
 | Retirer une valeur d’une liste de sélection | à tout moment ; si la valeur est utilisée, un avertissement indique le nombre d’enregistrements. Ils conservent leur valeur, mais une valeur valide doit être choisie à la prochaine modification. |
 | Supprimer un champ | d’abord **désactiver**, puis « Supprimer définitivement » en saisissant le nom de la colonne |
@@ -1216,7 +1216,7 @@ tables, menus, rapports, liaisons, rôles et tâches :
 La colonne **Statut** indique *Active*, *Inactive*, *Retrait dès …* ou *Échec du retrait* (le message en info-bulle),
 **Installée** l’état de référence d’une app installée et **Remarques** des avertissements durables comme « Plugin
 manquant : … » ou des tables connectées sans connexion.
-Le menu d’actions (trois points) contient **Modèle de données**, **Interfaces**, **Exporter …**, désactiver/activer, retirer et –
+Le menu d’actions (trois points) contient **Modèle de données**, **Interfaces**, **Exporter …**, **Mettre à jour …**, désactiver/activer, retirer et –
 uniquement pour les apps vides – **Supprimer** ; les apps avec contenu sont désactivées puis retirées (ci-dessous).
 
 **Où l’app se choisit – et où elle découle :**
@@ -1345,6 +1345,55 @@ l’autre app. Si l’autre app est désactivée ou si son interface a une autre
 qu’une remarque. Une copie continue de renvoyer à la même table de l’autre app ; elle reprend ses propres partages,
 avec la version 1.
 
+**Mettre à jour :** **« Mettre à jour … »** (menu d’actions de l’app, droit *Apps : mettre à jour*) amène une app
+installée à l’état d’un fichier plus récent de la même app. Le principe :
+
+```
+Développement (source) ──Exporter──▶ fichier 1.0 ──« Installer une app », nouvelle──▶ Production
+        │ continuer à développer                                                    ▲
+        └──────────────Exporter──▶ fichier 1.1 ────────« Mettre à jour … »────────────┘
+```
+
+- SAFT reconnaît **la même app** à sa **clé d’app**, chaque objet (table, champ, rapport, menu, rôle …) à sa propre clé
+  – pas à son nom. Un champ renommé reste ainsi le même champ, les données restent.
+- Seule une app **issue de la même source** peut donc être mise à jour : installée comme « nouvelle app (telle
+  qu’exportée) », avec les mêmes clés. Une **copie** (nouveau nom et préfixe) reçoit de nouvelles clés et devient une
+  app indépendante – elle ne se met à jour qu’à partir de ses propres exports, jamais l’original à partir d’une copie ou
+  l’inverse. Développer une version de test qui mettra ensuite à jour l’original demande un second système (test) sur
+  lequel l’app est installée comme nouvelle app.
+- **Ne jamais modifier les clés à la main :** si l’on remplace la clé d’app dans le fichier, toutes les tables du
+  fichier apparaissent comme nouvelles et toutes celles de l’app installée comme « supprimées dans le paquet » – la mise à
+  jour les désactiverait ou (sur choix) les supprimerait avec leurs données.
+
+**Le plan de modifications** compare trois états : l’**état de référence** (dernière installation ou mise à jour,
+colonne « Installée »), l’**état actuel** dans SAFT et le **paquet**. Ce que seul le paquet modifie est repris ; ce qui
+n’a été adapté que dans SAFT reste ; si les deux ont modifié la même propriété différemment, c’est un **conflit** – non
+présélectionné, sans choix l’état dans SAFT reste. Les tables et champs créés dans SAFT depuis l’état de référence et
+absents du paquet figurent sous « Seulement dans SAFT, reste inchangé » et ne sont jamais retirés. Une app sans état de
+référence (créée ici) peut aussi être mise à jour ; chaque écart est alors un conflit.
+
+L’**aperçu** indique les versions, les empêchements (p. ex. fichier d’une autre app, interface manquante) et les
+remarques (p. ex. pas de version plus récente) et liste les étapes avec leur classement :
+
+| Classement | Signification | Exemples |
+|---|---|---|
+| sûr (présélectionné) | aucune donnée touchée | nouvelle table ou nouveau champ, libellé, propriétés, nouvelles valeurs de choix, ordre |
+| délicat (présélectionné) | données ou processus existants touchés, rien n’est perdu | changement de type avec valeurs, nom technique, obligatoire ou unique avec données existantes, règles du champ enfreintes par des valeurs existantes, formule, valeurs de choix supprimées, règles de table, désactivation |
+| destructif (non présélectionné) | des données sont perdues | supprimer un champ ou une table avec données – seulement avec une confirmation supplémentaire |
+
+Si un champ ou une table avec données manque dans le paquet, il est d’abord seulement **désactivé** (les données
+restent) ; la suppression est une étape à part. Sans données, il est supprimé directement. **Impossibles** (avec motif)
+sont les modifications que le Concepteur de tables refuserait – p. ex. un changement de type qui perdrait des valeurs
+(p. ex. « 1 valeur dépasse 30 caractères ») – et les modifications d’interfaces utilisées par d’autres apps. Les
+différences dans les liaisons de tables, rapports, menus, rôles, tâches, le manuel et les tables connectées ne sont pour
+l’instant qu’affichées.
+
+**Exécution :** une sauvegarde est faite d’abord ; puis les étapes choisies passent par les opérations du Concepteur de
+tables avec toutes les règles de protection (nouvelles tables et champs, modifications, partages, enfin désactivation et
+suppression). Ensuite le paquet est le nouvel état de référence et sa version la version de l’app. Si une étape échoue,
+la mise à jour s’arrête et indique combien d’étapes ont déjà été exécutées et où se trouve la sauvegarde ; choisir à
+nouveau le même fichier ne montre que le reste. La mise à jour figure dans le journal des modifications.
+
 **Désactiver et activer :** dans le menu d’actions (trois points) d’une app ; droit *Apps : gérer*. Une app désactivée
 disparaît pour tous sauf le super-admin : plus dans le sélecteur, ni menus, analyses ou tuiles, aucun accès à ses tables
 (ni par des liens, analyses ou exports) ; ses tâches planifiées sont ignorées (avec mention). Données, rôles et droits
@@ -1410,6 +1459,7 @@ entrée de menu).
 | Apps: gérer | créer, modifier, activer et désactiver des apps, téléverser le manuel, déplacer des tables, supprimer les apps vides |
 | Apps: exporter | télécharger une app sous forme de fichier (`saft-app/1`) |
 | Apps: installer | installer une app à partir d’un tel fichier, aussi comme copie |
+| Apps: mettre à jour | mettre à jour une app installée à partir d’un fichier plus récent de la même app (plan de modifications) |
 | Plugins: afficher | page « Plugins » avec version, état et dépendances |
 | Plugins: gérer | activer et désactiver des plugins, créer leurs entrées de menu, nettoyer les restes de plugins désinstallés, télécharger le contexte de développement |
 | Tâches planifiées: afficher | liste des tâches et de leurs exécutions |

@@ -228,6 +228,39 @@ final class DynamicSchemaService
      *
      * @param  array<string, mixed>  $data
      */
+    /**
+     * Ginge die Änderung eines Felds durch (Angaben gültig, Typ- bzw. Optionsänderung mit den vorhandenen Daten möglich)?
+     * Nur lesend – für den Änderungsplan beim Aktualisieren einer App (B-107, Etappe 6). Null oder die Meldung.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function fieldChangeProblem(CustomField $field, array $data): ?string
+    {
+        try {
+            $table = $field->customTable;
+            $new = $this->normalizer->normalize([...$this->fieldState($field), ...$data], $table);
+            $this->assertIndexable($new);
+            $this->columnChangeStrategy($table, $field, $new);
+
+            return null;
+        } catch (BusinessRuleException $e) {
+            return $e->getMessage();
+        }
+    }
+
+    /** @return array<string, mixed> aktueller Stand eines Felds im Eingabeformat von updateField */
+    private function fieldState(CustomField $field): array
+    {
+        return [
+            ...$field->only(['name', 'is_required', 'is_unique', 'is_searchable', 'is_sortable', 'show_in_table', 'show_in_form', 'is_active', 'sort_order']),
+            // Alle Sprachen, sonst würde die Ersatzsprache als aktuelle Sprache gespeichert.
+            'label' => $field->getTranslations('label'),
+            'type' => $field->type,
+            'options' => $field->optionsArray(),
+            'validation_rules' => (array) ($field->validation_rules ?? []),
+        ];
+    }
+
     public function updateField(CustomField $field, array $data): CustomField
     {
         $this->assertDesigner($field->custom_table);
@@ -237,15 +270,7 @@ final class DynamicSchemaService
         $before = [$field->type, $field->optionsArray(), $field->is_active];
 
         $updated = $this->mutate($table->name, function () use ($field, $table, $data): CustomField {
-            $current = [
-                ...$field->only(['name', 'is_required', 'is_unique', 'is_searchable', 'is_sortable', 'show_in_table', 'show_in_form', 'is_active', 'sort_order']),
-                // Alle Sprachen, sonst würde die Ersatzsprache als aktuelle Sprache gespeichert.
-                'label' => $field->getTranslations('label'),
-                'type' => $field->type,
-                'options' => $field->optionsArray(),
-                'validation_rules' => (array) ($field->validation_rules ?? []),
-            ];
-            $new = $this->normalizer->normalize([...$current, ...$data], $table);
+            $new = $this->normalizer->normalize([...$this->fieldState($field), ...$data], $table);
 
             $renamed = $new['name'] !== $field->name;
             $this->assertIndexable($new);
@@ -805,12 +830,15 @@ final class DynamicSchemaService
 
         $safe = match (true) {
             $from === $to => match ($from) {
-                FieldType::String => $opt['length'] === $old['length'] ? null : $opt['length'] > $old['length'],
+                // Kürzer nur, wenn alle vorhandenen Werte hineinpassen.
+                FieldType::String => $opt['length'] === $old['length'] ? null : ($opt['length'] > $old['length'] || $this->overLength($table, $field->name, (int) $opt['length'])[0] === 0),
                 // Nur Stellen zählen; andere Optionen (z. B. Vorgabe aus dem Master) sind Metadaten.
                 FieldType::Decimal => [$opt['precision'], $opt['scale']] == [$old['precision'], $old['scale']] ? null : ($opt['scale'] >= $old['scale'] && $opt['precision'] - $opt['scale'] >= $old['precision'] - $old['scale']),
                 FieldType::Relation => $opt['table'] === $old['table'] ? null : false,
                 default => null, // z. B. Select-Optionen: nur Metadaten
             },
+            // Mehrzeilig → einzeilig: nur, wenn alle vorhandenen Werte in die Länge passen.
+            $from === FieldType::Text && $to === FieldType::String => $this->overLength($table, $field->name, (int) $opt['length'])[0] === 0,
             in_array($to->value, self::SAFE_CONVERSIONS[$from->value] ?? [], true) => $this->fitsWithoutLoss($from, $old, $to, $opt),
             default => false,
         };
@@ -827,7 +855,31 @@ final class DynamicSchemaService
             return 'recreate';
         }
 
+        if ($to === FieldType::String && in_array($from, [FieldType::String, FieldType::Text], true)) {
+            [$count, $longest] = $this->overLength($table, $field->name, (int) $opt['length']);
+            $this->fail(trans_choice('tables.errors.too_long', $count, ['name' => $field->name, 'count' => $count, 'length' => (int) $opt['length'], 'longest' => $longest]));
+        }
+
         $this->fail(__('tables.errors.type_change', ['name' => $field->name, 'from' => $from->label(), 'to' => $to->label()]));
+    }
+
+    /**
+     * Werte, die länger als $length Zeichen sind (gezählt in PHP, seitenweise; auch gelöschte Datensätze).
+     *
+     * @return array{0: int, 1: int} Anzahl, Länge des längsten Werts
+     */
+    private function overLength(CustomTable $table, string $column, int $length): array
+    {
+        $count = 0;
+        $longest = 0;
+
+        foreach ($this->namespace->connection()->table($this->namespace->qualify($table->name))->whereNotNull($column)->select(['id', $column])->lazyById(1000) as $row) {
+            $size = mb_strlen((string) $row->{$column});
+            $longest = max($longest, $size);
+            $count += (int) ($size > $length);
+        }
+
+        return [$count, $longest];
     }
 
     /**

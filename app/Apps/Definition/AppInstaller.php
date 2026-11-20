@@ -187,7 +187,7 @@ final class AppInstaller
      * @param  array<int, mixed>  $requires
      * @return array{0: list<string>, 1: list<string>, 2: list<string>} Übersicht, Hinderungsgründe, Hinweise
      */
-    private function requirements(array $requires): array
+    public function requirements(array $requires): array
     {
         $overview = [];
         $blockers = [];

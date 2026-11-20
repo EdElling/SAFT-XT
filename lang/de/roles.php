@@ -36,6 +36,7 @@ return [
         'assistant' => 'Assistent nutzen',
         'manage' => 'verwalten',
         'install' => 'installieren',
+        'upgrade' => 'aktualisieren',
         'last_login' => 'Meine letzte Anmeldung',
         'my_logins' => 'Meine Anmeldungen',
         'my_changes' => 'Meine letzten Änderungen',

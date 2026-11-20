@@ -68,6 +68,8 @@ final readonly class AppDefinition
             'saft' => (string) config('saft.version'),
             'api' => ApiManifest::current(),
             'exported_at' => now()->toIso8601String(),
+            // Enthaltene Teile: beim Aktualisieren (Etappe 6) heisst ein fehlender Teil „nicht mitgeliefert“, nicht „leer“.
+            'parts' => array_values(array_intersect(self::PARTS, $parts)),
             'app' => [
                 'key' => (string) $app->uuid,
                 'name' => $app->getTranslations('name'),

@@ -11,6 +11,7 @@ use App\DynamicData\DataAccess;
 use App\DynamicData\DataView;
 use App\DynamicData\DetailRelations;
 use App\DynamicData\DetailSource;
+use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Ui\DynamicRecordActions;
 use App\DynamicData\Ui\DynamicTableBuilder;
 use App\DynamicData\Ui\KeylessRow;
@@ -325,7 +326,8 @@ class DynamicDataPage extends Page implements HasTable
         $components = [
             Section::make(RecordEntries::title($current['table'], $current['record']))
                 ->compact()
-                ->schema([RecordEntries::blocks($current['table'], $current['record'], compact: true)]),
+                // Oberste Ebene: dieselben Felder wie die sichtbaren Spalten der Liste (auch selbst eingeblendete).
+                ->schema([RecordEntries::blocks($current['table'], $current['record'], compact: true, visible: $level === 0 ? $this->visibleColumnNames($current['table']) : null)]),
         ];
 
         if ($level + 1 >= CascadePath::MAX_LEVELS) {
@@ -397,6 +399,15 @@ class DynamicDataPage extends Page implements HasTable
         $selection = $this->selection;
 
         return once(fn (): array => app(CascadeResolver::class)->resolve($this->customTable(), CascadePath::parse($selection)));
+    }
+
+    /** @return list<string> Felder, deren Spalte in der Liste gerade sichtbar ist (Spaltenauswahl der Person) */
+    private function visibleColumnNames(CustomTable $table): array
+    {
+        return $table->fields
+            // Verknüpfungsfelder heissen in der Liste „feld__label“ (DynamicTableBuilder::RELATION_SUFFIX).
+            ->filter(fn (CustomField $f): bool => $f->is_active && ! $this->isTableColumnToggledHidden($f->type === FieldType::Relation ? $f->name.DynamicTableBuilder::RELATION_SUFFIX : $f->name))
+            ->pluck('name')->values()->all();
     }
 
     private function dataView(): DataView
