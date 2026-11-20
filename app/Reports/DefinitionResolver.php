@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reports;
 
+use App\Apps\AppInterfaces;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
@@ -26,6 +27,9 @@ use Illuminate\Support\Collection;
  *
  * Angebundene externe Tabellen werden nie live abgefragt, sondern über ihren neuesten vollständigen
  * Datenstand (Kopie in SAFTs Datenbank); ohne Datenstand ist die Auswertung nicht ausführbar.
+ *
+ * Über die App-Grenze (B-107, Etappe 5b) führt ein Pfad nur in eine freigegebene Tabelle einer anderen App (Schnittstelle),
+ * dort nur zu freigegebenen Feldern und nicht weiter.
  */
 final class DefinitionResolver
 {
@@ -66,16 +70,25 @@ final class DefinitionResolver
     /** @var array<int, list<string>> Spalten der Datenstand-Kopien */
     private array $snapshotColumns = [];
 
+    /** App der Grundtabelle der laufenden Auflösung */
+    private ?int $baseApp = null;
+
+    /** @var array<int, true> über eine Schnittstelle erreichte Tabellen der laufenden Auflösung */
+    private array $interfaces = [];
+
     public function resolve(ReportDefinition $definition): ResolvedReport
     {
         $this->errors = [];
         $this->snapshots = [];
+        $this->interfaces = [];
         $this->tables ??= CustomTable::query()->with(['fields' => fn ($q) => $q->orderBy('sort_order')])->get()->keyBy('id');
         $base = $this->usableTable($this->tables->get($definition->base), '#'.$definition->base);
 
         if ($base === null) {
             throw new InvalidReportException($this->errors);
         }
+
+        $this->baseApp = $base->app_id;
 
         $fields = [];
         $joins = [];
@@ -112,7 +125,7 @@ final class DefinitionResolver
             throw new InvalidReportException(array_values(array_unique($this->errors)));
         }
 
-        return new ResolvedReport($definition, $base, $fields, array_values($joins), $involved, $this->snapshots);
+        return new ResolvedReport($definition, $base, $fields, array_values($joins), $involved, $this->snapshots, array_keys($this->interfaces));
     }
 
     /**
@@ -133,8 +146,16 @@ final class DefinitionResolver
         $labels = [];
         $path = [];
         $pathKey = '';
+        $crossed = false;
 
         foreach ($spec['path'] as $relationId) {
+            // Hinter einer Schnittstelle geht es nicht weiter.
+            if ($crossed) {
+                $this->error('interface_depth', ['label' => $spec['label'] ?? '#'.$spec['field'], 'table' => $table->label]);
+
+                return null;
+            }
+
             // Negative Nummer: Verknüpfung für Auswertungen (report_links), sonst Verknüpfungsfeld.
             $step = $relationId < 0 ? $this->linkStep(-$relationId, $table, $spec) : $this->relationStep($relationId, $table, $spec);
 
@@ -143,6 +164,17 @@ final class DefinitionResolver
             }
 
             [$relation, $target, $key, $label] = $step;
+
+            if (AppInterfaces::foreign($target, $this->baseApp)) {
+                if (! $target->is_shared) {
+                    $this->error('not_shared_table', ['table' => $target->label]);
+
+                    return null;
+                }
+
+                $crossed = true;
+                $this->interfaces[$target->id] = true;
+            }
 
             $pathKey .= '/'.$relationId;
 
@@ -162,6 +194,12 @@ final class DefinitionResolver
         // Dateien lassen sich nicht auswerten (B-021): wie ein fehlendes Feld behandeln.
         if (! $field instanceof CustomField || ! $field->is_active || $field->type === FieldType::File) {
             $this->error('missing_field', ['label' => $spec['label'] ?? '#'.$spec['field'], 'table' => $table->label]);
+
+            return null;
+        }
+
+        if ($crossed && ! AppInterfaces::fieldShared($table, $field->name)) {
+            $this->error('not_shared_field', ['label' => $field->label, 'table' => $table->label]);
 
             return null;
         }
@@ -196,7 +234,9 @@ final class DefinitionResolver
         foreach (array_unique($keys) as $key) {
             $resolved = $fields[$key] ?? null;
 
-            if ($resolved === null || $resolved->bucket !== null || $resolved->field->type !== FieldType::Relation) {
+            // Verknüpfungsfelder hinter einer Schnittstelle bleiben beim Schlüssel (nicht weiter in die fremde App).
+            if ($resolved === null || $resolved->bucket !== null || $resolved->field->type !== FieldType::Relation
+                || AppInterfaces::foreign($resolved->table, $this->baseApp)) {
                 continue;
             }
 

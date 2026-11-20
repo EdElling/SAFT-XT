@@ -75,11 +75,15 @@ final class AppDefinitionValidator
             }
         }
 
-        $this->relations((array) ($definition['tables'] ?? []), $known);
+        // Schnittstellen anderer Apps (Etappe 5b): Ziel von Verknüpfungen und Tabellenverknüpfungen, Leserechte von Rollen.
+        $required = $this->requires($definition['requires'] ?? []);
+        $reachable = [...$known, ...$required];
+
+        $this->relations((array) ($definition['tables'] ?? []), $reachable);
         $reports = $this->reports((array) ($definition['reports'] ?? []), $known);
         $menus = $this->menus((array) ($definition['menus'] ?? []), $known, $reports);
-        $this->links((array) ($definition['report_links'] ?? []), $known);
-        $this->roles((array) ($definition['roles'] ?? []), $known, $menus);
+        $this->links((array) ($definition['report_links'] ?? []), $known, $reachable);
+        $this->roles((array) ($definition['roles'] ?? []), $reachable, $menus);
 
         foreach ((array) ($definition['tasks'] ?? []) as $i => $task) {
             $this->key("tasks[{$i}].key", $task['key'] ?? null);
@@ -208,15 +212,16 @@ final class AppDefinitionValidator
 
     /**
      * @param  array<int, mixed>  $links
-     * @param  list<string>  $known
+     * @param  list<string>  $known  Tabellen der App (Quelle)
+     * @param  list<string>  $reachable  dazu Schnittstellen anderer Apps (Ziel)
      */
-    private function links(array $links, array $known): void
+    private function links(array $links, array $known, array $reachable): void
     {
         foreach ($links as $i => $link) {
             $this->key("report_links[{$i}].key", $link['key'] ?? null);
 
-            foreach (['source' => Str::before((string) ($link['source'] ?? ''), '.'), 'target_table' => (string) ($link['target_table'] ?? '')] as $part => $table) {
-                if (! in_array($table, $known, true)) {
+            foreach (['source' => [Str::before((string) ($link['source'] ?? ''), '.'), $known], 'target_table' => [(string) ($link['target_table'] ?? ''), $reachable]] as $part => [$table, $allowed]) {
+                if (! in_array($table, $allowed, true)) {
                     $this->fail("report_links[{$i}].{$part}", __('apps.definition.errors.unknown_table', ['table' => $table]));
                 }
             }
@@ -250,6 +255,36 @@ final class AppDefinitionValidator
                 }
             }
         }
+    }
+
+    /**
+     * Benötigte Schnittstellen anderer Apps: Liste von Apps mit Schlüssel und Tabellen mit Namen.
+     *
+     * @return list<string> Namen der benötigten Tabellen
+     */
+    private function requires(mixed $requires): array
+    {
+        if (! is_array($requires) || ! array_is_list($requires)) {
+            $this->fail('requires', __('apps.definition.errors.list'));
+
+            return [];
+        }
+
+        $names = [];
+
+        foreach ($requires as $i => $entry) {
+            foreach ((array) (is_array($entry) ? ($entry['tables'] ?? []) : []) as $j => $table) {
+                $name = is_array($table) ? (string) ($table['name'] ?? '') : '';
+
+                if ($name === '') {
+                    $this->fail("requires[{$i}].tables[{$j}].name", __('apps.definition.errors.missing'));
+                }
+
+                $names[] = $name;
+            }
+        }
+
+        return $names;
     }
 
     /** Stabiler Schlüssel: UUID, in der ganzen Definition eindeutig. */

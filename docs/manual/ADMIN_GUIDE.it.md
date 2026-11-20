@@ -318,7 +318,8 @@ un **altro campo** o con un **valore fisso**:
 
 **App e prefisso:** alla creazione scegliete l’[app](#15-app-applicazioni-specialistiche) della tabella
 (obbligatoria se ci sono più app). Se l’app ha un prefisso, precede il nome tecnico proposto; cambiare app lo
-sostituisce. I collegamenti sono possibili solo con tabelle della stessa app.
+sostituisce. I collegamenti sono possibili con tabelle della stessa app e con tabelle condivise di altre app
+([interfacce](#15-app-applicazioni-specialistiche)).
 
 ### Campi calcolati
 
@@ -1201,8 +1202,8 @@ e – solo per app vuote – **Elimina**; le app con contenuto vengono disattiva
 **Confine tra app:** campi di collegamento, collegamenti tra tabelle per i report, «Riprendi da» e le formule sulle
 tabelle figlie esistono all’interno di un’app – oltre il confine solo verso tabelle **condivise** (interfacce, sotto).
 Il designer di tabelle offre le tabelle della stessa app e le tabelle condivise di altre app con il loro nome. Alla
-creazione l’assistente IA delle tabelle prende l’app dal testo (altrimenti quella scelta) e usa solo gruppi di menu e
-tabelle di quell’app; nell’adattamento vede solo l’app della tabella. Gli elenchi del Designer di tabelle e del
+creazione l’assistente IA delle tabelle prende l’app dal testo (altrimenti quella scelta) e usa solo gruppi di menu di quell’app; crea collegamenti verso tabelle di quell’app o verso tabelle condivise di altre
+app (visualizzando solo campi condivisi); nell’adattamento vede solo l’app della tabella. Gli elenchi del Designer di tabelle e del
 Connettore di tabelle mostrano l’app come colonna con filtro.
 
 **Interfacce:** un’app può **condividere** singole tabelle con tutte le altre app – in sola lettura. Nel Designer di
@@ -1211,19 +1212,24 @@ condivisi** (proposti: quelli ricercabili; l’ID ne fa sempre parte). Le altre 
 
 - riferirsi alla tabella con un **campo di collegamento** (nella scelta «Articolo (Gestione magazzino)»); come campi
   visualizzati ci sono solo campi condivisi,
-- riprendere un valore condiviso nella propria tabella con **«Riprendi da»**.
+- riprendere un valore condiviso nella propria tabella con **«Riprendi da»**,
+- usare i campi condivisi nei **report** tramite un campo di collegamento o un collegamento tra tabelle – senza diritto
+  di lettura sulla tabella altrui; da lì non si prosegue nell’altra app, e non è proposta come tabella di base,
+- creare **collegamenti tra tabelle** verso la tabella (campo di destinazione: ID o un campo univoco condiviso; la scelta
+  nomina l’app).
 
 Creare, modificare o eliminare nella tabella dell’altra app tramite l’interfaccia non è possibile; non ci sono somme su
 tabelle figlie di un’altra app, e «Dettagli» offre solo tabelle della propria app. I campi condivisi sono visibili nei
 collegamenti a tutti coloro che vedono il proprio record; aprire la tabella altrui stessa (elenco, anteprima) richiede
 il suo diritto di lettura – assegnato nel ruolo, sezione «Tabelle condivise di altre app».
 
-Ciò che un’altra app usa è un **contratto**: la tabella non si può disattivare, eliminare, spostare in un’altra app né
+Ciò che un’altra app usa – campi di collegamento, collegamenti tra tabelle, campi nei suoi report – è un
+**contratto**: la tabella non si può disattivare, eliminare, spostare in un’altra app né
 togliere dalla condivisione; i campi usati non si possono eliminare, rinominare, cambiare di tipo né deselezionare (il
 selettore è allora bloccato, i campi usati figurano come «Condivisi in modo fisso» sopra la scelta, la sezione nomina gli
 utilizzatori); un’app con interfaccia usata non si può rimuovere. Togliere un campo non usato dalla condivisione aumenta
 la **versione** dell’interfaccia dell’app. Se l’app che condivide è **disattivata**, i campi che vi rimandano mostrano
-«non disponibile» e la scelta resta vuota (il super-admin vede ancora i valori); la conferma alla disattivazione lo
+«non disponibile» e la scelta resta vuota, i report segnalano «al momento non disponibile» (il super-admin vede ancora i valori); la conferma alla disattivazione lo
 segnala. Nella pagina **App** la colonna **Interfacce** mostra il numero di tabelle condivise e l’azione **Interfacce**
 (menu a puntini) cosa condivide l’app, chi lo usa e cosa usa lei stessa di altre app.
 
@@ -1273,8 +1279,11 @@ di dati» di un gruppo di menu, con «Mostra campi»); compaiono solo le tabelle
 tabelle e i menu dell’app; a scelta: report (condivisi e propri), ruoli con diritti, attività pianificate e manuale. Mai
 inclusi: record, credenziali delle connessioni ai database (tabelle collegate solo come riferimento), menu, ruoli e
 attività di sistema. Ogni oggetto porta la sua chiave stabile, affinché un’app installata possa essere aggiornata in
-seguito. SAFT controlla la coerenza del file prima del download; l’esportazione è registrata nel registro delle
-modifiche.
+seguito. SAFT controlla la coerenza del file prima del download; l’esportazione è registrata nel registro delle modifiche.
+**Interfacce:** le condivisioni di tabelle e campi e la versione dell’interfaccia sono incluse. Ciò che l’app usa di
+altre app figura sotto `requires` (app, versione, tabelle, campi usati). I ruoli portano con sé delle tabelle di altre
+app solo il diritto di lettura sulle tabelle condivise; gli altri diritti fuori dall’app non appartengono alla
+definizione.
 
 **Installare:** **«Installa app …»** in alto nella pagina (diritto *App: installare*) carica un tale file e mostra
 un’**anteprima**: nome, versione e prefisso, cosa verrà creato, impedimenti (in rosso) – ad es. se l’app o una tabella
@@ -1294,6 +1303,12 @@ confrontate con il database, altrimenti restano senza connessione (vedi [Connett
 «Senza connessione»). Se la creazione non riesce a metà, l’app resta disattivata e si può smontare con «Rimuovi …». Lo
 stato installato viene salvato come **stato di partenza** (colonna **Installata**, ad es. «Installata: 1.2 il 20.11.2026»)
 – base per il futuro aggiornamento. L’installazione è registrata nel registro delle modifiche.
+
+**Interfacce richieste:** se l’app usa tabelle di altre app, l’anteprima le elenca sotto «Usa interfacce di altre app»
+(ad es. «Gestione magazzino › lager_artikel (campi: artikelnummer, bezeichnung)»). Se una tale tabella manca o se essa
+o un campo usato non è condiviso, l’installazione è impedita – installare o condividere prima l’altra app. Se l’altra
+app è disattivata o la sua interfaccia ha un’altra versione (ma i campi ci sono), c’è solo un avviso. Una copia
+continua a rimandare alla stessa tabella dell’altra app; riprende le proprie condivisioni, con la versione 1.
 
 **Disattivare e attivare:** nel menu delle azioni (tre puntini) di un’app; diritto *App: gestire*. Un’app disattivata
 scompare per tutti tranne il super-admin: non più nel selettore, né menu, report o riquadri, nessun accesso alle sue

@@ -15,6 +15,7 @@ final readonly class InstallAnalysis
      * @param  list<string>  $blockers
      * @param  list<string>  $warnings
      * @param  array<string, int>  $counts  Anzahl je Teil (tables, fields, external_tables, report_links, reports, menus, roles, tasks, manuals)
+     * @param  list<string>  $requires  genutzte Schnittstellen anderer Apps („App › Tabelle (Felder)“)
      */
     public function __construct(
         public array $definition,
@@ -22,6 +23,7 @@ final readonly class InstallAnalysis
         public array $warnings,
         public array $counts,
         public bool $copy,
+        public array $requires = [],
     ) {}
 
     public function canInstall(): bool

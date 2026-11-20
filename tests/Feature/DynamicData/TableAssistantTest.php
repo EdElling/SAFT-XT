@@ -314,6 +314,32 @@ class TableAssistantTest extends DynamicDataTestCase
         $this->assertSame($first->id, CustomTable::query()->where('name', 'vereine')->value('app_id'));
     }
 
+    public function test_relations_into_other_apps_use_shared_tables_and_fields(): void
+    {
+        // „vereine“ (Verwaltung) ist mit dem Feld „name“ freigegeben; „Lagerverwaltung“ darf darauf verknüpfen.
+        self::ensureTestApp();
+        $lager = App::query()->create(['name' => ['de' => 'Lagerverwaltung'], 'prefix' => 'lager', 'sort_order' => 2]);
+        $this->service()->updateInterface(CustomTable::query()->where('name', 'vereine')->sole(), true, ['name']);
+        $customers = fn (array $display): array => $this->members(['app' => $lager->id, 'name' => 'kunden', 'label' => $this->t('Kunden'), 'fields' => [
+            $this->field('firma', 'string'),
+            $this->field('verein_id', 'relation', ['relation_table' => 'vereine', 'relation_display' => $display]),
+        ]]);
+
+        // Nicht freigegebenes Anzeigefeld: Korrektur; danach nur freigegebene Felder.
+        $this->fake->push($customers(['ort']))->push($customers(['name']));
+        Livewire::test(CreateCustomTable::class)
+            ->fillForm(['app_id' => $lager->id])
+            ->set('assistantPrompt', 'Kunden mit ihrem Verein')
+            ->call('askTableAssistant')
+            ->assertSet('assistantReplyKind', 'proposal')
+            ->call('create')
+            ->assertHasNoFormErrors();
+        $this->assertStringContainsString(__('tables_assistant.errors.relation_shared_fields', ['name' => 'verein_id', 'table' => 'vereine', 'fields' => 'ort']), end($this->fake->requests[1]['messages'])['content']);
+        $this->assertSame('vereine', CustomTable::query()->where('name', 'lager_kunden')->sole()->fields()->where('name', 'verein_id')->sole()->optionsArray()['table']);
+        // Im Kontext: die freigegebenen Felder der Tabelle anderer Apps.
+        $this->assertStringContainsString('\\"shared_fields\\":[\\"name\\"]', $this->fake->sentText());
+    }
+
     public function test_icon_is_proposed_from_the_installed_icons(): void
     {
         // Neue Tabelle: unbekanntes Symbol wird korrigiert, bekanntes als heroicon-o-… übernommen.

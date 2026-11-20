@@ -10,6 +10,8 @@ use App\DynamicData\DataMenu;
 use App\Models\App;
 use App\Models\AppManual;
 use App\Models\CustomTable;
+use App\Models\DynamicRecord;
+use App\Models\Report;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\DynamicSchemaService;
@@ -419,6 +421,44 @@ class AppsTest extends DuskTestCase
             $browser->visit('/admin/table-designer/'.$staff->id.'/edit')->waitForText('Schnittstelle', 15)
                 ->waitForText('Fest freigegeben, weil von anderen Apps genutzt: Name (name)', 15)
                 ->assertSee('kunden.betreuer_id');
+        });
+    }
+
+    /** FAP-14 */
+    public function test_report_reads_shared_fields_of_another_app_without_its_permission(): void
+    {
+        $schema = app(DynamicSchemaService::class);
+        $staff = CustomTable::query()->where('name', 'hr_mitarbeitende')->sole();
+        $schema->updateInterface($staff, true, ['name']);
+        $relation = $schema->addField(CustomTable::query()->where('name', 'kunden')->sole(), ['name' => 'betreuer_id', 'label' => 'Betreuer', 'type' => 'relation', 'options' => ['table' => 'hr_mitarbeitende', 'display_fields' => ['name']]]);
+        $anna = DynamicRecord::forTableName('hr_mitarbeitende')->create(['name' => 'Anna Muster']);
+        DynamicRecord::forTableName('kunden')->create(['firma' => 'Beispiel AG', 'betreuer_id' => $anna->id]);
+        $customers = CustomTable::query()->where('name', 'kunden')->with('fields')->sole();
+        $report = Report::query()->create(['name' => 'Betreuung', 'app_id' => $this->first->id, 'owner_id' => User::query()->where('email', self::ADMIN)->value('id'), 'is_shared' => true, 'definition' => [
+            'base' => $customers->id,
+            'fields' => [
+                ['key' => 'firma', 'path' => [], 'field' => $customers->fields->firstWhere('name', 'firma')->id],
+                ['key' => 'betreuer', 'path' => [$relation->id], 'field' => $staff->fields()->where('name', 'name')->value('id'), 'label' => 'Betreuer Name'],
+            ],
+        ]]);
+
+        // Person der ersten App: nur Kunden lesbar, nicht die Mitarbeitenden – der freigegebene Name erscheint trotzdem.
+        $role = Role::query()->create(['name' => 'vertrieb', 'guard_name' => 'web', 'app_id' => $this->first->id]);
+        $role->givePermissionTo('reports.view', 'data.kunden.view');
+        $this->activeUser('vertrieb@example.com')->assignRole($role);
+
+        $this->browse(function (Browser $browser) use ($report): void {
+            $this->login($browser, 'vertrieb@example.com')->visit('/admin/reports/'.$report->id)
+                ->waitForText('Beispiel AG', 15)
+                ->assertSee('Anna Muster');
+            $this->logout($browser);
+
+            // Die Schnittstelle nennt die Auswertung als Nutzer.
+            $this->login($browser, self::ADMIN)->visit('/admin/apps')->waitForText('Personal', 15);
+            $this->openRowActions($browser, 'Personal');
+            $this->clickVisibleButton($browser, 'Schnittstellen');
+            $browser->waitFor('.fi-modal-window', 15)
+                ->waitForText('Auswertung „Betreuung“', 15);
         });
     }
 }

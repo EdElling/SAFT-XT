@@ -16,6 +16,7 @@ final readonly class ResolvedReport
      * @param  list<array{alias: string, parent: string, relation: CustomField, table: CustomTable, key: string}>  $joins
      * @param  array<int, CustomTable>  $tables  alle beteiligten Tabellen (auch nur im Filter)
      * @param  array<int, DataSnapshot>  $snapshots  verwendeter Datenstand je angebundener Tabelle
+     * @param  list<int>  $interfaces  über eine Schnittstelle einer anderen App erreichte Tabellen (ohne eigenes Leserecht)
      */
     public function __construct(
         public ReportDefinition $definition,
@@ -24,6 +25,7 @@ final readonly class ResolvedReport
         public array $joins,
         public array $tables,
         public array $snapshots = [],
+        public array $interfaces = [],
     ) {}
 
     public function snapshot(CustomTable $table): ?DataSnapshot

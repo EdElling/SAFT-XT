@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\ReportLinks\Schemas;
 
+use App\Apps\AppInterfaces;
 use App\Filament\Support\TranslatableInputs;
 use App\Models\CustomField;
 use App\Models\CustomTable;
@@ -70,7 +71,7 @@ class ReportLinkForm
                     ->schema([
                         Select::make('target_table_id')
                             ->label(__('report_links.table'))
-                            ->options(fn (): array => self::tableOptions())
+                            ->options(fn (Get $get): array => self::tableOptions($table($get('source_table_id'))))
                             ->searchable()
                             ->required()
                             ->live()
@@ -82,7 +83,7 @@ class ReportLinkForm
                                 $target = $table($get('target_table_id'));
                                 $source = $field($get('source_field_id'));
 
-                                return $target === null ? [] : $links->targetOptions($target, $source === null ? null : ReportLinks::kind($source));
+                                return $target === null ? [] : $links->targetOptions($target, $source === null ? null : ReportLinks::kind($source), $table($get('source_table_id')));
                             })
                             ->searchable()
                             ->required()
@@ -109,14 +110,21 @@ class ReportLinkForm
             ]);
     }
 
-    /** @return array<int, string> alle aktiven Tabellen mit Herkunft */
-    public static function tableOptions(): array
+    /**
+     * Aktive Tabellen mit Herkunft. Mit Quelltabelle (für das Ziel): Tabellen ihrer App und freigegebene Tabellen anderer
+     * Apps (Schnittstellen, B-107 Etappe 5b) mit dem Namen der App.
+     *
+     * @return array<int, string>
+     */
+    public static function tableOptions(?CustomTable $source = null): array
     {
-        return CustomTable::query()->with('databaseConnection')->where('is_active', true)->get()
+        return CustomTable::query()->with(['databaseConnection', 'app'])->where('is_active', true)->get()
+            ->filter(fn (CustomTable $t): bool => $source === null || ! AppInterfaces::foreign($t, $source->app_id) || $t->is_shared)
             ->sortBy(fn (CustomTable $t): string => mb_strtolower((string) $t->label))
             ->mapWithKeys(fn (CustomTable $t): array => [$t->id => $t->label.' · '.($t->isExternal()
                 ? __('report_links.external', ['connection' => (string) $t->databaseConnection?->name])
-                : __('report_links.designer')).' ('.$t->name.')'])
+                : __('report_links.designer')).' ('.$t->name.')'
+                .($source !== null && AppInterfaces::foreign($t, $source->app_id) ? ' – '.$t->app?->name : '')])
             ->all();
     }
 

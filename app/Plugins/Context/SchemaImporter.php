@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Plugins\Context;
 
 use App\DynamicData\Rules\CopySource;
+use App\DynamicData\Rules\SequenceSuggester;
 use App\Exceptions\BusinessRuleException;
 use App\Models\App;
 use App\Models\CustomField;
@@ -105,7 +106,8 @@ final readonly class SchemaImporter
             $kind = match (true) {
                 ($field['type'] ?? null) === 'relation' => 'relation',
                 ($field['type'] ?? null) === 'computed' => 'computed',
-                ! empty($field['options'][CopySource::OPTION]) => 'copy',
+                // „Übernehmen aus“ und „Zählen je“ (Vorschlag der nächsten Nummer je Verknüpfung) brauchen die Verknüpfung.
+                ! empty($field['options'][CopySource::OPTION]), ! empty($field['options'][SequenceSuggester::SCOPE]) => 'copy',
                 default => null,
             };
 

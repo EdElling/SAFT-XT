@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Apps\Definition;
 
+use App\Apps\AppInterfaces;
 use App\Apps\PluginApps;
+use App\DynamicData\DataPermissions;
+use App\DynamicData\Rules\CopySource;
+use App\DynamicData\Schema\FieldType;
 use App\Models\App;
 use App\Models\AppManual;
 use App\Models\CustomField;
@@ -28,6 +32,10 @@ use App\Plugins\PluginRegistry;
  * Jedes Objekt trägt seinen stabilen Schlüssel („key“, UUID); Verweise stehen zusätzlich als Namen (wie im
  * Konfigurationspaket, References), damit die Datei lesbar bleibt. Nie enthalten: Systemmenüs, Systemrollen,
  * System-Aufgaben, Zugangsdaten, Datensätze; angebundene Tabellen nur als Verweis.
+ *
+ * Schnittstellen (Etappe 5b): Freigaben stehen bei Tabellen und Feldern („is_shared“), die Version in
+ * „app.interface_version“. Was die App von anderen Apps nutzt, steht in „requires“ (App, Version, Tabellen, Felder);
+ * Installieren setzt diese Freigaben voraus.
  */
 final readonly class AppDefinition
 {
@@ -67,6 +75,7 @@ final readonly class AppDefinition
                 'icon' => $app->icon,
                 'prefix' => $app->prefix,
                 'version' => $app->version,
+                'interface_version' => (int) $app->interface_version,
                 'manual' => in_array('manual', $parts, true)
                     ? AppManual::query()->where('app_id', $app->id)->orderBy('locale')->pluck('content', 'locale')->all()
                     : [],
@@ -110,6 +119,8 @@ final readonly class AppDefinition
             'hidden_menus' => array_values(array_filter($role['hidden_menus'], static fn (string $path): bool => in_array($path, $paths, true))),
         ], $definition['roles']);
 
+        $definition['roles'] = array_map(fn (array $role): array => [...$role, 'permissions' => $this->rolePermissions($app, $role['permissions'])], $definition['roles']);
+        $definition['requires'] = $this->requires($definition);
         $definition['plugins'] = $this->requiredPlugins($app, $definition);
 
         return $definition;
@@ -192,12 +203,124 @@ final readonly class AppDefinition
             // Rechte ergeben sich beim Anlegen aus dem Namen; in der Definition nicht nötig.
             unset($table['permissions']);
 
+            $shared = $model->fields->filter(static fn (CustomField $f): bool => $f->is_shared)->pluck('name')->all();
+
             return [
                 'key' => (string) $model->uuid,
                 ...$table,
-                'fields' => array_map(static fn (array $field): array => ['key' => $keys[$field['name']] ?? null, ...$field], $table['fields']),
+                // Schnittstelle (Etappe 5b): nur bei freigegebenen Tabellen bzw. Feldern.
+                ...($model->is_shared ? ['is_shared' => true] : []),
+                'fields' => array_map(static fn (array $field): array => [
+                    'key' => $keys[$field['name']] ?? null,
+                    ...$field,
+                    ...(in_array($field['name'], $shared, true) ? ['is_shared' => true] : []),
+                ], $table['fields']),
             ];
         }, $this->schema->export($names, false)['tables']);
+    }
+
+    /**
+     * Rechte einer Rolle, die zur App gehören: alle ausser Datenrechten auf Tabellen anderer Apps – von dort nur
+     * Anzeigen auf freigegebene Tabellen (Schnittstelle); Rechte „ausserhalb“ aus der Zeit vor den Apps gehören nicht dazu.
+     *
+     * @param  list<string>  $permissions
+     * @return list<string>
+     */
+    private function rolePermissions(App $app, array $permissions): array
+    {
+        $tables = CustomTable::query()->get(['name', 'app_id', 'is_shared'])->keyBy('name');
+
+        return array_values(array_filter($permissions, static function (string $permission) use ($app, $tables): bool {
+            if (! str_starts_with($permission, DataPermissions::PREFIX)) {
+                return true;
+            }
+
+            $rest = substr($permission, strlen(DataPermissions::PREFIX));
+            $table = $tables->get(substr($rest, 0, (int) strrpos($rest, '.')));
+
+            return $table === null || ! AppInterfaces::foreign($table, $app->id)
+                || ($table->is_shared && str_ends_with($rest, '.view'));
+        }));
+    }
+
+    /**
+     * Was die App von anderen Apps nutzt (Schnittstellen): Verknüpfungsfelder mit Anzeige- und Übernahmefeldern,
+     * Tabellenverknüpfungen, Felder in Auswertungen und Leserechte von Rollen – gruppiert nach App.
+     *
+     * @param  array<string, mixed>  $definition
+     * @return list<array{app: array<string, mixed>, tables: list<array{key: string, name: string, fields: list<string>}>}>
+     */
+    private function requires(array $definition): array
+    {
+        $own = [...array_column($definition['tables'], 'name'), ...array_column($definition['external_tables'], 'name')];
+        $need = [];
+        $use = static function (string $table, array $fields = []) use (&$need, $own): void {
+            if ($table !== '' && ! in_array($table, $own, true)) {
+                $need[$table] = [...($need[$table] ?? []), ...array_filter($fields, static fn (string $f): bool => $f !== '' && $f !== 'id')];
+            }
+        };
+
+        foreach ([...$definition['tables'], ...$definition['external_tables']] as $table) {
+            $targets = [];
+
+            foreach ((array) $table['fields'] as $field) {
+                $options = (array) ($field['options'] ?? []);
+
+                if (($field['type'] ?? null) === FieldType::Relation->value) {
+                    $targets[$field['name']] = (string) ($options['table'] ?? '');
+                    $use($targets[$field['name']], array_map('strval', (array) ($options['display_fields'] ?? array_filter([$options['display_field'] ?? null]))));
+                }
+            }
+
+            foreach ((array) $table['fields'] as $field) {
+                $copy = (string) (((array) ($field['options'] ?? []))[CopySource::OPTION] ?? '');
+
+                if (str_contains($copy, '.') && isset($targets[strstr($copy, '.', true)])) {
+                    $use($targets[strstr($copy, '.', true)], [substr($copy, strpos($copy, '.') + 1)]);
+                }
+            }
+        }
+
+        foreach ($definition['report_links'] as $link) {
+            $use((string) $link['target_table'], [(string) substr((string) ($link['target_field'] ?? ''), strpos((string) ($link['target_field'] ?? ''), '.') + 1)]);
+        }
+
+        foreach ($definition['reports'] as $report) {
+            foreach ((array) (($report['definition'] ?? [])['fields'] ?? []) as $field) {
+                $ref = (string) (is_array($field) ? ($field['field'] ?? '') : '');
+
+                if (str_contains($ref, '.')) {
+                    $use((string) strstr($ref, '.', true), [substr($ref, strpos($ref, '.') + 1)]);
+                }
+            }
+        }
+
+        foreach ($definition['roles'] as $role) {
+            foreach ((array) $role['permissions'] as $permission) {
+                if (str_starts_with((string) $permission, DataPermissions::PREFIX)) {
+                    $rest = substr((string) $permission, strlen(DataPermissions::PREFIX));
+                    $use(substr($rest, 0, (int) strrpos($rest, '.')));
+                }
+            }
+        }
+
+        $apps = [];
+
+        foreach (CustomTable::query()->whereIn('name', array_keys($need))->with('app')->orderBy('name')->get() as $table) {
+            $owner = $table->app;
+            $key = (string) ($owner?->uuid ?? '');
+            $apps[$key] ??= ['app' => [
+                'key' => $key,
+                'name' => $owner?->getTranslations('name') ?? [],
+                'prefix' => $owner?->prefix,
+                'interface_version' => (int) ($owner?->interface_version ?? 1),
+            ], 'tables' => []];
+            $fields = array_values(array_unique($need[$table->name]));
+            sort($fields);
+            $apps[$key]['tables'][] = ['key' => (string) $table->uuid, 'name' => $table->name, 'fields' => $fields];
+        }
+
+        return array_values($apps);
     }
 
     /**

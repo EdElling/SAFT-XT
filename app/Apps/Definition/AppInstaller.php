@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Apps\Definition;
 
+use App\Apps\AppInterfaces;
 use App\DynamicData\DataMenu;
 use App\DynamicData\DataPermissions;
 use App\DynamicData\Formula\FormulaAnalyzer;
@@ -28,6 +29,7 @@ use App\Plugins\Context\SchemaExporter;
 use App\Plugins\Context\SchemaImporter;
 use App\Plugins\PluginRegistry;
 use App\Tasks\TaskRegistry;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
@@ -130,6 +132,10 @@ final class AppInstaller
             }
         }
 
+        [$requires, $missing, $notes] = $this->requirements((array) ($definition['requires'] ?? []));
+        $blockers = [...$blockers, ...$missing];
+        $warnings = [...$warnings, ...$notes];
+
         foreach (array_keys((array) ($definition['plugins'] ?? [])) as $plugin) {
             if (! $this->plugins->has((string) $plugin)) {
                 $warnings[] = __('apps.install.warnings.plugin', ['plugin' => (string) $plugin]);
@@ -171,7 +177,64 @@ final class AppInstaller
             'roles' => count($definition['roles']),
             'tasks' => count($definition['tasks']),
             'manuals' => count((array) ($definition['app']['manual'] ?? [])),
-        ], $copy !== null);
+        ], $copy !== null, $requires);
+    }
+
+    /**
+     * Benötigte Schnittstellen anderer Apps (Etappe 5b): Jede Tabelle muss vorhanden und freigegeben sein, mit allen
+     * genutzten Feldern. Sonst ein Hinderungsgrund; deaktivierte App oder andere Version nur als Hinweis.
+     *
+     * @param  array<int, mixed>  $requires
+     * @return array{0: list<string>, 1: list<string>, 2: list<string>} Übersicht, Hinderungsgründe, Hinweise
+     */
+    private function requirements(array $requires): array
+    {
+        $overview = [];
+        $blockers = [];
+        $warnings = [];
+
+        foreach ($requires as $entry) {
+            $app = (array) ($entry['app'] ?? []);
+            $appName = References::defaultLabel($app['name'] ?? []) ?: (string) ($app['prefix'] ?? '–');
+            $installed = null;
+
+            foreach ((array) ($entry['tables'] ?? []) as $required) {
+                $name = (string) ($required['name'] ?? '');
+                $fields = array_values(array_map('strval', (array) ($required['fields'] ?? [])));
+                $table = CustomTable::query()->where('name', $name)->with(['fields', 'app'])->first();
+                $overview[] = __('apps.install.requires_table', ['app' => $appName, 'table' => $name, 'fields' => $fields === [] ? '–' : implode(', ', $fields)]);
+
+                if ($table === null || $table->app_id === null) {
+                    $blockers[] = __('apps.install.errors.requires_missing', ['app' => $appName, 'table' => $name]);
+
+                    continue;
+                }
+
+                $installed ??= $table->app;
+
+                if (! $table->is_shared) {
+                    $blockers[] = __('apps.install.errors.requires_not_shared', ['app' => (string) $table->app?->name, 'table' => $name]);
+
+                    continue;
+                }
+
+                $unshared = array_values(array_filter($fields, static fn (string $f): bool => ! AppInterfaces::fieldShared($table, $f)));
+
+                if ($unshared !== []) {
+                    $blockers[] = __('apps.install.errors.requires_fields', ['app' => (string) $table->app?->name, 'table' => $name, 'fields' => implode(', ', $unshared)]);
+                }
+            }
+
+            if ($installed !== null && ! $installed->is_active) {
+                $warnings[] = __('apps.install.warnings.requires_inactive', ['app' => (string) $installed->name]);
+            }
+
+            if ($installed !== null && isset($app['interface_version']) && (int) $app['interface_version'] !== (int) $installed->interface_version) {
+                $warnings[] = __('apps.install.warnings.requires_version', ['app' => (string) $installed->name, 'expected' => (int) $app['interface_version'], 'actual' => (int) $installed->interface_version]);
+            }
+        }
+
+        return [$overview, array_values(array_unique($blockers)), $warnings];
     }
 
     /**
@@ -200,6 +263,7 @@ final class AppInstaller
             'icon' => $data['icon'] ?? null,
             'prefix' => $data['prefix'] ?? null,
             'version' => $data['version'] ?? null,
+            'interface_version' => max(1, (int) ($data['interface_version'] ?? 1)),
             'sort_order' => ((int) App::query()->max('sort_order')) + 10,
             'is_active' => false,
         ]);
@@ -212,8 +276,8 @@ final class AppInstaller
 
             // 2. Tabellen des Table-Designers (DDL; auf MySQL/MariaDB nicht transaktional, deshalb vorher geprüft).
             if ($definition['tables'] !== []) {
-                $tables = array_map(static fn (array $t): array => [...$t, 'fields' => array_map(static function (array $f): array {
-                    unset($f['key']);
+                $tables = array_map(static fn (array $t): array => [...Arr::except($t, ['is_shared']), 'fields' => array_map(static function (array $f): array {
+                    unset($f['key'], $f['is_shared']);
 
                     return $f;
                 }, $t['fields'])], $definition['tables']);
@@ -221,10 +285,11 @@ final class AppInstaller
 
                 foreach ($definition['tables'] as $table) {
                     $model = CustomTable::query()->where('name', $table['name'])->firstOrFail();
-                    $model->forceFill(['uuid' => $table['key']])->saveQuietly();
+                    $model->forceFill(['uuid' => $table['key'], 'is_shared' => (bool) ($table['is_shared'] ?? false)])->saveQuietly();
 
                     foreach ($table['fields'] as $field) {
-                        CustomField::query()->where('custom_table_id', $model->id)->where('name', $field['name'])->update(['uuid' => $field['key']]);
+                        CustomField::query()->where('custom_table_id', $model->id)->where('name', $field['name'])
+                            ->update(['uuid' => $field['key'], 'is_shared' => (bool) ($field['is_shared'] ?? false)]);
                     }
                 }
             }
@@ -528,7 +593,7 @@ final class AppInstaller
             return $f;
         }, $fields);
 
-        $definition['app'] = [...$definition['app'], 'name' => [(string) config('locales.default') => $name], 'prefix' => $prefix];
+        $definition['app'] = [...$definition['app'], 'name' => [(string) config('locales.default') => $name], 'prefix' => $prefix, 'interface_version' => 1];
         $definition['tables'] = array_map(static fn (array $t): array => [...$t, 'name' => $table($t['name']), 'fields' => $fields($t['fields']),
             'details' => array_map($ref, (array) ($t['details'] ?? []))], $definition['tables']);
         $definition['external_tables'] = array_map(static fn (array $t): array => [...$t, 'name' => $table($t['name']), 'fields' => $fields((array) $t['fields'])], $definition['external_tables']);

@@ -95,6 +95,13 @@ Damit Verweise zwischen Apps robust sind (und dieselbe Logik später der REST-AP
 - Ist die freigebende App deaktiviert, zeigen verweisende Felder **„nicht verfügbar“**.
 - Umsetzung in zwei Teilen: **5a** Freigeben, Verknüpfen, Schutz, Rechte, Lebenszyklus; **5b** Auswertungen und
   Tabellenverknüpfungen über Schnittstellen, App-Definition (`requires`), Version, KI-Tabellenassistent.
+- Entschieden 5b (20.11.2026): In Auswertungen führt ein Pfad nur **in** die freigegebene Tabelle (freigegebene Felder,
+  ohne eigenes Leserecht), nicht weiter in die andere App; sie ist keine Grundtabelle. Tabellenverknüpfungen dürfen auf
+  freigegebene Tabellen zeigen (Zielfeld freigegeben). Auswertungen und Tabellenverknüpfungen anderer Apps zählen als
+  Nutzung (Vertrag). Die App-Definition trägt Freigaben und `interface_version`; `requires` nennt je App die genutzten
+  Tabellen und Felder. Fehlt beim Installieren eine benötigte Schnittstelle, ist das ein **Hinderungsgrund** (nicht:
+  Felder inaktiv anlegen); andere Version oder deaktivierte App nur Hinweis. Der Bruch beim Aktualisieren kommt mit
+  Etappe 6.
 - Später (B-109, eigene Datenbank je App): Verknüpfungen über App-Grenzen sind heute Fremdschlüssel in derselben
   Datenbank; mit getrennten Datenbanken müssten sie ohne Fremdschlüssel auskommen.
 - Die Schnittstelle ist Teil der App-Definition und hat eine **Version**; inkompatible Änderungen erhöhen sie und

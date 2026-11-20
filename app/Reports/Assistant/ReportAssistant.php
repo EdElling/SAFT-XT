@@ -45,7 +45,8 @@ final class ReportAssistant
         keeps records with equal names apart. For "per person", "which customers" and the like, use the relation field
         itself; add further fields of the related table only when the user asks for them. `links` are further
         connections to another table, with negative ids. Select fields list their `choices`; in filters use the choice
-        `value`, not the label.
+        `value`, not the label. Tables marked `interface` belong to another app: they can only be reached through a
+        relation or link, never be the base, and the path ends there (only their listed fields, no further steps).
 
         Field references (`ref`) have the form `<path>:<field id>`. The path lists the relation field ids and link ids,
         separated by `/`, that lead from the base table to the table holding the field; it is empty for fields of the
@@ -190,7 +191,9 @@ final class ReportAssistant
     {
         $base = $state['base'];
 
-        if ($base === null || ! in_array($base, array_column($this->catalog->structure($user, false), 'id'), true)) {
+        $bases = array_column(array_filter($this->catalog->structure($user, false), static fn (array $t): bool => ! ($t['interface'] ?? false)), 'id');
+
+        if ($base === null || ! in_array($base, $bases, true)) {
             return [__('assistant.errors.unknown_table', ['id' => (string) $base])];
         }
 

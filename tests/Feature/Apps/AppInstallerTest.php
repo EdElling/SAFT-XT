@@ -46,6 +46,8 @@ class AppInstallerTest extends DynamicDataTestCase
             ['name' => 'menge', 'label' => 'Menge', 'type' => 'integer', 'validation_rules' => ['max' => 3]],
             ['name' => 'kunde_id', 'label' => 'Kunde', 'type' => 'relation', 'options' => ['table' => 'vk_kunden', 'display_fields' => ['firma']]],
         ]);
+        // „Zählen je“ braucht die Verknüpfung – beim Installieren erst nach ihr anlegen.
+        $service->addField($orders->refresh(), ['name' => 'position', 'label' => 'Position', 'type' => 'integer', 'options' => ['suggest_next' => true, 'suggest_scope' => 'kunde_id']]);
         $service->addField($customers->refresh(), ['name' => 'stueck', 'label' => 'Stück', 'type' => 'computed', 'options' => ['formula' => 'sum(vk_bestellungen.menge)', 'result' => 'integer']]);
 
         $group = Menu::create(['app_id' => $this->sales->id, 'label' => ['de' => 'Verkauf'], 'sort_order' => 10]);
@@ -96,7 +98,7 @@ class AppInstallerTest extends DynamicDataTestCase
 
         $analysis = $this->installer()->analyze($definition);
         $this->assertSame([], $analysis->blockers);
-        $this->assertSame(['tables' => 2, 'fields' => 5, 'external_tables' => 0, 'report_links' => 1, 'reports' => 1, 'menus' => 4, 'roles' => 1, 'tasks' => 1, 'manuals' => 1], $analysis->counts);
+        $this->assertSame(['tables' => 2, 'fields' => 6, 'external_tables' => 0, 'report_links' => 1, 'reports' => 1, 'menus' => 4, 'roles' => 1, 'tasks' => 1, 'manuals' => 1], $analysis->counts);
 
         $app = $this->installer()->install($definition, null, $this->admin);
 
@@ -108,6 +110,7 @@ class AppInstallerTest extends DynamicDataTestCase
         $this->assertSame(collect($definition['tables'][0]['fields'])->pluck('key', 'name')->sort()->all(), $orders->fields->pluck('uuid', 'name')->sort()->all());
         $this->assertEquals(['max' => 3], $orders->fields->firstWhere('name', 'menge')->validation_rules);
         $this->assertSame('sum(vk_bestellungen.menge)', CustomField::query()->where('name', 'stueck')->sole()->optionsArray()['formula']);
+        $this->assertSame('kunde_id', $orders->fields->firstWhere('name', 'position')->optionsArray()['suggest_scope']);
 
         $report = Report::query()->sole();
         $this->assertSame([$orders->id, $app->id, $this->admin->id], [(int) $report->definition['base'], $report->app_id, $report->owner_id]);

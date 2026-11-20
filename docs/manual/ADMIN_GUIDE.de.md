@@ -315,7 +315,8 @@ Dateien hinzukamen oder entfernt wurden.
 
 **App und Präfix:** Beim Anlegen wählen Sie die [App](#15-apps-fachanwendungen) der Tabelle (bei mehreren Apps
 Pflicht). Hat die App ein Präfix, steht es vor dem vorgeschlagenen technischen Namen; ein Wechsel der App ersetzt es.
-Verknüpfungen sind nur zu Tabellen derselben App möglich.
+Verknüpfungen sind zu Tabellen derselben App möglich und zu freigegebenen Tabellen anderer Apps
+([Schnittstellen](#15-apps-fachanwendungen)).
 
 ### Berechnete Felder
 
@@ -1176,8 +1177,8 @@ leeren Apps – **Löschen**; Apps mit Inhalt werden deaktiviert und entfernt (u
 **Grenze zwischen Apps:** Verknüpfungsfelder, Tabellenverknüpfungen für Auswertungen, „Übernehmen aus“ und Formeln über
 Kind-Tabellen gibt es innerhalb einer App – über die App-Grenze nur auf **freigegebene** Tabellen (Schnittstellen,
 unten). Der Table-Designer bietet Tabellen derselben App an und freigegebene Tabellen anderer Apps mit deren Namen. Der
-KI-Tabellenassistent wählt beim Anlegen die App aus dem Text (sonst die gewählte) und verwendet nur Menügruppen und
-Tabellen dieser App; beim Anpassen sieht er nur die App der Tabelle. Die Listen von Table-Designer und Table-Connector
+KI-Tabellenassistent wählt beim Anlegen die App aus dem Text (sonst die gewählte) und verwendet nur Menügruppen dieser App; Verknüpfungen setzt er auf Tabellen dieser App oder auf freigegebene Tabellen
+anderer Apps (Anzeige nur freigegebene Felder); beim Anpassen sieht er nur die App der Tabelle. Die Listen von Table-Designer und Table-Connector
 zeigen die App als Spalte mit Filter.
 
 **Schnittstellen:** Eine App kann einzelne Tabellen für alle anderen Apps **freigeben** – nur lesend. Im Table-Designer
@@ -1186,19 +1187,25 @@ zeigen die App als Spalte mit Filter.
 
 - mit einem **Verknüpfungsfeld** auf die Tabelle verweisen (in der Auswahl „Artikel (Lagerverwaltung)“); als
   Anzeigefelder gibt es nur freigegebene Felder,
-- mit **„Übernehmen aus“** einen freigegebenen Wert in ihre eigene Tabelle holen.
+- mit **„Übernehmen aus“** einen freigegebenen Wert in ihre eigene Tabelle holen,
+- in **Auswertungen** über ein Verknüpfungsfeld oder eine Tabellenverknüpfung die freigegebenen Felder verwenden – ohne
+  Leserecht auf die fremde Tabelle; von dort geht es nicht weiter in die andere App, und als Grundtabelle steht sie nicht
+  zur Wahl,
+- **Tabellenverknüpfungen** auf die Tabelle anlegen (Zielfeld: ID oder ein freigegebenes eindeutiges Feld; die Auswahl
+  nennt die App).
 
 In der fremden Tabelle selbst anlegen, ändern oder löschen geht über die Schnittstelle nicht; Summen über Kind-Tabellen
 einer anderen App gibt es nicht, und unter „Details“ erscheinen nur Tabellen der eigenen App. Die freigegebenen Felder
 sind in Verknüpfungen für alle sichtbar, die den eigenen Datensatz sehen; die fremde Tabelle selbst öffnen (Liste,
 Vorschau) braucht ihr Leserecht – vergeben in der Rolle im Abschnitt „Freigegebene Tabellen anderer Apps“.
 
-Was eine andere App nutzt, ist **Vertrag**: Die Tabelle lässt sich nicht deaktivieren, löschen, in eine andere App
+Was eine andere App nutzt – Verknüpfungsfelder, Tabellenverknüpfungen, Felder in ihren Auswertungen –, ist
+**Vertrag**: Die Tabelle lässt sich nicht deaktivieren, löschen, in eine andere App
 verschieben oder aus der Freigabe nehmen, genutzte Felder nicht löschen, umbenennen, im Typ ändern oder abwählen (der
 Schalter ist dann gesperrt, genutzte Felder stehen als „Fest freigegeben“ über der Auswahl, der Abschnitt nennt die
 Nutzer); eine App mit genutzter Schnittstelle lässt sich nicht entfernen. Nimmt man ein unbenutztes Feld aus der
 Freigabe, steigt die **Version** der Schnittstelle der App. Ist die freigebende App **deaktiviert**, zeigen die
-verweisenden Felder „nicht verfügbar“, die Auswahl bleibt leer (der Super-Admin sieht weiterhin die Werte); beim
+verweisenden Felder „nicht verfügbar“, die Auswahl bleibt leer, Auswertungen melden „zurzeit nicht verfügbar“ (der Super-Admin sieht weiterhin die Werte); beim
 Deaktivieren weist die Rückfrage darauf hin. Auf der Seite **Apps** zeigt die Spalte **Schnittstellen** die Zahl der
 freigegebenen Tabellen und die Aktion **Schnittstellen** (Punkte-Menü), was die App freigibt, wer es nutzt und was sie
 selbst von anderen Apps nutzt.
@@ -1248,7 +1255,10 @@ Tabellenverknüpfungen und die Menüs der App; wählbar sind Auswertungen (freig
 geplante Aufgaben und das Handbuch. Nie enthalten sind Datensätze, Zugangsdaten von Datenbankverbindungen (angebundene
 Tabellen nur als Verweis), Systemmenüs, Systemrollen und System-Aufgaben. Jedes Objekt trägt seinen stabilen Schlüssel,
 damit sich eine installierte App später aktualisieren lässt. SAFT prüft die Datei vor dem Herunterladen auf
-Stimmigkeit; der Export steht im Änderungsprotokoll.
+Stimmigkeit; der Export steht im Änderungsprotokoll. **Schnittstellen:** Freigaben von Tabellen und Feldern und die
+Version der Schnittstelle gehen mit. Was die App von anderen Apps nutzt, steht unter `requires` (App, Version,
+Tabellen, genutzte Felder). Rollen nehmen von Tabellen anderer Apps nur das Leserecht auf freigegebene Tabellen mit;
+übrige Rechte ausserhalb der App gehören nicht zur Definition.
 
 **Installieren:** **„App installieren …“** oben auf der Seite (Recht *Apps: installieren*) lädt eine solche Datei hoch
 und zeigt eine **Vorschau**: Name, Version und Präfix, was angelegt wird, Hinderungsgründe (rot) – etwa wenn die App oder
@@ -1267,8 +1277,14 @@ sind. **Angebundene Tabellen** werden inaktiv angelegt: Gibt es eine Datenbankve
 zugeordnet und mit der Datenbank abgeglichen, sonst bleiben sie ohne Verbindung (siehe
 [Table-Connector](#10-table-connector), „Ohne Verbindung“). Scheitert das Anlegen mittendrin, bleibt die App deaktiviert
 stehen und lässt sich mit „Entfernen …“ abbauen. Der installierte Stand wird als **Ausgangsstand** gespeichert
-(Spalte **Installiert**, z. B. „Installiert: 1.2 am 20.11.2026“) – Grundlage für das spätere Aktualisieren. Installieren
-steht im Änderungsprotokoll.
+(Spalte **Installiert**, z. B. „Installiert: 1.2 am 20.11.2026“) – Grundlage für das spätere Aktualisieren. Installieren steht im Änderungsprotokoll.
+
+**Benötigte Schnittstellen:** Nutzt die App Tabellen anderer Apps, nennt die Vorschau sie unter „Nutzt Schnittstellen
+anderer Apps“ (z. B. „Lagerverwaltung › lager_artikel (Felder: artikelnummer, bezeichnung)“). Fehlt eine solche Tabelle
+oder ist sie bzw. ein genutztes Feld nicht freigegeben, verhindert das das Installieren – zuerst die andere App
+installieren bzw. freigeben. Ist die andere App deaktiviert oder hat ihre Schnittstelle eine andere Version (die
+Felder sind aber da), gibt es nur einen Hinweis. Eine Kopie verweist weiter auf dieselbe Tabelle der anderen App; ihre
+eigenen Freigaben übernimmt sie, mit Version 1.
 
 **Deaktivieren und aktivieren:** Im Aktionsmenü (drei Punkte) einer App; Recht *Apps: verwalten*. Eine deaktivierte
 App verschwindet für alle ausser dem Super-Admin: nicht mehr im Umschalter, keine Menüs, Auswertungen und Kacheln, kein

@@ -7,6 +7,7 @@ namespace App\DynamicData\Assistant;
 use App\Ai\AiConfig;
 use App\Ai\AiConversation;
 use App\Ai\AiUsage;
+use App\Apps\AppInterfaces;
 use App\DynamicData\DataMenu;
 use App\DynamicData\Rules\TableRule;
 use App\DynamicData\Rules\TableRuleNormalizer;
@@ -68,7 +69,9 @@ final class TableAssistant
         added to an existing table (Adjust with AI) – when creating, leave them out.
 
         Create relations only when the description asks for them or clearly implies them (e.g. "belongs to a club" and a
-        table for clubs exists). Use only existing tables and fields from the data model. Keep tables focused: the
+        table for clubs exists). Use only existing tables and fields from the data model. Tables of other apps can only be
+        linked when they are shared ("shared_tables", or tables with "shared_fields"): only by a relation, and
+        relation_display may only use their shared fields. Keep tables focused: the
         fields the description names plus obvious ones; no speculative extras.
 
         When the request is ambiguous, set kind to "question" and ask one short question in the user's language; fill
@@ -81,8 +84,9 @@ final class TableAssistant
         Every table belongs to exactly one app (business application, see "apps" in the data model). Set app to the id of
         the app the user names in the request; otherwise to the app of the current form state (form.app). If neither
         names an app and there is more than one app, set kind to "question" and ask in which app the table belongs,
-        listing the app names. The menu group and the tables of relations must belong to the chosen app (see "app" of
-        each menu group and table); groups and tables of other apps cannot be used. Do not put the app prefix into the
+        listing the app names. The menu group must belong to the chosen app (see "app" of each menu group). Relations
+        point to tables of the chosen app, or to tables of other apps that list "shared_fields" (shared interface;
+        relation_display only from these fields); other tables of other apps cannot be used. Do not put the app prefix into the
         technical name – it is added automatically.
         TXT;
 
@@ -307,9 +311,36 @@ final class TableAssistant
                 'label' => (string) $t->label,
                 'fields' => $t->fields->where('is_active', true)->map(fn (CustomField $f): array => ['name' => $f->name, 'label' => (string) $f->label, 'type' => $f->type->value])->values()->all(),
             ])->all(),
+            // Schnittstellen (B-107, Etappe 5b): freigegebene Tabellen anderer Apps, nur mit ihren freigegebenen Feldern.
+            'shared_tables' => $this->sharedTables(fn (CustomTable $t): bool => AppInterfaces::foreign($t, $this->appId)),
             'menu_groups' => collect(app(DataMenu::class)->groupOptions($this->appId))->map(fn (string $label, string $id): array => ['id' => $id, 'label' => trim($label)])->values()->all(),
             'icons' => IconCatalog::assistantNames(),
         ];
+    }
+
+    /**
+     * Freigegebene Tabellen (Schnittstellen) mit App und freigegebenen Feldern.
+     *
+     * @param  callable(CustomTable): bool  $filter
+     * @return list<array<string, mixed>>
+     */
+    private function sharedTables(callable $filter): array
+    {
+        return CustomTable::query()->designer()->where('is_shared', true)->where('is_active', true)->with(['fields', 'app'])->orderBy('name')->get()
+            ->filter($filter)
+            ->map(fn (CustomTable $t): array => [
+                'name' => $t->name,
+                'label' => (string) $t->label,
+                'app' => (string) $t->app?->name,
+                'shared_fields' => $this->sharedFields($t),
+            ])->values()->all();
+    }
+
+    /** @return list<array{name: string, label: string, type: string}> */
+    private function sharedFields(CustomTable $table): array
+    {
+        return $table->fields->filter(fn (CustomField $f): bool => $f->is_active && AppInterfaces::fieldShared($table, $f->name))
+            ->map(fn (CustomField $f): array => ['name' => $f->name, 'label' => (string) $f->label, 'type' => $f->type->value])->values()->all();
     }
 
     /**
@@ -335,6 +366,8 @@ final class TableAssistant
                 'label' => (string) $t->label,
                 'app' => $t->app_id,
                 'fields' => $t->fields->where('is_active', true)->map(fn (CustomField $f): array => ['name' => $f->name, 'label' => (string) $f->label, 'type' => $f->type->value])->values()->all(),
+                // Schnittstelle: für Tabellen anderer Apps nur diese Felder.
+                ...($t->is_shared ? ['shared_fields' => array_column($this->sharedFields($t), 'name')] : []),
             ])->all(),
             'menu_groups' => $groups,
             'icons' => IconCatalog::assistantNames(),
@@ -453,11 +486,17 @@ final class TableAssistant
             $errors = [...$errors, ...$this->ruleTextProblems($field)];
             $errors = [...$errors, ...$this->fieldProblems(TableProposalSchema::toFormField($field), null)];
 
-            // Verknüpfungen nur innerhalb der App (B-107).
-            $target = ($field['type'] ?? null) === 'relation' ? CustomTable::query()->where('name', (string) ($field['relation_table'] ?? ''))->first() : null;
+            // Verknüpfungen in eine andere App nur auf freigegebene Tabellen, Anzeige nur freigegebene Felder (B-107, Etappe 5b).
+            $target = ($field['type'] ?? null) === 'relation' ? CustomTable::query()->where('name', (string) ($field['relation_table'] ?? ''))->with('fields')->first() : null;
 
-            if ($target !== null && $appId !== null && $target->app_id !== $appId) {
-                $errors[] = __('tables_assistant.errors.relation_app', ['name' => (string) ($field['name'] ?? ''), 'table' => $target->name]);
+            if ($target !== null && AppInterfaces::foreign($target, $appId)) {
+                $unshared = array_values(array_filter(array_map('strval', (array) ($field['relation_display'] ?? [])), static fn (string $f): bool => ! AppInterfaces::fieldShared($target, $f)));
+
+                if (! $target->is_shared) {
+                    $errors[] = __('tables_assistant.errors.relation_app', ['name' => (string) ($field['name'] ?? ''), 'table' => $target->name]);
+                } elseif ($unshared !== []) {
+                    $errors[] = __('tables_assistant.errors.relation_shared_fields', ['name' => (string) ($field['name'] ?? ''), 'table' => $target->name, 'fields' => implode(', ', $unshared)]);
+                }
             }
         }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reports;
 
+use App\Apps\AppInterfaces;
 use App\DynamicData\DataAccess;
 use App\DynamicData\DynamicDataNamespace;
 use App\Exceptions\BusinessRuleException;
@@ -60,7 +61,17 @@ final class ReportRunner
     public function resolve(Report|ReportDefinition $report, ?User $user): ResolvedReport
     {
         $resolved = $this->resolver->resolve($report instanceof Report ? $report->definitionObject() : $report);
-        $denied = array_filter($resolved->tables, fn (CustomTable $table): bool => ! DataAccess::allows($user, $table, 'view'));
+        // Schnittstellen anderer Apps (B-107, Etappe 5b): freigegebene Felder ohne eigenes Leserecht, solange die App aktiv ist.
+        $interfaces = array_filter($resolved->tables, fn (CustomTable $table): bool => in_array($table->id, $resolved->interfaces, true));
+        $unavailable = array_filter($interfaces, fn (CustomTable $table): bool => AppInterfaces::unavailable($table, $user));
+
+        if ($unavailable !== []) {
+            throw new InvalidReportException([__('reports.errors.unavailable', [
+                'tables' => implode(', ', array_map(fn (CustomTable $t): string => (string) $t->label, $unavailable)),
+            ])], 'report.unavailable');
+        }
+
+        $denied = array_filter(array_diff_key($resolved->tables, $interfaces), fn (CustomTable $table): bool => ! DataAccess::allows($user, $table, 'view'));
 
         if ($denied !== []) {
             throw new InvalidReportException([__('reports.errors.forbidden', [

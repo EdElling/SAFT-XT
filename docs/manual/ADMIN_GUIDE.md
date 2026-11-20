@@ -304,7 +304,8 @@ For every rule you choose the **field**, the **comparison** and whether it is co
 
 **App and prefix:** when creating a table you choose its [app](#15-apps-business-applications) (required if there
 are several apps). If the app has a prefix, it is put in front of the suggested technical name; changing the app
-replaces it. Relations are only possible to tables of the same app.
+replaces it. Relations are possible to tables of the same app and to shared tables of other apps
+([interfaces](#15-apps-business-applications)).
 
 ### Computed fields
 
@@ -1144,7 +1145,8 @@ apps – **Delete**; apps with content are deactivated and removed (below).
 **Boundary between apps:** relation fields, table links for reports, “Copy from” and formulas over child tables exist
 within one app – across the app boundary only to **shared** tables (interfaces, below). The table designer offers tables
 of the same app and shared tables of other apps with their name. When creating, the AI table assistant takes the app
-from the text (otherwise the chosen one) and only uses menu groups and tables of that app; when adjusting, it only sees
+from the text (otherwise the chosen one) and only uses menu groups of that app; it sets relations to tables of that app or to shared tables of other apps (display
+only shared fields); when adjusting, it only sees
 the app of the table. The lists of the table designer and the table connector show the app as a column with a filter.
 
 **Interfaces:** An app can **share** individual tables with all other apps – read only. In the table designer (edit
@@ -1153,19 +1155,21 @@ searchable ones; the ID always belongs to them). Other apps can then:
 
 - refer to the table with a **relation field** (in the choice “Item (Warehouse)”); only shared fields are available as
   display fields,
-- fetch a shared value into their own table with **“Copy from”**.
+- fetch a shared value into their own table with **“Copy from”**,
+- use the shared fields in **reports** through a relation field or a table link – without read permission on the other
+  table; from there it does not lead further into the other app, and it is not offered as a base table,
+- create **table links** to the table (target field: ID or a shared unique field; the choice names the app).
 
 Creating, changing or deleting in the other app's table is not possible through the interface; there are no totals over
 child tables of another app, and “Details” only offers tables of the own app. The shared fields are visible in relations
 to everyone who sees the own record; opening the other table itself (list, preview) needs its read permission – granted
 in the role in the section “Shared tables of other apps”.
 
-What another app uses is a **contract**: the table cannot be deactivated, deleted, moved to another app or withdrawn
+What another app uses – relation fields, table links, fields in its reports – is a **contract**: the table cannot be deactivated, deleted, moved to another app or withdrawn
 from sharing, used fields cannot be deleted, renamed, changed in type or deselected (the switch is then locked, used
 fields are listed as “Permanently shared” above the choice, the section names the users); an app with a used interface
 cannot be removed. Taking an unused field out of the sharing raises the **version** of the app's interface. If the
-sharing app is **deactivated**, the referring fields show “not available” and the choice stays empty (the super admin
-still sees the values); the confirmation when deactivating points this out. On the **Apps** page the column
+sharing app is **deactivated**, the referring fields show “not available” and the choice stays empty, reports report “currently not available” (the super admin still sees the values); the confirmation when deactivating points this out. On the **Apps** page the column
 **Interfaces** shows the number of shared tables and the action **Interfaces** (dots menu) what the app shares, who uses
 it and what it uses from other apps itself.
 
@@ -1211,7 +1215,10 @@ permission *Apps: export*). Always included are the tables with fields, rules an
 menus of the app; optional are reports (shared and own), roles with permissions, scheduled tasks and the manual. Never
 included are records, credentials of database connections (connected tables only as a reference), system menus,
 system roles and system tasks. Every object carries its stable key so that an installed app can be updated later.
-SAFT checks the file for consistency before downloading; the export is recorded in the change log.
+SAFT checks the file for consistency before downloading; the export is recorded in the change log. **Interfaces:**
+shares of tables and fields and the version of the interface are included. What the app uses from other apps is listed
+under `requires` (app, version, tables, used fields). Roles only take the read permission on shared tables of other
+apps along; other permissions outside the app do not belong to the definition.
 
 **Install:** **“Install app …”** at the top of the page (permission *Apps: install*) uploads such a file and shows a
 **preview**: name, version and prefix, what will be created, obstacles (red) – e.g. if the app or a table of the same
@@ -1231,6 +1238,12 @@ database, otherwise they stay without connection (see [table connector](#10-tabl
 If creating fails halfway, the app stays deactivated and can be taken down with “Remove …”. The installed state is
 saved as the **baseline** (column **Installed**, e.g. “Installed: 1.2 on 20.11.2026”) – the basis for updating later.
 Installing is recorded in the change log.
+
+**Required interfaces:** if the app uses tables of other apps, the preview lists them under “Uses interfaces of other
+apps” (e.g. “Warehouse › lager_artikel (fields: artikelnummer, bezeichnung)”). If such a table is missing or it or a
+used field is not shared, installing is prevented – install or share the other app first. If the other app is
+deactivated or its interface has a different version (but the fields are there), there is only a note. A copy keeps
+referring to the same table of the other app; it takes its own shares along, with version 1.
 
 **Deactivate and activate:** in the action menu (three dots) of an app; permission *Apps: manage*. A deactivated app
 disappears for everyone except the super admin: no longer in the switcher, no menus, reports or cards, no access to its

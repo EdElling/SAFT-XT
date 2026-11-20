@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Apps;
 
+use App\Apps\AppInterfaces;
 use App\Apps\AppMover;
 use App\Apps\AppRemover;
 use App\Apps\CurrentApp;
+use App\Apps\Definition\AppDefinition;
+use App\Apps\Definition\AppInstaller;
 use App\DynamicData\DetailRelations;
 use App\DynamicData\RelationDisplay;
 use App\Exceptions\BusinessRuleException;
@@ -16,8 +19,15 @@ use App\Models\App;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\Report;
+use App\Models\ReportLink;
 use App\Models\Role;
 use App\Models\User;
+use App\Reports\Editor\FieldCatalog;
+use App\Reports\InvalidReportException;
+use App\Reports\Links\ReportLinks;
+use App\Reports\ReportDefinition;
+use App\Reports\ReportRunner;
 use Livewire\Livewire;
 use Tests\Feature\DynamicData\DynamicDataTestCase;
 
@@ -206,5 +216,154 @@ class AppInterfacesTest extends DynamicDataTestCase
         $this->articles->refresh();
         $this->assertTrue($this->articles->is_shared, 'Freigabe bleibt.');
         $this->assertSame(['name', 'preis'], $this->articles->fields()->where('is_shared', true)->pluck('name')->sort()->values()->all(), 'Genutztes Feld bleibt fest, abgewähltes unbenutztes ist weg.');
+    }
+
+    /** Auswertung der Bestellungen (Shop) mit Feldern des Artikels (Lager) über die Verknüpfung. */
+    private function orderReport(string ...$fields): ReportDefinition
+    {
+        $relation = $this->fieldId('shop_bestellungen', 'artikel_id');
+
+        return ReportDefinition::fromArray([
+            'base' => $this->orders()->id,
+            'fields' => [
+                ['key' => 'menge', 'path' => [], 'field' => $this->fieldId('shop_bestellungen', 'menge'), 'bucket' => null, 'label' => null],
+                ...array_map(fn (string $f): array => ['key' => 'a_'.$f, 'path' => [$relation], 'field' => $this->fieldId('lg_artikel', $f), 'bucket' => null, 'label' => null], $fields),
+            ],
+        ]);
+    }
+
+    public function test_reports_read_shared_fields_of_other_apps_without_their_permission(): void
+    {
+        $this->share(['name']);
+        $this->relate();
+        $article = DynamicRecord::forTableName('lg_artikel')->create(['name' => 'Schraube', 'preis' => 2, 'notiz' => 'intern']);
+        DynamicRecord::forTableName('shop_bestellungen')->create(['menge' => 3, 'artikel_id' => $article->id]);
+        $seller = $this->userWithPermissions(['data.shop_bestellungen.view']);
+        $runner = app(ReportRunner::class);
+
+        // Freigegebenes Feld: ohne Leserecht auf die Artikel.
+        $rows = $runner->run($this->orderReport('name'), $seller)->rows;
+        $this->assertSame('Schraube', $rows[0]['a_name']);
+
+        // Nicht freigegebenes Feld: abgelehnt, auch für den Super-Admin.
+        foreach ([$seller, $this->superAdmin()] as $user) {
+            try {
+                $runner->resolve($this->orderReport('notiz'), $user);
+                $this->fail('Nicht freigegebenes Feld erwartet');
+            } catch (InvalidReportException $e) {
+                $this->assertStringContainsString('nicht für andere Apps freigegeben', implode(' ', $e->errors));
+            }
+        }
+
+        // Im Editor: nur freigegebene Felder des Artikels, keine fremde Grundtabelle.
+        $catalog = new FieldCatalog;
+        $labels = array_map(static fn (array $e): string => $e['label'], $catalog->entries($this->orders()->id, $seller));
+        $this->assertContains('Artikel › Name', $labels);
+        $this->assertNotContains('Artikel › Notiz', $labels);
+        $this->assertNotContains($this->articles->id, $catalog->reachableFrom($this->orders()->id, $this->superAdmin()));
+
+        // Deaktivierte freigebende App: „nicht verfügbar“ statt Rechtefehler.
+        $this->stock->update(['is_active' => false]);
+        $this->assertFalse($runner->canRun($this->orderReport('name'), $seller));
+        $this->assertTrue($runner->canRun($this->orderReport('name'), $this->superAdmin()));
+    }
+
+    public function test_fields_used_by_reports_and_links_of_other_apps_are_a_contract(): void
+    {
+        $this->share(['name', 'preis']);
+        $this->relate();
+        Report::query()->create(['name' => 'Umsatz', 'app_id' => $this->shop->id, 'owner_id' => auth()->id(), 'is_shared' => true, 'definition' => $this->orderReport('preis')->toArray()]);
+
+        $this->rejects(fn () => $this->service()->updateInterface($this->articles->refresh(), true, ['name']), 'Das Feld „preis“ wird von anderen Apps');
+        $this->assertStringContainsString('Auswertung „Umsatz“', implode(' ', app(AppInterfaces::class)->usages($this->articles->refresh(), 'preis')));
+    }
+
+    public function test_table_links_reach_other_apps_only_through_shared_fields(): void
+    {
+        $this->service()->updateField($this->articles->fields()->where('name', 'name')->sole(), ['is_unique' => true]);
+        $this->service()->updateField($this->articles->fields()->where('name', 'notiz')->sole(), ['is_unique' => true]);
+        $this->service()->addField($this->orders(), ['name' => 'artikel_name', 'label' => 'Artikelname', 'type' => 'string']);
+        $orders = $this->orders();
+        $link = fn (string $target) => ReportLink::query()->create([
+            'label' => ['de' => 'Artikel'],
+            'source_table_id' => $orders->id,
+            'source_field_id' => $this->fieldId('shop_bestellungen', 'artikel_name'),
+            'target_table_id' => $this->articles->id,
+            'target_field_id' => $this->fieldId('lg_artikel', $target),
+        ]);
+
+        $this->rejects(fn () => $link('name'), 'nur auf freigegebene Tabellen und Felder');
+
+        $this->share(['name']);
+        $links = app(ReportLinks::class);
+        $this->assertSame([ReportLinks::ID, (string) $this->fieldId('lg_artikel', 'name')], array_map('strval', array_keys($links->targetOptions($this->articles->refresh(), null, $orders))));
+        $this->rejects(fn () => $link('notiz'), 'nur auf freigegebene Tabellen und Felder');
+        $created = $link('name');
+        $this->assertSame($this->shop->id, $created->app_id);
+
+        // Genutzt: Zielfeld ist Vertrag.
+        $this->rejects(fn () => $this->service()->updateInterface($this->articles->refresh(), true, []), 'Das Feld „name“ wird von anderen Apps');
+    }
+
+    public function test_definition_carries_the_interface_and_what_an_app_requires(): void
+    {
+        $this->share(['name', 'preis']);
+        $this->relate(['name']);
+        $this->service()->addField($this->orders(), ['name' => 'stueckpreis', 'label' => 'Stückpreis', 'type' => 'decimal', 'options' => ['copy_from' => 'artikel_id.preis']]);
+        $role = Role::query()->create(['name' => 'verkauf', 'guard_name' => 'web', 'app_id' => $this->shop->id]);
+        $role->givePermissionTo('data.shop_bestellungen.view', 'data.lg_artikel.view', 'data.lg_artikel.update');
+        $this->stock->update(['interface_version' => 3]);
+        $definitions = app(AppDefinition::class);
+
+        // Freigebende App: Freigaben und Version.
+        $stock = $definitions->build($this->stock, AppDefinition::PARTS, $this->superAdmin());
+        $this->assertSame(3, $stock['app']['interface_version']);
+        $articles = collect($stock['tables'])->firstWhere('name', 'lg_artikel');
+        $this->assertTrue($articles['is_shared']);
+        $this->assertSame(['name', 'preis'], collect($articles['fields'])->where('is_shared', true)->pluck('name')->all());
+        $this->assertSame([], $stock['requires']);
+
+        // Nutzende App: requires mit App, Version und genutzten Feldern; Rechte „ausserhalb“ fallen weg.
+        $shop = $definitions->build($this->shop, AppDefinition::PARTS, $this->superAdmin());
+        $this->assertSame([[
+            'app' => ['key' => (string) $this->stock->uuid, 'name' => ['de' => 'Lager'], 'prefix' => 'lg', 'interface_version' => 3],
+            'tables' => [['key' => (string) $this->articles->uuid, 'name' => 'lg_artikel', 'fields' => ['name', 'preis']]],
+        ]], $shop['requires']);
+        $this->assertEqualsCanonicalizing(['data.shop_bestellungen.view', 'data.lg_artikel.view'], collect($shop['roles'])->firstWhere('name', 'verkauf')['permissions']);
+    }
+
+    public function test_installing_checks_required_interfaces_and_keeps_shares(): void
+    {
+        $this->share(['name', 'preis']);
+        $this->relate(['name']);
+        $definitions = app(AppDefinition::class);
+        $installer = app(AppInstaller::class);
+        $shop = $definitions->build($this->shop, AppDefinition::PARTS, $this->superAdmin());
+        $copy = ['name' => 'Shop 2', 'prefix' => 'shopzwei'];
+
+        // Fehlende Felder oder Tabellen: Hinderungsgrund.
+        $broken = $shop;
+        $broken['requires'][0]['tables'][0]['fields'][] = 'notiz';
+        $this->assertStringContainsString('die Felder notiz', implode(' ', $installer->analyze($broken, $copy)->blockers));
+        $broken['requires'][0]['tables'][0]['name'] = 'lg_fehlt';
+        $broken['tables'] = array_map(static fn (array $t): array => [...$t, 'fields' => array_map(static fn (array $f): array => ($f['options']['table'] ?? null) === 'lg_artikel' ? array_replace_recursive($f, ['options' => ['table' => 'lg_fehlt']]) : $f, $t['fields'])], $broken['tables']);
+        $this->assertStringContainsString('Benötigt die Schnittstelle „lg_fehlt“', implode(' ', $installer->analyze($broken, $copy)->blockers));
+
+        // Vorhanden: Kopie verweist weiter auf die Artikel des Lagers.
+        $analysis = $installer->analyze($shop, $copy);
+        $this->assertSame([], $analysis->blockers);
+        $this->assertSame(['Lager › lg_artikel (Felder: name)'], $analysis->requires);
+        $installer->install($shop, $copy, $this->superAdmin());
+        $relation = CustomTable::query()->where('name', 'shopzwei_bestellungen')->sole()->fields()->where('name', 'artikel_id')->sole();
+        $this->assertSame('lg_artikel', $relation->optionsArray()['table']);
+
+        // Kopie der freigebenden App: Freigaben bleiben, Version beginnt neu.
+        $this->stock->update(['interface_version' => 4]);
+        $stock = $definitions->build($this->stock, AppDefinition::PARTS, $this->superAdmin());
+        $copied = $installer->install($stock, ['name' => 'Lager 2', 'prefix' => 'lgzwei'], $this->superAdmin());
+        $articles = CustomTable::query()->where('name', 'lgzwei_artikel')->sole();
+        $this->assertTrue($articles->is_shared);
+        $this->assertSame(['name', 'preis'], $articles->fields()->where('is_shared', true)->orderBy('sort_order')->pluck('name')->all());
+        $this->assertSame(1, $copied->interface_version);
     }
 }

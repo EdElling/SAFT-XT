@@ -326,7 +326,8 @@ enregistrement, p. ex. « date de livraison ≥ date de commande » ou « quanti
 
 **App et préfixe :** lors de la création, vous choisissez l’[app](#15-apps-applications-métier) de la table
 (obligatoire s’il y a plusieurs apps). Si l’app a un préfixe, il précède le nom technique proposé ; changer d’app le
-remplace. Les liaisons ne sont possibles qu’avec des tables de la même app.
+remplace. Les liaisons sont possibles avec des tables de la même app et avec des tables partagées d’autres apps
+([interfaces](#15-apps-applications-métier)).
 
 ### Champs calculés
 
@@ -1234,7 +1235,8 @@ uniquement pour les apps vides – **Supprimer** ; les apps avec contenu sont d�
 formules sur les tables enfants existent au sein d’une app – au-delà de la frontière seulement vers des tables
 **partagées** (interfaces, ci-dessous). Le Concepteur de tables propose les tables de la même app et les tables partagées
 d’autres apps avec leur nom. À la création, l’assistant IA des tables reprend l’app du texte (sinon celle choisie) et
-n’utilise que les groupes de menu et tables de cette app ; à l’adaptation, il ne voit que l’app de la table. Les listes
+n’utilise que les groupes de menu de cette app ; il crée les liaisons vers des tables de cette app ou vers des tables
+partagées d’autres apps (affichage uniquement de champs partagés) ; à l’adaptation, il ne voit que l’app de la table. Les listes
 du Concepteur de tables et du Connecteur de tables affichent l’app en colonne avec un filtre.
 
 **Interfaces :** une app peut **partager** des tables avec toutes les autres apps – en lecture seule. Dans le Concepteur
@@ -1243,7 +1245,11 @@ partagés** (proposés : ceux qui sont recherchables ; l’ID en fait toujours p
 
 - référencer la table par un **champ de liaison** (dans le choix « Article (Gestion de stock) ») ; seuls les champs
   partagés sont disponibles comme champs affichés,
-- reprendre une valeur partagée dans leur propre table avec **« Reprendre de »**.
+- reprendre une valeur partagée dans leur propre table avec **« Reprendre de »**,
+- utiliser les champs partagés dans des **rapports** via un champ de liaison ou une liaison de tables – sans droit de
+  lecture sur la table étrangère ; de là, on ne va pas plus loin dans l’autre app, et elle n’est pas proposée comme table
+  de base,
+- créer des **liaisons de tables** vers la table (champ cible : ID ou un champ unique partagé ; le choix nomme l’app).
 
 Créer, modifier ou supprimer dans la table de l’autre app n’est pas possible via l’interface ; il n’y a pas de sommes
 sur les tables enfants d’une autre app, et « Détails » ne propose que les tables de sa propre app. Les champs partagés
@@ -1251,13 +1257,13 @@ sont visibles dans les liaisons pour tous ceux qui voient leur propre enregistre
 elle-même (liste, aperçu) nécessite son droit de lecture – attribué dans le rôle, section « Tables partagées d’autres
 apps ».
 
-Ce qu’une autre app utilise est un **contrat** : la table ne peut être ni désactivée, ni supprimée, ni déplacée dans une
+Ce qu’une autre app utilise – champs de liaison, liaisons de tables, champs dans ses rapports – est un **contrat** : la table ne peut être ni désactivée, ni supprimée, ni déplacée dans une
 autre app, ni retirée du partage ; les champs utilisés ne peuvent être ni supprimés, ni renommés, ni changés de type, ni
 désélectionnés (l’interrupteur est alors verrouillé, les champs utilisés figurent comme « Partagés de façon fixe »
 au-dessus du choix, la section nomme les utilisateurs) ; une app dont l’interface est utilisée ne peut pas être retirée.
 Retirer un champ non utilisé du partage augmente la **version** de l’interface de l’app. Si l’app qui partage est
-**désactivée**, les champs qui y renvoient affichent « non disponible » et le choix reste vide (le super-admin voit
-toujours les valeurs) ; la confirmation lors de la désactivation le signale. Sur la page **Apps**, la colonne
+**désactivée**, les champs qui y renvoient affichent « non disponible » et le choix reste vide, les rapports signalent « actuellement non disponible » (le super-admin voit toujours les
+valeurs) ; la confirmation lors de la désactivation le signale. Sur la page **Apps**, la colonne
 **Interfaces** indique le nombre de tables partagées et l’action **Interfaces** (menu à points) ce que l’app partage,
 qui l’utilise et ce qu’elle utilise elle-même d’autres apps.
 
@@ -1307,8 +1313,11 @@ de données » d’un groupe de menu, avec « Afficher les champs ») ; seules l
 tables et les menus de l’app ; au choix : rapports (partagés et propres), rôles avec droits, tâches planifiées et
 manuel. Jamais inclus : enregistrements, identifiants des connexions de base de données (tables connectées seulement
 comme référence), menus, rôles et tâches système. Chaque objet porte sa clé stable afin qu’une app installée puisse être
-mise à jour plus tard. SAFT vérifie la cohérence du fichier avant le téléchargement ; l’export figure dans le journal
-des modifications.
+mise à jour plus tard. SAFT vérifie la cohérence du fichier avant le téléchargement ; l’export figure dans le journal des modifications.
+**Interfaces :** les partages de tables et de champs et la version de l’interface sont inclus. Ce que l’app utilise
+d’autres apps figure sous `requires` (app, version, tables, champs utilisés). Les rôles n’emportent des tables d’autres
+apps que le droit de lecture sur les tables partagées ; les autres droits hors de l’app n’appartiennent pas à la
+définition.
 
 **Installer :** **« Installer une app … »** en haut de la page (droit *Apps : installer*) téléverse un tel fichier et
 affiche un **aperçu** : nom, version et préfixe, ce qui sera créé, obstacles (en rouge) – p. ex. si l’app ou une table de
@@ -1327,8 +1336,14 @@ leur installation. Les **tables connectées** sont créées inactives : s’il e
 sont attribuées et comparées avec la base de données, sinon elles restent sans connexion (voir
 [Connecteur de tables](#10-connecteur-de-tables), « Sans connexion »). Si la création échoue en cours de route, l’app
 reste désactivée et peut être retirée avec « Retirer … ». L’état installé est enregistré comme **état de référence**
-(colonne **Installée**, p. ex. « Installée : 1.2 le 20.11.2026 ») – base de la future mise à jour. L’installation figure
-dans le journal des modifications.
+(colonne **Installée**, p. ex. « Installée : 1.2 le 20.11.2026 ») – base de la future mise à jour. L’installation figure dans le journal des modifications.
+
+**Interfaces requises :** si l’app utilise des tables d’autres apps, l’aperçu les liste sous « Utilise des interfaces
+d’autres apps » (p. ex. « Gestion de stock › lager_artikel (champs : artikelnummer, bezeichnung) »). Si une telle table
+manque ou si elle ou un champ utilisé n’est pas partagé, l’installation est empêchée – installer ou partager d’abord
+l’autre app. Si l’autre app est désactivée ou si son interface a une autre version (mais les champs sont là), il n’y a
+qu’une remarque. Une copie continue de renvoyer à la même table de l’autre app ; elle reprend ses propres partages,
+avec la version 1.
 
 **Désactiver et activer :** dans le menu d’actions (trois points) d’une app ; droit *Apps : gérer*. Une app désactivée
 disparaît pour tous sauf le super-admin : plus dans le sélecteur, ni menus, analyses ou tuiles, aucun accès à ses tables

@@ -9,6 +9,9 @@ use App\DynamicData\Schema\FieldType;
 use App\Models\App;
 use App\Models\CustomField;
 use App\Models\CustomTable;
+use App\Models\Report;
+use App\Models\ReportLink;
+use App\Models\User;
 use Illuminate\Support\Collection;
 
 /**
@@ -35,9 +38,16 @@ final class AppInterfaces
         return $field === 'id' || $table->fields->contains(static fn (CustomField $f): bool => $f->name === $field && $f->is_shared && $f->is_active);
     }
 
+    /** Ist die App der Tabelle deaktiviert (für alle ausser dem Super-Admin „nicht verfügbar“)? */
+    public static function unavailable(CustomTable $table, ?User $user): bool
+    {
+        return $table->app_id !== null && ! App::isActiveId($table->app_id) && ! ($user?->isSuperAdmin() ?? false);
+    }
+
     /**
      * Wer aus anderen Apps eine Tabelle (oder ein Feld davon) nutzt: Verknüpfungsfelder, die auf sie zeigen – mit dem
-     * Feld als Anzeigefeld oder Quelle von „Übernehmen aus“.
+     * Feld als Anzeigefeld oder Quelle von „Übernehmen aus“ –, Tabellenverknüpfungen auf das Feld und Auswertungen mit
+     * dem Feld (Etappe 5b).
      *
      * @return list<string> „App › Tabelle.Feld“
      */
@@ -58,6 +68,18 @@ final class AppInterfaces
 
             if ($uses) {
                 $usages[] = (string) ($owner->app?->name ?? '–').' › '.$owner->name.'.'.$relation->name;
+            }
+        }
+
+        foreach ($this->linksTo($table) as $link) {
+            if ($field === null || ($link->targetField?->name ?? 'id') === $field) {
+                $usages[] = (string) ($link->sourceTable?->app?->name ?? '–').' › '.$link->sourceTable?->name.' → '.$link->label;
+            }
+        }
+
+        foreach ($this->reportsUsing($table) as ['report' => $report, 'fields' => $fields]) {
+            if ($field === null || in_array($field, $fields, true)) {
+                $usages[] = (string) ($report->app?->name ?? '–').' › '.__('apps.interfaces.report', ['name' => $report->name]);
             }
         }
 
@@ -117,6 +139,42 @@ final class AppInterfaces
     private function relationsTo(CustomTable $table): Collection
     {
         return CustomField::query()->where('type', FieldType::Relation->value)->where('options->table', $table->name)->with('custom_table.app')->get();
+    }
+
+    /** @return Collection<int, ReportLink> Tabellenverknüpfungen anderer Apps auf diese Tabelle */
+    private function linksTo(CustomTable $table): Collection
+    {
+        return ReportLink::query()->where('target_table_id', $table->id)->with(['sourceTable.app', 'targetField'])->get()
+            ->filter(static fn (ReportLink $link): bool => $link->sourceTable !== null && self::foreign($link->sourceTable, $table->app_id))
+            ->values();
+    }
+
+    /**
+     * Auswertungen anderer Apps mit Feldern dieser Tabelle.
+     *
+     * @return list<array{report: Report, fields: list<string>}>
+     */
+    private function reportsUsing(CustomTable $table): array
+    {
+        if ($table->app_id === null) {
+            return [];
+        }
+
+        $names = $table->fields->pluck('name', 'id');
+        $found = [];
+
+        foreach (Report::query()->whereNotNull('app_id')->where('app_id', '!=', $table->app_id)->with('app')->get() as $report) {
+            $fields = array_values(array_unique(array_filter(array_map(
+                static fn (array $spec): ?string => $names[(int) ($spec['field'] ?? 0)] ?? null,
+                $report->definitionObject()->fields,
+            ))));
+
+            if ($fields !== []) {
+                $found[] = ['report' => $report, 'fields' => $fields];
+            }
+        }
+
+        return $found;
     }
 
     /** @return list<string> */

@@ -37,6 +37,17 @@
         </div>
     @endif
 
+    @if ($analysis->requires !== [])
+        <div>
+            <p class="font-semibold">{{ __('apps.install.requires') }}</p>
+            <ul class="list-disc ps-5" data-app-install-requires>
+                @foreach ($analysis->requires as $required)
+                    <li>{{ $required }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     @if ($analysis->warnings !== [])
         <div class="rounded-lg bg-warning-50 p-3 text-warning-800 dark:bg-warning-500/10 dark:text-warning-400" data-app-install-warnings>
             <p class="font-semibold">{{ __('apps.install.notes') }}</p>

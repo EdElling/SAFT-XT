@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reports\Links;
 
+use App\Apps\AppInterfaces;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Schema\FieldType;
 use App\ExternalData\Snapshots\SnapshotService;
@@ -65,16 +66,18 @@ final class ReportLinks
      *
      * @return array<int|string, string>
      */
-    public function targetOptions(CustomTable $table, ?string $kind = null): array
+    public function targetOptions(CustomTable $table, ?string $kind = null, ?CustomTable $source = null): array
     {
         $options = [];
+        // In eine andere App nur freigegebene Felder (Schnittstelle, B-107 Etappe 5b).
+        $interface = $source !== null && AppInterfaces::foreign($table, $source->app_id);
 
         if (! $table->isExternal() && ($kind === null || $kind === self::KIND_INTEGER)) {
             $options[self::ID] = 'id';
         }
 
         foreach ($this->targetFields($table) as $field) {
-            if ($kind === null || self::kind($field) === $kind) {
+            if (($kind === null || self::kind($field) === $kind) && (! $interface || AppInterfaces::fieldShared($table, $field->name))) {
                 $options[$field->id] = $field->label.' ('.$field->name.')';
             }
         }
@@ -106,7 +109,11 @@ final class ReportLinks
             return __('report_links.errors.source_field');
         }
 
-        if (! array_key_exists($targetField, $this->targetOptions($target))) {
+        if (AppInterfaces::foreign($target, $source->app_id) && ! $target->is_shared) {
+            return __('apps.errors.cross_app_link');
+        }
+
+        if (! array_key_exists($targetField, $this->targetOptions($target, null, $source))) {
             return __('report_links.errors.target_unique', ['table' => $target->label]);
         }
 

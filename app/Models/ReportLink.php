@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Apps\AppInterfaces;
 use App\Exceptions\BusinessRuleException;
 use App\Models\Base\ReportLink as BaseReportLink;
 use App\Models\Concerns\BelongsToApp;
@@ -29,16 +30,22 @@ class ReportLink extends BaseReportLink
 
     protected static function booted(): void
     {
-        // Gehört zur App der Quelltabelle; Ziel nur in derselben App (B-107, Schnittstellen erst später).
+        // Gehört zur App der Quelltabelle; Ziel in derselben App oder eine freigegebene Tabelle einer anderen App mit
+        // freigegebenem Zielfeld (Schnittstelle, B-107 Etappe 5b).
         static::saving(static function (self $link): void {
-            $apps = CustomTable::query()->whereKey([$link->source_table_id, $link->target_table_id])->pluck('app_id', 'id');
-            $source = $apps[$link->source_table_id] ?? null;
+            $source = CustomTable::query()->whereKey($link->source_table_id)->value('app_id');
+            $target = $link->target_table_id === null ? null : CustomTable::query()->with('fields')->find($link->target_table_id);
+            $source = $source === null ? null : (int) $source;
 
-            if ($link->target_table_id !== null && ($apps[$link->target_table_id] ?? null) !== $source) {
-                throw new BusinessRuleException(__('apps.errors.cross_app_link'));
+            if ($target !== null && AppInterfaces::foreign($target, $source)) {
+                $field = $link->target_field_id === null ? 'id' : $target->fields->firstWhere('id', $link->target_field_id)?->name;
+
+                if ($field === null || ! AppInterfaces::fieldShared($target, $field)) {
+                    throw new BusinessRuleException(__('apps.errors.cross_app_link'));
+                }
             }
 
-            $link->app_id = $source === null ? null : (int) $source;
+            $link->app_id = $source;
         });
     }
 

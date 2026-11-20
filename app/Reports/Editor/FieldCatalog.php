@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reports\Editor;
 
+use App\Apps\AppInterfaces;
 use App\Apps\CurrentApp;
 use App\DynamicData\DataAccess;
 use App\DynamicData\RelationDisplay;
@@ -21,7 +22,8 @@ use Illuminate\Support\Collection;
  * Felder, die eine Person für eine Grundtabelle wählen kann: die eigenen und – entlang der
  * Verknüpfungsfelder – die der übergeordneten Tabellen (höchstens DefinitionResolver::MAX_DEPTH
  * Stufen) bzw. entlang der Verknüpfungen für Auswertungen, jeweils nur Tabellen mit Leserecht;
- * angebundene Tabellen nur mit Datenstand.
+ * angebundene Tabellen nur mit Datenstand. Freigegebene Tabellen anderer Apps (Schnittstellen, B-107 Etappe 5b) nur mit
+ * ihren freigegebenen Feldern – ohne eigenes Leserecht – und ohne weiterzugehen.
  *
  * Ein Feld wird als Text referenziert: "57/63:31" = Pfad über die Verknüpfungsfelder 57 und 63
  * zum Feld 31; ":31" = Feld der Grundtabelle.
@@ -133,6 +135,10 @@ final class FieldCatalog
             return [];
         }
 
+        // Wechsel der Grundtabelle nur innerhalb der App (Schnittstellen sind keine Grundtabellen).
+        $appId = $tables->get($base)->app_id;
+        $tables = $tables->reject(fn (CustomTable $t): bool => AppInterfaces::foreign($t, $appId));
+
         $byName = $tables->keyBy('name');
         $neighbours = [];
 
@@ -214,12 +220,14 @@ final class FieldCatalog
         }
 
         $entries = [];
-        $walk = function (CustomTable $table, array $path, array $labels) use (&$walk, &$entries, $user): void {
+        $appId = $table->app_id;
+        $walk = function (CustomTable $table, array $path, array $labels) use (&$walk, &$entries, $user, $appId): void {
             $group = $labels === [] ? (string) $table->label : implode(' › ', $labels);
+            $interface = AppInterfaces::foreign($table, $appId);
 
             foreach ($table->fields as $field) {
-                // Dateien lassen sich nicht auswerten (B-021).
-                if (! $field->is_active || $field->type === FieldType::File) {
+                // Dateien lassen sich nicht auswerten (B-021); hinter einer Schnittstelle nur freigegebene Felder.
+                if (! $field->is_active || $field->type === FieldType::File || ($interface && ! AppInterfaces::fieldShared($table, $field->name))) {
                     continue;
                 }
 
@@ -231,21 +239,21 @@ final class FieldCatalog
                     'label' => $labels === [] ? (string) $field->label : $group.' › '.$field->label,
                 ];
 
-                if ($field->type === FieldType::Relation && count($path) < DefinitionResolver::MAX_DEPTH) {
+                if (! $interface && $field->type === FieldType::Relation && count($path) < DefinitionResolver::MAX_DEPTH) {
                     $target = $this->tables()->firstWhere('name', (string) ($field->optionsArray()['table'] ?? ''));
 
-                    if ($target !== null && $this->usable($target, $user)) {
+                    if ($target !== null && $this->reachable($target, $user, $appId)) {
                         $walk($target, [...$path, $field->id], [...$labels, (string) $field->label]);
                     }
                 }
             }
 
             // Verknüpfungen für Auswertungen ab dieser Tabelle (im Pfad als negative Nummer).
-            if (count($path) < DefinitionResolver::MAX_DEPTH) {
+            if (! $interface && count($path) < DefinitionResolver::MAX_DEPTH) {
                 foreach ($this->linksFrom($table) as $link) {
                     $target = $this->tables()->get($link->target_table_id);
 
-                    if ($target !== null && $this->usable($target, $user)) {
+                    if ($target !== null && $this->reachable($target, $user, $appId)) {
                         $walk($target, [...$path, -$link->id], [...$labels, (string) $link->label]);
                     }
                 }
@@ -280,12 +288,34 @@ final class FieldCatalog
         $tables = $this->tables()->filter(fn (CustomTable $t): bool => $t->is_active && $this->usable($t, $user));
         $locale = app()->getLocale();
 
-        return $tables->sortBy(fn (CustomTable $t): string => mb_strtolower((string) $t->label))->map(function (CustomTable $table) use ($tables, $withChoices, $locale): array {
+        // Schnittstellen (B-107, Etappe 5b): freigegebene Tabellen anderer Apps, auf die eine Verknüpfung oder
+        // Tabellenverknüpfung zeigt – nur mit freigegebenen Feldern, ohne eigenes Leserecht, ohne Weitergehen.
+        $interfaces = new Collection;
+
+        foreach ($tables as $table) {
+            $targets = [
+                ...$table->fields->filter(fn (CustomField $f): bool => $f->is_active && $f->type === FieldType::Relation)
+                    ->map(fn (CustomField $f): ?CustomTable => $this->tables()->firstWhere('name', (string) ($f->optionsArray()['table'] ?? '')))->all(),
+                ...$this->linksFrom($table)->map(fn (ReportLink $l): ?CustomTable => $this->tables()->get($l->target_table_id))->all(),
+            ];
+
+            foreach ($targets as $target) {
+                if ($target !== null && AppInterfaces::foreign($target, $table->app_id) && $this->reachable($target, $user, $table->app_id)) {
+                    $interfaces->put($target->id, $target);
+                }
+            }
+        }
+
+        $all = $tables->union($interfaces);
+
+        return $all->sortBy(fn (CustomTable $t): string => mb_strtolower((string) $t->label))->map(function (CustomTable $table) use ($tables, $all, $withChoices, $locale): array {
             $fields = [];
+            $interface = ! $tables->has($table->id);
 
             foreach ($table->fields as $field) {
-                // Dateien lassen sich nicht auswerten (B-021).
-                if (! $field->is_active || $field->type === FieldType::File) {
+                // Dateien lassen sich nicht auswerten (B-021); Schnittstellen nur mit freigegebenen Feldern, ohne Verknüpfungen.
+                if (! $field->is_active || $field->type === FieldType::File
+                    || ($interface && (! AppInterfaces::fieldShared($table, $field->name) || $field->type === FieldType::Relation))) {
                     continue;
                 }
 
@@ -295,7 +325,7 @@ final class FieldCatalog
                     $target = $this->tables()->firstWhere('name', (string) ($field->optionsArray()['table'] ?? ''));
                     $entry['type'] = 'relation';
 
-                    if ($target !== null && $tables->has($target->id)) {
+                    if ($target !== null && $all->has($target->id)) {
                         $entry['to'] = $target->id;
                         // Was das Verknüpfungsfeld in einer Auswertung anzeigt (Anzeigefelder des verknüpften Datensatzes).
                         $shows = array_values(array_filter(array_map(
@@ -321,8 +351,8 @@ final class FieldCatalog
                 $fields[] = $entry;
             }
 
-            $links = $this->linksFrom($table)
-                ->filter(fn (ReportLink $link): bool => $tables->has($link->target_table_id))
+            $links = ($interface ? new Collection : $this->linksFrom($table))
+                ->filter(fn (ReportLink $link): bool => $all->has($link->target_table_id))
                 ->map(fn (ReportLink $link): array => ['id' => -$link->id, 'label' => (string) $link->label, 'to' => $link->target_table_id])
                 ->values()
                 ->all();
@@ -333,6 +363,8 @@ final class FieldCatalog
                 'description' => filled($table->description) ? (string) $table->description : null,
                 'fields' => $fields,
                 'links' => $links === [] ? null : $links,
+                // Nur über eine Verknüpfung erreichbar, keine Grundtabelle; nur diese Felder, nicht weiter.
+                'interface' => $interface ? true : null,
             ], static fn (mixed $v): bool => $v !== null);
         })->values()->all();
     }
@@ -355,6 +387,20 @@ final class FieldCatalog
     private function listed(CustomTable $table, ?User $user): bool
     {
         return $table->is_active && DataAccess::allows($user, $table, 'view');
+    }
+
+    /**
+     * Darf der Weg von einer Tabelle der App $appId in diese Tabelle führen? In der eigenen App mit Leserecht, in eine andere
+     * App nur in eine freigegebene Tabelle (Schnittstelle) einer aktiven App – dafür ohne eigenes Leserecht.
+     */
+    private function reachable(CustomTable $table, ?User $user, ?int $appId): bool
+    {
+        if (! AppInterfaces::foreign($table, $appId)) {
+            return $this->usable($table, $user);
+        }
+
+        return $table->is_active && $table->is_shared && ! AppInterfaces::unavailable($table, $user)
+            && (! $table->isExternal() || $this->snapshotAt($table) !== null);
     }
 
     /** Für Felder und Abfragen: zusätzlich bei angebundenen Tabellen ein Datenstand. */
