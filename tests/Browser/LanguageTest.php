@@ -58,8 +58,9 @@ class LanguageTest extends DuskTestCase
             $browser->waitForText('Sign in', 15)->assertSourceHas('lang="en"');
 
             // Anmelden, abmelden: Die Anmeldeseite bleibt englisch, obwohl der Browser Deutsch meldet.
-            $this->submitLogin($browser, self::ADMIN)->waitFor('.fi-user-menu-trigger', 15);
-            $browser->click('.fi-user-menu-trigger')->waitForText('Sign out')->press('Sign out')->waitFor(self::SELECTOR_EMAIL, 15);
+            // Nach dem Anmelden baut Livewire die Seite noch auf (auf GitHub: „stale element“): erst dann ins Menü.
+            $this->submitLogin($browser, self::ADMIN)->waitFor('.fi-user-menu-trigger', 15)->pause(800);
+            $browser->click('.fi-user-menu-trigger')->waitForText('Sign out')->pause(300)->press('Sign out')->waitFor(self::SELECTOR_EMAIL, 15);
             $browser->assertSourceHas('lang="en"')->assertSee('Sign in');
         });
     }
