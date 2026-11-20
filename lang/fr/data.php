@@ -15,6 +15,7 @@ return [
     'actions' => [
         'create' => 'Nouvel enregistrement',
         'details' => 'Détails',
+        'view' => 'Afficher',
     ],
     'import' => [
         'label' => 'Importer',

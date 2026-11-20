@@ -237,8 +237,23 @@ abstract class DuskTestCase extends BaseTestCase
         return $browser->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., '{$rowText}')]//*[self::button or self::a][contains(., '{$action}')]");
     }
 
+    /**
+     * „Details“ öffnet den Slider – den gibt es nur in Smartphone-Breite (am Desktop direkt Bearbeiten/Löschen,
+     * DynamicRecordActions::rowActions). Deshalb vorher schmal stellen.
+     */
+    protected function mobile(Browser $browser): Browser
+    {
+        $browser->resize(400, 1000);
+
+        return $browser->pause(300);
+    }
+
     protected function openDetails(Browser $browser, string $rowText, string $button = 'Details'): Browser
     {
+        if ($button === 'Details') {
+            $this->mobile($browser);
+        }
+
         return $browser->waitForText($rowText, 15)
             ->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., '{$rowText}')]//button[contains(., '{$button}')]")
             // Sprachunabhängig auf das Popup warten, dann auf das Ende der Einblendung.

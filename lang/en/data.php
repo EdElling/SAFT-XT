@@ -15,6 +15,7 @@ return [
     'actions' => [
         'create' => 'New record',
         'details' => 'Details',
+        'view' => 'View',
     ],
     'import' => [
         'label' => 'Import',

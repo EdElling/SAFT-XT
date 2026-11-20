@@ -179,15 +179,15 @@ In the menu under **Data**, open a table, e.g. **Customers**.
    - "Deleted records": only for users with delete permission
 3. **Sort**: clicking a column header sorts in ascending or descending order. Every column can be sorted.
    Selection lists are sorted by the stored value, not by the displayed label.
-4. **Details** opens the record in a window (see [4.2](#42-viewing-creating-editing-and-deleting-records)).
+4. **Edit, Delete, …** at the end of the row (see [4.2](#42-viewing-creating-editing-and-deleting-records)); on the
+   smartphone **Details**.
 
 At the bottom you choose how many records are shown per page (10, 25, 50 or 100) and move between pages with the page numbers and arrows (on narrow screens with "Previous" and "Next"). Dates and
 numbers follow the chosen language: in English e.g. `01/02/2026 14:30` and `1,234.50`, in German `01.02.2026 14:30`
 and `1.234,50`, in French and Italian `01/02/2026 14:30`. With the number format **Switzerland** (see
 [chapter 3](#3-interface-and-dashboard)) numbers appear as `1'234.50`.
 
-**Width:** A table is as wide as its columns. With few columns there is free space to the right, and "Details" sits
-right next to the last column. If the columns do not fit into the window, the table is as wide as the window and can
+**Width:** A table is as wide as its columns. With few columns there is free space to the right, and the buttons of the row sit right next to the last column. If the columns do not fit into the window, the table is as wide as the window and can
 be scrolled horizontally. Summaries and detail tables in the master-detail view behave the same way.
 
 > **Which columns do I see?** The default is set by the menu entry you used to open the table. There can therefore
@@ -206,8 +206,20 @@ search and sorting only last until you sign out. **Numbers** are right-aligned i
 
 ### 4.2 Viewing, creating, editing and deleting records
 
-The tables are meant for **reading**. Clicking a row selects the record (see
-[4.3](#43-related-tables-the-master-detail-view)). To **edit**, open the record with **"Details"**:
+Clicking a row selects the record (see [4.3](#43-related-tables-the-master-detail-view)). Editing is done with the
+buttons at the end of the row – depending on the screen width:
+
+**On the desktop** (from about tablet width) there are icons; the tooltip names the function:
+
+| Icon | Function |
+|---|---|
+| **Edit** (pencil) | Opens the input form as a window; **Save** or **Cancel** leads straight back to the table. |
+| **Delete** (bin) | Deletes after a confirmation. |
+| **View** (eye) | Instead of “Edit” if you may only read: the form with all fields, locked. |
+| **Restore** | For deleted records instead of “Edit” and “Delete”. |
+| **…** | Menu with **View** and **History** (who changed what when). |
+
+**On the smartphone** you open the record with **"Details"** in a window sliding in from the right:
 
 ![Details window](images/en/05-details-popup.png)
 
@@ -241,7 +253,7 @@ missing.
 > lines. The message names the reason, e.g. "1 × Order lines (via "Order")". Delete the related records first.
 
 **Viewing deleted records:** With delete permission you can also show deleted entries with the "Deleted records"
-filter and bring them back with "Details → Restore". If another record now has the same value in a unique field, the
+filter and bring them back with **Restore** in the row (smartphone: "Details → Restore"). If another record now has the same value in a unique field, the
 message "Data conflict" appears, and the record stays deleted.
 
 > **Record deleted in the meantime?** If someone deletes the record while you are editing it, saving is rejected
@@ -277,7 +289,7 @@ Further rules:
   distinguishable. The next level appears under the tab in which you made the selection.
 - **New record in a detail table:** the relation is set automatically: a new order line always belongs to the
   currently selected order. No new records can be created below a deleted record; the button is missing there.
-- **Editing** is done here, too, exclusively with **"Details"** in the respective row.
+- **Editing** is done here, too, with the buttons in the respective row (smartphone: **"Details"**).
 - **Bookmarks and links:** your selection is stored in the browser's address bar. Reloading and a shared link show
   exactly the same view. If you leave the page and come back with "Back", you find your selection again. "Back" does
   not step through individual row clicks, however: it goes to the previous page.

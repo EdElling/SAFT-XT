@@ -471,7 +471,7 @@ class CascadeTest extends DuskTestCase
             $this->clickRow($browser, 'ACME GmbH')->waitForText('B-100', 15);
             $this->clickRow($browser, 'B-100')->waitForText('Bestellungen: B-100', 15);
 
-            $browser->clickAtXPath("(//table[contains(@class, 'fi-ta-table')])[2]//tr[contains(., 'B-100')]//button[contains(., 'Details')]")
+            $this->mobile($browser)->clickAtXPath("(//table[contains(@class, 'fi-ta-table')])[2]//tr[contains(., 'B-100')]//button[contains(., 'Details')]")
                 ->waitForText('Schliessen', 15)->pause(300);
             $this->clickVisibleButton($browser, 'Löschen')->waitForText('Abbrechen', 15)->pause(300);
             $this->clickVisibleButton($browser, 'Löschen')->waitUntilMissingText('Bestellungen: B-100', 15);

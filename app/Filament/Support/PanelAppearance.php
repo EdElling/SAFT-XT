@@ -106,6 +106,9 @@ final class PanelAppearance
             // Prüfregeln aus Plugins in der Auswahl „Weitere Prüfungen“: Symbol, Regel, Plugin (grau).
             .'.saft-plugin-option{display:inline-flex;align-items:center;gap:.3rem}'
             .'.saft-plugin-option-source{opacity:.65;font-size:.85em}'
+            // Datentabellen: schmal „Details“ im Slider, breit direkt Bearbeiten/Löschen (DynamicRecordActions::rowActions).
+            .'.saft-desktop-only{display:none!important}'
+            .'@media (min-width:768px){.saft-mobile-only{display:none!important}.saft-desktop-only{display:inline-flex!important}}'
             // Reiter über Listen (z. B. App-Reiter, HasAppTabs) links bündig wie Titel und Tabelle, nur so breit wie nötig.
             .'.fi-resource-list-records-page .fi-tabs:not(.fi-contained){margin-inline:0;width:fit-content}'
             // Untermenüs in der Seitenleiste: Pfeil rechts, nach unten gedreht, wenn offen (MenuNavigationBuilder).

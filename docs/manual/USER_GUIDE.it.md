@@ -182,7 +182,8 @@ Nel menu aprite una tabella sotto **Dati**, ad es. **Clienti**.
    - «Record eliminati»: solo per gli utenti con diritto di eliminazione
 3. **Ordinare**: un clic sull’intestazione di una colonna ordina in modo crescente o decrescente. Ogni colonna è
    ordinabile. Gli elenchi di selezione vengono ordinati secondo il valore salvato, non secondo l’etichetta mostrata.
-4. **Dettagli**: apre il record in una finestra (vedere [4.2](#42-visualizzare-creare-modificare-ed-eliminare-record)).
+4. **Modifica, Elimina, …**: alla fine della riga (vedere [4.2](#42-visualizzare-creare-modificare-ed-eliminare-record));
+   sullo smartphone **Dettagli**.
 
 In basso scegliete quanti record mostrare per pagina (10, 25, 50 o 100) e passate da una pagina all’altra con i
 numeri di pagina e le frecce (sugli schermi stretti con «Precedente» e «Successivo»). Date e numeri seguono la lingua
@@ -191,7 +192,7 @@ scelta: in italiano ad es. `01/02/2026 14:30`, in tedesco `01.02.2026 14:30` e `
 i numeri compaiono come `1'234.50`.
 
 **Larghezza:** una tabella è larga quanto le sue colonne. Con poche colonne resta spazio libero a destra, e
-«Dettagli» si trova subito accanto all’ultima colonna. Se le colonne non entrano nella finestra, la tabella è larga
+i pulsanti della riga si trovano subito accanto all’ultima colonna. Se le colonne non entrano nella finestra, la tabella è larga
 quanto la finestra e si può scorrere orizzontalmente. Le anteprime brevi e le tabelle di dettaglio della vista
 master-detail si comportano allo stesso modo.
 
@@ -214,7 +215,19 @@ destra in tutte le tabelle.
 ### 4.2 Visualizzare, creare, modificare ed eliminare record
 
 Le tabelle servono alla **lettura**. Un clic su una riga seleziona il record (vedere
-[4.3](#43-tabelle-collegate-la-vista-master-detail)). Per **modificarlo** aprite il record con **«Dettagli»**:
+[4.3](#43-tabelle-collegate-la-vista-master-detail)). La modifica avviene con i pulsanti alla fine della riga – a seconda della larghezza dello schermo:
+
+**Sul desktop** (da circa la larghezza di un tablet) ci sono icone; il tooltip indica la funzione:
+
+| Icona | Funzione |
+|---|---|
+| **Modifica** (matita) | Apre il modulo di inserimento in una finestra; **Salva** o **Annulla** riporta direttamente alla tabella. |
+| **Elimina** (cestino) | Elimina dopo una domanda di sicurezza. |
+| **Visualizza** (occhio) | Al posto di «Modifica» se potete solo leggere: il modulo con tutti i campi, bloccato. |
+| **Ripristina** | Per i record eliminati al posto di «Modifica» ed «Elimina». |
+| **…** | Menu con **Visualizza** e **Cronologia** (chi ha modificato cosa e quando). |
+
+**Sullo smartphone** aprite il record con **«Dettagli»** in una finestra che scorre da destra:
 
 ![Finestra Dettagli](images/it/05-details-popup.png)
 
@@ -249,7 +262,7 @@ I pulsanti visibili dipendono dai vostri diritti: con il solo diritto di lettura
 > (tramite «Ordine»)». Eliminate prima i record collegati.
 
 **Vedere i record eliminati:** con il diritto di eliminazione, il filtro «Record eliminati» mostra anche le voci
-eliminate, che potete recuperare con «Dettagli → Ripristina». Se nel frattempo un altro record ha lo stesso valore in
+eliminate, che potete recuperare con **Ripristina** nella riga (smartphone: «Dettagli → Ripristina»). Se nel frattempo un altro record ha lo stesso valore in
 un campo univoco, compare il messaggio «Conflitto di dati» e il record resta eliminato.
 
 > **Record eliminato nel frattempo?** Se qualcuno ha eliminato il record mentre lo state modificando, il salvataggio
@@ -288,7 +301,7 @@ Altre regole:
 - **Nuovo record in una tabella di dettaglio:** il collegamento viene impostato automaticamente – una nuova riga
   d’ordine appartiene sempre all’ordine selezionato. Sotto un record eliminato non si possono creare nuovi record; il
   pulsante lì manca.
-- **La modifica** avviene anche qui esclusivamente con **«Dettagli»** nella riga interessata.
+- **La modifica** avviene anche qui con i pulsanti della riga interessata (smartphone: **«Dettagli»**).
 - **Segnalibri e link:** la vostra selezione compare nella barra degli indirizzi del browser. Ricaricare la pagina o
   un link inoltrato mostrano esattamente la stessa vista. Anche chi lascia la pagina e torna con «Indietro» ritrova la
   propria selezione. «Indietro» non ripercorre però i singoli clic sulle righe: il tasto porta alla pagina

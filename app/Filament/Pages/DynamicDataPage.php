@@ -257,8 +257,7 @@ class DynamicDataPage extends Page implements HasTable
             ])
             ->recordActions([
                 // Zusammengesetzter Schlüssel: Details und Bearbeiten ja, Auswahl (Master-Detail) nein.
-                DynamicRecordActions::details($customTable)->visible($customTable->hasKey()),
-                ...($customTable->hasKey() ? app(PluginRegistry::class)->dataActions($customTable, DataAction::RECORD) : []),
+                ...DynamicRecordActions::rowActions($customTable, [], $customTable->hasKey() ? app(PluginRegistry::class)->dataActions($customTable, DataAction::RECORD) : []),
             ])
             ->emptyStateHeading(__('data.empty'));
     }

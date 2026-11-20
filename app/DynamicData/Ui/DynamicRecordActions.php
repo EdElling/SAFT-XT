@@ -24,6 +24,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Infolists\Components\RepeatableEntry;
@@ -325,9 +326,68 @@ final class DynamicRecordActions
             : filled($value);
     }
 
+    /** CSS-Klassen der Umschaltung nach Bildschirmbreite (PanelAppearance): schmal Slider „Details“, breit direkt. */
+    public const string MOBILE = 'saft-mobile-only';
+
+    public const string DESKTOP = 'saft-desktop-only';
+
+    /**
+     * Aktionen einer Zeile (Liste und Detailtabellen). Schmal (Smartphone): „Details“ im Slider wie bisher. Breit
+     * (Desktop): direkt „Bearbeiten“ und „Löschen“ (bzw. „Ansehen“ ohne Bearbeitungsrecht, „Wiederherstellen“ bei
+     * gelöschten Datensätzen), dazu ein Menü mit „Ansehen“ und „Verlauf“; Plugin-Aktionen wie bisher in der Zeile.
+     *
+     * @param  list<string>  $locked  nicht bearbeitbare Felder (Verknüpfung zur Haupttabelle)
+     * @param  list<Action>  $plugins  Aktionen aus Plugins für einen Datensatz
+     * @return list<Action|ActionGroup>
+     */
+    public static function rowActions(CustomTable $table, array $locked = [], array $plugins = []): array
+    {
+        if (! $table->hasKey()) {
+            return [];
+        }
+
+        $desktop = ['class' => self::DESKTOP];
+        $editable = static fn (?DynamicRecord $record): bool => $table->supports('update') && DataAccess::current($table, 'update') && ! self::trashed($record);
+        $refresh = static fn ($livewire) => $livewire->dispatch(self::REFRESH_EVENT);
+
+        // Breit nur Symbole mit Tooltip (Platz sparen), wie das „…“-Menü.
+        $icon = static fn (Action $action): Action => $action->iconButton()->tooltip(fn (Action $action): string => (string) $action->getLabel())->extraAttributes($desktop);
+
+        return [
+            self::details($table, $locked)->extraAttributes(['class' => self::MOBILE]),
+            $icon(self::edit($table, $locked, 'editRow'))->after($refresh),
+            $icon(self::view($table, $locked, 'viewRow'))->visible(fn (?DynamicRecord $record): bool => ! $editable($record)),
+            $icon(self::delete($table, 'deleteRow'))->after(fn ($livewire, DynamicRecord $record) => $livewire->dispatch(
+                self::REFRESH_EVENT,
+                deletedFrom: $table->name,
+                deletedRecord: $table->hasSingleKey() ? (int) $record->getKey() : null,
+            )),
+            $icon(self::restore($table, 'restoreRow'))->after($refresh),
+            ...$plugins,
+            ActionGroup::make([
+                self::view($table, $locked, 'viewMore')->visible(fn (?DynamicRecord $record): bool => $editable($record)),
+                self::history('historyMore')->visible(self::writable($table)),
+            ])->extraAttributes($desktop),
+        ];
+    }
+
+    /**
+     * „Ansehen“: das Formular der Tabelle, alle Felder gesperrt, als mittiges Fenster.
+     *
+     * @param  list<string>  $locked
+     */
+    public static function view(CustomTable $table, array $locked = [], string $name = 'view'): ViewAction
+    {
+        return ViewAction::make($name)
+            ->label(__('data.actions.view'))
+            ->schema(self::form($table, $locked))
+            ->modalHeading(fn (DynamicRecord $record): string => RecordEntries::title($table, $record))
+            ->authorize(fn (): bool => DataAccess::current($table, 'view'));
+    }
+
     /**
      * Popup mit allen Feldern; Bearbeiten, Verlauf, Löschen und Wiederherstellen nur hier
-     * (die Kaskade selbst ist lesend).
+     * (die Kaskade selbst ist lesend). Auf breiten Bildschirmen ersetzt durch rowActions().
      *
      * @param  list<string>  $locked  nicht bearbeitbare Felder (Verknüpfung zur Haupttabelle)
      */
@@ -361,15 +421,15 @@ final class DynamicRecordActions
     /**
      * @param  list<string>  $locked  nicht bearbeitbare Felder
      */
-    public static function edit(CustomTable $table, array $locked = []): EditAction
+    public static function edit(CustomTable $table, array $locked = [], ?string $name = null): EditAction
     {
-        return EditAction::make()
+        return EditAction::make($name)
             ->schema(self::form($table, $locked))
             ->visible($table->supports('update'))
             ->authorize(fn (): bool => DataAccess::current($table, 'update'))
             // Nur die Schaltfläche ausblenden: Ein bereits offenes Formular muss die Meldung beim Speichern erreichen.
             ->hidden(fn (mixed $livewire, ?DynamicRecord $record): bool => ($record?->trashed() ?? false)
-                && ! in_array('edit', array_column($livewire->mountedActions ?? [], 'name'), true))
+                && array_intersect(['edit', 'editRow'], array_column($livewire->mountedActions ?? [], 'name')) === [])
             ->using(function (DynamicRecord $record, array $data) use ($locked, $table): DynamicRecord {
                 // Das Formular kann älter sein als eine Löschung in einem anderen Fenster.
                 $current = $record->newQuery()->withTrashed()->find($record->getKey());
@@ -386,9 +446,9 @@ final class DynamicRecordActions
             });
     }
 
-    public static function history(): Action
+    public static function history(string $name = 'history'): Action
     {
-        return Action::make('history')
+        return Action::make($name)
             ->label(__('data.history.label'))
             ->icon('heroicon-o-clock')
             ->color('gray')
@@ -418,10 +478,10 @@ final class DynamicRecordActions
             ->placeholder(__('data.history.empty'));
     }
 
-    public static function delete(CustomTable $table): DeleteAction
+    public static function delete(CustomTable $table, ?string $name = null): DeleteAction
     {
         // Ein bereits gelöschter Datensatz wird nicht erneut gelöscht (Filaments eigene Regel ginge durch visible() verloren).
-        $delete = DeleteAction::make()
+        $delete = DeleteAction::make($name)
             ->visible(fn (?Model $record = null): bool => $table->supports('delete') && ! self::trashed($record))
             ->authorize(fn (): bool => DataAccess::current($table, 'delete'));
 
@@ -429,10 +489,10 @@ final class DynamicRecordActions
         return $table->isExternal() ? $delete->modalDescription(__('data.delete_permanently')) : $delete;
     }
 
-    public static function restore(CustomTable $table): RestoreAction
+    public static function restore(CustomTable $table, ?string $name = null): RestoreAction
     {
         // Nur bei gelöschten Datensätzen – visible() ersetzt Filaments eigene Sichtbarkeitsregel.
-        return RestoreAction::make()
+        return RestoreAction::make($name)
             ->visible(fn (?Model $record = null): bool => ! $table->isExternal() && self::trashed($record))
             ->authorize(fn (): bool => DataAccess::current($table, 'delete'));
     }

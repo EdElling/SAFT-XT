@@ -15,6 +15,7 @@ return [
     'actions' => [
         'create' => 'Nuovo record',
         'details' => 'Dettagli',
+        'view' => 'Visualizza',
     ],
     'import' => [
         'label' => 'Importa',

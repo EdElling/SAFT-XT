@@ -188,7 +188,8 @@ Dans le menu, ouvrez une table sous **Données**, p. ex. **Clients**.
    - « Enregistrements supprimés » : uniquement pour les utilisateurs ayant le droit de suppression
 3. **Trier** : un clic sur un en-tête de colonne trie par ordre croissant ou décroissant. Toutes les colonnes peuvent
    être triées. Les listes de sélection sont triées selon la valeur enregistrée, non selon le libellé affiché.
-4. **Détails** : ouvre l’enregistrement dans une fenêtre (voir [4.2](#42-consulter-créer-modifier-et-supprimer-des-enregistrements)).
+4. **Modifier, Supprimer, …** : en fin de ligne (voir [4.2](#42-consulter-créer-modifier-et-supprimer-des-enregistrements)) ;
+   sur smartphone **Détails**.
 
 En bas, vous choisissez le nombre d’enregistrements par page (10, 25, 50 ou 100) et passez d’une page à l’autre avec
 les numéros de page et les flèches (sur les écrans étroits avec « Précédent » et « Suivant »). Les dates et les
@@ -198,7 +199,7 @@ nombres suivent la langue choisie : en français p. ex. `01/02/2026 14:30`, en a
 `1 234,50`).
 
 **Largeur :** un tableau est aussi large que ses colonnes. S’il y a peu de colonnes, il reste de la place à droite, et
-« Détails » se trouve juste à côté de la dernière colonne. Si les colonnes ne tiennent pas dans la fenêtre, le tableau
+les boutons de la ligne se trouvent juste à côté de la dernière colonne. Si les colonnes ne tiennent pas dans la fenêtre, le tableau
 prend la largeur de la fenêtre et défile horizontalement. Les aperçus et les tableaux de détails de la vue
 maître-détail se comportent de la même manière.
 
@@ -221,7 +222,19 @@ jusqu’à la déconnexion. Les **nombres** sont alignés à droite dans tous le
 ### 4.2 Consulter, créer, modifier et supprimer des enregistrements
 
 Les tableaux servent à la **lecture**. Un clic sur une ligne sélectionne l’enregistrement (voir
-[4.3](#43-tables-liées--la-vue-maître-détail)). Pour le **modifier**, ouvrez l’enregistrement via **« Détails »** :
+[4.3](#43-tables-liées--la-vue-maître-détail)). La modification se fait avec les boutons en fin de ligne – selon la largeur de l’écran :
+
+**Sur ordinateur** (à partir d’environ la largeur d’une tablette), ce sont des icônes ; l’infobulle indique la fonction :
+
+| Icône | Fonction |
+|---|---|
+| **Modifier** (crayon) | Ouvre le formulaire de saisie dans une fenêtre ; **Sauvegarder les modifications** ou **Annuler** ramène directement au tableau. |
+| **Supprimer** (corbeille) | Supprime après une question de sécurité. |
+| **Afficher** (œil) | À la place de « Modifier » si vous ne pouvez que lire : le formulaire avec tous les champs, verrouillé. |
+| **Restaurer** | Pour les enregistrements supprimés, à la place de « Modifier » et « Supprimer ». |
+| **…** | Menu avec **Afficher** et **Historique** (qui a modifié quoi et quand). |
+
+**Sur smartphone**, ouvrez l’enregistrement via **« Détails »** dans une fenêtre qui glisse depuis la droite :
 
 ![Fenêtre Détails](images/fr/05-details-popup.png)
 
@@ -258,7 +271,7 @@ et « Supprimer » manquent.
 > « 1 × Lignes de commande (via « Commande ») ». Supprimez d’abord les enregistrements rattachés.
 
 **Voir les enregistrements supprimés :** avec le droit de suppression, le filtre « Enregistrements supprimés » affiche
-aussi les entrées supprimées, que vous pouvez récupérer via « Détails → Restaurer ». Si un autre enregistrement a
+aussi les entrées supprimées, que vous pouvez récupérer via **Restaurer** sur la ligne (smartphone : « Détails → Restaurer »). Si un autre enregistrement a
 entre-temps la même valeur dans un champ unique, le message « Conflit de données » s’affiche et l’enregistrement reste
 supprimé.
 
@@ -300,7 +313,7 @@ Autres règles :
 - **Nouvel enregistrement dans une table de détail :** la liaison est renseignée automatiquement – une nouvelle ligne
   de commande appartient toujours à la commande sélectionnée. Sous un enregistrement supprimé, on ne peut pas créer de
   nouveaux enregistrements ; le bouton y manque.
-- **La modification** se fait ici aussi uniquement via **« Détails »** sur la ligne concernée.
+- **La modification** se fait ici aussi avec les boutons de la ligne concernée (smartphone : **« Détails »**).
 - **Signets et liens :** votre sélection figure dans la barre d’adresse du navigateur. Un rechargement ou un lien
   transmis affichent exactement la même vue. Qui quitte la page et revient avec « Retour » retrouve aussi sa
   sélection. « Retour » ne parcourt toutefois pas les clics sur les lignes un à un : la touche mène à la page

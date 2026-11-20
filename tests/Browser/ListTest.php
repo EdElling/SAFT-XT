@@ -419,7 +419,8 @@ class ListTest extends DuskTestCase
 
             [$layout] = $browser->script(<<<'JS'
                 const card = document.querySelector('.fi-ta').getBoundingClientRect();
-                const details = [...document.querySelectorAll('tr.fi-ta-row button')].at(-1).getBoundingClientRect();
+                // Letzter sichtbarer Knopf der Zeile (am Desktop Symbole; „Details“ nur in Smartphone-Breite).
+                const details = [...document.querySelectorAll('tr.fi-ta-row button')].filter((b) => b.offsetParent !== null).at(-1).getBoundingClientRect();
                 return {
                     card: card.width,
                     content: document.querySelector('.fi-page-content').getBoundingClientRect().width,
@@ -428,7 +429,7 @@ class ListTest extends DuskTestCase
                 };
             JS);
 
-            // Zwei Spalten füllen nicht die ganze Breite; „Details“ steht am Rand der Tabelle, nicht des Fensters.
+            // Zwei Spalten füllen nicht die ganze Breite; die Knöpfe stehen am Rand der Tabelle, nicht des Fensters.
             $this->assertLessThan($layout['content'] * 0.75, $layout['card']);
             $this->assertLessThan(60, $layout['detailsGap']);
             $this->assertFalse($layout['scrolls']);

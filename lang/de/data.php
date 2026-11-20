@@ -15,6 +15,7 @@ return [
     'actions' => [
         'create' => 'Neuer Datensatz',
         'details' => 'Details',
+        'view' => 'Ansehen',
     ],
     'import' => [
         'label' => 'Importieren',

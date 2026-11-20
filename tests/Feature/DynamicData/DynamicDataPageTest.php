@@ -84,6 +84,45 @@ class DynamicDataPageTest extends DynamicDataTestCase
             ->assertActionHidden([TestAction::make('details')->table($record), TestAction::make('delete')]);
     }
 
+    /** Breite Bildschirme: direkt Bearbeiten, Löschen, Ansehen, Wiederherstellen; schmale: „Details“ im Slider. */
+    public function test_desktop_row_actions_edit_delete_view_and_restore_directly(): void
+    {
+        $record = DynamicRecord::forTable($this->projekte)->create(['titel' => 'Alpha']);
+        $this->actingAs($this->superAdmin());
+        $page = Livewire::test(DynamicDataPage::class, ['table' => 'projekte']);
+
+        // Bearbeiten direkt (ohne Slider), Ansehen im Menü, „Ansehen“ als Knopf nur ohne Bearbeitungsrecht.
+        $page->assertActionVisible(TestAction::make('editRow')->table($record))
+            ->assertActionHidden(TestAction::make('viewRow')->table($record))
+            ->assertActionVisible(TestAction::make('viewMore')->table($record))
+            ->callAction(TestAction::make('editRow')->table($record), ['titel' => 'Beta'])
+            ->assertHasNoActionErrors();
+        $this->assertSame('Beta', DynamicRecord::forTable($this->projekte)->newQuery()->value('titel'));
+
+        // Umschaltung nach Breite über CSS-Klassen.
+        $html = $page->html();
+        $this->assertStringContainsString('saft-mobile-only', $html);
+        $this->assertStringContainsString('saft-desktop-only', $html);
+
+        // Löschen mit Rückfrage, dann Wiederherstellen in der Zeile.
+        $page->callAction(TestAction::make('deleteRow')->table($record));
+        $this->assertTrue(DynamicRecord::forTable($this->projekte)->newQuery()->withTrashed()->find($record->id)->trashed());
+        $trashed = DynamicRecord::forTable($this->projekte)->newQuery()->withTrashed()->find($record->id);
+        Livewire::test(DynamicDataPage::class, ['table' => 'projekte'])
+            ->filterTable('trashed', true)
+            ->assertActionHidden(TestAction::make('editRow')->table($trashed))
+            ->assertActionVisible(TestAction::make('viewRow')->table($trashed))
+            ->callAction(TestAction::make('restoreRow')->table($trashed));
+        $this->assertFalse(DynamicRecord::forTable($this->projekte)->newQuery()->find($record->id)->trashed());
+
+        // Nur lesen: „Ansehen“ statt Bearbeiten/Löschen.
+        $this->actingAs($this->userWithPermissions(['data.projekte.view']));
+        Livewire::test(DynamicDataPage::class, ['table' => 'projekte'])
+            ->assertActionHidden(TestAction::make('editRow')->table($record))
+            ->assertActionHidden(TestAction::make('deleteRow')->table($record))
+            ->assertActionVisible(TestAction::make('viewRow')->table($record));
+    }
+
     public function test_revoked_permission_takes_effect_on_next_interaction(): void
     {
         $user = $this->userWithPermissions(['data.projekte.view']);

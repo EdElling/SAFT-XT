@@ -184,15 +184,15 @@ einer anderen App, wechselt SAFT von selbst dorthin. Mit Zugang zu nur einer App
    - „Gelöschte Datensätze“: nur für Benutzer mit Löschrecht
 3. **Sortieren** – Klick auf einen Spaltenkopf sortiert auf- bzw. absteigend. Jede Spalte ist sortierbar.
    Auswahllisten sortieren nach dem gespeicherten Wert, nicht nach der angezeigten Bezeichnung.
-4. **Details** – öffnet den Datensatz in einem Fenster (siehe [4.2](#42-datensätze-ansehen-anlegen-bearbeiten-löschen)).
+4. **Bearbeiten, Löschen, …** – am Ende der Zeile (siehe [4.2](#42-datensätze-ansehen-anlegen-bearbeiten-löschen)); auf
+   dem Smartphone **Details**.
 
 Unten wählen Sie, wie viele Datensätze pro Seite angezeigt werden (10, 25, 50 oder 100), und blättern mit
 Seitenzahlen und Pfeilen zwischen den Seiten (auf schmalen Bildschirmen mit „Vorherige“ und „Nächste“). Datumswerte und Zahlen folgen der gewählten Sprache: auf Deutsch z. B. `01.02.2026 14:30` und
 `1.234,50`, auf Englisch `01/02/2026 14:30` und `1,234.50`, auf Französisch und Italienisch `01/02/2026 14:30`. Mit
 dem Zahlenformat **Schweiz** (siehe [Kapitel 3](#3-oberfläche-und-dashboard)) erscheinen Zahlen als `1'234.50`.
 
-**Breite:** Eine Tabelle ist so breit wie ihre Spalten. Bei wenigen Spalten bleibt rechts daneben Platz frei, und
-„Details“ steht direkt neben der letzten Spalte. Passen die Spalten nicht ins Fenster, ist die Tabelle so breit wie
+**Breite:** Eine Tabelle ist so breit wie ihre Spalten. Bei wenigen Spalten bleibt rechts daneben Platz frei, und die Schaltflächen der Zeile stehen direkt neben der letzten Spalte. Passen die Spalten nicht ins Fenster, ist die Tabelle so breit wie
 das Fenster und lässt sich waagrecht scrollen. Kurzanzeigen und Detailtabellen der Master-Detail-Ansicht verhalten
 sich genauso.
 
@@ -214,9 +214,20 @@ in allen Tabellen rechtsbündig.
 
 ### 4.2 Datensätze ansehen, anlegen, bearbeiten, löschen
 
-Die Tabellen sind zum **Lesen** gedacht. Ein Klick auf eine Zeile wählt den Datensatz aus (siehe
-[4.3](#43-verknüpfte-tabellen-die-master-detail-ansicht)). Zum **Bearbeiten** öffnen Sie den Datensatz über
-**„Details“**:
+Ein Klick auf eine Zeile wählt den Datensatz aus (siehe [4.3](#43-verknüpfte-tabellen-die-master-detail-ansicht)).
+Bearbeitet wird über die Schaltflächen am Ende der Zeile – je nach Bildschirmbreite unterschiedlich:
+
+**Am Desktop** (ab etwa Tablet-Breite) stehen dort Symbole; der Tooltip nennt die Funktion:
+
+| Symbol | Funktion |
+|---|---|
+| **Bearbeiten** (Stift) | Öffnet das Eingabeformular als Fenster; **Speichern** bzw. **Abbrechen** führt direkt zurück zur Tabelle. |
+| **Löschen** (Papierkorb) | Löscht nach einer Sicherheitsfrage. |
+| **Ansehen** (Auge) | Statt „Bearbeiten“, wenn Sie nur lesen dürfen: das Formular mit allen Feldern, gesperrt. |
+| **Wiederherstellen** | Bei gelöschten Datensätzen statt „Bearbeiten“ und „Löschen“. |
+| **…** | Menü mit **Ansehen** und **Verlauf** (wer wann was geändert hat). |
+
+**Auf dem Smartphone** öffnen Sie den Datensatz über **„Details“** in einem Fenster, das von rechts einfährt:
 
 ![Details-Fenster](images/de/05-details-popup.png)
 
@@ -253,7 +264,7 @@ Welche Schaltflächen Sie sehen, hängt von Ihren Rechten ab: Mit reinem Leserec
 > z. B. „1 × Bestellpositionen (über „Bestellung“)“. Löschen Sie zuerst die zugeordneten Datensätze.
 
 **Gelöschte Datensätze ansehen:** Mit Löschrecht können Sie über den Filter „Gelöschte Datensätze“ auch
-gelöschte Einträge anzeigen und über „Details → Wiederherstellen“ zurückholen. Gibt es inzwischen einen anderen
+gelöschte Einträge anzeigen und über **Wiederherstellen** in der Zeile (Smartphone: „Details → Wiederherstellen“) zurückholen. Gibt es inzwischen einen anderen
 Datensatz mit demselben Wert in einem eindeutigen Feld, erscheint die Meldung „Datenkonflikt“, und der Datensatz
 bleibt gelöscht.
 
@@ -294,7 +305,7 @@ Weitere Regeln:
 - **Neuer Datensatz in einer Detailtabelle:** Die Verknüpfung ist automatisch gesetzt – eine neue
   Bestellposition gehört immer zur gerade ausgewählten Bestellung. Unter einem gelöschten Datensatz können keine
   neuen Datensätze angelegt werden, die Schaltfläche fehlt dort.
-- **Bearbeiten** geschieht auch hier ausschliesslich über **„Details“** in der jeweiligen Zeile.
+- **Bearbeiten** geschieht auch hier über die Schaltflächen in der jeweiligen Zeile (Smartphone: **„Details“**).
 - **Lesezeichen und Links:** Ihre Auswahl steht in der Adresszeile des Browsers. Neu laden und ein
   weitergegebener Link zeigen genau dieselbe Ansicht. Auch wer die Seite verlässt und mit „Zurück“ zurückkehrt,
   findet seine Auswahl wieder. Durch einzelne Zeilenklicks geht „Zurück“ aber nicht: Die Taste führt zur

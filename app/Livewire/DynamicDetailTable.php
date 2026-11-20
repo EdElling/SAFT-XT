@@ -149,8 +149,7 @@ class DynamicDetailTable extends Component implements HasActions, HasSchemas, Ha
                 ...app(PluginRegistry::class)->dataActions($child, DataAction::TABLE),
             ])
             ->recordActions([
-                DynamicRecordActions::details($child, [$fk])->visible($child->hasKey()),
-                ...($child->hasKey() ? app(PluginRegistry::class)->dataActions($child, DataAction::RECORD) : []),
+                ...DynamicRecordActions::rowActions($child, [$fk], $child->hasKey() ? app(PluginRegistry::class)->dataActions($child, DataAction::RECORD) : []),
             ])
             ->emptyStateHeading(__('data.empty_details'));
     }

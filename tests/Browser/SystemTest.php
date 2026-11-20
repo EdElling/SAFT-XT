@@ -403,7 +403,7 @@ class SystemTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($table): void {
             $this->login($browser, self::ADMIN);
 
-            foreach (['/admin/roles' => '.fi-ta', "/admin/table-designer/{$table->id}/edit" => '.fi-resource-relation-manager .fi-ta'] as $path => $selector) {
+            foreach (['/admin/roles?tab=all' => '.fi-ta', "/admin/table-designer/{$table->id}/edit" => '.fi-resource-relation-manager .fi-ta'] as $path => $selector) {
                 // Tabellen in Bearbeitungsmasken laden erst, wenn sie ins Bild scrollen.
                 $this->scrollThroughPage($browser->visit($path)->waitFor('.fi-page-content', 15));
                 $browser->waitFor($selector.' .fi-ta-table', 15)->pause(300);

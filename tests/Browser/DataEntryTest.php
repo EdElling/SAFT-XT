@@ -9,6 +9,7 @@ use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Services\DynamicSchemaService;
+use Facebook\WebDriver\WebDriverBy;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
@@ -207,7 +208,7 @@ class DataEntryTest extends DuskTestCase
             $this->assertNoScriptRan($browser, 'Vorschau');
             $browser->refresh()->waitFor('.fi-ta-table', 15);
 
-            $browser->clickAtXPath("//tr[contains(@class, 'fi-ta-row')]//button[contains(., 'Details')]")->waitForText('Schliessen', 15)->pause(300);
+            $this->mobile($browser)->clickAtXPath("//tr[contains(@class, 'fi-ta-row')]//button[contains(., 'Details')]")->waitForText('Schliessen', 15)->pause(300);
             $this->assertNoScriptRan($browser, 'Details');
 
             $this->clickVisibleButton($browser, 'Bearbeiten')->waitFor('input[id$=".titel"]', 15);
@@ -367,5 +368,27 @@ class DataEntryTest extends DuskTestCase
                 ->assertSee('Web muss eine URL sein')
                 ->assertSee('Kurz muss mindestens 3 Zeichen lang sein');
         });
+    }
+
+    /** EIN-17 */
+    public function test_desktop_edits_and_deletes_directly_from_the_row(): void
+    {
+        $this->browse(function (Browser $browser): void {
+            // Breit (Desktop): Symbole „Bearbeiten“ und „Löschen“ in der Zeile, kein „Details“.
+            $this->login($browser, self::ADMIN)->visit('/admin/data/kunden')->waitForText('ACME GmbH', 15);
+            $this->assertFalse($browser->driver->findElement(WebDriverBy::xpath("//tr[contains(., 'ACME GmbH')]//button[contains(., 'Details')]"))->isDisplayed());
+            $browser->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., 'ACME GmbH')]//button[@aria-label='Bearbeiten']")
+                ->waitFor($this->input('firma'), 15)
+                ->clear($this->input('firma'))->type($this->input('firma'), 'ACME AG');
+            $this->clickVisibleButton($browser, 'Speichern');
+            $browser->waitForText('ACME AG', 15)->waitUntilMissing('.fi-modal-window', 15);
+
+            $browser->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., 'ACME AG')]//button[@aria-label='Löschen']")
+                ->waitFor('.fi-modal-window', 15)->pause(300);
+            $this->clickVisibleButton($browser, 'Löschen');
+            $browser->waitUntilMissingText('ACME AG', 15);
+        });
+
+        $this->assertTrue(DynamicRecord::forTable($this->kunden)->newQuery()->withTrashed()->find($this->acme->id)->trashed());
     }
 }
