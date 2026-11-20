@@ -336,7 +336,9 @@ class RolesTest extends DuskTestCase
                 ->assertSeeIn('.fi-sidebar', 'Kunden')
                 ->assertDontSeeIn('.fi-sidebar', 'Benutzer');
 
-            $browser->press('Beenden')
+            // Erst klicken, wenn die Seite ruhig ist; gezielt den Button im Hinweisband.
+            $browser->pause(500)
+                ->click('[data-role-simulation-banner] button[type="submit"]')
                 ->waitUntilMissing('[data-role-simulation-banner]', 15)
                 ->waitForText('Benutzer', 15)
                 ->assertSeeIn('.fi-sidebar', 'Benutzer');
