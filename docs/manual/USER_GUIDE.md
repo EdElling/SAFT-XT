@@ -459,8 +459,8 @@ Describe in your own words what you want to see, e.g. "purchase volume per suppl
 fills the editor and can be checked and changed as usual. Nothing is saved until you click **Save**. A further entry
 adjusts the proposal ("only receipts", "as a line"); **Start over** begins a new conversation. The assistant sets the
 name of the report as long as you do not enter or change it yourself; **Start over** clears a name set this way. The
-assistant also builds formulas and figures from values. Your description and the names of the tables and fields you may evaluate are transmitted – **never
-records**. The number of requests per day is limited; the assistant shows how many are left today.
+assistant also builds formulas and figures from values. Your description and the names of the tables and fields of the current app you may evaluate, plus shared fields of other apps, are
+transmitted – **never records**. The number of requests per day is limited; the assistant shows how many are left today.
 
 **Sharing:** A report is private or **shared**. Who sees and runs it is always decided by the **data permissions of
 the person calling it**: they need read permission for every table involved, including tables used only in a

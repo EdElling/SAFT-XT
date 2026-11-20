@@ -497,7 +497,8 @@ Rien n’est enregistré avant **Sauvegarder**. Une saisie supplémentaire adapt
 « en lignes ») ; **Recommencer** démarre une nouvelle conversation. L’assistant définit le nom du rapport tant que vous
 ne le saisissez ou ne le modifiez pas vous-même ; **Recommencer** efface un nom ainsi défini. L’assistant crée aussi des
 formules et des indicateurs à partir des valeurs. Sont transmis
-votre description et les noms des tables et champs que vous pouvez analyser – **jamais d’enregistrements**. Le nombre
+votre description et les noms des tables et champs de l’app actuelle que vous pouvez analyser, ainsi que les champs partagés d’autres apps –
+**jamais d’enregistrements**. Le nombre
 de demandes par jour est limité ; l’assistant indique combien il en reste aujourd’hui.
 
 **Partager :** un rapport est privé ou **partagé**. Qui le voit et l’exécute dépend toujours des **droits sur les

@@ -480,8 +480,8 @@ Budget (CHF), valore Numero di record, indicatore `[Budget (CHF)] ÷ [Publikatio
 barre»; la proposta riempie l’editor e si può verificare e modificare come di consueto. Si salva solo con **Salva**.
 Con un ulteriore inserimento adattate la proposta («solo entrate», «a linee»); **Ricominciare** avvia una nuova
 conversazione. L’assistente imposta il nome del report finché non lo inserite o modificate voi; **Ricominciare** cancella
-un nome impostato così. L’assistente crea anche formule e indicatori dai valori. Vengono trasmessi la vostra descrizione e i nomi delle tabelle e dei
-campi che potete analizzare – **mai record**. Il numero di richieste al giorno è limitato; l’assistente indica quante
+un nome impostato così. L’assistente crea anche formule e indicatori dai valori. Vengono trasmessi la vostra descrizione e i nomi delle tabelle e dei campi dell’app attuale che potete analizzare, più i campi condivisi di altre app – **mai
+record**. Il numero di richieste al giorno è limitato; l’assistente indica quante
 ne restano oggi.
 
 **Condividere:** un report è privato o **condiviso**. Chi lo vede e lo esegue lo decidono sempre i **diritti sui dati

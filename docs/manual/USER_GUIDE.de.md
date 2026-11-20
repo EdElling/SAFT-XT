@@ -483,7 +483,8 @@ als Balken“; der Vorschlag füllt den Editor und lässt sich wie gewohnt prüf
 **Speichern**. Mit einer weiteren Eingabe passen Sie den Vorschlag an („nur Eingänge“, „als Linie“); **Neu beginnen**
 startet ein neues Gespräch. Den Namen der Auswertung setzt der Assistent, solange Sie ihn nicht selbst eintragen oder
 ändern; **Neu beginnen** leert einen so gesetzten Namen. Der Assistent bildet auch Formeln und Kennzahlen aus Werten. Übermittelt werden Ihre Beschreibung und die Namen der
-Tabellen und Felder, die Sie auswerten dürfen – **nie Datensätze**. Die Zahl der Anfragen pro Tag ist begrenzt; der
+Tabellen und Felder der aktuellen App, die Sie auswerten dürfen, dazu freigegebene Felder anderer Apps – **nie
+Datensätze**. Die Zahl der Anfragen pro Tag ist begrenzt; der
 Assistent zeigt an, wie viele heute noch möglich sind.
 
 **Teilen:** Eine Auswertung ist privat oder **geteilt**. Wer sie sieht und ausführt, entscheiden immer die

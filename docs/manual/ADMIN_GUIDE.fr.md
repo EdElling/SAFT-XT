@@ -1547,5 +1547,6 @@ table. Les tables d’une app désactivée ne sont utilisables que par le super-
 | Tableau des stocks: Afficher la matrice des stocks | ouvrir le tableau des stocks (stock par article et emplacement) |
 | Tableau des stocks: Transférer sur le tableau des stocks | transférer directement sur le tableau des stocks |
 
-La page **Plugins** indique les droits qu’apporte un plugin ; s’il appartient à une app, la gestion des rôles ne propose
-ses droits qu’aux rôles de cette app.
+La page **Plugins** indique les droits qu’apporte un plugin ; s’il appartient à une app, la gestion des rôles ne propose ses droits qu’aux rôles de cette app. De même, ses tuiles du tableau de bord, règles de
+validation, fonctions de formule et types de tâches ne sont proposés que dans cette app ; les règles, formules et tâches
+déjà configurées restent valables. Les plugins sans app propre sont disponibles dans toutes les apps.

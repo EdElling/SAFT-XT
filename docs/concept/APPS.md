@@ -203,8 +203,8 @@ Tabellen-Assistenten), Diagramm aus einer Definition, Änderungsplan.
 | 4 App-Definition | Format `saft-app/1`: aus dem aktuellen Stand erzeugen, exportieren, als neue App installieren, Ausgangsstand speichern; Diagramm aus einer Definition; Seite „Apps“ ersetzt „Konfiguration übertragen“. Beim Export **zuerst die App wählen**, dann ihre Objekte; System-Menüs (Dashboard, Dokumentation, Auswertungen, Administration) und Systemrollen werden nie angeboten. In zwei Teilen: **4a** Format, Export, Version, Datenmodell je App; **4b** Installieren (auch **als Kopie** mit neuen Schlüsseln und anderem Präfix; dieselbe App ein zweites Mal sonst abgelehnt), Ausgangsstand, eigene Rechte *Apps: exportieren* und *Apps: installieren*, „Konfiguration übertragen“ wird abgelöst (alte Pakete weiter einspielbar) | mittel |
 | 5 Schnittstellen | Freigabe von Tabellen/Feldern, Verweise aus anderen Apps nur darauf, Vertragsschutz, „Verwendet in“ über Apps | mittel |
 | 6 Änderungsplan | Vergleich, Einstufung, Konflikte, Vorschau, Ausführen; Aktualisieren einer installierten App aus einem Paket (löst B-001 ab) | gross |
-| 7 Plugins und KI | Plugin-Zuordnung und -Aktivierung je App, Plugin-API 1.9 (Plugin schlägt seine App vor), KI-Kontext je App | mittel |
-| 8 KI-App-Designer | siehe Abschnitt 7 | gross |
+| 7 KI-App-Designer | siehe Abschnitt 7 | gross |
+| 8 Plugins je App | Plugin-Zuordnung von Hand und Aktivierung je App, Plugin-API 1.9 (Plugin schlägt seine App vor). Bereits umgesetzt (in 0.4.0): App eines Plugins aus seinen Tabellen, Menüs, Rechte, Handbücher, Kacheln, Prüfregeln, Formelfunktionen und Aufgabenarten je App, KI-Kontext je App (Hilfe-, Tabellen- und Auswertungsassistent) | mittel |
 
 Jede Etappe ist für sich auslieferbar; ab Etappe 2 ist der Nutzen sichtbar. Etappe 1 legt mit den stabilen
 Schlüsseln die Grundlage für 4, 6 und 8.

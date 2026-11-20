@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Plugins;
 
+use App\Apps\PluginApps;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\Models\CustomTable;
 use App\Plugins\Api\DataAction;
@@ -159,13 +160,13 @@ final class PluginRegistry
      *
      * @return array<string, FormulaFunction>
      */
-    public function formulaFunctions(): array
+    public function formulaFunctions(?int $appId = null): array
     {
         $reserved = [...array_keys(FormulaAnalyzer::FUNCTIONS), ...FormulaAnalyzer::AGGREGATES];
         $functions = [];
 
         foreach ($this->all() as $plugin) {
-            if ($plugin->formulaFunctions() === [] || ! app(PluginDependencies::class)->satisfied($plugin)) {
+            if ($plugin->formulaFunctions() === [] || ! app(PluginDependencies::class)->satisfied($plugin) || ! $this->offeredIn($plugin, $appId)) {
                 continue;
             }
 
@@ -184,14 +185,15 @@ final class PluginRegistry
      * Prüfregeln der Plugins, die nicht ruhen, nach Schlüssel „<plugin-id>.<name>“.
      *
      * @param  string|null  $type  nur Regeln für diesen Feldtyp
+     * @param  int|null  $appId  nur Plugins dieser App bzw. ohne eigene App (Angebot im Table-Designer)
      * @return array<string, FieldRule>
      */
-    public function fieldRules(?string $type = null): array
+    public function fieldRules(?string $type = null, ?int $appId = null): array
     {
         $rules = [];
 
         foreach ($this->all() as $plugin) {
-            if ($plugin->fieldRules() === [] || ! app(PluginDependencies::class)->satisfied($plugin)) {
+            if ($plugin->fieldRules() === [] || ! app(PluginDependencies::class)->satisfied($plugin) || ! $this->offeredIn($plugin, $appId)) {
                 continue;
             }
 
@@ -204,6 +206,15 @@ final class PluginRegistry
         }
 
         return $rules;
+    }
+
+    /**
+     * Wird ein Beitrag des Plugins in der App angeboten (B-107)? Ohne App (null) überall; sonst nur in der App des
+     * Plugins bzw. überall, wenn es keine eigene App hat. Prüfen und Ausführen bleiben unabhängig davon.
+     */
+    public function offeredIn(SaftPlugin $plugin, ?int $appId): bool
+    {
+        return $appId === null || app(PluginApps::class)->belongsTo($plugin, $appId);
     }
 
     /** @return list<string> Klassen der Aufgaben-Arten aller Plugins */

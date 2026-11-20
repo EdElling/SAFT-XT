@@ -35,9 +35,10 @@ class ScheduledTaskForm
             Section::make(__('tasks.sections.task'))->columns(2)->schema([
                 Select::make('type')
                     ->label(__('tasks.fields.type'))
-                    ->options(fn (?ScheduledTask $record): array => $record !== null
+                    // Arten aus Plugins nur passend zur gewählten App (B-107).
+                    ->options(fn (?ScheduledTask $record, Get $get): array => $record !== null
                         ? [$record->type => $record->typeLabel()]
-                        : $registry->creatableOptions())
+                        : $registry->creatableOptions(filled($get('app_id')) ? (int) $get('app_id') : null))
                     ->required()
                     ->live()
                     // Parameter der Art mit ihren Vorgaben belegen: zeigt z. B. „90“ im Feld und macht den Zustand zu

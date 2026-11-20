@@ -1506,5 +1506,6 @@ tabella. Le tabelle di un’app disattivata sono utilizzabili solo dal super-adm
 | Tabellone delle giacenze: Visualizzare la matrice delle giacenze | aprire il tabellone delle giacenze (giacenza per articolo e ubicazione) |
 | Tabellone delle giacenze: Trasferire sul tabellone delle giacenze | trasferire direttamente sul tabellone |
 
-La pagina **Plugin** mostra quali diritti porta un plugin; se appartiene a un’app, la gestione dei ruoli offre i suoi
-diritti solo ai ruoli di quell’app.
+La pagina **Plugin** mostra quali diritti porta un plugin; se appartiene a un’app, la gestione dei ruoli offre i suoi diritti solo ai ruoli di quell’app. Allo stesso modo i suoi riquadri della
+dashboard, regole di controllo, funzioni di formula e tipi di attività sono proposti solo in quell’app; regole, formule
+e attività già configurate restano valide. I plugin senza app propria sono disponibili in tutte le app.

@@ -94,7 +94,7 @@ final class FieldForm
                     ->columnSpanFull(),
             ]),
             self::typeOptions($owner),
-            self::validation(),
+            self::validation($owner),
             self::suggestion($owner),
             Fieldset::make(__('tables.fields.behaviour'))
                 ->columns(3)
@@ -433,7 +433,8 @@ final class FieldForm
         }
 
         // Formelfunktionen aus Plugins mit ihrer Beschreibung als Tooltip.
-        $pluginFunctions = app(PluginRegistry::class)->formulaFunctions();
+        // Nur Funktionen von Plugins der App der Tabelle bzw. ohne eigene App (B-107).
+        $pluginFunctions = app(PluginRegistry::class)->formulaFunctions($owner?->app_id);
 
         if ($pluginFunctions !== []) {
             $groups[] = [
@@ -538,7 +539,7 @@ final class FieldForm
             ]);
     }
 
-    private static function validation(): Fieldset
+    private static function validation(?CustomTable $owner = null): Fieldset
     {
         $is = static fn (string ...$types): Closure => static fn (Get $get): bool => in_array($get('type'), $types, true);
 
@@ -557,9 +558,9 @@ final class FieldForm
                     ->multiple()
                     // Puzzle-Symbol und Plugin in Liste und gewählten Etiketten (Texte in pluginCheckOptions maskiert).
                     ->allowHtml()
-                    ->options(static fn (Get $get): array => self::pluginCheckOptions((string) $get('type'), (array) $get('validation_rules.'.FieldRuleCheck::OPTION)))
+                    ->options(static fn (Get $get): array => self::pluginCheckOptions((string) $get('type'), (array) $get('validation_rules.'.FieldRuleCheck::OPTION), $owner?->app_id))
                     ->helperText(static fn (Get $get): ?string => self::pluginCheckHint((string) $get('type'), (array) $get('validation_rules.'.FieldRuleCheck::OPTION)))
-                    ->visible(static fn (Get $get): bool => self::pluginCheckOptions((string) $get('type'), (array) $get('validation_rules.'.FieldRuleCheck::OPTION)) !== [])
+                    ->visible(static fn (Get $get): bool => self::pluginCheckOptions((string) $get('type'), (array) $get('validation_rules.'.FieldRuleCheck::OPTION), $owner?->app_id) !== [])
                     ->columnSpanFull(),
             ]);
     }
@@ -570,11 +571,18 @@ final class FieldForm
      * @param  array<mixed>  $selected
      * @return array<string, string>
      */
-    private static function pluginCheckOptions(string $type, array $selected): array
+    private static function pluginCheckOptions(string $type, array $selected, ?int $appId = null): array
     {
         $options = [];
+        $all = app(PluginRegistry::class)->fieldRules($type);
+        // Angeboten: Regeln von Plugins der App der Tabelle (B-107); schon gewählte anderer Apps bleiben sichtbar.
+        $offered = app(PluginRegistry::class)->fieldRules($type, $appId);
 
-        foreach (app(PluginRegistry::class)->fieldRules($type) as $key => $rule) {
+        foreach ($all as $key => $rule) {
+            if (! isset($offered[$key]) && ! in_array($key, array_map('strval', $selected), true)) {
+                continue;
+            }
+
             $plugin = app(PluginRegistry::class)->get((string) strstr($key, '.', true));
             $options[$key] = '<span class="saft-plugin-option" title="'.e(__('plugins.origin.tooltip', ['plugin' => $plugin->label()])).'">'
                 .svg('heroicon-m-puzzle-piece', 'saft-plugin-origin-icon')->toHtml()

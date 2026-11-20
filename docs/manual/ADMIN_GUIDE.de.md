@@ -1485,5 +1485,6 @@ freigeschaltet ist. Tabellen einer deaktivierten App sind nur für den Super-Adm
 | Lager-Tafel: Lagerspiegel anzeigen | die Lagertafel (Bestand je Artikel und Ort) öffnen |
 | Lager-Tafel: Auf der Lagertafel umbuchen | direkt in der Lagertafel umbuchen |
 
-Welche Rechte ein Plugin mitbringt, zeigt die Seite **Plugins**; gehört es zu einer App, bietet die Rollenverwaltung
-seine Rechte nur Rollen dieser App an.
+Welche Rechte ein Plugin mitbringt, zeigt die Seite **Plugins**; gehört es zu einer App, bietet die Rollenverwaltung seine Rechte nur Rollen dieser App an. Ebenso erscheinen seine
+Dashboard-Kacheln, Prüfregeln, Formelfunktionen und Aufgabenarten nur in dieser App zur Auswahl; schon eingerichtete
+Regeln, Formeln und Aufgaben bleiben gültig. Plugins ohne eigene App stehen in allen Apps zur Verfügung.

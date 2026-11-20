@@ -46,9 +46,13 @@ final class TaskRegistry
     }
 
     /** @return array<string, string> Arten, die sich in der Verwaltung anlegen lassen. */
-    public function creatableOptions(): array
+    /** @param  int|null  $appId  nur Arten von Plugins dieser App bzw. ohne eigene App (B-107); null = alle */
+    public function creatableOptions(?int $appId = null): array
     {
-        return collect($this->all())->filter(fn (TaskType $type): bool => $type->creatable())
+        $plugins = app(PluginRegistry::class);
+
+        return collect($this->all())->filter(fn (TaskType $type): bool => $type->creatable()
+            && (($plugin = $plugins->ownerOf($type::class)) === null || $plugins->offeredIn($plugin, $appId)))
             ->map(fn (TaskType $type): string => $this->labelOf($type))->all();
     }
 

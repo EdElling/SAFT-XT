@@ -1443,5 +1443,6 @@ deactivated app can only be used by the super admin.
 | Stock board: View stock matrix | open the stock board (stock per item and location) |
 | Stock board: Transfer on the stock board | transfer directly on the stock board |
 
-The **Plugins** page shows which permissions a plugin brings; if it belongs to an app, role management offers its
-permissions only to roles of that app.
+The **Plugins** page shows which permissions a plugin brings; if it belongs to an app, role management offers its permissions only to roles of that app. Likewise its dashboard
+tiles, field rules, formula functions and task types are only offered in that app; rules, formulas and tasks already
+set up stay valid. Plugins without an app of their own are available in all apps.

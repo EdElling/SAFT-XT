@@ -380,4 +380,20 @@ class AppInterfacesTest extends DynamicDataTestCase
             ->assertActionDisabled(TestAction::make('toggleActive')->table($name))
             ->assertActionEnabled(TestAction::make('toggleActive')->table($price));
     }
+
+    public function test_report_assistant_sees_the_current_app_and_shared_tables_only(): void
+    {
+        $this->share(['name']);
+        $this->relate();
+        $this->service()->createTable(['app_id' => $this->stock->id, 'name' => 'lg_orte', 'label' => 'Orte'], [['name' => 'ort', 'label' => 'Ort', 'type' => 'string']]);
+        $admin = $this->superAdmin();
+        app(CurrentApp::class)->switch($admin, $this->shop);
+
+        $structure = collect((new FieldCatalog)->structure($admin->fresh(), false))->keyBy('label');
+
+        $this->assertTrue($structure->has('Bestellungen'));
+        $this->assertTrue($structure['Artikel']['interface'] ?? false, 'Freigegebene Tabelle als Schnittstelle.');
+        $this->assertSame(['Name'], array_column($structure['Artikel']['fields'], 'label'));
+        $this->assertFalse($structure->has('Orte'), 'Andere Tabellen der Lager-App nicht.');
+    }
 }

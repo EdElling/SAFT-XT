@@ -109,4 +109,17 @@ class PluginOriginTest extends PluginTestCase
         $this->assertSame('Lager: Inventur-Erinnerung (Plugin Lager-Tafel)', $options['lager_tafel_inventory_reminder']);
         $this->assertSame('Datenbank sichern', app(TaskRegistry::class)->labelOf(app(TaskRegistry::class)->get('db_backup')), 'Eigene Arten ohne Zusatz.');
     }
+
+    public function test_plugin_task_types_are_offered_only_in_their_app(): void
+    {
+        $own = (int) CustomTable::query()->where('name', 'lager_artikel')->value('app_id');
+        $other = App::query()->create(['name' => ['de' => 'Andere'], 'prefix' => 'andere2', 'sort_order' => 9]);
+        $registry = app(TaskRegistry::class);
+
+        $this->assertArrayHasKey('lager_tafel_inventory_reminder', $registry->creatableOptions($own));
+        $this->assertArrayNotHasKey('lager_tafel_inventory_reminder', $registry->creatableOptions($other->id));
+        $this->assertArrayHasKey('lager_tafel_inventory_reminder', $registry->creatableOptions(), 'Ohne App: alle.');
+        // Plugins ohne eigene App (z. B. CH-Prüfungen) überall.
+        $this->assertArrayHasKey('ch-pruefungen.iban', app(PluginRegistry::class)->fieldRules('string', $other->id));
+    }
 }

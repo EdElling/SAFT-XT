@@ -285,7 +285,10 @@ final class FieldCatalog
      */
     public function structure(?User $user, bool $withChoices): array
     {
-        $tables = $this->tables()->filter(fn (CustomTable $t): bool => $t->is_active && $this->usable($t, $user));
+        // Nur Tabellen der aktuellen App (B-107, wie die Grundtabellen im Editor); dazu Schnittstellen (unten).
+        $appId = $user === null ? null : app(CurrentApp::class)->id($user);
+        $tables = $this->tables()->filter(fn (CustomTable $t): bool => $t->is_active && $this->usable($t, $user)
+            && ($user === null || $t->app_id === null || $t->app_id === $appId));
         $locale = app()->getLocale();
 
         // Schnittstellen (B-107, Etappe 5b): freigegebene Tabellen anderer Apps, auf die eine Verknüpfung oder
