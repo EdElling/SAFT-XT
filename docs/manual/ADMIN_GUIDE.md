@@ -1280,17 +1280,29 @@ version) and lists the steps with their rating:
 | Rating | Meaning | Examples |
 |---|---|---|
 | safe (preselected) | no data affected | new table or field, label, properties, new choices, order |
-| risky (preselected) | existing data or processes affected, nothing is lost | type change with values, technical name, required or unique with existing data, field rules that existing values violate, formula, dropped choices, table rules, deactivating |
-| destructive (not preselected) | data is lost | deleting a field or table with data – only with an additional confirmation |
+| risky (preselected) | existing data or processes affected, nothing is lost | type change with values, technical name, required or unique with existing data, field rules that existing values violate, formula, dropped choices, table rules, deactivating; revoking permissions of a role (with number of people), renaming a role, menu into another group, target of a table link, switching on writing to a connected table; removing a report, menu, table link, task or role without members |
+| destructive (not preselected) | data or access is lost | deleting a field or table with data, removing a role with members – only with an additional confirmation |
 
 If a field or table with data is missing in the package, it is first only **deactivated** (data kept); deleting is a
 separate step. Without data it is deleted directly. **Not possible** (with a reason) are changes the table designer
 would refuse – e.g. a type change that would lose values (e.g. “1 value is longer than 30 characters”) – and changes to
-interfaces other apps use. Differences in table links, reports, menus, roles, tasks, manual and connected tables are
-only shown in the preview for now.
+interfaces other apps use. **Table links, reports, menus, roles, tasks, manual and connected tables** are updated as well – per property (e.g.
+“Report …: name A → B”, “Menu …: group A → B”, “Role …: permissions: + …, − …”):
+
+- **Roles:** permissions and hidden menus change as a difference; permissions outside the app stay. A new role whose
+  name is already taken gets the prefix of the app.
+- **Reports:** new ones belong to the updating person; personal reports of others stay untouched.
+- **Menus:** the group is recognised by its key – a renamed group does not move its entries.
+- **Not possible** is removing a table link a remaining report uses or a menu group with remaining entries, as well as a
+  task of an unknown type (e.g. from a missing plugin) or without its table or connection.
+- **Connected tables:** only the SAFT side (labels, properties of the columns, write permissions, export); updating does
+  not change source, connection and key (note). If one is missing in the package, it is only deactivated.
+
+If there is nothing to do, the button is **“Close”** – nothing is backed up and no new baseline is saved.
 
 **Running:** a backup is made first; then the selected steps run through the operations of the table designer with all
-protection rules (new tables and fields, changes, sharing, finally deactivating and deleting). Afterwards the package is
+protection rules (connected tables, new tables and fields, changes, sharing, table links, reports, menus, roles, tasks, manual,
+finally removing, deactivating and deleting). Afterwards the package is
 the new baseline and its version the version of the app. If a step fails, updating stops and reports how many steps
 have already been run and where the backup is; choosing the same file again shows only the rest. Updating is recorded
 in the change log.

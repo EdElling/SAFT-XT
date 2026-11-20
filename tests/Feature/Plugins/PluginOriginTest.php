@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plugins;
 
+use App\Apps\CurrentApp;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\MySettingsPage;
 use App\Filament\Resources\CustomTables\Schemas\FieldForm;
+use App\Models\App;
 use App\Models\CustomTable;
+use App\Models\User;
 use App\Plugins\Api\DataAction;
 use App\Plugins\PluginRegistry;
 use App\Plugins\Testing\PluginTestCase;
@@ -61,6 +64,22 @@ class PluginOriginTest extends PluginTestCase
         Livewire::test(Dashboard::class)
             ->assertSee('data-plugin-origin="lager-tafel"', false)
             ->assertSee('saft-plugin-origin-card', false);
+    }
+
+    public function test_dashboard_cards_from_plugins_appear_only_in_their_app(): void
+    {
+        $user = $this->actingWithPermissions(['lager-tafel.view', 'data.lager_artikel.view', 'data.lager_orte.view', 'data.lager_bestaende.view']);
+        $own = CustomTable::query()->where('name', 'lager_artikel')->value('app_id');
+        $other = App::query()->create(['name' => ['de' => 'Andere'], 'prefix' => 'andere', 'sort_order' => 9]);
+
+        $user->assignRole(User::ROLE_SUPER_ADMIN); // Zugang zu beiden Apps
+        app(CurrentApp::class)->switch($user, $own);
+        $this->assertContains('plugin:Saft.LagerTafel.Widgets.StockByLocationChart', array_keys(Livewire::test(Dashboard::class)->instance()->cards()));
+
+        // In einer anderen App: keine Kacheln des Lager-Plugins (Systemkacheln bleiben).
+        $user->forceFill(['current_app_id' => $other->id])->save();
+        $cards = array_keys(Livewire::test(Dashboard::class)->instance()->cards());
+        $this->assertNotContains('plugin:Saft.LagerTafel.Widgets.StockByLocationChart', $cards);
     }
 
     public function test_buttons_in_data_tables_name_their_plugin_in_the_tooltip(): void

@@ -1321,18 +1321,32 @@ Die **Vorschau** nennt Versionen, Hinderungsgründe (z. B. Datei einer anderen A
 | Einstufung | Bedeutung | Beispiele |
 |---|---|---|
 | sicher (vorgewählt) | keine Daten betroffen | neue Tabelle oder neues Feld, Bezeichnung, Merkmale, neue Auswahlwerte, Reihenfolge |
-| heikel (vorgewählt) | vorhandene Daten oder Abläufe betroffen, nichts geht verloren | Typänderung mit Werten, technischer Name, Pflicht oder eindeutig bei vorhandenen Daten, Feldregeln, die vorhandene Werte verletzen, Formel, wegfallende Auswahlwerte, Tabellenregeln, Deaktivieren |
-| zerstörend (nicht vorgewählt) | Daten gehen verloren | Feld oder Tabelle mit Daten löschen – nur mit zusätzlicher Bestätigung |
+| heikel (vorgewählt) | vorhandene Daten oder Abläufe betroffen, nichts geht verloren | Typänderung mit Werten, technischer Name, Pflicht oder eindeutig bei vorhandenen Daten, Feldregeln, die vorhandene Werte verletzen, Formel, wegfallende Auswahlwerte, Tabellenregeln, Deaktivieren; Rechte einer Rolle entziehen (mit Anzahl Personen), Rolle umbenennen, Menü in eine andere Gruppe, Ziel einer Tabellenverknüpfung, Schreiben auf eine angebundene Tabelle einschalten; Auswertung, Menü, Tabellenverknüpfung, Aufgabe oder Rolle ohne Mitglieder entfernen |
+| zerstörend (nicht vorgewählt) | Daten oder Zugang gehen verloren | Feld oder Tabelle mit Daten löschen, Rolle mit Mitgliedern entfernen – nur mit zusätzlicher Bestätigung |
 
 Fehlt ein Feld oder eine Tabelle mit Daten im Paket, wird es zuerst nur **deaktiviert** (Daten bleiben); Löschen ist ein
 eigener Schritt. Ohne Daten wird direkt gelöscht. **Nicht ausführbar** (mit Grund) sind Änderungen, die der
 Table-Designer ablehnen würde – etwa eine Typänderung, bei der Werte verloren gingen (z. B. „1 Wert ist länger als 30
-Zeichen“) – und Änderungen an Schnittstellen, die andere Apps nutzen. Unterschiede in Tabellenverknüpfungen,
-Auswertungen, Menüs, Rollen, Aufgaben, Handbuch und angebundenen Tabellen zeigt die Vorschau vorerst nur an.
+Zeichen“) – und Änderungen an Schnittstellen, die andere Apps nutzen. Ebenso aktualisiert werden **Tabellenverknüpfungen, Auswertungen, Menüs, Rollen, Aufgaben, Handbuch und angebundene
+Tabellen** – je Eigenschaft (z. B. „Auswertung …: Name A → B“, „Menü …: Gruppe A → B“, „Rolle …: Rechte: + …, − …“):
+
+- **Rollen:** Rechte und ausgeblendete Menüs ändern sich als Differenz; Rechte ausserhalb der App bleiben. Eine neue Rolle
+  mit schon vergebenem Namen erhält das Präfix der App.
+- **Auswertungen:** neue gehören der aktualisierenden Person; persönliche Auswertungen anderer bleiben unberührt.
+- **Menüs:** Die Gruppe wird über ihren Schlüssel erkannt – eine umbenannte Gruppe verschiebt ihre Einträge nicht.
+- **Nicht ausführbar** ist das Entfernen einer Tabellenverknüpfung, die eine bleibende Auswertung nutzt, oder einer
+  Menügruppe mit bleibenden Einträgen, ebenso eine Aufgabe unbekannter Art (z. B. aus einem fehlenden Plugin) oder
+  ohne ihre Tabelle bzw. Verbindung.
+- **Angebundene Tabellen:** nur die Seite von SAFT (Bezeichnungen, Merkmale der Spalten, Schreibrechte, Export);
+  Quelle, Verbindung und Schlüssel ändert das Aktualisieren nicht (Hinweis). Fehlt eine im Paket, wird sie nur
+  deaktiviert.
+
+Ist nichts zu tun, heisst die Schaltfläche **„Schliessen“** – es wird weder gesichert noch ein neuer Ausgangsstand
+gespeichert.
 
 **Ausführen:** Vorher wird eine Sicherung angelegt; dann laufen die gewählten Schritte über die Operationen des
-Table-Designers mit allen Schutzregeln (neue Tabellen und Felder, Änderungen, Freigaben, zuletzt Deaktivieren und
-Löschen). Danach ist das Paket der neue Ausgangsstand und seine Version die Version der App. Scheitert ein Schritt,
+Table-Designers mit allen Schutzregeln (angebundene Tabellen, neue Tabellen und Felder, Änderungen, Freigaben, Tabellenverknüpfungen, Auswertungen, Menüs,
+Rollen, Aufgaben, Handbuch, zuletzt Entfernen, Deaktivieren und Löschen). Danach ist das Paket der neue Ausgangsstand und seine Version die Version der App. Scheitert ein Schritt,
 bricht das Aktualisieren ab und meldet, wie viele Schritte schon ausgeführt sind und wo die Sicherung liegt; dieselbe
 Datei nochmals gewählt zeigt nur noch den Rest. Aktualisieren steht im Änderungsprotokoll.
 

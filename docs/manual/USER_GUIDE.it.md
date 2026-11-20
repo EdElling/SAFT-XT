@@ -130,7 +130,7 @@ dall’account aziendale.
   risposte dell’IA possono contenere errori – fanno fede i manuali.
 - La **dashboard** è la pagina iniziale. I riquadri (widget) sono disposti su due colonne che crescono verso il basso
   in modo indipendente; i riquadri larghi seguono sotto, a tutta larghezza. Quali riquadri vedete lo stabilisce
-  l’amministrazione tramite il vostro ruolo; possono aggiungersi riquadri dei plugin, p. es. *Magazzino: scorta minima* – portano sotto l’etichetta «Plugin: …», come le pagine dei plugin sotto il titolo. Potete **disporli** voi stessi: **«Personalizza dashboard»** (in alto a
+  l’amministrazione tramite il vostro ruolo; possono aggiungersi riquadri dei plugin, p. es. *Magazzino: scorta minima* – portano sotto l’etichetta «Plugin: …», come le pagine dei plugin sotto il titolo; i riquadri di un plugin compaiono solo nell’app a cui appartiene. Potete **disporli** voi stessi: **«Personalizza dashboard»** (in alto a
   destra) mostra su ogni riquadro una maniglia e **«Nascondi»**. Con la maniglia trascinate un riquadro all’interno di
   una colonna, nell’altra colonna o – solo i report – nell’area larga in basso, dove occupa tutta la larghezza. I
   riquadri nascosti compaiono in alto in un elenco, da cui si possono rendere di nuovo visibili. La disposizione viene

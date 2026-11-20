@@ -42,7 +42,9 @@ final class UpdateAppAction
             ->visible(fn (): bool => auth()->user()?->can('apps.upgrade') ?? false)
             ->modalHeading(fn (App $record): string => __('apps.update.heading', ['name' => (string) $record->name]))
             ->modalWidth('5xl')
-            ->modalSubmitActionLabel(__('apps.update.submit'))
+            // Nichts zu tun (keine wählbaren Schritte): Der Knopf auf der Seite „Änderungsplan“ heisst „Schliessen“ und
+            // schliesst nur den Dialog.
+            ->modalSubmitActionLabel(fn (mixed $livewire, App $record): string => self::hasWork($record, $livewire) ? __('apps.update.submit') : __('common.close'))
             ->steps([
                 Step::make(__('apps.update.step_file'))
                     ->schema([
@@ -84,8 +86,13 @@ final class UpdateAppAction
                 $user = auth()->user();
                 abort_unless($user instanceof User && $user->can('apps.upgrade'), 403);
 
+                $plan = self::plan($record, $data['file'] ?? null);
+
+                if ($plan->selectable() === []) {
+                    return; // „Schliessen“
+                }
+
                 try {
-                    $plan = self::plan($record, $data['file'] ?? null);
                     $result = app(ChangeExecutor::class)->apply($record, $plan, array_values((array) ($data['steps'] ?? [])), (bool) ($data['confirm'] ?? false), $user);
                 } catch (BusinessRuleException $e) {
                     Notification::make()->danger()->title($e->getMessage())->persistent()->send();
@@ -100,6 +107,15 @@ final class UpdateAppAction
                     ->persistent()
                     ->send();
             });
+    }
+
+    /** Bietet der Plan der hochgeladenen Datei wählbare Schritte? (Ohne Datei, im ersten Schritt: ja.) */
+    private static function hasWork(App $record, mixed $livewire): bool
+    {
+        $mounted = (array) ($livewire->mountedActions ?? []);
+        $file = ((array) (end($mounted) ?: []))['data']['file'] ?? null;
+
+        return blank($file) || self::plan($record, $file)->selectable() !== [];
     }
 
     /** Sind zerstörende Schritte gewählt? */

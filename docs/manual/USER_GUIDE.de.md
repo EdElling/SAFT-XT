@@ -132,7 +132,7 @@ Firmen-Login abgemeldet.
   sind die Handbücher.
 - Das **Dashboard** ist die Startseite. Die Kacheln (Widgets) stehen in zwei Spalten, die unabhängig voneinander
   nach unten wachsen; breite Kacheln folgen darunter über die volle Breite. Welche Kacheln Sie sehen, legt die
-  Administration über Ihre Rolle fest; dazu können Kacheln aus Plugins kommen, z. B. *Lager: Mindestbestand* – sie tragen darunter das Etikett „Plugin: …“, wie auch Seiten aus Plugins unter ihrem Titel. **Anordnen** können Sie sie selbst: **„Dashboard anpassen“** (oben rechts)
+  Administration über Ihre Rolle fest; dazu können Kacheln aus Plugins kommen, z. B. *Lager: Mindestbestand* – sie tragen darunter das Etikett „Plugin: …“, wie auch Seiten aus Plugins unter ihrem Titel; Kacheln eines Plugins erscheinen nur in der App, zu der das Plugin gehört. **Anordnen** können Sie sie selbst: **„Dashboard anpassen“** (oben rechts)
   zeigt an jeder Kachel einen Griff und **„Ausblenden“**. Am Griff ziehen Sie eine Kachel innerhalb einer Spalte,
   in die andere Spalte oder – nur Auswertungen – in den breiten Bereich unten, wo sie die volle Breite bekommt.
   Ausgeblendete Kacheln stehen oben in einer Liste und lassen sich dort wieder einblenden. Die Anordnung wird sofort

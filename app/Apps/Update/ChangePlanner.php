@@ -10,13 +10,19 @@ use App\Apps\Definition\AppDefinitionValidator;
 use App\Apps\Definition\AppInstaller;
 use App\Apps\Definition\References;
 use App\DynamicData\Schema\FieldType;
+use App\Filament\Resources\Reports\ReportResource;
 use App\Models\App;
 use App\Models\AppBaseline;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\Menu;
+use App\Models\Report;
+use App\Models\ReportLink;
+use App\Models\Role;
 use App\Models\User;
 use App\Plugins\PluginRegistry;
 use App\Services\DynamicSchemaService;
+use App\Tasks\TaskRegistry;
 use Throwable;
 
 /**
@@ -36,8 +42,15 @@ final class ChangePlanner
 
     private const array FIELD_ATTRS = ['name', 'label', 'type', 'options', 'validation_rules', 'is_required', 'is_unique', 'is_searchable', 'is_sortable', 'show_in_table', 'show_in_form', 'is_active', 'sort_order'];
 
-    /** Teile, die erst Etappe 6b ausführt: Liste in der Definition => Objektart */
-    private const array LATER = ['external_tables' => 'external_table', 'report_links' => 'report_link', 'reports' => 'report', 'menus' => 'menu', 'roles' => 'role', 'tasks' => 'task'];
+    /** Weitere Teile: Liste in der Definition => [Objektart, verglichene Eigenschaften] */
+    private const array OBJECTS = [
+        'external_tables' => ['external_table', ['label', 'description', 'icon', 'connection', 'source', 'key_columns', 'allow', 'export_enabled', 'fields']],
+        'report_links' => ['report_link', ['label', 'source', 'target_table', 'target_field']],
+        'reports' => ['report', ['name', 'description', 'is_shared', 'definition']],
+        'menus' => ['menu', ['label', 'icon', 'parent', 'permission_name', 'sort_order', 'is_active', 'target']],
+        'roles' => ['role', ['name', 'permissions', 'hidden_menus']],
+        'tasks' => ['task', ['name', 'type', 'parameters', 'frequency', 'interval_hours', 'at_time', 'weekday', 'is_active']],
+    ];
 
     public function __construct(
         private readonly AppDefinition $definitions,
@@ -46,6 +59,7 @@ final class ChangePlanner
         private readonly AppInterfaces $interfaces,
         private readonly PluginRegistry $plugins,
         private readonly DynamicSchemaService $service,
+        private readonly TaskRegistry $tasks,
     ) {}
 
     /** @var list<string> Tabellen und Felder, die es nur in SAFT gibt (seit dem Ausgangsstand angelegt; bleiben) */
@@ -436,10 +450,10 @@ final class ChangePlanner
         }
     }
 
-    // --- Weitere Teile (Ausführen in Etappe 6b) ------------------------------------------------------------------
+    // --- Weitere Teile: Verknüpfungen, Auswertungen, Menüs, Rollen, Aufgaben, angebundene Tabellen, Handbuch ------
 
     /**
-     * Auf Objektebene: neu, geändert, entfernt – mit Konflikten. Teile, die das Paket nicht enthält (ältere Dateien ohne
+     * Je Objekt und Eigenschaft wie bei Tabellen und Feldern. Teile, die das Paket nicht enthält (ältere Dateien ohne
      * „parts“: leere Liste), bleiben unberührt.
      *
      * @param  array<string, mixed>|null  $base
@@ -452,55 +466,225 @@ final class ChangePlanner
         $parts = (array) ($target['parts'] ?? []);
         $steps = [];
 
-        foreach (self::LATER as $list => $kind) {
+        foreach (self::OBJECTS as $list => [$kind, $attrs]) {
             $optional = in_array($list, ['reports', 'roles', 'tasks'], true);
 
             if ($optional && ! in_array($list, $parts, true) && (array) ($target[$list] ?? []) === []) {
                 continue;
             }
 
-            $bas = $base === null ? null : self::byKey((array) ($base[$list] ?? []));
-            $cur = self::byKey((array) ($current[$list] ?? []));
-            $tgt = self::byKey((array) ($target[$list] ?? []));
+            // Menüs: Elterngruppe über ihren Schlüssel vergleichen – eine umbenannte Gruppe verschiebt ihre Einträge nicht.
+            $objects = static fn (?array $definition): array => $list === 'menus' ? self::withParentKeys((array) ($definition[$list] ?? [])) : (array) ($definition[$list] ?? []);
 
-            foreach ($tgt as $key => $object) {
-                $label = self::objectLabel($kind, $object);
-
-                if (! isset($cur[$key])) {
-                    if ($bas === null || ! isset($bas[$key]) || ! self::same($bas[$key], $object)) {
-                        $steps[] = new ChangeStep("{$kind}:{$key}", $kind, ChangeStep::CREATE, $key, $label, conflict: $bas !== null && isset($bas[$key]), target: $object);
-                    }
-                } elseif (! self::same($cur[$key], $object)) {
-                    $local = $bas !== null && isset($bas[$key]) && ! self::same($bas[$key], $cur[$key]);
-                    $packaged = $bas === null || ! isset($bas[$key]) || ! self::same($bas[$key], $object);
-
-                    if ($packaged) {
-                        $steps[] = new ChangeStep("{$kind}:{$key}", $kind, ChangeStep::UPDATE, $key, $label, conflict: $local || $bas === null, target: $object);
-                    }
-                }
-            }
-
-            foreach ($cur as $key => $object) {
-                if (! isset($tgt[$key]) && ($bas === null || isset($bas[$key]))) {
-                    $steps[] = new ChangeStep("{$kind}:{$key}:delete", $kind, ChangeStep::DELETE, $key, self::objectLabel($kind, $object), level: ChangeStep::RISKY, conflict: $bas === null || ! self::same($bas[$key], $object));
-                }
-            }
+            $steps = [...$steps, ...$this->objectSteps(
+                $kind,
+                $attrs,
+                $base === null ? null : self::byKey($objects($base)),
+                self::byKey($objects($current)),
+                self::byKey($objects($target)),
+                $target,
+                $base,
+            )];
         }
 
-        $manual = static fn (?array $d): array => (array) (($d['app'] ?? [])['manual'] ?? []);
+        // Handbuch je Sprache (Schlüssel = Sprache).
+        $manual = static fn (?array $d): array => collect((array) (($d['app'] ?? [])['manual'] ?? []))
+            ->mapWithKeys(static fn (mixed $content, string|int $locale): array => [(string) $locale => ['key' => (string) $locale, 'content' => $content]])->all();
 
         if (in_array('manual', $parts, true) || $manual($target) !== []) {
-            foreach ($manual($target) as $locale => $content) {
-                $now = $manual($current)[$locale] ?? null;
-
-                if ($now !== $content && ($base === null || ($manual($base)[$locale] ?? null) !== $content)) {
-                    $steps[] = new ChangeStep('manual:'.$locale, 'manual', $now === null ? ChangeStep::CREATE : ChangeStep::UPDATE, (string) $locale, __('apps.update.manual', ['locale' => strtoupper((string) $locale)]),
-                        conflict: $now !== null && ($base === null || ($manual($base)[$locale] ?? null) !== $now));
-                }
-            }
+            $steps = [...$steps, ...$this->objectSteps('manual', ['content'], $base === null ? null : $manual($base), $manual($current), $manual($target), $target, $base)];
         }
 
         return $steps;
+    }
+
+    /**
+     * Menüs mit dem Schlüssel ihrer Elterngruppe („parent_key“; ausserhalb der App: der Pfad).
+     *
+     * @param  list<array<string, mixed>>  $menus
+     * @return list<array<string, mixed>>
+     */
+    private static function withParentKeys(array $menus): array
+    {
+        $keys = array_column($menus, 'key', 'path');
+
+        return array_map(static fn (array $m): array => [...$m, 'parent_key' => $m['parent'] === null ? null : ($keys[$m['parent']] ?? $m['parent'])], $menus);
+    }
+
+    /**
+     * @param  list<string>  $attrs
+     * @param  array<string, array<string, mixed>>|null  $bas
+     * @param  array<string, array<string, mixed>>  $cur
+     * @param  array<string, array<string, mixed>>  $tgt
+     * @param  array<string, mixed>  $target  ganze Definition des Pakets
+     * @param  array<string, mixed>|null  $base  ganzer Ausgangsstand
+     * @return list<ChangeStep>
+     */
+    private function objectSteps(string $kind, array $attrs, ?array $bas, array $cur, array $tgt, array $target, ?array $base): array
+    {
+        $steps = [];
+        // Elterngruppe über den Schlüssel vergleichen, anzeigen und ausführen über den Pfad.
+        $value = static fn (array $o, string $a): mixed => $a === 'parent' && array_key_exists('parent_key', $o) ? $o['parent_key'] : ($o[$a] ?? null);
+
+        foreach ($tgt as $key => $object) {
+            $label = self::objectLabel($kind, $object);
+
+            if (! isset($cur[$key])) {
+                if ($bas !== null && isset($bas[$key])) {
+                    if (! self::same($bas[$key], $object)) {
+                        $steps[] = new ChangeStep("{$kind}:{$key}", $kind, ChangeStep::CREATE, $key, $label, conflict: true, notes: [__('apps.update.notes.removed_locally')], target: $object);
+                    }
+
+                    continue;
+                }
+
+                $steps[] = new ChangeStep("{$kind}:{$key}", $kind, ChangeStep::CREATE, $key, $label, target: $object, blocked: $this->createBlocked($kind, $object));
+
+                continue;
+            }
+
+            [$package, $conflicts] = $this->attrDiff($bas[$key] ?? null, $cur[$key], $object, $attrs, $value);
+            $paths = static fn (array $changes): array => array_map(static fn (array $c): array => $c['attr'] === 'parent'
+                ? [...$c, 'from' => $cur[$key]['parent'] ?? null, 'to' => $object['parent'] ?? null] : $c, $changes);
+
+            foreach ([[$paths($package), false], [$paths($conflicts), true]] as [$changes, $conflict]) {
+                if ($changes !== []) {
+                    [$level, $notes] = $this->objectRisk($kind, $changes, $key);
+                    $steps[] = new ChangeStep("{$kind}:{$key}".($conflict ? ':conflict' : ''), $kind, ChangeStep::UPDATE, $key, $label, $changes, $level, $conflict, $notes, $object);
+                }
+            }
+        }
+
+        foreach ($cur as $key => $object) {
+            if (isset($tgt[$key])) {
+                continue;
+            }
+
+            if ($bas !== null && ! isset($bas[$key])) {
+                $this->local[] = __('apps.update.kind.'.$kind).' · '.self::objectLabel($kind, $object);
+
+                continue;
+            }
+
+            [$notes, $blocked, $level] = [...$this->objectRemoval($kind, $key, $object, $target, $base), ChangeStep::RISKY];
+
+            // Rolle mit Mitgliedern: Personen verlieren den Zugang – wie Löschen mit Daten nur auf ausdrückliche Wahl.
+            if ($kind === 'role' && ($members = $this->members($key)) > 0) {
+                $level = ChangeStep::DESTRUCTIVE;
+                $notes[] = trans_choice('apps.update.notes.role_members', $members, ['count' => $members]);
+            }
+
+            // Angebundene Tabelle: nur deaktivieren; die Anbindung entfernt man im Table-Connector.
+            $action = $kind === 'external_table' ? ChangeStep::DEACTIVATE : ChangeStep::DELETE;
+            $steps[] = new ChangeStep("{$kind}:{$key}:".($action === ChangeStep::DELETE ? 'delete' : 'deactivate'), $kind, $action, $key, self::objectLabel($kind, $object), level: $level,
+                conflict: $bas === null || ! self::same($bas[$key], $object), notes: $kind === 'external_table' ? [...$notes, __('apps.update.notes.external_kept')] : $notes, blocked: $blocked);
+        }
+
+        return $steps;
+    }
+
+    /**
+     * @param  list<array{attr: string, from: mixed, to: mixed}>  $changes
+     * @return array{0: string, 1: list<string>}
+     */
+    private function objectRisk(string $kind, array $changes, string $key = ''): array
+    {
+        $notes = [];
+
+        foreach ($changes as ['attr' => $attr, 'from' => $from, 'to' => $to]) {
+            $note = match (true) {
+                $kind === 'report_link' && in_array($attr, ['source', 'target_table', 'target_field'], true) => __('apps.update.notes.link_target'),
+                $kind === 'menu' && $attr === 'parent' => __('apps.update.notes.menu_moved', ['from' => (string) ($from ?? '–'), 'to' => (string) ($to ?? '–')]),
+                // Rechte entziehen: Mitglieder verlieren Zugriff.
+                $kind === 'role' && $attr === 'permissions' && array_diff((array) $from, (array) $to) !== [] => trans_choice('apps.update.notes.role_revoked', $members = $this->members($key), ['count' => $members]),
+                $kind === 'role' && $attr === 'name' => __('apps.update.notes.role_renamed'),
+                // Schreiben auf eine angebundene Tabelle einschalten.
+                $kind === 'external_table' && $attr === 'allow' && collect((array) $to)->contains(static fn (mixed $on, string $right): bool => (bool) $on && empty(((array) $from)[$right])) => __('apps.update.notes.external_write'),
+                // Quelle, Verbindung, Schlüssel: ändert das Aktualisieren nicht.
+                $kind === 'external_table' && in_array($attr, ['connection', 'source', 'key_columns'], true) => __('apps.update.notes.external_source'),
+                default => null,
+            };
+
+            if ($note !== null) {
+                $notes[] = $note;
+            }
+        }
+
+        return [$notes === [] ? ChangeStep::SAFE : ChangeStep::RISKY, array_values(array_unique($notes))];
+    }
+
+    /** Anzahl Personen mit der Rolle (Schlüssel). */
+    private function members(string $key): int
+    {
+        $role = Role::query()->where('uuid', $key)->first();
+
+        return $role === null ? 0 : $role->users()->count();
+    }
+
+    /** Neues Objekt, das sich nicht anlegen lässt: Aufgabe einer unbekannten Art oder mit fehlendem Ziel. */
+    private function createBlocked(string $kind, array $object): ?string
+    {
+        if ($kind !== 'task') {
+            return null;
+        }
+
+        if (! $this->tasks->has((string) ($object['type'] ?? ''))) {
+            return __('apps.install.warnings.task_type', ['task' => (string) ($object['name'] ?? $object['type'] ?? '')]);
+        }
+
+        return $this->installer->taskParameters((array) ($object['parameters'] ?? [])) === null ? __('apps.update.notes.task_target') : null;
+    }
+
+    /**
+     * Gründe und Sperre beim Entfernen: Verknüpfung, die eine bleibende Auswertung nutzt; Menügruppe mit bleibenden
+     * Einträgen; Menüeinträge auf eine Auswertung.
+     *
+     * @param  array<string, mixed>  $object
+     * @param  array<string, mixed>  $target
+     * @param  array<string, mixed>|null  $base
+     * @return array{0: list<string>, 1: string|null}
+     */
+    private function objectRemoval(string $kind, string $key, array $object, array $target, ?array $base): array
+    {
+        if ($kind === 'report_link') {
+            $link = ReportLink::query()->where('uuid', $key)->first();
+            $reference = 'link:'.$object['source'].'>'.$object['target_table'];
+            $targetReports = self::byKey((array) ($target['reports'] ?? []));
+            $baseReports = $base === null ? [] : self::byKey((array) ($base['reports'] ?? []));
+            $users = $link === null ? collect() : Report::query()->get()->filter(static fn (Report $r): bool => collect((array) (($r->definition ?? [])['fields'] ?? []))
+                ->contains(static fn (mixed $f): bool => is_array($f) && in_array(-$link->id, array_map('intval', (array) ($f['path'] ?? [])), true)));
+            $staying = $users->filter(static function (Report $r) use ($targetReports, $baseReports, $reference): bool {
+                $packaged = $targetReports[(string) $r->uuid] ?? null;
+
+                // Im Paket: bleibt die Auswertung bei dieser Verknüpfung? Sonst eigene Auswertung in SAFT (bleibt).
+                return $packaged !== null
+                    ? collect((array) (($packaged['definition'] ?? [])['fields'] ?? []))->contains(static fn (mixed $f): bool => is_array($f) && in_array($reference, (array) ($f['path'] ?? []), true))
+                    : ! isset($baseReports[(string) $r->uuid]);
+            });
+
+            return [[], $staying->isEmpty() ? null : __('apps.update.notes.link_used', ['reports' => $staying->pluck('name')->implode(', ')])];
+        }
+
+        if ($kind === 'menu') {
+            $menu = Menu::query()->where('uuid', $key)->first();
+            $packaged = self::byKey((array) ($target['menus'] ?? []));
+            $based = $base === null ? [] : self::byKey((array) ($base['menus'] ?? []));
+            // Einträge darunter, die bleiben (im Paket oder nur in SAFT), sperren das Entfernen der Gruppe.
+            $staying = $menu === null ? collect() : Menu::query()->where('parent_id', $menu->id)->get()
+                ->filter(static fn (Menu $m): bool => isset($packaged[(string) $m->uuid]) || ! isset($based[(string) $m->uuid]));
+
+            return [[], $staying->isEmpty() ? null
+                : __('apps.update.notes.menu_children', ['menus' => $staying->map(static fn (Menu $m): string => References::defaultLabel($m->getTranslations('label')))->implode(', ')])];
+        }
+
+        if ($kind === 'report') {
+            $report = Report::query()->where('uuid', $key)->first();
+            $menus = $report === null ? 0 : Menu::query()->where('route', ReportResource::VIEW_ROUTE)->where('route_parameters->record', (string) $report->id)->count();
+
+            return [$menus > 0 ? [trans_choice('apps.update.notes.report_menus', $menus, ['count' => $menus])] : [], null];
+        }
+
+        return [[], null];
     }
 
     // --- Vergleich ---------------------------------------------------------------------------------------------
@@ -644,6 +828,7 @@ final class ChangePlanner
             'menu' => (string) ($object['path'] ?? ''),
             'report_link' => References::defaultLabel($object['label'] ?? []) ?: (string) ($object['source'] ?? ''),
             'external_table' => self::label($object),
+            'manual' => strtoupper((string) ($object['key'] ?? '')),
             default => (string) ($object['name'] ?? ''),
         };
     }

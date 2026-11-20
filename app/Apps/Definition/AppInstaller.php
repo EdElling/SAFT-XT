@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Apps\Definition;
 
 use App\Apps\AppInterfaces;
-use App\DynamicData\DataMenu;
 use App\DynamicData\DataPermissions;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Formula\Parser;
 use App\DynamicData\Formula\Printer;
 use App\Exceptions\BusinessRuleException;
 use App\ExternalData\TableConnectorService;
-use App\Filament\Resources\Reports\ReportResource;
 use App\Models\App;
 use App\Models\AppBaseline;
 use App\Models\AppManual;
@@ -59,6 +57,7 @@ final class AppInstaller
         private readonly PluginRegistry $plugins,
         private readonly TaskRegistry $tasks,
         private readonly Parser $parser,
+        private readonly DefinitionObjects $objects,
     ) {}
 
     /**
@@ -329,14 +328,7 @@ final class AppInstaller
     private function objects(App $app, array $definition, User $user): void
     {
         foreach ($definition['report_links'] as $link) {
-            ReportLink::query()->create([
-                'uuid' => $link['key'],
-                'label' => $link['label'],
-                'source_table_id' => $this->refs->tableId((string) strstr((string) $link['source'], '.', true)),
-                'source_field_id' => $this->refs->fieldId((string) $link['source']),
-                'target_table_id' => $this->refs->tableId((string) $link['target_table']),
-                'target_field_id' => $link['target_field'] === null ? null : $this->refs->fieldId((string) $link['target_field']),
-            ]);
+            ReportLink::query()->create(['uuid' => $link['key'], ...$this->objects->link($link)]);
         }
 
         $this->refs->refresh();
@@ -349,7 +341,7 @@ final class AppInstaller
                 'description' => $report['description'] ?? null,
                 'owner_id' => $user->id,
                 'is_shared' => (bool) ($report['is_shared'] ?? false),
-                'definition' => $this->reportDefinition((array) $report['definition']),
+                'definition' => $this->objects->reportDefinition((array) $report['definition']),
             ])->id;
         }
 
@@ -357,7 +349,7 @@ final class AppInstaller
         $menus = [];
 
         foreach ($definition['menus'] as $menu) {
-            $parent = $menu['parent'] === null ? null : ($menus[$menu['parent']] ?? $this->refs->menuId((string) $menu['parent']));
+            $parent = $this->objects->menuParent($menu['parent'] === null ? null : (string) $menu['parent'], $menus);
             $menus[$menu['path']] = (int) Menu::query()->create([
                 'uuid' => $menu['key'],
                 'app_id' => $app->id,
@@ -367,7 +359,7 @@ final class AppInstaller
                 'permission_name' => $menu['permission_name'] ?? null,
                 'sort_order' => (int) ($menu['sort_order'] ?? 0),
                 'is_active' => (bool) ($menu['is_active'] ?? true),
-                ...$this->menuTarget((array) $menu['target'], $reports, $menus),
+                ...$this->objects->menuTarget((array) $menu['target'], $reports, $menus),
             ])->id;
         }
 
@@ -408,7 +400,7 @@ final class AppInstaller
      *
      * @param  array<string, mixed>  $data
      */
-    private function external(App $app, array $data): void
+    public function external(App $app, array $data): void
     {
         $connection = DatabaseConnection::query()->where('name', (string) ($data['connection'] ?? ''))->first();
 
@@ -458,7 +450,7 @@ final class AppInstaller
     }
 
     /** Vergebener Rollenname: mit dem Präfix der App (wie beim Verschieben), sonst durchnummeriert. */
-    private function roleName(string $name, string $prefix): string
+    public function roleName(string $name, string $prefix): string
     {
         if (! Role::query()->where('name', $name)->exists()) {
             return $name;
@@ -479,7 +471,7 @@ final class AppInstaller
      * @param  array<string, mixed>  $parameters
      * @return array<string, mixed>|null
      */
-    private function taskParameters(array $parameters): ?array
+    public function taskParameters(array $parameters): ?array
     {
         if (array_key_exists('table', $parameters)) {
             $id = $this->refs->tableId((string) $parameters['table']);
@@ -504,47 +496,6 @@ final class AppInstaller
         }
 
         return $parameters;
-    }
-
-    /**
-     * Definition einer Auswertung mit Namen → mit IDs dieser Installation.
-     *
-     * @param  array<string, mixed>  $definition
-     * @return array<string, mixed>
-     */
-    private function reportDefinition(array $definition): array
-    {
-        $definition['base'] = $this->refs->tableId((string) ($definition['base'] ?? ''));
-        $definition['fields'] = array_map(fn (mixed $f): mixed => is_array($f) ? [
-            ...$f,
-            'path' => array_map(fn (mixed $step): int => str_starts_with((string) $step, 'link:')
-                ? -(int) $this->refs->linkId(substr((string) $step, 5))
-                : (int) $this->refs->fieldId((string) $step), (array) ($f['path'] ?? [])),
-            'field' => (int) $this->refs->fieldId((string) ($f['field'] ?? '')),
-        ] : $f, (array) ($definition['fields'] ?? []));
-
-        return $definition;
-    }
-
-    /**
-     * @param  array<string, mixed>  $target
-     * @param  array<string, int>  $reports  Name → ID der eben angelegten Auswertungen
-     * @param  array<string, int>  $menus  Pfad → ID der eben angelegten Menüs
-     * @return array<string, mixed> route, route_parameters, url, view_config
-     */
-    private function menuTarget(array $target, array $reports, array $menus): array
-    {
-        return match ($target['type'] ?? 'group') {
-            'data' => ['route' => DataMenu::ROUTE, 'route_parameters' => ['table' => $target['table']], 'url' => null,
-                'view_config' => ($columns = array_values(array_filter(array_map(fn (string $f): ?int => $this->refs->fieldId($f), (array) ($target['columns'] ?? []))))) === [] ? null : ['columns' => $columns]],
-            'report' => ['route' => ReportResource::VIEW_ROUTE, 'route_parameters' => ['record' => (string) ($reports[(string) $target['report']] ?? 0)], 'url' => null, 'view_config' => null],
-            'route' => ['route' => $target['route'], 'route_parameters' => array_map(
-                static fn (mixed $value): mixed => is_string($value) && str_starts_with($value, 'menu:') ? ($menus[substr($value, 5)] ?? null) : $value,
-                (array) ($target['parameters'] ?? []),
-            ) ?: null, 'url' => null, 'view_config' => null],
-            'url' => ['route' => null, 'route_parameters' => null, 'url' => $target['url'], 'view_config' => null],
-            default => ['route' => null, 'route_parameters' => null, 'url' => null, 'view_config' => null],
-        };
     }
 
     /**

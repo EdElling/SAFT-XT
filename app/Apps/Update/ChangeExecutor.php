@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Apps\Update;
 
+use App\Apps\Definition\AppInstaller;
+use App\Apps\Definition\DefinitionObjects;
 use App\Apps\Definition\References;
 use App\Database\DatabaseBackup;
 use App\DynamicData\Rules\CopySource;
@@ -12,13 +14,21 @@ use App\DynamicData\Schema\FieldType;
 use App\Exceptions\BusinessRuleException;
 use App\Models\App;
 use App\Models\AppBaseline;
+use App\Models\AppManual;
 use App\Models\CustomField;
 use App\Models\CustomTable;
+use App\Models\Menu;
+use App\Models\Report;
+use App\Models\ReportLink;
+use App\Models\Role;
+use App\Models\ScheduledTask;
 use App\Models\User;
 use App\Plugins\Context\SchemaExporter;
 use App\Plugins\Context\SchemaImporter;
 use App\Services\DynamicSchemaService;
 use Illuminate\Support\Arr;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 use Throwable;
 
 /**
@@ -34,11 +44,16 @@ final class ChangeExecutor
     /** @var list<string> */
     private array $done = [];
 
+    /** @var array<string, mixed> Definition des Pakets (Elternmenüs über ihren Schlüssel) */
+    private array $target = [];
+
     public function __construct(
         private readonly DynamicSchemaService $service,
         private readonly SchemaImporter $importer,
         private readonly References $refs,
         private readonly DatabaseBackup $backup,
+        private readonly DefinitionObjects $objects,
+        private readonly AppInstaller $installer,
     ) {}
 
     /**
@@ -55,16 +70,22 @@ final class ChangeExecutor
 
         $steps = array_values(array_filter($plan->steps, static fn (ChangeStep $s): bool => $s->selectable() && in_array($s->id, $selected, true)));
 
+        // Nichts gewählt: weder sichern noch einen neuen Ausgangsstand speichern.
+        if ($steps === []) {
+            throw new BusinessRuleException(__('apps.update.errors.nothing'));
+        }
+
         if (! $confirmDestructive && collect($steps)->contains(static fn (ChangeStep $s): bool => $s->level === ChangeStep::DESTRUCTIVE)) {
             throw new BusinessRuleException(__('apps.update.errors.confirm'));
         }
 
+        $this->target = $plan->target;
         $dump = $this->backup->create();
         $this->backup->backupFiles($dump);
         $this->done = [];
 
         try {
-            $this->run($app, $steps);
+            $this->run($app, $steps, $user);
         } catch (Throwable $e) {
             activity('apps')->causedBy($user)->performedOn($app)->event('update_partial')
                 ->withProperties(['version' => $plan->target['app']['version'] ?? null, 'done' => $this->done, 'error' => $e->getMessage(), 'backup' => basename($dump)])
@@ -95,7 +116,7 @@ final class ChangeExecutor
     }
 
     /** @param  list<ChangeStep>  $steps */
-    private function run(App $app, array $steps): void
+    private function run(App $app, array $steps, User $user): void
     {
         $of = static fn (string $kind, string $action): array => array_values(array_filter($steps, static fn (ChangeStep $s): bool => $s->kind === $kind && $s->action === $action));
 
@@ -105,7 +126,10 @@ final class ChangeExecutor
             $this->done[] = $step->label;
         }
 
-        // 2. Neue Tabellen samt Feldern (wie beim Installieren).
+        // 2a. Angebundene Tabellen zuerst: Verknüpfungen eigener Tabellen dürfen auf sie zeigen.
+        $this->externalTables($app, $steps);
+
+        // 2b. Neue Tabellen samt Feldern (wie beim Installieren).
         $this->createTables($app, $of('table', ChangeStep::CREATE));
 
         // 3. Neue Felder in bestehenden Tabellen: einfache, Verknüpfungen, Übernahmen und „Zählen je“, berechnete.
@@ -144,13 +168,324 @@ final class ChangeExecutor
             $this->done[] = $step->label;
         }
 
-        // 6. Deaktivieren (Daten bleiben), 7. Löschen – Felder vor Tabellen.
+        // 6. Tabellenverknüpfungen, Auswertungen, Menüs (Eltern vor Kindern), Handbuch.
+        $this->objects($app, $steps, $user);
+
+        // 7. Entfernen: Menüs (Kinder zuerst), Auswertungen, Tabellenverknüpfungen, Handbuch.
+        $this->removeObjects($app, $steps);
+
+        // 8. Deaktivieren (Daten bleiben), 9. Löschen – Felder vor Tabellen.
         foreach ([ChangeStep::DEACTIVATE, ChangeStep::DELETE] as $action) {
             foreach ([...$of('field', $action), ...$of('table', $action)] as $step) {
                 $step->kind === 'field' ? $this->removeField($step) : $this->removeTable($step);
                 $this->done[] = $step->label;
             }
         }
+    }
+
+    /** @param  list<ChangeStep>  $steps */
+    private function objects(App $app, array $steps, User $user): void
+    {
+        $of = fn (string $kind, string $action): array => $this->merged(array_values(array_filter($steps, static fn (ChangeStep $s): bool => $s->kind === $kind && $s->action === $action)));
+
+        $this->refs->refresh();
+
+        foreach ($of('report_link', ChangeStep::CREATE) as $step) {
+            ReportLink::query()->create(['uuid' => $step->key, ...$this->objects->link($step->target)]);
+            $this->done[] = $step->label;
+        }
+
+        foreach ($of('report_link', ChangeStep::UPDATE) as $step) {
+            $columns = ['label' => ['label'], 'source' => ['source_table_id', 'source_field_id'], 'target_table' => ['target_table_id'], 'target_field' => ['target_field_id']];
+            $data = Arr::only($this->objects->link($step->target), array_merge(...array_map(static fn (array $c): array => $columns[$c['attr']] ?? [], $step->changes)));
+            ReportLink::query()->where('uuid', $step->key)->firstOrFail()->update($data);
+            $this->done[] = $step->label;
+        }
+
+        $this->refs->refresh();
+
+        foreach ($of('report', ChangeStep::CREATE) as $step) {
+            Report::query()->create([
+                'uuid' => $step->key,
+                'name' => $step->target['name'],
+                'description' => $step->target['description'] ?? null,
+                'owner_id' => $user->id,
+                'is_shared' => (bool) ($step->target['is_shared'] ?? false),
+                'definition' => $this->objects->reportDefinition((array) $step->target['definition']),
+            ]);
+            $this->done[] = $step->label;
+        }
+
+        foreach ($of('report', ChangeStep::UPDATE) as $step) {
+            $values = self::values($step->changes);
+
+            if (array_key_exists('definition', $values)) {
+                $values['definition'] = $this->objects->reportDefinition((array) $values['definition']);
+            }
+
+            Report::query()->where('uuid', $step->key)->firstOrFail()->update(Arr::only($values, ['name', 'description', 'is_shared', 'definition']));
+            $this->done[] = $step->label;
+        }
+
+        // Menüs: Eltern vor Kindern (Tiefe des Pfads).
+        $depth = static fn (ChangeStep $s): int => substr_count((string) ($s->target['path'] ?? ''), ' › ');
+        $creates = $of('menu', ChangeStep::CREATE);
+        usort($creates, static fn (ChangeStep $a, ChangeStep $b): int => $depth($a) <=> $depth($b));
+        $menus = [];
+
+        foreach ($creates as $step) {
+            $menu = $step->target;
+            $menus[(string) $menu['path']] = (int) Menu::query()->create([
+                'uuid' => $step->key,
+                'app_id' => $app->id,
+                'parent_id' => $this->menuParent($menu['parent'] ?? null, $menus),
+                'label' => $menu['label'],
+                'icon' => $menu['icon'] ?? null,
+                'permission_name' => $menu['permission_name'] ?? null,
+                'sort_order' => (int) ($menu['sort_order'] ?? 0),
+                'is_active' => (bool) ($menu['is_active'] ?? true),
+                ...$this->objects->menuTarget((array) $menu['target'], [], $menus),
+            ])->id;
+            $this->done[] = $step->label;
+        }
+
+        $this->refs->refresh();
+
+        foreach ($of('menu', ChangeStep::UPDATE) as $step) {
+            $values = self::values($step->changes);
+            $data = Arr::only($values, ['label', 'icon', 'permission_name', 'sort_order', 'is_active']);
+
+            if (array_key_exists('parent', $values)) {
+                $data['parent_id'] = $this->menuParent($values['parent'] === null ? null : (string) $values['parent'], $menus);
+            }
+
+            if (array_key_exists('target', $values)) {
+                $data = [...$data, ...$this->objects->menuTarget((array) $values['target'], [], $menus)];
+            }
+
+            Menu::query()->where('uuid', $step->key)->firstOrFail()->update($data);
+            $this->done[] = $step->label;
+        }
+
+        foreach ([...$of('manual', ChangeStep::CREATE), ...$of('manual', ChangeStep::UPDATE)] as $step) {
+            AppManual::query()->updateOrCreate(['app_id' => $app->id, 'locale' => $step->key], ['content' => (string) ($step->target['content'] ?? '')]);
+            $this->done[] = $step->label;
+        }
+
+        $this->roles($app, $of('role', ChangeStep::CREATE), $of('role', ChangeStep::UPDATE));
+        $this->tasks($app, $of('task', ChangeStep::CREATE), $of('task', ChangeStep::UPDATE), $user);
+    }
+
+    /**
+     * Rollen: neue mit Präfix bei vergebenem Namen (wie beim Installieren); Änderungen als Differenz – Rechte ausserhalb
+     * der App, die nicht im Paket stehen, bleiben.
+     *
+     * @param  list<ChangeStep>  $creates
+     * @param  list<ChangeStep>  $updates
+     */
+    private function roles(App $app, array $creates, array $updates): void
+    {
+        $permissions = static fn (array $names) => Permission::query()->where('guard_name', 'web')->whereIn('name', $names)->get();
+
+        foreach ($creates as $step) {
+            $role = Role::query()->create(['uuid' => $step->key, 'name' => $this->installer->roleName((string) $step->target['name'], (string) ($app->prefix ?? '')), 'guard_name' => 'web', 'app_id' => $app->id]);
+            $role->syncPermissions($permissions((array) ($step->target['permissions'] ?? [])));
+            $role->hiddenMenus()->sync($this->menuIds((array) ($step->target['hidden_menus'] ?? [])));
+            $this->done[] = $step->label;
+        }
+
+        foreach ($updates as $step) {
+            $role = Role::query()->where('uuid', $step->key)->firstOrFail();
+
+            foreach ($step->changes as ['attr' => $attr, 'from' => $from, 'to' => $to]) {
+                match ($attr) {
+                    'name' => $role->update(['name' => (string) $to]),
+                    'permissions' => (function () use ($role, $from, $to, $permissions): void {
+                        $role->givePermissionTo($permissions(array_values(array_diff((array) $to, (array) $from))));
+
+                        foreach ($permissions(array_values(array_diff((array) $from, (array) $to))) as $permission) {
+                            $role->revokePermissionTo($permission);
+                        }
+                    })(),
+                    'hidden_menus' => (function () use ($role, $from, $to): void {
+                        $role->hiddenMenus()->syncWithoutDetaching($this->menuIds(array_values(array_diff((array) $to, (array) $from))));
+                        $role->hiddenMenus()->detach($this->menuIds(array_values(array_diff((array) $from, (array) $to))));
+                    })(),
+                    default => null,
+                };
+            }
+
+            $this->done[] = $step->label;
+        }
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
+
+    /**
+     * @param  list<ChangeStep>  $creates
+     * @param  list<ChangeStep>  $updates
+     */
+    private function tasks(App $app, array $creates, array $updates, User $user): void
+    {
+        $parameters = function (array $task): array {
+            $resolved = $this->installer->taskParameters((array) ($task['parameters'] ?? []));
+
+            if ($resolved === null) {
+                throw new BusinessRuleException(__('apps.update.notes.task_target'));
+            }
+
+            return $resolved;
+        };
+
+        foreach ($creates as $step) {
+            ScheduledTask::query()->create([
+                'uuid' => $step->key,
+                'app_id' => $app->id,
+                'name' => $step->target['name'] ?? null,
+                'type' => $step->target['type'],
+                'parameters' => $parameters($step->target),
+                'frequency' => $step->target['frequency'],
+                'interval_hours' => $step->target['interval_hours'] ?? null,
+                'at_time' => $step->target['at_time'] ?? '03:00',
+                'weekday' => $step->target['weekday'] ?? null,
+                'is_active' => (bool) ($step->target['is_active'] ?? true),
+                'created_by' => $user->id,
+            ]);
+            $this->done[] = $step->label;
+        }
+
+        foreach ($updates as $step) {
+            $values = self::values($step->changes);
+
+            if (array_key_exists('parameters', $values)) {
+                $values['parameters'] = $parameters($step->target);
+            }
+
+            ScheduledTask::query()->where('uuid', $step->key)->firstOrFail()
+                ->update(Arr::only($values, ['name', 'type', 'parameters', 'frequency', 'interval_hours', 'at_time', 'weekday', 'is_active']));
+            $this->done[] = $step->label;
+        }
+    }
+
+    /**
+     * Angebundene Tabellen: neue wie beim Installieren (inaktiv, mit Verbindung gleichen Namens abgeglichen); Änderungen
+     * nur auf der Seite von SAFT – Bezeichnungen, Merkmale der Spalten, Schreibrechte, Export. Quelle, Verbindung und
+     * Schlüssel bleiben (Table-Connector).
+     *
+     * @param  list<ChangeStep>  $steps
+     */
+    private function externalTables(App $app, array $steps): void
+    {
+        foreach (array_filter($steps, static fn (ChangeStep $s): bool => $s->kind === 'external_table' && $s->action === ChangeStep::CREATE) as $step) {
+            $this->installer->external($app, $step->target);
+            $this->done[] = $step->label;
+        }
+
+        foreach ($this->merged(array_values(array_filter($steps, static fn (ChangeStep $s): bool => $s->kind === 'external_table' && $s->action === ChangeStep::UPDATE))) as $step) {
+            $table = CustomTable::query()->where('uuid', $step->key)->with('fields')->firstOrFail();
+            $values = self::values($step->changes);
+            $data = Arr::only($values, ['label', 'description', 'icon', 'export_enabled']);
+
+            if (array_key_exists('allow', $values)) {
+                $data = [...$data, 'allow_create' => (bool) ($values['allow']['create'] ?? false), 'allow_update' => (bool) ($values['allow']['update'] ?? false), 'allow_delete' => (bool) ($values['allow']['delete'] ?? false)];
+            }
+
+            if ($data !== []) {
+                $table->update($data);
+            }
+
+            if (array_key_exists('fields', $values)) {
+                foreach ((array) $values['fields'] as $field) {
+                    $table->fields->firstWhere('uuid', $field['key'] ?? null)
+                        ?->update(Arr::only($field, ['label', 'is_searchable', 'is_sortable', 'show_in_table', 'show_in_form', 'is_active', 'sort_order']));
+                }
+            }
+
+            $this->done[] = $step->label;
+        }
+    }
+
+    /**
+     * Menüpfade des Pakets → IDs (über den Schlüssel im Paket, sonst den Pfad in SAFT).
+     *
+     * @param  list<string>  $paths
+     * @return list<int>
+     */
+    private function menuIds(array $paths): array
+    {
+        return array_values(array_filter(array_map(fn (string $path): ?int => $this->menuParent($path, []), $paths)));
+    }
+
+    /**
+     * Elternmenü zum Pfad im Paket: eben angelegt, sonst über den Schlüssel des Pakets (auch wenn die Gruppe erst
+     * umbenannt wird), sonst über den Pfad in SAFT (z. B. eine Systemgruppe).
+     *
+     * @param  array<string, int>  $menus
+     */
+    private function menuParent(?string $path, array $menus): ?int
+    {
+        if ($path === null) {
+            return null;
+        }
+
+        $key = collect((array) ($this->target['menus'] ?? []))->firstWhere('path', $path)['key'] ?? null;
+        $id = $menus[$path] ?? ($key === null ? null : Menu::query()->where('uuid', $key)->value('id'));
+
+        return $id !== null ? (int) $id : $this->objects->menuParent($path);
+    }
+
+    /** @param  list<ChangeStep>  $steps */
+    private function removeObjects(App $app, array $steps): void
+    {
+        $of = static fn (string $kind): array => array_values(array_filter($steps, static fn (ChangeStep $s): bool => $s->kind === $kind && $s->action === ChangeStep::DELETE));
+        $menus = Menu::query()->whereIn('uuid', array_map(static fn (ChangeStep $s): string => $s->key, $of('menu')))->get();
+
+        // Kinder vor Eltern: zuerst Einträge, deren Eltern nicht ebenfalls entfernt werden … rückwärts nach Tiefe.
+        $level = static function (Menu $menu) use ($menus): int {
+            for ($depth = 0, $current = $menu; $current !== null && $depth < 10; $depth++) {
+                $current = $menus->firstWhere('id', $current->parent_id) ?? ($current->parent_id === null ? null : Menu::query()->find($current->parent_id));
+            }
+
+            return $depth;
+        };
+
+        foreach ($menus->sortByDesc($level) as $menu) {
+            $menu->delete();
+            $this->done[] = References::defaultLabel($menu->getTranslations('label'));
+        }
+
+        foreach ($of('report') as $step) {
+            Report::query()->where('uuid', $step->key)->first()?->delete();
+            $this->done[] = $step->label;
+        }
+
+        foreach ($of('report_link') as $step) {
+            ReportLink::query()->where('uuid', $step->key)->first()?->delete();
+            $this->done[] = $step->label;
+        }
+
+        foreach ($of('manual') as $step) {
+            AppManual::query()->where('app_id', $app->id)->where('locale', $step->key)->delete();
+            $this->done[] = $step->label;
+        }
+
+        foreach ($of('role') as $step) {
+            Role::query()->where('uuid', $step->key)->first()?->delete();
+            $this->done[] = $step->label;
+        }
+
+        foreach ($of('task') as $step) {
+            ScheduledTask::query()->where('uuid', $step->key)->first()?->delete();
+            $this->done[] = $step->label;
+        }
+
+        // Angebundene Tabellen nur deaktivieren.
+        foreach (array_filter($steps, static fn (ChangeStep $s): bool => $s->kind === 'external_table' && $s->action === ChangeStep::DEACTIVATE) as $step) {
+            CustomTable::query()->where('uuid', $step->key)->first()?->update(['is_active' => false]);
+            $this->done[] = $step->label;
+        }
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
     /** @param  list<ChangeStep>  $steps */

@@ -501,4 +501,42 @@ class AppsTest extends DuskTestCase
         $this->assertTrue(CustomTable::query()->where('name', 'hr_mitarbeitende')->sole()->fields()->where('name', 'abteilung')->exists());
         File::delete($path);
     }
+
+    /** FAP-18 */
+    public function test_update_also_changes_reports_menus_and_roles(): void
+    {
+        $admin = User::query()->where('email', self::ADMIN)->sole();
+        $staff = CustomTable::query()->where('name', 'hr_mitarbeitende')->with('fields')->sole();
+        Report::query()->create(['name' => 'Personalliste', 'app_id' => $this->second->id, 'owner_id' => $admin->id, 'is_shared' => true,
+            'definition' => ['base' => $staff->id, 'fields' => [['key' => 'n', 'path' => [], 'field' => $staff->fields->firstWhere('name', 'name')->id]]]]);
+        $role = Role::query()->create(['name' => 'personal', 'guard_name' => 'web', 'app_id' => $this->second->id]);
+        $role->givePermissionTo('data.hr_mitarbeitende.view');
+        $definition = app(AppDefinition::class)->build($this->second->fresh(), AppDefinition::PARTS, $admin);
+        AppBaseline::query()->create(['app_id' => $this->second->id, 'kind' => AppBaseline::INSTALLED, 'version' => '1.0', 'definition' => $definition, 'installed_by' => $admin->id]);
+        $definition['app']['version'] = '1.1';
+        $definition['reports'][0]['name'] = 'Mitarbeitende nach Name';
+        $definition['roles'][0]['permissions'] = ['data.hr_mitarbeitende.update', 'data.hr_mitarbeitende.view'];
+        $path = storage_path('framework/testing/hr-1.1b.saft-app.json');
+        File::ensureDirectoryExists(dirname($path));
+        File::put($path, (string) json_encode($definition));
+
+        $this->browse(function (Browser $browser) use ($path): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/apps')->waitForText('Personal', 15);
+            $this->openRowActions($browser, 'Personal');
+            $this->clickVisibleButton($browser, 'Aktualisieren …');
+            $browser->waitFor('.fi-modal-window .filepond--root', 15)
+                ->attach('.fi-modal-window .filepond--root input[type="file"]', $path)
+                ->waitUntil("document.querySelectorAll('.filepond--item[data-filepond-item-state=\"idle\"], .filepond--item[data-filepond-item-state=\"processing-complete\"]').length >= 1", 30);
+            $this->clickVisibleButton($browser, 'Weiter');
+            $browser->waitFor('[data-app-update-plan]', 15)
+                ->waitForText('Name Personalliste → Mitarbeitende nach Name', 15)
+                ->assertSee('Rechte: + data.hr_mitarbeitende.update');
+            $this->clickVisibleButton($browser, 'Gewählte Schritte ausführen');
+            $browser->waitForText('App „Personal“ aktualisiert', 60);
+        });
+
+        $this->assertTrue(Report::query()->where('name', 'Mitarbeitende nach Name')->exists());
+        $this->assertTrue($role->fresh()->hasPermissionTo('data.hr_mitarbeitende.update'));
+        File::delete($path);
+    }
 }

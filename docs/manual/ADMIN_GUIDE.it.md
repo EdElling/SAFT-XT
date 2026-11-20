@@ -1344,18 +1344,31 @@ versione più recente) ed elenca i passi con la loro classificazione:
 | Classificazione | Significato | Esempi |
 |---|---|---|
 | sicuro (preselezionato) | nessun dato toccato | nuova tabella o nuovo campo, etichetta, proprietà, nuovi valori di scelta, ordine |
-| delicato (preselezionato) | dati o processi esistenti toccati, nulla va perso | cambio di tipo con valori, nome tecnico, obbligatorio o univoco con dati esistenti, regole del campo violate da valori esistenti, formula, valori di scelta eliminati, regole della tabella, disattivazione |
-| distruttivo (non preselezionato) | si perdono dati | eliminare un campo o una tabella con dati – solo con una conferma aggiuntiva |
+| delicato (preselezionato) | dati o processi esistenti toccati, nulla va perso | cambio di tipo con valori, nome tecnico, obbligatorio o univoco con dati esistenti, regole del campo violate da valori esistenti, formula, valori di scelta eliminati, regole della tabella, disattivazione; togliere diritti a un ruolo (con numero di persone), rinominare un ruolo, menu in un altro gruppo, destinazione di un collegamento tra tabelle, attivare la scrittura su una tabella collegata; rimuovere un report, un menu, un collegamento tra tabelle, un’attività o un ruolo senza membri |
+| distruttivo (non preselezionato) | si perdono dati o accessi | eliminare un campo o una tabella con dati, rimuovere un ruolo con membri – solo con una conferma aggiuntiva |
 
 Se nel pacchetto manca un campo o una tabella con dati, viene prima solo **disattivato** (i dati restano);
 l’eliminazione è un passo a sé. Senza dati viene eliminato direttamente. **Non possibili** (con motivo) sono le
 modifiche che il Designer di tabelle rifiuterebbe – ad es. un cambio di tipo che perderebbe valori (ad es. «1 valore
-supera 30 caratteri») – e le modifiche a interfacce usate da altre app. Le differenze in collegamenti tra tabelle,
-report, menu, ruoli, attività, manuale e tabelle collegate per ora sono solo mostrate.
+supera 30 caratteri») – e le modifiche a interfacce usate da altre app. Vengono aggiornati anche **collegamenti tra tabelle, report, menu, ruoli, attività, manuale e tabelle collegate** – per
+proprietà (ad es. «Report …: nome A → B», «Menu …: gruppo A → B», «Ruolo …: diritti: + …, − …»):
+
+- **Ruoli:** diritti e menu nascosti cambiano come differenza; i diritti fuori dall’app restano. Un nuovo ruolo il cui
+  nome è già usato riceve il prefisso dell’app.
+- **Report:** quelli nuovi appartengono alla persona che aggiorna; i report personali di altri restano intatti.
+- **Menu:** il gruppo è riconosciuto dalla sua chiave – un gruppo rinominato non sposta le sue voci.
+- **Non possibile** è rimuovere un collegamento tra tabelle usato da un report che resta o un gruppo di menu con voci che
+  restano, così come un’attività di tipo sconosciuto (ad es. da un plugin mancante) o senza la sua tabella o connessione.
+- **Tabelle collegate:** solo il lato SAFT (etichette, proprietà delle colonne, diritti di scrittura, esportazione);
+  l’aggiornamento non modifica origine, connessione e chiave (avviso). Se una manca nel pacchetto, viene solo
+  disattivata.
+
+Se non c’è nulla da fare, il pulsante si chiama **«Chiudi»** – non si crea alcun salvataggio né un nuovo stato di
+riferimento.
 
 **Esecuzione:** prima viene creato un salvataggio; poi i passi scelti passano per le operazioni del Designer di tabelle
-con tutte le regole di protezione (nuove tabelle e campi, modifiche, condivisioni, infine disattivazione ed
-eliminazione). Dopo, il pacchetto è il nuovo stato di riferimento e la sua versione la versione dell’app. Se un passo
+con tutte le regole di protezione (tabelle collegate, nuove tabelle e campi, modifiche, condivisioni, collegamenti tra tabelle, report, menu, ruoli,
+attività, manuale, infine rimozione, disattivazione ed eliminazione). Dopo, il pacchetto è il nuovo stato di riferimento e la sua versione la versione dell’app. Se un passo
 fallisce, l’aggiornamento si interrompe e indica quanti passi sono già stati eseguiti e dove si trova il salvataggio;
 scegliendo di nuovo lo stesso file si vede solo il resto. L’aggiornamento figura nel registro delle modifiche.
 

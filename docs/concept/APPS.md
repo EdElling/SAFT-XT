@@ -170,6 +170,13 @@ Plan für alle Teile, Ausführen für App, Tabellen, Felder; **6b** Ausführen f
 Menüs, Rollen, Aufgaben, Handbuch, angebundene Tabellen. Aktualisieren geht nur aus derselben Quelle (App-Schlüssel);
 eine Kopie ist eigenständig – Übernahme aus einer Kopie über Namen: B-111.
 
+Entschieden für Etappe 6b (20.11.2026): Rolle mit Mitgliedern entfernen ist zerstörend (nicht vorgewählt, Bestätigung),
+ohne Mitglieder heikel. Neue Auswertungen gehören der aktualisierenden Person, persönliche Auswertungen anderer bleiben
+unberührt. Angebundene Tabellen: nur die Seite von SAFT (Bezeichnungen, Spaltenmerkmale, Schreibrechte, Export) – Quelle,
+Verbindung und Schlüssel nicht; fehlt eine im Paket, wird sie nur deaktiviert. Rollenrechte als Differenz (Rechte
+ausserhalb der App bleiben); Menügruppen über ihren Schlüssel (Umbenennen verschiebt nicht). Ohne Arbeit nur
+„Schliessen“, ohne gewählte Schritte keine Sicherung.
+
 ## 7. KI-App-Designer (Perspektive, nicht Teil der ersten Etappen)
 
 Aus einem Fachkonzept (Text) entwirft der Assistent eine App-Definition, zuerst nur das Datenmodell. SAFT zeigt sie als

@@ -9,13 +9,21 @@ use App\Apps\Update\ChangeExecutor;
 use App\Apps\Update\ChangePlan;
 use App\Apps\Update\ChangePlanner;
 use App\Apps\Update\ChangeStep;
+use App\Apps\Update\ChangeText;
+use App\DynamicData\DataMenu;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Apps\Pages\ListApps;
 use App\Models\App;
 use App\Models\AppBaseline;
+use App\Models\AppManual;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\Menu;
+use App\Models\Report;
+use App\Models\ReportLink;
+use App\Models\Role;
+use App\Models\ScheduledTask;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Process\PendingProcess;
@@ -303,6 +311,16 @@ class AppUpdateTest extends DynamicDataTestCase
         $this->assertSame($key, CustomField::query()->where('name', 'ort')->sole()->uuid);
         $this->assertSame('2.0', $this->sales->fresh()->version);
 
+        // Dieselbe Datei nochmals: nichts zu tun – „Schliessen“, keine Sicherung, kein neuer Ausgangsstand.
+        $baselines = AppBaseline::query()->where('app_id', $this->sales->id)->count();
+        $this->assertSame([], $this->plan($package)->selectable());
+        Livewire::test(ListApps::class)
+            ->callTableAction('updateApp', $this->sales, ['file' => [UploadedFile::fake()->createWithContent('vk-2.0.saft-app.json', (string) json_encode($package))], 'steps' => []])
+            ->assertHasNoTableActionErrors()
+            ->assertNotNotified(__('apps.update.done', ['name' => 'Verkauf']));
+        $this->assertSame($baselines, AppBaseline::query()->where('app_id', $this->sales->id)->count());
+        $this->assertCount(1, File::glob($this->storage.'/backups/*'), 'Nur die Sicherung des ersten Laufs.');
+
         // Ohne Recht keine Aktion.
         $this->actingAs($this->userWithPermissions(['apps.view', 'apps.manage', 'apps.install']));
         Livewire::test(ListApps::class)->assertTableActionHidden('updateApp', $this->sales);
@@ -323,5 +341,111 @@ class AppUpdateTest extends DynamicDataTestCase
         $rules = $plan->step('field:'.$this->key('vk_bestellungen', 'nummer'));
         $this->assertSame(ChangeStep::RISKY, $rules->level);
         $this->assertStringContainsString('2 Werte verletzen die neuen Feldregeln', implode(' ', $rules->notes));
+    }
+
+    public function test_reports_links_menus_and_manual_are_updated(): void
+    {
+        $orders = CustomTable::query()->where('name', 'vk_bestellungen')->sole();
+        $customers = CustomTable::query()->where('name', 'vk_kunden')->sole();
+        $this->service()->updateField($customers->fields()->where('name', 'firma')->sole(), ['is_unique' => true]);
+        $link = ReportLink::query()->create(['label' => ['de' => 'Zur Firma'], 'source_table_id' => $orders->id, 'source_field_id' => $this->fieldId('vk_bestellungen', 'nummer'),
+            'target_table_id' => $customers->id, 'target_field_id' => $this->fieldId('vk_kunden', 'firma')]);
+        $report = Report::query()->create(['name' => 'Mengen', 'owner_id' => $this->admin->id, 'is_shared' => true, 'definition' => ['base' => $orders->id, 'fields' => [
+            ['key' => 'n', 'path' => [], 'field' => $this->fieldId('vk_bestellungen', 'nummer')],
+            ['key' => 'f', 'path' => [-$link->id], 'field' => $this->fieldId('vk_kunden', 'firma')],
+        ]]]);
+        $old = Report::query()->create(['name' => 'Alt', 'owner_id' => $this->admin->id, 'is_shared' => true, 'definition' => ['base' => $orders->id, 'fields' => [['key' => 'n', 'path' => [], 'field' => $this->fieldId('vk_bestellungen', 'nummer')]]]]);
+        $group = Menu::query()->create(['app_id' => $this->sales->id, 'label' => ['de' => 'Verkauf'], 'sort_order' => 10]);
+        app(DataMenu::class)->create($orders, $group->id);
+        AppManual::query()->create(['app_id' => $this->sales->id, 'locale' => 'de', 'content' => "# Verkauf\n"]);
+        AppBaseline::query()->where('app_id', $this->sales->id)->update(['definition' => json_encode($this->definition())]);
+
+        $newMenu = (string) Str::uuid();
+        $newReport = (string) Str::uuid();
+        $package = $this->package(function (array $d) use ($newMenu, $newReport): array {
+            $d['reports'] = array_values(array_filter($d['reports'], static fn (array $r): bool => $r['name'] !== 'Alt'));
+            $d['reports'][0]['name'] = 'Mengen je Bestellung';
+            $d['reports'][] = [...$d['reports'][0], 'key' => $newReport, 'name' => 'Neu', 'definition' => [...$d['reports'][0]['definition'], 'fields' => [$d['reports'][0]['definition']['fields'][0]]]];
+            // Gruppe umbenannt: Pfade im Paket lauten „Vertrieb …“.
+            $d['menus'] = array_map(static fn (array $m): array => [...$m, 'path' => str_replace('Verkauf', 'Vertrieb', $m['path']), 'parent' => $m['parent'] === null ? null : str_replace('Verkauf', 'Vertrieb', $m['parent'])], $d['menus']);
+            $d['menus'][0]['label'] = ['de' => 'Vertrieb'];
+            $d['menus'][] = ['key' => $newMenu, 'path' => 'Vertrieb › Neu', 'parent' => 'Vertrieb', 'label' => ['de' => 'Neu'], 'icon' => null, 'permission_name' => null, 'sort_order' => 5, 'is_active' => true, 'target' => ['type' => 'report', 'report' => 'Neu']];
+            $d['report_links'] = []; // Verknüpfung entfernt – „Mengen je Bestellung“ nutzt sie weiter
+            $d['app']['manual'] = ['de' => "# Vertrieb\n"];
+
+            return $d;
+        });
+        $plan = $this->plan($package);
+        $ids = array_map(static fn (ChangeStep $s): string => $s->id, $plan->selectable());
+
+        $this->assertContains('report:'.$report->uuid, $ids);
+        $this->assertContains('report:'.$newReport, $ids);
+        $this->assertContains('report:'.$old->uuid.':delete', $ids);
+        $this->assertContains('menu:'.$group->uuid, $ids);
+        $this->assertContains('manual:de', $ids);
+        $this->assertStringContainsString('genutzt, die bleiben: Mengen', (string) $plan->step('report_link:'.$link->uuid.':delete')->blocked, 'Genutzte Verknüpfung bleibt.');
+
+        // Das neue Menü hängt an der umbenannten Gruppe („Vertrieb“ gibt es erst nach dem Umbenennen): über ihren Schlüssel.
+        app(ChangeExecutor::class)->apply($this->sales, $plan, $plan->preselected(), false, $this->admin);
+
+        $this->assertSame('Mengen je Bestellung', $report->fresh()->name);
+        $this->assertNull(Report::query()->find($old->id));
+        $this->assertSame([$this->admin->id, $orders->id], [Report::query()->where('uuid', $newReport)->sole()->owner_id, (int) Report::query()->where('uuid', $newReport)->sole()->definition['base']]);
+        $this->assertSame('Vertrieb', $group->fresh()->getTranslation('label', 'de'));
+        $entry = Menu::query()->where('uuid', $newMenu)->sole();
+        $this->assertSame([$group->id, (string) Report::query()->where('uuid', $newReport)->value('id')], [$entry->parent_id, $entry->route_parameters['record']]);
+        $this->assertNotNull(ReportLink::query()->find($link->id));
+        $this->assertSame("# Vertrieb\n", AppManual::query()->where('app_id', $this->sales->id)->where('locale', 'de')->value('content'));
+    }
+
+    public function test_roles_tasks_and_connected_tables_are_updated(): void
+    {
+        $sales = Role::query()->create(['name' => 'vertrieb', 'guard_name' => 'web', 'app_id' => $this->sales->id]);
+        $sales->givePermissionTo('data.vk_kunden.view', 'data.vk_bestellungen.view');
+        $old = Role::query()->create(['name' => 'alt', 'guard_name' => 'web', 'app_id' => $this->sales->id]);
+        $person = User::factory()->create()->assignRole($sales, $old);
+        $task = ScheduledTask::query()->create(['name' => 'Aufräumen', 'type' => 'task_runs_prune', 'app_id' => $this->sales->id, 'frequency' => 'daily', 'at_time' => '03:00', 'parameters' => []]);
+        $erp = CustomTable::query()->create(['app_id' => $this->sales->id, 'name' => 'vk_erp', 'label' => ['de' => 'ERP'], 'source' => CustomTable::SOURCE_EXTERNAL, 'external_table' => 'erp', 'is_active' => false]);
+        $erp->fields()->create(['name' => 'nr', 'label' => ['de' => 'Nr.'], 'type' => 'string', 'options' => []]);
+        AppBaseline::query()->where('app_id', $this->sales->id)->update(['definition' => json_encode($this->definition())]);
+
+        $newRole = (string) Str::uuid();
+        $package = $this->package(function (array $d) use ($newRole): array {
+            $roles = array_column($d['roles'], null, 'name');
+            $roles['vertrieb']['permissions'] = ['data.vk_bestellungen.update', 'data.vk_bestellungen.view'];
+            unset($roles['alt']);
+            $roles['lager'] = ['key' => $newRole, 'name' => 'lager', 'permissions' => ['data.vk_kunden.view'], 'hidden_menus' => []];
+            $d['roles'] = array_values($roles);
+            $d['tasks'][0]['at_time'] = '04:00';
+            $d['tasks'][] = [...$d['tasks'][0], 'key' => (string) Str::uuid(), 'name' => 'Unbekannt', 'type' => 'gibt_es_nicht'];
+            $d['external_tables'][0]['label'] = ['de' => 'ERP-Artikel'];
+            $d['external_tables'][0]['allow'] = ['create' => false, 'update' => true, 'delete' => false];
+            $d['external_tables'][0]['source']['table'] = 'erp_neu';
+
+            return $d;
+        });
+        $plan = $this->plan($package);
+
+        $revoke = $plan->step('role:'.$sales->uuid);
+        $this->assertSame(ChangeStep::RISKY, $revoke->level);
+        $this->assertStringContainsString('betrifft 1 Person', implode(' ', $revoke->notes));
+        $this->assertStringContainsString('+ data.vk_bestellungen.update, − data.vk_kunden.view', ChangeText::summary($revoke));
+        $delete = $plan->step('role:'.$old->uuid.':delete');
+        $this->assertSame([ChangeStep::DESTRUCTIVE, false], [$delete->level, $delete->preselected()], 'Rolle mit Mitgliedern: nur auf ausdrückliche Wahl.');
+        $this->assertNotNull(collect($plan->steps)->first(static fn (ChangeStep $s): bool => $s->kind === 'task' && $s->action === ChangeStep::CREATE)?->blocked, 'Unbekannte Aufgabenart.');
+        $external = $plan->step('external_table:'.$erp->uuid);
+        $this->assertSame(ChangeStep::RISKY, $external->level);
+        $this->assertStringContainsString('ändert das Aktualisieren nicht', implode(' ', $external->notes));
+
+        app(ChangeExecutor::class)->apply($this->sales, $plan, [...$plan->preselected(), 'role:'.$old->uuid.':delete'], true, $this->admin);
+
+        $this->assertEqualsCanonicalizing(['data.vk_bestellungen.update', 'data.vk_bestellungen.view'], $sales->fresh()->permissions->pluck('name')->all());
+        $this->assertNull(Role::query()->find($old->id));
+        $this->assertSame(['vertrieb'], $person->fresh()->getRoleNames()->all());
+        $this->assertSame([$this->sales->id, ['data.vk_kunden.view']], [Role::query()->where('uuid', $newRole)->sole()->app_id, Role::query()->where('uuid', $newRole)->sole()->permissions->pluck('name')->all()]);
+        $this->assertSame('04:00', $task->fresh()->at_time);
+        $this->assertFalse(ScheduledTask::query()->where('name', 'Unbekannt')->exists());
+        $erp->refresh();
+        $this->assertSame(['ERP-Artikel', true, 'erp'], [$erp->getTranslation('label', 'de'), (bool) $erp->allow_update, $erp->external_table], 'Quelle bleibt.');
     }
 }

@@ -1380,19 +1380,32 @@ remarques (p. ex. pas de version plus récente) et liste les étapes avec leur c
 | Classement | Signification | Exemples |
 |---|---|---|
 | sûr (présélectionné) | aucune donnée touchée | nouvelle table ou nouveau champ, libellé, propriétés, nouvelles valeurs de choix, ordre |
-| délicat (présélectionné) | données ou processus existants touchés, rien n’est perdu | changement de type avec valeurs, nom technique, obligatoire ou unique avec données existantes, règles du champ enfreintes par des valeurs existantes, formule, valeurs de choix supprimées, règles de table, désactivation |
-| destructif (non présélectionné) | des données sont perdues | supprimer un champ ou une table avec données – seulement avec une confirmation supplémentaire |
+| délicat (présélectionné) | données ou processus existants touchés, rien n’est perdu | changement de type avec valeurs, nom technique, obligatoire ou unique avec données existantes, règles du champ enfreintes par des valeurs existantes, formule, valeurs de choix supprimées, règles de table, désactivation ; retirer des droits d’un rôle (avec nombre de personnes), renommer un rôle, menu dans un autre groupe, cible d’une liaison de tables, activer l’écriture sur une table connectée ; retirer un rapport, un menu, une liaison de tables, une tâche ou un rôle sans membres |
+| destructif (non présélectionné) | des données ou des accès sont perdus | supprimer un champ ou une table avec données, retirer un rôle avec membres – seulement avec une confirmation supplémentaire |
 
 Si un champ ou une table avec données manque dans le paquet, il est d’abord seulement **désactivé** (les données
 restent) ; la suppression est une étape à part. Sans données, il est supprimé directement. **Impossibles** (avec motif)
 sont les modifications que le Concepteur de tables refuserait – p. ex. un changement de type qui perdrait des valeurs
-(p. ex. « 1 valeur dépasse 30 caractères ») – et les modifications d’interfaces utilisées par d’autres apps. Les
-différences dans les liaisons de tables, rapports, menus, rôles, tâches, le manuel et les tables connectées ne sont pour
-l’instant qu’affichées.
+(p. ex. « 1 valeur dépasse 30 caractères ») – et les modifications d’interfaces utilisées par d’autres apps. Sont aussi mis à jour les **liaisons de tables, rapports, menus, rôles, tâches, le manuel et les tables connectées** –
+par propriété (p. ex. « Rapport … : nom A → B », « Menu … : groupe A → B », « Rôle … : droits : + …, − … ») :
+
+- **Rôles :** les droits et menus masqués changent par différence ; les droits hors de l’app restent. Un nouveau rôle
+  dont le nom est déjà pris reçoit le préfixe de l’app.
+- **Rapports :** les nouveaux appartiennent à la personne qui met à jour ; les rapports personnels d’autres restent
+  intacts.
+- **Menus :** le groupe est reconnu à sa clé – un groupe renommé ne déplace pas ses entrées.
+- **Impossible :** retirer une liaison de tables qu’utilise un rapport qui reste ou un groupe de menu avec des entrées
+  qui restent, de même qu’une tâche de type inconnu (p. ex. d’un plugin manquant) ou sans sa table ou connexion.
+- **Tables connectées :** seulement le côté SAFT (libellés, propriétés des colonnes, droits d’écriture, export) ; la
+  mise à jour ne modifie pas source, connexion et clé (remarque). Si l’une manque dans le paquet, elle est seulement
+  désactivée.
+
+S’il n’y a rien à faire, le bouton s’appelle **« Fermer »** – rien n’est sauvegardé et aucun nouvel état de référence
+n’est enregistré.
 
 **Exécution :** une sauvegarde est faite d’abord ; puis les étapes choisies passent par les opérations du Concepteur de
-tables avec toutes les règles de protection (nouvelles tables et champs, modifications, partages, enfin désactivation et
-suppression). Ensuite le paquet est le nouvel état de référence et sa version la version de l’app. Si une étape échoue,
+tables avec toutes les règles de protection (tables connectées, nouvelles tables et champs, modifications, partages, liaisons de tables, rapports, menus, rôles,
+tâches, manuel, enfin retrait, désactivation et suppression). Ensuite le paquet est le nouvel état de référence et sa version la version de l’app. Si une étape échoue,
 la mise à jour s’arrête et indique combien d’étapes ont déjà été exécutées et où se trouve la sauvegarde ; choisir à
 nouveau le même fichier ne montre que le reste. La mise à jour figure dans le journal des modifications.
 

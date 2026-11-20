@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Apps\CurrentApp;
+use App\Apps\PluginApps;
 use App\Dashboard\DashboardLayout;
 use App\Filament\Widgets\ReportCardWidget;
 use App\Models\User;
@@ -170,12 +171,20 @@ class Dashboard extends BaseDashboard
         }
 
         $cards = [];
+        $appId = app(CurrentApp::class)->id($this->user());
 
         foreach ($this->getWidgets() as $widget) {
             $class = $this->normalizeWidgetClass($widget);
 
             // Kacheln ausgeschalteter Plugins entfallen (ihre Livewire-Komponente wäre gesperrt).
             if (app(PluginStates::class)->blocks($class) || ! $class::canView()) {
+                continue;
+            }
+
+            // Kacheln eines Plugins nur in seiner App (B-107); Plugins ohne eigene App überall.
+            $plugin = $this->isPluginWidget($class) ? app(PluginOrigin::class)->of($class) : null;
+
+            if ($plugin !== null && ! app(PluginApps::class)->belongsTo($plugin, $appId)) {
                 continue;
             }
 
@@ -199,8 +208,6 @@ class Dashboard extends BaseDashboard
 
         if ($user !== null && ReportCardWidget::canView()) {
             // Nur Auswertungen der aktuellen App (B-107).
-            $appId = app(CurrentApp::class)->id($user);
-
             // Auswertungen ohne App (Grundtabelle fehlt) erscheinen überall.
             foreach ($user->dashboardReports()->where(static fn ($q) => $q->whereNull('reports.app_id')->orWhere('reports.app_id', $appId ?? 0))->orderBy('reports.name')->get() as $report) {
                 if (! $user->can('view', $report)) {

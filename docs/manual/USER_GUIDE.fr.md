@@ -136,7 +136,7 @@ déconnecté du compte de l’entreprise.
 - Le **tableau de bord** est la page d’accueil. Les tuiles (widgets) sont disposées sur deux colonnes qui s’allongent
   indépendamment l’une de l’autre ; les tuiles larges suivent en dessous sur toute la largeur. Les tuiles que vous
   voyez sont définies par l’administration via votre rôle ; des tuiles issues de plugins peuvent s’y ajouter, p. ex.
-  *Entrepôt : stock minimum* – elles portent en dessous l’étiquette « Plugin : … », comme les pages issues de plugins sous leur titre. Vous pouvez les **disposer** vous-même :
+  *Entrepôt : stock minimum* – elles portent en dessous l’étiquette « Plugin : … », comme les pages issues de plugins sous leur titre ; les tuiles d’un plugin n’apparaissent que dans l’app à laquelle il appartient. Vous pouvez les **disposer** vous-même :
   **« Personnaliser le tableau de bord »** (en haut à droite) affiche sur chaque tuile une poignée et **« Masquer »**.
   Avec la poignée, vous déplacez une tuile dans une colonne, vers l’autre colonne ou – rapports uniquement – dans la
   zone large en bas, où elle occupe toute la largeur. Les tuiles masquées figurent en haut dans une liste, d’où vous

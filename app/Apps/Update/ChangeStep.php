@@ -25,8 +25,8 @@ final readonly class ChangeStep
 
     public const string DESTRUCTIVE = 'destructive';
 
-    /** Objektarten, deren Schritte Etappe 6a ausführt (die übrigen zeigt die Vorschau nur an). */
-    public const array EXECUTABLE = ['app', 'table', 'field'];
+    /** Objektarten, deren Schritte ausgeführt werden (die übrigen zeigt die Vorschau nur an). */
+    public const array EXECUTABLE = ['app', 'table', 'field', 'external_table', 'report_link', 'report', 'menu', 'role', 'task', 'manual'];
 
     /**
      * @param  string  $kind  app, table, field, external_table, report_link, report, menu, role, task, manual
