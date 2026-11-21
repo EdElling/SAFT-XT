@@ -76,6 +76,47 @@ final class RecordFiles
     }
 
     /**
+     * Datensatz kopieren (B-120): Verweise auf Dateien, die schon einem Datensatz gehören, durch echte Kopien ersetzen
+     * (noch ohne Datensatz; sync() ordnet sie beim Speichern der Kopie zu). Neu hochgeladene Dateien bleiben, wie sie sind.
+     *
+     * @param  array<string, mixed>  $data  Werte des neuen Datensatzes
+     * @return array<string, mixed>
+     */
+    public function copyOwned(CustomTable $table, array $data): array
+    {
+        foreach (self::fileFields($table) as $field) {
+            $references = (array) ($data[$field->name] ?? []);
+
+            if ($references === []) {
+                continue;
+            }
+
+            $files = RecordFile::query()->whereIn('id', self::ids($references))->whereNotNull('record_id')->get()->keyBy('id');
+            $data[$field->name] = array_map(fn (array $reference): array => isset($reference['id'], $files[$reference['id']])
+                ? $this->copy($files[$reference['id']])->toReference()
+                : $reference, array_values(array_filter($references, 'is_array')));
+        }
+
+        return $data;
+    }
+
+    /** Eine Datei samt Inhalt kopieren: neuer Pfad im selben Verzeichnis, noch ohne Datensatz. */
+    public function copy(RecordFile $file): RecordFile
+    {
+        $extension = pathinfo($file->path, PATHINFO_EXTENSION);
+        $path = dirname($file->path).'/'.Str::uuid()->toString().($extension !== '' ? '.'.$extension : '');
+        $this->disk()->copy($file->path, $path);
+
+        return RecordFile::query()->create([
+            ...$file->only(['custom_table_id', 'field', 'disk', 'name', 'mime', 'size', 'width', 'height']),
+            'id' => (string) Str::uuid(),
+            'record_id' => null,
+            'path' => $path,
+            'uploaded_by' => auth()->id(),
+        ]);
+    }
+
+    /**
      * Wert im Datensatz → Pfade für das Formular.
      *
      * @return list<string>

@@ -13,6 +13,10 @@ return [
     'record_deleted' => 'This record has been deleted.',
     'delete_permanently' => 'The record is permanently deleted from the external database and cannot be restored.',
     'actions' => [
+        'copy' => 'Copy',
+        'copy_heading' => 'Copy of :title',
+        'copy_submit' => 'Create copy',
+        'copied' => 'Copy created.',
         'create' => 'New record',
         'details' => 'Details',
         'view' => 'View',

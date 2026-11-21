@@ -13,6 +13,10 @@ return [
     'record_deleted' => 'Questo record è stato eliminato.',
     'delete_permanently' => 'Il record viene eliminato definitivamente dal database esterno e non può essere ripristinato.',
     'actions' => [
+        'copy' => 'Copia',
+        'copy_heading' => 'Copia di :title',
+        'copy_submit' => 'Crea copia',
+        'copied' => 'Copia creata.',
         'create' => 'Nuovo record',
         'details' => 'Dettagli',
         'view' => 'Visualizza',

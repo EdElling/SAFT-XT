@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DynamicData\Ui;
 
 use App\DynamicData\DataAccess;
+use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Export\ExportFormat;
 use App\DynamicData\Export\TableExporter;
 use App\DynamicData\Import\RecordImportAnalysis;
@@ -357,6 +358,7 @@ final class DynamicRecordActions
             // Desktop: Ansehen, Bearbeiten, Verlauf, Löschen bzw. Wiederherstellen, Plugins.
             $icon(self::view($table, $locked, 'viewRow')),
             $icon(self::edit($table, $locked, 'editRow'))->after($refresh),
+            $icon(self::copy($table, $locked, 'copyRow')),
             $icon(self::history('historyRow'))->visible(self::writable($table)),
             $icon(self::delete($table, 'deleteRow'))->after(fn ($livewire, DynamicRecord $record) => $livewire->dispatch(
                 self::REFRESH_EVENT,
@@ -425,6 +427,7 @@ final class DynamicRecordActions
             ->modalCancelActionLabel(__('common.close'))
             ->extraModalFooterActions(fn (DynamicRecord $record): array => [
                 self::edit($table, $locked)->record($record)->after(fn ($livewire) => $livewire->dispatch(self::REFRESH_EVENT)),
+                self::copy($table, $locked)->record($record)->cancelParentActions(),
                 self::history()->record($record)->visible(self::writable($table)),
                 self::delete($table)->record($record)->cancelParentActions()->after(fn ($livewire) => $livewire->dispatch(
                     self::REFRESH_EVENT,
@@ -461,6 +464,53 @@ final class DynamicRecordActions
 
                 return $record;
             });
+    }
+
+    /**
+     * Datensatz kopieren (B-120): Formular „Neuer Datensatz“ mit den Werten des Originals; eindeutige Felder und der
+     * Schlüssel einer angebundenen Tabelle bleiben leer, berechnete Felder rechnet SAFT neu. Dateien und Bilder werden
+     * beim Speichern kopiert; die Verknüpfung zur Haupttabelle (Detailtabelle) bleibt die des Originals.
+     *
+     * @param  list<string>  $locked  nicht bearbeitbare Felder (Verknüpfung zur Haupttabelle)
+     */
+    public static function copy(CustomTable $table, array $locked = [], string $name = 'copy'): Action
+    {
+        return Action::make($name)
+            ->label(__('data.actions.copy'))
+            ->icon('heroicon-o-document-duplicate')
+            ->visible(fn (?DynamicRecord $record): bool => $table->supports('create') && ! ($record?->trashed() ?? false))
+            ->authorize(fn (): bool => DataAccess::current($table, 'create'))
+            ->modalHeading(fn (DynamicRecord $record): string => __('data.actions.copy_heading', ['title' => RecordEntries::title($table, $record)]))
+            ->modalSubmitActionLabel(__('data.actions.copy_submit'))
+            ->schema(self::form($table, $locked))
+            ->fillForm(fn (DynamicRecord $record): array => self::copyValues($table, $record))
+            ->action(function (array $data, DynamicRecord $record, mixed $livewire) use ($table, $locked): void {
+                $data = app(RecordFiles::class)->copyOwned($table, $data);
+                $copy = DynamicRecord::forTable($table)->fill($data)->forceFill(array_intersect_key($record->getAttributes(), array_flip($locked)));
+                $copy->save();
+
+                Notification::make()->success()->title(__('data.actions.copied'))->send();
+                $livewire->dispatch(self::REFRESH_EVENT);
+            });
+    }
+
+    /**
+     * Werte für die Kopie: alle Felder des Formulars ausser eindeutigen, berechneten und dem Schlüssel.
+     *
+     * @return array<string, mixed>
+     */
+    private static function copyValues(CustomTable $table, DynamicRecord $record): array
+    {
+        $skip = $table->isExternal() ? $table->keyColumns() : [];
+        $values = $record->attributesToArray();
+
+        foreach ($table->fields as $field) {
+            if ($field->is_unique || $field->type === FieldType::Computed || in_array($field->name, $skip, true)) {
+                unset($values[$field->name]);
+            }
+        }
+
+        return array_intersect_key($values, array_flip($table->fields->where('is_active', true)->pluck('name')->all()));
     }
 
     public static function history(string $name = 'history'): Action

@@ -226,6 +226,7 @@ Le tabelle servono alla **lettura**. Un clic su una riga seleziona il record (ve
 |---|---|
 | **Visualizza** (lente) | Il modulo con tutti i campi, bloccato – anche i campi calcolati. |
 | **Modifica** (matita) | Apre il modulo di inserimento in una finestra; **Salva** o **Annulla** riporta direttamente alla tabella. |
+| **Copia** (due fogli) | Apre «Nuovo record» con tutti i valori dell’originale; i campi univoci (ad es. codice articolo) restano vuoti, quelli calcolati vengono ricalcolati. File e immagini vengono creati come copie proprie al salvataggio. Richiede il diritto di creare. |
 | **Cronologia** (orologio) | Chi ha modificato cosa e quando. |
 | **Elimina** (cestino) | Elimina dopo una domanda di sicurezza. |
 | **Ripristina** | Per i record eliminati al posto di «Modifica» ed «Elimina». |
@@ -243,6 +244,7 @@ per l’anteprima dei record collegati). «Ripristina» compare solo per i recor
 | Pulsante | Funzione |
 |---|---|
 | **Modifica** | Apre il modulo di inserimento. Le modifiche vengono applicate subito dopo il salvataggio. Non disponibile per i record eliminati. |
+| **Copia** | Crea un nuovo record con i valori di questo record (come nella tabella). |
 | **Cronologia** | Mostra chi ha modificato cosa e quando (ad es. «status: Nuovo → Spedito»). |
 | **Elimina** | Contrassegna il record come eliminato. Scompare dall’elenco, ma resta ripristinabile. |
 | **Ripristina** | Visibile solo per i record eliminati. |

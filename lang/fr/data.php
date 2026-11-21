@@ -13,6 +13,10 @@ return [
     'record_deleted' => 'Cet enregistrement a été supprimé.',
     'delete_permanently' => 'L’enregistrement est définitivement supprimé de la base de données externe et ne peut pas être restauré.',
     'actions' => [
+        'copy' => 'Copier',
+        'copy_heading' => 'Copie de :title',
+        'copy_submit' => 'Créer la copie',
+        'copied' => 'Copie créée.',
         'create' => 'Nouvel enregistrement',
         'details' => 'Détails',
         'view' => 'Afficher',

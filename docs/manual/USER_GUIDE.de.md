@@ -226,6 +226,7 @@ Bearbeitet wird über die Schaltflächen am Ende der Zeile – je nach Bildschir
 |---|---|
 | **Ansehen** (Lupe) | Das Formular mit allen Feldern, gesperrt – auch berechnete Felder. |
 | **Bearbeiten** (Stift) | Öffnet das Eingabeformular als Fenster; **Speichern** bzw. **Abbrechen** führt direkt zurück zur Tabelle. |
+| **Kopieren** (zwei Blätter) | Öffnet „Neuer Datensatz“ mit allen Werten des Originals; eindeutige Felder (z. B. Artikelnummer) bleiben leer, berechnete werden neu gerechnet. Dateien und Bilder werden beim Speichern als eigene Kopien angelegt. Braucht das Recht zum Anlegen. |
 | **Verlauf** (Uhr) | Wer wann was geändert hat (z. B. „status: Neu → Versendet“). |
 | **Löschen** (Papierkorb) | Löscht nach einer Sicherheitsfrage. |
 | **Wiederherstellen** | Bei gelöschten Datensätzen statt „Bearbeiten“ und „Löschen“. |
@@ -244,6 +245,7 @@ Unten finden Sie (1):
 | Schaltfläche | Funktion |
 |---|---|
 | **Bearbeiten** | Öffnet das Eingabeformular. Änderungen werden nach dem Speichern sofort übernommen. Bei gelöschten Datensätzen nicht verfügbar. |
+| **Kopieren** | Legt einen neuen Datensatz mit den Werten dieses Datensatzes an (wie in der Tabelle). |
 | **Verlauf** | Zeigt, wer wann was geändert hat (z. B. „status: Neu → Versendet“). |
 | **Löschen** | Markiert den Datensatz als gelöscht. Er verschwindet aus der Liste, bleibt aber wiederherstellbar. |
 | **Wiederherstellen** | Nur bei gelöschten Datensätzen sichtbar. |

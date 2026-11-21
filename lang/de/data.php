@@ -13,6 +13,10 @@ return [
     'record_deleted' => 'Dieser Datensatz ist gelöscht.',
     'delete_permanently' => 'Der Datensatz wird endgültig aus der externen Datenbank gelöscht und lässt sich nicht wiederherstellen.',
     'actions' => [
+        'copy' => 'Kopieren',
+        'copy_heading' => 'Kopie von :title',
+        'copy_submit' => 'Kopie anlegen',
+        'copied' => 'Kopie angelegt.',
         'create' => 'Neuer Datensatz',
         'details' => 'Details',
         'view' => 'Ansehen',
