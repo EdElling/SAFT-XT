@@ -191,6 +191,16 @@ final class RecordFiles
     }
 
     /**
+     * Bestimmte Dateien samt Eintrag löschen, z. B. die alten Dateien nach dem Zurücksetzen einer Demo.
+     *
+     * @param  iterable<RecordFile>  $files
+     */
+    public function delete(iterable $files): void
+    {
+        $this->deleteFiles($files);
+    }
+
+    /**
      * Nur die Dateien im Speicher löschen (Einträge schon entfernt, z. B. mit der Tabelle).
      *
      * @param  iterable<RecordFile>  $files

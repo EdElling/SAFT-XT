@@ -119,12 +119,13 @@ geteilte Beispiel-Auswertung „Umsatz je Monat und Kategorie“ als Balkendiagr
 php artisan db:seed --class=DemoDataSeeder
 ```
 
-Drei weitere Demos als Tabellen in SAFT selbst (ohne Datenbankverbindung), je mit eigener Menügruppe, Datenmodell
+Vier weitere Demos als Tabellen in SAFT selbst (ohne Datenbankverbindung), je mit eigener Menügruppe, Datenmodell
 und Beispiel-Auswertungen – dieselben Daten wie die externen Demos:
 
 ```bash
 php artisan db:seed --class=LagerDemoSeeder       # „Lager (Demo)“: Lieferanten, Artikel, Lagerorte, Bestände, Bewegungen …
 php artisan db:seed --class=VertriebDemoSeeder    # „Vertrieb (Demo)“: Kunden, Events, Anfragen, Bestellungen – nutzt die Lager-Artikel
+php artisan db:seed --class=GitarrenshopDemoSeeder  # „Gitarrenshop (Demo)“: Ein- und Ausgaben mit MWST, Belege, Ratenzahlung, Artikelbilder
 php artisan db:seed --class=ForschungDemoSeeder   # „Forschung (Demo)“: Organisationen, Personen, Projekte, Publikationen …
 ```
 

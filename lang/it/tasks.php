@@ -149,6 +149,7 @@ return [
             'lager' => 'Magazzino',
             'vertrieb' => 'Vendite',
             'forschung' => 'Ricerca',
+            'gitarrenshop' => 'Negozio di chitarre',
         ],
         'disabled' => 'Saltata: il ripristino dei dati demo non è consentito su questo server (DEMO_RESET=true nel file .env).',
         'nothing_installed' => 'Saltata: nessuna delle demo scelte è caricata.',

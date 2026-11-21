@@ -15,6 +15,7 @@ use App\Tasks\TaskRunner;
 use App\Tasks\TaskSkipped;
 use App\Tasks\Types\DemoResetTask;
 use Database\Seeders\ForschungDemoSeeder;
+use Database\Seeders\GitarrenshopDemoSeeder;
 use Database\Seeders\LagerDemoSeeder;
 use Database\Seeders\VertriebDemoSeeder;
 use Illuminate\Http\UploadedFile;
@@ -105,6 +106,24 @@ class DemoResetTest extends DynamicDataTestCase
         $items = DynamicRecord::forTableName('lager_artikel')->newQuery()->pluck('id')->all();
         $this->assertSame([], DynamicRecord::forTableName('vertrieb_anfragepositionen')->newQuery()->whereNotIn('artikel_id', $items)->pluck('id')->all(), 'Positionen zeigen auf die neuen Artikel.');
         $this->assertGreaterThan(0, (float) DynamicRecord::forTableName('vertrieb_anfragen')->newQuery()->sum('summe'), 'Summen neu berechnet.');
+    }
+
+    public function test_gitarrenshop_reset_recreates_records_and_files(): void
+    {
+        config(['saft.demo_reset' => true]);
+        Storage::fake('local');
+        $this->seed(GitarrenshopDemoSeeder::class);
+        $tables = app(GitarrenshopDemoSeeder::class)->demoTableNames();
+        $before = $this->counts($tables);
+        $files = RecordFile::query()->count();
+        DynamicRecord::forTableName('gitarren_artikel')->newQuery()->where('inventarnummer', 'G-003')->sole()->update(['status' => 'verkauft']);
+
+        $result = app(DemoResetTask::class)->run(['demos' => ['gitarrenshop'], 'backup' => false]);
+
+        $this->assertSame($before, $this->counts($tables));
+        $this->assertSame('an_lager', DynamicRecord::forTableName('gitarren_artikel')->newQuery()->where('inventarnummer', 'G-003')->sole()->status);
+        $this->assertSame($files, RecordFile::query()->count(), 'Alte Dateien entfernt, neue angelegt.');
+        $this->assertSame(array_sum($before), $result->data['records']['gitarrenshop']);
     }
 
     public function test_skips_when_no_chosen_demo_is_loaded(): void

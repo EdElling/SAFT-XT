@@ -17,6 +17,7 @@ use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\Menu;
+use App\Models\RecordFile;
 use App\Models\Report;
 use App\Reports\DefinitionResolver;
 use App\Reports\ReportDefinition;
@@ -76,16 +77,17 @@ trait SeedsDemoTables
         $namespace = app(DynamicDataNamespace::class);
         $db = $namespace->connection();
 
-        return DynamicRecord::withoutPluginEvents(function () use ($names, $tables, $namespace, $db): int {
+        // Dateien vor dem Zurücksetzen: Ihre Datensätze werden direkt in der Datenbank ersetzt (B-021); Dateien, die die
+        // Demo beim Neuladen selbst anlegt (z. B. Bilder im Gitarrenshop), bleiben.
+        $oldFiles = RecordFile::query()->whereIn('custom_table_id', $tables->pluck('id'))->get();
+
+        return DynamicRecord::withoutPluginEvents(function () use ($names, $tables, $namespace, $db, $oldFiles): int {
             $db->transaction(function () use ($tables): void {
                 $this->deleteDemoRecords($tables);
                 $this->reseedDemoData();
             });
 
-            // Die Datensätze wurden direkt in der Datenbank ersetzt: angehängte Dateien gehören zu keinem mehr (B-021).
-            foreach ($tables as $table) {
-                app(RecordFiles::class)->deleteForTable($table);
-            }
+            app(RecordFiles::class)->delete($oldFiles);
 
             $done = [];
             $count = 0;

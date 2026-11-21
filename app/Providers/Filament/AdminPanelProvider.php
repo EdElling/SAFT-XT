@@ -58,6 +58,8 @@ class AdminPanelProvider extends PanelProvider
             ->multiFactorAuthentication([SaftAppAuthentication::make()->recoverable()], isRequired: true)
             ->multiFactorAuthenticationRequiredMiddlewareName(RequireTwoFactor::class)
             ->brandName(fn (): string => (string) config('app.name'))
+            // Symbol im Browser-Tab: Safttropfen (SVG); favicon.ico und apple-touch-icon.png für ältere Browser und iOS.
+            ->favicon(asset('favicon.svg'))
             // Farbschema aus den App-Einstellungen (für alle).
             ->colors(fn (): array => PanelAppearance::colors())
             ->spa()
@@ -74,6 +76,7 @@ class AdminPanelProvider extends PanelProvider
             // Eigene Stile und der persönliche Kontrastmodus (siehe PanelAppearance).
             ->renderHook(PanelsRenderHook::STYLES_AFTER, fn (): string => PanelAppearance::styles().PanelAppearance::themeScript().PanelAppearance::submenuScript())
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => PanelAppearance::headScript())
+            ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => '<link rel="alternate icon" href="'.e(asset('favicon.ico')).'" sizes="16x16 32x32 48x48"><link rel="apple-touch-icon" href="'.e(asset('apple-touch-icon.png')).'">')
             // Umschalter der aktuellen App (B-107), nur bei mehr als einer zugänglichen App.
             ->renderHook(PanelsRenderHook::GLOBAL_SEARCH_BEFORE, static function (): string {
                 $user = auth()->user();

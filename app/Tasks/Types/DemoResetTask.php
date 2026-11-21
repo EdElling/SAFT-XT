@@ -11,6 +11,7 @@ use App\Tasks\TaskSkipped;
 use App\Tasks\TaskType;
 use Database\Seeders\DemoDataSeeder;
 use Database\Seeders\ForschungDemoSeeder;
+use Database\Seeders\GitarrenshopDemoSeeder;
 use Database\Seeders\LagerDemoSeeder;
 use Database\Seeders\VertriebDemoSeeder;
 use Filament\Forms\Components\CheckboxList;
@@ -30,6 +31,7 @@ final readonly class DemoResetTask implements TaskType
         // Nach dem Lager: Ihre Anfragepositionen verweisen auf Lager-Artikel.
         'vertrieb' => VertriebDemoSeeder::class,
         'forschung' => ForschungDemoSeeder::class,
+        'gitarrenshop' => GitarrenshopDemoSeeder::class,
     ];
 
     /** @var array<string, list<string>> Demo => Demos, deren Daten auf sie verweisen (über eine Schnittstelle) */

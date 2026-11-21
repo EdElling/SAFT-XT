@@ -149,6 +149,7 @@ return [
             'lager' => 'Warehouse',
             'vertrieb' => 'Sales',
             'forschung' => 'Research',
+            'gitarrenshop' => 'Guitar shop',
         ],
         'disabled' => 'Skipped: resetting demo data is not allowed on this server (DEMO_RESET=true in .env).',
         'nothing_installed' => 'Skipped: none of the selected demos is loaded.',

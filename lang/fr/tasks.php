@@ -149,6 +149,7 @@ return [
             'lager' => 'Entrepôt',
             'vertrieb' => 'Ventes',
             'forschung' => 'Recherche',
+            'gitarrenshop' => 'Magasin de guitares',
         ],
         'disabled' => 'Ignorée : la réinitialisation des données de démo n’est pas autorisée sur ce serveur (DEMO_RESET=true dans .env).',
         'nothing_installed' => 'Ignorée : aucune des démos choisies n’est chargée.',

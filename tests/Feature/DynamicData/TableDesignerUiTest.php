@@ -9,6 +9,8 @@ use App\Filament\Resources\CustomTables\Pages\EditCustomTable;
 use App\Filament\Resources\CustomTables\RelationManagers\CustomFieldsRelationManager;
 use App\Filament\Resources\CustomTables\Schemas\FieldForm;
 use App\Filament\Resources\Roles\Schemas\RoleForm;
+use App\Filament\Support\TableLabelHint;
+use App\Models\App;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -16,6 +18,7 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\Testing\TestAction;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 
@@ -84,6 +87,11 @@ class TableDesignerUiTest extends DynamicDataTestCase
         // Die eigene Bezeichnung zählt nicht.
         Livewire::test(EditCustomTable::class, ['record' => $projects->getRouteKey()])
             ->assertDontSee('verwendet bereits SAFT-Tabelle projekte.');
+
+        // Nur innerhalb der App (B-107): Tabellen anderer Apps stehen nicht in denselben Menüs.
+        $other = App::query()->create(['uuid' => (string) Str::uuid(), 'name' => ['de' => 'Andere App'], 'icon' => 'heroicon-o-cube', 'sort_order' => 900]);
+        $this->assertNotNull(TableLabelHint::message('Projekte', 'de', null, $projects->app_id));
+        $this->assertNull(TableLabelHint::message('Projekte', 'de', null, $other->id));
     }
 
     public function test_create_table_with_initial_fields_via_form(): void

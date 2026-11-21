@@ -10,15 +10,19 @@ use App\Filament\Resources\Reports\ReportResource;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\Menu;
+use App\Models\RecordFile;
 use App\Models\Report;
+use App\Models\Role;
 use App\Reports\ChartData;
 use App\Reports\ReportResult;
 use App\Reports\ReportRunner;
 use App\Reports\ValueFormatter;
 use Database\Seeders\DemoDataSeeder;
 use Database\Seeders\ForschungDemoSeeder;
+use Database\Seeders\GitarrenshopDemoSeeder;
 use Database\Seeders\LagerDemoSeeder;
 use Database\Seeders\VertriebDemoSeeder;
+use Illuminate\Support\Facades\Storage;
 
 /** Demo-Seeder Lager, Vertrieb und Forschung: Tabellen in SAFT selbst, Daten, Menügruppe, Auswertungen. */
 class DemoSeedersTest extends DynamicDataTestCase
@@ -194,6 +198,56 @@ class DemoSeedersTest extends DynamicDataTestCase
         $this->assertSame(20, (int) array_sum(array_column($status->rows, 'anzahl')));
         $this->assertCount(6, $this->runReport(VertriebDemoSeeder::REPORT_WON)->rows, 'Kunden mit gewonnenen Anfragen.');
         $this->assertNotEmpty($this->runReport(VertriebDemoSeeder::REPORT_ITEMS)->rows);
+    }
+
+    public function test_gitarrenshop_demo_with_vat_files_and_instalments(): void
+    {
+        Storage::fake('local');
+        $this->seed(GitarrenshopDemoSeeder::class);
+        $this->seed(GitarrenshopDemoSeeder::class);
+
+        $this->assertCounts(['gitarren_kunden' => 5, 'gitarren_lieferanten' => 4, 'gitarren_artikel' => 10, 'gitarren_belege' => 11, 'gitarren_buchungen' => 28, 'gitarren_zahlungen' => 13]);
+        $this->assertGroup(GitarrenshopDemoSeeder::GROUP['de'], 6, 4);
+        $this->assertSame(['Buchhaltung' => ['Belege', 'Buchungen', 'Zahlungen'], 'Stammdaten' => ['Artikel', 'Kunden', 'Lieferanten'],
+            'Auswertungen' => ['Einnahmen und Ausgaben je Jahr', 'Gesamtsaldo', 'Alle Buchungen', 'Ein- und Ausgaben je Artikel']], $this->submenus(GitarrenshopDemoSeeder::GROUP['de']));
+
+        // Einnahmen mit Kunde, Ausgaben mit Lieferant.
+        $receipts = DynamicRecord::forTableName('gitarren_belege')->newQuery()->get();
+        $this->assertSame(0, $receipts->where('typ', 'Einnahme')->whereNull('kunde_id')->count() + $receipts->where('typ', 'Ausgabe')->whereNull('lieferant_id')->count());
+        $keller = DynamicRecord::forTableName('gitarren_kunden')->newQuery()->where('name', 'Keller')->sole();
+        $this->assertSame((int) $keller->id, (int) $receipts->firstWhere('belegnummer', 'V-2026-002')->kunde_id);
+        $this->assertSame('8f0c6a52-6d0e-4c8e-9a43-5b1c2f6e0a05', CustomTable::query()->where('name', 'gitarren_artikel')->sole()->app->uuid);
+
+        // MWST aus dem gewählten Satz (if-Formel), Brutto, Einnahme bzw. Ausgabe nach der Art.
+        $repair = DynamicRecord::forTableName('gitarren_buchungen')->newQuery()->where('text', 'Neue Bundierung')->sole();
+        $this->assertSame(['9.72', '129.72', '0.00', '129.72', '-129.72'], array_map('strval', [$repair->mwst, $repair->brutto, $repair->einnahme, $repair->ausgabe, $repair->saldo]));
+
+        // Artikel: Kosten (Warenwert, Zoll, Einfuhr-MWST, Reparatur) und Erlös; Ratenzahlung: drei Zahlungen, nichts offen.
+        $tele = DynamicRecord::forTableName('gitarren_artikel')->newQuery()->where('inventarnummer', 'G-002')->sole();
+        $this->assertSame(['348.08', '670.22', '322.14'], array_map('strval', [$tele->kosten, $tele->erloes, $tele->ergebnis]));
+        $instalments = DynamicRecord::forTableName('gitarren_belege')->newQuery()->where('belegnummer', 'V-2026-002')->sole();
+        $this->assertSame(['583.74', '583.74', '0.00'], array_map('strval', [$instalments->summe, $instalments->bezahlt, $instalments->offen]));
+        $this->assertSame('130.00', (string) DynamicRecord::forTableName('gitarren_belege')->newQuery()->where('belegnummer', 'E-2026-003')->sole()->offen, 'Anzahlung: die Hälfte offen.');
+
+        // Platzhalter-Bilder und PDF-Belege sind echte Dateien.
+        $images = RecordFile::query()->where('field', 'bilder')->get();
+        $this->assertSame(11, $images->count());
+        $this->assertSame('image/png', $images->first()->mime);
+        $this->assertStringStartsWith('%PDF-1.4', Storage::disk('local')->get(RecordFile::query()->where('field', 'dateien')->firstOrFail()->path));
+
+        // Auswertungen: Jahre mit Saldo; Gesamtsaldo = Summe aller Salden.
+        $years = $this->runReport(GitarrenshopDemoSeeder::REPORT_YEARS);
+        $this->assertCount(2, $years->rows);
+        $total = (float) DynamicRecord::forTableName('gitarren_buchungen')->newQuery()->sum('saldo');
+        $this->assertEqualsWithDelta($total, (float) $this->runReport(GitarrenshopDemoSeeder::REPORT_BALANCE)->rows[0]['summe'], 0.001);
+        $this->assertEqualsWithDelta($total, array_sum(array_map(static fn (array $r): float => (float) $r['saldo_summe'], $years->rows)), 0.001);
+        $this->assertCount(28, $this->runReport(GitarrenshopDemoSeeder::REPORT_BOOKINGS)->rows);
+
+        // Fachrolle mit allen Rechten der App; Belege kopieren nimmt die Buchungen mit.
+        $role = Role::query()->where('name', GitarrenshopDemoSeeder::ROLE)->sole();
+        $this->assertTrue($role->hasPermissionTo('data.gitarren_zahlungen.delete') && $role->hasPermissionTo('reports.view'));
+        $this->assertSame(CustomTable::query()->where('name', 'gitarren_artikel')->sole()->app_id, $role->app_id);
+        $this->assertTrue(CustomTable::query()->where('name', 'gitarren_buchungen')->sole()->fields->firstWhere('name', 'beleg_id')->optionsArray()['copy_with_parent'] ?? false);
     }
 
     public function test_all_three_demos_side_by_side(): void

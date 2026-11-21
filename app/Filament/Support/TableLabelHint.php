@@ -7,10 +7,13 @@ namespace App\Filament\Support;
 use App\Models\CustomTable;
 use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Text;
+use Filament\Schemas\Components\Utilities\Get;
 
 /**
  * Hinweis (kein Fehler), wenn andere Tabellen schon dieselbe Bezeichnung tragen: erlaubt, aber in Menüs und
- * Auswahllisten schwer zu unterscheiden. Verglichen wird in der Vorgabesprache, ohne Groß-/Kleinschreibung.
+ * Auswahllisten schwer zu unterscheiden. Verglichen wird in der Vorgabesprache, ohne Groß-/Kleinschreibung, und nur
+ * innerhalb der App (B-107): Tabellen anderer Apps erscheinen nicht in denselben Menüs; wo doch (Schnittstellen), steht
+ * der App-Name davor.
  */
 final class TableLabelHint
 {
@@ -20,14 +23,17 @@ final class TableLabelHint
 
         return $input
             ->live(onBlur: true)
-            ->belowContent(function (mixed $state, ?CustomTable $record = null) use ($locale): ?Text {
-                $message = is_string($state) ? self::message($state, $locale, $record) : null;
+            ->belowContent(function (mixed $state, Get $get, mixed $record = null) use ($locale): ?Text {
+                $record = $record instanceof CustomTable ? $record : null;
+                $app = $record?->app_id ?? (filled($get('app_id')) ? (int) $get('app_id') : null);
+                $message = is_string($state) ? self::message($state, $locale, $record, $app) : null;
 
                 return $message === null ? null : Text::make($message)->color('warning');
             });
     }
 
-    public static function message(string $label, string $locale, ?CustomTable $ignore = null): ?string
+    /** @param  int|null  $appId  App der Tabelle; null = mit allen Tabellen vergleichen */
+    public static function message(string $label, string $locale, ?CustomTable $ignore = null, ?int $appId = null): ?string
     {
         $wanted = mb_strtolower(trim($label));
 
@@ -35,7 +41,7 @@ final class TableLabelHint
             return null;
         }
 
-        $same = CustomTable::query()->with('databaseConnection')->orderBy('name')->get()
+        $same = CustomTable::query()->with('databaseConnection')->when($appId !== null, fn ($q) => $q->where('app_id', $appId))->orderBy('name')->get()
             ->filter(fn (CustomTable $t): bool => ! ($ignore?->exists && $t->is($ignore))
                 && mb_strtolower(trim((string) $t->getTranslation('label', $locale))) === $wanted)
             ->map(fn (CustomTable $t): string => $t->isExternal()
