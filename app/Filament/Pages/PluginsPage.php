@@ -291,8 +291,11 @@ class PluginsPage extends Page implements HasTable
             ->recordActions(RowIcons::of([
                 Action::make('disablePlugin')
                     ->label(__('plugins.switch.disable'))
+                    // Das Symbol zeigt den Zustand (grün = aktiv), der Tooltip, was ein Klick bewirkt; der Dialog bleibt rot.
                     ->icon('heroicon-o-power')
-                    ->color('danger')
+                    ->color('success')
+                    ->modalIconColor('danger')
+                    ->modalSubmitAction(fn (Action $action): Action => $action->color('danger'))
                     ->visible(fn (array $record): bool => $record['enabled'] && self::canManage())
                     ->requiresConfirmation()
                     ->modalHeading(fn (array $record): string => __('plugins.switch.disable_heading', ['plugin' => $record['label']]))
@@ -308,7 +311,9 @@ class PluginsPage extends Page implements HasTable
                 Action::make('enablePlugin')
                     ->label(__('plugins.switch.enable'))
                     ->icon('heroicon-o-power')
-                    ->color('success')
+                    ->color('danger')
+                    ->modalIconColor('success')
+                    ->modalSubmitAction(fn (Action $action): Action => $action->color('success'))
                     ->visible(fn (array $record): bool => ! $record['enabled'] && self::canManage())
                     ->requiresConfirmation()
                     ->modalHeading(fn (array $record): string => __('plugins.switch.enable_heading', ['plugin' => $record['label']]))

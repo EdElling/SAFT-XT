@@ -1102,7 +1102,8 @@ für den Hilfe-Assistenten. Ruht das Plugin oder ist es ausgeschaltet, verschwin
 Table-Designer unter **Weitere Prüfungen** zusätzlich, was sie verlangen.
 
 **Plugins ausschalten** (Recht *Plugins: verwalten*): **Ausschalten** in der Zeile des Plugins legt es still, ohne es
-zu entfernen – etwa für Tests oder wenn sich zwei Plugins in ihrer Funktion überschneiden. Der Dialog zeigt vorher, was
+zu entfernen – etwa für Tests oder wenn sich zwei Plugins in ihrer Funktion überschneiden. Das Power-Symbol zeigt den Zustand – grün eingeschaltet, rot
+ausgeschaltet –, sein Tooltip, was ein Klick bewirkt. Der Dialog zeigt vorher, was
 wegfällt. Solange ein Plugin ausgeschaltet ist,
 
 - sind seine Seiten nicht erreichbar (auch nicht über eine gespeicherte Adresse), seine Kacheln verschwinden vom

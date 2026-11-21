@@ -1156,7 +1156,8 @@ stock* et *Tableau des stocks* en fournissent chacun un en quatre langues. Les r
 indiquent en plus, dans le concepteur de tables sous **Contrôles supplémentaires**, ce qu’elles exigent.
 
 **Désactiver des plugins** (droit *Plugins : gérer*) : **Désactiver** dans la ligne du plugin le met à l’arrêt sans
-le supprimer – par exemple pour des tests ou lorsque deux plugins se recoupent. La boîte de dialogue indique d’abord ce
+le supprimer – par exemple pour des tests ou lorsque deux plugins se recoupent. Le symbole marche/arrêt indique l’état – vert activé, rouge désactivé –,
+son infobulle ce que fait un clic. La boîte de dialogue indique d’abord ce
 qui disparaît. Tant qu’un plugin est désactivé,
 
 - ses pages ne sont pas accessibles (pas même par une adresse enregistrée), ses tuiles disparaissent du tableau de bord

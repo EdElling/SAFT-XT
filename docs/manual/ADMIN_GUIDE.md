@@ -1074,7 +1074,8 @@ in four languages. Validation rules from plugins also show in the table designer
 require.
 
 **Switching plugins off** (permission *Plugins: manage*): **Switch off** in the plugin's row shuts it down without
-removing it – for example for tests or when two plugins overlap in function. The dialog shows beforehand what goes
+removing it – for example for tests or when two plugins overlap in function. The power icon shows the state – green switched on, red
+switched off –, its tooltip what a click does. The dialog shows beforehand what goes
 away. While a plugin is switched off,
 
 - its pages cannot be reached (not even through a saved address), its tiles disappear from the dashboard and its menu

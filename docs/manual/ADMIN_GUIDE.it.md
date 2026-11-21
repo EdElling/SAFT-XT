@@ -1127,7 +1127,8 @@ giacenze* ne forniscono uno ciascuno in quattro lingue. Le regole di verifica de
 di tabelle sotto **Ulteriori verifiche**, che cosa richiedono.
 
 **Disattivare plugin** (diritto *Plugin: gestire*): **Disattiva** nella riga del plugin lo ferma senza rimuoverlo –
-ad esempio per i test o quando due plugin si sovrappongono nelle funzioni. La finestra di dialogo mostra prima cosa
+ad esempio per i test o quando due plugin si sovrappongono nelle funzioni. Il simbolo di accensione mostra lo stato – verde attivo, rosso
+disattivato –, il suo tooltip cosa fa un clic. La finestra di dialogo mostra prima cosa
 viene meno. Finché un plugin è disattivato,
 
 - le sue pagine non sono raggiungibili (nemmeno tramite un indirizzo salvato), i suoi riquadri spariscono dalla
