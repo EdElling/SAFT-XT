@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Browser;
 
+use App\Apps\Designer\AppDesigner;
 use App\Apps\Designer\DraftCompiler;
+use App\Apps\Designer\DraftReports;
 use App\Models\App;
 use App\Models\AppDraft;
 use App\Models\CustomTable;
+use App\Models\Report;
 use App\Models\User;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
@@ -96,6 +99,37 @@ class AppDesignerTest extends DuskTestCase
         $this->assertTrue($app->is_active);
         $this->assertSame(['kurse_anmeldungen', 'kurse_kurse', 'kurse_raeume'], CustomTable::query()->where('app_id', $app->id)->orderBy('name')->pluck('name')->all());
         $this->assertSame(AppDraft::CREATED, $this->draft->refresh()->status);
+    }
+
+    /** FAP-21 */
+    public function test_reports_after_creating_show_progress_links_and_retry(): void
+    {
+        $admin = User::query()->where('email', self::ADMIN)->firstOrFail();
+        $app = app(AppDesigner::class)->create($admin, $this->draft, withReports: false);
+        $report = Report::query()->create(['name' => 'Summe je Kurs', 'is_shared' => true, 'owner_id' => $admin->id, 'definition' => [
+            'base' => (int) CustomTable::query()->where('name', 'kurse_kurse')->value('id'),
+            'fields' => [['key' => 't', 'path' => [], 'field' => (int) CustomTable::query()->where('name', 'kurse_kurse')->sole()->fields()->where('name', 'titel')->value('id')]],
+        ]]);
+        $this->draft->refresh()->forceFill(['reports' => [
+            ['title' => 'Summe je Kurs', 'description' => 'x', 'status' => DraftReports::CREATED, 'report_id' => $report->id, 'message' => null],
+            ['title' => 'Anmeldungen je Monat', 'description' => 'y', 'status' => DraftReports::FAILED, 'report_id' => null, 'message' => 'Welcher Zeitraum?'],
+        ]])->save();
+
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/app-designer?draft='.$this->draft->id)
+                ->waitFor('[data-designer-reports]', 15)
+                ->assertSeeIn('[data-designer-report="created"]', 'Summe je Kurs')
+                ->assertSeeIn('[data-designer-report="failed"]', 'nicht möglich: Welcher Zeitraum?')
+                ->assertPresent('[data-designer-to-app]')
+                // Erneut versuchen startet die Schleife; ohne KI im Testserver wieder „nicht möglich“, mit neuem Grund.
+                ->click('[data-designer-report-retry]')
+                ->waitUntilMissingText('Welcher Zeitraum?', 30)
+                ->waitFor('[data-designer-report="failed"]', 30)
+                ->assertDontSee('wird erstellt');
+            $browser->clickLink('Summe je Kurs')->waitForLocation('/admin/reports/'.Report::query()->where('name', 'Summe je Kurs')->value('id'), 15);
+        });
+
+        $this->assertNotNull($app->fresh());
     }
 
     /** Entwurf um eine Tabelle ergänzen, wie es eine Runde „Anpassen“ täte. */

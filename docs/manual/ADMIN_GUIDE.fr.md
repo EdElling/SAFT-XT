@@ -1368,11 +1368,18 @@ Il nécessite un fournisseur d’IA configuré et l’assistant IA activé (voir
   crée l’app : tables, tables de détail (sous chaque table les tables qui la référencent), menu avec modèle de données
   et un **rôle** avec tous les droits sur les nouvelles tables et la consultation des rapports. Contrairement à
   l’installation, l’app est ensuite **active** et vous y passez. Le brouillon reste, marqué « créée ».
+- **Rapports :** l’IA propose 2 à 6 rapports pour l’app – d’abord ceux que cite votre description, puis des rapports
+  évidents ; l’aperçu les montre sous « Rapports (créés après l’app) », et vous les modifiez dans la conversation. Avec
+  la case cochée d’avance dans le dialogue « Créer l’app », la page reste affichée après la création et montre la
+  progression : l’assistant de rapports crée les rapports l’un après l’autre sur les nouvelles tables (environ 20 à 40
+  secondes chacun) – *en cours de création*, *en attente*, créé (avec lien) ou *impossible* avec la raison et
+  **Réessayer**. Les rapports sont partagés et figurent dans l’app sous le sous-menu « Rapports » ; ensuite **« Vers la
+  nouvelle app »** y mène. Sans la case, vous passez directement dans l’app.
 - **Ensuite**, vous modifiez l’app comme toute autre – à la main dans le concepteur de tables ou par table avec
-  **« Adapter avec l’IA »**. Le concepteur d’apps ne propose pas (encore) de rapports ; créez-les dans la nouvelle app
-  avec l’assistant de rapports.
+  **« Adapter avec l’IA »**, les rapports dans le concepteur de rapports. Qui n’est pas super-admin reçoit le rôle de
+  l’app lors de la création.
 - **Protection des données et coûts :** seuls votre description, le brouillon et la structure des tables partagées
-  d’autres apps vont à l’IA – jamais des enregistrements. Une étape dure souvent une à trois minutes et compte, comme
+  d’autres apps vont à l’IA – jamais des enregistrements. Une étape dure souvent une à trois minutes (chaque rapport compte comme une demande à part) et compte, comme
   les autres assistants, dans la limite journalière ; elle figure dans le journal des modifications.
 
 **Exporter :** télécharge l’app sous forme de **définition d’app** (fichier `<préfixe>-<version>.saft-app.json`, format

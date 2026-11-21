@@ -1308,11 +1308,17 @@ KI-Anbieter und den eingeschalteten KI-Assistenten (siehe [Kapitel 7](#7-globale
   Datenmodell und eine **Fachrolle** mit allen Rechten auf die neuen Tabellen und dem Ansehen von Auswertungen. Anders
   als beim Installieren ist die App danach **aktiv**, und Sie wechseln hinein. Der Entwurf bleibt mit dem Vermerk
   „erzeugt“ stehen.
-- **Danach** ändern Sie die App wie jede andere – im Table-Designer von Hand oder je Tabelle mit **„Mit KI anpassen“**.
-  Auswertungen schlägt der App-Designer (noch) nicht vor; legen Sie sie in der neuen App mit dem
-  Auswertungs-Assistenten an.
+- **Auswertungen:** Zur App schlägt die KI 2–6 Auswertungen vor – zuerst die, die Ihre Beschreibung nennt, dann
+  naheliegende –; die Vorschau zeigt sie unter „Auswertungen (werden nach dem Erzeugen angelegt)“, ändern lassen sie sich
+  im Gespräch. Mit dem vorgewählten Häkchen im Dialog „App erzeugen“ bleibt die Seite nach dem Erzeugen stehen und
+  zeigt den Fortschritt: Der Auswertungs-Assistent legt eine Auswertung nach der anderen gegen die neuen Tabellen an
+  (je etwa 20–40 Sekunden) – *wird erstellt*, *wartet*, erstellt (mit Link) oder *nicht möglich* mit Grund und
+  **Erneut versuchen**. Die Auswertungen sind geteilt und stehen in der App im Untermenü „Auswertungen“; danach führt
+  **„Zur neuen App“** hinein. Ohne Häkchen geht es gleich in die App.
+- **Danach** ändern Sie die App wie jede andere – im Table-Designer von Hand oder je Tabelle mit **„Mit KI anpassen“**,
+  Auswertungen im Auswertungs-Designer. Wer kein Super-Admin ist, erhält beim Erzeugen die Fachrolle der App.
 - **Datenschutz und Kosten:** An die KI gehen nur Ihre Beschreibung, der Entwurf und die Struktur freigegebener Tabellen
-  anderer Apps – nie Datensätze. Eine Runde dauert oft ein bis drei Minuten und zählt wie die anderen Assistenten zum
+  anderer Apps – nie Datensätze. Eine Runde dauert oft ein bis drei Minuten (jede Auswertung zählt als eigene Anfrage) und zählt wie die anderen Assistenten zum
   Tageslimit; sie steht im Änderungsprotokoll.
 
 **Exportieren:** lädt die App als **App-Definition** herunter (Datei `<präfix>-<version>.saft-app.json`, Format

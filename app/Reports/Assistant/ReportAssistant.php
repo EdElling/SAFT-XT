@@ -124,12 +124,13 @@ final class ReportAssistant
     /**
      * @param  array<string, mixed>  $state  aktueller Zustand des Editors
      * @param  list<array{role: string, content: string}>  $history  bisheriger Verlauf
+     * @param  bool  $checkPermission  false für den App-Designer (Etappe 7c): dort genügt das Recht apps.design
      */
-    public function propose(User $user, string $text, array $state, array $history = []): AssistantResult
+    public function propose(User $user, string $text, array $state, array $history = [], bool $checkPermission = true): AssistantResult
     {
         $text = trim($text);
 
-        if (! self::availableFor($user)) {
+        if ($checkPermission ? ! self::availableFor($user) : ! (self::configured() && app(AppSettings::class)->ai_assistant_enabled)) {
             throw new BusinessRuleException(__('assistant.errors.not_available'));
         }
 

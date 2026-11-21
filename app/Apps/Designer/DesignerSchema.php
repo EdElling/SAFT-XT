@@ -40,6 +40,11 @@ final class DesignerSchema
                 'icon' => ['type' => 'string'],
                 'tables' => ['type' => 'array', 'items' => ['type' => 'string']],
             ])],
+            // Auswertungswünsche (Etappe 7c): angelegt erst nach dem Erzeugen vom Auswertungsassistenten.
+            'reports' => ['type' => 'array', 'items' => TableProposalSchema::object([
+                'title' => ['type' => 'string'],
+                'description' => ['type' => 'string'],
+            ])],
         ]);
     }
 }

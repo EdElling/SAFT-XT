@@ -1332,10 +1332,17 @@ fornitore IA configurato e l’assistente IA attivato (vedi [capitolo 7](#7-impo
   l’app: tabelle, tabelle di dettaglio (sotto ogni tabella quelle che la referenziano), menu con modello dei dati e un
   **ruolo** con tutti i diritti sulle nuove tabelle e la visualizzazione dei report. A differenza dell’installazione,
   l’app è poi **attiva** e vi si passa. La bozza resta, contrassegnata «creata».
+- **Report:** l’IA propone 2–6 report per l’app – prima quelli citati dalla sua descrizione, poi quelli ovvi;
+  l’anteprima li mostra sotto «Report (creati dopo l’app)» e si modificano nella conversazione. Con la spunta
+  preselezionata nella finestra «Crea app» la pagina resta aperta dopo la creazione e mostra l’avanzamento:
+  l’assistente per i report crea un report dopo l’altro sulle nuove tabelle (circa 20–40 secondi ciascuno) – *in
+  creazione*, *in attesa*, creato (con link) o *non possibile* con il motivo e **Riprova**. I report sono condivisi e
+  compaiono nell’app nel sottomenu «Report»; poi **«Alla nuova app»** vi conduce. Senza spunta si passa subito
+  nell’app.
 - **In seguito** modifica l’app come qualsiasi altra – a mano nel designer di tabelle o per tabella con **«Adatta con
-  l’IA»**. Il progettista di app non propone (ancora) report; li crei nella nuova app con l’assistente per i report.
+  l’IA»**, i report nel designer dei report. Chi non è super-admin riceve il ruolo dell’app alla creazione.
 - **Protezione dei dati e costi:** all’IA vanno solo la sua descrizione, la bozza e la struttura delle tabelle
-  condivise di altre app – mai record. Un passaggio dura spesso da uno a tre minuti e conta, come gli altri
+  condivise di altre app – mai record. Un passaggio dura spesso da uno a tre minuti (ogni report conta come richiesta a sé) e conta, come gli altri
   assistenti, nel limite giornaliero; figura nel registro delle modifiche.
 
 **Esportare:** scarica l’app come **definizione dell’app** (file `<prefisso>-<versione>.saft-app.json`, formato

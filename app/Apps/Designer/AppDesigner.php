@@ -15,6 +15,7 @@ use App\Models\App;
 use App\Models\AppDraft;
 use App\Models\CustomField;
 use App\Models\CustomTable;
+use App\Models\Role;
 use App\Models\User;
 use App\Reports\Assistant\AssistantClient;
 use App\Settings\AppSettings;
@@ -64,6 +65,13 @@ final class AppDesigner
         Menus: group the tables into 1-4 menu groups (label in all languages, icon, tables = technical names), e.g. daily
         work and master data; each table in at most one group. A data model entry and a role with all permissions are
         added automatically – do not model users, roles or permissions.
+
+        Reports: propose 2-6 reports in the user's language – first those the description asks for explicitly (e.g.
+        "income and expenses per year with balance"), then obvious ones. Each has a short title and one or two sentences
+        describing exactly what it shows: base table, grouping, values, filters, sort, kind of chart (e.g. "Bookings
+        grouped by year of the receipt date: sum of income, sum of expenses and their difference as balance; as a
+        table"). Use the field names of the draft. The reports are created after the app exists – keep them to what the
+        tables and computed fields can deliver.
 
         Keep the app focused: what the description asks for plus obvious necessities, no speculative extras. When the
         request is too vague to design a useful app, set kind to "question" and ask one short question in the user's
@@ -151,11 +159,12 @@ final class AppDesigner
 
     /**
      * App anlegen: Definition installieren (Name änderbar; ein anderes Präfix benennt die Tabellen um), aktivieren und
-     * in die App wechseln.
+     * in die App wechseln. Die vorgeschlagenen Auswertungen warten danach auf DraftReports (Etappe 7c). Wer kein
+     * Super-Admin ist, erhält die Fachrolle – sonst sähe er die Tabellen seiner App nicht.
      *
      * @throws BusinessRuleException
      */
-    public function create(User $user, AppDraft $draft, ?string $name = null, ?string $prefix = null): App
+    public function create(User $user, AppDraft $draft, ?string $name = null, ?string $prefix = null, bool $withReports = true): App
     {
         abort_unless($user->can('apps.design') && $draft->user_id === $user->id, 403);
 
@@ -181,9 +190,18 @@ final class AppDesigner
         $copy = $prefix !== $definition['app']['prefix'] ? ['name' => (string) $definition['app']['name'][$default], 'prefix' => $prefix] : null;
         $app = $this->installer->install($definition, $copy, $user);
         $app->forceFill(['is_active' => true])->save();
-        app(CurrentApp::class)->switch($user, $app);
 
-        $draft->forceFill(['status' => AppDraft::CREATED, 'app_id' => $app->id])->save();
+        if (! $user->isSuperAdmin() && ($role = Role::query()->where('app_id', $app->id)->first()) !== null) {
+            $user->assignRole($role);
+        }
+
+        app(CurrentApp::class)->switch($user->refresh(), $app);
+
+        $draft->forceFill([
+            'status' => AppDraft::CREATED,
+            'app_id' => $app->id,
+            'reports' => $withReports ? DraftReports::fromProposal((array) $draft->proposal) : [],
+        ])->save();
 
         return $app;
     }

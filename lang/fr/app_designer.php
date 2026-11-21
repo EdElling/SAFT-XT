@@ -4,6 +4,18 @@ declare(strict_types=1);
 
 /** KI-App-Designer (B-107, Etappe 7a). */
 return [
+    'to_app' => 'Vers la nouvelle app',
+    'reports' => [
+        'preview' => 'Rapports (créés après l’app)',
+        'create' => '{1} Créer le rapport proposé|[2,*] Créer les :count rapports proposés',
+        'create_help' => 'L’assistant de rapports les crée l’un après l’autre après l’app (environ 20 à 40 secondes chacun) ; vous voyez la progression ici.',
+        'heading' => 'Rapports',
+        'working' => 'en cours de création …',
+        'waiting' => 'en attente',
+        'failed' => 'L’assistant n’a pas fourni de rapport.',
+        'failed_with' => 'impossible : :reason',
+        'retry' => 'Réessayer',
+    ],
     'action' => 'Concevoir avec l’IA',
     'title' => 'Concepteur d’apps',
     'new' => 'Nouveau brouillon',

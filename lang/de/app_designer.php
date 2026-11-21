@@ -4,6 +4,18 @@ declare(strict_types=1);
 
 /** KI-App-Designer (B-107, Etappe 7a). */
 return [
+    'to_app' => 'Zur neuen App',
+    'reports' => [
+        'preview' => 'Auswertungen (werden nach dem Erzeugen angelegt)',
+        'create' => '{1} Die vorgeschlagene Auswertung anlegen|[2,*] Die :count vorgeschlagenen Auswertungen anlegen',
+        'create_help' => 'Der Auswertungsassistent legt sie nach dem Erzeugen nacheinander an (je etwa 20–40 Sekunden); Sie sehen den Fortschritt hier.',
+        'heading' => 'Auswertungen',
+        'working' => 'wird erstellt …',
+        'waiting' => 'wartet',
+        'failed' => 'Der Assistent hat keine Auswertung geliefert.',
+        'failed_with' => 'nicht möglich: :reason',
+        'retry' => 'Erneut versuchen',
+    ],
     'action' => 'Mit KI entwerfen',
     'title' => 'App-Designer',
     'new' => 'Neuer Entwurf',

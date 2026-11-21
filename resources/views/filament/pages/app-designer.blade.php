@@ -52,6 +52,37 @@
 
                 @if ($current?->status === \App\Models\AppDraft::CREATED)
                     <p class="note" data-designer-created>{{ __('app_designer.created_note', ['app' => (string) $current->app?->name]) }}</p>
+
+                    @if ($reports !== [])
+                        {{-- Auswertungen nach dem Erzeugen (Etappe 7c): je Aufruf eine; die Schleife läuft, solange eine wartet. --}}
+                        <div wire:key="report-run-{{ $reportRun }}"
+                             x-data
+                             x-init="if (@js($pending)) { (async () => { while (await $wire.createNextReport()) {} })() }"
+                             data-designer-reports>
+                            <p class="font-semibold text-sm">{{ __('app_designer.reports.heading') }}</p>
+                            <ul style="display: flex; flex-direction: column; gap: .35rem; margin-top: .35rem">
+                                @php($first = array_search(\App\Apps\Designer\DraftReports::PENDING, array_column($reports, 'status'), true))
+                                @foreach ($reports as $i => $report)
+                                    <li class="text-sm" data-designer-report="{{ $report['status'] }}">
+                                        @if ($report['status'] === \App\Apps\Designer\DraftReports::CREATED)
+                                            <span class="text-success-600 dark:text-success-400">✓</span>
+                                            <a href="{{ $report['url'] }}" class="text-primary-600 underline dark:text-primary-400">{{ $report['title'] }}</a>
+                                        @elseif ($report['status'] === \App\Apps\Designer\DraftReports::FAILED)
+                                            <span class="text-danger-600 dark:text-danger-400">✗</span> {{ $report['title'] }}
+                                            <span class="note">– {{ __('app_designer.reports.failed_with', ['reason' => $report['message']]) }}</span>
+                                            <x-filament::link tag="button" size="sm" wire:click="retryReport({{ $i }})" data-designer-report-retry>{{ __('app_designer.reports.retry') }}</x-filament::link>
+                                        @else
+                                            <span class="note">{{ $i === $first ? '⏳ '.__('app_designer.reports.working') : '· '.__('app_designer.reports.waiting') }}</span> {{ $report['title'] }}
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <div>
+                        <x-filament::button tag="a" :href="$appUrl" icon="heroicon-m-arrow-right" :color="$pending ? 'gray' : 'primary'" data-designer-to-app>{{ __('app_designer.to_app') }}</x-filament::button>
+                    </div>
                 @elseif (! $available)
                     {{-- Ohne KI: Entwürfe und Vorschau bleiben, nur keine neuen Runden. --}}
                     <p class="text-sm text-warning-700 dark:text-warning-400" data-designer-unavailable>{{ __('app_designer.unavailable') }}</p>
@@ -104,6 +135,17 @@
                         {{-- Das Diagramm ignoriert Livewire (wire:ignore); ein neuer Schlüssel je Datenmodell ersetzt es nach „Anpassen“. --}}
                         <div wire:key="designer-diagram-{{ md5($diagram['expanded']) }}" data-designer-diagram="{{ md5($diagram['expanded']) }}">
                             @include('filament.partials.data-model-diagram', $diagram)
+                        </div>
+                    @endif
+
+                    @if ($wishes !== [])
+                        <div data-designer-wishes>
+                            <p class="font-semibold">{{ __('app_designer.reports.preview') }}</p>
+                            <ul style="list-style: disc; padding-inline-start: 1.25rem;">
+                                @foreach ($wishes as $wish)
+                                    <li><strong>{{ $wish['title'] }}</strong> <span class="note">– {{ $wish['description'] }}</span></li>
+                                @endforeach
+                            </ul>
                         </div>
                     @endif
 

@@ -8,15 +8,18 @@ use App\Apps\CurrentApp;
 use App\Apps\Designer\AppDesigner;
 use App\Apps\Designer\DesignerResult;
 use App\Apps\Designer\DraftCompiler;
+use App\Apps\Designer\DraftReports;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Pages\AppDesignerPage;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\Apps\Pages\ListApps;
 use App\Models\App;
 use App\Models\AppDraft;
+use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\Menu;
+use App\Models\Report;
 use App\Models\Role;
 use App\Models\User;
 use App\Reports\Assistant\AssistantClient;
@@ -94,6 +97,10 @@ class AppDesignerTest extends DynamicDataTestCase
             'menus' => [
                 ['label' => $this->t('Kursbetrieb'), 'icon' => 'calendar', 'tables' => ['kurse_kurse', 'kurse_anmeldungen']],
                 ['label' => $this->t('Stammdaten'), 'icon' => 'archive-box', 'tables' => ['kurse_teilnehmende']],
+            ],
+            'reports' => [
+                ['title' => 'Einnahmen je Kurs', 'description' => 'Kurse mit der Summe der bezahlten Einnahmen, als Balken.'],
+                ['title' => 'Anmeldungen je Kurs', 'description' => 'Anzahl Anmeldungen je Kurs.'],
             ],
         ], ...$overrides];
     }
@@ -224,7 +231,9 @@ class AppDesignerTest extends DynamicDataTestCase
             ->assertActionVisible('createApp');
 
         $page->mountAction('createApp')
-            ->assertSchemaStateSet(['name' => 'Kurse', 'prefix' => 'kurse'])
+            ->assertSchemaStateSet(['name' => 'Kurse', 'prefix' => 'kurse', 'reports' => true])
+            // Ohne Auswertungen geht es gleich in die App.
+            ->setActionData(['reports' => false])
             ->callMountedAction()
             ->assertHasNoActionErrors()
             ->assertNotified('App „Kurse“ erzeugt.')
@@ -277,5 +286,61 @@ class AppDesignerTest extends DynamicDataTestCase
 
         $this->assertMatchesRegularExpression('/^[0-9a-f]{32}$/', $before);
         $this->assertNotSame($before, $key($page->html()), 'Neuer Schlüssel: Livewire ersetzt das Diagramm.');
+    }
+
+    /** Antwort des Auswertungsassistenten für die erzeugte App (echte IDs). */
+    private function report(string $title, string $base, array $rows, array $values, string $visual = 'bar'): array
+    {
+        $ref = static fn (string $qualified): string => ':'.(int) CustomField::query()->whereHas('custom_table', fn ($q) => $q->where('name', explode('.', $qualified)[0]))->where('name', explode('.', $qualified)[1])->value('id');
+
+        return [
+            'kind' => 'report', 'question' => null, 'title' => $title,
+            'base' => (int) CustomTable::query()->where('name', $base)->value('id'),
+            'rows' => array_map(static fn (string $f): array => ['ref' => $ref($f), 'bucket' => null], $rows),
+            'columns' => [],
+            'values' => array_map(static fn (array $v): array => ['agg' => $v[0], 'ref' => $v[1] === null ? null : $ref($v[1])], $values),
+            'filters' => [], 'sort' => null, 'limit' => null, 'visual' => $visual,
+        ];
+    }
+
+    public function test_reports_are_created_one_by_one_after_the_app(): void
+    {
+        $this->fake->push($this->courses());
+        $page = Livewire::test(AppDesignerPage::class)->set('prompt', 'Kursverwaltung')->call('send')
+            ->assertSee('Auswertungen (werden nach dem Erzeugen angelegt)')
+            ->assertSee('Einnahmen je Kurs');
+
+        $page->mountAction('createApp')
+            ->assertSchemaStateSet(['reports' => true])
+            ->callMountedAction()
+            ->assertHasNoActionErrors()
+            ->assertNoRedirect()
+            ->assertSee('⏳ wird erstellt …')
+            ->assertSee('Zur neuen App');
+        $draft = AppDraft::query()->sole();
+        $this->assertSame([DraftReports::PENDING, DraftReports::PENDING], array_column($draft->reports, 'status'));
+
+        // Je Aufruf eine Auswertung: die erste gelingt, die zweite kommt als Rückfrage zurück.
+        $this->fake->push($this->report('Einnahmen je Kurs', 'kurse_anmeldungen', ['kurse_anmeldungen.kurs_id'], [['sum', 'kurse_anmeldungen.betrag']]));
+        $this->assertTrue($page->instance()->createNextReport());
+        $this->fake->push(['kind' => 'question', 'question' => 'Welcher Zeitraum?', 'title' => '', 'base' => null, 'rows' => [], 'columns' => [], 'values' => [], 'filters' => [], 'sort' => null, 'limit' => null, 'visual' => 'table']);
+        $this->assertFalse($page->instance()->createNextReport());
+
+        $draft->refresh();
+        $this->assertSame([DraftReports::CREATED, DraftReports::FAILED], array_column($draft->reports, 'status'));
+        $this->assertSame('Welcher Zeitraum?', $draft->reports[1]['message']);
+        $report = Report::query()->findOrFail($draft->reports[0]['report_id']);
+        $this->assertTrue($report->is_shared);
+        $this->assertSame($draft->app_id, $report->app_id, 'Gehört zur neuen App.');
+        $group = Menu::query()->where('app_id', $draft->app_id)->where('label->de', 'Auswertungen')->sole();
+        $this->assertSame(['Einnahmen je Kurs'], Menu::query()->where('parent_id', $group->id)->get()->map(fn (Menu $m): string => $m->getTranslation('label', 'de'))->all());
+
+        // Nicht möglich: Grund und „Erneut versuchen“; danach gelingt sie.
+        $page->call('$refresh')->assertSee('nicht möglich: Welcher Zeitraum?')->assertSee('Erneut versuchen')
+            ->call('retryReport', 1);
+        $this->fake->push($this->report('Anmeldungen je Kurs', 'kurse_anmeldungen', ['kurse_anmeldungen.kurs_id'], [['count', null]], 'table'));
+        $this->assertFalse($page->instance()->createNextReport());
+        $this->assertSame([DraftReports::CREATED, DraftReports::CREATED], array_column($draft->refresh()->reports, 'status'));
+        $this->assertSame(2, Report::query()->where('app_id', $draft->app_id)->count());
     }
 }

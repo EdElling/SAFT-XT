@@ -22,7 +22,7 @@ class AppDraft extends BaseAppDraft
     public const string CREATED = 'created';
 
     /** Der Verlauf ist lang und ändert sich bei jeder Antwort; protokolliert werden Titel, Status und erzeugte App. */
-    protected array $auditExcept = ['history', 'proposal', 'definition'];
+    protected array $auditExcept = ['history', 'proposal', 'definition', 'reports'];
 
     public function user(): BelongsTo
     {

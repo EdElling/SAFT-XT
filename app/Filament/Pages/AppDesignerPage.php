@@ -8,12 +8,15 @@ use App\Apps\Definition\AppInstaller;
 use App\Apps\Definition\DefinitionGraph;
 use App\Apps\Designer\AppDesigner;
 use App\Apps\Designer\DesignerResult;
+use App\Apps\Designer\DraftReports;
 use App\DynamicData\Schema\FieldType;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Apps\AppResource;
+use App\Filament\Resources\Reports\ReportResource;
 use App\Models\AppDraft;
 use App\Models\User;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -41,6 +44,9 @@ class AppDesignerPage extends Page
 
     /** Meldung unter der Eingabe (Fehler der letzten Runde). */
     public ?string $notice = null;
+
+    /** Lauf der Auswertungen (Etappe 7c): wechselt beim Erzeugen und Wiederholen und startet die Schleife im Browser neu. */
+    public int $reportRun = 0;
 
     public static function canAccess(): bool
     {
@@ -131,14 +137,19 @@ class AppDesignerPage extends Page
                 ->fillForm(fn (): array => [
                     'name' => (string) (($this->current()?->definition['app']['name'] ?? [])[config('locales.default')] ?? ''),
                     'prefix' => (string) ($this->current()?->definition['app']['prefix'] ?? ''),
+                    'reports' => true,
                 ])
                 ->schema([
                     TextInput::make('name')->label(__('app_designer.app_name'))->required()->maxLength(100),
                     TextInput::make('prefix')->label(__('apps.prefix'))->helperText(__('app_designer.prefix_help'))->required()->regex('/^[a-z][a-z0-9]{0,19}$/'),
+                    Checkbox::make('reports')
+                        ->label(fn (): string => trans_choice('app_designer.reports.create', count(DraftReports::fromProposal((array) $this->current()?->proposal)), ['count' => count(DraftReports::fromProposal((array) $this->current()?->proposal))]))
+                        ->helperText(__('app_designer.reports.create_help'))
+                        ->visible(fn (): bool => DraftReports::fromProposal((array) $this->current()?->proposal) !== []),
                 ])
                 ->action(function (array $data): void {
                     try {
-                        $app = app(AppDesigner::class)->create($this->user(), $this->current() ?? throw new BusinessRuleException(__('app_designer.errors.nothing_to_create')), $data['name'], $data['prefix']);
+                        $app = app(AppDesigner::class)->create($this->user(), $this->current() ?? throw new BusinessRuleException(__('app_designer.errors.nothing_to_create')), $data['name'], $data['prefix'], (bool) ($data['reports'] ?? false));
                     } catch (BusinessRuleException $e) {
                         Notification::make()->danger()->title(__('app_designer.create_failed'))->body($e->getMessage())->persistent()->send();
 
@@ -146,10 +157,42 @@ class AppDesignerPage extends Page
                     }
 
                     Notification::make()->success()->title(__('app_designer.created', ['app' => (string) $app->name]))->send();
-                    // Vollständig neu laden: Menü, App-Umschalter und Rechte gehören zur neuen App.
-                    $this->redirect(Dashboard::getUrl(), navigate: false);
+
+                    // Ohne Auswertungen gleich in die App (vollständig neu laden: Menü, Umschalter, Rechte). Sonst bleibt die
+                    // Seite und zeigt den Fortschritt; „Zur neuen App“ führt danach hinein.
+                    if (! DraftReports::pending($this->current())) {
+                        $this->redirect(Dashboard::getUrl(), navigate: false);
+
+                        return;
+                    }
+
+                    $this->reportRun++;
                 }),
         ];
+    }
+
+    /**
+     * Die nächste Auswertung anlegen (aus der Schleife im Browser, je Aufruf eine). true = es wartet noch eine.
+     */
+    public function createNextReport(): bool
+    {
+        $draft = $this->current();
+
+        if ($draft === null) {
+            return false;
+        }
+
+        app(DraftReports::class)->next($this->user(), $draft);
+
+        return DraftReports::pending($draft->refresh());
+    }
+
+    public function retryReport(int $index): void
+    {
+        if (($draft = $this->current()) !== null) {
+            app(DraftReports::class)->retry($this->user(), $draft, $index);
+            $this->reportRun++;
+        }
     }
 
     /** @return array<string, mixed> */
@@ -169,6 +212,11 @@ class AppDesignerPage extends Page
             'analysis' => $analysis,
             'diagram' => $graph === null || $graph->isEmpty() ? null : [...DataModelPage::viewDataFor($graph), 'storageKey' => 'saft.app-designer.fields'],
             'tables' => $definition === null ? [] : self::tableSummary($definition),
+            // Vor dem Erzeugen die Wünsche aus dem Vorschlag, danach der Stand je Auswertung.
+            'wishes' => $draft?->status === AppDraft::DRAFT ? DraftReports::fromProposal((array) $draft->proposal) : [],
+            'reports' => array_map(static fn (array $r): array => [...$r, 'url' => filled($r['report_id'] ?? null) ? ReportResource::getUrl('view', ['record' => $r['report_id']]) : null], (array) ($draft?->reports ?? [])),
+            'pending' => $draft !== null && DraftReports::pending($draft),
+            'appUrl' => Dashboard::getUrl(),
         ];
     }
 

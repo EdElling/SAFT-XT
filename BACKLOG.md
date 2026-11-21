@@ -8,7 +8,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-1. **B-107** Etappe 7 (KI-App-Designer): 7a umgesetzt (Entwurf im Gespräch, Vorschau, Erzeugen); offen 7c Auswertungen vorschlagen, 7b Editor für den Entwurf
+1. **B-107** Etappe 7 (KI-App-Designer): 7a und 7c umgesetzt (Entwurf im Gespräch, Vorschau, Erzeugen, Auswertungen); offen 7b Editor für den Entwurf
 
 ## Apps (Fachanwendungen)
 

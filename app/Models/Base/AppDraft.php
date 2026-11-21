@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property array|null $history
  * @property array|null $proposal
  * @property array|null $definition
+ * @property array|null $reports
  * @property string $status
  * @property int|null $app_id
  * @property Carbon|null $created_at
@@ -32,6 +33,7 @@ class AppDraft extends Model
         'history' => 'array',
         'proposal' => 'array',
         'definition' => 'array',
+        'reports' => 'array',
         'app_id' => 'int',
     ];
 
@@ -41,6 +43,7 @@ class AppDraft extends Model
         'history',
         'proposal',
         'definition',
+        'reports',
         'status',
         'app_id',
     ];
