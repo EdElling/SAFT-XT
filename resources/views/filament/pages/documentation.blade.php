@@ -125,8 +125,9 @@
 
             <article class="saft-doc" data-doc="about" data-label="{{ __('documentation.about') }}" x-show="tab === 'about'" x-cloak>
                 <h2>{{ __('documentation.about') }}</h2>
-                <p><strong>SAFT</strong> · {{ __('documentation.version') }} <strong data-saft-version>{{ $version }}</strong>
+                <p><strong>SAFT</strong> · {{ __('documentation.version') }} <strong data-saft-version>{{ $version }}</strong>@if ($releaseStatus !== '') <span data-saft-release-status>({{ $releaseStatus }})</span>@endif
                     · {{ __('documentation.plugin_api') }} <strong data-saft-api-version>{{ \App\Plugins\Api\ApiManifest::current() }}</strong></p>
+                <p data-saft-releases>{{ __('documentation.updates') }} <a href="https://github.com/EdElling/SAFT-XT/releases" target="_blank" rel="noopener">github.com/EdElling/SAFT-XT/releases</a></p>
                 <h3>{{ __('documentation.components') }}</h3>
                 <ul>
                     @foreach ($versions as $name => $value)
@@ -134,6 +135,7 @@
                     @endforeach
                 </ul>
                 <h3>{{ __('documentation.license') }}</h3>
+                <p data-saft-license-link>{{ __('documentation.license_link') }} <a href="https://polyformproject.org/licenses/noncommercial/1.0.0#changes-and-new-works-license" target="_blank" rel="noopener">polyformproject.org/licenses/noncommercial/1.0.0</a></p>
                 {{-- Der Verweis im Kopf der LICENSE auf THIRD_PARTY_NOTICES.md führt zur Liste weiter unten (aufklappen und hinspringen). --}}
                 <pre style="white-space: pre-wrap; font-family: inherit; font-size: .85rem" data-saft-license
                      x-on:click="if ($event.target.closest('[data-notices-link]')) { $event.preventDefault(); const d = document.getElementById('third-party-components'); d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); }">{!! $notices === null ? e($license) : str_replace('THIRD_PARTY_NOTICES.md', '<a href="#third-party-components" data-notices-link>THIRD_PARTY_NOTICES.md</a>', e($license)) !!}</pre>

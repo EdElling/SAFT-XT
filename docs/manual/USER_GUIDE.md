@@ -119,8 +119,9 @@ company login.
 - **Documentation** (in the menu right below the dashboard) shows this guide and the frequently asked questions in the
   application, with a table of contents and a search field that searches all guides while you type. People with a
   permission in the Administration area also see the administrator guide. If plugins ship their own manuals (e.g.
-  *Stock transfer*), they appear as further tabs when you may work with the functions. **About SAFT XT** shows the version, the
-  licence terms and the third-party components with their licences.
+  *Stock transfer*), they appear as further tabs when you may work with the functions. **About SAFT XT** shows the version with its status (e.g.
+  *pre-release*), refers to the *Releases* page on GitHub for updates and shows the licence terms (with a link to the
+  PolyForm Project website) and the third-party components with their licences.
 - **Help assistant:** if it is set up and you have the permission, the **?** button at the top right opens a window
   where you ask questions about using SAFT, e.g. “How do I export this table?”. The answer is based on the manuals you
   may see and refers to the matching sections; the assistant knows which page you are on. When it opens, “Describe the current screen” is already in the field –

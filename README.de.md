@@ -291,3 +291,5 @@ Komponenten von Drittanbietern behalten ihre eigenen Lizenzen, aufgeführt in
 
 **Vorgänger SAFT2:** Das Vorgängerprojekt SAFT2 (Versionen bis 2.8.0) wurde unter einer anderen Lizenz (EULA)
 veröffentlicht. Es ist zurückgezogen, wird nicht mehr unterstützt und darf nicht verwendet werden; verwenden Sie SAFT XT.
+
+**Lizenztext:** [PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0#changes-and-new-works-license) auf der Webseite des PolyForm Project.

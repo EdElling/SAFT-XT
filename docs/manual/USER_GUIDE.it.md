@@ -122,7 +122,8 @@ dall’account aziendale.
   nell’applicazione, con indice e un campo di ricerca che cerca in tutte le guide durante la digitazione. Chi ha un
   diritto nell’area Amministrazione vede anche la guida all’amministrazione. Se dei plugin forniscono propri manuali (ad
   es. *Trasferimento di magazzino*), compaiono come schede aggiuntive quando puoi usare quelle funzioni. **Informazioni su SAFT XT** indica la
-  versione, le condizioni di licenza e i componenti di terze parti con le relative licenze.
+  versione con il suo stato (ad es. *pre-release*), rimanda alla pagina *Releases* su GitHub per gli aggiornamenti e
+  mostra le condizioni di licenza (con un link al sito del PolyForm Project) e i componenti di terze parti con le relative licenze.
 - **Assistente di aiuto:** se è configurato e hai il diritto, il pulsante **?** in alto a destra apre una finestra in
   cui fai domande sull’uso, ad es. «Come esporto questa tabella?». La risposta si basa sui manuali che puoi vedere e
   rimanda alle sezioni corrispondenti; l’assistente sa in quale pagina ti trovi. All’apertura nel campo c’è già «Descrivi la schermata attuale» – basta

@@ -127,7 +127,9 @@ déconnecté du compte de l’entreprise.
   personnes ayant un droit dans le domaine Administration voient en plus le guide d’administration. Si des plugins
   fournissent leurs propres manuels (p. ex. *Transfert de stock*), ils apparaissent comme onglets supplémentaires lorsque
   vous pouvez utiliser ces fonctions. **À propos de
-  SAFT** indique la version, les conditions de licence et les composants tiers avec leurs licences.
+  SAFT** indique la version avec son statut (p. ex. *pre-release*), renvoie
+  à la page *Releases* sur GitHub pour les mises à jour et affiche les conditions de licence (avec un lien vers le site
+  du PolyForm Project) et les composants tiers avec leurs licences.
 - **Assistant d’aide :** s’il est configuré et que vous en avez le droit, le bouton **?** en haut à droite ouvre une
   fenêtre où vous posez des questions sur l’utilisation, p. ex. « Comment exporter cette table ? ». La réponse s’appuie
   sur les manuels que vous pouvez voir et renvoie aux sections correspondantes ; l’assistant sait sur quelle page vous vous trouvez. À l’ouverture, « Décris l’écran actuel » figure déjà dans le

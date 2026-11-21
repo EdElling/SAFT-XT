@@ -46,6 +46,7 @@ class DocumentationPage extends Page
                 'sections' => Documentation::sections($doc, $visible),
             ]])->all(),
             'version' => (string) config('saft.version'),
+            'releaseStatus' => (string) config('saft.release_status'),
             'versions' => [
                 'Laravel' => app()->version(),
                 'Filament' => InstalledVersions::getPrettyVersion('filament/filament') ?? '–',

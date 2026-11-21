@@ -14,6 +14,8 @@ return [
     'plugin_api' => 'Interface des plugins',
     'components' => 'Composants',
     'license' => 'Licence (PolyForm Noncommercial 1.0.0)',
+    'license_link' => 'Licence sur le site du PolyForm Project :',
+    'updates' => 'Mises à jour et notes de version :',
     'language_note' => 'Ce guide n’existe pas (encore) en français ; la version anglaise est affichée.',
     'third_party' => 'Composants tiers',
     'third_party_help' => 'SAFT utilise des composants d’autres fournisseurs, chacun sous sa propre licence (principalement MIT, BSD, Apache 2.0, ISC). Les conditions de licence de SAFT ne s’appliquent qu’au code propre de SAFT et ne restreignent pas les droits accordés par ces licences.',

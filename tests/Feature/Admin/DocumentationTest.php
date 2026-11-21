@@ -54,6 +54,9 @@ class DocumentationTest extends TestCase
         $this->actingAs($this->userWithPermissions());
         Livewire::test(DocumentationPage::class)
             ->assertSeeHtml('data-saft-version>'.config('saft.version').'<')
+            ->assertSeeHtml('data-saft-release-status>('.config('saft.release_status').')<')
+            ->assertSeeHtml('href="https://github.com/EdElling/SAFT-XT/releases"')
+            ->assertSeeHtml('href="https://polyformproject.org/licenses/noncommercial/1.0.0#changes-and-new-works-license"')
             ->assertSee('PolyForm Noncommercial License 1.0.0')
             ->assertSee('Laravel '.app()->version());
     }

@@ -6,6 +6,9 @@ return [
     // Version von SAFT (bei jedem Release anheben); erscheint unter „Dokumentation › Über SAFT“.
     'version' => '0.4.0',
 
+    // Status des Releases (wie auf GitHub, z. B. „pre-release“); leer, sobald es ein reguläres Release ist.
+    'release_status' => 'pre-release',
+
     // Version der Programmierschnittstelle für Plugins (App\Plugins\Api, siehe Entwicklerhandbuch), unabhängig von der
     // SAFT-Version: Minor = nur Ergänzungen, Major = Breaking Changes. Jede bereitgestellte Major-Version einmal.
     'api_versions' => ['1.8'],
