@@ -1,0 +1,73 @@
+# Music school
+
+## Overview
+
+The **Music school** app runs a small music school: students with their contact persons, teachers, courses per
+semester, lessons with attendance, rental instruments, semester invoices with payments, and concerts and recitals.
+All amounts are in Swiss francs (CHF).
+
+It is an example of a medium-sized application: 20 tables, designed with the **AI app designer** and then refined by
+hand. The demo is installed from an app definition – exactly as via **Apps › Install app**.
+
+| Menu | Tables |
+|---|---|
+| Teaching | Courses, Enrollments, Lessons, Attendance, Events, Performances |
+| People | Students, Contact persons, Student contacts, Teachers, Teacher subjects |
+| Finance & instruments | Invoices, Invoice items, Payments, Rental instruments, Rental contracts |
+| Master data | Subjects, Course types (with semester fee), Semesters, Rooms |
+
+The sample data shows a completed semester (**HS 2026**) with lessons, invoices and payments, and one that has just
+begun (**FS 2027**) with its first courses and enrollments.
+
+## Typical tasks
+
+### Create a course and enrol students
+
+1. Under **Teaching › Courses**, create a course with subject, course type, teacher, room, semester, weekday and time.
+   The **fee** is taken from the course type and can be adjusted on the course.
+2. Under **Enrollments**, add the participants – status *active*, *waiting list* or *withdrawn*, with a discount in
+   percent if needed (e.g. for siblings).
+3. On the course, **enrollments**, **free places** and **occupancy** show how full it is; only active enrollments count.
+
+### Lessons and attendance
+
+For each lesson, record date, duration and topic, and below it the **attendance** (present, excused, unexcused). The
+**hourly rate** comes from the teacher; SAFT calculates **hours** and **fee**. On the student, the **attendance rate**
+shows how regularly they come.
+
+### Semester invoice
+
+1. Under **Finance & instruments › Invoices**, create an invoice to the contact person (for minors) or to the adult
+   student, with semester and due date.
+2. Below it, add an **invoice item** of type *course* for each course – SAFT takes the **unit price** from the course
+   fee and deducts any discount. Rental instruments are a line of type *rental* with the number of months.
+3. Record incoming **payments**; **paid** and **open** show the status. A cancelled invoice has nothing open.
+
+Copying an invoice (e.g. for the next semester) copies its items, not its payments.
+
+### Renting instruments
+
+Record each instrument under **Rental instruments** with inventory number, condition and rental price, and the rental
+under **Rental contracts** with start, end, deposit and contract (PDF).
+
+### Concerts and recitals
+
+Create an event under **Events** and add the **performances** below it with piece, composer, instrument and order –
+this gives the programme.
+
+## Reports
+
+- **Occupancy per course** – enrollments, free places and occupancy.
+- **Income per subject and semester** – invoiced amounts of the course items.
+- **Open invoices per contact person** – who still owes how much.
+- **Attendance rate per student** – attendance records, present, rate.
+- **Teaching hours and fee per teacher** – the basis for payroll.
+
+## Tips
+
+- On the contact person, **open amount** shows the total of their open invoices.
+- Siblings share their contact persons; the **invoice recipient** tick on the student contacts shows who gets the
+  invoice.
+- The **Music school** role has all permissions for this app – suitable for the school management or the office.
+- The **help assistant** (the **?** button at the top right) answers questions about using SAFT – including this
+  manual.

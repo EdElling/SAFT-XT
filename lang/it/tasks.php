@@ -150,6 +150,7 @@ return [
             'vertrieb' => 'Vendite',
             'forschung' => 'Ricerca',
             'gitarrenshop' => 'Negozio di chitarre',
+            'musikschule' => 'Scuola di musica',
         ],
         'disabled' => 'Saltata: il ripristino dei dati demo non è consentito su questo server (DEMO_RESET=true nel file .env).',
         'nothing_installed' => 'Saltata: nessuna delle demo scelte è caricata.',

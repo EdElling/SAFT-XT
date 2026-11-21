@@ -17,6 +17,7 @@ use App\Tasks\Types\DemoResetTask;
 use Database\Seeders\ForschungDemoSeeder;
 use Database\Seeders\GitarrenshopDemoSeeder;
 use Database\Seeders\LagerDemoSeeder;
+use Database\Seeders\MusikschuleDemoSeeder;
 use Database\Seeders\VertriebDemoSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Process\PendingProcess;
@@ -124,6 +125,25 @@ class DemoResetTest extends DynamicDataTestCase
         $this->assertSame('an_lager', DynamicRecord::forTableName('gitarren_artikel')->newQuery()->where('inventarnummer', 'G-003')->sole()->status);
         $this->assertSame($files, RecordFile::query()->count(), 'Alte Dateien entfernt, neue angelegt.');
         $this->assertSame(array_sum($before), $result->data['records']['gitarrenshop']);
+    }
+
+    public function test_musikschule_reset_in_dependency_order(): void
+    {
+        config(['saft.demo_reset' => true]);
+        $this->superAdmin();
+        $this->seed(MusikschuleDemoSeeder::class);
+        $seeder = app(MusikschuleDemoSeeder::class);
+        $tables = $seeder->demoTableNames();
+        $this->assertSame(20, count($tables));
+        $this->assertLessThan(array_search('musikschule_rechnungen', $tables, true), array_search('musikschule_kontaktpersonen', $tables, true), 'Verknüpfungsziele zuerst.');
+        $before = $this->counts($tables);
+        DynamicRecord::forTableName('musikschule_faecher')->newQuery()->where('bezeichnung', 'Violine')->sole()->update(['bezeichnung' => 'Geige']);
+
+        $result = app(DemoResetTask::class)->run(['demos' => ['musikschule'], 'backup' => false]);
+
+        $this->assertSame($before, $this->counts($tables));
+        $this->assertTrue(DynamicRecord::forTableName('musikschule_faecher')->newQuery()->where('bezeichnung', 'Violine')->exists());
+        $this->assertSame(array_sum($before), $result->data['records']['musikschule']);
     }
 
     public function test_skips_when_no_chosen_demo_is_loaded(): void

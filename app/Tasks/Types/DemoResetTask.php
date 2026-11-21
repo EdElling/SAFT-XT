@@ -13,6 +13,7 @@ use Database\Seeders\DemoDataSeeder;
 use Database\Seeders\ForschungDemoSeeder;
 use Database\Seeders\GitarrenshopDemoSeeder;
 use Database\Seeders\LagerDemoSeeder;
+use Database\Seeders\MusikschuleDemoSeeder;
 use Database\Seeders\VertriebDemoSeeder;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Toggle;
@@ -32,6 +33,7 @@ final readonly class DemoResetTask implements TaskType
         'vertrieb' => VertriebDemoSeeder::class,
         'forschung' => ForschungDemoSeeder::class,
         'gitarrenshop' => GitarrenshopDemoSeeder::class,
+        'musikschule' => MusikschuleDemoSeeder::class,
     ];
 
     /** @var array<string, list<string>> Demo => Demos, deren Daten auf sie verweisen (über eine Schnittstelle) */

@@ -21,6 +21,7 @@ use Database\Seeders\DemoDataSeeder;
 use Database\Seeders\ForschungDemoSeeder;
 use Database\Seeders\GitarrenshopDemoSeeder;
 use Database\Seeders\LagerDemoSeeder;
+use Database\Seeders\MusikschuleDemoSeeder;
 use Database\Seeders\VertriebDemoSeeder;
 use Illuminate\Support\Facades\Storage;
 
@@ -248,6 +249,49 @@ class DemoSeedersTest extends DynamicDataTestCase
         $this->assertTrue($role->hasPermissionTo('data.gitarren_zahlungen.delete') && $role->hasPermissionTo('reports.view'));
         $this->assertSame(CustomTable::query()->where('name', 'gitarren_artikel')->sole()->app_id, $role->app_id);
         $this->assertTrue(CustomTable::query()->where('name', 'gitarren_buchungen')->sole()->fields->firstWhere('name', 'beleg_id')->optionsArray()['copy_with_parent'] ?? false);
+    }
+
+    public function test_musikschule_demo_installed_from_the_app_definition(): void
+    {
+        $this->superAdmin(); // Installieren braucht eine Person (Besitzerin der Auswertungen).
+        $this->seed(MusikschuleDemoSeeder::class);
+        $this->seed(MusikschuleDemoSeeder::class);
+
+        $this->assertCounts([
+            'musikschule_faecher' => 8, 'musikschule_kursarten' => 5, 'musikschule_semester' => 2, 'musikschule_raeume' => 5,
+            'musikschule_lehrpersonen' => 6, 'musikschule_schueler' => 30, 'musikschule_kurse' => 22, 'musikschule_instrumente' => 10,
+            'musikschule_mietvertraege' => 6, 'musikschule_veranstaltungen' => 3, 'musikschule_lektionen' => 200,
+        ]);
+        $app = MusikschuleDemoSeeder::installedApp();
+        $this->assertSame(['d5d9d05e-2fe0-4b57-bd17-24219b63beea', 'Musikschule (Demo)', true], [$app->uuid, $app->getTranslation('name', 'de'), $app->is_active]);
+        $this->assertSame(20, CustomTable::query()->where('app_id', $app->id)->count());
+        $this->assertSame(1, Role::query()->where('app_id', $app->id)->count());
+
+        // Übernommene Werte: Tarif aus der Kursart, Einzelpreis aus dem Kurs, Stundensatz aus der Lehrperson; Honorar berechnet.
+        $course = DynamicRecord::forTableName('musikschule_kurse')->newQuery()->where('bezeichnung', 'Klavier Laura')->sole();
+        $this->assertSame('990.00', (string) $course->tarif);
+        $line = DynamicRecord::forTableName('musikschule_rechnungspositionen')->newQuery()->where('kurs', $course->id)->sole();
+        $this->assertSame(['990.00', '990.00'], [(string) $line->einzelpreis, (string) $line->betrag]);
+        $lesson = DynamicRecord::forTableName('musikschule_lektionen')->newQuery()->where('kurs', $course->id)->firstOrFail();
+        $this->assertSame(['110.00', '110.00'], [(string) $lesson->stundensatz, (string) $lesson->honorar]);
+
+        // Geschwisterrabatt; Belegung zählt nur aktive Anmeldungen.
+        $noah = DynamicRecord::forTableName('musikschule_rechnungspositionen')->newQuery()->where('text', 'Gitarre Noah (Noah Meier)')->sole();
+        $this->assertSame('468.00', (string) $noah->betrag);
+        $mia = DynamicRecord::forTableName('musikschule_kurse')->newQuery()->where('bezeichnung', 'Klavier Mia')->sole();
+        $this->assertSame([1, 0], [(int) $mia->anzahl_anmeldungen, (int) $mia->freie_plaetze]);
+
+        // Rechnungen: eine storniert (nichts offen), einige offen; sonst bezahlt + offen = Summe.
+        $bills = DynamicRecord::forTableName('musikschule_rechnungen')->newQuery()->get();
+        $this->assertSame(1, $bills->where('status', 'storniert')->count());
+        $this->assertGreaterThan(0, $bills->where('status', 'versendet')->filter(static fn ($b): bool => (float) $b->offen > 0)->count());
+        $this->assertSame('0.00', (string) $bills->firstWhere('status', 'storniert')->offen);
+        $this->assertSame(0, $bills->where('status', 'versendet')->filter(static fn ($b): bool => abs((float) $b->summe - (float) $b->bezahlt - (float) $b->offen) > 0.001)->count());
+
+        // Alle fünf Auswertungen laufen und liefern Zeilen.
+        foreach (Report::query()->where('app_id', $app->id)->get() as $report) {
+            $this->assertNotEmpty(app(ReportRunner::class)->run($report, $this->superAdmin())->rows, $report->name);
+        }
     }
 
     public function test_all_three_demos_side_by_side(): void

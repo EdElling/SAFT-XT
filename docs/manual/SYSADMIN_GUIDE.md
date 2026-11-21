@@ -278,6 +278,7 @@ shows all available commands, `php artisan help <command>` the options of a comm
 | `php artisan db:seed --class=LagerDemoSeeder` | Warehouse demo (`lager_…`), group "Lager (Demo)" |
 | `php artisan db:seed --class=VertriebDemoSeeder` | Sales demo (`vertrieb_…`), own app "Sales (demo)" that uses the warehouse items through an interface; loads the warehouse demo first if missing. Resetting the warehouse data also resets the sales data |
 | `php artisan db:seed --class=GitarrenshopDemoSeeder` | Guitar shop demo (`gitarren_…`), own app "Guitar shop (demo)": income and expenses with VAT, receipts and payments with files, item images (placeholders), role "Gitarrenshop" with all permissions of the app |
+| `php artisan db:seed --class=MusikschuleDemoSeeder` | Music school demo (`musikschule_…`), medium-sized app "Music school (demo)" with 20 tables, installed from the app definition `database/seeders/apps/musikschule.saft-app.json` (designed with the AI app designer): courses, lessons with attendance, rental instruments, semester invoices with payments, concerts; 5 reports, role "Musikschule". Needs a super admin (after `php artisan db:seed`) |
 | `php artisan db:seed --class=ForschungDemoSeeder` | Internal research demo (`forschung_…`), group "Research (demo)" |
 
 Load demo data only on test and training systems (not with an installation using `--no-dev`). The demos first check

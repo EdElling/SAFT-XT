@@ -150,6 +150,7 @@ return [
             'vertrieb' => 'Vertrieb',
             'forschung' => 'Forschung',
             'gitarrenshop' => 'Gitarrenshop',
+            'musikschule' => 'Musikschule',
         ],
         'disabled' => 'Übersprungen: Demo-Daten zurücksetzen ist auf diesem Server nicht erlaubt (DEMO_RESET=true in der .env).',
         'nothing_installed' => 'Übersprungen: Keine der gewählten Demos ist geladen.',

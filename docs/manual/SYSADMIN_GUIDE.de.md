@@ -284,6 +284,7 @@ Alle Befehle im Hauptverzeichnis von SAFT ausführen, auf einem Produktionsserve
 | `php artisan db:seed --class=LagerDemoSeeder` | Lager-Demo (`lager_…`), Gruppe „Lager (Demo)“ |
 | `php artisan db:seed --class=VertriebDemoSeeder` | Vertriebs-Demo (`vertrieb_…`), eigene App „Vertrieb (Demo)“, die die Lager-Artikel über eine Schnittstelle nutzt; spielt die Lager-Demo bei Bedarf zuerst ein. Wer die Lager-Daten zurücksetzt, setzt die Vertriebsdaten mit zurück |
 | `php artisan db:seed --class=GitarrenshopDemoSeeder` | Gitarrenshop-Demo (`gitarren_…`), eigene App „Gitarrenshop (Demo)“: Ein- und Ausgaben mit MWST, Belege und Zahlungen mit Dateien, Artikelbilder (Platzhalter), Rolle „Gitarrenshop“ mit allen Rechten der App |
+| `php artisan db:seed --class=MusikschuleDemoSeeder` | Musikschul-Demo (`musikschule_…`), mittelgrosse App „Musikschule (Demo)“ mit 20 Tabellen, installiert aus der App-Definition `database/seeders/apps/musikschule.saft-app.json` (entworfen mit dem KI-App-Designer): Kurse, Lektionen mit Präsenzen, Mietinstrumente, Semesterrechnungen mit Zahlungen, Konzerte; 5 Auswertungen, Rolle „Musikschule“. Braucht einen Super-Admin (nach `php artisan db:seed`) |
 | `php artisan db:seed --class=ForschungDemoSeeder` | Interne Forschungs-Demo (`forschung_…`), Gruppe „Forschung (Demo)“ |
 
 Demo-Daten nur in Test- und Schulungssystemen einspielen (nicht bei einer Installation mit `--no-dev`). Die Demos
