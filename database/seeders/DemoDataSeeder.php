@@ -87,6 +87,8 @@ class DemoDataSeeder extends Seeder
             $this->seedReport($group);
         }
 
+        // Kopiert man eine Bestellung, kommen die Positionen mit (B-123) – auch in schon geladenen Demos.
+        $this->demoCopyWithParent(['bestellpositionen.bestellung_id']);
         $this->seedDemoManual();
     }
 
@@ -357,7 +359,7 @@ class DemoDataSeeder extends Seeder
                 'icon' => 'heroicon-o-list-bullet',
                 'description' => self::t('Artikel je Bestellung.', 'Items per order.', 'Articles par commande.', 'Articoli per ordine.'),
                 'fields' => [
-                    ['name' => 'bestellung_id', 'label' => self::t('Bestellung', 'Order', 'Commande', 'Ordine'), 'type' => 'relation', 'options' => ['table' => 'bestellungen', 'display_field' => 'bestellnummer'], 'is_required' => true],
+                    ['name' => 'bestellung_id', 'label' => self::t('Bestellung', 'Order', 'Commande', 'Ordine'), 'type' => 'relation', 'options' => ['table' => 'bestellungen', 'display_field' => 'bestellnummer', 'copy_with_parent' => true], 'is_required' => true],
                     ['name' => 'position', 'label' => self::t('Pos.', 'Pos.', 'Pos.', 'Pos.'), 'type' => 'integer', 'is_required' => true, 'validation_rules' => ['min' => 1], 'options' => ['suggest_next' => true, 'suggest_scope' => 'bestellung_id']],
                     ['name' => 'artikel_id', 'label' => self::t('Artikel', 'Item', 'Article', 'Articolo'), 'type' => 'relation', 'options' => ['table' => 'artikel', 'display_field' => 'bezeichnung'], 'is_required' => true],
                     ['name' => 'menge', 'label' => self::t('Menge', 'Quantity', 'Quantité', 'Quantità'), 'type' => 'integer', 'is_required' => true, 'validation_rules' => ['min' => 1]],

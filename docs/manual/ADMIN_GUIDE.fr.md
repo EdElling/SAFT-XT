@@ -286,6 +286,15 @@ de la modification ; la saisie y cherche dans tous les champs affichés. Le tri 
 affiché. Si vous renommez un champ affiché, la liaison suit ; tant qu’un champ sert quelque part de champ affiché, il
 ne peut pas être supprimé définitivement.
 
+**Copier les enregistrements enfants :** avec l’interrupteur **« Copier aussi lors de la copie de l’enregistrement
+parent »** d’un champ de liaison, vous définissez quels enregistrements appartiennent au parent, p. ex. pour
+`lignes_commande.commande_id` : qui copie une commande peut copier ses lignes avec – dans le dialogue de copie sous forme
+de case « Copier avec » cochée d’avance, décochable. Si les lignes ont elles-mêmes de tels enfants, ils sont copiés
+aussi. La liaison pointe ensuite vers la copie, les autres liaisons restent ; les fichiers sont copiés, les champs
+uniques vidés, les champs calculés recalculés. Les liaisons vers la même table (hiérarchie) et vers des tables d’autres
+apps n’ont pas cet interrupteur. Si un champ d’une table copiée avec est unique et obligatoire, la copie s’arrête avec un
+message ; plus de 1000 enregistrements par copie ne sont pas possibles (`APP_DATA_COPY_MAX_RECORDS`).
+
 **Champs de fichiers :** un champ de type **Fichier** accepte des pièces jointes. Réglages :
 
 - **Fichiers autorisés :** images (JPEG, PNG, GIF, WebP), PDF, documents Office (Word, Excel, PowerPoint,

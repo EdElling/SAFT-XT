@@ -336,6 +336,15 @@ final class FieldForm
                     ->default(RelationDisplay::DEFAULT_SEPARATOR)
                     ->selectablePlaceholder(false)
                     ->visible(fn (Get $get): bool => $get('type') === FieldType::Relation->value && count((array) $get('options.display_fields')) > 1),
+                // Kind-Datensätze mitkopieren (B-123): nicht für Selbstreferenzen und Tabellen anderer Apps.
+                Toggle::make('options.'.FieldDefinitionNormalizer::COPY_WITH_PARENT)
+                    ->label(__('tables.fields.copy_with_parent'))
+                    ->helperText(__('tables.fields.copy_with_parent_help'))
+                    ->visible(fn (Get $get): bool => $get('type') === FieldType::Relation->value
+                        && filled($get('options.table'))
+                        && (string) $get('options.table') !== $owner?->name
+                        && ! self::foreignTarget((string) $get('options.table'), $owner?->app_id ?? (filled($app = $get('../../app_id')) ? (int) $app : null)))
+                    ->columnSpanFull(),
                 Text::make(__('tables.fields.relation_help'))
                     ->visible($is(FieldType::Relation))
                     ->columnSpanFull(),

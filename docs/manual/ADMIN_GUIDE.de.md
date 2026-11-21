@@ -276,6 +276,15 @@ der Auswahlliste beim Bearbeiten; dort sucht die Eingabe in allen Anzeigefeldern
 Anzeigefeld. Benennen Sie ein Anzeigefeld um, folgt die Verknüpfung; solange ein Feld irgendwo als Anzeigefeld dient,
 lässt es sich nicht endgültig löschen.
 
+**Kind-Datensätze mitkopieren:** Mit dem Schalter **„Beim Kopieren des übergeordneten Datensatzes mitkopieren“** am
+Verknüpfungsfeld legen Sie fest, welche Datensätze zum übergeordneten gehören, z. B. bei `bestellpositionen.bestellung_id`:
+Wer eine Bestellung kopiert, kann deren Positionen mitkopieren – im Kopier-Dialog als vorgewähltes Häkchen
+„Mitkopieren“, abwählbar. Haben die Positionen selbst wieder solche Kinder, kommen sie mit. Die Verknüpfung zeigt danach
+auf die Kopie, andere Verknüpfungen bleiben; Dateien werden kopiert, eindeutige Felder geleert, berechnete Felder neu
+gerechnet. Bei Verknüpfungen auf die eigene Tabelle (Hierarchie) und auf Tabellen anderer Apps gibt es den Schalter
+nicht. Ist ein Feld einer mitkopierten Tabelle eindeutig und Pflicht, bricht das Kopieren mit einer Meldung ab; mehr als
+1000 Datensätze je Kopie sind nicht möglich (`APP_DATA_COPY_MAX_RECORDS`).
+
 **Dateifelder:** Ein Feld vom Typ **Datei** nimmt Anhänge auf. Einstellungen:
 
 - **Erlaubte Dateien:** Bilder (JPEG, PNG, GIF, WebP), PDF, Office-Dokumente (Word, Excel, PowerPoint,

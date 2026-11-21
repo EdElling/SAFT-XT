@@ -21,6 +21,14 @@ return [
         'details' => 'Details',
         'view' => 'Ansehen',
     ],
+    'copy' => [
+        'children' => 'Mitkopieren',
+        'children_help' => 'Datensätze, die zu diesem gehören; ihre Verknüpfung zeigt danach auf die Kopie.',
+        'nested' => 'darin :tables',
+        'copied_children' => '{1} Ein weiterer Datensatz mitkopiert.|[2,*] :count weitere Datensätze mitkopiert.',
+        'too_many' => 'Zu viele Datensätze: Die Kopie umfasste :count, erlaubt sind höchstens :limit. Bitte weniger mitkopieren.',
+        'unique_required' => '„:table“ lässt sich nicht mitkopieren: „:field“ ist eindeutig und Pflicht. Bitte das Häkchen entfernen.',
+    ],
     'import' => [
         'label' => 'Importieren',
         'template' => 'Vorlage herunterladen',

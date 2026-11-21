@@ -71,6 +71,7 @@ class VertriebDemoSeeder extends Seeder
             ['vertrieb_anfragepositionen', 'betrag', self::demoText('Betrag (EUR)', 'Amount (EUR)', 'Montant (EUR)', 'Importo (EUR)'), 'round(menge * preis, 2)', ['result' => 'decimal', 'precision' => 12, 'scale' => 2]],
             ['vertrieb_anfragen', 'summe', self::demoText('Summe (EUR)', 'Total (EUR)', 'Total (EUR)', 'Totale (EUR)'), 'sum(vertrieb_anfragepositionen.betrag)', ['result' => 'decimal', 'precision' => 14, 'scale' => 2]],
         ]);
+        $this->demoCopyWithParent(['vertrieb_anfragepositionen.anfrage_id']);
         $this->reports($group);
         $this->submenus($group);
         $this->seedDemoManual();
@@ -233,7 +234,7 @@ class VertriebDemoSeeder extends Seeder
             [
                 'name' => 'vertrieb_anfragepositionen', 'label' => $t('Anfragepositionen', 'Enquiry items', 'Lignes de demande', 'Righe della richiesta'), 'icon' => 'heroicon-o-list-bullet',
                 'fields' => [
-                    ['name' => 'anfrage_id', 'label' => $t('Anfrage', 'Enquiry', 'Demande', 'Richiesta'), 'type' => 'relation', 'options' => ['table' => 'vertrieb_anfragen', 'display_field' => 'betreff'], 'is_required' => true],
+                    ['name' => 'anfrage_id', 'label' => $t('Anfrage', 'Enquiry', 'Demande', 'Richiesta'), 'type' => 'relation', 'options' => ['table' => 'vertrieb_anfragen', 'display_field' => 'betreff', 'copy_with_parent' => true], 'is_required' => true],
                     ['name' => 'position', 'label' => $t('Position', 'Line', 'Ligne', 'Riga'), 'type' => 'integer', 'options' => ['group_digits' => false]],
                     // Artikel der Lager-App über deren Schnittstelle.
                     ['name' => 'artikel_id', 'label' => $t('Artikel', 'Item', 'Article', 'Articolo'), 'type' => 'relation', 'options' => ['table' => 'lager_artikel', 'display_field' => 'artikelnummer', 'display_fields' => ['artikelnummer', 'bezeichnung'], 'separator' => ' '], 'is_required' => true],

@@ -8,6 +8,7 @@ use App\DynamicData\DataMenu;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Formula\Recalculator;
+use App\DynamicData\Schema\FieldDefinitionNormalizer;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Reports\ReportResource;
 use App\Models\App;
@@ -350,6 +351,23 @@ trait SeedsDemoTables
         }
 
         return $report;
+    }
+
+    /**
+     * Verknüpfungen „beim Kopieren des übergeordneten Datensatzes mitkopieren“ (B-123), auch in schon geladenen Demos;
+     * andere Optionen der Verknüpfung bleiben.
+     *
+     * @param  list<string>  $relations  „tabelle.feld“
+     */
+    protected function demoCopyWithParent(array $relations): void
+    {
+        foreach ($relations as $relation) {
+            $field = CustomField::query()->find($this->demoFieldId($relation));
+
+            if ($field instanceof CustomField && ! ($field->optionsArray()[FieldDefinitionNormalizer::COPY_WITH_PARENT] ?? false)) {
+                app(DynamicSchemaService::class)->updateField($field, ['options' => [...$field->optionsArray(), FieldDefinitionNormalizer::COPY_WITH_PARENT => true]]);
+            }
+        }
     }
 
     /** ID eines Feldes als „tabelle.feld“. */

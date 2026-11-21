@@ -187,6 +187,9 @@ class DemoSeedersTest extends DynamicDataTestCase
             $this->assertEqualsWithDelta((float) $orders[$enquiry->bestellung_id], (float) $enquiry->summe, 0.001, $enquiry->betreff);
         }
 
+        // Kopiert man eine Anfrage, kommen die Positionen mit (B-123).
+        $this->assertTrue(CustomTable::query()->where('name', 'vertrieb_anfragepositionen')->sole()->fields->firstWhere('name', 'anfrage_id')->optionsArray()['copy_with_parent'] ?? false);
+
         $status = $this->runReport(VertriebDemoSeeder::REPORT_STATUS);
         $this->assertSame(20, (int) array_sum(array_column($status->rows, 'anzahl')));
         $this->assertCount(6, $this->runReport(VertriebDemoSeeder::REPORT_WON)->rows, 'Kunden mit gewonnenen Anfragen.');
@@ -206,6 +209,7 @@ class DemoSeedersTest extends DynamicDataTestCase
             Menu::query()->whereNull('parent_id')->whereNull('route')->where('label->de', 'like', '%(Demo)')->orderBy('sort_order')->get()->map(fn (Menu $m): string => $m->getTranslation('label', 'de'))->all(),
         );
         $this->assertSame(11, Report::query()->count());
+        $this->assertTrue(CustomTable::query()->where('name', 'bestellpositionen')->sole()->fields->firstWhere('name', 'bestellung_id')->optionsArray()['copy_with_parent'] ?? false, 'Shop: Positionen werden mitkopiert.');
     }
 
     /** @param  array<string, int>  $counts */

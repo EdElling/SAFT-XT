@@ -21,6 +21,14 @@ return [
         'details' => 'Details',
         'view' => 'View',
     ],
+    'copy' => [
+        'children' => 'Copy along',
+        'children_help' => 'Records that belong to this one; their link then points to the copy.',
+        'nested' => 'including :tables',
+        'copied_children' => '{1} One more record copied along.|[2,*] :count more records copied along.',
+        'too_many' => 'Too many records: the copy would comprise :count, at most :limit are allowed. Please copy fewer along.',
+        'unique_required' => '":table" cannot be copied along: ":field" is unique and required. Please remove the tick.',
+    ],
     'import' => [
         'label' => 'Import',
         'template' => 'Download template',

@@ -41,6 +41,11 @@ return [
     | Dateien werden mit einer Meldung abgelehnt.
     */
     /*
+    | Datensatz kopieren samt Kind-Datensätzen (B-123): höchstens so viele Datensätze je Kopie, Original mitgezählt.
+    */
+    'copy_max_records' => (int) env('APP_DATA_COPY_MAX_RECORDS', 1000),
+
+    /*
     | Dateien in Feldern vom Typ „Datei“ (B-021): Laravel-Speicher, nie öffentlich – Herunterladen nur über SAFT mit
     | den Rechten des Datensatzes. Vorgabe ist der private lokale Speicher (storage/app/private), wahlweise S3
     | (FILESYSTEM_DISK-Einträge in config/filesystems.php, Zugang über AWS_* in der .env).

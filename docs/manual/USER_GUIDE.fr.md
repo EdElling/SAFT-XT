@@ -234,7 +234,7 @@ Les tableaux servent à la **lecture**. Un clic sur une ligne sélectionne l’e
 |---|---|
 | **Afficher** (loupe) | Le formulaire avec tous les champs, verrouillé – champs calculés compris. |
 | **Modifier** (crayon) | Ouvre le formulaire de saisie dans une fenêtre ; **Sauvegarder les modifications** ou **Annuler** ramène directement au tableau. |
-| **Copier** (deux feuilles) | Ouvre « Nouvel enregistrement » avec toutes les valeurs de l’original ; les champs uniques (p. ex. numéro d’article) restent vides, les champs calculés sont recalculés. Fichiers et images sont créés comme copies distinctes à l’enregistrement. Nécessite le droit de créer. |
+| **Copier** (deux feuilles) | Ouvre « Nouvel enregistrement » avec toutes les valeurs de l’original ; les champs uniques (p. ex. numéro d’article) restent vides, les champs calculés sont recalculés. Fichiers et images sont créés comme copies distinctes à l’enregistrement. Si des enregistrements en font partie (p. ex. les lignes d’une commande), ils figurent en haut sous **Copier avec**, cochés d’avance – décochez pour les exclure. Nécessite le droit de créer. |
 | **Historique** (horloge) | Qui a modifié quoi et quand. |
 | **Supprimer** (corbeille) | Supprime après une question de sécurité. |
 | **Restaurer** | Pour les enregistrements supprimés, à la place de « Modifier » et « Supprimer ». |

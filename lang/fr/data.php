@@ -21,6 +21,14 @@ return [
         'details' => 'Détails',
         'view' => 'Afficher',
     ],
+    'copy' => [
+        'children' => 'Copier avec',
+        'children_help' => 'Enregistrements qui appartiennent à celui-ci ; leur liaison pointe ensuite vers la copie.',
+        'nested' => 'y compris :tables',
+        'copied_children' => '{1} Un autre enregistrement copié avec.|[2,*] :count autres enregistrements copiés avec.',
+        'too_many' => 'Trop d’enregistrements : la copie en comprendrait :count, :limit au maximum sont permis. Veuillez en copier moins avec.',
+        'unique_required' => '« :table » ne peut pas être copiée avec : « :field » est unique et obligatoire. Veuillez décocher.',
+    ],
     'import' => [
         'label' => 'Importer',
         'template' => 'Télécharger le modèle',

@@ -21,6 +21,14 @@ return [
         'details' => 'Dettagli',
         'view' => 'Visualizza',
     ],
+    'copy' => [
+        'children' => 'Copiare insieme',
+        'children_help' => 'Record che appartengono a questo; il loro collegamento punta poi alla copia.',
+        'nested' => 'con :tables',
+        'copied_children' => '{1} Un altro record copiato insieme.|[2,*] Altri :count record copiati insieme.',
+        'too_many' => 'Troppi record: la copia ne comprenderebbe :count, al massimo :limit sono ammessi. Copiarne meno insieme.',
+        'unique_required' => '«:table» non può essere copiata insieme: «:field» è univoco e obbligatorio. Togliere la spunta.',
+    ],
     'import' => [
         'label' => 'Importa',
         'template' => 'Scarica modello',

@@ -268,6 +268,14 @@ details, preview, filters, export and in the selection list when editing; there,
 Sorting uses the first display field. If you rename a display field, the relation follows; as long as a field serves
 as display field anywhere, it cannot be deleted permanently.
 
+**Copying child records along:** With the switch **"Copy along when the parent record is copied"** on a relation
+field you define which records belong to the parent, e.g. on `order_lines.order_id`: whoever copies an order can copy its
+lines along – in the copy dialog as a preselected tick "Copy along" that can be removed. If the lines have such children
+themselves, they come along too. The link then points to the copy, other links stay; files are copied, unique fields
+emptied, computed fields recalculated. Relations to the same table (hierarchy) and to tables of other apps do not have
+the switch. If a field of a table copied along is unique and required, the copy stops with a message; more than 1000
+records per copy are not possible (`APP_DATA_COPY_MAX_RECORDS`).
+
 **File fields:** A field of type **File** takes attachments. Settings:
 
 - **Allowed files:** images (JPEG, PNG, GIF, WebP), PDF, Office documents (Word, Excel, PowerPoint, OpenDocument),

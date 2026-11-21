@@ -279,6 +279,15 @@ durante la modifica; lì l’inserimento cerca in tutti i campi visualizzati. L�
 campo visualizzato. Se rinominate un campo visualizzato, il collegamento segue; finché un campo serve da qualche parte
 come campo visualizzato, non può essere eliminato definitivamente.
 
+**Copiare insieme i record figli:** con l’interruttore **«Copiare anche quando si copia il record superiore»** di un
+campo di collegamento si stabilisce quali record appartengono al superiore, ad es. per `righe_ordine.ordine_id`: chi
+copia un ordine può copiare anche le sue righe – nella finestra di copia come spunta «Copiare insieme» preselezionata,
+deselezionabile. Se le righe hanno a loro volta tali figli, vengono copiati anche questi. Il collegamento punta poi alla
+copia, gli altri collegamenti restano; i file vengono copiati, i campi univoci svuotati, i campi calcolati ricalcolati. I
+collegamenti alla stessa tabella (gerarchia) e a tabelle di altre app non hanno l’interruttore. Se un campo di una
+tabella copiata insieme è univoco e obbligatorio, la copia si interrompe con un messaggio; più di 1000 record per copia
+non sono possibili (`APP_DATA_COPY_MAX_RECORDS`).
+
 **Campi file:** un campo di tipo **File** accetta allegati. Impostazioni:
 
 - **File consentiti:** immagini (JPEG, PNG, GIF, WebP), PDF, documenti Office (Word, Excel, PowerPoint,

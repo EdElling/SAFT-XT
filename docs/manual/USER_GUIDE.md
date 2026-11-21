@@ -218,7 +218,7 @@ buttons at the end of the row – depending on the screen width:
 |---|---|
 | **View** (magnifying glass) | The form with all fields, locked – computed fields too. |
 | **Edit** (pencil) | Opens the input form as a window; **Save** or **Cancel** leads straight back to the table. |
-| **Copy** (two sheets) | Opens “New record” with all values of the original; unique fields (e.g. item number) stay empty, computed ones are recalculated. Files and images are created as separate copies when saving. Needs the permission to create. |
+| **Copy** (two sheets) | Opens “New record” with all values of the original; unique fields (e.g. item number) stay empty, computed ones are recalculated. Files and images are created as separate copies when saving. If records belong to it (e.g. the lines of an order), they are listed at the top under **Copy along** with a preselected tick – remove it to leave them out. Needs the permission to create. |
 | **History** (clock) | Who changed what when (e.g. “status: New → Shipped”). |
 | **Delete** (bin) | Deletes after a confirmation. |
 | **Restore** | For deleted records instead of “Edit” and “Delete”. |

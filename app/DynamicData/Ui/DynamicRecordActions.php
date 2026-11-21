@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\DynamicData\Ui;
 
 use App\DynamicData\DataAccess;
-use App\DynamicData\Files\RecordFiles;
+use App\DynamicData\RecordCopier;
 use App\DynamicData\Export\ExportFormat;
 use App\DynamicData\Export\TableExporter;
 use App\DynamicData\Import\RecordImportAnalysis;
@@ -26,6 +26,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Infolists\Components\RepeatableEntry;
@@ -52,6 +53,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 final class DynamicRecordActions
 {
+    /** Formularfeld der gewählten Kind-Tabellen beim Kopieren (kein gültiger Spaltenname, also kein Konflikt). */
+    private const string COPY_CHILDREN = '_copy_children';
+
     /** Kaskade neu aufbauen (z. B. nach Löschen eines ausgewählten Datensatzes). */
     public const string REFRESH_EVENT = 'cascade-refresh';
 
@@ -469,7 +473,8 @@ final class DynamicRecordActions
     /**
      * Datensatz kopieren (B-120): Formular „Neuer Datensatz“ mit den Werten des Originals; eindeutige Felder und der
      * Schlüssel einer angebundenen Tabelle bleiben leer, berechnete Felder rechnet SAFT neu. Dateien und Bilder werden
-     * beim Speichern kopiert; die Verknüpfung zur Haupttabelle (Detailtabelle) bleibt die des Originals.
+     * beim Speichern kopiert; die Verknüpfung zur Haupttabelle (Detailtabelle) bleibt die des Originals. Kind-Tabellen
+     * mit „mitkopieren“ stehen als vorgewählte Häkchen über dem Formular (B-123).
      *
      * @param  list<string>  $locked  nicht bearbeitbare Felder (Verknüpfung zur Haupttabelle)
      */
@@ -482,35 +487,31 @@ final class DynamicRecordActions
             ->authorize(fn (): bool => DataAccess::current($table, 'create'))
             ->modalHeading(fn (DynamicRecord $record): string => __('data.actions.copy_heading', ['title' => RecordEntries::title($table, $record)]))
             ->modalSubmitActionLabel(__('data.actions.copy_submit'))
-            ->schema(self::form($table, $locked))
-            ->fillForm(fn (DynamicRecord $record): array => self::copyValues($table, $record))
+            ->schema(fn (Schema $schema, DynamicRecord $record): Schema => $schema
+                ->components([
+                    CheckboxList::make(self::COPY_CHILDREN)
+                        ->label(__('data.copy.children'))
+                        ->helperText(__('data.copy.children_help'))
+                        ->options(app(RecordCopier::class)->options($table, $record))
+                        ->visible(app(RecordCopier::class)->options($table, $record) !== [])
+                        ->columnSpanFull(),
+                    ...app(DynamicFormBuilder::class)->components($table, $locked, []),
+                ])
+                ->columns(2))
+            ->fillForm(fn (DynamicRecord $record): array => [
+                ...RecordCopier::values($table, $record),
+                self::COPY_CHILDREN => array_keys(app(RecordCopier::class)->options($table, $record)),
+            ])
             ->action(function (array $data, DynamicRecord $record, mixed $livewire) use ($table, $locked): void {
-                $data = app(RecordFiles::class)->copyOwned($table, $data);
-                $copy = DynamicRecord::forTable($table)->fill($data)->forceFill(array_intersect_key($record->getAttributes(), array_flip($locked)));
-                $copy->save();
+                $chosen = array_values((array) ($data[self::COPY_CHILDREN] ?? []));
+                unset($data[self::COPY_CHILDREN]);
+                $result = app(RecordCopier::class)->copy($table, $record, $data, $locked, $chosen);
 
-                Notification::make()->success()->title(__('data.actions.copied'))->send();
+                Notification::make()->success()->title(__('data.actions.copied'))
+                    ->body($result['children'] > 0 ? trans_choice('data.copy.copied_children', $result['children'], ['count' => $result['children']]) : null)
+                    ->send();
                 $livewire->dispatch(self::REFRESH_EVENT);
             });
-    }
-
-    /**
-     * Werte für die Kopie: alle Felder des Formulars ausser eindeutigen, berechneten und dem Schlüssel.
-     *
-     * @return array<string, mixed>
-     */
-    private static function copyValues(CustomTable $table, DynamicRecord $record): array
-    {
-        $skip = $table->isExternal() ? $table->keyColumns() : [];
-        $values = $record->attributesToArray();
-
-        foreach ($table->fields as $field) {
-            if ($field->is_unique || $field->type === FieldType::Computed || in_array($field->name, $skip, true)) {
-                unset($values[$field->name]);
-            }
-        }
-
-        return array_intersect_key($values, array_flip($table->fields->where('is_active', true)->pluck('name')->all()));
     }
 
     public static function history(string $name = 'history'): Action

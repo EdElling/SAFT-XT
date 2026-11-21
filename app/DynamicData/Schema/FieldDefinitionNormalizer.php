@@ -27,6 +27,9 @@ use App\Support\Translations;
  */
 final class FieldDefinitionNormalizer
 {
+    /** Option einer Verknüpfung: beim Kopieren des übergeordneten Datensatzes mitkopieren (B-123). */
+    public const string COPY_WITH_PARENT = 'copy_with_parent';
+
     public const int MAX_STRING_LENGTH = 10_000;
 
     public const int MAX_SELECT_OPTIONS = 500;
@@ -320,7 +323,18 @@ final class FieldDefinitionNormalizer
             }
         }
 
-        return RelationDisplay::store(['table' => $tableName], $displayFields, $options['separator'] ?? null);
+        $stored = RelationDisplay::store(['table' => $tableName], $displayFields, $options['separator'] ?? null);
+
+        // Kind-Datensätze mitkopieren (B-123): nur innerhalb der App, nie über eine Selbstreferenz (Hierarchie).
+        if ((bool) ($options[self::COPY_WITH_PARENT] ?? false)) {
+            if ($foreign || $target === $owner) {
+                $this->fail(__($foreign ? 'tables.errors.copy_with_parent_foreign' : 'tables.errors.copy_with_parent_self'));
+            }
+
+            $stored[self::COPY_WITH_PARENT] = true;
+        }
+
+        return $stored;
     }
 
     /**

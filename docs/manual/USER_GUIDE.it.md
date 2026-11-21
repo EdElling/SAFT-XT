@@ -226,7 +226,7 @@ Le tabelle servono alla **lettura**. Un clic su una riga seleziona il record (ve
 |---|---|
 | **Visualizza** (lente) | Il modulo con tutti i campi, bloccato – anche i campi calcolati. |
 | **Modifica** (matita) | Apre il modulo di inserimento in una finestra; **Salva** o **Annulla** riporta direttamente alla tabella. |
-| **Copia** (due fogli) | Apre «Nuovo record» con tutti i valori dell’originale; i campi univoci (ad es. codice articolo) restano vuoti, quelli calcolati vengono ricalcolati. File e immagini vengono creati come copie proprie al salvataggio. Richiede il diritto di creare. |
+| **Copia** (due fogli) | Apre «Nuovo record» con tutti i valori dell’originale; i campi univoci (ad es. codice articolo) restano vuoti, quelli calcolati vengono ricalcolati. File e immagini vengono creati come copie proprie al salvataggio. Se ne fanno parte altri record (ad es. le righe di un ordine), compaiono in alto sotto **Copiare insieme** con una spunta preselezionata – toglierla per escluderli. Richiede il diritto di creare. |
 | **Cronologia** (orologio) | Chi ha modificato cosa e quando. |
 | **Elimina** (cestino) | Elimina dopo una domanda di sicurezza. |
 | **Ripristina** | Per i record eliminati al posto di «Modifica» ed «Elimina». |
