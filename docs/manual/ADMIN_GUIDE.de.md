@@ -343,10 +343,26 @@ filtern, exportieren und in Regeln verwenden.
   `sum(round(bestellpositionen.menge * bestellpositionen.einzelpreis * 0.95, 2))`. Im Ausdruck stehen nur Felder dieser
   einen Kind-Tabelle (keine Felder des Master-Datensatzes, keine verschachtelten Zusammenfassungen). Ist das Ergebnis
   für einen Kind-Datensatz leer, zählt er nicht mit – mit `coalesce(…, 0)` lässt sich das steuern.
-- **Eingabehilfe:** Unter dem Formelfeld stehen die Zahlenfelder der Tabelle als Knöpfe, z. B. „Menge (menge)“; ein
-  Klick fügt den technischen Namen an der Schreibmarke ein. Je Kind-Tabelle folgt eine eigene Zeile mit
-  `count(tabelle)` und deren Zahlenfeldern (`tabelle.feld`), dazu Knöpfe für Rechenzeichen, Funktionen und `sum`,
-  `avg`, `count`. Beim Anlegen einer neuen Tabelle erscheinen nur die Felder, die im Formular weiter oben stehen.
+- **Bedingungen:** `if(bedingung, dann, sonst)` rechnet je nach Bedingung den einen oder den anderen Wert; ohne
+  `sonst` ist das Ergebnis leer, wenn die Bedingung nicht erfüllt ist. Bedingungen vergleichen mit `=`, `<>`, `<`, `<=`,
+  `>`, `>=` und lassen sich mit `and` und `or` verknüpfen. In Vergleichen sind auch Text-, Auswahl-, Datums- und
+  Ja/Nein-Felder erlaubt; Text steht in einfachen Anführungszeichen (ein Anführungszeichen im Text wird verdoppelt).
+  Auswahlfelder vergleichen den gespeicherten Wert, nicht die übersetzte Bezeichnung; ein Datum schreibt man
+  `'2026-12-31'`. Beispiele: Betrag mit Vorzeichen = `if(typ = 'Ausgabe', -betrag, betrag)`, Zollkosten eines Belegs =
+  `sum(if(positionen.art = 'Zoll', positionen.betrag, 0))`, Anzahl Positionen über 10 Stück =
+  `sum(positionen.menge > 10)` (ein Vergleich ergibt 1 oder 0). Ist eine Seite eines Vergleichs leer, ist er nicht
+  erfüllt – auch bei `<>`. **Text unscharf vergleichen:** `contains(feld, 'teil')`, `startswith(feld, 'anfang')` und
+  `endswith(feld, 'ende')` prüfen ohne Gross-/Kleinschreibung, ob der Text den Teil enthält bzw. damit beginnt oder
+  endet, und ergeben ebenfalls 1 oder 0, z. B. `sum(contains(positionen.bezeichnung, 'gitarre'))`. Werte in Funktionen dürfen auch mit `;` getrennt werden; SAFT schreibt sie mit Komma. In den
+  Ausdrücken der Auswertungen gibt es `if()` (noch) nicht.
+- **Eingabehilfe:** Unter dem Formelfeld stehen die Felder der Tabelle als Knöpfe, z. B. „Menge (menge)“; ein
+  Klick fügt den technischen Namen an der Schreibmarke ein. Zahlenfelder dienen zum Rechnen, Text-, Auswahl-, Datums-
+  und Ja/Nein-Felder für Vergleiche; der Tooltip nennt den Datentyp, bei Auswahlfeldern auch die gespeicherten Werte. Je
+  Kind-Tabelle folgt eine eigene Zeile mit `count(tabelle)` und deren Feldern (`tabelle.feld`), dazu Knöpfe für Rechenzeichen, Funktionen und `sum`,
+  `avg`, `count`; jeder dieser Knöpfe erklärt im Tooltip Syntax und Beispiel, der Hilfetext öffnet
+  sich mit „Hilfe zu den Formeln“; die Funktionen aus Plugins
+  stehen ganz unten. Ergebnis, Stellen und Nachkommastellen stehen oben in
+  einer Zeile. Beim Anlegen einer neuen Tabelle erscheinen nur die Felder, die im Formular weiter oben stehen.
 - **Prüfung:** Schon während der Eingabe meldet SAFT Fehler mit der Stelle (z. B. „Zeichen 9: Unbekanntes Feld
   „preis““) oder bestätigt, wovon das Ergebnis abhängt. Kreisbezüge werden abgelehnt; die Meldung nennt die Formeln der
   beteiligten Felder, z. B. „Kreisbezug: mwst → einkaufspreis → mwst. Die Formeln: mwst = …; einkaufspreis = …“.

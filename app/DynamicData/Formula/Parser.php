@@ -5,16 +5,22 @@ declare(strict_types=1);
 namespace App\DynamicData\Formula;
 
 /**
- * Liest eine Formel wie `round(menge * einzelpreis, 2)` oder `sum(positionen.betrag)` in einen
- * JSON-fähigen Baum:
- *   ['num' => '1.5'] · ['field' => 'menge'] · ['op' => '+', 'left' => …, 'right' => …]
+ * Liest eine Formel wie `round(menge * einzelpreis, 2)`, `sum(positionen.betrag)` oder
+ * `if(typ = 'Ausgabe', -betrag, betrag)` in einen JSON-fähigen Baum:
+ *   ['num' => '1.5'] · ['str' => 'Ausgabe'] · ['field' => 'menge'] · ['op' => '+', 'left' => …, 'right' => …]
  *   ['neg' => …] · ['call' => 'round', 'args' => […]] · ['path' => ['positionen', 'betrag']]
+ * Vergleiche (= <> < <= > >=) und and/or sind ebenfalls 'op'-Knoten.
  *
- * Grammatik: expr = term (('+'|'-') term)* · term = unary (('*'|'/') unary)* ·
- * unary = '-' unary | primary · primary = Zahl | Name ['.' Name] | Name '(' [expr (',' expr)*] ')' | '(' expr ')'
+ * Grammatik: expr = and ('or' and)* · and = compare ('and' compare)* · compare = sum [vergleich sum] ·
+ * sum = term (('+'|'-') term)* · term = unary (('*'|'/') unary)* · unary = '-' unary | primary ·
+ * primary = Zahl | 'Text' | Name ['.' Name] | Name '(' [expr (',' expr)*] ')' | '(' expr ')'
+ * Werte in Funktionen trennt ein Komma; ein Semikolon gilt ebenso (wie in den Formeln der Auswertungen).
  */
 final class Parser
 {
+    /** Vergleichszeichen; die zweistelligen zuerst, damit „<=“ nicht als „<“ gelesen wird. */
+    public const array COMPARISONS = ['<=', '>=', '<>', '=', '<', '>'];
+
     /** @var list<array{type: string, value: string, pos: int}> */
     private array $tokens = [];
 
@@ -63,8 +69,19 @@ final class Parser
             } elseif (preg_match('/\G([A-Za-z_][A-Za-z0-9_]*)/', $formula, $m, 0, $i) === 1) {
                 $tokens[] = ['type' => 'name', 'value' => strtolower($m[1]), 'pos' => $i + 1];
                 $i += strlen($m[1]);
-            } elseif (str_contains('+-*/(),.', $char)) {
-                $tokens[] = ['type' => $char, 'value' => $char, 'pos' => $i + 1];
+            } elseif ($char === "'") {
+                // Text in einfachen Anführungszeichen; ein Anführungszeichen im Text wird verdoppelt ('l''Ourson').
+                if (preg_match("/\\G'((?:[^']|'')*)'/", $formula, $m, 0, $i) !== 1) {
+                    throw FormulaException::at($i + 1, __('tables.formula.errors.unterminated_text'));
+                }
+
+                $tokens[] = ['type' => 'str', 'value' => str_replace("''", "'", $m[1]), 'pos' => $i + 1];
+                $i += strlen($m[0]);
+            } elseif (($comparison = $this->comparisonAt($formula, $i)) !== null) {
+                $tokens[] = ['type' => 'cmp', 'value' => $comparison, 'pos' => $i + 1];
+                $i += strlen($comparison);
+            } elseif (str_contains('+-*/(),.;', $char)) {
+                $tokens[] = ['type' => $char === ';' ? ',' : $char, 'value' => $char, 'pos' => $i + 1];
                 $i++;
             } else {
                 throw FormulaException::at($i + 1, __('tables.formula.errors.character', ['char' => $char]));
@@ -76,10 +93,66 @@ final class Parser
         return $tokens;
     }
 
+    private function comparisonAt(string $formula, int $i): ?string
+    {
+        foreach (self::COMPARISONS as $comparison) {
+            if (substr($formula, $i, strlen($comparison)) === $comparison) {
+                return $comparison;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * @return array<string, mixed>
      */
     private function expression(): array
+    {
+        $node = $this->conjunction();
+
+        while ($this->acceptKeyword('or')) {
+            $node = ['op' => 'or', 'left' => $node, 'right' => $this->conjunction()];
+        }
+
+        return $node;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function conjunction(): array
+    {
+        $node = $this->comparison();
+
+        while ($this->acceptKeyword('and')) {
+            $node = ['op' => 'and', 'left' => $node, 'right' => $this->comparison()];
+        }
+
+        return $node;
+    }
+
+    /**
+     * Höchstens ein Vergleich je Stufe: „a < b < c“ ist ein Fehler, „a < b and b < c“ richtig.
+     *
+     * @return array<string, mixed>
+     */
+    private function comparison(): array
+    {
+        $node = $this->sum();
+
+        if ($this->peek()['type'] === 'cmp') {
+            $token = $this->next();
+            $node = ['op' => $token['value'], 'left' => $node, 'right' => $this->sum(), 'pos' => $token['pos']];
+        }
+
+        return $node;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function sum(): array
     {
         $node = $this->term();
 
@@ -129,6 +202,7 @@ final class Parser
 
         return match ($token['type']) {
             'num' => ['num' => $token['value'], 'pos' => $token['pos']],
+            'str' => ['str' => $token['value'], 'pos' => $token['pos']],
             'name' => $this->name($token),
             '(' => $this->group(),
             default => throw FormulaException::at($token['pos'], $token['type'] === 'end'
@@ -202,6 +276,18 @@ final class Parser
         }
 
         return $token;
+    }
+
+    /** and/or: Namen, die nur an der Stelle eines Rechenzeichens als Verknüpfung gelten. */
+    private function acceptKeyword(string $keyword): bool
+    {
+        if ($this->peek()['type'] !== 'name' || $this->peek()['value'] !== $keyword) {
+            return false;
+        }
+
+        $this->next();
+
+        return true;
     }
 
     private function accept(string $type): bool

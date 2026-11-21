@@ -333,10 +333,25 @@ rules.
   `sum(round(bestellpositionen.menge * bestellpositionen.einzelpreis * 0.95, 2))`. The expression only contains fields of
   this one child table (no fields of the master record, no nested summaries). If the result for a child record is
   empty, it does not count – use `coalesce(…, 0)` to control this.
-- **Input help:** Below the formula field the number fields of the table appear as buttons, e.g. "Quantity
-  (quantity)"; a click inserts the technical name at the cursor. Each child table gets its own line with
-  `count(table)` and its number fields (`table.field`), plus buttons for operators, functions and `sum`, `avg`,
-  `count`. When creating a new table only the fields further up in the form are listed.
+- **Conditions:** `if(condition, then, else)` calculates one value or the other depending on the condition; without
+  `else` the result is empty if the condition is not fulfilled. Conditions compare with `=`, `<>`, `<`, `<=`, `>`, `>=`
+  and can be combined with `and` and `or`. In comparisons text, select, date and yes/no fields are allowed too; text is
+  written in single quotes (a quote inside the text is doubled). Select fields compare the stored value, not the
+  translated label; a date is written `'2026-12-31'`. Examples: signed amount = `if(type = 'Expense', -amount, amount)`,
+  customs costs of a receipt = `sum(if(lines.kind = 'Customs', lines.amount, 0))`, number of lines above 10 pieces =
+  `sum(lines.quantity > 10)` (a comparison gives 1 or 0). If one side of a comparison is empty, it is not fulfilled –
+  also with `<>`. **Fuzzy text comparisons:** `contains(field, 'part')`, `startswith(field, 'start')` and
+  `endswith(field, 'end')` check, ignoring case, whether the text contains the part or starts or ends with it, and also
+  give 1 or 0, e.g. `sum(contains(lines.description, 'guitar'))`. Values in functions may also be separated by `;`; SAFT writes them with a comma. The expressions of
+  reports do not (yet) have `if()`.
+- **Input help:** Below the formula field the fields of the table appear as buttons, e.g. "Quantity
+  (quantity)"; a click inserts the technical name at the cursor. Number fields are for calculating, text, select, date and
+  yes/no fields for comparisons; the tooltip shows the data type and, for select fields, the stored values. Each child
+  table gets its own line with `count(table)` and its fields (`table.field`), plus buttons for operators, functions and `sum`, `avg`,
+  `count`; each of these buttons explains its syntax with an example in the tooltip, the help
+  text opens with "Help on formulas"; the functions from plugins are at the
+  very bottom. Result, digits and decimal places are in one row at the
+  top. When creating a new table only the fields further up in the form are listed.
 - **Check:** While you type, SAFT reports errors with their position (e.g. "Character 9: Unknown field “price”") or
   confirms what the result depends on. Circular references are rejected; the message names the formulas of the
   fields involved, e.g. "Circular reference: mwst → einkaufspreis → mwst. The formulas: mwst = …; einkaufspreis = …".

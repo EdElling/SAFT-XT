@@ -7,7 +7,11 @@ namespace App\DynamicData\Formula;
 /** Formelbaum zurück in Text, z. B. nach dem Umbenennen eines Felds. */
 final class Printer
 {
-    private const array PRECEDENCE = ['+' => 1, '-' => 1, '*' => 2, '/' => 2];
+    private const array PRECEDENCE = [
+        'or' => 1, 'and' => 2,
+        '=' => 3, '<>' => 3, '<' => 3, '<=' => 3, '>' => 3, '>=' => 3,
+        '+' => 4, '-' => 4, '*' => 5, '/' => 5,
+    ];
 
     /**
      * @param  array<string, mixed>  $node
@@ -16,7 +20,9 @@ final class Printer
     {
         if (isset($node['op'])) {
             $own = self::PRECEDENCE[$node['op']];
-            $text = self::print($node['left'], $own).' '.$node['op'].' '.self::print($node['right'], $own, true);
+            // Vergleiche lassen sich nicht aneinanderreihen: links auf gleicher Stufe ebenfalls klammern.
+            $comparison = $own === 3;
+            $text = self::print($node['left'], $own + ($comparison ? 1 : 0)).' '.$node['op'].' '.self::print($node['right'], $own, true);
 
             // Klammern nur, wo sie nötig sind (rechts auch bei gleicher Stufe: a - (b - c)).
             return $own < $parent || ($right && $own === $parent) ? '('.$text.')' : $text;
@@ -25,9 +31,10 @@ final class Printer
         return match (true) {
             isset($node['agg']) => $node['agg'].'('.self::aggregated($node).(($node['explicit'] ?? false) ? ', '.$node['via'] : '').')',
             isset($node['num']) => (string) $node['num'],
+            isset($node['str']) => "'".str_replace("'", "''", (string) $node['str'])."'",
             isset($node['field']) => (string) $node['field'],
             isset($node['path']) => implode('.', $node['path']),
-            isset($node['neg']) => '-'.self::print($node['neg'], 3),
+            isset($node['neg']) => '-'.self::print($node['neg'], 6),
             isset($node['call']) => $node['call'].'('.implode(', ', array_map(static fn (array $a): string => self::print($a), $node['args'])).')',
             default => '',
         };

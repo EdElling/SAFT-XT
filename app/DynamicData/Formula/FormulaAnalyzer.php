@@ -32,6 +32,15 @@ final class FormulaAnalyzer
     public const array AGGREGATES = ['sum', 'count', 'min', 'max', 'avg'];
 
     /**
+     * Reservierte Namen: if(bedingung, dann[, sonst]) sowie and/or. Nicht in FUNCTIONS, weil die Formeln der
+     * Auswertungen (ReportExpression) jene Liste mitbenutzen und if() dort (noch) nicht kennen.
+     */
+    public const array KEYWORDS = ['if', 'and', 'or', ...self::TEXT_FUNCTIONS];
+
+    /** Unscharfe Textvergleiche (ohne Gross-/Kleinschreibung), Ergebnis 1 oder 0: contains(text, teil) usw. */
+    public const array TEXT_FUNCTIONS = ['contains', 'startswith', 'endswith'];
+
+    /**
      * Eingebaute Funktionen und die Formelfunktionen der Plugins: Name => [mindestens, höchstens] Argumente.
      *
      * @return array<string, array{0: int, 1: int|null}>
@@ -205,9 +214,13 @@ final class FormulaAnalyzer
      * @param  array<string, CustomField>  $fields
      * @return array<string, mixed>
      */
-    private function check(array $node, array $fields, string $self, ?string $table): array
+    private function check(array $node, array $fields, string $self, ?string $table, bool $comparable = false): array
     {
         $pos = (int) ($node['pos'] ?? 1);
+
+        if (isset($node['str'])) {
+            return $comparable ? $node : throw FormulaException::at($pos, __('tables.formula.errors.text_outside_comparison'));
+        }
 
         if (isset($node['field'])) {
             $name = (string) $node['field'];
@@ -221,9 +234,7 @@ final class FormulaAnalyzer
                 throw FormulaException::at($pos, __('tables.formula.errors.unknown_field', ['field' => $name]));
             }
 
-            if (! in_array($field->valueType(), [FieldType::Integer, FieldType::Decimal], true)) {
-                throw FormulaException::at($pos, __('tables.formula.errors.not_number', ['field' => $name]));
-            }
+            self::assertType($field, $name, $pos, $comparable);
 
             return $node;
         }
@@ -238,6 +249,18 @@ final class FormulaAnalyzer
 
             if ($this->isAggregate($name, $args, $fields)) {
                 return $this->aggregate($name, $args, $pos, $self, $table);
+            }
+
+            if ($name === 'if') {
+                $node['args'] = array_map(fn (array $arg): array => $this->check($arg, $fields, $self, $table), self::ifArguments($args, $pos));
+
+                return $node;
+            }
+
+            if (in_array($name, self::TEXT_FUNCTIONS, true)) {
+                $node['args'] = array_map(fn (array $arg): array => $this->check($arg, $fields, $self, $table, true), self::textArguments($name, $args, $pos));
+
+                return $node;
             }
 
             [$min, $max] = self::functions()[$name] ?? throw FormulaException::at($pos, __('tables.formula.errors.unknown_function', ['function' => $name]));
@@ -256,13 +279,62 @@ final class FormulaAnalyzer
             return $node;
         }
 
+        // Die Seiten eines Vergleichs dürfen auch Text und Felder ohne Zahl sein (Auswahl, Text, Datum, Ja/Nein).
+        $sides = self::isComparison($node);
+
         foreach (['left', 'right', 'neg'] as $key) {
             if (isset($node[$key])) {
-                $node[$key] = $this->check($node[$key], $fields, $self, $table);
+                $node[$key] = $this->check($node[$key], $fields, $self, $table, $sides);
             }
         }
 
         return $node;
+    }
+
+    /** @param  array<string, mixed>  $node */
+    private static function isComparison(array $node): bool
+    {
+        return isset($node['op']) && in_array($node['op'], Parser::COMPARISONS, true);
+    }
+
+    /**
+     * Zahlenfeld zum Rechnen; in Vergleichen jedes Feld ausser Dateien.
+     */
+    private static function assertType(CustomField $field, string $label, int $pos, bool $comparable): void
+    {
+        if ($comparable ? $field->valueType() === FieldType::File : ! in_array($field->valueType(), [FieldType::Integer, FieldType::Decimal], true)) {
+            throw FormulaException::at($pos, __($comparable ? 'tables.formula.errors.not_comparable' : 'tables.formula.errors.not_number', ['field' => $label]));
+        }
+    }
+
+    /**
+     * contains/startswith/endswith(text, teil): genau zwei Werte; beide dürfen Text oder Felder ohne Zahl sein.
+     *
+     * @param  list<array<string, mixed>>  $args
+     * @return list<array<string, mixed>>
+     */
+    private static function textArguments(string $name, array $args, int $pos): array
+    {
+        if (count($args) !== 2) {
+            throw FormulaException::at($pos, __('tables.formula.errors.arguments', ['function' => $name]));
+        }
+
+        return $args;
+    }
+
+    /**
+     * if(bedingung, dann[, sonst]): zwei oder drei Werte.
+     *
+     * @param  list<array<string, mixed>>  $args
+     * @return list<array<string, mixed>>
+     */
+    private static function ifArguments(array $args, int $pos): array
+    {
+        if (count($args) < 2 || count($args) > 3) {
+            throw FormulaException::at($pos, __('tables.formula.errors.arguments', ['function' => 'if']));
+        }
+
+        return $args;
     }
 
     /**
@@ -355,9 +427,13 @@ final class FormulaAnalyzer
      * @param  array<string, mixed>  $node
      * @return array<string, mixed>
      */
-    private function childExpression(array $node, CustomTable $child, string $childName, string $self, ?string $table): array
+    private function childExpression(array $node, CustomTable $child, string $childName, string $self, ?string $table, bool $comparable = false): array
     {
         $pos = (int) ($node['pos'] ?? 1);
+
+        if (isset($node['str'])) {
+            return $comparable ? $node : throw FormulaException::at($pos, __('tables.formula.errors.text_outside_comparison'));
+        }
 
         if (isset($node['path'])) {
             [$tableName, $fieldName] = $node['path'];
@@ -372,9 +448,7 @@ final class FormulaAnalyzer
                 throw FormulaException::at($pos, __('tables.formula.errors.unknown_child_field', ['field' => $fieldName, 'table' => $childName]));
             }
 
-            if (! in_array($field->valueType(), [FieldType::Integer, FieldType::Decimal], true)) {
-                throw FormulaException::at($pos, __('tables.formula.errors.not_number', ['field' => $childName.'.'.$fieldName]));
-            }
+            self::assertType($field, $childName.'.'.$fieldName, $pos, $comparable);
 
             // Über die eigene Tabelle (Baum): keine berechneten Felder, sonst rechnete es im Kreis.
             if ($childName === $table && ($field->type === FieldType::Computed || $fieldName === $self)) {
@@ -386,6 +460,18 @@ final class FormulaAnalyzer
 
         if (isset($node['field'])) {
             throw FormulaException::at($pos, __('tables.formula.errors.aggregate_parent_field', ['field' => $node['field'], 'table' => $childName]));
+        }
+
+        if (isset($node['call']) && $node['call'] === 'if') {
+            $node['args'] = array_map(fn (array $arg): array => $this->childExpression($arg, $child, $childName, $self, $table), self::ifArguments((array) $node['args'], $pos));
+
+            return $node;
+        }
+
+        if (isset($node['call']) && in_array($node['call'], self::TEXT_FUNCTIONS, true)) {
+            $node['args'] = array_map(fn (array $arg): array => $this->childExpression($arg, $child, $childName, $self, $table, true), self::textArguments((string) $node['call'], (array) $node['args'], $pos));
+
+            return $node;
         }
 
         if (isset($node['call'])) {
@@ -408,9 +494,11 @@ final class FormulaAnalyzer
             return $node;
         }
 
+        $sides = self::isComparison($node);
+
         foreach (['left', 'right', 'neg'] as $key) {
             if (isset($node[$key])) {
-                $node[$key] = $this->childExpression($node[$key], $child, $childName, $self, $table);
+                $node[$key] = $this->childExpression($node[$key], $child, $childName, $self, $table, $sides);
             }
         }
 

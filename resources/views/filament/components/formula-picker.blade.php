@@ -3,7 +3,8 @@
     des nächstgelegenen Formelfelds ein – im Repeater also in das Feld desselben Eintrags.
 
     $groups:  list<array{label: string, items: list<array{label: string, insert: string, title?: string}>}>
-    $buttons: list<array{label: string, insert: string}>  Rechenzeichen und Funktionen
+    $buttons: list<array{label: string, insert: string, title?: string}>  Rechenzeichen und Funktionen (Tooltip: Erklärung)
+    $buttonsLabel: optionale Überschrift über den Knöpfen
     $empty:   Text, wenn keine Felder da sind
 --}}
 <div x-data="{
@@ -37,9 +38,12 @@
             </div>
         </div>
     @endforeach
+    @if (filled($buttonsLabel ?? null) && $buttons !== [])
+        <p style="font-size: .875rem; font-weight: 500; margin-bottom: -.2rem">{{ $buttonsLabel }}</p>
+    @endif
     <p style="font-size: .75rem; display: flex; flex-wrap: wrap; gap: .2rem">
         @foreach ($buttons as $button)
-            <button type="button" x-on:click="insert(@js($button['insert']))" title="{{ trim($button['insert']) }}"
+            <button type="button" x-on:click="insert(@js($button['insert']))" title="{{ $button['title'] ?? trim($button['insert']) }}"
                 style="font-family: ui-monospace, monospace; padding: 0 .4rem; border: 1px solid var(--gray-300); border-radius: .25rem"
                 class="dark:!border-white/10">{{ $button['label'] }}</button>
         @endforeach

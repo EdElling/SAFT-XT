@@ -155,7 +155,7 @@ final readonly class PluginInspector
             }
         }
 
-        $reserved = [...array_keys(FormulaAnalyzer::FUNCTIONS), ...FormulaAnalyzer::AGGREGATES];
+        $reserved = [...array_keys(FormulaAnalyzer::FUNCTIONS), ...FormulaAnalyzer::AGGREGATES, ...FormulaAnalyzer::KEYWORDS];
         $seen = [];
 
         foreach ($plugin->formulaFunctions() as $function) {

@@ -8,7 +8,8 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-1. **B-107** Etappe 7 (KI-App-Designer) – nach einer Denkpause
+1. **B-120** Datensatz kopieren, dann **B-121** Demo „Gitarrenshop“
+2. **B-107** Etappe 7 (KI-App-Designer): 7a Entwurf per Prompt mit Vorschau und Erzeugen, 7b Editor, 7c Auswertungen
 
 ## Apps (Fachanwendungen)
 
@@ -38,6 +39,10 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 | B-010 | Externe Datenbank als interne Tabellen übernehmen | DDL-Schema oder Datenbank-Dump bzw. angebundene Tabellen (Table-Connector) als Tabellen des Table-Designers übernehmen, mit Verknüpfungen und optional Daten. Empfohlener Weg: „Als interne Tabellen übernehmen“ aus dem Table-Connector. | offen | – |
 | B-011 | KI-Assistent für mehrere verknüpfte Tabellen | Der Assistent im Table-Designer schlägt ein ganzes Datenmodell (mehrere Tabellen mit Verknüpfungen) vor. | offen | – |
 | B-110 | Regeln über den Tabellen-Assistenten | Der KI-Assistent im Table-Designer schlägt beim Erstellen und Ändern auch Regeln vor: Feldregeln (Minimum/Maximum, Mindest-/Höchstlänge, E-Mail, URL) und Tabellenregeln (Feld mit Feld oder Wert vergleichen, optional eigene Meldung in vier Sprachen), z. B. „Menge in Abfragepositionen maximal 3“ oder „Ende nicht vor Beginn“. Prüfung über dieselben Klassen wie von Hand, Vorschau je Regel beim Ändern. Nicht: Plugin-Regeln, Formeln, „Übernehmen aus“, Vorgabewerte. | umgesetzt (Feld- und Tabellenregeln beim Erstellen bzw. Anpassen, Regel auf dieselben Felder ersetzt die vorhandene, Widersprüche werden erklärt; dazu „Mit KI anpassen“ als Gespräch im Dialog und Sprachreiter mit Platzhalter für alle übersetzbaren Texte) | B-107 Etappe 3 |
+| B-118 | Bedingungen in Formeln (Table-Designer) | `if(bedingung, dann[, sonst])`, Vergleiche `= <> < <= > >=`, `and`/`or`, Text in einfachen Anführungszeichen, unscharf mit `contains`/`startswith`/`endswith` (ohne Gross-/Kleinschreibung); in Vergleichen auch Text-, Auswahl-, Datums- und Ja/Nein-Felder; auch in Summen über Kind-Datensätze, z. B. `sum(if(positionen.art = 'Zoll', positionen.betrag, 0))`. Leere Seite = nicht erfüllt. Vorstufe für die Demo „Gitarrenshop“ (B-121). Dazu im Formeleditor: alle verwendbaren Felder mit Datentyp im Tooltip, Tooltip mit Syntax je Funktionsknopf, Hilfetext aufklappbar. | umgesetzt | B-107 Etappe 7 |
+| B-119 | `if()` in den Formeln der Auswertungen | Die Ausdrücke der Auswertungen (`ReportExpression`) haben eine eigene Syntax: Felder in eckigen Klammern (`[Menge]`), Werte mit `;` getrennt, Rechenzeichen auch × ÷. Bedingungen dort ergänzen wie in den Tabellenformeln (B-118), passend zu dieser Syntax, z. B. `if([Typ] = 'Ausgabe'; -[Betrag]; [Betrag])`. Die Funktionsliste teilen sich heute beide (`FormulaAnalyzer::FUNCTIONS`); `if` steht deshalb bewusst nicht darin. | offen | B-118 |
+| B-120 | Datensatz kopieren inkl. Dateien | Symbol „Kopieren“ in der Zeile von Datentabellen (Recht zum Anlegen): Formular „Neuer Datensatz“ mit allen Werten vorbelegt, eindeutige Felder leer, berechnete neu; Dateien und Bilder werden beim Speichern als echte Kopien angelegt. Vorstufe für die Demo „Gitarrenshop“ (B-121). | offen | B-107 Etappe 7 |
+| B-121 | Demo „Gitarrenshop“ | Ein- und Ausgabenrechnung mit MWST (Auswahl der Schweizer Sätze, Einfuhr-MWST als Ausgabenart), Belege mit Dateien, Teil- und Ratenzahlungen, Artikel als Einzelstücke (Instrumente, Zubehör, Dienstleistungen, Sonstiges, bis 10 Bilder) mit Kosten und Erlös; Auswertungen je Jahr mit Saldo, alle Buchungen, je Artikel. Von Hand als Seeder; Referenz und Testfall für den KI-App-Designer (Etappe 7) mit dem Prompt des Nutzers. | offen | B-118, B-120 |
 
 ## Fehlende Grundfunktionen
 

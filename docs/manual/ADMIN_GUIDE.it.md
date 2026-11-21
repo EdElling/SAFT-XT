@@ -346,10 +346,27 @@ nelle regole.
   `sum(round(bestellpositionen.menge * bestellpositionen.einzelpreis * 0.95, 2))`. L’espressione contiene solo campi
   di quell’unica tabella figlia (nessun campo del record master, nessun riepilogo annidato). Se il risultato per un
   record figlio è vuoto, non viene contato – con `coalesce(…, 0)` lo si può gestire.
-- **Aiuto all’inserimento:** sotto il campo della formula i campi numerici della tabella compaiono come pulsanti, ad
-  es. «Menge (menge)»; un clic inserisce il nome tecnico alla posizione del cursore. Per ogni tabella figlia segue una
-  riga propria con `count(tabella)` e i suoi campi numerici (`tabella.campo`), oltre a pulsanti per gli operatori, le
-  funzioni e `sum`, `avg`, `count`. Creando una nuova tabella compaiono solo i campi che si trovano più in alto nel
+- **Condizioni:** `if(condizione, allora, altrimenti)` calcola l’uno o l’altro valore secondo la condizione; senza
+  `altrimenti` il risultato è vuoto se la condizione non è soddisfatta. Le condizioni confrontano con `=`, `<>`, `<`,
+  `<=`, `>`, `>=` e si combinano con `and` e `or`. Nei confronti sono ammessi anche campi testo, selezione, data e sì/no;
+  il testo va tra apici (un apice nel testo si raddoppia). I campi di selezione confrontano il valore salvato, non
+  l’etichetta tradotta; una data si scrive `'2026-12-31'`. Esempi: importo con segno =
+  `if(tipo = 'Uscita', -importo, importo)`, costi doganali di un giustificativo =
+  `sum(if(righe.genere = 'Dogana', righe.importo, 0))`, numero di righe oltre 10 pezzi = `sum(righe.quantita > 10)`
+  (un confronto dà 1 o 0). Se un lato di un confronto è vuoto, non è soddisfatto – anche con `<>`. **Confrontare testo in modo approssimativo:**
+  `contains(campo, 'parte')`, `startswith(campo, 'inizio')` e `endswith(campo, 'fine')` verificano, senza distinguere
+  maiuscole e minuscole, se il testo contiene la parte o inizia o finisce con essa, e danno anch’essi 1 o 0, ad es.
+  `sum(contains(righe.descrizione, 'chitarra'))`. I valori di una
+  funzione si possono separare anche con `;`; SAFT li scrive con la virgola. Le espressioni dei report non conoscono
+  (ancora) `if()`.
+- **Aiuto all’inserimento:** sotto il campo della formula i campi della tabella compaiono come pulsanti, ad
+  es. «Menge (menge)»; un clic inserisce il nome tecnico alla posizione del cursore. I campi numerici servono per calcolare, i campi testo,
+  selezione, data e sì/no per i confronti; il tooltip indica il tipo di dato e, per i campi di selezione, i valori
+  salvati. Per ogni tabella figlia segue una riga propria con `count(tabella)` e i suoi campi (`tabella.campo`), oltre a pulsanti per gli operatori, le
+  funzioni e `sum`, `avg`, `count`; ognuno di questi pulsanti spiega nel tooltip la sintassi con un esempio, il
+  testo di aiuto si apre con «Aiuto sulle formule»; le funzioni dei plugin si
+  trovano in fondo. Risultato, cifre e decimali sono in
+  alto su una riga. Creando una nuova tabella compaiono solo i campi che si trovano più in alto nel
   modulo.
 - **Controllo:** già durante l’inserimento SAFT segnala gli errori con la posizione (ad es. «Carattere 9: campo
   sconosciuto «preis»») oppure conferma da cosa dipende il risultato. I riferimenti circolari vengono rifiutati; il

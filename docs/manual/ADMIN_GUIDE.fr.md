@@ -355,10 +355,28 @@ ou *Prix total* comme somme des montants de toutes les lignes d’une commande. 
   `sum(round(bestellpositionen.menge * bestellpositionen.einzelpreis * 0.95, 2))`. L’expression ne contient que des
   champs de cette seule table enfant (pas de champs de l’enregistrement maître, pas de résumés imbriqués). Si le
   résultat est vide pour un enregistrement enfant, il ne compte pas – `coalesce(…, 0)` permet de le gérer.
-- **Aide à la saisie :** sous le champ de formule, les champs numériques de la table apparaissent sous forme de
-  boutons, p. ex. « Menge (menge) » ; un clic insère le nom technique au curseur. Chaque table enfant a sa propre
-  ligne avec `count(table)` et ses champs numériques (`table.champ`), plus des boutons pour les opérateurs, les
-  fonctions et `sum`, `avg`, `count`. Lors de la création d’une nouvelle table, seuls les champs placés plus haut dans
+- **Conditions :** `if(condition, alors, sinon)` calcule l’une ou l’autre valeur selon la condition ; sans `sinon`, le
+  résultat est vide si la condition n’est pas remplie. Les conditions comparent avec `=`, `<>`, `<`, `<=`, `>`, `>=` et
+  se combinent avec `and` et `or`. Dans les comparaisons, les champs texte, liste de choix, date et oui/non sont aussi
+  admis ; le texte s’écrit entre apostrophes (une apostrophe dans le texte est doublée). Les listes de choix comparent
+  la valeur enregistrée, pas le libellé traduit ; une date s’écrit `'2026-12-31'`. Exemples : montant signé =
+  `if(type = 'Dépense', -montant, montant)`, frais de douane d’un justificatif =
+  `sum(if(lignes.genre = 'Douane', lignes.montant, 0))`, nombre de lignes au-delà de 10 pièces =
+  `sum(lignes.quantite > 10)` (une comparaison donne 1 ou 0). Si un côté d’une comparaison est vide, elle n’est pas
+  remplie – même avec `<>`. **Comparer du texte de façon approximative :** `contains(champ, 'partie')`,
+  `startswith(champ, 'début')` et `endswith(champ, 'fin')` vérifient, sans tenir compte de la casse, si le texte contient
+  la partie ou commence ou finit par elle, et donnent aussi 1 ou 0, p. ex. `sum(contains(lignes.designation, 'guitare'))`.
+  Les valeurs d’une fonction peuvent aussi être séparées par `;` ; SAFT les écrit avec une
+  virgule. Les expressions des rapports ne connaissent pas (encore) `if()`.
+- **Aide à la saisie :** sous le champ de formule, les champs de la table apparaissent sous forme de
+  boutons, p. ex. « Menge (menge) » ; un clic insère le nom technique au curseur. Les champs numériques servent au calcul, les champs
+  texte, liste de choix, date et oui/non aux comparaisons ; l’infobulle indique le type de données et, pour les listes de
+  choix, les valeurs enregistrées. Chaque table enfant a sa propre ligne avec `count(table)` et ses champs
+  (`table.champ`), plus des boutons pour les opérateurs, les
+  fonctions et `sum`, `avg`, `count` ; chacun de ces boutons explique dans l’infobulle la syntaxe avec un exemple,
+  le texte d’aide s’ouvre avec « Aide sur les formules » ; les fonctions
+  des plugins se trouvent tout en bas. Résultat, chiffres et
+  décimales figurent en haut sur une ligne. Lors de la création d’une nouvelle table, seuls les champs placés plus haut dans
   le formulaire apparaissent.
 - **Contrôle :** dès la saisie, SAFT signale les erreurs avec leur position (p. ex. « Caractère 9 : champ inconnu
   « preis » ») ou confirme de quoi dépend le résultat. Les références circulaires sont refusées ; le message indique

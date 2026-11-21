@@ -46,6 +46,15 @@ use Illuminate\Support\Str;
  */
 final class FieldForm
 {
+    /** Felder, die sich in Formeln vergleichen lassen (if(), and/or), aber nicht rechnen: Text, Auswahl, Datum, Ja/Nein. */
+    /** Schlüssel der Tooltips für die Rechenzeichen-Knöpfe (tables.formula.tips). */
+    private const array TIP_KEYS = [
+        '+' => 'plus', '-' => 'minus', '*' => 'times', '/' => 'divide', '(' => 'brackets', ')' => 'brackets', ',' => 'comma',
+        '=' => 'equal', '<>' => 'not_equal', '<' => 'less', '>' => 'greater', 'and' => 'and', 'or' => 'or',
+    ];
+
+    private const array COMPARABLE = [FieldType::String, FieldType::Text, FieldType::Select, FieldType::Boolean, FieldType::Date, FieldType::DateTime];
+
     /**
      * @return list<Component|Field>
      */
@@ -222,6 +231,27 @@ final class FieldForm
             ->columns(2)
             ->visible($is(FieldType::String, FieldType::Decimal, FieldType::Select, FieldType::Relation, FieldType::Computed, FieldType::File))
             ->schema([
+                // Erste Zeile: beim berechneten Feld das Ergebnis, bei Dezimalzahlen (auch als Ergebnis) die Stellen.
+                Grid::make(3)
+                    ->schema([
+                        Select::make('options.result')
+                            ->label(__('tables.formula.result'))
+                            ->options(['decimal' => FieldType::Decimal->label(), 'integer' => FieldType::Integer->label()])
+                            ->default('decimal')
+                            ->selectablePlaceholder(false)
+                            ->live()
+                            ->visible($is(FieldType::Computed)),
+                        TextInput::make('options.precision')
+                            ->label(__('tables.fields.precision'))
+                            ->integer()->minValue(1)->maxValue(38)->default(12)
+                            ->visible($decimal),
+                        TextInput::make('options.scale')
+                            ->label(__('tables.fields.scale'))
+                            ->integer()->minValue(0)->maxValue(38)->default(2)
+                            ->visible($decimal),
+                    ])
+                    ->visible($is(FieldType::Decimal, FieldType::Computed))
+                    ->columnSpanFull(),
                 ...self::formula($owner),
                 // Dateien (B-021): erlaubte Arten, Höchstgrösse je Datei, Anzahl.
                 CheckboxList::make('options.kinds')
@@ -262,14 +292,6 @@ final class FieldForm
                     ->maxValue(FieldDefinitionNormalizer::MAX_STRING_LENGTH)
                     ->default(255)
                     ->visible($is(FieldType::String)),
-                TextInput::make('options.precision')
-                    ->label(__('tables.fields.precision'))
-                    ->integer()->minValue(1)->maxValue(38)->default(12)
-                    ->visible($decimal),
-                TextInput::make('options.scale')
-                    ->label(__('tables.fields.scale'))
-                    ->integer()->minValue(0)->maxValue(38)->default(2)
-                    ->visible($decimal),
                 Repeater::make('options.options')
                     ->label(__('tables.fields.options'))
                     ->schema([
@@ -331,13 +353,6 @@ final class FieldForm
         $isComputed = static fn (Get $get): bool => $get('type') === FieldType::Computed->value;
 
         return [
-            Select::make('options.result')
-                ->label(__('tables.formula.result'))
-                ->options(['decimal' => FieldType::Decimal->label(), 'integer' => FieldType::Integer->label()])
-                ->default('decimal')
-                ->selectablePlaceholder(false)
-                ->live()
-                ->visible($isComputed),
             Textarea::make('options.formula')
                 ->label(__('tables.formula.label'))
                 ->rows(2)
@@ -371,29 +386,42 @@ final class FieldForm
                 ->viewData(fn (Get $get, ?CustomField $record): array => self::formulaPicker($owner, $get, (string) ($get('name') ?: $record?->name)))
                 ->columnSpanFull()
                 ->visible($isComputed),
-            Text::make(__('tables.formula.help'))
+            View::make('filament.components.formula-help')
+                ->viewData(['summary' => __('tables.formula.help_toggle'), 'text' => __('tables.formula.help')])
                 ->columnSpanFull()
                 ->visible($isComputed),
+            // Funktionen aus Plugins erst nach den eingebauten und dem Hilfetext – nicht mit ihnen zu verwechseln.
+            View::make('filament.components.formula-picker')
+                ->viewData(fn (): array => ['groups' => self::pluginFunctionGroups($owner), 'buttons' => [], 'empty' => ''])
+                ->columnSpanFull()
+                ->visible(fn (Get $get): bool => $isComputed($get) && self::pluginFunctionGroups($owner) !== []),
         ];
     }
 
     /**
-     * Daten für die Formel-Bausteine: Zahlenfelder dieser Tabelle (beim Anlegen: die Felder weiter oben im Formular)
-     * und je Kind-Tabelle deren Zahlenfelder als „tabelle.feld“ plus count(tabelle).
+     * Daten für die Formel-Bausteine: Zahlenfelder dieser Tabelle (beim Anlegen: die Felder weiter oben im Formular),
+     * Felder zum Vergleichen in if() (Text, Auswahl, Datum, Ja/Nein; bei Auswahl nennt der Tooltip die gespeicherten
+     * Werte) und je Kind-Tabelle deren Felder als „tabelle.feld“ plus count(tabelle).
      *
      * @return array<string, mixed>
      */
     private static function formulaPicker(?CustomTable $owner, Get $get, string $self): array
     {
-        $item = static fn (string $name, string $label, ?string $insert = null): array => [
+        $item = static fn (string $name, string $label, ?string $insert = null, ?string $title = null): array => array_filter([
             'label' => $label === '' || $label === $name ? $name : $label.' ('.$name.')',
             'insert' => $insert ?? $name,
-        ];
+            'title' => $title,
+        ], static fn (?string $v): bool => $v !== null);
+        // Zum Rechnen Zahlen; Text, Auswahl, Datum und Ja/Nein für Vergleiche (if, contains …).
+        $usable = static fn (CustomField $f): bool => in_array($f->valueType(), [FieldType::Integer, FieldType::Decimal, ...self::COMPARABLE], true);
+        // Tooltip: Datentyp, bei Auswahlfeldern die gespeicherten Werte (Vergleiche brauchen sie, nicht die Bezeichnung).
+        $title = static fn (CustomField $f, string $insert): string => $insert.' – '.self::typeTitle($f->type, $f->type === FieldType::Computed ? $f->valueType() : null,
+            $f->type === FieldType::Select ? collect((array) ($f->optionsArray()['options'] ?? []))->map(static fn (mixed $o): string => is_array($o) ? (string) ($o['value'] ?? '') : (string) $o)->all() : []);
 
         if ($owner !== null) {
             $own = $owner->fields()->get()
-                ->filter(fn (CustomField $f): bool => $f->is_active && $f->name !== $self && in_array($f->valueType(), [FieldType::Integer, FieldType::Decimal], true))
-                ->map(fn (CustomField $f): array => $item($f->name, (string) $f->label))
+                ->filter(fn (CustomField $f): bool => $f->is_active && $f->name !== $self && $usable($f))
+                ->map(fn (CustomField $f): array => $item($f->name, (string) $f->label, null, $title($f, $f->name)))
                 ->values()
                 ->all();
         } else {
@@ -407,12 +435,12 @@ final class FieldForm
                     break;
                 }
 
-                $type = (string) ($sibling['type'] ?? '');
-                $numeric = in_array($type, [FieldType::Integer->value, FieldType::Decimal->value], true)
-                    || ($type === FieldType::Computed->value);
+                $type = FieldType::tryFrom((string) ($sibling['type'] ?? ''));
+                $usableType = $type === FieldType::Computed || in_array($type, [FieldType::Integer, FieldType::Decimal, ...self::COMPARABLE], true);
 
-                if ($numeric) {
-                    $own[] = $item($name, Translations::pick($sibling['label'] ?? null, $name));
+                if ($type !== null && $usableType) {
+                    $values = $type === FieldType::Select ? array_map(static fn (mixed $o): string => (string) ($o['value'] ?? ''), (array) ($sibling['options']['options'] ?? [])) : [];
+                    $own[] = $item($name, Translations::pick($sibling['label'] ?? null, $name), null, $name.' – '.self::typeTitle($type, null, $values));
                 }
             }
         }
@@ -421,8 +449,8 @@ final class FieldForm
 
         foreach ($owner === null ? [] : FormulaAnalyzer::children($owner->name) as $childName => $child) {
             $fields = $child['table']->fields
-                ->filter(fn (CustomField $f): bool => $f->is_active && in_array($f->valueType(), [FieldType::Integer, FieldType::Decimal], true))
-                ->map(fn (CustomField $f): array => $item($childName.'.'.$f->name, (string) $f->label === '' ? '' : $f->label, $childName.'.'.$f->name))
+                ->filter(fn (CustomField $f): bool => $f->is_active && $usable($f))
+                ->map(fn (CustomField $f): array => $item($childName.'.'.$f->name, (string) $f->label === '' ? '' : $f->label, $childName.'.'.$f->name, $title($f, $childName.'.'.$f->name)))
                 ->values()
                 ->all();
 
@@ -432,30 +460,53 @@ final class FieldForm
             ];
         }
 
-        // Formelfunktionen aus Plugins mit ihrer Beschreibung als Tooltip.
-        // Nur Funktionen von Plugins der App der Tabelle bzw. ohne eigene App (B-107).
-        $pluginFunctions = app(PluginRegistry::class)->formulaFunctions($owner?->app_id);
-
-        if ($pluginFunctions !== []) {
-            $groups[] = [
-                'label' => __('tables.formula.picker_plugins'),
-                'items' => array_values(array_map(static fn (FormulaFunction $f): array => [
-                    'label' => $f->name.'()',
-                    'insert' => $f->name.'(',
-                    'title' => ($f->description !== '' ? $f->description : $f->name)
-                        .' – '.__('plugins.origin.tooltip', ['plugin' => (string) app(PluginRegistry::class)->formulaFunctionPlugin($f->name)?->label()]),
-                ], $pluginFunctions)),
-            ];
-        }
-
         return [
             'groups' => $groups,
+            'buttonsLabel' => __('tables.formula.picker_functions'),
+            // Tooltip je Knopf: Syntax und Beispiel (tables.formula.tips).
             'buttons' => [
-                ...array_map(fn (string $s): array => ['label' => $s, 'insert' => $s === ',' ? ', ' : ' '.$s.' '], ['+', '-', '*', '/', '(', ')', ',']),
-                ...array_map(fn (string $f): array => ['label' => $f, 'insert' => $f.'('], ['round', 'abs', 'min', 'max', 'coalesce', 'sum', 'avg', 'count']),
+                ...array_map(fn (string $s): array => ['label' => $s, 'insert' => $s === ',' ? ', ' : ' '.$s.' ', 'title' => __('tables.formula.tips.'.self::TIP_KEYS[$s])], ['+', '-', '*', '/', '(', ')', ',', '=', '<>', '<', '>', 'and', 'or']),
+                ...array_map(fn (string $f): array => ['label' => $f, 'insert' => $f.'(', 'title' => __('tables.formula.tips.'.$f)], ['round', 'abs', 'min', 'max', 'coalesce', 'if', 'contains', 'startswith', 'endswith', 'sum', 'avg', 'count']),
             ],
             'empty' => __('tables.formula.picker_empty'),
         ];
+    }
+
+    /**
+     * Formelfunktionen aus Plugins mit ihrer Beschreibung als Tooltip – nur von Plugins der App der Tabelle bzw. ohne
+     * eigene App (B-107).
+     *
+     * @return list<array{label: string, items: list<array{label: string, insert: string, title: string}>}>
+     */
+    private static function pluginFunctionGroups(?CustomTable $owner): array
+    {
+        $pluginFunctions = app(PluginRegistry::class)->formulaFunctions($owner?->app_id);
+
+        if ($pluginFunctions === []) {
+            return [];
+        }
+
+        return [[
+            'label' => __('tables.formula.picker_plugins'),
+            'items' => array_values(array_map(static fn (FormulaFunction $f): array => [
+                'label' => $f->name.'()',
+                'insert' => $f->name.'(',
+                'title' => ($f->description !== '' ? $f->description : $f->name)
+                    .' – '.__('plugins.origin.tooltip', ['plugin' => (string) app(PluginRegistry::class)->formulaFunctionPlugin($f->name)?->label()]),
+            ], $pluginFunctions)),
+        ]];
+    }
+
+    /**
+     * Tooltip eines Feldknopfs: Datentyp (berechnet mit Ergebnis), bei Auswahlfeldern die gespeicherten Werte.
+     *
+     * @param  list<string>  $values
+     */
+    private static function typeTitle(FieldType $type, ?FieldType $result, array $values): string
+    {
+        $label = $type->label().($result !== null ? ' ('.$result->label().')' : '');
+
+        return $values === [] ? $label : $label.' – '.__('tables.formula.picker_values', ['values' => implode(', ', array_map(static fn (string $v): string => "'".$v."'", $values))]);
     }
 
     /** Ergebnis der Prüfung unter dem Formelfeld: Fehler oder die Felder, von denen das Ergebnis abhängt. */

@@ -162,7 +162,7 @@ final class PluginRegistry
      */
     public function formulaFunctions(?int $appId = null): array
     {
-        $reserved = [...array_keys(FormulaAnalyzer::FUNCTIONS), ...FormulaAnalyzer::AGGREGATES];
+        $reserved = [...array_keys(FormulaAnalyzer::FUNCTIONS), ...FormulaAnalyzer::AGGREGATES, ...FormulaAnalyzer::KEYWORDS];
         $functions = [];
 
         foreach ($this->all() as $plugin) {
