@@ -385,6 +385,84 @@ class TableAssistantTest extends DynamicDataTestCase
         $this->assertEquals(['max_length' => 40], $fields['nachname']->validation_rules);
     }
 
+    public function test_computed_fields_are_proposed_when_creating(): void
+    {
+        $proposal = fn (string $formula): array => $this->members(['fields' => [
+            $this->field('menge', 'integer'),
+            $this->field('preis', 'decimal', ['precision' => 10, 'scale' => 2]),
+            $this->field('betrag', 'computed', ['formula' => $formula, 'precision' => 12, 'scale' => 2]),
+            $this->field('gross', 'computed', ['formula' => 'betrag > 100', 'precision' => 1, 'scale' => 0]),
+        ]]);
+
+        // Summen über Kind-Tabellen gibt es beim Anlegen noch nicht: Korrektur.
+        $this->fake->push($proposal('sum(positionen.betrag)'))->push($proposal('round(menge * preis, 2)'));
+        $page = Livewire::test(CreateCustomTable::class)
+            ->set('assistantPrompt', 'Mitglieder mit Menge, Preis und Betrag')
+            ->call('askTableAssistant')
+            ->assertSet('assistantReplyKind', 'proposal');
+        $this->assertStringContainsString('„positionen“ ist keine Tabelle', end($this->fake->requests[1]['messages'])['content']);
+        $this->assertStringContainsString('computed (B-122)', $this->fake->requests[0]['system'][0]['text'], 'Die KI kennt die Formelsyntax.');
+
+        $page->call('create')->assertHasNoFormErrors();
+        $fields = CustomTable::query()->where('name', 'mitglieder')->sole()->fields->keyBy('name');
+        $this->assertSame(FieldType::Computed, $fields['betrag']->type);
+        $this->assertSame(['decimal', 'round(menge * preis, 2)'], [$fields['betrag']->optionsArray()['result'], $fields['betrag']->optionsArray()['formula']]);
+        $this->assertSame('integer', $fields['gross']->optionsArray()['result'], 'Genauigkeit mit 0 Nachkommastellen = Ganzzahl.');
+
+        $record = DynamicRecord::forTableName('mitglieder')->create(['nachname' => 'X', 'menge' => 3, 'preis' => '40.50']);
+        $this->assertSame(['121.50', 1], [(string) $record->betrag, (int) $record->gross]);
+    }
+
+    public function test_computed_fields_with_conditions_are_added_to_an_existing_table(): void
+    {
+        $status = ['options' => [['value' => 'offen', 'label' => ['de' => 'Offen']], ['value' => 'bezahlt', 'label' => ['de' => 'Bezahlt']]]];
+        $orders = $this->service()->createTable(['name' => 'bestellungen', 'label' => ['de' => 'Bestellungen']], [
+            ['name' => 'nummer', 'label' => ['de' => 'Nummer'], 'type' => 'string'],
+            ['name' => 'status', 'label' => ['de' => 'Status'], 'type' => 'select', 'options' => $status],
+        ]);
+        $this->service()->createTable(['name' => 'positionen', 'label' => ['de' => 'Positionen']], [
+            ['name' => 'bestellung_id', 'label' => ['de' => 'Bestellung'], 'type' => 'relation', 'options' => ['table' => 'bestellungen', 'display_fields' => ['nummer']]],
+            ['name' => 'menge', 'label' => ['de' => 'Menge'], 'type' => 'integer'],
+            ['name' => 'preis', 'label' => ['de' => 'Preis'], 'type' => 'decimal', 'options' => ['precision' => 10, 'scale' => 2]],
+        ]);
+        $order = DynamicRecord::forTableName('bestellungen')->create(['nummer' => 'B-1', 'status' => 'offen']);
+        DynamicRecord::forTableName('positionen')->create(['bestellung_id' => $order->id, 'menge' => 3, 'preis' => '10.00']);
+        DynamicRecord::forTableName('positionen')->create(['bestellung_id' => $order->id, 'menge' => 1, 'preis' => '5.00']);
+
+        $proposal = fn (string $open): array => [
+            'kind' => 'changes', 'question' => '', 'icon' => '', 'change' => [], 'add_rules' => [],
+            'add' => [
+                $this->field('ueber_2', 'computed', ['label' => $this->t('Positionen über 2 Stk.'), 'formula' => 'sum(positionen.menge > 2)', 'precision' => 10, 'scale' => 0]),
+                $this->field('gesamt', 'computed', ['label' => $this->t('Gesamt'), 'formula' => 'sum(positionen.menge * positionen.preis)', 'precision' => 12, 'scale' => 2]),
+                // Verwendet das vorher vorgeschlagene, noch nicht gespeicherte Feld „gesamt“.
+                $this->field('zahlbetrag', 'computed', ['label' => $this->t('Zahlbetrag'), 'formula' => $open, 'precision' => 12, 'scale' => 2]),
+            ],
+        ];
+
+        // Mit Text rechnen geht nicht: Korrektur.
+        $this->fake->push($proposal('status * gesamt'))->push($proposal("if(status = 'bezahlt', 0, gesamt)"));
+
+        Livewire::test(EditCustomTable::class, ['record' => $orders->id])
+            ->callAction('aiAdjust', ['prompt' => 'Positionen über 2 Stück zählen, Gesamt, Zahlbetrag 0 wenn bezahlt'])
+            ->assertActionMounted('aiAdjust')
+            ->assertSet('aiSummary', [
+                'Neu: Positionen über 2 Stk. (Berechnet) – Formel: sum(positionen.menge > 2)',
+                'Neu: Gesamt (Berechnet) – Formel: sum(positionen.menge * positionen.preis)',
+                "Neu: Zahlbetrag (Berechnet) – Formel: if(status = 'bezahlt', 0, gesamt)",
+            ])
+            ->callAction(TestAction::make('aiApply'))
+            ->assertNotified(__('tables_assistant.applied_all'));
+
+        $this->assertStringContainsString('„status“ ist kein Zahlenfeld', end($this->fake->requests[1]['messages'])['content']);
+        // Kind-Tabellen samt gespeicherten Auswahlwerten gehen an die KI.
+        $this->assertStringContainsString('"child_tables":[{"name":"positionen"', end($this->fake->requests[0]['messages'])['content']);
+
+        $order = DynamicRecord::forTableName('bestellungen')->newQuery()->findOrFail($order->id);
+        $this->assertSame([1, '35.00', '35.00'], [(int) $order->ueber_2, (string) $order->gesamt, (string) $order->zahlbetrag]);
+        $order->update(['status' => 'bezahlt']);
+        $this->assertSame('0.00', (string) $order->fresh()->zahlbetrag);
+    }
+
     public function test_field_and_table_rules_are_added_to_an_existing_table(): void
     {
         $this->service()->createTable(['name' => 'anfragepositionen', 'label' => ['de' => 'Anfragepositionen']], [

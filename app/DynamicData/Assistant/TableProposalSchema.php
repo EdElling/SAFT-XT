@@ -12,8 +12,8 @@ use App\DynamicData\Files\FileKinds;
  */
 final class TableProposalSchema
 {
-    /** Feldtypen, die der Assistent vorschlagen darf (keine berechneten Felder). */
-    public const array TYPES = ['string', 'text', 'integer', 'decimal', 'boolean', 'date', 'datetime', 'select', 'relation', 'file'];
+    /** Feldtypen, die der Assistent vorschlagen darf; berechnete Felder mit Formel (B-122). */
+    public const array TYPES = ['string', 'text', 'integer', 'decimal', 'boolean', 'date', 'datetime', 'select', 'relation', 'file', 'computed'];
 
     /** @return list<string> */
     public static function locales(): array
@@ -89,6 +89,12 @@ final class TableProposalSchema
                 'max_mb' => is_int($field['max_mb'] ?? null) && $field['max_mb'] > 0 ? $field['max_mb'] : (int) config('dynamic_data.files.default_max_mb', 10),
                 'max_files' => is_int($field['max_files'] ?? null) && $field['max_files'] > 0 ? $field['max_files'] : 1,
             ],
+            // Berechnet (B-122): Genauigkeit mit 0 Nachkommastellen = Ganzzahl, sonst Dezimalzahl (Vorgabe 12,2).
+            'computed' => ['formula' => trim((string) ($field['formula'] ?? '')), ...(is_int($field['precision'] ?? null) && $field['precision'] > 0 && ($field['scale'] ?? null) === 0
+                ? ['result' => 'integer']
+                : ['result' => 'decimal', ...(is_int($field['precision'] ?? null) && $field['precision'] > 0
+                    ? ['precision' => $field['precision'], 'scale' => is_int($field['scale'] ?? null) ? $field['scale'] : 2]
+                    : ['precision' => 12, 'scale' => 2])])],
             default => [],
         };
 
@@ -151,6 +157,8 @@ final class TableProposalSchema
             'max_files' => ['type' => 'integer'],
             // Feldregeln als kurzer Text (RuleText), z. B. „min=1; max=3“; leer = keine.
             'rules' => ['type' => 'string'],
+            // Formel eines berechneten Felds (B-122); "" bei anderen Typen.
+            'formula' => ['type' => 'string'],
         ]);
     }
 

@@ -25,6 +25,7 @@ return [
     'applied_all' => 'Alle Änderungen übernommen.',
     'applied_some' => 'Nicht alles übernommen:',
     'summary' => [
+        'formula' => 'Formel: :formula',
         'table_rule_changed' => 'Regel ändern: :old → :new',
         'rules' => 'Regeln: :rules',
         'rule_removed' => ':rule entfernt',

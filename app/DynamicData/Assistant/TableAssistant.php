@@ -9,6 +9,7 @@ use App\Ai\AiConversation;
 use App\Ai\AiUsage;
 use App\Apps\AppInterfaces;
 use App\DynamicData\DataMenu;
+use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Rules\TableRule;
 use App\DynamicData\Rules\TableRuleNormalizer;
 use App\DynamicData\Schema\FieldDefinitionNormalizer;
@@ -61,6 +62,20 @@ final class TableAssistant
         for fields often filtered or sorted; not for text and file). Use 0 for length/precision/scale/max_mb/max_files
         and "" for relation_table when they do not apply, empty lists for choices/relation_display/file_kinds when they do
         not apply.
+
+        computed (B-122): a value SAFT calculates and stores itself, never entered by hand; set "formula" and, for the
+        result, precision/scale like a decimal (precision 0 = default 12,2; scale 0 with a precision > 0 = whole number,
+        e.g. precision 10, scale 0 for counts). Formula syntax: technical field names of the same table, numbers,
+        + - * / and brackets; functions round(x, digits), abs(x), min(a, b, …), max(a, b, …), coalesce(a, fallback);
+        conditions if(condition, then, else) with comparisons = <> < <= > >= combined with and/or; text in single quotes
+        (for select fields compare the stored value, e.g. status = 'bezahlt'); contains(text, part), startswith(text,
+        start), endswith(text, end) ignore case; a comparison gives 1 or 0. Across child records (tables whose relation
+        points to this table, see "child_tables"): sum(child.field), avg(…), min(…), max(…) and count(child); inside them
+        an expression of fields of that one child table is allowed, e.g. sum(positionen.menge * positionen.preis) or
+        sum(if(positionen.art = 'Zoll', positionen.betrag, 0)) or sum(positionen.menge > 2) to count lines. Calculating
+        only works with number fields (integer, decimal, computed); text, select, date and yes/no fields only in
+        comparisons and contains(…). A new computed field may use fields listed before it. When creating a new table
+        there are no child tables yet: only formulas within the same record. Leave "formula" "" for all other types.
 
         Field rules (only when the user asks for limits or formats) go into "rules" as short text, separated by ";":
         min=<number> and max=<number> (integer, decimal), min_length=<n> and max_length=<n> (string, text), email and url
@@ -431,6 +446,17 @@ final class TableAssistant
                 'searchable' => $f->is_searchable,
                 'sortable' => $f->is_sortable,
             ])->values()->all(),
+            // Für Summen in Formeln (B-122): Tabellen, die per Verknüpfung auf diese zeigen, mit ihren Feldern.
+            'child_tables' => array_values(array_map(static fn (array $child): array => [
+                'name' => $child['table']->name,
+                'label' => (string) $child['table']->label,
+                'relations' => $child['relations'],
+                'fields' => $child['table']->fields->where('is_active', true)->map(static fn (CustomField $f): array => array_filter([
+                    'name' => $f->name,
+                    'type' => $f->type->value,
+                    'values' => $f->type === FieldType::Select ? array_map(static fn (mixed $o): string => (string) (is_array($o) ? ($o['value'] ?? '') : $o), (array) ($f->optionsArray()['options'] ?? [])) : null,
+                ], static fn (mixed $v): bool => $v !== null))->values()->all(),
+            ], FormulaAnalyzer::children($table->name))),
         ];
     }
 
@@ -500,6 +526,60 @@ final class TableAssistant
             }
         }
 
+        // Formeln gegen die vorgeschlagenen Felder (neue Tabelle: noch keine Kind-Tabellen).
+        return [...$errors, ...$this->formulaProblems(array_map(TableProposalSchema::toFormField(...), $fields), [], null, $appId)];
+    }
+
+    /**
+     * Formeln berechneter Felder (B-122) gegen die Tabelle samt den vorgeschlagenen Feldern prüfen – in
+     * Vorschlagsreihenfolge, mit Kreisbezug und ohne Summen über Kind-Tabellen einer anderen App. Die Prüfung beim
+     * Anlegen (FieldDefinitionNormalizer) kennt nur gespeicherte Felder und sähe neue Felder nicht.
+     *
+     * @param  list<array<string, mixed>>  $forms  vorgeschlagene Felder (Formularzustand)
+     * @param  iterable<CustomField>  $existing
+     * @return list<string>
+     */
+    private function formulaProblems(array $forms, iterable $existing, ?string $table, ?int $appId): array
+    {
+        $fields = [];
+        $errors = [];
+
+        foreach ($existing as $field) {
+            $fields[$field->name] = $field;
+        }
+
+        foreach ($forms as $form) {
+            $name = (string) ($form['name'] ?? '');
+            $type = FieldType::tryFrom((string) ($form['type'] ?? ''));
+
+            if ($name === '' || $type === null) {
+                continue;
+            }
+
+            $options = (array) ($form['options'] ?? []);
+
+            if ($type === FieldType::Computed) {
+                try {
+                    $compiled = app(FormulaAnalyzer::class)->compile((string) ($options['formula'] ?? ''), $fields, $name, $table);
+                    FormulaAnalyzer::assertNoCycle($fields, $name, $compiled['ast']);
+
+                    foreach (FormulaAnalyzer::aggregates($compiled['ast']) as $aggregate) {
+                        $child = CustomTable::query()->where('name', $aggregate['table'])->first();
+
+                        if ($child !== null && AppInterfaces::foreign($child, $appId)) {
+                            throw new BusinessRuleException(__('apps.errors.cross_app_aggregate', ['table' => (string) $child->label]));
+                        }
+                    }
+
+                    $options['ast'] = $compiled['ast'];
+                } catch (BusinessRuleException $e) {
+                    $errors[] = __('tables_assistant.errors.field', ['name' => $name, 'error' => $e->getMessage()]);
+                }
+            }
+
+            $fields[$name] = new CustomField(['name' => $name, 'type' => $type, 'label' => $form['label'] ?? [], 'options' => $options, 'is_active' => true]);
+        }
+
         return $errors;
     }
 
@@ -530,6 +610,11 @@ final class TableAssistant
      */
     private function fieldProblems(array $field, ?CustomTable $owner): array
     {
+        // Die Formel prüft formulaProblems() gegen die vorgeschlagenen Felder; hier nur Name, Typ und Stellen.
+        if (($field['type'] ?? null) === FieldType::Computed->value) {
+            $field['options'] = [...(array) ($field['options'] ?? []), 'formula' => '0'];
+        }
+
         try {
             $this->normalizer->normalize(FieldForm::toServiceData($field), $owner);
         } catch (BusinessRuleException $e) {
@@ -592,6 +677,9 @@ final class TableAssistant
                 $errors[] = __('tables_assistant.errors.field', ['name' => $field->name, 'error' => $e->getMessage()]);
             }
         }
+
+        $fresh = array_values(array_filter($adds, static fn (array $add): bool => ! in_array($add['name'] ?? null, $existing, true)));
+        $errors = [...$errors, ...$this->formulaProblems(array_map(TableProposalSchema::toFormField(...), $fresh), $table->fields, $table->name, $table->app_id)];
 
         // Neue Tabellenregeln: gegen die Tabelle samt neuer Felder prüfen, zusammen mit den vorhandenen Regeln.
         if ($tableRules !== []) {
@@ -818,7 +906,8 @@ final class TableAssistant
             $lines[] = __('tables_assistant.summary.add', [
                 'field' => Translations::pick($add['label'] ?? null, (string) $add['name']),
                 'type' => FieldType::from((string) $add['type'])->label().($add['type'] === 'relation' ? ' → '.((string) ($add['options']['table'] ?? '')) : ''),
-            ]).(($add['validation_rules'] ?? []) !== [] ? ' – '.RuleText::describeField((array) $add['validation_rules']) : '');
+            ]).(($add['validation_rules'] ?? []) !== [] ? ' – '.RuleText::describeField((array) $add['validation_rules']) : '')
+                .($add['type'] === FieldType::Computed->value ? ' – '.__('tables_assistant.summary.formula', ['formula' => (string) ($add['options']['formula'] ?? '')]) : '');
         }
 
         foreach ($changes['change'] as $change) {

@@ -364,26 +364,27 @@ final class FieldForm
                     $component->getLivewire()->validateOnly($component->getStatePath());
                 })
                 ->extraInputAttributes(['data-formula-input' => true, 'spellcheck' => 'false', 'style' => 'font-family: ui-monospace, monospace'])
-                ->rule(static fn (Get $get, ?CustomField $record): Closure => static function (string $attribute, mixed $value, Closure $fail) use ($owner, $get, $record): void {
+                ->rule(static fn (Get $get, mixed $record): Closure => static function (string $attribute, mixed $value, Closure $fail) use ($owner, $get, $record): void {
                     if ($owner === null || blank($value)) {
                         return;
                     }
 
                     try {
                         $fields = $owner->fields()->get()->keyBy('name')->all();
-                        $self = (string) ($get('name') ?: $record?->name);
+                        $self = (string) ($get('name') ?: ($record instanceof CustomField ? $record->name : ''));
                         $compiled = app(FormulaAnalyzer::class)->compile((string) $value, $fields, $self, $owner->name);
                         FormulaAnalyzer::assertNoCycle($fields, $self, $compiled['ast']);
                     } catch (BusinessRuleException $e) {
                         $fail($e->getMessage());
                     }
                 })
-                ->helperText(fn (Get $get, ?CustomField $record): string => self::formulaHelp($owner, (string) $get('options.formula'), (string) ($get('name') ?: $record?->name)))
+                // Beim Anlegen einer Tabelle ist $record nach dem Speichern die Tabelle, nicht das Feld.
+                ->helperText(fn (Get $get, mixed $record): string => self::formulaHelp($owner, (string) $get('options.formula'), (string) ($get('name') ?: ($record instanceof CustomField ? $record->name : ''))))
                 ->columnSpanFull()
                 ->visible($isComputed),
             // Klickbare Felder (technische Namen), Zusammenfassungen über Kind-Tabellen, Rechenzeichen und Funktionen.
             View::make('filament.components.formula-picker')
-                ->viewData(fn (Get $get, ?CustomField $record): array => self::formulaPicker($owner, $get, (string) ($get('name') ?: $record?->name)))
+                ->viewData(fn (Get $get, mixed $record): array => self::formulaPicker($owner, $get, (string) ($get('name') ?: ($record instanceof CustomField ? $record->name : ''))))
                 ->columnSpanFull()
                 ->visible($isComputed),
             View::make('filament.components.formula-help')
