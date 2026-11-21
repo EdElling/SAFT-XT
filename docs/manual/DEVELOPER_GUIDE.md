@@ -26,7 +26,7 @@
 - [14. Testing](#14-testing)
 - [15. Context for external development and AI agents](#15-context-for-external-development-and-ai-agents)
 - [16. Security](#16-security)
-- [17. Examples: stock transfer, stock board and Swiss checks](#17-examples-stock-transfer-stock-board-and-swiss-checks)
+- [17. Examples: stock transfer, stock board, Swiss checks and music school planning](#17-examples-stock-transfer-stock-board-swiss-checks-and-music-school-planning)
 - [18. API versions and change log](#18-api-versions-and-change-log)
 - [Appendix A – Step-by-step guides](#appendix-a--step-by-step-guides)
 
@@ -57,7 +57,7 @@ A plugin is an ordinary **Composer package** with a plugin class and a service p
 | Kinds of scheduled tasks | classes implementing `App\Tasks\TaskType` |
 
 **What is guaranteed:** the programming interface for plugins (plugin API) has its **own version number**,
-independent of SAFT – currently **1.8**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
+independent of SAFT – currently **1.9**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, all classes under `App\Plugins\Api` (except
 `ApiManifest`), the test base `App\Plugins\Testing\PluginTestCase`, for kinds of scheduled tasks
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` and `App\Tasks\TaskSkipped`, and the trait
@@ -419,6 +419,7 @@ Saft::transaction(function (): void { /* several changes: all or nothing */ });
 | `->can('update')`, `->authorize('update')` | data permissions of the signed-in person (`view`, `create`, `update`, `delete`, `export`, `import`) |
 | `->formFields(only: [...], except: [...])` | form fields from the table designer for your own forms |
 | `->files($record, 'field')`, `->attachFile($record, 'field', $file, $name)`, `->detachFile($record, 'field', $id)` | read, attach and remove files of a field of type “File” (since API 1.8, see below) |
+| `->url($record)` | address of the data view with the record selected (without `$record`: the table) – for links from your own pages; the data view checks the permissions (since API 1.9) |
 | `->withoutAuthorization()` | copy without permission checks, for background work |
 | `Saft::transaction(fn …)` | several changes as one unit |
 | `Saft::notify($person, $notification)` | notification in the bell (see below) |
@@ -803,11 +804,12 @@ trusted source; for your own plugins check at least:
 - Listeners only reject what is wrong in business terms – they apply in all data views and in imports.
 - Credentials and keys never in code, but in `.env` or encrypted settings.
 
-## 17. Examples: stock transfer, stock board and Swiss checks
+## 17. Examples: stock transfer, stock board, Swiss checks and music school planning
 
-Three example plugins ship with SAFT: *Lager-Umbuchung* (stock transfer) shows a business application with a form,
+Four example plugins ship with SAFT: *Lager-Umbuchung* (stock transfer) shows a business application with a form,
 business rules and a tile, *Lager-Tafel* (stock board) is the example for the guides in appendix A, *CH-Prüfungen*
-(Swiss checks) shows formula functions and validation rules without pages of its own.
+(Swiss checks) shows formula functions and validation rules without pages of its own, *Musikschule-Planung* (music
+school planning) shows a planning view and a bulk action for an app that was designed with the AI app designer.
 
 ### 17.1 Stock transfer
 
@@ -873,9 +875,28 @@ tables:
 To try it: in the table designer select “IBAN” under **Further checks** on a text field, or create a computed field
 with the formula `rappen(amount * 1.081)`.
 
+### 17.4 Music school planning
+
+The plugin `plugins/musikschule-planung` (only in development and demo installations) works with the tables of the demo
+app *Music school* (`php artisan db:seed --class=MusikschuleDemoSeeder`). It shows how a plugin extends an app that was
+not built by hand but designed with the AI app designer:
+
+| Building block | File | What it does |
+|---|---|---|
+| Access to the app | `src/School.php` | table and field names in one place (`REQUIRED` for `requiredTables()`), courses with time slot (duration from the course type), overlap, current and next semester |
+| Own view | `src/Pages/Stundenplan.php`, `resources/views/stundenplan.blade.php` | weekly grid per teacher, room or student: blocks by time, colour per subject, overlaps side by side, print view; links with `DataTable::url()` (API 1.9) |
+| Listener (rejects) | `src/CourseConflictGuard.php` | `RecordSaving`: teacher or room booked at the same time → `RecordRejected` with a message |
+| Listener (notifies) | `src/RoomCapacityHint.php` | `RecordSaved`: more participants than places → notice in the bell |
+| Bulk action | `src/SemesterRollover.php`, `src/RolloverAction.php` | copy courses and enrollments to another semester, with a preview in the dialog, in one transaction (`Saft::transaction`); button per row and above the table Semesters |
+| Tests | `tests/MusikschulePlanungTest.php` | installs the app from its app definition and tests conflicts, rollover (including “all or nothing”), timetable and permissions |
+
+**Permissions:** *Music school: planning: View timetable* and *Roll over semester*; plus the data permissions on courses
+and enrollments. The rollover writes with the permissions of the signed-in person; the conflict check applies as for any
+other entry.
+
 ## 18. API versions and change log
 
-The plugin API has its own version number **major.minor** (currently **1.8**). It is set in `config/saft.php`
+The plugin API has its own version number **major.minor** (currently **1.9**). It is set in `config/saft.php`
 (`api_versions`) and shown under **Documentation › About SAFT XT** and on the **Plugins** page.
 
 | Change | Version | Effect on plugins |
@@ -903,6 +924,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 | API | SAFT | Changes |
 |---|---|---|
+| **1.9** | 0.5.0 | `DataTable::url()` – address of the data view with a selected record, e.g. for links from a timetable |
 | **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` and `detachFile()` plus `StoredFile` – read, attach (with the form's checks) and remove files of fields of type “File” |
 | **1.7** | 0.1 | `MenuSuggestion` with optional `subgroup` – menu suggestion into a submenu of the group (third level) |
 | **1.6** | 0.1 | `FieldRule` with optional `description`; `SaftPlugin::manuals()` and `Manual` – manuals from plugins in online help and help assistant; `saft:plugins --check` checks them |

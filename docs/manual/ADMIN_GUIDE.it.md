@@ -1150,8 +1150,8 @@ controlli del plugin non si applicano e le sue pagine mostrano cosa manca.
 
 **Manuali dei plugin:** un plugin può fornire una propria guida utente. Compare in **Documentazione** come scheda
 aggiuntiva – per le persone con uno dei diritti indicati dal plugin – ed è conoscenza per l’assistente di aiuto. Se il
-plugin è inattivo o disattivato, il manuale scompare. I plugin di esempio *Trasferimento di magazzino* e *Tabellone delle
-giacenze* ne forniscono uno ciascuno in quattro lingue. Le regole di verifica dei plugin indicano inoltre, nel Designer
+plugin è inattivo o disattivato, il manuale scompare. I plugin di esempio *Trasferimento di magazzino*, *Tabellone delle
+giacenze* e *Scuola di musica: pianificazione* ne forniscono uno ciascuno in quattro lingue. Le regole di verifica dei plugin indicano inoltre, nel Designer
 di tabelle sotto **Ulteriori verifiche**, che cosa richiedono.
 
 **Disattivare plugin** (diritto *Plugin: gestire*): **Disattiva** nella riga del plugin lo ferma senza rimuoverlo –

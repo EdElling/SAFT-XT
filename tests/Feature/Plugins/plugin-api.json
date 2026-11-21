@@ -1,5 +1,5 @@
 {
-    "version": "1.8",
+    "version": "1.9",
     "surface": {
         "App\\Filament\\Concerns\\LimitsFormWidth": [
             "trait",
@@ -42,6 +42,7 @@
             "function query(): Illuminate\\Database\\Eloquent\\Builder",
             "function transaction(Closure $callback): mixed",
             "function update(App\\Models\\DynamicRecord|string|int $record, array $values): App\\Models\\DynamicRecord",
+            "function url(App\\Models\\DynamicRecord|string|int|null $record = null): string",
             "function validate(array $values, ?App\\Models\\DynamicRecord $existing = null): void",
             "function withoutAuthorization(): App\\Plugins\\Api\\DataTable"
         ],

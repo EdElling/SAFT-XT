@@ -1094,7 +1094,7 @@ missing.
 
 **Manuals from plugins:** a plugin can ship its own user guide. It appears under **Documentation** as a further tab –
 for people with one of the permissions the plugin names for it – and is knowledge for the help assistant. If the plugin
-is resting or switched off, the manual disappears. The example plugins *Stock transfer* and *Stock board* each ship one
+is resting or switched off, the manual disappears. The example plugins *Stock transfer*, *Stock board* and *Music school: planning* each ship one
 in four languages. Validation rules from plugins also show in the table designer under **Further checks** what they
 require.
 

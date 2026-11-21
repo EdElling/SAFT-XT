@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'plugin' => 'École de musique : planification',
+    'description' => 'Horaire par enseignant, salle ou élève, contrôle des conflits à l’enregistrement d’un cours et reconduction de semestre (exemple pour la démo « École de musique »).',
+    'permissions' => [
+        'timetable' => 'Voir l’horaire',
+        'rollover' => 'Reconduire un semestre',
+    ],
+    'days' => ['mo' => 'lundi', 'di' => 'mardi', 'mi' => 'mercredi', 'do' => 'jeudi', 'fr' => 'vendredi', 'sa' => 'samedi', 'so' => 'dimanche'],
+    'conflict' => [
+        'teacher' => ':name donne déjà « :course » le :day de :from à :to.',
+        'room' => ':name est déjà occupée par « :course » le :day de :from à :to.',
+    ],
+    'capacity' => [
+        'title' => 'Salle trop petite',
+        'body' => '« :course » admet :max participants, :room n’a que :places places.',
+    ],
+    'rollover' => [
+        'action' => 'Reconduire le semestre',
+        'heading' => 'Reprendre les cours au semestre suivant',
+        'submit' => 'Reconduire',
+        'source' => 'Du semestre',
+        'target' => 'Au semestre',
+        'keep_schedule' => 'Reprendre jour, heure et salle',
+        'keep_schedule_help' => 'Sinon, ils restent vides et sont planifiés au nouveau semestre.',
+        'enrolments' => 'Reprendre les inscriptions actives',
+        'enrolments_help' => 'En liste d’attente – confirmez-les en mettant le statut sur « actif ».',
+        'new_tariff' => 'Tarif selon le type de cours',
+        'new_tariff_help' => 'Sinon, le tarif du cours précédent s’applique.',
+        'choose' => 'Veuillez choisir la source et la cible.',
+        'same' => 'La source et la cible doivent être des semestres différents.',
+        'preview' => ':courses cours et :enrolments inscriptions seront repris.',
+        'preview_skipped' => ':count cours existent déjà dans la cible et sont ignorés : :names.',
+        'done' => ':courses cours et :enrolments inscriptions repris dans :target.',
+        'failed' => 'Reconduction impossible – rien n’a été repris.',
+        'rights' => 'Il vous manque le droit de créer dans : :tables.',
+    ],
+    'timetable' => [
+        'title' => 'Horaire',
+        'semester' => 'Semestre',
+        'view' => 'Vue',
+        'views' => ['teacher' => 'Enseignant', 'room' => 'Salle', 'student' => 'Élève'],
+        'choice' => ['lehrperson' => 'Enseignant', 'raum' => 'Salle', 'schueler' => 'Élève'],
+        'tooltip' => ':count places sur :max occupées',
+        'conflicts' => ':count cours se chevauchent (encadrés en rouge).',
+        'empty' => 'Aucun cours ce semestre.',
+        'unscheduled' => 'Sans jour ni heure',
+        'print' => 'Imprimer',
+        'unavailable_title' => 'App École de musique incomplète',
+        'unavailable' => 'Il manque :',
+        'no_rights' => 'Vous n’êtes pas autorisé à voir les cours.',
+    ],
+];

@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'plugin' => 'Musikschule: Planung',
+    'description' => 'Stundenplan je Lehrperson, Raum oder Schüler, Konfliktprüfung beim Speichern eines Kurses und Semester-Fortschreibung (Beispiel für die Demo „Musikschule“).',
+    'permissions' => [
+        'timetable' => 'Stundenplan ansehen',
+        'rollover' => 'Semester fortschreiben',
+    ],
+    'days' => ['mo' => 'Montag', 'di' => 'Dienstag', 'mi' => 'Mittwoch', 'do' => 'Donnerstag', 'fr' => 'Freitag', 'sa' => 'Samstag', 'so' => 'Sonntag'],
+    'conflict' => [
+        'teacher' => ':name unterrichtet am :day :from–:to bereits „:course“.',
+        'room' => ':name ist am :day :from–:to bereits mit „:course“ belegt.',
+    ],
+    'capacity' => [
+        'title' => 'Raum zu klein',
+        'body' => '„:course“ erlaubt :max Teilnehmende, :room hat nur :places Plätze.',
+    ],
+    'rollover' => [
+        'action' => 'Semester fortschreiben',
+        'heading' => 'Kurse ins nächste Semester übernehmen',
+        'submit' => 'Fortschreiben',
+        'source' => 'Von Semester',
+        'target' => 'In Semester',
+        'keep_schedule' => 'Wochentag, Zeit und Raum übernehmen',
+        'keep_schedule_help' => 'Sonst bleiben sie leer und werden im neuen Semester geplant.',
+        'enrolments' => 'Aktive Anmeldungen mitnehmen',
+        'enrolments_help' => 'Als Warteliste – bestätigen Sie sie, indem Sie den Status auf „aktiv“ setzen.',
+        'new_tariff' => 'Tarif neu aus der Kursart',
+        'new_tariff_help' => 'Sonst gilt der Tarif des bisherigen Kurses.',
+        'choose' => 'Bitte Quelle und Ziel wählen.',
+        'same' => 'Quelle und Ziel müssen verschiedene Semester sein.',
+        'preview' => 'Übernommen werden :courses Kurse und :enrolments Anmeldungen.',
+        'preview_skipped' => ':count Kurse gibt es im Ziel schon und werden übersprungen: :names.',
+        'done' => ':courses Kurse und :enrolments Anmeldungen in :target übernommen.',
+        'failed' => 'Fortschreibung nicht möglich – es wurde nichts übernommen.',
+        'rights' => 'Dafür fehlt Ihnen das Recht zum Anlegen in: :tables.',
+    ],
+    'timetable' => [
+        'title' => 'Stundenplan',
+        'semester' => 'Semester',
+        'view' => 'Ansicht',
+        'views' => ['teacher' => 'Lehrperson', 'room' => 'Raum', 'student' => 'Schüler'],
+        'choice' => ['lehrperson' => 'Lehrperson', 'raum' => 'Raum', 'schueler' => 'Schülerin oder Schüler'],
+        'tooltip' => ':count von :max Plätzen belegt',
+        'conflicts' => ':count Kurse überschneiden sich (rot umrandet).',
+        'empty' => 'Keine Kurse in diesem Semester.',
+        'unscheduled' => 'Ohne Wochentag oder Zeit',
+        'print' => 'Drucken',
+        'unavailable_title' => 'Musikschul-App nicht vollständig',
+        'unavailable' => 'Es fehlen:',
+        'no_rights' => 'Sie dürfen die Kurse nicht sehen.',
+    ],
+];

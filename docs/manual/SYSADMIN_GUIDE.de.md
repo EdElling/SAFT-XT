@@ -367,7 +367,7 @@ ausgeblendet, Listener, Knöpfe, Prüfregeln und Formelfunktionen wirken nicht, 
    zusammen mit den nicht mehr benötigten Rechten.
 
 Daten, die ein Plugin in Tabellen des Table-Designers geschrieben hat, bleiben erhalten. Die Beispiel-Plugins
-`saft/lager-umbuchung`, `saft/lager-tafel` und `saft/ch-pruefungen` sind nur mit den Entwicklungspaketen installiert
+`saft/lager-umbuchung`, `saft/lager-tafel`, `saft/ch-pruefungen` und `saft/musikschule-planung` sind nur mit den Entwicklungspaketen installiert
 (nicht mit `composer install --no-dev`).
 
 ---

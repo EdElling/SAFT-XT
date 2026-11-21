@@ -45,7 +45,8 @@
         "reliese/laravel": "^1.4",
         "saft/ch-pruefungen": "^1.0",
         "saft/lager-tafel": "^1.0",
-        "saft/lager-umbuchung": "^1.0"
+        "saft/lager-umbuchung": "^1.0",
+        "saft/musikschule-planung": "^1.0"
     },
     "autoload": {
         "psr-4": {

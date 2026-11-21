@@ -11,6 +11,7 @@ use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Ui\DynamicFormBuilder;
 use App\DynamicData\Validation\RecordChecker;
 use App\Exceptions\BusinessRuleException;
+use App\Filament\Pages\DynamicDataPage;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -75,6 +76,15 @@ final class DataTable
         if ($this->authorizing && ! $this->can($action)) {
             throw new AuthorizationException(__('plugins.api.forbidden', ['table' => $this->label(), 'action' => __('roles.actions.'.$action)]));
         }
+    }
+
+    /**
+     * Adresse der Datenansicht dieser Tabelle; mit Datensatz ist er dort ausgewählt (Kind-Datensätze darunter). Prüft
+     * keine Rechte – die Datenansicht selbst tut es beim Aufruf. Seit API 1.9.
+     */
+    public function url(DynamicRecord|int|string|null $record = null): string
+    {
+        return DynamicDataPage::urlFor($this->table->name, $record instanceof DynamicRecord ? $record->getKey() : $record);
     }
 
     /** Abfrage über alle Datensätze (ohne Papierkorb). */

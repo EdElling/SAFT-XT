@@ -26,7 +26,7 @@
 - [14. Testen](#14-testen)
 - [15. Kontext für externe Entwicklung und KI-Agenten](#15-kontext-für-externe-entwicklung-und-ki-agenten)
 - [16. Sicherheit](#16-sicherheit)
-- [17. Beispiele: Lager-Umbuchung, Lager-Tafel und CH-Prüfungen](#17-beispiele-lager-umbuchung-lager-tafel-und-ch-prüfungen)
+- [17. Beispiele: Lager-Umbuchung, Lager-Tafel, CH-Prüfungen und Musikschule-Planung](#17-beispiele-lager-umbuchung-lager-tafel-ch-prüfungen-und-musikschule-planung)
 - [18. API-Versionen und Änderungsprotokoll](#18-api-versionen-und-änderungsprotokoll)
 - [Anhang A – Schritt-für-Schritt-Anleitungen](#anhang-a--schritt-für-schritt-anleitungen)
 
@@ -58,7 +58,7 @@ mitbringen:
 | Arten geplanter Aufgaben | Klassen, die `App\Tasks\TaskType` umsetzen |
 
 **Was zugesichert ist:** Die Programmierschnittstelle für Plugins (Plugin-API) hat eine **eigene Versionsnummer**,
-unabhängig von SAFT – derzeit **1.8**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
+unabhängig von SAFT – derzeit **1.9**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, alle Klassen unter `App\Plugins\Api` (ausser
 `ApiManifest`), die Test-Basis `App\Plugins\Testing\PluginTestCase`, für Arten geplanter Aufgaben
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` und `App\Tasks\TaskSkipped` sowie das Trait
@@ -426,6 +426,7 @@ Saft::transaction(function (): void { /* mehrere Änderungen: alles oder nichts 
 | `->can('update')`, `->authorize('update')` | Datenrechte der angemeldeten Person (`view`, `create`, `update`, `delete`, `export`, `import`) |
 | `->formFields(only: [...], except: [...])` | Formularfelder aus dem Table-Designer für eigene Masken |
 | `->files($datensatz, 'feld')`, `->attachFile($datensatz, 'feld', $datei, $name)`, `->detachFile($datensatz, 'feld', $id)` | Dateien eines Felds vom Typ „Datei“ lesen, anhängen und entfernen (seit API 1.8, siehe unten) |
+| `->url($datensatz)` | Adresse der Datenansicht, mit dem Datensatz ausgewählt (ohne `$datensatz`: die Tabelle) – für Links aus eigenen Seiten; die Rechte prüft die Datenansicht (seit API 1.9) |
 | `->withoutAuthorization()` | Kopie ohne Rechteprüfung, für Hintergrundarbeit |
 | `Saft::transaction(fn …)` | Mehrere Änderungen als Einheit |
 | `Saft::notify($person, $meldung)` | Benachrichtigung in die Glocke (siehe unten) |
@@ -818,11 +819,12 @@ vertrauenswürdiger Quelle installieren; prüfen Sie bei eigenen Plugins mindest
 - Listener lehnen nur ab, was fachlich falsch ist – sie wirken in allen Datenansichten und beim Import.
 - Zugangsdaten und Schlüssel nie im Code, sondern in der `.env` bzw. in verschlüsselten Einstellungen.
 
-## 17. Beispiele: Lager-Umbuchung, Lager-Tafel und CH-Prüfungen
+## 17. Beispiele: Lager-Umbuchung, Lager-Tafel, CH-Prüfungen und Musikschule-Planung
 
-Drei Beispiel-Plugins liegen bei SAFT: *Lager-Umbuchung* zeigt eine Fachanwendung mit Maske, Geschäftsregeln und
+Vier Beispiel-Plugins liegen bei SAFT: *Lager-Umbuchung* zeigt eine Fachanwendung mit Maske, Geschäftsregeln und
 Kachel, *Lager-Tafel* ist das Beispiel zu den Anleitungen in Anhang A, *CH-Prüfungen* zeigt Formelfunktionen und
-Prüfregeln ohne eigene Seiten.
+Prüfregeln ohne eigene Seiten, *Musikschule-Planung* zeigt eine Planungsansicht und eine Massenaktion für eine App, die
+mit dem KI-App-Designer entstanden ist.
 
 ### 17.1 Lager-Umbuchung
 
@@ -888,9 +890,28 @@ Prüfregeln ohne eigene Seiten – es braucht daher weder Rechte noch Menüvorsc
 So probieren Sie es aus: im Table-Designer bei einem Textfeld unter **Weitere Prüfungen** „IBAN“ wählen, oder ein
 berechnetes Feld mit der Formel `rappen(betrag * 1.081)` anlegen.
 
+### 17.4 Musikschule-Planung
+
+Das Plugin `plugins/musikschule-planung` (nur in Entwicklungs- und Demo-Installationen) arbeitet mit den Tabellen der
+Demo-App *Musikschule* (`php artisan db:seed --class=MusikschuleDemoSeeder`). Es zeigt, wie ein Plugin eine App ergänzt,
+die nicht von Hand, sondern mit dem KI-App-Designer entworfen wurde:
+
+| Baustein | Datei | Was es tut |
+|---|---|---|
+| Zugriff auf die App | `src/School.php` | Tabellen- und Feldnamen an einer Stelle (`REQUIRED` für `requiredTables()`), Kurse mit Zeitfenster (Dauer aus der Kursart), Überschneidung, laufendes und nächstes Semester |
+| Eigene Ansicht | `src/Pages/Stundenplan.php`, `resources/views/stundenplan.blade.php` | Wochenraster je Lehrperson, Raum oder Schüler: Blöcke nach Zeit, Farbe je Fach, Überschneidungen nebeneinander, Druckansicht; Links mit `DataTable::url()` (API 1.9) |
+| Listener (verbietet) | `src/CourseConflictGuard.php` | `RecordSaving`: Lehrperson oder Raum zur selben Zeit belegt → `RecordRejected` mit Meldung |
+| Listener (meldet) | `src/RoomCapacityHint.php` | `RecordSaved`: mehr Teilnehmende als Plätze → Hinweis in der Glocke |
+| Massenaktion | `src/SemesterRollover.php`, `src/RolloverAction.php` | Kurse und Anmeldungen in ein anderes Semester kopieren, mit Vorschau im Dialog, in einer Transaktion (`Saft::transaction`); Knopf je Zeile und über der Tabelle Semester |
+| Tests | `tests/MusikschulePlanungTest.php` | installiert die App aus ihrer App-Definition und prüft Konflikte, Fortschreibung (auch „alles oder nichts“), Stundenplan und Rechte |
+
+**Rechte:** *Musikschule: Planung: Stundenplan ansehen* und *Semester fortschreiben*; dazu die Datenrechte auf Kurse
+bzw. Anmeldungen. Die Fortschreibung schreibt mit den Rechten der angemeldeten Person; die Konfliktprüfung gilt dabei
+wie bei jeder anderen Erfassung.
+
 ## 18. API-Versionen und Änderungsprotokoll
 
-Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.8**). Sie steht in `config/saft.php`
+Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.9**). Sie steht in `config/saft.php`
 (`api_versions`) und erscheint unter **Dokumentation › Über SAFT XT** sowie auf der Seite **Plugins**.
 
 | Änderung | Version | Wirkung für Plugins |
@@ -919,6 +940,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 | API | SAFT | Änderungen |
 |---|---|---|
+| **1.9** | 0.5.0 | `DataTable::url()` – Adresse der Datenansicht mit ausgewähltem Datensatz, z. B. für Links aus einem Stundenplan |
 | **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` und `detachFile()` sowie `StoredFile` – Dateien aus Feldern vom Typ „Datei“ lesen, anhängen (mit den Prüfungen des Formulars) und entfernen |
 | **1.7** | 0.1 | `MenuSuggestion` mit optionalem `subgroup` – Menüvorschlag in ein Untermenü der Gruppe (dritte Ebene) |
 | **1.6** | 0.1 | `FieldRule` mit optionaler `description`; `SaftPlugin::manuals()` und `Manual` – Handbücher aus Plugins in Online-Hilfe und Hilfe-Assistent; `saft:plugins --check` prüft sie |
