@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 /** KI-App-Designer (B-107, Etappe 7a). */
 return [
+    'translation_help' => 'The labels are translated into the other languages; this takes about half a minute to a minute.',
+    'translation_failed' => 'The labels could not be translated (:error). The app has been created anyway; add the translations in the table designer, by hand or with "Adjust with AI".',
+    'translation_log' => 'Translation of :count labels (app designer)',
     'to_app' => 'To the new app',
     'reports' => [
         'preview' => 'Reports (created after the app)',

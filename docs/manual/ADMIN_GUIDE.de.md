@@ -1292,7 +1292,8 @@ KI-Anbieter und den eingeschalteten KI-Assistenten (siehe [Kapitel 7](#7-globale
   werden soll –, z. B. „eine einfache Ein- und Ausgabenrechnung mit MWST, Belegen als PDF und Artikeln mit bis zu 10
   Bildern“. Mit **Entwerfen** schlägt die KI eine App vor: Name, Präfix und Symbol, Tabellen mit Feldern, Typen,
   Auswahlwerten, Verknüpfungen, Dateifeldern, berechneten Feldern (auch Bedingungen und Summen über Kind-Tabellen),
-  Tabellenregeln und Menügruppen.
+  Tabellenregeln und Menügruppen. Im Gespräch entstehen alle Bezeichnungen nur in Ihrer Sprache (kürzere, schnellere
+  Antworten); übersetzt wird einmal beim Erzeugen.
 - **Vorschau:** Rechts stehen Name und Präfix, eine Zusammenfassung, Hinweise (z. B. zu Dateifeldern), das Datenmodell
   als Diagramm und je Tabelle die Felder mit Typ, Verknüpfung (`→ tabelle`), Formel (`= …`) oder Auswahlwerten.
   **In der Datenbank entsteht dabei nichts.**
@@ -1304,7 +1305,8 @@ KI-Anbieter und den eingeschalteten KI-Assistenten (siehe [Kapitel 7](#7-globale
 - **Entwürfe:** Links stehen Ihre Entwürfe (nur Ihre); jeder Vorschlag wird gespeichert, Sie können später
   weitermachen oder einen Entwurf löschen. **Neuer Entwurf** beginnt von vorn.
 - **App erzeugen:** **„App erzeugen“** oben rechts fragt Name und Präfix (ein anderes Präfix benennt die Tabellen um)
-  und legt die App an: Tabellen, Detailtabellen (unter jeder Tabelle die Tabellen, die auf sie verweisen), Menü mit
+  übersetzt die Bezeichnungen in die übrigen Sprachen (etwa eine halbe bis eine Minute; scheitert das, entsteht die App
+  trotzdem, und ein Hinweis nennt den Grund) und legt die App an: Tabellen, Detailtabellen (unter jeder Tabelle die Tabellen, die auf sie verweisen), Menü mit
   Datenmodell und eine **Fachrolle** mit allen Rechten auf die neuen Tabellen und dem Ansehen von Auswertungen. Anders
   als beim Installieren ist die App danach **aktiv**, und Sie wechseln hinein. Der Entwurf bleibt mit dem Vermerk
   „erzeugt“ stehen.
@@ -1319,7 +1321,7 @@ KI-Anbieter und den eingeschalteten KI-Assistenten (siehe [Kapitel 7](#7-globale
 - **Danach** ändern Sie die App wie jede andere – im Table-Designer von Hand oder je Tabelle mit **„Mit KI anpassen“**,
   Auswertungen im Auswertungs-Designer. Wer kein Super-Admin ist, erhält beim Erzeugen die Fachrolle der App.
 - **Datenschutz und Kosten:** An die KI gehen nur Ihre Beschreibung, der Entwurf und die Struktur freigegebener Tabellen
-  anderer Apps – nie Datensätze. Eine Runde dauert oft ein bis drei Minuten (jede Auswertung zählt als eigene Anfrage). Eine Antwort fasst etwa 15–20 Tabellen; ist der Entwurf grösser, meldet SAFT das – beginnen Sie dann mit den wichtigsten Tabellen und ergänzen Sie weitere nach dem Erzeugen (Grenze: `AI_DESIGNER_MAX_TOKENS`, siehe Systemadministration) und zählt wie die anderen Assistenten zum
+  anderer Apps – nie Datensätze. Eine Runde dauert oft ein bis drei Minuten (jede Auswertung zählt als eigene Anfrage). Eine Antwort fasst etwa 25–30 Tabellen; ist der Entwurf grösser, meldet SAFT das – beginnen Sie dann mit den wichtigsten Tabellen und ergänzen Sie weitere nach dem Erzeugen (Grenze: `AI_DESIGNER_MAX_TOKENS`, siehe Systemadministration) und zählt wie die anderen Assistenten zum
   Tageslimit; sie steht im Änderungsprotokoll.
 
 **Exportieren:** lädt die App als **App-Definition** herunter (Datei `<präfix>-<version>.saft-app.json`, Format

@@ -17,10 +17,13 @@ final class FakeAssistantClient implements AssistantClient
     /** @var list<array{system: array<int, mixed>, messages: array<int, mixed>, schema: array<string, mixed>}> */
     public array $requests = [];
 
-    /** @param  array<string, mixed>|AssistantReply  $reply  Vorschlag als Array oder fertige Antwort */
-    public function push(array|AssistantReply $reply): self
+    /**
+     * @param  array<string, mixed>|AssistantReply|\Closure  $reply  Vorschlag als Array, fertige Antwort oder eine Funktion,
+     *                                                               die aus der Anfrage ($messages) den Vorschlag berechnet
+     */
+    public function push(array|AssistantReply|\Closure $reply): self
     {
-        $this->replies[] = $reply instanceof AssistantReply
+        $this->replies[] = $reply instanceof AssistantReply || $reply instanceof \Closure
             ? $reply
             : new AssistantReply(json_encode($reply, JSON_THROW_ON_ERROR), 'end_turn', inputTokens: 1200, outputTokens: 150, cacheReadTokens: 800);
 
@@ -31,7 +34,11 @@ final class FakeAssistantClient implements AssistantClient
     {
         $this->requests[] = compact('system', 'messages', 'schema', 'strict');
 
-        return array_shift($this->replies) ?? throw new RuntimeException('Keine Antwort vorbereitet.');
+        $reply = array_shift($this->replies) ?? throw new RuntimeException('Keine Antwort vorbereitet.');
+
+        return $reply instanceof \Closure
+            ? new AssistantReply(json_encode($reply($messages), JSON_THROW_ON_ERROR), 'end_turn', inputTokens: 1200, outputTokens: 150)
+            : $reply;
     }
 
     public function model(): string

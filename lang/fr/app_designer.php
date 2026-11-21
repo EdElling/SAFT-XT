@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 /** KI-App-Designer (B-107, Etappe 7a). */
 return [
+    'translation_help' => 'Les libellés sont traduits dans les autres langues ; cela prend environ une demi-minute à une minute.',
+    'translation_failed' => 'Les libellés n’ont pas pu être traduits (:error). L’app est tout de même créée ; complétez les traductions dans le concepteur de tables, à la main ou avec « Adapter avec l’IA ».',
+    'translation_log' => 'Traduction de :count libellés (concepteur d’apps)',
     'to_app' => 'Vers la nouvelle app',
     'reports' => [
         'preview' => 'Rapports (créés après l’app)',

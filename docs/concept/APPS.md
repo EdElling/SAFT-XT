@@ -210,6 +210,10 @@ möglich“ mit Grund und erneutem Versuch.
 
 Vor dem Erzeugen lassen sich die vorgeschlagenen Auswertungen einzeln abwählen.
 
+**Sprachen:** Im Gespräch entstehen alle Bezeichnungen nur in der Sprache der Person (etwa 40 % kürzere Antworten);
+beim Erzeugen übersetzt `DraftTranslator` den fertigen Stand einmal in die übrigen Sprachen – als Liste der Texte in
+Teilen, nicht als zweiter Entwurf. Scheitert es, entsteht die App unübersetzt mit Hinweis.
+
 **Zurückgestellt (Entscheid 2026-11-21):** 7b Editor für den Entwurf. Eine frisch erzeugte App hat keine Daten und lässt
 sich im Table-Designer frei ändern (auch mit „Mit KI anpassen“); ein eigener Entwurfs-Editor müsste dessen Formulare
 für nicht gespeicherte Tabellen nachbauen und dauerhaft mitpflegen. Grobe Umbauten gehen im Gespräch einfacher.

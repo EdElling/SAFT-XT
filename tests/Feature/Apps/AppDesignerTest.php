@@ -9,6 +9,7 @@ use App\Apps\Designer\AppDesigner;
 use App\Apps\Designer\DesignerResult;
 use App\Apps\Designer\DraftCompiler;
 use App\Apps\Designer\DraftReports;
+use App\Apps\Designer\DraftTranslator;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Pages\AppDesignerPage;
 use App\Filament\Pages\Dashboard;
@@ -51,6 +52,12 @@ class AppDesignerTest extends DynamicDataTestCase
 
         $this->fake = new FakeAssistantClient;
         $this->app->instance(AssistantClient::class, $this->fake);
+    }
+
+    protected function tearDown(): void
+    {
+        DraftTranslator::$chunk = 120;
+        parent::tearDown();
     }
 
     /** @return array<string, string> */
@@ -371,5 +378,67 @@ class AppDesignerTest extends DynamicDataTestCase
         $this->assertCount(1, $this->fake->requests, 'Keine Korrekturrunde – sie würde wieder zu lang.');
         // Für den Designer gelten eigene, höhere Grenzen.
         $this->assertSame([32000, 900], [config('ai.max_tokens'), config('ai.timeout')]);
+    }
+
+    /** Vorschlag nur in der Sprache der Person (wie im Gespräch): alle anderen Sprachen leer. */
+    private function german(array $value): array
+    {
+        if (array_keys($value) === ['de', 'en', 'fr', 'it']) {
+            return ['de' => $value['de'], 'en' => '', 'fr' => '', 'it' => ''];
+        }
+
+        return array_map(fn (mixed $v): mixed => is_array($v) ? $this->german($v) : $v, $value);
+    }
+
+    /** Übersetzung durch die Attrappe: „EN …“, „FR …“, „IT …“ je Text der Anfrage. */
+    private function translation(): \Closure
+    {
+        return static function (array $messages): array {
+            $texts = json_decode(substr((string) end($messages)['content'], strpos((string) end($messages)['content'], 'Texts: ') + 7), true);
+
+            return ['translations' => array_map(static fn (string $id, string $text): array => ['id' => $id, 'de' => $text, 'en' => 'EN '.$text, 'fr' => 'FR '.$text, 'it' => 'IT '.$text], array_keys($texts), $texts)];
+        };
+    }
+
+    public function test_labels_are_drafted_in_one_language_and_translated_when_creating(): void
+    {
+        DraftTranslator::$chunk = 10;
+        $this->fake->push($this->german($this->courses()));
+        $designer = app(AppDesigner::class);
+        $draft = $designer->start($this->admin);
+        $designer->propose($this->admin, $draft, 'Kursverwaltung');
+        $this->assertStringContainsString('ONLY in the language of the user', $this->fake->requests[0]['system'][0]['text']);
+        $this->assertSame('', $draft->refresh()->definition['tables'][1]['label']['en'] ?? '', 'Im Entwurf nur Deutsch.');
+
+        // Beim Erzeugen: in Teilen zu höchstens 10 Texten übersetzt (gleiche Texte einmal).
+        foreach (range(1, 5) as $i) {
+            $this->fake->push($this->translation());
+        }
+        $app = $designer->create($this->admin, $draft);
+        $translations = array_slice($this->fake->requests, 1);
+        $this->assertGreaterThan(1, count($translations), 'Mehrere Teile.');
+        $this->assertNull($designer->translationWarning);
+
+        $courses = CustomTable::query()->where('name', 'kurse_kurse')->sole();
+        $this->assertSame(['Kurse', 'EN Kurse', 'IT Kurse'], [$courses->getTranslation('label', 'de'), $courses->getTranslation('label', 'en'), $courses->getTranslation('label', 'it')]);
+        $this->assertSame('FR Titel', $courses->fields()->where('name', 'titel')->sole()->getTranslation('label', 'fr'));
+        $this->assertSame('EN Kurse', $app->getTranslation('name', 'en'));
+        $this->assertSame('IT Kursbetrieb', Menu::query()->where('app_id', $app->id)->where('label->de', 'Kursbetrieb')->sole()->getTranslation('label', 'it'));
+    }
+
+    public function test_the_app_is_created_untranslated_with_a_warning_when_translating_fails(): void
+    {
+        $this->fake->push($this->german($this->courses()));
+        $designer = app(AppDesigner::class);
+        $draft = $designer->start($this->admin);
+        $designer->propose($this->admin, $draft, 'Kursverwaltung');
+
+        // Zweimal unvollständig: kein weiterer Versuch, die App entsteht trotzdem.
+        $this->fake->push(['translations' => []])->push(['translations' => []]);
+        $app = $designer->create($this->admin, $draft);
+
+        $this->assertStringStartsWith('Die Bezeichnungen konnten nicht übersetzt werden', (string) $designer->translationWarning);
+        $this->assertTrue($app->is_active);
+        $this->assertSame('Kurse', CustomTable::query()->where('name', 'kurse_kurse')->sole()->getTranslation('label', 'en'), 'Ohne Übersetzung gilt die Vorgabesprache.');
     }
 }

@@ -40,6 +40,10 @@ final class AppDesigner
         You design a complete business application ("app") for SAFT, a database application. Respond only with JSON that
         matches the given schema.
 
+        Languages: write every label, description, choice label and menu label ONLY in the language of the user (the
+        language code given in the request) and set all other languages to "" – they are translated automatically when
+        the app is created. This overrides "in all languages" below.
+
         An app has a name and a one-sentence description in all languages of the schema (de, en, fr, it – translate
         them), a prefix (lower case letters and digits, 1-20 characters, starting with a letter, e.g. "gitarren"; it
         must not be one of "existing_prefixes") and an icon from "icons".
@@ -79,10 +83,14 @@ final class AppDesigner
         change it as the user asks and keep everything else unchanged; without a draft, design a new app.
         TXT;
 
+    /** Hinweis des letzten create(), wenn die Übersetzung nicht gelang (die App ist trotzdem erzeugt). */
+    public ?string $translationWarning = null;
+
     public function __construct(
         private readonly AssistantClient $client,
         private readonly DraftCompiler $compiler,
         private readonly AppInstaller $installer,
+        private readonly DraftTranslator $translator,
     ) {}
 
     public static function availableFor(?User $user): bool
@@ -187,15 +195,24 @@ final class AppDesigner
             throw new BusinessRuleException(implode(' ', $compiled['problems']));
         }
 
-        $definition = $compiled['definition'];
+        // Im Gespräch entstehen die Bezeichnungen nur in einer Sprache; die übrigen jetzt einmal übersetzen.
+        $timeout = max((int) config('ai.timeout', 120), (int) config('ai.designer_timeout', 900));
+        config(['ai.timeout' => $timeout]);
+        @set_time_limit(2 * $timeout + 60);
+        $translated = $this->translator->translate($user, $compiled['definition']);
+        $definition = $translated['definition'];
+        $this->translationWarning = $translated['warning'];
         $default = (string) config('locales.default');
         $prefix = filled($prefix) ? strtolower(trim((string) $prefix)) : $definition['app']['prefix'];
 
-        if (filled($name)) {
-            $definition['app']['name'] = [...$definition['app']['name'], $default => trim((string) $name)];
+        $locale = app()->getLocale();
+
+        // Der Name aus dem Dialog gilt in der Sprache der Person; geändert, gilt er auch für die übrigen ohne eigenen Namen.
+        if (filled($name) && trim((string) $name) !== (string) ($definition['app']['name'][$locale] ?? '')) {
+            $definition['app']['name'] = [...$definition['app']['name'], $locale => trim((string) $name)];
         }
 
-        $copy = $prefix !== $definition['app']['prefix'] ? ['name' => (string) $definition['app']['name'][$default], 'prefix' => $prefix] : null;
+        $copy = $prefix !== $definition['app']['prefix'] ? ['name' => (string) ($definition['app']['name'][$default] ?? $definition['app']['name'][$locale] ?? $name), 'prefix' => $prefix] : null;
         $app = $this->installer->install($definition, $copy, $user);
         $app->forceFill(['is_active' => true])->save();
 

@@ -1318,6 +1318,8 @@ fornitore IA configurato e l’assistente IA attivato (vedi [capitolo 7](#7-impo
   semplice contabilità di entrate e uscite con IVA, giustificativi in PDF e articoli con fino a 10 immagini». Con
   **Progetta** l’IA propone un’app: nome, prefisso e icona, tabelle con campi, tipi, valori di selezione, collegamenti,
   campi file, campi calcolati (anche condizioni e somme sulle tabelle figlie), regole di tabella e gruppi di menu.
+  Nella conversazione tutte le etichette sono scritte solo nella sua lingua (risposte più brevi e veloci); la
+  traduzione avviene una sola volta alla creazione.
 - **Anteprima:** a destra compaiono nome e prefisso, un riepilogo, avvisi (ad es. sui campi file), il modello dei dati
   come diagramma e, per tabella, i campi con tipo, collegamento (`→ tabella`), formula (`= …`) o valori. **Nella banca
   dati non viene creato nulla.**
@@ -1328,8 +1330,9 @@ fornitore IA configurato e l’assistente IA attivato (vedi [capitolo 7](#7-impo
   regole. SAFT rimanda gli errori all’IA per la correzione; se non riesce, il messaggio compare sotto l’inserimento.
 - **Bozze:** a sinistra ci sono le sue bozze (solo le sue); ogni proposta viene salvata, può continuare più tardi o
   eliminare una bozza. **Nuova bozza** ricomincia da capo.
-- **Crea app:** **«Crea app»** in alto a destra chiede nome e prefisso (un altro prefisso rinomina le tabelle) e crea
-  l’app: tabelle, tabelle di dettaglio (sotto ogni tabella quelle che la referenziano), menu con modello dei dati e un
+- **Crea app:** **«Crea app»** in alto a destra chiede nome e prefisso (un altro prefisso rinomina le tabelle) traduce le
+  etichette nelle altre lingue (da mezzo minuto a un minuto circa; se non riesce, l’app viene creata comunque e un avviso
+  ne indica il motivo) e crea l’app: tabelle, tabelle di dettaglio (sotto ogni tabella quelle che la referenziano), menu con modello dei dati e un
   **ruolo** con tutti i diritti sulle nuove tabelle e la visualizzazione dei report. A differenza dell’installazione,
   l’app è poi **attiva** e vi si passa. La bozza resta, contrassegnata «creata».
 - **Report:** l’IA propone 2–6 report per l’app – prima quelli citati dalla sua descrizione, poi quelli ovvi;
@@ -1343,7 +1346,7 @@ fornitore IA configurato e l’assistente IA attivato (vedi [capitolo 7](#7-impo
 - **In seguito** modifica l’app come qualsiasi altra – a mano nel designer di tabelle o per tabella con **«Adatta con
   l’IA»**, i report nel designer dei report. Chi non è super-admin riceve il ruolo dell’app alla creazione.
 - **Protezione dei dati e costi:** all’IA vanno solo la sua descrizione, la bozza e la struttura delle tabelle
-  condivise di altre app – mai record. Un passaggio dura spesso da uno a tre minuti (ogni report conta come richiesta a sé). Una risposta contiene circa 15–20 tabelle; se la bozza è più grande, SAFT lo segnala – inizi allora con le tabelle più importanti e aggiunga le altre dopo la creazione (limite: `AI_DESIGNER_MAX_TOKENS`, vedi amministrazione di sistema) e conta, come gli altri
+  condivise di altre app – mai record. Un passaggio dura spesso da uno a tre minuti (ogni report conta come richiesta a sé). Una risposta contiene circa 25–30 tabelle; se la bozza è più grande, SAFT lo segnala – inizi allora con le tabelle più importanti e aggiunga le altre dopo la creazione (limite: `AI_DESIGNER_MAX_TOKENS`, vedi amministrazione di sistema) e conta, come gli altri
   assistenti, nel limite giornaliero; figura nel registro delle modifiche.
 
 **Esportare:** scarica l’app come **definizione dell’app** (file `<prefisso>-<versione>.saft-app.json`, formato

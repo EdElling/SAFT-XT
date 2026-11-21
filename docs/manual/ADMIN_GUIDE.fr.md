@@ -1353,7 +1353,8 @@ Il nécessite un fournisseur d’IA configuré et l’assistant IA activé (voir
   p. ex. « une comptabilité simple des recettes et dépenses avec TVA, justificatifs en PDF et articles avec jusqu’à 10
   images ». Avec **Concevoir**, l’IA propose une app : nom, préfixe et icône, tables avec champs, types, valeurs de
   sélection, liaisons, champs fichier, champs calculés (aussi conditions et sommes sur les tables enfants), règles de
-  table et groupes de menu.
+  table et groupes de menu. Dans la conversation, tous les libellés sont rédigés uniquement dans votre langue
+  (réponses plus courtes et plus rapides) ; la traduction se fait une fois à la création.
 - **Aperçu :** à droite figurent nom et préfixe, un résumé, des remarques (p. ex. sur les champs fichier), le modèle de
   données en diagramme et, par table, les champs avec type, liaison (`→ table`), formule (`= …`) ou valeurs. **Rien
   n’est créé dans la base de données.**
@@ -1365,7 +1366,8 @@ Il nécessite un fournisseur d’IA configuré et l’assistant IA activé (voir
 - **Brouillons :** à gauche figurent vos brouillons (seulement les vôtres) ; chaque proposition est enregistrée, vous
   pouvez reprendre plus tard ou supprimer un brouillon. **Nouveau brouillon** recommence.
 - **Créer l’app :** **« Créer l’app »** en haut à droite demande nom et préfixe (un autre préfixe renomme les tables) et
-  crée l’app : tables, tables de détail (sous chaque table les tables qui la référencent), menu avec modèle de données
+  traduit les libellés dans les autres langues (environ une demi-minute à une minute ; en cas d’échec, l’app est tout
+  de même créée et une remarque en donne la raison), puis crée l’app : tables, tables de détail (sous chaque table les tables qui la référencent), menu avec modèle de données
   et un **rôle** avec tous les droits sur les nouvelles tables et la consultation des rapports. Contrairement à
   l’installation, l’app est ensuite **active** et vous y passez. Le brouillon reste, marqué « créée ».
 - **Rapports :** l’IA propose 2 à 6 rapports pour l’app – d’abord ceux que cite votre description, puis des rapports
@@ -1379,7 +1381,7 @@ Il nécessite un fournisseur d’IA configuré et l’assistant IA activé (voir
   **« Adapter avec l’IA »**, les rapports dans le concepteur de rapports. Qui n’est pas super-admin reçoit le rôle de
   l’app lors de la création.
 - **Protection des données et coûts :** seuls votre description, le brouillon et la structure des tables partagées
-  d’autres apps vont à l’IA – jamais des enregistrements. Une étape dure souvent une à trois minutes (chaque rapport compte comme une demande à part). Une réponse contient environ 15 à 20 tables ; si le brouillon est plus grand, SAFT le signale – commencez alors par les tables les plus importantes et ajoutez les autres après la création (limite : `AI_DESIGNER_MAX_TOKENS`, voir administration système) et compte, comme
+  d’autres apps vont à l’IA – jamais des enregistrements. Une étape dure souvent une à trois minutes (chaque rapport compte comme une demande à part). Une réponse contient environ 25 à 30 tables ; si le brouillon est plus grand, SAFT le signale – commencez alors par les tables les plus importantes et ajoutez les autres après la création (limite : `AI_DESIGNER_MAX_TOKENS`, voir administration système) et compte, comme
   les autres assistants, dans la limite journalière ; elle figure dans le journal des modifications.
 
 **Exporter :** télécharge l’app sous forme de **définition d’app** (fichier `<préfixe>-<version>.saft-app.json`, format

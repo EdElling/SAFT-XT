@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 /** KI-App-Designer (B-107, Etappe 7a). */
 return [
+    'translation_help' => 'Die Bezeichnungen werden dabei in die übrigen Sprachen übersetzt; das dauert etwa eine halbe bis eine Minute.',
+    'translation_failed' => 'Die Bezeichnungen konnten nicht übersetzt werden (:error). Die App ist trotzdem erzeugt; ergänzen Sie die Übersetzungen im Table-Designer, von Hand oder mit „Mit KI anpassen“.',
+    'translation_log' => 'Übersetzung von :count Bezeichnungen (App-Designer)',
     'to_app' => 'Zur neuen App',
     'reports' => [
         'preview' => 'Auswertungen (werden nach dem Erzeugen angelegt)',

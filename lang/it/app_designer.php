@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 /** KI-App-Designer (B-107, Etappe 7a). */
 return [
+    'translation_help' => 'Le etichette vengono tradotte nelle altre lingue; ciò richiede da mezzo minuto a un minuto circa.',
+    'translation_failed' => 'Non è stato possibile tradurre le etichette (:error). L’app è comunque creata; completi le traduzioni nel designer di tabelle, a mano o con «Adatta con l’IA».',
+    'translation_log' => 'Traduzione di :count etichette (progettista di app)',
     'to_app' => 'Alla nuova app',
     'reports' => [
         'preview' => 'Report (creati dopo l’app)',

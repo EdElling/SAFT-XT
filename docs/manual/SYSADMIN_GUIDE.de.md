@@ -229,7 +229,7 @@ dort leer bleibt, kommt aus der `.env`:
 | `AI_EFFORT` | Denktiefe `low`, `medium` (Vorgabe), `high` |
 | `AI_DAILY_LIMIT` | Anfragen je Person und Tag (Vorgabe 50) |
 | `AI_MAX_TOKENS`, `AI_TIMEOUT` | Obergrenze der Antwort (Vorgabe 16000) und Sekunden je Anfrage (Vorgabe 120) |
-| `AI_DESIGNER_MAX_TOKENS`, `AI_DESIGNER_TIMEOUT` | Nur für den KI-App-Designer (eine ganze App ist eine lange Antwort): Obergrenze der Antwort (Vorgabe 32000, etwa 15–20 Tabellen) und Sekunden je Anfrage (Vorgabe 900). Mehr Token erlauben grössere Apps, dauern aber länger und kosten mehr; PHP- und Proxy-Zeitlimits müssen für den Designer entsprechend höher sein |
+| `AI_DESIGNER_MAX_TOKENS`, `AI_DESIGNER_TIMEOUT` | Nur für den KI-App-Designer (eine ganze App ist eine lange Antwort): Obergrenze der Antwort (Vorgabe 32000, etwa 25–30 Tabellen) und Sekunden je Anfrage (Vorgabe 900). Mehr Token erlauben grössere Apps, dauern aber länger und kosten mehr; PHP- und Proxy-Zeitlimits müssen für den Designer entsprechend höher sein |
 | `ANTHROPIC_API_KEY` | Schlüssel für `anthropic`; besser in den globalen Einstellungen (dort verschlüsselt gespeichert) |
 | `AI_INFERENCE_GEO` | Optional: Region der Verarbeitung bei Anthropic, z. B. `us` |
 | `AI_BASE_URL` | Nur für Proxys/Gateways; leer = `api.anthropic.com` |

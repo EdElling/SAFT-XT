@@ -132,10 +132,10 @@ class AppDesignerPage extends Page
                 ->icon(Heroicon::OutlinedSparkles)
                 ->visible(fn (): bool => ($draft = $this->current()) !== null && $draft->status === AppDraft::DRAFT && is_array($draft->definition))
                 ->modalHeading(__('app_designer.create_heading'))
-                ->modalDescription(__('app_designer.create_help'))
+                ->modalDescription(__('app_designer.create_help').' '.__('app_designer.translation_help'))
                 ->modalSubmitActionLabel(__('app_designer.create'))
                 ->fillForm(fn (): array => [
-                    'name' => (string) (($this->current()?->definition['app']['name'] ?? [])[config('locales.default')] ?? ''),
+                    'name' => (string) (($this->current()?->definition['app']['name'] ?? [])[app()->getLocale()] ?? ($this->current()?->definition['app']['name'] ?? [])[config('locales.default')] ?? ''),
                     'prefix' => (string) ($this->current()?->definition['app']['prefix'] ?? ''),
                     // Alle vorgeschlagenen Auswertungen vorgewählt; einzeln abwählbar.
                     'reports' => array_keys(DraftReports::fromProposal((array) $this->current()?->proposal)),
@@ -152,8 +152,10 @@ class AppDesignerPage extends Page
                         ->visible(fn (): bool => DraftReports::fromProposal((array) $this->current()?->proposal) !== []),
                 ])
                 ->action(function (array $data): void {
+                    $designer = app(AppDesigner::class);
+
                     try {
-                        $app = app(AppDesigner::class)->create($this->user(), $this->current() ?? throw new BusinessRuleException(__('app_designer.errors.nothing_to_create')), $data['name'], $data['prefix'], array_values(array_map('intval', (array) ($data['reports'] ?? []))));
+                        $app = $designer->create($this->user(), $this->current() ?? throw new BusinessRuleException(__('app_designer.errors.nothing_to_create')), $data['name'], $data['prefix'], array_values(array_map('intval', (array) ($data['reports'] ?? []))));
                     } catch (BusinessRuleException $e) {
                         Notification::make()->danger()->title(__('app_designer.create_failed'))->body($e->getMessage())->persistent()->send();
 
@@ -161,6 +163,10 @@ class AppDesignerPage extends Page
                     }
 
                     Notification::make()->success()->title(__('app_designer.created', ['app' => (string) $app->name]))->send();
+
+                    if (filled($warning = $designer->translationWarning)) {
+                        Notification::make()->warning()->title($warning)->persistent()->send();
+                    }
 
                     // Ohne Auswertungen gleich in die App (vollständig neu laden: Menü, Umschalter, Rechte). Sonst bleibt die
                     // Seite und zeigt den Fortschritt; „Zur neuen App“ führt danach hinein.

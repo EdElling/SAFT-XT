@@ -1253,7 +1253,8 @@ assistant switched on (see [chapter 7](#7-global-settings)).
 - **Describe:** Describe the app in your own words – which data, how it is related, what should be calculated – e.g. "a
   simple income and expense accounting with VAT, receipts as PDF and items with up to 10 images". With **Design** the
   AI proposes an app: name, prefix and icon, tables with fields, types, choices, relations, file fields, computed fields
-  (also conditions and totals across child tables), table rules and menu groups.
+  (also conditions and totals across child tables), table rules and menu groups. In the conversation all labels are
+  written only in your language (shorter, faster answers); they are translated once when creating the app.
 - **Preview:** On the right you see name and prefix, a summary, notes (e.g. about file fields), the data model as a
   diagram and per table the fields with type, relation (`→ table`), formula (`= …`) or choices. **Nothing is created in
   the database.**
@@ -1265,7 +1266,8 @@ assistant switched on (see [chapter 7](#7-global-settings)).
 - **Drafts:** On the left are your drafts (only yours); every proposal is saved, you can continue later or delete a
   draft. **New draft** starts over.
 - **Create app:** **"Create app"** at the top right asks for name and prefix (a different prefix renames the tables)
-  and creates the app: tables, detail tables (below each table the tables that point to it), menu with data model and
+  translates the labels into the other languages (about half a minute to a minute; if that fails, the app is created
+  anyway and a note gives the reason) and creates the app: tables, detail tables (below each table the tables that point to it), menu with data model and
   a **role** with all permissions on the new tables and viewing reports. Unlike installing, the app is **active**
   afterwards and you switch into it. The draft remains, marked "created".
 - **Reports:** The AI proposes 2–6 reports for the app – first those your description names, then obvious ones; the
@@ -1279,7 +1281,7 @@ assistant switched on (see [chapter 7](#7-global-settings)).
 - **Afterwards** you change the app like any other – by hand in the table designer or per table with **"Adjust with
   AI"**, reports in the report designer. Whoever is not a super admin receives the role of the app when creating it.
 - **Privacy and cost:** Only your description, the draft and the structure of shared tables of other apps go to the AI
-  – never records. A round often takes one to three minutes (each report counts as a request of its own). One answer holds about 15–20 tables; if the draft is larger, SAFT says so – then start with the most important tables and add more after creating the app (limit: `AI_DESIGNER_MAX_TOKENS`, see system administration) and counts towards the daily limit like the other
+  – never records. A round often takes one to three minutes (each report counts as a request of its own). One answer holds about 25–30 tables; if the draft is larger, SAFT says so – then start with the most important tables and add more after creating the app (limit: `AI_DESIGNER_MAX_TOKENS`, see system administration) and counts towards the daily limit like the other
   assistants; it is recorded in the activity log.
 
 **Export:** downloads the app as an **app definition** (file `<prefix>-<version>.saft-app.json`, format `saft-app/1`;
