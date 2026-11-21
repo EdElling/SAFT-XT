@@ -9,6 +9,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 ## Als Nächstes (Prio 1)
 
 1. **B-107** Etappe 7 (KI-App-Designer) umgesetzt: 7a Entwurf im Gespräch, Vorschau, Erzeugen; 7c Auswertungen (einzeln abwählbar). 7b Editor zurückgestellt (Entscheid 2026-11-21: Table-Designer nach dem Erzeugen genügt). Nächste Schritte offen.
+2. **B-124** Dokumente aus Vorlagen: Etappe D1 planen (Konzept docs/concept/DOCUMENTS.md)
 
 ## Apps (Fachanwendungen)
 
@@ -50,7 +51,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 | Nr. | Thema | Beschreibung | Status | Bezug |
 |---|---|---|---|---|
-| B-124 | Dokumente aus Vorlagen (PDF, DOCX) | Allgemeine Ausgabe für SAFT: aus einer Selektion (ausgewählte Datensätze, Filter oder ein Datensatz mit seinen Kind-Datensätzen) Dokumente nach Vorlagen erzeugen, z. B. Rechnungen, Lieferscheine, Briefe – als PDF oder DOCX. Vorlagen je App mit Platzhaltern für Felder, Kind-Tabellen (Positionen) und berechnete Werte; Rechte je Vorlage; Ablage des erzeugten Dokuments optional in einem Dateifeld. Anstoss: Rechnungen im Gitarrenshop (B-121). | offen | B-121 |
+| B-124 | Dokumente aus Vorlagen (PDF, DOCX) | Allgemeine Ausgabe für SAFT: aus einer Selektion (ausgewählte Datensätze, Filter oder ein Datensatz mit seinen Kind-Datensätzen) Dokumente nach Vorlagen erzeugen, z. B. Rechnungen, Lieferscheine, Briefe – als PDF oder DOCX. Vorlagen je App mit Platzhaltern für Felder, Kind-Tabellen (Positionen) und berechnete Werte; Rechte je Vorlage; Ablage des erzeugten Dokuments optional in einem Dateifeld. Anstoss: Rechnungen im Gitarrenshop (B-121). | Konzept abgestimmt (docs/concept/DOCUMENTS.md: mPDF, Mustache, Briefpapier als PDF getrennt von Inhaltsvorlagen, Etappen D1–D4) | B-121 |
 | B-125 | Kompakte Formulare | Platzsparendes Layout für alle Formulare, beginnend mit dem Feldformular im Table-Designer: (a) Werteliste eines Auswahlfelds als kompakte Tabelle über die volle Breite (eigene Kachel) mit den Spalten Wert, Anzeige DE/EN/FR/IT und Löschsymbol, darüber „Neu“ für eine leere Zeile (Filament: Repeater im Tabellenmodus) – auch einzeln vorziehbar; (b) Bezeichnung und Feld zeilenweise nebeneinander (Filament: inlineLabel), zuerst bei Bezeichnung, Spaltenname und Typ; danach Formular für Formular prüfen, wie die dynamischen Teile (je Feldtyp) passen. Anstoss: Feld „Land“ der Lieferanten im Gitarrenshop. | offen | – |
 | B-126 | Logo und Symbol im Browser-Tab | Symbol im Browser-Tab: Safttropfen (favicon.svg, favicon.ico, apple-touch-icon.png) ; Logo neben dem Namen in der Titelleiste und auf der Anmeldeseite, bei „Über SAFT“ immer das SAFT-Logo; eigenes Logo in den Einstellungen hochladbar (PNG, JPG, WebP; kein SVG), wahlweise auch als Symbol im Tab; ausgeliefert über /branding/logo ohne öffentlichen Speicher. | umgesetzt | – |
 | B-020 | Rechte auf Zeilenebene | Datensätze nur sehen bzw. bearbeiten, wenn eine Bedingung erfüllt ist (z. B. eigene Abteilung, eigene Datensätze). | offen | – |
