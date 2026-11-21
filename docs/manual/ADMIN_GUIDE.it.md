@@ -1310,6 +1310,34 @@ perde l’accesso – oppure rimozione dei diritti. Lo spostamento compare nel r
 **Modello di dati:** mostra il diagramma di tutte le tabelle dell’app con i loro collegamenti (come la pagina «Modello
 di dati» di un gruppo di menu, con «Mostra campi»); compaiono solo le tabelle che potete leggere.
 
+**Progettare con l’IA (progettista di app):** **«Progettare con l’IA»** in alto nella pagina (diritto *App: progettare
+con l’IA*; con l’aggiornamento lo ricevono i ruoli che possono installare app) apre il progettista di app. Richiede un
+fornitore IA configurato e l’assistente IA attivato (vedi [capitolo 7](#7-impostazioni-globali)).
+
+- **Descrivere:** descriva l’app con parole sue – quali dati, come sono collegati, cosa va calcolato –, ad es. «una
+  semplice contabilità di entrate e uscite con IVA, giustificativi in PDF e articoli con fino a 10 immagini». Con
+  **Progetta** l’IA propone un’app: nome, prefisso e icona, tabelle con campi, tipi, valori di selezione, collegamenti,
+  campi file, campi calcolati (anche condizioni e somme sulle tabelle figlie), regole di tabella e gruppi di menu.
+- **Anteprima:** a destra compaiono nome e prefisso, un riepilogo, avvisi (ad es. sui campi file), il modello dei dati
+  come diagramma e, per tabella, i campi con tipo, collegamento (`→ tabella`), formula (`= …`) o valori. **Nella banca
+  dati non viene creato nulla.**
+- **Adattare:** scriva altri desideri nella conversazione, ad es. «fornitori in una tabella propria», e clicchi
+  **Adatta** – quante volte vuole. Se l’IA fa una domanda, compare nella conversazione.
+- **Verificato:** ogni proposta viene verificata completamente prima di essere mostrata, come all’installazione – nomi
+  (anche rispetto alle tabelle esistenti), collegamenti (nella bozza o verso tabelle condivise di altre app), formule e
+  regole. SAFT rimanda gli errori all’IA per la correzione; se non riesce, il messaggio compare sotto l’inserimento.
+- **Bozze:** a sinistra ci sono le sue bozze (solo le sue); ogni proposta viene salvata, può continuare più tardi o
+  eliminare una bozza. **Nuova bozza** ricomincia da capo.
+- **Crea app:** **«Crea app»** in alto a destra chiede nome e prefisso (un altro prefisso rinomina le tabelle) e crea
+  l’app: tabelle, tabelle di dettaglio (sotto ogni tabella quelle che la referenziano), menu con modello dei dati e un
+  **ruolo** con tutti i diritti sulle nuove tabelle e la visualizzazione dei report. A differenza dell’installazione,
+  l’app è poi **attiva** e vi si passa. La bozza resta, contrassegnata «creata».
+- **In seguito** modifica l’app come qualsiasi altra – a mano nel designer di tabelle o per tabella con **«Adatta con
+  l’IA»**. Il progettista di app non propone (ancora) report; li crei nella nuova app con l’assistente per i report.
+- **Protezione dei dati e costi:** all’IA vanno solo la sua descrizione, la bozza e la struttura delle tabelle
+  condivise di altre app – mai record. Un passaggio dura spesso da uno a tre minuti e conta, come gli altri
+  assistenti, nel limite giornaliero; figura nel registro delle modifiche.
+
 **Esportare:** scarica l’app come **definizione dell’app** (file `<prefisso>-<versione>.saft-app.json`, formato
 `saft-app/1`; diritto *App: esportare*). Sempre inclusi: le tabelle con campi, regole e dettagli, i collegamenti di
 tabelle e i menu dell’app; a scelta: report (condivisi e propri), ruoli con diritti, attività pianificate e manuale. Mai
@@ -1468,6 +1496,7 @@ sono riservate e non si possono assegnare a nessun ruolo: **Visualizza come ruol
 | App: esportare | scaricare un’app come file (`saft-app/1`) |
 | App: installare | installare un’app da un tale file, anche come copia |
 | App: aggiornare | aggiornare un’app installata da un file più recente della stessa app (piano delle modifiche) |
+| App: progettare con l’IA | progettare e creare una nuova app con il progettista di app IA |
 | Plugin: visualizzare | pagina «Plugin» con versione, stato e dipendenze |
 | Plugin: gestire | attivare e disattivare plugin, creare le loro voci di menu, ripulire i resti di plugin disinstallati, scaricare il contesto per lo sviluppo |
 | Attività pianificate: visualizzare | elenco delle attività e delle loro esecuzioni |

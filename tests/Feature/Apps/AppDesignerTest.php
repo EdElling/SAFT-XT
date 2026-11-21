@@ -9,6 +9,9 @@ use App\Apps\Designer\AppDesigner;
 use App\Apps\Designer\DesignerResult;
 use App\Apps\Designer\DraftCompiler;
 use App\Exceptions\BusinessRuleException;
+use App\Filament\Pages\AppDesignerPage;
+use App\Filament\Pages\Dashboard;
+use App\Filament\Resources\Apps\Pages\ListApps;
 use App\Models\App;
 use App\Models\AppDraft;
 use App\Models\CustomTable;
@@ -19,6 +22,7 @@ use App\Models\User;
 use App\Reports\Assistant\AssistantClient;
 use App\Settings\AppSettings;
 use Illuminate\Support\Str;
+use Livewire\Livewire;
 use Tests\Fakes\FakeAssistantClient;
 use Tests\Feature\DynamicData\DynamicDataTestCase;
 
@@ -107,6 +111,7 @@ class AppDesignerTest extends DynamicDataTestCase
         $this->assertSame(DesignerResult::PROPOSAL, $result->status);
         $this->assertStringContainsString('Unbekanntes Feld „titel“ in „kurse_anmeldungen“', end($this->fake->requests[1]['messages'])['content'], 'Korrekturrunde mit der Meldung der Formelprüfung.');
         $this->assertStringContainsString('"existing_prefixes"', $this->fake->requests[0]['system'][1]['text']);
+        $this->assertFalse($this->fake->requests[0]['strict'], 'Ohne erzwungene Form (Grammatik zu gross).');
 
         $draft->refresh();
         $this->assertSame('Ich brauche eine Kursverwaltung mit Anmeldungen und Einnahmen.', $draft->title);
@@ -200,5 +205,62 @@ class AppDesignerTest extends DynamicDataTestCase
         $this->assertTrue(AppDesigner::availableFor($other));
         $this->expectException(BusinessRuleException::class);
         $designer->propose($other, $designer->start($this->admin), 'Fremder Entwurf');
+    }
+
+    public function test_the_page_shows_conversation_preview_and_creates_the_app(): void
+    {
+        $this->fake->push($this->courses());
+        $page = Livewire::test(AppDesignerPage::class)
+            ->assertSee(__('app_designer.intro'))
+            ->assertActionHidden('createApp')
+            ->set('prompt', 'Kursverwaltung mit Anmeldungen')
+            ->call('send')
+            ->assertSet('prompt', '')
+            ->assertSee('Kursverwaltung mit Anmeldungen')
+            ->assertSee('Vorschlag mit den Tabellen kurse_teilnehmende, kurse_kurse, kurse_anmeldungen – siehe Vorschau.')
+            ->assertSee('= sum(if(kurse_anmeldungen.bezahlt, kurse_anmeldungen.betrag, 0))')
+            ->assertSee('→ kurse_kurse')
+            ->assertSee('3 Tabellen, 10 Felder')
+            ->assertActionVisible('createApp');
+
+        $page->mountAction('createApp')
+            ->assertSchemaStateSet(['name' => 'Kurse', 'prefix' => 'kurse'])
+            ->callMountedAction()
+            ->assertHasNoActionErrors()
+            ->assertNotified('App „Kurse“ erzeugt.')
+            ->assertRedirect(Dashboard::getUrl());
+        $this->assertTrue(App::query()->where('prefix', 'like', 'kurse%')->sole()->is_active);
+
+        // Entwurf nach dem Erzeugen: Hinweis statt Eingabe; löschen entfernt nur den Entwurf.
+        $draft = AppDraft::query()->sole();
+        Livewire::test(AppDesignerPage::class, ['draft' => $draft->id])
+            ->assertSee('Aus diesem Entwurf wurde die App „Kurse“ erzeugt.')
+            ->assertActionHidden('createApp')
+            ->call('deleteDraft', $draft->id);
+        $this->assertSame(0, AppDraft::query()->count());
+        $this->assertTrue(CustomTable::query()->where('name', 'kurse_kurse')->exists());
+    }
+
+    public function test_page_access_errors_and_the_button_on_the_apps_list(): void
+    {
+        Livewire::test(ListApps::class)->assertActionVisible('designApp');
+
+        // KI-Fehler (zweimal ungültig) als Meldung unter der Eingabe; die Eingabe bleibt stehen.
+        $broken = $this->courses(['tables' => []]);
+        $this->fake->push($broken)->push($broken);
+        Livewire::test(AppDesignerPage::class)
+            ->set('prompt', 'Leer')
+            ->call('send')
+            ->assertSet('prompt', 'Leer')
+            ->assertSee('Kein gültiger Entwurf: Der Entwurf hat keine Tabellen.');
+
+        // Fremde Entwürfe sind nicht zu sehen; ohne Recht keine Seite.
+        $other = $this->userWithPermissions(['apps.view', 'apps.design']);
+        $foreign = AppDraft::query()->latest('id')->firstOrFail();
+        $this->actingAs($other);
+        Livewire::test(AppDesignerPage::class, ['draft' => $foreign->id])->assertDontSee('Leer');
+        $this->actingAs($this->userWithPermissions(['apps.view']));
+        $this->get(AppDesignerPage::getUrl())->assertForbidden();
+        Livewire::test(ListApps::class)->assertActionHidden('designApp');
     }
 }

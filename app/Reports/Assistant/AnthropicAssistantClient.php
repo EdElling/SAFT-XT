@@ -25,8 +25,13 @@ final class AnthropicAssistantClient implements AssistantClient
         return $this->config->model();
     }
 
-    public function complete(array $system, array $messages, array $schema): AssistantReply
+    public function complete(array $system, array $messages, array $schema, bool $strict = true): AssistantReply
     {
+        // Ohne erzwungene Form: das Schema als Vorgabe im Auftrag (nach den zwischengespeicherten Blöcken).
+        if (! $strict) {
+            $system[] = ['type' => 'text', 'text' => "Respond with exactly one JSON object and nothing else – no Markdown, no code fences, no comments. It must match this JSON schema (all properties required):\n".json_encode($schema, JSON_UNESCAPED_UNICODE)];
+        }
+
         $blocks = array_map(static fn (array $b): array => array_filter([
             'type' => 'text',
             'text' => $b['text'],
@@ -37,10 +42,10 @@ final class AnthropicAssistantClient implements AssistantClient
             'maxTokens' => (int) config('ai.max_tokens', 16000),
             'system' => $blocks,
             'messages' => $messages,
-            'outputConfig' => [
+            'outputConfig' => array_filter([
                 'effort' => $this->config->effort(),
-                'format' => ['type' => 'json_schema', 'schema' => $schema],
-            ],
+                'format' => $strict ? ['type' => 'json_schema', 'schema' => $schema] : null,
+            ]),
             'requestOptions' => ['timeout' => (float) config('ai.timeout', 120)],
         ];
 
@@ -64,6 +69,11 @@ final class AnthropicAssistantClient implements AssistantClient
                 $text = $block->text;
                 break;
             }
+        }
+
+        // Ohne erzwungene Form schreiben Modelle gelegentlich doch einen Codeblock um das JSON.
+        if (! $strict && $text !== null && preg_match('/^\s*```(?:json)?\s*(.*?)\s*```\s*$/s', $text, $m) === 1) {
+            $text = $m[1];
         }
 
         return new AssistantReply(

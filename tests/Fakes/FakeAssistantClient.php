@@ -27,9 +27,9 @@ final class FakeAssistantClient implements AssistantClient
         return $this;
     }
 
-    public function complete(array $system, array $messages, array $schema): AssistantReply
+    public function complete(array $system, array $messages, array $schema, bool $strict = true): AssistantReply
     {
-        $this->requests[] = compact('system', 'messages', 'schema');
+        $this->requests[] = compact('system', 'messages', 'schema', 'strict');
 
         return array_shift($this->replies) ?? throw new RuntimeException('Keine Antwort vorbereitet.');
     }

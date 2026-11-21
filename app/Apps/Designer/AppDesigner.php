@@ -108,13 +108,19 @@ final class AppDesigner
                 .'Request: '.trim($text),
         ];
         $conversation = new AiConversation($this->client);
+        // Eine ganze App ist eine lange Antwort (oft 2–3 Minuten): mehr Zeit für den Aufruf und – mit Korrekturrunde –
+        // für die Anfrage als bei den anderen Assistenten.
+        config(['ai.timeout' => max((int) config('ai.timeout', 120), 300)]);
+        @set_time_limit(660);
 
         try {
+            // Das Schema einer ganzen App ist dem Anbieter als Grammatik zu gross („grammar too large“): nur als Vorgabe
+            // im Auftrag (strict: false) – geprüft wird der Vorschlag ohnehin vollständig, Fehler gehen in die Korrekturrunde.
             $answer = $conversation->ask($system, [...array_slice((array) ($draft->history ?? []), -2 * self::HISTORY_TURNS), $request], DesignerSchema::response(), function (array $proposal) use (&$compiled): array {
                 $compiled = $this->compiler->compile($proposal);
 
                 return $compiled['problems'];
-            });
+            }, strict: false);
         } catch (Throwable $e) {
             Log::warning('App-Designer fehlgeschlagen', ['error' => $e->getMessage()]);
             AiUsage::log($user, 'apps', $text, 'error', $conversation->usage, $conversation->model(), $e->getMessage());

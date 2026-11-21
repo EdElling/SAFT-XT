@@ -1284,6 +1284,37 @@ Mitgliedern, damit niemand den Zugriff verliert – oder Rechte entfernen. Das V
 **Datenmodell:** zeigt das Diagramm aller Tabellen der App mit ihren Verknüpfungen (wie die Seite „Datenmodell“ einer
 Menügruppe, mit „Felder anzeigen“); es erscheinen nur Tabellen, die Sie lesen dürfen.
 
+**Mit KI entwerfen (App-Designer):** **„Mit KI entwerfen“** oben auf der Seite (Recht *Apps: mit KI entwerfen*; beim
+Update erhalten es die Rollen, die Apps installieren dürfen) öffnet den App-Designer. Er braucht einen eingerichteten
+KI-Anbieter und den eingeschalteten KI-Assistenten (siehe [Kapitel 7](#7-globale-einstellungen)).
+
+- **Beschreiben:** Sie beschreiben die App in eigenen Worten – welche Daten, wie sie zusammenhängen, was berechnet
+  werden soll –, z. B. „eine einfache Ein- und Ausgabenrechnung mit MWST, Belegen als PDF und Artikeln mit bis zu 10
+  Bildern“. Mit **Entwerfen** schlägt die KI eine App vor: Name, Präfix und Symbol, Tabellen mit Feldern, Typen,
+  Auswahlwerten, Verknüpfungen, Dateifeldern, berechneten Feldern (auch Bedingungen und Summen über Kind-Tabellen),
+  Tabellenregeln und Menügruppen.
+- **Vorschau:** Rechts stehen Name und Präfix, eine Zusammenfassung, Hinweise (z. B. zu Dateifeldern), das Datenmodell
+  als Diagramm und je Tabelle die Felder mit Typ, Verknüpfung (`→ tabelle`), Formel (`= …`) oder Auswahlwerten.
+  **In der Datenbank entsteht dabei nichts.**
+- **Anpassen:** Weitere Wünsche schreiben Sie ins Gespräch, z. B. „Lieferanten als eigene Tabelle“, und klicken
+  **Anpassen** – beliebig oft. Fragt die KI zurück, steht die Frage im Gespräch.
+- **Geprüft:** Jeder Vorschlag wird vor der Anzeige vollständig geprüft wie beim Installieren – Namen (auch gegen
+  vorhandene Tabellen), Verknüpfungen (innerhalb des Entwurfs oder auf freigegebene Tabellen anderer Apps), Formeln und
+  Regeln. Fehler gibt SAFT der KI zur Korrektur zurück; gelingt sie nicht, erscheint die Meldung unter der Eingabe.
+- **Entwürfe:** Links stehen Ihre Entwürfe (nur Ihre); jeder Vorschlag wird gespeichert, Sie können später
+  weitermachen oder einen Entwurf löschen. **Neuer Entwurf** beginnt von vorn.
+- **App erzeugen:** **„App erzeugen“** oben rechts fragt Name und Präfix (ein anderes Präfix benennt die Tabellen um)
+  und legt die App an: Tabellen, Detailtabellen (unter jeder Tabelle die Tabellen, die auf sie verweisen), Menü mit
+  Datenmodell und eine **Fachrolle** mit allen Rechten auf die neuen Tabellen und dem Ansehen von Auswertungen. Anders
+  als beim Installieren ist die App danach **aktiv**, und Sie wechseln hinein. Der Entwurf bleibt mit dem Vermerk
+  „erzeugt“ stehen.
+- **Danach** ändern Sie die App wie jede andere – im Table-Designer von Hand oder je Tabelle mit **„Mit KI anpassen“**.
+  Auswertungen schlägt der App-Designer (noch) nicht vor; legen Sie sie in der neuen App mit dem
+  Auswertungs-Assistenten an.
+- **Datenschutz und Kosten:** An die KI gehen nur Ihre Beschreibung, der Entwurf und die Struktur freigegebener Tabellen
+  anderer Apps – nie Datensätze. Eine Runde dauert oft ein bis drei Minuten und zählt wie die anderen Assistenten zum
+  Tageslimit; sie steht im Änderungsprotokoll.
+
 **Exportieren:** lädt die App als **App-Definition** herunter (Datei `<präfix>-<version>.saft-app.json`, Format
 `saft-app/1`; Recht *Apps: exportieren*). Immer dabei sind die Tabellen mit Feldern, Regeln und Details, die
 Tabellenverknüpfungen und die Menüs der App; wählbar sind Auswertungen (freigegebene und eigene), Rollen mit Rechten,
@@ -1446,6 +1477,7 @@ entfernen**. „Anzeigen“ ist jeweils Voraussetzung für die übrigen Rechte e
 | Apps: exportieren | eine App als Datei (`saft-app/1`) herunterladen |
 | Apps: installieren | eine App aus einer solchen Datei installieren, auch als Kopie |
 | Apps: aktualisieren | eine installierte App aus einer neueren Datei derselben App aktualisieren (Änderungsplan) |
+| Apps: mit KI entwerfen | eine neue App mit dem KI-App-Designer entwerfen und erzeugen |
 | Plugins: anzeigen | Seite „Plugins“ mit Version, Status und Abhängigkeiten |
 | Plugins: verwalten | Plugins ein- und ausschalten, ihre Menüeinträge anlegen, Reste deinstallierter Plugins aufräumen, Kontext für Entwicklung herunterladen |
 | Geplante Aufgaben: anzeigen | Liste der Aufgaben und ihrer Läufe |

@@ -38,12 +38,12 @@ final class AiConversation
      * @param  callable(array<string, mixed>): list<string>  $check  Fehler des Vorschlags (leer = gültig)
      * @return array{status: string, proposal: array<string, mixed>, history: list<array{role: string, content: string}>, question: ?string, errors: list<string>}
      */
-    public function ask(array $system, array $messages, array $schema, callable $check): array
+    public function ask(array $system, array $messages, array $schema, callable $check, bool $strict = true): array
     {
         $errors = [];
 
         for ($attempt = 0; $attempt < 2; $attempt++) {
-            $reply = $this->client->complete($system, $messages, $schema);
+            $reply = $this->client->complete($system, $messages, $schema, $strict);
             $this->usage['in'] += $reply->inputTokens + $reply->cacheReadTokens + $reply->cacheWriteTokens;
             $this->usage['out'] += $reply->outputTokens;
             $this->usage['cache'] += $reply->cacheReadTokens;

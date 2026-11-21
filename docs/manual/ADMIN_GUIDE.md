@@ -1246,6 +1246,34 @@ access – or remove the permissions. Moving is recorded in the activity log.
 **Data model:** shows the diagram of all tables of the app with their relations (like the “Data model” page of a menu
 group, with “Show fields”); only tables you may read appear.
 
+**Design with AI (app designer):** **"Design with AI"** at the top of the page (permission *Apps: design with AI*; on
+update, roles that may install apps receive it) opens the app designer. It needs a configured AI provider and the AI
+assistant switched on (see [chapter 7](#7-global-settings)).
+
+- **Describe:** Describe the app in your own words – which data, how it is related, what should be calculated – e.g. "a
+  simple income and expense accounting with VAT, receipts as PDF and items with up to 10 images". With **Design** the
+  AI proposes an app: name, prefix and icon, tables with fields, types, choices, relations, file fields, computed fields
+  (also conditions and totals across child tables), table rules and menu groups.
+- **Preview:** On the right you see name and prefix, a summary, notes (e.g. about file fields), the data model as a
+  diagram and per table the fields with type, relation (`→ table`), formula (`= …`) or choices. **Nothing is created in
+  the database.**
+- **Adjust:** Write further wishes into the conversation, e.g. "suppliers as a table of their own", and click **Adjust**
+  – as often as you like. If the AI asks back, the question appears in the conversation.
+- **Checked:** Every proposal is checked completely before it is shown, as when installing – names (also against
+  existing tables), relations (within the draft or to shared tables of other apps), formulas and rules. SAFT returns
+  errors to the AI for correction; if that fails, the message appears below the input.
+- **Drafts:** On the left are your drafts (only yours); every proposal is saved, you can continue later or delete a
+  draft. **New draft** starts over.
+- **Create app:** **"Create app"** at the top right asks for name and prefix (a different prefix renames the tables)
+  and creates the app: tables, detail tables (below each table the tables that point to it), menu with data model and
+  a **role** with all permissions on the new tables and viewing reports. Unlike installing, the app is **active**
+  afterwards and you switch into it. The draft remains, marked "created".
+- **Afterwards** you change the app like any other – by hand in the table designer or per table with **"Adjust with
+  AI"**. The app designer does not (yet) propose reports; create them in the new app with the report assistant.
+- **Privacy and cost:** Only your description, the draft and the structure of shared tables of other apps go to the AI
+  – never records. A round often takes one to three minutes and counts towards the daily limit like the other
+  assistants; it is recorded in the activity log.
+
 **Export:** downloads the app as an **app definition** (file `<prefix>-<version>.saft-app.json`, format `saft-app/1`;
 permission *Apps: export*). Always included are the tables with fields, rules and details, the table links and the
 menus of the app; optional are reports (shared and own), roles with permissions, scheduled tasks and the manual. Never
@@ -1402,6 +1430,7 @@ reserved for the super admin and cannot be granted to any role: **View as role**
 | Apps: export | download an app as a file (`saft-app/1`) |
 | Apps: install | install an app from such a file, also as a copy |
 | Apps: update | update an installed app from a newer file of the same app (change plan) |
+| Apps: design with AI | design and create a new app with the AI app designer |
 | Plugins: view | “Plugins” page with version, status and dependencies |
 | Plugins: manage | switch plugins on and off, create their menu entries, clean up leftovers of uninstalled plugins, download the development context |
 | Scheduled tasks: view | list of tasks and their runs |

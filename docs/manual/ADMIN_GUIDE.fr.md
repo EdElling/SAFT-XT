@@ -1345,6 +1345,36 @@ droits. Le déplacement figure dans le journal des modifications.
 **Modèle de données :** affiche le diagramme de toutes les tables de l’app avec leurs liaisons (comme la page « Modèle
 de données » d’un groupe de menu, avec « Afficher les champs ») ; seules les tables que vous pouvez lire apparaissent.
 
+**Concevoir avec l’IA (concepteur d’apps) :** **« Concevoir avec l’IA »** en haut de la page (droit *Apps : concevoir
+avec l’IA* ; lors de la mise à jour, les rôles autorisés à installer des apps le reçoivent) ouvre le concepteur d’apps.
+Il nécessite un fournisseur d’IA configuré et l’assistant IA activé (voir [chapitre 7](#7-paramètres-globaux)).
+
+- **Décrire :** décrivez l’app avec vos mots – quelles données, comment elles sont liées, ce qui doit être calculé –,
+  p. ex. « une comptabilité simple des recettes et dépenses avec TVA, justificatifs en PDF et articles avec jusqu’à 10
+  images ». Avec **Concevoir**, l’IA propose une app : nom, préfixe et icône, tables avec champs, types, valeurs de
+  sélection, liaisons, champs fichier, champs calculés (aussi conditions et sommes sur les tables enfants), règles de
+  table et groupes de menu.
+- **Aperçu :** à droite figurent nom et préfixe, un résumé, des remarques (p. ex. sur les champs fichier), le modèle de
+  données en diagramme et, par table, les champs avec type, liaison (`→ table`), formule (`= …`) ou valeurs. **Rien
+  n’est créé dans la base de données.**
+- **Adapter :** écrivez d’autres souhaits dans la conversation, p. ex. « les fournisseurs dans une table à part », puis
+  **Adapter** – aussi souvent que nécessaire. Si l’IA pose une question, elle apparaît dans la conversation.
+- **Vérifié :** chaque proposition est entièrement vérifiée avant l’affichage, comme à l’installation – noms (aussi par
+  rapport aux tables existantes), liaisons (dans le brouillon ou vers des tables partagées d’autres apps), formules et
+  règles. SAFT renvoie les erreurs à l’IA pour correction ; si elle échoue, le message apparaît sous la saisie.
+- **Brouillons :** à gauche figurent vos brouillons (seulement les vôtres) ; chaque proposition est enregistrée, vous
+  pouvez reprendre plus tard ou supprimer un brouillon. **Nouveau brouillon** recommence.
+- **Créer l’app :** **« Créer l’app »** en haut à droite demande nom et préfixe (un autre préfixe renomme les tables) et
+  crée l’app : tables, tables de détail (sous chaque table les tables qui la référencent), menu avec modèle de données
+  et un **rôle** avec tous les droits sur les nouvelles tables et la consultation des rapports. Contrairement à
+  l’installation, l’app est ensuite **active** et vous y passez. Le brouillon reste, marqué « créée ».
+- **Ensuite**, vous modifiez l’app comme toute autre – à la main dans le concepteur de tables ou par table avec
+  **« Adapter avec l’IA »**. Le concepteur d’apps ne propose pas (encore) de rapports ; créez-les dans la nouvelle app
+  avec l’assistant de rapports.
+- **Protection des données et coûts :** seuls votre description, le brouillon et la structure des tables partagées
+  d’autres apps vont à l’IA – jamais des enregistrements. Une étape dure souvent une à trois minutes et compte, comme
+  les autres assistants, dans la limite journalière ; elle figure dans le journal des modifications.
+
 **Exporter :** télécharge l’app sous forme de **définition d’app** (fichier `<préfixe>-<version>.saft-app.json`, format
 `saft-app/1` ; droit *Apps : exporter*). Toujours inclus : les tables avec champs, règles et détails, les liaisons de
 tables et les menus de l’app ; au choix : rapports (partagés et propres), rôles avec droits, tâches planifiées et
@@ -1510,6 +1540,7 @@ entrée de menu).
 | Apps: exporter | télécharger une app sous forme de fichier (`saft-app/1`) |
 | Apps: installer | installer une app à partir d’un tel fichier, aussi comme copie |
 | Apps: mettre à jour | mettre à jour une app installée à partir d’un fichier plus récent de la même app (plan de modifications) |
+| Apps: concevoir avec l’IA | concevoir et créer une nouvelle app avec le concepteur d’apps IA |
 | Plugins: afficher | page « Plugins » avec version, état et dépendances |
 | Plugins: gérer | activer et désactiver des plugins, créer leurs entrées de menu, nettoyer les restes de plugins désinstallés, télécharger le contexte de développement |
 | Tâches planifiées: afficher | liste des tâches et de leurs exécutions |
