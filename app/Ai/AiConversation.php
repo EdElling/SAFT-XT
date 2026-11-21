@@ -21,6 +21,9 @@ final class AiConversation
 
     public const string INVALID = 'invalid';
 
+    /** Antwort an der Längengrenze abgebrochen: keine Korrekturrunde (sie würde wieder zu lang). */
+    public const string TRUNCATED = 'truncated';
+
     /** @var array{in: int, out: int, cache: int} */
     public array $usage = ['in' => 0, 'out' => 0, 'cache' => 0];
 
@@ -50,6 +53,10 @@ final class AiConversation
 
             if ($reply->refused() || $reply->text === null) {
                 return ['status' => self::REFUSED, 'proposal' => [], 'history' => $messages, 'question' => null, 'errors' => []];
+            }
+
+            if ($reply->truncated()) {
+                return ['status' => self::TRUNCATED, 'proposal' => [], 'history' => $messages, 'question' => null, 'errors' => [__('assistant.errors.truncated')]];
             }
 
             try {

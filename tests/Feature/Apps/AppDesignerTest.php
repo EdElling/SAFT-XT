@@ -23,6 +23,7 @@ use App\Models\Report;
 use App\Models\Role;
 use App\Models\User;
 use App\Reports\Assistant\AssistantClient;
+use App\Reports\Assistant\AssistantReply;
 use App\Settings\AppSettings;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
@@ -356,5 +357,19 @@ class AppDesignerTest extends DynamicDataTestCase
             ->assertNoRedirect();
 
         $this->assertSame(['Anmeldungen je Kurs'], array_column(AppDraft::query()->sole()->reports, 'title'));
+    }
+
+    public function test_a_truncated_answer_gives_a_clear_message_without_a_correction_round(): void
+    {
+        config(['ai.max_tokens' => 16000, 'ai.timeout' => 120]);
+        $this->fake->push(new AssistantReply('{"kind": "app", "app": {"name": {"de": "Kur', 'max_tokens', inputTokens: 5000, outputTokens: 32000));
+
+        $result = app(AppDesigner::class)->propose($this->admin, app(AppDesigner::class)->start($this->admin), 'Eine riesige App');
+
+        $this->assertSame(DesignerResult::ERROR, $result->status);
+        $this->assertStringStartsWith('Der Entwurf ist zu umfangreich für eine Antwort der KI (höchstens 32000 Token).', (string) $result->message);
+        $this->assertCount(1, $this->fake->requests, 'Keine Korrekturrunde – sie würde wieder zu lang.');
+        // Für den Designer gelten eigene, höhere Grenzen.
+        $this->assertSame([32000, 900], [config('ai.max_tokens'), config('ai.timeout')]);
     }
 }

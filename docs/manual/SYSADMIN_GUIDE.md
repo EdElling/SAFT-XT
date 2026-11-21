@@ -223,6 +223,7 @@ comes from the `.env`:
 | `AI_EFFORT` | Thinking depth `low`, `medium` (default), `high` |
 | `AI_DAILY_LIMIT` | Requests per person and day (default 50) |
 | `AI_MAX_TOKENS`, `AI_TIMEOUT` | Maximum answer size (default 16000) and seconds per request (default 120) |
+| `AI_DESIGNER_MAX_TOKENS`, `AI_DESIGNER_TIMEOUT` | Only for the AI app designer (a whole app is a long answer): maximum answer size (default 32000, about 15–20 tables) and seconds per request (default 900). More tokens allow larger apps but take longer and cost more; PHP and proxy time limits must be correspondingly higher for the designer |
 | `ANTHROPIC_API_KEY` | Key for `anthropic`; better in the global settings (stored encrypted there) |
 | `AI_INFERENCE_GEO` | Optional: processing region with Anthropic, e.g. `us` |
 | `AI_BASE_URL` | Only for proxies/gateways; empty = `api.anthropic.com` |

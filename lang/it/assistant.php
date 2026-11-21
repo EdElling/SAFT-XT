@@ -76,6 +76,7 @@ return [
         'no_tables' => 'Non può analizzare nessuna tabella.',
         'failed' => 'L’assistente IA al momento non è raggiungibile. Riprovare più tardi.',
         'refused' => 'L’assistente IA non ha elaborato questa richiesta. Formularla diversamente.',
+        'truncated' => 'La risposta dell’IA era troppo lunga ed è stata interrotta.',
         'invalid' => 'Nessuna proposta valida: :errors. Descrivere in modo più preciso o completare a mano.',
         'unknown_table' => 'La tabella :id non esiste o non può essere analizzata.',
         'formula' => 'Formula non leggibile – :error',

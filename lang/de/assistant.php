@@ -76,6 +76,7 @@ return [
         'no_tables' => 'Sie dürfen keine Tabelle auswerten.',
         'failed' => 'Der KI-Assistent ist gerade nicht erreichbar. Bitte später noch einmal versuchen.',
         'refused' => 'Der KI-Assistent hat diese Anfrage nicht bearbeitet. Bitte anders formulieren.',
+        'truncated' => 'Die Antwort der KI war zu lang und brach ab.',
         'invalid' => 'Kein gültiger Vorschlag: :errors. Bitte genauer beschreiben oder von Hand ergänzen.',
         'unknown_table' => 'Tabelle :id gibt es nicht oder sie ist nicht auswertbar.',
         'formula' => 'Formel nicht lesbar – :error',

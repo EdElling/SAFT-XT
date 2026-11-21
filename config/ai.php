@@ -22,6 +22,11 @@ return [
     // Sekunden je Anfrage an das Modell
     'timeout' => (int) env('AI_TIMEOUT', 120),
 
+    // KI-App-Designer: Eine ganze App ist eine lange Antwort – höhere Grenzen nur dort (Token je Antwort, Sekunden je
+    // Anfrage). Mehr Token erlauben grössere Apps, dauern aber länger und kosten mehr.
+    'designer_max_tokens' => (int) env('AI_DESIGNER_MAX_TOKENS', 32000),
+    'designer_timeout' => (int) env('AI_DESIGNER_TIMEOUT', 900),
+
     // Anfragen je Person und Tag
     'daily_limit' => (int) env('AI_DAILY_LIMIT', 50),
 

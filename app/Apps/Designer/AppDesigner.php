@@ -116,10 +116,14 @@ final class AppDesigner
                 .'Request: '.trim($text),
         ];
         $conversation = new AiConversation($this->client);
-        // Eine ganze App ist eine lange Antwort (oft 2–3 Minuten): mehr Zeit für den Aufruf und – mit Korrekturrunde –
-        // für die Anfrage als bei den anderen Assistenten.
-        config(['ai.timeout' => max((int) config('ai.timeout', 120), 300)]);
-        @set_time_limit(660);
+        // Eine ganze App ist eine lange Antwort (oft 2–3 Minuten, bei grossen Apps und langsamen Modellen deutlich mehr):
+        // eigene, höhere Grenzen für Länge und Dauer, für die Anfrage Platz für eine Korrekturrunde.
+        $timeout = max((int) config('ai.timeout', 120), (int) config('ai.designer_timeout', 900));
+        config([
+            'ai.timeout' => $timeout,
+            'ai.max_tokens' => max((int) config('ai.max_tokens', 16000), (int) config('ai.designer_max_tokens', 32000)),
+        ]);
+        @set_time_limit(2 * $timeout + 60);
 
         try {
             // Das Schema einer ganzen App ist dem Anbieter als Grammatik zu gross („grammar too large“): nur als Vorgabe
@@ -140,6 +144,7 @@ final class AppDesigner
             AiConversation::OK => new DesignerResult(DesignerResult::PROPOSAL, warnings: $compiled['warnings'] ?? []),
             AiConversation::QUESTION => new DesignerResult(DesignerResult::QUESTION, (string) $answer['question']),
             AiConversation::REFUSED => new DesignerResult(DesignerResult::ERROR, __('assistant.errors.refused')),
+            AiConversation::TRUNCATED => new DesignerResult(DesignerResult::ERROR, __('app_designer.errors.too_large', ['tokens' => (int) config('ai.max_tokens')])),
             default => new DesignerResult(DesignerResult::ERROR, __('app_designer.errors.invalid', ['errors' => implode('; ', array_slice($answer['errors'], 0, 8))])),
         };
 

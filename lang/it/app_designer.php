@@ -56,6 +56,7 @@ return [
         'menu_table' => 'Il gruppo di menu cita la tabella «:table», che non è nella bozza.',
         'menu_twice' => 'La tabella «:table» è in più di un gruppo di menu.',
         'invalid' => 'Nessuna bozza valida: :errors',
+        'too_large' => 'La bozza è troppo grande per una risposta dell’IA (al massimo :tokens token). Inizi con le tabelle più importanti e aggiunga le altre dopo la creazione nel designer di tabelle – oppure l’amministrazione di sistema aumenta AI_DESIGNER_MAX_TOKENS.',
         'nothing_to_create' => 'Non c’è ancora una bozza da cui creare un’app.',
         'already_created' => 'Da questa bozza è già stata creata un’app.',
     ],

@@ -1379,7 +1379,7 @@ Il nécessite un fournisseur d’IA configuré et l’assistant IA activé (voir
   **« Adapter avec l’IA »**, les rapports dans le concepteur de rapports. Qui n’est pas super-admin reçoit le rôle de
   l’app lors de la création.
 - **Protection des données et coûts :** seuls votre description, le brouillon et la structure des tables partagées
-  d’autres apps vont à l’IA – jamais des enregistrements. Une étape dure souvent une à trois minutes (chaque rapport compte comme une demande à part) et compte, comme
+  d’autres apps vont à l’IA – jamais des enregistrements. Une étape dure souvent une à trois minutes (chaque rapport compte comme une demande à part). Une réponse contient environ 15 à 20 tables ; si le brouillon est plus grand, SAFT le signale – commencez alors par les tables les plus importantes et ajoutez les autres après la création (limite : `AI_DESIGNER_MAX_TOKENS`, voir administration système) et compte, comme
   les autres assistants, dans la limite journalière ; elle figure dans le journal des modifications.
 
 **Exporter :** télécharge l’app sous forme de **définition d’app** (fichier `<préfixe>-<version>.saft-app.json`, format

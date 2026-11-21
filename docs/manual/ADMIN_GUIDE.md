@@ -1279,7 +1279,7 @@ assistant switched on (see [chapter 7](#7-global-settings)).
 - **Afterwards** you change the app like any other – by hand in the table designer or per table with **"Adjust with
   AI"**, reports in the report designer. Whoever is not a super admin receives the role of the app when creating it.
 - **Privacy and cost:** Only your description, the draft and the structure of shared tables of other apps go to the AI
-  – never records. A round often takes one to three minutes (each report counts as a request of its own) and counts towards the daily limit like the other
+  – never records. A round often takes one to three minutes (each report counts as a request of its own). One answer holds about 15–20 tables; if the draft is larger, SAFT says so – then start with the most important tables and add more after creating the app (limit: `AI_DESIGNER_MAX_TOKENS`, see system administration) and counts towards the daily limit like the other
   assistants; it is recorded in the activity log.
 
 **Export:** downloads the app as an **app definition** (file `<prefix>-<version>.saft-app.json`, format `saft-app/1`;

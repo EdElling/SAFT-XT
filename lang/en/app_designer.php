@@ -56,6 +56,7 @@ return [
         'menu_table' => 'The menu group names the table ":table", which is not in the draft.',
         'menu_twice' => 'The table ":table" is in more than one menu group.',
         'invalid' => 'No valid draft: :errors',
+        'too_large' => 'The draft is too large for one answer of the AI (at most :tokens tokens). Start with the most important tables and add more after creating the app in the table designer – or the system administration raises AI_DESIGNER_MAX_TOKENS.',
         'nothing_to_create' => 'There is no draft yet from which an app can be created.',
         'already_created' => 'An app has already been created from this draft.',
     ],

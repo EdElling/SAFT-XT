@@ -1343,7 +1343,7 @@ fornitore IA configurato e l’assistente IA attivato (vedi [capitolo 7](#7-impo
 - **In seguito** modifica l’app come qualsiasi altra – a mano nel designer di tabelle o per tabella con **«Adatta con
   l’IA»**, i report nel designer dei report. Chi non è super-admin riceve il ruolo dell’app alla creazione.
 - **Protezione dei dati e costi:** all’IA vanno solo la sua descrizione, la bozza e la struttura delle tabelle
-  condivise di altre app – mai record. Un passaggio dura spesso da uno a tre minuti (ogni report conta come richiesta a sé) e conta, come gli altri
+  condivise di altre app – mai record. Un passaggio dura spesso da uno a tre minuti (ogni report conta come richiesta a sé). Una risposta contiene circa 15–20 tabelle; se la bozza è più grande, SAFT lo segnala – inizi allora con le tabelle più importanti e aggiunga le altre dopo la creazione (limite: `AI_DESIGNER_MAX_TOKENS`, vedi amministrazione di sistema) e conta, come gli altri
   assistenti, nel limite giornaliero; figura nel registro delle modifiche.
 
 **Esportare:** scarica l’app come **definizione dell’app** (file `<prefisso>-<versione>.saft-app.json`, formato

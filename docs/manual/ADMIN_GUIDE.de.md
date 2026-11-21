@@ -1319,7 +1319,7 @@ KI-Anbieter und den eingeschalteten KI-Assistenten (siehe [Kapitel 7](#7-globale
 - **Danach** ändern Sie die App wie jede andere – im Table-Designer von Hand oder je Tabelle mit **„Mit KI anpassen“**,
   Auswertungen im Auswertungs-Designer. Wer kein Super-Admin ist, erhält beim Erzeugen die Fachrolle der App.
 - **Datenschutz und Kosten:** An die KI gehen nur Ihre Beschreibung, der Entwurf und die Struktur freigegebener Tabellen
-  anderer Apps – nie Datensätze. Eine Runde dauert oft ein bis drei Minuten (jede Auswertung zählt als eigene Anfrage) und zählt wie die anderen Assistenten zum
+  anderer Apps – nie Datensätze. Eine Runde dauert oft ein bis drei Minuten (jede Auswertung zählt als eigene Anfrage). Eine Antwort fasst etwa 15–20 Tabellen; ist der Entwurf grösser, meldet SAFT das – beginnen Sie dann mit den wichtigsten Tabellen und ergänzen Sie weitere nach dem Erzeugen (Grenze: `AI_DESIGNER_MAX_TOKENS`, siehe Systemadministration) und zählt wie die anderen Assistenten zum
   Tageslimit; sie steht im Änderungsprotokoll.
 
 **Exportieren:** lädt die App als **App-Definition** herunter (Datei `<präfix>-<version>.saft-app.json`, Format

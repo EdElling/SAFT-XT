@@ -16,6 +16,12 @@ final readonly class AssistantReply
         public int $cacheWriteTokens = 0,
     ) {}
 
+    /** Die Antwort brach an der Längengrenze ab (AI_MAX_TOKENS) – das JSON ist unvollständig. */
+    public function truncated(): bool
+    {
+        return $this->stopReason === 'max_tokens';
+    }
+
     public function refused(): bool
     {
         return $this->stopReason === 'refusal';

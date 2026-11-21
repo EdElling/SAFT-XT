@@ -56,6 +56,7 @@ return [
         'menu_table' => 'Le groupe de menu cite la table « :table », absente du brouillon.',
         'menu_twice' => 'La table « :table » figure dans plus d’un groupe de menu.',
         'invalid' => 'Aucun brouillon valable : :errors',
+        'too_large' => 'Le brouillon est trop volumineux pour une réponse de l’IA (au plus :tokens jetons). Commencez par les tables les plus importantes et ajoutez les autres après la création dans le concepteur de tables – ou l’administration système augmente AI_DESIGNER_MAX_TOKENS.',
         'nothing_to_create' => 'Il n’y a pas encore de brouillon à partir duquel créer une app.',
         'already_created' => 'Une app a déjà été créée à partir de ce brouillon.',
     ],

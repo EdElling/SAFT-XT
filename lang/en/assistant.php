@@ -76,6 +76,7 @@ return [
         'no_tables' => 'You may not evaluate any table.',
         'failed' => 'The AI assistant cannot be reached right now. Please try again later.',
         'refused' => 'The AI assistant did not process this request. Please phrase it differently.',
+        'truncated' => 'The AI\'s answer was too long and was cut off.',
         'invalid' => 'No valid suggestion: :errors. Please describe it more precisely or complete it by hand.',
         'unknown_table' => 'Table :id does not exist or cannot be evaluated.',
         'formula' => 'Formula cannot be read – :error',

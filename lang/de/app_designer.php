@@ -56,6 +56,7 @@ return [
         'menu_table' => 'Die Menügruppe nennt die Tabelle „:table“, die es im Entwurf nicht gibt.',
         'menu_twice' => 'Die Tabelle „:table“ steht in mehr als einer Menügruppe.',
         'invalid' => 'Kein gültiger Entwurf: :errors',
+        'too_large' => 'Der Entwurf ist zu umfangreich für eine Antwort der KI (höchstens :tokens Token). Beginnen Sie mit den wichtigsten Tabellen und ergänzen Sie weitere nach dem Erzeugen im Table-Designer – oder die Systemadministration erhöht AI_DESIGNER_MAX_TOKENS.',
         'nothing_to_create' => 'Es gibt noch keinen Entwurf, aus dem sich eine App erzeugen lässt.',
         'already_created' => 'Aus diesem Entwurf wurde schon eine App erzeugt.',
     ],
