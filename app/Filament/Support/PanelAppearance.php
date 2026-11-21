@@ -156,11 +156,16 @@ final class PanelAppearance
             .'.dark .saft-file-thumb{border-color:var(--gray-700)}'
             .'.saft-file-link{display:inline-flex;align-items:center;gap:.25rem;color:var(--primary-600)}.dark .saft-file-link{color:var(--primary-400)}'
             .'.saft-file-link:hover{text-decoration:underline}.saft-file-icon{width:1rem;height:1rem;flex-shrink:0}'
-            .'.saft-app-switcher{display:inline-flex;align-items:center;gap:.5rem;padding:.375rem .625rem;border-radius:.5rem;font-size:.875rem;font-weight:600;color:var(--gray-700);border:1px solid var(--gray-200);background:#fff;max-width:16rem}'
+            .'.saft-app-switcher{display:inline-flex;align-items:center;gap:.5rem;padding:.375rem .625rem;border-radius:.5rem;font-size:.875rem;font-weight:600;color:var(--gray-700);border:1px solid var(--gray-200);background:#fff;max-width:24rem}'
             .'.dark .saft-app-switcher{color:var(--gray-200);border-color:var(--gray-700);background:var(--gray-900)}'
             .'.saft-app-switcher:hover{background:var(--gray-50)}.dark .saft-app-switcher:hover{background:var(--gray-800)}'
             .'.saft-app-switcher-icon{width:1.25rem;height:1.25rem;color:var(--primary-600);flex-shrink:0}.saft-app-switcher-chevron{width:1rem;height:1rem;color:var(--gray-400);flex-shrink:0}'
             .'.saft-app-switcher-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+            // Menü so breit wie der längste App-Name: höchstens 28 rem über Filaments Breitenstufe „md“ (seine Grenze steht
+            // mit !important in einer CSS-Ebene, eigene Regeln kommen dagegen nicht an), mindestens 14 rem wie bisher;
+            // noch längere Namen brechen um statt über den Rand zu laufen.
+            .'[data-app-switcher] .fi-dropdown-panel{width:max-content;min-width:14rem}'
+            .'[data-app-switcher] .fi-dropdown-list-item-label{white-space:normal;overflow-wrap:anywhere}'
             // Rückfall-Hinweis übersetzbarer Texte als Platzhalter: grau und kursiv (TranslatableInputs).
             .'.saft-translation-fallback::placeholder{font-style:italic;color:var(--gray-400)}.dark .saft-translation-fallback::placeholder{color:var(--gray-500)}'
             .'.saft-file-more{font-size:.75rem;color:var(--gray-500);cursor:pointer}.saft-file-more:hover{text-decoration:underline}'

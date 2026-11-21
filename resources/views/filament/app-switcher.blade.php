@@ -1,7 +1,7 @@
 {{-- Umschalter der aktuellen App (B-107), nur bei mehr als einer zugänglichen App. --}}
-<x-filament::dropdown placement="bottom-start" data-app-switcher>
+<x-filament::dropdown placement="bottom-start" width="md" data-app-switcher>
     <x-slot name="trigger">
-        <button type="button" class="saft-app-switcher" aria-label="{{ __('apps.switch.label') }}" title="{{ __('apps.switch.label') }}">
+        <button type="button" class="saft-app-switcher" aria-label="{{ __('apps.switch.label') }}" title="{{ __('apps.switch.label') }}: {{ $current?->name }}">
             @if ($current?->icon)
                 {{ svg($current->icon, 'saft-app-switcher-icon') }}
             @else
