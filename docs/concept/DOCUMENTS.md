@@ -1,6 +1,6 @@
 # Konzept: Dokumente aus Vorlagen (PDF) in SAFT XT
 
-Stand: 21.11.2026 · Status: abgestimmt, Etappe D1 in Planung · Backlog: B-124
+Stand: 21.11.2026 · Status: abgestimmt, offene Punkte entschieden, Etappe D1 in Planung · Backlog: B-124
 
 ## 1. Ziel
 
@@ -26,7 +26,9 @@ Empfänger, elektronische Rechnungsformate (ZUGFeRD, XRechnung).
 | Gestaltung und Inhalt | **Getrennt.** Das **Briefpapier** (CI) wird einmal zentral festgelegt; **Inhaltsvorlagen** setzen nur Daten darauf und können das CI nicht verletzen (Abschnitt 3). |
 | Bearbeiten | In SAFT selbst: **Code-Editor** für Inhaltsvorlagen mit Feldauswahl und **Live-Vorschau** als PDF. Später Bausteine im Formular für Fachanwender. Kein WYSIWYG-Designer. |
 | KI | Erzeugt **nur Inhaltsvorlagen** innerhalb des Briefpapiers, nie das CI (Etappe D2). |
-| Zuordnung | Inhaltsvorlagen gehören zu einer **App** und einer **Grundtabelle** (z. B. „Rechnung“ zu *Belege*). Das Briefpapier gilt für die ganze Installation, mit möglicher Abweichung je App. |
+| Zuordnung | Inhaltsvorlagen gehören zu einer **App** und einer **Grundtabelle** (z. B. „Rechnung“ zu *Belege*). Das Briefpapier gilt für die ganze Installation; **je App ein eigenes Briefpapier ab D1**. |
+| Archivierung | **PDF/A-3b** (mPDF), einstellbar, Vorgabe an. Abgelegte Dokumente sind schreibgeschützt; erneutes Erzeugen legt eine neue Fassung an. Prüfwert (SHA-256) im Änderungsprotokoll. **Digitale Signatur später** (eigene Etappe D5 nach einem Versuch). |
+| Nummernkreise | **Nicht Teil der Dokumente**, eigenes Backlog-Thema B-135 (Feldeigenschaft). Vorlagen zeigen das vorhandene Nummernfeld an. |
 | Recht | Je Vorlage, wie bei Auswertungen: Wer die Grundtabelle lesen darf und das Recht der Vorlage hat, darf das Dokument erzeugen. Vorlagen bearbeiten: eigenes Recht *Dokumentvorlagen: verwalten*. |
 
 ## 3. Briefpapier (CI) – einmal festlegen
@@ -44,7 +46,8 @@ Affinity, auch Word) bei der Agentur oder der Kommunikationsabteilung. In SAFT w
   bzw. DIN 5008), Absenderzeile.
 - **Absenderdaten** als Platzhalter für Vorlagen: Firmenname, Adresse, MWST-Nummer, IBAN, Kontakt.
 
-Optional je App ein eigenes Briefpapier (z. B. eine Abteilung mit eigenem Auftritt); sonst gilt das der Installation.
+Optional je App ein eigenes Briefpapier (z. B. eine Abteilung mit eigenem Auftritt), schon in D1; sonst gilt das der
+Installation. Je App lassen sich alle Teile oder nur einzelne (z. B. nur Briefpapier-PDF und Absender) abweichend festlegen.
 
 ## 4. Inhaltsvorlagen – Daten auf das Briefpapier setzen
 
@@ -96,7 +99,11 @@ des Kunden). Bezeichnungen von Auswahlwerten und Formatierungen folgen ihr.
 - Ergebnis: **PDF herunterladen** und auf Wunsch **in einem Dateifeld ablegen** (je Vorlage einstellbar, z. B.
   „Belegdateien“) – dann bleibt das Dokument beim Datensatz und erscheint in der Vorschau der Dateien.
 - Dateiname aus der Vorlage, z. B. `Rechnung-{{belegnummer}}.pdf`.
-- Im Änderungsprotokoll: wer welches Dokument zu welchem Datensatz erzeugt hat.
+- Im Änderungsprotokoll: wer welches Dokument zu welchem Datensatz erzeugt hat, mit Prüfwert (SHA-256) des PDFs.
+- **PDF/A-3b** (Einstellung, Vorgabe an): Schriften eingebettet, keine Transparenz. Ein Briefpapier-PDF mit Transparenzen
+  kann damit kollidieren – Prüfung und Hinweis beim Hochladen.
+- **Schreibgeschützt:** Ein im Dateifeld abgelegtes Dokument wird nicht überschrieben; erneutes Erzeugen legt eine neue
+  Fassung daneben (`Rechnung-R-2026-001 (2).pdf`).
 - Später (D3): mehrere ausgewählte Datensätze auf einmal – ein zusammengefügtes PDF oder eine ZIP-Datei; Versand per
   E-Mail.
 
@@ -110,10 +117,11 @@ installierte App nutzt das Briefpapier der Zielinstallation.
 
 | Etappe | Inhalt | Grösse |
 |---|---|---|
-| **D1 Grundlage** | mPDF; Briefpapier (PDF-Hintergrund für erste und Folgeseiten, Hausschriften, Hausfarben, Satzspiegel, Absenderdaten); Inhaltsvorlagen je App mit Code-Editor, Feldauswahl, Live-Vorschau und Prüfung; mitgelieferte Vorlagen „Rechnung“ und „Brief“; Symbol „Dokument“ in der Zeile, Herunterladen und Ablage im Dateifeld; Rechte; Handbücher. Demo: Rechnung im Gitarrenshop. | gross |
+| **D1 Grundlage** | mPDF; Briefpapier der Installation und je App (PDF-Hintergrund für erste und Folgeseiten, Hausschriften, Hausfarben, Satzspiegel, Absenderdaten); PDF/A-3b, Prüfwert, schreibgeschützte Ablage; Inhaltsvorlagen je App mit Code-Editor, Feldauswahl, Live-Vorschau und Prüfung; mitgelieferte Vorlagen „Rechnung“ und „Brief“; Symbol „Dokument“ in der Zeile, Herunterladen und Ablage im Dateifeld; Rechte; Handbücher. Demo: Rechnung im Gitarrenshop. | gross |
 | **D2 KI und Bausteine** | Inhaltsvorlage aus einer Beschreibung (innerhalb des Briefpapiers); Bausteine im Formular für Fachanwender (Layout wählen, Felder im Adressblock, Spalten der Positionstabelle, Summen, Texte) | mittel |
 | **D3 Mehrere und Versand** | Auswahl mehrerer Datensätze → ein PDF bzw. ZIP; Versand per E-Mail mit dem Dokument als Anhang | mittel |
-| **D4 Schweiz und Word** | **QR-Rechnung** (Zahlteil mit QR-Code nach Schweizer Standard, reine PHP-Bibliothek); DOCX für Briefe, die man nachbearbeiten will | mittel |
+| **D4 Schweiz und Word** | **QR-Rechnung** (Zahlteil mit QR-Code nach Schweizer Standard, reine PHP-Bibliothek); DOCX für Briefe, die man nachbearbeiten will. Sinnvoll mit Nummernkreisen (B-135) | mittel |
+| **D5 Signatur** | erzeugte PDFs digital signieren (Zertifikat von SAFT erzeugt oder hochgeladen), damit jede Änderung erkennbar ist; vorher Versuch, ob eine reine PHP-Lösung PDF/A erhält | klein bis mittel |
 
 Jede Etappe ist für sich auslieferbar. D1 ist ohne KI vollständig nutzbar.
 
@@ -127,9 +135,12 @@ Jede Etappe ist für sich auslieferbar. D1 ist ohne KI vollständig nutzbar.
 - **Sicherheit:** Vorlagen dürfen keine externen Ressourcen laden (Bilder, Schriften, CSS aus dem Internet) und keinen
   Code ausführen; mPDF wird entsprechend eingeschränkt, Mustache führt keinen Code aus.
 
-## 10. Offene Punkte
+## 10. Entschiedene Punkte (21.11.2026)
 
-- Briefpapier je App in D1 oder erst bei Bedarf?
-- Nummernkreise (z. B. Rechnungsnummer) – heute über „Zählen je“ in den Feldern; reicht das, oder braucht es fortlaufende
-  Nummern je Jahr?
-- Archivierung: erzeugte Dokumente unveränderbar ablegen (z. B. PDF/A, Aufbewahrungspflicht)?
+- **Briefpapier je App:** bereits in D1.
+- **Nummernkreise:** eigenes Backlog-Thema B-135 – formatierte Nummern (`R-2026-0027`), Neubeginn je Jahr, einmal
+  vergeben nie wieder, ohne Doppel bei gleichzeitigem Anlegen. Heute gibt es nur „fortlaufend vorschlagen“ (höchster
+  Wert + 1, auch je Verknüpfung mit „Zählen je“).
+- **Archivierung:** PDF/A-3b in D1 (erlaubt später eingebettete Rechnungsdaten, ZUGFeRD); PDF/A allein schützt nicht vor
+  Änderungen, deshalb schreibgeschützte Ablage und Prüfwert; digitale Signatur (auch mit selbst erzeugtem Zertifikat)
+  in D5.
