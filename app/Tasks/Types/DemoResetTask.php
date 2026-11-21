@@ -12,6 +12,7 @@ use App\Tasks\TaskType;
 use Database\Seeders\DemoDataSeeder;
 use Database\Seeders\ForschungDemoSeeder;
 use Database\Seeders\LagerDemoSeeder;
+use Database\Seeders\VertriebDemoSeeder;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Toggle;
 
@@ -26,7 +27,14 @@ final readonly class DemoResetTask implements TaskType
     public const array DEMOS = [
         'shop' => DemoDataSeeder::class,
         'lager' => LagerDemoSeeder::class,
+        // Nach dem Lager: Ihre Anfragepositionen verweisen auf Lager-Artikel.
+        'vertrieb' => VertriebDemoSeeder::class,
         'forschung' => ForschungDemoSeeder::class,
+    ];
+
+    /** @var array<string, list<string>> Demo => Demos, deren Daten auf sie verweisen (über eine Schnittstelle) */
+    public const array DEPENDENTS = [
+        'lager' => ['vertrieb'],
     ];
 
     public function __construct(private DatabaseBackup $backup) {}
@@ -124,6 +132,20 @@ final readonly class DemoResetTask implements TaskType
             $backup = basename($dump);
         }
 
+        // Wer auf eine zurückgesetzte Demo verweist, wird vorher geleert und danach mit zurückgesetzt – sonst blockieren
+        // seine Verweise das Leeren (Fremdschlüssel). DEMOS legt die Reihenfolge fest: verwiesene Demos zuerst.
+        foreach (array_keys($seeders) as $key) {
+            foreach (self::DEPENDENTS[$key] ?? [] as $dependent) {
+                $seeder = app(self::DEMOS[$dependent]);
+
+                if ($seeder->demoInstalled()) {
+                    $seeder->clearDemoData();
+                    $seeders[$dependent] = $seeder;
+                }
+            }
+        }
+
+        $seeders = array_intersect_key(array_merge(array_fill_keys(array_keys(self::DEMOS), null), $seeders), $seeders);
         $records = [];
 
         foreach ($seeders as $key => $seeder) {

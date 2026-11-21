@@ -274,6 +274,7 @@ shows all available commands, `php artisan help <command>` the options of a comm
 | `php artisan db:seed` (production: `--force`) | Basic setup: roles, permissions, menu and the first administrator from `ADMIN_*` in `.env`; repeatable |
 | `php artisan db:seed --class=DemoDataSeeder` | Shop demo (articles, customers, orders, order lines) with an example report, group "Shop (Demo)" |
 | `php artisan db:seed --class=LagerDemoSeeder` | Warehouse demo (`lager_…`), group "Lager (Demo)" |
+| `php artisan db:seed --class=VertriebDemoSeeder` | Sales demo (`vertrieb_…`), own app "Sales (demo)" that uses the warehouse items through an interface; loads the warehouse demo first if missing. Resetting the warehouse data also resets the sales data |
 | `php artisan db:seed --class=ForschungDemoSeeder` | Internal research demo (`forschung_…`), group "Research (demo)" |
 
 Load demo data only on test and training systems (not with an installation using `--no-dev`). The demos first check

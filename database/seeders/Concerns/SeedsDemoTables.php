@@ -20,9 +20,10 @@ use App\Models\Report;
 use App\Reports\DefinitionResolver;
 use App\Reports\ReportDefinition;
 use App\Services\DynamicSchemaService;
+use Illuminate\Support\Collection;
 
 /**
- * Gemeinsame Bausteine der Demo-Seeder (Shop, Lager, Forschung): Menügruppe, Tabellen samt
+ * Gemeinsame Bausteine der Demo-Seeder (Shop, Lager, Vertrieb, Forschung): Menügruppe, Tabellen samt
  * Menüeinträgen, Master-Detail, Tabellenregeln, berechnete Felder und Beispiel-Auswertungen.
  * Alles wiederholbar: Vorhandenes wird nicht dupliziert, spätere Anpassungen bleiben erhalten.
  */
@@ -75,19 +76,8 @@ trait SeedsDemoTables
         $db = $namespace->connection();
 
         return DynamicRecord::withoutPluginEvents(function () use ($names, $tables, $namespace, $db): int {
-            $db->transaction(function () use ($names, $tables, $namespace, $db): void {
-                foreach (array_reverse($names) as $name) {
-                    $query = $db->table($namespace->qualify($name));
-                    $selfReferences = $tables[$name]->fields()->where('type', 'relation')->get()
-                        ->filter(static fn (CustomField $field): bool => ($field->optionsArray()['table'] ?? null) === $name);
-
-                    foreach ($selfReferences as $field) {
-                        (clone $query)->update([$field->name => null]);
-                    }
-
-                    (clone $query)->delete();
-                }
-
+            $db->transaction(function () use ($tables): void {
+                $this->deleteDemoRecords($tables);
                 $this->reseedDemoData();
             });
 
@@ -106,6 +96,43 @@ trait SeedsDemoTables
 
             return $count;
         });
+    }
+
+    /**
+     * Leert nur die Tabellen der Demo, ohne sie neu zu füllen – für Demos, deren Daten auf eine andere Demo verweisen
+     * (Vertrieb auf Lager-Artikel): vor dem Zurücksetzen der anderen leeren, danach selbst zurücksetzen.
+     */
+    public function clearDemoData(): void
+    {
+        $tables = CustomTable::query()->whereIn('name', $this->demoTableNames())->get()->keyBy('name');
+        app(DynamicDataNamespace::class)->connection()->transaction(fn () => $this->deleteDemoRecords($tables));
+    }
+
+    /**
+     * In umgekehrter Anlegereihenfolge leeren, Verweise einer Tabelle auf sich selbst vorher auf leer setzen.
+     *
+     * @param  Collection<string, CustomTable>  $tables
+     */
+    private function deleteDemoRecords(Collection $tables): void
+    {
+        $namespace = app(DynamicDataNamespace::class);
+        $db = $namespace->connection();
+
+        foreach (array_reverse($this->demoTableNames()) as $name) {
+            if (! $tables->has($name)) {
+                continue;
+            }
+
+            $query = $db->table($namespace->qualify($name));
+            $selfReferences = $tables[$name]->fields()->where('type', 'relation')->get()
+                ->filter(static fn (CustomField $field): bool => ($field->optionsArray()['table'] ?? null) === $name);
+
+            foreach ($selfReferences as $field) {
+                (clone $query)->update([$field->name => null]);
+            }
+
+            (clone $query)->delete();
+        }
     }
 
     /** Füllt die (leeren) Tabellen der Demo mit ihren Beispieldaten. */

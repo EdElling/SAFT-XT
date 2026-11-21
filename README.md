@@ -118,11 +118,12 @@ example report "Umsatz je Monat und Kategorie" (revenue per month and category) 
 php artisan db:seed --class=DemoDataSeeder
 ```
 
-Two more demos as tables in SAFT itself (without a database connection), each with its own menu group, data model and
+Three more demos as tables in SAFT itself (without a database connection), each with its own menu group, data model and
 example reports – the same data as the external demos:
 
 ```bash
 php artisan db:seed --class=LagerDemoSeeder       # "Warehouse (demo)": suppliers, items, locations, stock, movements …
+php artisan db:seed --class=VertriebDemoSeeder    # "Sales (demo)": customers, events, enquiries, orders – uses the warehouse items
 php artisan db:seed --class=ForschungDemoSeeder   # "Research (demo)": organisations, people, projects, publications …
 ```
 

@@ -16,6 +16,7 @@ use App\Tasks\TaskSkipped;
 use App\Tasks\Types\DemoResetTask;
 use Database\Seeders\ForschungDemoSeeder;
 use Database\Seeders\LagerDemoSeeder;
+use Database\Seeders\VertriebDemoSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\File;
@@ -85,6 +86,25 @@ class DemoResetTest extends DynamicDataTestCase
         $this->assertSame('Nicht zurückgesetzt', $researchChanged->fresh()->name);
         $this->assertSame(array_sum($before), $result->data['records']['lager']);
         $this->assertNull($result->data['backup']);
+    }
+
+    public function test_resetting_the_lager_demo_also_resets_the_vertrieb_demo_that_links_to_its_items(): void
+    {
+        config(['saft.demo_reset' => true]);
+        $this->seed(VertriebDemoSeeder::class);
+        $sales = app(VertriebDemoSeeder::class)->demoTableNames();
+        $before = $this->counts($sales);
+        DynamicRecord::forTableName('vertrieb_kunden')->create(['kundennummer' => 'K-9999', 'name' => 'Besucher', 'land' => 'CH']);
+
+        // Nur „Lager“ gewählt: Die Anfragepositionen verweisen auf Lager-Artikel und werden mit zurückgesetzt.
+        $result = app(DemoResetTask::class)->run(['demos' => ['lager'], 'backup' => false]);
+
+        $this->assertSame(['lager', 'vertrieb'], array_keys($result->data['records']));
+        $this->assertSame($before, $this->counts($sales));
+        $this->assertFalse(DynamicRecord::forTableName('vertrieb_kunden')->newQuery()->where('kundennummer', 'K-9999')->exists());
+        $items = DynamicRecord::forTableName('lager_artikel')->newQuery()->pluck('id')->all();
+        $this->assertSame([], DynamicRecord::forTableName('vertrieb_anfragepositionen')->newQuery()->whereNotIn('artikel_id', $items)->pluck('id')->all(), 'Positionen zeigen auf die neuen Artikel.');
+        $this->assertGreaterThan(0, (float) DynamicRecord::forTableName('vertrieb_anfragen')->newQuery()->sum('summe'), 'Summen neu berechnet.');
     }
 
     public function test_skips_when_no_chosen_demo_is_loaded(): void

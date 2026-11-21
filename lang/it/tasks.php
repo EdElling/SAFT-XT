@@ -147,6 +147,7 @@ return [
         'demos' => [
             'shop' => 'Negozio',
             'lager' => 'Magazzino',
+            'vertrieb' => 'Vendite',
             'forschung' => 'Ricerca',
         ],
         'disabled' => 'Saltata: il ripristino dei dati demo non è consentito su questo server (DEMO_RESET=true nel file .env).',

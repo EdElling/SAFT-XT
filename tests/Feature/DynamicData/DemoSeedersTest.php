@@ -18,8 +18,9 @@ use App\Reports\ValueFormatter;
 use Database\Seeders\DemoDataSeeder;
 use Database\Seeders\ForschungDemoSeeder;
 use Database\Seeders\LagerDemoSeeder;
+use Database\Seeders\VertriebDemoSeeder;
 
-/** Demo-Seeder Lager und Forschung: Tabellen in SAFT selbst, Daten, Menügruppe, Auswertungen. */
+/** Demo-Seeder Lager, Vertrieb und Forschung: Tabellen in SAFT selbst, Daten, Menügruppe, Auswertungen. */
 class DemoSeedersTest extends DynamicDataTestCase
 {
     public function test_lager_demo(): void
@@ -151,6 +152,45 @@ class DemoSeedersTest extends DynamicDataTestCase
         $budget = $this->runReport(ForschungDemoSeeder::REPORT_BUDGET);
         $total = (float) DynamicRecord::forTableName('forschung_projekte')->newQuery()->sum('budget');
         $this->assertEqualsWithDelta($total, array_sum(array_column($budget->rows, 'summe')), 0.01);
+    }
+
+    public function test_vertrieb_demo_builds_on_the_lager_app_through_its_interface(): void
+    {
+        // Ohne Lager-Demo spielt der Vertrieb sie zuerst ein; zweimal einspielen dupliziert nichts.
+        $this->seed(VertriebDemoSeeder::class);
+        $this->seed(VertriebDemoSeeder::class);
+
+        $this->assertCounts([
+            'lager_artikel' => 20, 'vertrieb_kunden' => 12, 'vertrieb_events' => 8, 'vertrieb_bestellungen' => 10,
+            'vertrieb_anfragen' => 20, 'vertrieb_anfragepositionen' => 43,
+        ]);
+        $this->assertGroup(VertriebDemoSeeder::GROUP['de'], 5, 3);
+        $this->assertSame([
+            'Verkauf' => ['Anfragen', 'Anfragepositionen', 'Bestellungen'],
+            'Kunden und Events' => ['Kunden', 'Events'],
+            'Auswertungen' => ['Anfragen je Status', 'Angefragte Artikel', 'Gewonnen je Kunde'],
+        ], $this->submenus(VertriebDemoSeeder::GROUP['de']));
+
+        // Eigene App, Artikel bleiben in der Lager-App und sind dort freigegeben.
+        $sales = CustomTable::query()->where('name', 'vertrieb_anfragen')->sole()->app;
+        $items = CustomTable::query()->with('fields')->where('name', 'lager_artikel')->sole();
+        $this->assertSame('8f0c6a52-6d0e-4c8e-9a43-5b1c2f6e0a04', $sales->uuid);
+        $this->assertNotSame($sales->id, $items->app_id);
+        $this->assertTrue($items->is_shared);
+        $this->assertEqualsCanonicalizing(VertriebDemoSeeder::SHARED_ITEM_FIELDS, $items->fields->where('is_shared', true)->pluck('name')->all());
+        $this->assertSame(3, Report::query()->where('app_id', $sales->id)->count(), 'Auswertungen in der Vertriebs-App.');
+
+        // Bestellung = Summe ihrer Anfrage (Positionen: Menge × Preis, berechnet).
+        $orders = DynamicRecord::forTableName('vertrieb_bestellungen')->newQuery()->pluck('betrag', 'id');
+
+        foreach (DynamicRecord::forTableName('vertrieb_anfragen')->newQuery()->whereNotNull('bestellung_id')->get() as $enquiry) {
+            $this->assertEqualsWithDelta((float) $orders[$enquiry->bestellung_id], (float) $enquiry->summe, 0.001, $enquiry->betreff);
+        }
+
+        $status = $this->runReport(VertriebDemoSeeder::REPORT_STATUS);
+        $this->assertSame(20, (int) array_sum(array_column($status->rows, 'anzahl')));
+        $this->assertCount(6, $this->runReport(VertriebDemoSeeder::REPORT_WON)->rows, 'Kunden mit gewonnenen Anfragen.');
+        $this->assertNotEmpty($this->runReport(VertriebDemoSeeder::REPORT_ITEMS)->rows);
     }
 
     public function test_all_three_demos_side_by_side(): void

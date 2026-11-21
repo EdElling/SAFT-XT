@@ -147,6 +147,7 @@ return [
         'demos' => [
             'shop' => 'Shop',
             'lager' => 'Lager',
+            'vertrieb' => 'Vertrieb',
             'forschung' => 'Forschung',
         ],
         'disabled' => 'Übersprungen: Demo-Daten zurücksetzen ist auf diesem Server nicht erlaubt (DEMO_RESET=true in der .env).',
