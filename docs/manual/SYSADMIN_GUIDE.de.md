@@ -291,9 +291,10 @@ Demo-Daten nur in Test- und Schulungssystemen einspielen (nicht bei einer Instal
 prüfen vorab, ob ihre Tabellennamen frei sind, und brechen sonst ab, ohne etwas anzulegen. Auf einem Server mit
 `APP_ENV=production` (z. B. einer Demo bei Strato) fragt Laravel vor jedem Seeder „Are you sure you want to run this
 command?“ – mit `--force` entfällt die Frage, z. B. `php artisan db:seed --class=MusikschuleDemoSeeder --force`.
-Einen laufenden Seeder nicht abbrechen (Ctrl+C): Die Demo bleibt sonst halb gefüllt und wird beim nächsten Lauf nicht
-ergänzt; dann ihre Daten neu laden, mit der Aufgabe „App-Daten zurücksetzen“ (braucht `DEMO_RESET=true`) oder z. B.
-`php artisan tinker --execute='echo app(\Database\Seeders\MusikschuleDemoSeeder::class)->resetDemoData();'`.
+Einen laufenden Seeder nicht abbrechen (Ctrl+C): Die Demo bleibt sonst halb gefüllt. Die Musikschul-Demo erkennt das
+beim nächsten Lauf und lädt alle ihre Daten neu; bei den anderen Demos ihre Daten neu laden, mit der Aufgabe
+„App-Daten zurücksetzen“ (braucht `DEMO_RESET=true`) oder z. B.
+`php artisan tinker --execute='echo app(\Database\Seeders\LagerDemoSeeder::class)->resetDemoData();'`.
 
 ### 6.3 Laravel-Befehle, die SAFT braucht
 

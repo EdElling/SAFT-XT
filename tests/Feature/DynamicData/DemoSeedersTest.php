@@ -337,6 +337,21 @@ class DemoSeedersTest extends DynamicDataTestCase
         File::deleteDirectory($storage);
     }
 
+    public function test_musikschule_demo_reloads_a_half_filled_demo(): void
+    {
+        $this->superAdmin();
+        $this->seed(MusikschuleDemoSeeder::class);
+
+        // Wie nach einem abgebrochenen Lauf: Finanzen fehlen.
+        foreach (['musikschule_zahlungen', 'musikschule_rechnungspositionen', 'musikschule_rechnungen'] as $table) {
+            DynamicRecord::forTableName($table)->newQuery()->delete();
+        }
+
+        $this->seed(MusikschuleDemoSeeder::class);
+
+        $this->assertCounts(['musikschule_rechnungen' => 26, 'musikschule_schueler' => 30, 'musikschule_kurse' => 22, 'musikschule_ferien' => 8]);
+    }
+
     public function test_all_three_demos_side_by_side(): void
     {
         $this->seed(DemoDataSeeder::class);

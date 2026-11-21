@@ -285,9 +285,10 @@ Load demo data only on test and training systems (not with an installation using
 whether their table names are free and otherwise stop without creating anything. On a server with
 `APP_ENV=production` (e.g. a demo at Strato), Laravel asks "Are you sure you want to run this command?" before every
 seeder – `--force` skips the question, e.g. `php artisan db:seed --class=MusikschuleDemoSeeder --force`. Do not
-interrupt a running seeder (Ctrl+C): the demo then stays half filled and is not completed by the next run; reload its data in
-that case, with the task "Reset app data" (needs `DEMO_RESET=true`) or e.g.
-`php artisan tinker --execute='echo app(\Database\Seeders\MusikschuleDemoSeeder::class)->resetDemoData();'`.
+interrupt a running seeder (Ctrl+C): the demo then stays half filled. The music school demo detects this on the next run
+and reloads all its data; for the other demos, reload their data with the task "Reset app data" (needs
+`DEMO_RESET=true`) or e.g.
+`php artisan tinker --execute='echo app(\Database\Seeders\LagerDemoSeeder::class)->resetDemoData();'`.
 
 ### 6.3 Laravel commands SAFT needs
 

@@ -16,16 +16,17 @@ use Illuminate\Database\Seeder;
 use RuntimeException;
 
 /**
- * Musikschule (Demo): eine mittelgrosse App mit 20 Tabellen, entworfen mit dem KI-App-Designer (B-107, Etappe 7) und
+ * Musikschule (Demo): eine mittelgrosse App mit 21 Tabellen, entworfen mit dem KI-App-Designer (B-107, Etappe 7) und
  * von Hand verbessert. Die App selbst kommt aus der App-Definition database/seeders/apps/musikschule.saft-app.json und
  * wird über den normalen Installer angelegt – derselbe Weg wie „App installieren“. Dazu Beispieldaten: ein Semester
  * mit Unterricht, Präsenzen, Rechnungen und Zahlungen, ein zweites begonnen.
  *
  *   php artisan db:seed --class=MusikschuleDemoSeeder
  *
- * Wiederholbar: Ist die App schon da (auch unter anderem Namen), ergänzt der Seeder nur fehlende Daten. Fehlt ihr die
- * Tabelle Ferien (App-Stand 1.0), wird sie zuerst aktualisiert – derselbe Weg wie „Aktualisieren …“ auf der Seite Apps,
- * nur mit den vorgewählten Schritten.
+ * Wiederholbar: Ist die App schon da (auch unter anderem Namen), ergänzt der Seeder nur fehlende Daten; ist die Demo
+ * halb gefüllt (Beispieldaten vorhanden, aber eine Tabelle leer – z. B. nach einem abgebrochenen Lauf), lädt er alle
+ * Demo-Daten neu. Fehlt ihr die Tabelle Ferien (App-Stand 1.0), wird sie zuerst aktualisiert – derselbe Weg wie
+ * „Aktualisieren …“ auf der Seite Apps, nur mit den vorgewählten Schritten.
  */
 class MusikschuleDemoSeeder extends Seeder
 {
@@ -71,13 +72,33 @@ class MusikschuleDemoSeeder extends Seeder
             $this->update($app);
         }
 
-        if (DynamicRecord::forTableName('musikschule_faecher')->newQuery()->doesntExist()) {
+        $empty = $this->emptyDemoTables();
+
+        if (in_array('musikschule_faecher', $empty, true)) {
             $this->seedRecords();
-        } elseif (DynamicRecord::forTableName('musikschule_ferien')->newQuery()->doesntExist()) {
+        } elseif (array_diff($empty, ['musikschule_ferien']) !== [] && $this->hasDemoRecords()) {
+            // Halb gefüllt, z. B. nach einem abgebrochenen Lauf: alle Demo-Daten neu laden (in einer Transaktion). Nur wenn
+            // die ersten Beispieldaten von diesem Seeder stammen – eigene Daten in einer gleichen App bleiben unberührt.
+            $this->command?->warn('Musikschule (Demo) unvollständig, leer: '.implode(', ', $empty).' – Demo-Daten werden neu geladen.');
+            $this->resetDemoData();
+        } elseif (in_array('musikschule_ferien', $empty, true)) {
             $this->seedHolidays();
         }
 
         $this->seedDemoManual();
+    }
+
+    /** @return list<string> Demo-Tabellen ohne Datensätze */
+    private function emptyDemoTables(): array
+    {
+        return array_values(array_filter($this->demoTableNames(), static fn (string $table): bool => DynamicRecord::forTableName($table)->newQuery()->doesntExist()));
+    }
+
+    /** Stammen die ersten Beispieldaten von diesem Seeder (Fach „Musiktheorie“ und Semester „HS 2026“)? */
+    private function hasDemoRecords(): bool
+    {
+        return DynamicRecord::forTableName('musikschule_faecher')->newQuery()->where('bezeichnung', 'Musiktheorie')->exists()
+            && DynamicRecord::forTableName('musikschule_semester')->newQuery()->where('bezeichnung', 'HS 2026')->exists();
     }
 
     /** Aus der App-Definition installieren (wie „App installieren“) und aktivieren. */
