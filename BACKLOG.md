@@ -8,7 +8,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-1. **B-107** Etappe 7 (KI-App-Designer): 7a und 7c umgesetzt (Entwurf im Gespräch, Vorschau, Erzeugen, Auswertungen); offen 7b Editor für den Entwurf
+1. **B-107** Etappe 7 (KI-App-Designer) umgesetzt: 7a Entwurf im Gespräch, Vorschau, Erzeugen; 7c Auswertungen (einzeln abwählbar). 7b Editor zurückgestellt (Entscheid 2026-11-21: Table-Designer nach dem Erzeugen genügt). Nächste Schritte offen.
 
 ## Apps (Fachanwendungen)
 

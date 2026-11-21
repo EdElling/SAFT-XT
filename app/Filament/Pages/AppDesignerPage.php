@@ -16,7 +16,7 @@ use App\Filament\Resources\Reports\ReportResource;
 use App\Models\AppDraft;
 use App\Models\User;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -137,19 +137,23 @@ class AppDesignerPage extends Page
                 ->fillForm(fn (): array => [
                     'name' => (string) (($this->current()?->definition['app']['name'] ?? [])[config('locales.default')] ?? ''),
                     'prefix' => (string) ($this->current()?->definition['app']['prefix'] ?? ''),
-                    'reports' => true,
+                    // Alle vorgeschlagenen Auswertungen vorgewählt; einzeln abwählbar.
+                    'reports' => array_keys(DraftReports::fromProposal((array) $this->current()?->proposal)),
                 ])
                 ->schema([
                     TextInput::make('name')->label(__('app_designer.app_name'))->required()->maxLength(100),
                     TextInput::make('prefix')->label(__('apps.prefix'))->helperText(__('app_designer.prefix_help'))->required()->regex('/^[a-z][a-z0-9]{0,19}$/'),
-                    Checkbox::make('reports')
-                        ->label(fn (): string => trans_choice('app_designer.reports.create', count(DraftReports::fromProposal((array) $this->current()?->proposal)), ['count' => count(DraftReports::fromProposal((array) $this->current()?->proposal))]))
+                    CheckboxList::make('reports')
+                        ->label(__('app_designer.reports.create'))
                         ->helperText(__('app_designer.reports.create_help'))
+                        ->options(fn (): array => array_column(DraftReports::fromProposal((array) $this->current()?->proposal), 'title'))
+                        ->descriptions(fn (): array => array_column(DraftReports::fromProposal((array) $this->current()?->proposal), 'description'))
+                        ->bulkToggleable()
                         ->visible(fn (): bool => DraftReports::fromProposal((array) $this->current()?->proposal) !== []),
                 ])
                 ->action(function (array $data): void {
                     try {
-                        $app = app(AppDesigner::class)->create($this->user(), $this->current() ?? throw new BusinessRuleException(__('app_designer.errors.nothing_to_create')), $data['name'], $data['prefix'], (bool) ($data['reports'] ?? false));
+                        $app = app(AppDesigner::class)->create($this->user(), $this->current() ?? throw new BusinessRuleException(__('app_designer.errors.nothing_to_create')), $data['name'], $data['prefix'], array_values(array_map('intval', (array) ($data['reports'] ?? []))));
                     } catch (BusinessRuleException $e) {
                         Notification::make()->danger()->title(__('app_designer.create_failed'))->body($e->getMessage())->persistent()->send();
 

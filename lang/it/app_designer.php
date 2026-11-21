@@ -7,7 +7,7 @@ return [
     'to_app' => 'Alla nuova app',
     'reports' => [
         'preview' => 'Report (creati dopo l’app)',
-        'create' => '{1} Crea il report proposto|[2,*] Crea i :count report proposti',
+        'create' => 'Crea questi report proposti',
         'create_help' => 'L’assistente per i report li crea uno dopo l’altro dopo l’app (circa 20–40 secondi ciascuno); qui vede l’avanzamento.',
         'heading' => 'Report',
         'working' => 'in creazione …',

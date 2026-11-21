@@ -105,7 +105,7 @@ class AppDesignerTest extends DuskTestCase
     public function test_reports_after_creating_show_progress_links_and_retry(): void
     {
         $admin = User::query()->where('email', self::ADMIN)->firstOrFail();
-        $app = app(AppDesigner::class)->create($admin, $this->draft, withReports: false);
+        $app = app(AppDesigner::class)->create($admin, $this->draft, reports: false);
         $report = Report::query()->create(['name' => 'Summe je Kurs', 'is_shared' => true, 'owner_id' => $admin->id, 'definition' => [
             'base' => (int) CustomTable::query()->where('name', 'kurse_kurse')->value('id'),
             'fields' => [['key' => 't', 'path' => [], 'field' => (int) CustomTable::query()->where('name', 'kurse_kurse')->sole()->fields()->where('name', 'titel')->value('id')]],

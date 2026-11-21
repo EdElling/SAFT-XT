@@ -1310,11 +1310,12 @@ KI-Anbieter und den eingeschalteten KI-Assistenten (siehe [Kapitel 7](#7-globale
   „erzeugt“ stehen.
 - **Auswertungen:** Zur App schlägt die KI 2–6 Auswertungen vor – zuerst die, die Ihre Beschreibung nennt, dann
   naheliegende –; die Vorschau zeigt sie unter „Auswertungen (werden nach dem Erzeugen angelegt)“, ändern lassen sie sich
-  im Gespräch. Mit dem vorgewählten Häkchen im Dialog „App erzeugen“ bleibt die Seite nach dem Erzeugen stehen und
-  zeigt den Fortschritt: Der Auswertungs-Assistent legt eine Auswertung nach der anderen gegen die neuen Tabellen an
+  im Gespräch. Im Dialog „App erzeugen“ steht jede vorgeschlagene Auswertung mit einem vorgewählten Häkchen;
+  abgewählte werden nicht angelegt. Ist mindestens eine gewählt, bleibt die Seite nach dem Erzeugen stehen und zeigt
+  den Fortschritt: Der Auswertungs-Assistent legt eine Auswertung nach der anderen gegen die neuen Tabellen an
   (je etwa 20–40 Sekunden) – *wird erstellt*, *wartet*, erstellt (mit Link) oder *nicht möglich* mit Grund und
   **Erneut versuchen**. Die Auswertungen sind geteilt und stehen in der App im Untermenü „Auswertungen“; danach führt
-  **„Zur neuen App“** hinein. Ohne Häkchen geht es gleich in die App.
+  **„Zur neuen App“** hinein. Ohne gewählte Auswertung geht es gleich in die App.
 - **Danach** ändern Sie die App wie jede andere – im Table-Designer von Hand oder je Tabelle mit **„Mit KI anpassen“**,
   Auswertungen im Auswertungs-Designer. Wer kein Super-Admin ist, erhält beim Erzeugen die Fachrolle der App.
 - **Datenschutz und Kosten:** An die KI gehen nur Ihre Beschreibung, der Entwurf und die Struktur freigegebener Tabellen

@@ -1369,12 +1369,12 @@ Il nécessite un fournisseur d’IA configuré et l’assistant IA activé (voir
   et un **rôle** avec tous les droits sur les nouvelles tables et la consultation des rapports. Contrairement à
   l’installation, l’app est ensuite **active** et vous y passez. Le brouillon reste, marqué « créée ».
 - **Rapports :** l’IA propose 2 à 6 rapports pour l’app – d’abord ceux que cite votre description, puis des rapports
-  évidents ; l’aperçu les montre sous « Rapports (créés après l’app) », et vous les modifiez dans la conversation. Avec
-  la case cochée d’avance dans le dialogue « Créer l’app », la page reste affichée après la création et montre la
-  progression : l’assistant de rapports crée les rapports l’un après l’autre sur les nouvelles tables (environ 20 à 40
+  évidents ; l’aperçu les montre sous « Rapports (créés après l’app) », et vous les modifiez dans la conversation. Dans le
+  dialogue « Créer l’app », chaque rapport proposé a une case cochée d’avance ; les rapports décochés ne sont pas
+  créés. Si au moins un est coché, la page reste affichée après la création et montre la progression : l’assistant de rapports crée les rapports l’un après l’autre sur les nouvelles tables (environ 20 à 40
   secondes chacun) – *en cours de création*, *en attente*, créé (avec lien) ou *impossible* avec la raison et
   **Réessayer**. Les rapports sont partagés et figurent dans l’app sous le sous-menu « Rapports » ; ensuite **« Vers la
-  nouvelle app »** y mène. Sans la case, vous passez directement dans l’app.
+  nouvelle app »** y mène. Sans rapport coché, vous passez directement dans l’app.
 - **Ensuite**, vous modifiez l’app comme toute autre – à la main dans le concepteur de tables ou par table avec
   **« Adapter avec l’IA »**, les rapports dans le concepteur de rapports. Qui n’est pas super-admin reçoit le rôle de
   l’app lors de la création.

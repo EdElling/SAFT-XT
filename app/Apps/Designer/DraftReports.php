@@ -41,20 +41,28 @@ final readonly class DraftReports
     ) {}
 
     /**
-     * Wünsche aus dem Vorschlag als Liste mit Status (beim Erzeugen der App).
+     * Wünsche aus dem Vorschlag als Liste mit Status (beim Erzeugen der App), auf Wunsch nur die gewählten.
      *
      * @param  array<string, mixed>  $proposal
+     * @param  bool|list<int>  $selected  true = alle, false = keine, sonst die Indizes der gewählten Wünsche
      * @return list<array{title: string, description: string, status: string, report_id: int|null, message: string|null}>
      */
-    public static function fromProposal(array $proposal): array
+    public static function fromProposal(array $proposal, bool|array $selected = true): array
     {
-        return array_values(array_map(static fn (array $r): array => [
+        $wishes = array_values(array_filter((array) ($proposal['reports'] ?? []), static fn (mixed $r): bool => is_array($r) && filled($r['title'] ?? null)));
+
+        if ($selected !== true) {
+            $keep = $selected === false ? [] : array_map('intval', $selected);
+            $wishes = array_values(array_filter($wishes, static fn (int $i): bool => in_array($i, $keep, true), ARRAY_FILTER_USE_KEY));
+        }
+
+        return array_map(static fn (array $r): array => [
             'title' => trim((string) ($r['title'] ?? '')),
             'description' => trim((string) ($r['description'] ?? '')),
             'status' => self::PENDING,
             'report_id' => null,
             'message' => null,
-        ], array_filter((array) ($proposal['reports'] ?? []), static fn (mixed $r): bool => is_array($r) && filled($r['title'] ?? null))));
+        ], $wishes);
     }
 
     /** Gibt es noch wartende Auswertungen? */

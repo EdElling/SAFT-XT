@@ -231,9 +231,9 @@ class AppDesignerTest extends DynamicDataTestCase
             ->assertActionVisible('createApp');
 
         $page->mountAction('createApp')
-            ->assertSchemaStateSet(['name' => 'Kurse', 'prefix' => 'kurse', 'reports' => true])
-            // Ohne Auswertungen geht es gleich in die App.
-            ->setActionData(['reports' => false])
+            ->assertSchemaStateSet(['name' => 'Kurse', 'prefix' => 'kurse', 'reports' => [0, 1]])
+            // Alle Auswertungen abgewählt: gleich in die App.
+            ->setActionData(['reports' => []])
             ->callMountedAction()
             ->assertHasNoActionErrors()
             ->assertNotified('App „Kurse“ erzeugt.')
@@ -311,7 +311,7 @@ class AppDesignerTest extends DynamicDataTestCase
             ->assertSee('Einnahmen je Kurs');
 
         $page->mountAction('createApp')
-            ->assertSchemaStateSet(['reports' => true])
+            ->assertSchemaStateSet(['reports' => [0, 1]])
             ->callMountedAction()
             ->assertHasNoActionErrors()
             ->assertNoRedirect()
@@ -342,5 +342,19 @@ class AppDesignerTest extends DynamicDataTestCase
         $this->assertFalse($page->instance()->createNextReport());
         $this->assertSame([DraftReports::CREATED, DraftReports::CREATED], array_column($draft->refresh()->reports, 'status'));
         $this->assertSame(2, Report::query()->where('app_id', $draft->app_id)->count());
+    }
+
+    public function test_proposed_reports_can_be_deselected_one_by_one(): void
+    {
+        $this->fake->push($this->courses());
+        Livewire::test(AppDesignerPage::class)->set('prompt', 'Kursverwaltung')->call('send')
+            ->mountAction('createApp')
+            // Nur die zweite Auswertung anlegen.
+            ->setActionData(['reports' => [1]])
+            ->callMountedAction()
+            ->assertHasNoActionErrors()
+            ->assertNoRedirect();
+
+        $this->assertSame(['Anmeldungen je Kurs'], array_column(AppDraft::query()->sole()->reports, 'title'));
     }
 }

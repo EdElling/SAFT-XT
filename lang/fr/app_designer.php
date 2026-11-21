@@ -7,7 +7,7 @@ return [
     'to_app' => 'Vers la nouvelle app',
     'reports' => [
         'preview' => 'Rapports (créés après l’app)',
-        'create' => '{1} Créer le rapport proposé|[2,*] Créer les :count rapports proposés',
+        'create' => 'Créer ces rapports proposés',
         'create_help' => 'L’assistant de rapports les crée l’un après l’autre après l’app (environ 20 à 40 secondes chacun) ; vous voyez la progression ici.',
         'heading' => 'Rapports',
         'working' => 'en cours de création …',

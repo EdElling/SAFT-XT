@@ -164,7 +164,10 @@ final class AppDesigner
      *
      * @throws BusinessRuleException
      */
-    public function create(User $user, AppDraft $draft, ?string $name = null, ?string $prefix = null, bool $withReports = true): App
+    /**
+     * @param  bool|list<int>  $reports  true = alle vorgeschlagenen Auswertungen, false bzw. [] = keine, sonst die Indizes
+     */
+    public function create(User $user, AppDraft $draft, ?string $name = null, ?string $prefix = null, bool|array $reports = true): App
     {
         abort_unless($user->can('apps.design') && $draft->user_id === $user->id, 403);
 
@@ -200,7 +203,7 @@ final class AppDesigner
         $draft->forceFill([
             'status' => AppDraft::CREATED,
             'app_id' => $app->id,
-            'reports' => $withReports ? DraftReports::fromProposal((array) $draft->proposal) : [],
+            'reports' => DraftReports::fromProposal((array) $draft->proposal, $reports),
         ])->save();
 
         return $app;

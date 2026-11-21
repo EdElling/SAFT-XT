@@ -7,7 +7,7 @@ return [
     'to_app' => 'Zur neuen App',
     'reports' => [
         'preview' => 'Auswertungen (werden nach dem Erzeugen angelegt)',
-        'create' => '{1} Die vorgeschlagene Auswertung anlegen|[2,*] Die :count vorgeschlagenen Auswertungen anlegen',
+        'create' => 'Diese vorgeschlagenen Auswertungen anlegen',
         'create_help' => 'Der Auswertungsassistent legt sie nach dem Erzeugen nacheinander an (je etwa 20–40 Sekunden); Sie sehen den Fortschritt hier.',
         'heading' => 'Auswertungen',
         'working' => 'wird erstellt …',

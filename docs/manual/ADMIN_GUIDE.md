@@ -1269,12 +1269,13 @@ assistant switched on (see [chapter 7](#7-global-settings)).
   a **role** with all permissions on the new tables and viewing reports. Unlike installing, the app is **active**
   afterwards and you switch into it. The draft remains, marked "created".
 - **Reports:** The AI proposes 2–6 reports for the app – first those your description names, then obvious ones; the
-  preview lists them under "Reports (created after the app)", and you change them in the conversation. With the
-  preselected tick in the dialog "Create app" the page stays after creating and shows the progress: the report
+  preview lists them under "Reports (created after the app)", and you change them in the conversation. In the dialog
+  "Create app" each proposed report has a preselected tick; deselected ones are not created. If at least one is
+  selected, the page stays after creating and shows the progress: the report
   assistant creates one report after another against the new tables (about 20–40 seconds each) – *being created*,
   *waiting*, created (with link) or *not possible* with the reason and **Try again**. The reports are shared and
-  appear in the app in the submenu "Reports"; then **"To the new app"** leads into it. Without the tick you go straight
-  into the app.
+  appear in the app in the submenu "Reports"; then **"To the new app"** leads into it. Without a selected report you go
+  straight into the app.
 - **Afterwards** you change the app like any other – by hand in the table designer or per table with **"Adjust with
   AI"**, reports in the report designer. Whoever is not a super admin receives the role of the app when creating it.
 - **Privacy and cost:** Only your description, the draft and the structure of shared tables of other apps go to the AI
