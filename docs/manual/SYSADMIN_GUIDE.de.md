@@ -288,7 +288,12 @@ Alle Befehle im Hauptverzeichnis von SAFT ausführen, auf einem Produktionsserve
 | `php artisan db:seed --class=ForschungDemoSeeder` | Interne Forschungs-Demo (`forschung_…`), Gruppe „Forschung (Demo)“ |
 
 Demo-Daten nur in Test- und Schulungssystemen einspielen (nicht bei einer Installation mit `--no-dev`). Die Demos
-prüfen vorab, ob ihre Tabellennamen frei sind, und brechen sonst ab, ohne etwas anzulegen.
+prüfen vorab, ob ihre Tabellennamen frei sind, und brechen sonst ab, ohne etwas anzulegen. Auf einem Server mit
+`APP_ENV=production` (z. B. einer Demo bei Strato) fragt Laravel vor jedem Seeder „Are you sure you want to run this
+command?“ – mit `--force` entfällt die Frage, z. B. `php artisan db:seed --class=MusikschuleDemoSeeder --force`.
+Einen laufenden Seeder nicht abbrechen (Ctrl+C): Die Demo bleibt sonst halb gefüllt und wird beim nächsten Lauf nicht
+ergänzt; dann ihre Daten neu laden, mit der Aufgabe „App-Daten zurücksetzen“ (braucht `DEMO_RESET=true`) oder z. B.
+`php artisan tinker --execute='echo app(\Database\Seeders\MusikschuleDemoSeeder::class)->resetDemoData();'`.
 
 ### 6.3 Laravel-Befehle, die SAFT braucht
 

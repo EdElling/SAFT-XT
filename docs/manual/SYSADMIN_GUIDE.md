@@ -282,7 +282,12 @@ shows all available commands, `php artisan help <command>` the options of a comm
 | `php artisan db:seed --class=ForschungDemoSeeder` | Internal research demo (`forschung_…`), group "Research (demo)" |
 
 Load demo data only on test and training systems (not with an installation using `--no-dev`). The demos first check
-whether their table names are free and otherwise stop without creating anything.
+whether their table names are free and otherwise stop without creating anything. On a server with
+`APP_ENV=production` (e.g. a demo at Strato), Laravel asks "Are you sure you want to run this command?" before every
+seeder – `--force` skips the question, e.g. `php artisan db:seed --class=MusikschuleDemoSeeder --force`. Do not
+interrupt a running seeder (Ctrl+C): the demo then stays half filled and is not completed by the next run; reload its data in
+that case, with the task "Reset app data" (needs `DEMO_RESET=true`) or e.g.
+`php artisan tinker --execute='echo app(\Database\Seeders\MusikschuleDemoSeeder::class)->resetDemoData();'`.
 
 ### 6.3 Laravel commands SAFT needs
 

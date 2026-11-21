@@ -118,7 +118,7 @@ example report "Umsatz je Monat und Kategorie" (revenue per month and category) 
 php artisan db:seed --class=DemoDataSeeder
 ```
 
-Four more demos as tables in SAFT itself (without a database connection), each with its own menu group, data model and
+Five more demos as tables in SAFT itself (without a database connection), each with its own menu group, data model and
 example reports – the same data as the external demos:
 
 ```bash
@@ -128,6 +128,8 @@ php artisan db:seed --class=GitarrenshopDemoSeeder  # "Guitar shop (demo)": inco
 php artisan db:seed --class=MusikschuleDemoSeeder   # "Music school (demo)": 20 tables from an app definition (AI app designer), courses, lessons, invoices
 php artisan db:seed --class=ForschungDemoSeeder   # "Research (demo)": organisations, people, projects, publications …
 ```
+
+On a production server (`APP_ENV=production`, e.g. Strato), add `--force`; otherwise Laravel asks for confirmation.
 
 Optional external demo database for the database connections (schema `forschung` with persons, projects,
 publications and organisations, on the same server as SAFT):

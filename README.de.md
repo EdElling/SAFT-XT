@@ -119,7 +119,7 @@ geteilte Beispiel-Auswertung „Umsatz je Monat und Kategorie“ als Balkendiagr
 php artisan db:seed --class=DemoDataSeeder
 ```
 
-Vier weitere Demos als Tabellen in SAFT selbst (ohne Datenbankverbindung), je mit eigener Menügruppe, Datenmodell
+Fünf weitere Demos als Tabellen in SAFT selbst (ohne Datenbankverbindung), je mit eigener Menügruppe, Datenmodell
 und Beispiel-Auswertungen – dieselben Daten wie die externen Demos:
 
 ```bash
@@ -129,6 +129,8 @@ php artisan db:seed --class=GitarrenshopDemoSeeder  # „Gitarrenshop (Demo)“:
 php artisan db:seed --class=MusikschuleDemoSeeder   # „Musikschule (Demo)“: 20 Tabellen aus einer App-Definition (KI-App-Designer), Kurse, Lektionen, Rechnungen
 php artisan db:seed --class=ForschungDemoSeeder   # „Forschung (Demo)“: Organisationen, Personen, Projekte, Publikationen …
 ```
+
+Auf einem Produktionsserver (`APP_ENV=production`, z. B. Strato) `--force` anhängen, sonst fragt Laravel nach.
 
 Optional externe Demo-Datenbank für die Datenbankverbindungen (Schema `forschung` mit Personen, Projekten,
 Publikationen und Organisationen, auf demselben Server wie SAFT):
