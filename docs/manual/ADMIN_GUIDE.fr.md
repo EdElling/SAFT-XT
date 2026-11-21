@@ -368,7 +368,7 @@ ou *Prix total* comme somme des montants de toutes les lignes d’une commande. 
   résultat est vide si la condition n’est pas remplie. Les conditions comparent avec `=`, `<>`, `<`, `<=`, `>`, `>=` et
   se combinent avec `and` et `or`. Dans les comparaisons, les champs texte, liste de choix, date et oui/non sont aussi
   admis ; le texte s’écrit entre apostrophes (une apostrophe dans le texte est doublée). Les listes de choix comparent
-  la valeur enregistrée, pas le libellé traduit ; une date s’écrit `'2026-12-31'`. Exemples : montant signé =
+  la valeur enregistrée, pas le libellé traduit ; une date s’écrit `'2026-12-31'`. Les champs oui/non valent 1 ou 0 et servent donc aussi directement de condition : `if(paye, montant, 0)`. Exemples : montant signé =
   `if(type = 'Dépense', -montant, montant)`, frais de douane d’un justificatif =
   `sum(if(lignes.genre = 'Douane', lignes.montant, 0))`, nombre de lignes au-delà de 10 pièces =
   `sum(lignes.quantite > 10)` (une comparaison donne 1 ou 0). Si un côté d’une comparaison est vide, elle n’est pas

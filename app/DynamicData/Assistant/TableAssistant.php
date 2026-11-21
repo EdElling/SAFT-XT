@@ -10,6 +10,7 @@ use App\Ai\AiUsage;
 use App\Apps\AppInterfaces;
 use App\DynamicData\DataMenu;
 use App\DynamicData\Formula\FormulaAnalyzer;
+use App\DynamicData\Formula\FormulaCheck;
 use App\DynamicData\Rules\TableRule;
 use App\DynamicData\Rules\TableRuleNormalizer;
 use App\DynamicData\Schema\FieldDefinitionNormalizer;
@@ -41,16 +42,8 @@ final class TableAssistant
 {
     private const int HISTORY_TURNS = 6;
 
-    private const string INSTRUCTIONS = <<<'TXT'
-        You design database tables for SAFT, a database application. Respond only with JSON that matches the given schema.
-
-        A table has a technical name (lower case letters, digits and underscores, starting with a letter, at most 63
-        characters, singular or plural noun in the language of the user, e.g. "mitglieder"), a label and an optional
-        description, each in all languages of the schema (de, en, fr, it – translate them), and an optional menu group
-        (the id of an existing group, or null). Every table automatically has an id and timestamps – never add them.
-        Choose a fitting icon for the table from "icons" in the data model (e.g. "users" for members, "truck" for
-        deliveries); use exactly one of these names, or null.
-
+    /** Felder, berechnete Felder und Feldregeln – auch für den KI-App-Designer (B-107, Etappe 7a). */
+    public const string FIELD_INSTRUCTIONS = <<<'TXT'
         Fields have a technical name (same rules as table names), a label in all languages and a type:
         string (short text; length 1-10000, default 255), text (long text), integer, decimal (precision 1-38, scale ≤
         precision), boolean, date, datetime, select (fixed choices: value = short technical value, label in all
@@ -82,7 +75,22 @@ final class TableAssistant
         (string only), e.g. "min=1; max=3" for "quantity at most 3". Empty "" for no rules. Rules that compare two fields
         or a field with a fixed value for the whole table (e.g. "end not before start") are table rules: they can only be
         added to an existing table (Adjust with AI) – when creating, leave them out.
+        TXT;
 
+    private const string INSTRUCTIONS = self::TABLE_INSTRUCTIONS."\n\n".self::FIELD_INSTRUCTIONS."\n\n".self::RELATION_INSTRUCTIONS;
+
+    private const string TABLE_INSTRUCTIONS = <<<'TXT'
+        You design database tables for SAFT, a database application. Respond only with JSON that matches the given schema.
+
+        A table has a technical name (lower case letters, digits and underscores, starting with a letter, at most 63
+        characters, singular or plural noun in the language of the user, e.g. "mitglieder"), a label and an optional
+        description, each in all languages of the schema (de, en, fr, it – translate them), and an optional menu group
+        (the id of an existing group, or null). Every table automatically has an id and timestamps – never add them.
+        Choose a fitting icon for the table from "icons" in the data model (e.g. "users" for members, "truck" for
+        deliveries); use exactly one of these names, or null.
+        TXT;
+
+    private const string RELATION_INSTRUCTIONS = <<<'TXT'
         Create relations only when the description asks for them or clearly implies them (e.g. "belongs to a club" and a
         table for clubs exists). Use only existing tables and fields from the data model. Tables of other apps can only be
         linked when they are shared ("shared_tables", or tables with "shared_fields"): only by a relation, and
@@ -92,6 +100,7 @@ final class TableAssistant
         When the request is ambiguous, set kind to "question" and ask one short question in the user's language; fill
         the remaining properties with empty values. Each request includes the current state (form or table): change it
         when the user asks for a change, otherwise start over.
+
         TXT;
 
     /** Nur für neue Tabellen (B-107): Jede Tabelle gehört zu einer App. */
@@ -527,60 +536,7 @@ final class TableAssistant
         }
 
         // Formeln gegen die vorgeschlagenen Felder (neue Tabelle: noch keine Kind-Tabellen).
-        return [...$errors, ...$this->formulaProblems(array_map(TableProposalSchema::toFormField(...), $fields), [], null, $appId)];
-    }
-
-    /**
-     * Formeln berechneter Felder (B-122) gegen die Tabelle samt den vorgeschlagenen Feldern prüfen – in
-     * Vorschlagsreihenfolge, mit Kreisbezug und ohne Summen über Kind-Tabellen einer anderen App. Die Prüfung beim
-     * Anlegen (FieldDefinitionNormalizer) kennt nur gespeicherte Felder und sähe neue Felder nicht.
-     *
-     * @param  list<array<string, mixed>>  $forms  vorgeschlagene Felder (Formularzustand)
-     * @param  iterable<CustomField>  $existing
-     * @return list<string>
-     */
-    private function formulaProblems(array $forms, iterable $existing, ?string $table, ?int $appId): array
-    {
-        $fields = [];
-        $errors = [];
-
-        foreach ($existing as $field) {
-            $fields[$field->name] = $field;
-        }
-
-        foreach ($forms as $form) {
-            $name = (string) ($form['name'] ?? '');
-            $type = FieldType::tryFrom((string) ($form['type'] ?? ''));
-
-            if ($name === '' || $type === null) {
-                continue;
-            }
-
-            $options = (array) ($form['options'] ?? []);
-
-            if ($type === FieldType::Computed) {
-                try {
-                    $compiled = app(FormulaAnalyzer::class)->compile((string) ($options['formula'] ?? ''), $fields, $name, $table);
-                    FormulaAnalyzer::assertNoCycle($fields, $name, $compiled['ast']);
-
-                    foreach (FormulaAnalyzer::aggregates($compiled['ast']) as $aggregate) {
-                        $child = CustomTable::query()->where('name', $aggregate['table'])->first();
-
-                        if ($child !== null && AppInterfaces::foreign($child, $appId)) {
-                            throw new BusinessRuleException(__('apps.errors.cross_app_aggregate', ['table' => (string) $child->label]));
-                        }
-                    }
-
-                    $options['ast'] = $compiled['ast'];
-                } catch (BusinessRuleException $e) {
-                    $errors[] = __('tables_assistant.errors.field', ['name' => $name, 'error' => $e->getMessage()]);
-                }
-            }
-
-            $fields[$name] = new CustomField(['name' => $name, 'type' => $type, 'label' => $form['label'] ?? [], 'options' => $options, 'is_active' => true]);
-        }
-
-        return $errors;
+        return [...$errors, ...app(FormulaCheck::class)->problems(array_map(TableProposalSchema::toFormField(...), $fields), [], null, $appId)];
     }
 
     /**
@@ -679,7 +635,7 @@ final class TableAssistant
         }
 
         $fresh = array_values(array_filter($adds, static fn (array $add): bool => ! in_array($add['name'] ?? null, $existing, true)));
-        $errors = [...$errors, ...$this->formulaProblems(array_map(TableProposalSchema::toFormField(...), $fresh), $table->fields, $table->name, $table->app_id)];
+        $errors = [...$errors, ...app(FormulaCheck::class)->problems(array_map(TableProposalSchema::toFormField(...), $fresh), $table->fields, $table->name, $table->app_id)];
 
         // Neue Tabellenregeln: gegen die Tabelle samt neuer Felder prüfen, zusammen mit den vorhandenen Regeln.
         if ($tableRules !== []) {

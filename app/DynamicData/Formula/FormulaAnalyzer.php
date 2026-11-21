@@ -56,6 +56,35 @@ final class FormulaAnalyzer
         return $functions;
     }
 
+    /**
+     * Kind-Tabellen eines Entwurfs (KI-App-Designer, B-107 Etappe 7a), die es in der Datenbank noch nicht gibt; null =
+     * aus der Datenbank. Nur während withChildren() gesetzt.
+     *
+     * @var array<string, array<string, array{table: CustomTable, relations: list<string>}>>|null
+     */
+    private static ?array $virtualChildren = null;
+
+    /**
+     * Formeln gegen nicht gespeicherte Tabellen prüfen: children() liefert während $check die angegebenen Kind-Tabellen.
+     *
+     * @template T
+     *
+     * @param  array<string, array<string, array{table: CustomTable, relations: list<string>}>>  $children  Tabelle => Kind-Tabellen
+     * @param  \Closure(): T  $check
+     * @return T
+     */
+    public static function withChildren(array $children, \Closure $check): mixed
+    {
+        $before = self::$virtualChildren;
+        self::$virtualChildren = $children;
+
+        try {
+            return $check();
+        } finally {
+            self::$virtualChildren = $before;
+        }
+    }
+
     public function __construct(private readonly Parser $parser) {}
 
     /**
@@ -195,6 +224,10 @@ final class FormulaAnalyzer
      */
     public static function children(string $table): array
     {
+        if (self::$virtualChildren !== null) {
+            return self::$virtualChildren[$table] ?? [];
+        }
+
         $children = [];
 
         foreach (CustomField::query()->with('custom_table.fields')->where('type', FieldType::Relation->value)->where('options->table', $table)->orderBy('id')->get() as $relation) {
@@ -298,11 +331,12 @@ final class FormulaAnalyzer
     }
 
     /**
-     * Zahlenfeld zum Rechnen; in Vergleichen jedes Feld ausser Dateien.
+     * Zahlenfeld zum Rechnen (Ja/Nein zählt als 1 oder 0, z. B. if(bezahlt, betrag, 0)); in Vergleichen jedes Feld
+     * ausser Dateien.
      */
     private static function assertType(CustomField $field, string $label, int $pos, bool $comparable): void
     {
-        if ($comparable ? $field->valueType() === FieldType::File : ! in_array($field->valueType(), [FieldType::Integer, FieldType::Decimal], true)) {
+        if ($comparable ? $field->valueType() === FieldType::File : ! in_array($field->valueType(), [FieldType::Integer, FieldType::Decimal, FieldType::Boolean], true)) {
             throw FormulaException::at($pos, __($comparable ? 'tables.formula.errors.not_comparable' : 'tables.formula.errors.not_number', ['field' => $label]));
         }
     }

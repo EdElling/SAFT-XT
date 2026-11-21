@@ -357,7 +357,7 @@ filtern, exportieren und in Regeln verwenden.
   `>`, `>=` und lassen sich mit `and` und `or` verknüpfen. In Vergleichen sind auch Text-, Auswahl-, Datums- und
   Ja/Nein-Felder erlaubt; Text steht in einfachen Anführungszeichen (ein Anführungszeichen im Text wird verdoppelt).
   Auswahlfelder vergleichen den gespeicherten Wert, nicht die übersetzte Bezeichnung; ein Datum schreibt man
-  `'2026-12-31'`. Beispiele: Betrag mit Vorzeichen = `if(typ = 'Ausgabe', -betrag, betrag)`, Zollkosten eines Belegs =
+  `'2026-12-31'`. Ja/Nein-Felder zählen als 1 oder 0, also auch direkt als Bedingung: `if(bezahlt, betrag, 0)`. Beispiele: Betrag mit Vorzeichen = `if(typ = 'Ausgabe', -betrag, betrag)`, Zollkosten eines Belegs =
   `sum(if(positionen.art = 'Zoll', positionen.betrag, 0))`, Anzahl Positionen über 10 Stück =
   `sum(positionen.menge > 10)` (ein Vergleich ergibt 1 oder 0). Ist eine Seite eines Vergleichs leer, ist er nicht
   erfüllt – auch bei `<>`. **Text unscharf vergleichen:** `contains(feld, 'teil')`, `startswith(feld, 'anfang')` und

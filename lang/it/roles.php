@@ -37,6 +37,7 @@ return [
         'manage' => 'gestire',
         'install' => 'installare',
         'upgrade' => 'aggiornare',
+        'design' => 'progettare con l’IA',
         'last_login' => 'Il mio ultimo accesso',
         'my_logins' => 'I miei accessi',
         'my_changes' => 'Le mie ultime modifiche',

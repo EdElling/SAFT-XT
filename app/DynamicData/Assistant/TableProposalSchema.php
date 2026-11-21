@@ -135,7 +135,7 @@ final class TableProposalSchema
     }
 
     /** @return array<string, mixed> */
-    private static function field(): array
+    public static function field(): array
     {
         return self::object([
             'name' => ['type' => 'string'],
@@ -169,7 +169,7 @@ final class TableProposalSchema
     }
 
     /** @return array<string, mixed> Bezeichnung in allen Sprachen */
-    private static function translations(): array
+    public static function translations(): array
     {
         return self::object(array_fill_keys(self::locales(), ['type' => 'string']));
     }
@@ -187,7 +187,7 @@ final class TableProposalSchema
      * @param  array<string, mixed>  $properties
      * @return array<string, mixed>
      */
-    private static function object(array $properties): array
+    public static function object(array $properties): array
     {
         return ['type' => 'object', 'properties' => $properties, 'required' => array_keys($properties), 'additionalProperties' => false];
     }

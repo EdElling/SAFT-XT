@@ -8,7 +8,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-1. **B-107** Etappe 7 (KI-App-Designer): 7a Entwurf per Prompt mit Vorschau und Erzeugen, 7b Editor, 7c Auswertungen
+1. **B-107** Etappe 7 (KI-App-Designer): 7a Entwurf per Prompt mit Vorschau und Erzeugen (7a-1 Backend umgesetzt, 7a-2 Seite in Arbeit), 7b Editor, 7c Auswertungen
 
 ## Apps (Fachanwendungen)
 

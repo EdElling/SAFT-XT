@@ -37,6 +37,7 @@ return [
         'manage' => 'verwalten',
         'install' => 'installieren',
         'upgrade' => 'aktualisieren',
+        'design' => 'mit KI entwerfen',
         'last_login' => 'Meine letzte Anmeldung',
         'my_logins' => 'Meine Anmeldungen',
         'my_changes' => 'Meine letzten Änderungen',

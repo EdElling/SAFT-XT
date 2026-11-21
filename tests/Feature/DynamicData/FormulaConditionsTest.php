@@ -90,10 +90,10 @@ class FormulaConditionsTest extends DynamicDataTestCase
         $analyzer = app(FormulaAnalyzer::class);
 
         foreach ([
-            [$fields, 'belege', "typ + 'x'", "Zeichen 1: „typ“ ist kein Zahlenfeld."],
+            [$fields, 'belege', "typ + 'x'", 'Zeichen 1: „typ“ ist kein Zahlenfeld.'],
             [$fields, 'belege', "if('Ausgabe', 1, 0)", "Zeichen 4: Text in Anführungszeichen ist nur in einem Vergleich möglich, z. B. typ = 'Ausgabe'."],
             [$fields, 'belege', "if(typ = 'Ausgabe')", 'Zeichen 1: Falsche Anzahl Werte für if().'],
-            [$fields, 'belege', "contains(nummer)", 'Zeichen 1: Falsche Anzahl Werte für contains().'],
+            [$fields, 'belege', 'contains(nummer)', 'Zeichen 1: Falsche Anzahl Werte für contains().'],
             [$bookingFields, 'buchungen', "contains(beleg, 'x')", 'Zeichen 10: „beleg“ lässt sich nicht vergleichen (Datei).'],
             [$fields, 'belege', "typ = 'Ausgabe", 'Zeichen 7: Das schliessende Anführungszeichen fehlt.'],
             [$fields, 'belege', 'datum < 1 < 2', 'Zeichen 11: „<“ ist hier nicht erwartet.'],
@@ -109,6 +109,11 @@ class FormulaConditionsTest extends DynamicDataTestCase
         }
 
         $this->assertSame(['typ'], $analyzer->compile("if(typ = 'Ausgabe', -1, 1)", $fields, 'neu', 'belege')['fields']);
+
+        // Ja/Nein zählt als 1 oder 0 – direkt als Bedingung und in Summen.
+        $this->service()->addField($this->bookings->fresh(), ['name' => 'bezahlt', 'label' => 'Bezahlt', 'type' => 'boolean']);
+        $this->assertNotEmpty($analyzer->compile('sum(if(buchungen.bezahlt, buchungen.brutto, 0)) + sum(buchungen.bezahlt)', $fields, 'neu', 'belege')['ast']);
+        $this->assertSame('5', $this->evaluate('if(bezahlt, 5, 0)', ['bezahlt' => true]));
         $aggregate = FormulaAnalyzer::aggregates($analyzer->compile("sum(if(buchungen.art = 'Verkauf', buchungen.brutto, 0))", $fields, 'neu', 'belege')['ast'])[0];
         $this->assertSame(['art', 'brutto'], $aggregate['fields'], 'Auch das Vergleichsfeld löst die Neuberechnung aus.');
     }

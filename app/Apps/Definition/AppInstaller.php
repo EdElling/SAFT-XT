@@ -584,10 +584,18 @@ final class AppInstaller
     private function renameAggregates(array $node, callable $table): array
     {
         if (in_array($node['call'] ?? null, FormulaAnalyzer::AGGREGATES, true) && isset($node['args'][0])) {
-            if (isset($node['args'][0]['path'][0])) {
-                $node['args'][0]['path'][0] = $table((string) $node['args'][0]['path'][0]);
-            } elseif (isset($node['args'][0]['field'])) {
+            if (isset($node['args'][0]['field'])) {
+                // count(tabelle)
                 $node['args'][0]['field'] = $table((string) $node['args'][0]['field']);
+            } else {
+                // sum(tabelle.feld) und Ausdrücke wie sum(tabelle.menge * tabelle.preis) oder sum(if(tabelle.art = 'x', …)).
+                $node['args'][0] = Printer::map((array) $node['args'][0], static function (array $n) use ($table): array {
+                    if (isset($n['path'][0])) {
+                        $n['path'][0] = $table((string) $n['path'][0]);
+                    }
+
+                    return $n;
+                });
             }
         }
 

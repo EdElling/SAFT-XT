@@ -359,7 +359,7 @@ nelle regole.
   `altrimenti` il risultato è vuoto se la condizione non è soddisfatta. Le condizioni confrontano con `=`, `<>`, `<`,
   `<=`, `>`, `>=` e si combinano con `and` e `or`. Nei confronti sono ammessi anche campi testo, selezione, data e sì/no;
   il testo va tra apici (un apice nel testo si raddoppia). I campi di selezione confrontano il valore salvato, non
-  l’etichetta tradotta; una data si scrive `'2026-12-31'`. Esempi: importo con segno =
+  l’etichetta tradotta; una data si scrive `'2026-12-31'`. I campi sì/no valgono 1 o 0 e servono quindi anche direttamente come condizione: `if(pagato, importo, 0)`. Esempi: importo con segno =
   `if(tipo = 'Uscita', -importo, importo)`, costi doganali di un giustificativo =
   `sum(if(righe.genere = 'Dogana', righe.importo, 0))`, numero di righe oltre 10 pezzi = `sum(righe.quantita > 10)`
   (un confronto dà 1 o 0). Se un lato di un confronto è vuoto, non è soddisfatto – anche con `<>`. **Confrontare testo in modo approssimativo:**

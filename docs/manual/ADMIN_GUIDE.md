@@ -345,7 +345,7 @@ rules.
   `else` the result is empty if the condition is not fulfilled. Conditions compare with `=`, `<>`, `<`, `<=`, `>`, `>=`
   and can be combined with `and` and `or`. In comparisons text, select, date and yes/no fields are allowed too; text is
   written in single quotes (a quote inside the text is doubled). Select fields compare the stored value, not the
-  translated label; a date is written `'2026-12-31'`. Examples: signed amount = `if(type = 'Expense', -amount, amount)`,
+  translated label; a date is written `'2026-12-31'`. Yes/no fields count as 1 or 0, so they also work directly as a condition: `if(paid, amount, 0)`. Examples: signed amount = `if(type = 'Expense', -amount, amount)`,
   customs costs of a receipt = `sum(if(lines.kind = 'Customs', lines.amount, 0))`, number of lines above 10 pieces =
   `sum(lines.quantity > 10)` (a comparison gives 1 or 0). If one side of a comparison is empty, it is not fulfilled –
   also with `<>`. **Fuzzy text comparisons:** `contains(field, 'part')`, `startswith(field, 'start')` and
