@@ -8,8 +8,10 @@ use App\Ai\AiConfig;
 use App\Ai\AiConnectionTester;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Settings\AppSettings;
+use App\Support\Branding;
 use App\Support\ColorScheme;
 use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -22,6 +24,7 @@ use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 
 /**
@@ -65,6 +68,20 @@ class AppSettingsPage extends SettingsPage
                             ->helperText(__('settings.app_name_help'))
                             ->required()
                             ->maxLength(60),
+                        // Eigenes Logo (B-126): privat gespeichert, ausgeliefert über /branding/logo; ohne Logo der Safttropfen.
+                        FileUpload::make('logo_path')
+                            ->label(__('settings.logo'))
+                            ->helperText(__('settings.logo_help'))
+                            ->disk('local')
+                            ->directory(Branding::DIRECTORY)
+                            ->visibility('private')
+                            ->image()
+                            ->acceptedFileTypes(Branding::MIMES)
+                            ->maxSize(1024)
+                            ->imagePreviewHeight('80'),
+                        Toggle::make('logo_as_favicon')
+                            ->label(__('settings.logo_as_favicon'))
+                            ->helperText(__('settings.logo_as_favicon_help')),
                     ]),
                 Section::make(__('settings.appearance'))
                     ->schema([
@@ -216,6 +233,14 @@ class AppSettingsPage extends SettingsPage
         }
 
         $data['ai_daily_limit'] = filled($data['ai_daily_limit'] ?? null) ? (int) $data['ai_daily_limit'] : null;
+
+        // Ersetztes oder entferntes Logo: die alte Datei löschen.
+        $data['logo_path'] = filled($data['logo_path'] ?? null) ? (string) $data['logo_path'] : null;
+        $oldLogo = app(AppSettings::class)->logo_path;
+
+        if (filled($oldLogo) && $oldLogo !== $data['logo_path']) {
+            Storage::disk('local')->delete($oldLogo);
+        }
 
         return $data;
     }

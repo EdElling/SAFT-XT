@@ -15,6 +15,12 @@ class AppSettings extends Settings
     /** Anzeigename (Branding). Getrennt von APP_NAME, aus dem Cookie-/Cache-Präfixe stammen. */
     public string $app_name;
 
+    /** Eigenes Logo (B-126): Pfad auf dem privaten Speicher; null = SAFT-Logo (Safttropfen). */
+    public ?string $logo_path;
+
+    /** Eigenes Logo auch als Symbol im Browser-Tab (sonst bleibt der Safttropfen). */
+    public bool $logo_as_favicon;
+
     /** Farbschema der Oberfläche für alle (App\Support\ColorScheme). */
     public string $color_scheme;
 

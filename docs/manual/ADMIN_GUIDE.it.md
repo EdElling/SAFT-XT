@@ -585,6 +585,8 @@ predefinita.
 | Impostazione | Significato |
 |---|---|
 | **Nome visualizzato dell’applicazione** | Al massimo 60 caratteri. Compare nell’intestazione, nella scheda del browser, nella pagina di accesso e come mittente delle e-mail |
+| **Logo** | Appare accanto al nome nell’intestazione e nella pagina di accesso. PNG, JPG o WebP, al massimo 1 MB, preferibilmente quadrato; SVG non è ammesso (può contenere script). Senza logo proprio SAFT mostra la goccia di succo. Rimuoverlo ripristina la goccia. La pagina «Informazioni su SAFT XT» mostra sempre il logo SAFT |
+| **Usare il logo anche come icona nella scheda del browser** | Disattivato per impostazione predefinita: la scheda mantiene la goccia di succo |
 | **Schema di colori** | colore principale per tutti: **Indaco** (predefinito), **Rosso (HfH)**, **Verde** o **Grigio**. Colora pulsanti, voci di menu attive, link e la marcatura della riga selezionata; sfondo, carattere e layout restano. Vale subito dopo il salvataggio |
 
 ![Schema di colori](images/it/16-color-scheme.png)
@@ -1459,7 +1461,7 @@ sono riservate e non si possono assegnare a nessun ruolo: **Visualizza come ruol
 
 | Diritto | Effetto |
 |---|---|
-| Impostazioni globali: visualizzare / modificare | nome dell’applicazione, schema di colori, assistenti IA (provider, modello, interruttori) |
+| Impostazioni globali: visualizzare / modificare | nome dell’applicazione, logo, schema di colori, assistenti IA (provider, modello, interruttori) |
 | Menu: visualizzare / creare / modificare / eliminare | curare l’albero dei menu (gruppi, voci, ordine, diritti delle voci) |
 | App: visualizzare | aprire la pagina «App» e il modello di dati per app |
 | App: gestire | creare, modificare, attivare e disattivare app, caricare il manuale, spostare tabelle, eliminare app vuote |

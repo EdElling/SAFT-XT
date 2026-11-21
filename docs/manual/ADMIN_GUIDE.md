@@ -562,6 +562,8 @@ affects all Microsoft services in the browser (Outlook, Teams …), so it is off
 | Setting | Meaning |
 |---|---|
 | **Display name of the application** | At most 60 characters. Appears in the header, in the browser tab, on the sign-in page and as the sender of emails |
+| **Logo** | Shown next to the name in the header and on the login page. PNG, JPG or WebP, at most 1 MB, ideally square; SVG is not allowed (it can contain scripts). Without an own logo SAFT shows the juice drop. Removing it restores the juice drop. The page “About SAFT XT” always shows the SAFT logo |
+| **Also use the logo as the icon in the browser tab** | Off by default: the tab keeps the juice drop |
 | **Colour scheme** | Main colour for everyone: **Indigo** (default), **Red (HfH)**, **Green** or **Grey**. It colours buttons, active menu entries, links and the marker of the selected row; background, text and layout stay unchanged. Applies immediately after saving |
 
 ![Colour scheme](images/en/16-color-scheme.png)
@@ -1393,7 +1395,7 @@ reserved for the super admin and cannot be granted to any role: **View as role**
 
 | Permission | Effect |
 |---|---|
-| Global settings: view / edit | name of the application, colour scheme, AI assistants (provider, model, switches) |
+| Global settings: view / edit | name of the application, logo, colour scheme, AI assistants (provider, model, switches) |
 | Menus: view / create / edit / delete | maintain the menu tree (groups, entries, order, permissions of entries) |
 | Apps: view | open the “Apps” page and the data model per app |
 | Apps: manage | create, edit, activate and deactivate apps, upload the manual, move tables, delete empty apps |

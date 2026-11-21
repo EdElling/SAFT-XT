@@ -124,7 +124,8 @@
             @endif
 
             <article class="saft-doc" data-doc="about" data-label="{{ __('documentation.about') }}" x-show="tab === 'about'" x-cloak>
-                <h2>{{ __('documentation.about') }}</h2>
+                {{-- Immer das SAFT-Logo (B-126), auch wenn in den Einstellungen ein eigenes hochgeladen ist. --}}
+                <h2 style="display: flex; align-items: center; gap: .75rem"><img src="{{ asset('favicon.svg') }}" alt="" style="height: 2.5rem; width: 2.5rem" data-saft-about-logo>{{ __('documentation.about') }}</h2>
                 <p><strong>SAFT</strong> · {{ __('documentation.version') }} <strong data-saft-version>{{ $version }}</strong>@if ($releaseStatus !== '') <span data-saft-release-status>({{ $releaseStatus }})</span>@endif
                     · {{ __('documentation.plugin_api') }} <strong data-saft-api-version>{{ \App\Plugins\Api\ApiManifest::current() }}</strong></p>
                 <p data-saft-releases>{{ __('documentation.updates') }} <a href="https://github.com/EdElling/SAFT-XT/releases" target="_blank" rel="noopener">github.com/EdElling/SAFT-XT/releases</a></p>

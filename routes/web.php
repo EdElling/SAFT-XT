@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\AppSwitchController;
 use App\Http\Controllers\Auth\SsoController;
+use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\DocumentationImageController;
 use App\Http\Controllers\RecordFileController;
 use App\Http\Controllers\RoleSimulationController;
@@ -17,6 +18,9 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 // Keine öffentliche Startseite: direkt in die Anwendung.
 Route::redirect('/', '/admin');
+
+// Logo (B-126): auch auf der Anmeldeseite, also ohne Anmeldung.
+Route::middleware(['throttle:120,1'])->get('branding/logo', [BrandingController::class, 'logo'])->name('branding.logo');
 
 // „Ansicht als Rolle“ beenden: außerhalb des Panels, damit es auch mit sehr wenigen Rechten geht.
 Route::middleware(['auth'])->post('role-simulation/stop', [RoleSimulationController::class, 'stop'])->name('role-simulation.stop');

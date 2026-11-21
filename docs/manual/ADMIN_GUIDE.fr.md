@@ -601,6 +601,8 @@ désactivée par défaut.
 | Réglage | Signification |
 |---|---|
 | **Nom affiché de l’application** | 60 caractères au plus. Apparaît dans l’en-tête, dans l’onglet du navigateur, sur la page de connexion et comme expéditeur des e-mails |
+| **Logo** | Affiché à côté du nom dans l’en-tête et sur la page de connexion. PNG, JPG ou WebP, 1 Mo au plus, idéalement carré ; SVG n’est pas admis (peut contenir des scripts). Sans logo propre, SAFT affiche la goutte de jus. Le supprimer rétablit la goutte de jus. La page « À propos de SAFT XT » montre toujours le logo SAFT |
+| **Utiliser aussi le logo comme icône dans l’onglet du navigateur** | Désactivé par défaut : l’onglet garde la goutte de jus |
 | **Jeu de couleurs** | couleur principale pour tous : **Indigo** (par défaut), **Rouge (HfH)**, **Vert** ou **Gris**. Colore les boutons, les entrées de menu actives, les liens et le marquage de la ligne sélectionnée ; le fond, la police et la mise en page restent. S’applique dès l’enregistrement |
 
 ![Jeu de couleurs](images/fr/16-color-scheme.png)
@@ -1501,7 +1503,7 @@ entrée de menu).
 
 | Droit | Effet |
 |---|---|
-| Paramètres globaux: afficher / modifier | nom de l’application, palette de couleurs, assistants IA (fournisseur, modèle, interrupteurs) |
+| Paramètres globaux: afficher / modifier | nom de l’application, logo, palette de couleurs, assistants IA (fournisseur, modèle, interrupteurs) |
 | Menus: afficher / créer / modifier / supprimer | gérer l’arborescence des menus (groupes, entrées, ordre, droits des entrées) |
 | Apps: afficher | ouvrir la page « Apps » et le modèle de données par app |
 | Apps: gérer | créer, modifier, activer et désactiver des apps, téléverser le manuel, déplacer des tables, supprimer les apps vides |

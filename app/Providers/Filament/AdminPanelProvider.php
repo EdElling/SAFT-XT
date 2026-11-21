@@ -23,6 +23,7 @@ use App\Models\User;
 use App\Navigation\MenuNavigationBuilder;
 use App\Plugins\PluginOrigin;
 use App\Plugins\PluginRegistry;
+use App\Support\Branding;
 use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -34,6 +35,7 @@ use Filament\PanelProvider;
 use Filament\Support\Enums\Width;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -58,8 +60,12 @@ class AdminPanelProvider extends PanelProvider
             ->multiFactorAuthentication([SaftAppAuthentication::make()->recoverable()], isRequired: true)
             ->multiFactorAuthenticationRequiredMiddlewareName(RequireTwoFactor::class)
             ->brandName(fn (): string => (string) config('app.name'))
-            // Symbol im Browser-Tab: Safttropfen (SVG); favicon.ico und apple-touch-icon.png für ältere Browser und iOS.
-            ->favicon(asset('favicon.svg'))
+            // Logo neben dem Namen (B-126): eigenes aus den Einstellungen oder der Safttropfen.
+            ->brandLogo(fn (): Htmlable => Branding::brand())
+            ->brandLogoHeight('2rem')
+            // Symbol im Browser-Tab: Safttropfen (SVG) bzw. das eigene Logo; favicon.ico und apple-touch-icon.png für
+            // ältere Browser und iOS.
+            ->favicon(fn (): string => Branding::faviconUrl())
             // Farbschema aus den App-Einstellungen (für alle).
             ->colors(fn (): array => PanelAppearance::colors())
             ->spa()

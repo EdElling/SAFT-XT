@@ -123,7 +123,7 @@ Firmen-Login abgemeldet.
 - **Dokumentation** (im Menü direkt unter dem Dashboard) zeigt dieses Handbuch und die häufigen Fragen in der
   Anwendung, mit Inhaltsverzeichnis und einem Suchfeld, das beim Tippen über alle Handbücher sucht. Wer ein Recht im
   Bereich Administration hat, sieht zusätzlich das Administratorhandbuch. Bringen Plugins eigene Handbücher mit (z. B.
-  *Lager-Umbuchung*), erscheinen sie als weitere Reiter, wenn Sie mit den Funktionen arbeiten dürfen. **Über SAFT XT** nennt die Version mit ihrem Status (z. B.
+  *Lager-Umbuchung*), erscheinen sie als weitere Reiter, wenn Sie mit den Funktionen arbeiten dürfen. **Über SAFT XT** zeigt das SAFT-Logo und nennt die Version mit ihrem Status (z. B.
   *pre-release*), verweist für Updates auf die Seite *Releases* auf GitHub und zeigt die Lizenzbedingungen (mit Link zur
   Webseite des PolyForm Project) und die Komponenten von Drittanbietern mit ihren Lizenzen.
 - **Hilfe-Assistent:** Ist er eingerichtet und haben Sie das Recht dazu, öffnet der Knopf **?** oben rechts ein

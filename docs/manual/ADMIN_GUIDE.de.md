@@ -577,6 +577,8 @@ betrifft das alle Microsoft-Dienste im Browser (Outlook, Teams …) – daher st
 | Einstellung | Bedeutung |
 |---|---|
 | **Anzeigename der Anwendung** | Höchstens 60 Zeichen. Erscheint in der Kopfzeile, im Browser-Tab, auf der Anmeldeseite und als Absender von E-Mails |
+| **Logo** | Erscheint neben dem Namen in der Kopfzeile und auf der Anmeldeseite. PNG, JPG oder WebP, höchstens 1 MB, am besten quadratisch; SVG ist nicht erlaubt (kann Skripte enthalten). Ohne eigenes Logo zeigt SAFT den Safttropfen. Entfernen stellt den Safttropfen wieder her. Die Seite „Über SAFT XT“ zeigt immer das SAFT-Logo |
+| **Logo auch als Symbol im Browser-Tab verwenden** | Vorgabe aus: Im Tab bleibt der Safttropfen |
 | **Farbschema** | Hauptfarbe für alle: **Indigo** (Vorgabe), **Rot (HfH)**, **Grün** oder **Grau**. Färbt Schaltflächen, aktive Menüeinträge, Links und die Markierung der ausgewählten Zeile; Hintergrund, Schrift und Layout bleiben. Gilt sofort nach dem Speichern |
 
 ![Farbschema](images/de/16-color-scheme.png)
@@ -1437,7 +1439,7 @@ entfernen**. „Anzeigen“ ist jeweils Voraussetzung für die übrigen Rechte e
 
 | Recht | Wirkung |
 |---|---|
-| Globale Einstellungen: anzeigen / bearbeiten | Name der Anwendung, Farbschema, KI-Assistenten (Anbieter, Modell, Schalter) |
+| Globale Einstellungen: anzeigen / bearbeiten | Name der Anwendung, Logo, Farbschema, KI-Assistenten (Anbieter, Modell, Schalter) |
 | Menüs: anzeigen / anlegen / bearbeiten / löschen | den Menübaum pflegen (Gruppen, Einträge, Reihenfolge, Rechte der Einträge) |
 | Apps: anzeigen | Seite „Apps“ und Datenmodell je App öffnen |
 | Apps: verwalten | Apps anlegen, bearbeiten, aktivieren und deaktivieren, Handbuch hochladen, Tabellen verschieben, leere Apps löschen |
