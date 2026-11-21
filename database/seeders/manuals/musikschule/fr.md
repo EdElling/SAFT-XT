@@ -6,7 +6,7 @@ L'app **École de musique** gère une petite école de musique : élèves et leu
 par semestre, leçons avec présences, instruments en location, factures semestrielles avec paiements, ainsi que concerts
 et auditions. Tous les montants sont en francs suisses (CHF).
 
-C'est un exemple d'application de taille moyenne : 20 tables, conçues avec le **concepteur d'apps IA** puis affinées à
+C'est un exemple d'application de taille moyenne : 21 tables, conçues avec le **concepteur d'apps IA** puis affinées à
 la main. La démo est installée à partir d'une définition d'app – exactement comme via **Apps › Installer une app**.
 
 | Menu | Tables |
@@ -14,7 +14,7 @@ la main. La démo est installée à partir d'une définition d'app – exactemen
 | Enseignement | Cours, Inscriptions, Leçons, Présences, Événements, Prestations |
 | Personnes | Élèves, Personnes de contact, Contacts des élèves, Enseignants, Branches des enseignants |
 | Finances & instruments | Factures, Positions de facture, Paiements, Instruments de location, Contrats de location |
-| Données de base | Branches, Types de cours (avec tarif semestriel), Semestres, Salles |
+| Données de base | Branches, Types de cours (avec tarif semestriel), Semestres, Salles, Vacances |
 
 Les données d'exemple montrent un semestre terminé (**HS 2026**) avec leçons, factures et paiements, et un semestre
 commencé (**FS 2027**) avec les premiers cours et inscriptions.
@@ -35,6 +35,10 @@ commencé (**FS 2027**) avec les premiers cours et inscriptions.
 Pour chaque leçon, saisir date, durée et thème, puis les **présences** (présent, excusé, non excusé). Le **tarif
 horaire** vient de l'enseignant ; SAFT calcule les **heures** et les **honoraires**. Sur l'élève, le **taux de
 présence** montre sa régularité.
+
+**Données de base › Vacances** contient les vacances scolaires et jours fériés sans cours (un seul jour férié :
+*Du* = *Au*). Avec le plugin **École de musique : planification**, vous créez d'un coup les leçons d'un semestre – sans
+ces jours – et saisissez les présences d'une leçon sur une seule page.
 
 ### Facture semestrielle
 

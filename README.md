@@ -125,7 +125,7 @@ example reports – the same data as the external demos:
 php artisan db:seed --class=LagerDemoSeeder       # "Warehouse (demo)": suppliers, items, locations, stock, movements …
 php artisan db:seed --class=VertriebDemoSeeder    # "Sales (demo)": customers, events, enquiries, orders – uses the warehouse items
 php artisan db:seed --class=GitarrenshopDemoSeeder  # "Guitar shop (demo)": income and expenses with VAT, receipts, instalments, item images
-php artisan db:seed --class=MusikschuleDemoSeeder   # "Music school (demo)": 20 tables from an app definition (AI app designer), courses, lessons, invoices
+php artisan db:seed --class=MusikschuleDemoSeeder   # "Music school (demo)": 21 tables from an app definition (AI app designer), courses, lessons, invoices
 php artisan db:seed --class=ForschungDemoSeeder   # "Research (demo)": organisations, people, projects, publications …
 ```
 

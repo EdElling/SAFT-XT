@@ -148,6 +148,8 @@ final class Stundenplan extends Page
         $choice = (int) ($this->data['auswahl'] ?? 0);
         $courses = $school->courses((int) ($this->data['semester'] ?? 0));
         $enrolled = $this->participants($courses->pluck('id')->all());
+        $waiting = Saft::table(School::ENROLMENTS)->withoutAuthorization()->query()->whereIn('kurs', $courses->pluck('id')->all())
+            ->where('status', 'warteliste')->get()->countBy(static fn (DynamicRecord $e): int => (int) $e->getAttribute('kurs'))->all();
 
         $courses = $courses->filter(static fn (array $c): bool => match ($view) {
             self::ROOM => $c['room'] === $choice,
@@ -165,7 +167,7 @@ final class Stundenplan extends Page
         $teachers = $school->teachers();
         $rooms = $school->rooms();
         $table = Saft::table(School::COURSES);
-        $block = static function (array $c) use ($view, $teachers, $rooms, $subjects, $colors, $enrolled, $table): array {
+        $block = static function (array $c) use ($view, $teachers, $rooms, $subjects, $colors, $enrolled, $waiting, $table): array {
             $names = array_values($enrolled[$c['id']] ?? []);
             $detail = match ($view) {
                 self::ROOM => $teachers[$c['teacher']] ?? '',
@@ -177,7 +179,9 @@ final class Stundenplan extends Page
                 'id' => $c['id'], 'name' => $c['name'], 'detail' => $detail, 'start' => $c['start'], 'end' => $c['end'],
                 'time' => $c['start'] === null ? '' : School::clock($c['start']).'–'.School::clock($c['end']),
                 'subject' => $subjects[$c['subject']] ?? '', 'color' => $colors[$c['subject']] ?? '#6b7280',
-                'tooltip' => __(self::T.'tooltip', ['count' => count($names), 'max' => $c['max']]).($names === [] ? '' : "\n".implode("\n", $names)),
+                'tooltip' => __(self::T.'tooltip', ['count' => count($names), 'max' => $c['max']])
+                    .(($waiting[$c['id']] ?? 0) > 0 ? ', '.__(self::T.'waiting', ['count' => $waiting[$c['id']]]) : '')
+                    .($names === [] ? '' : "\n".implode("\n", $names)),
                 'url' => $table->url($c['id']), 'conflict' => false, 'lane' => 0, 'lanes' => 1,
             ];
         };

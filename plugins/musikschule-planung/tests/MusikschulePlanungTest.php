@@ -13,7 +13,9 @@ use App\Plugins\Testing\PluginTestCase;
 use Database\Seeders\MusikschuleDemoSeeder;
 use Filament\Actions\Testing\TestAction;
 use Livewire\Livewire;
+use Saft\MusikschulePlanung\LessonGenerator;
 use Saft\MusikschulePlanung\MusikschulePlanungPlugin;
+use Saft\MusikschulePlanung\Pages\Praesenz;
 use Saft\MusikschulePlanung\Pages\Stundenplan;
 use Saft\MusikschulePlanung\School;
 use Saft\MusikschulePlanung\SemesterRollover;
@@ -213,6 +215,89 @@ class MusikschulePlanungTest extends PluginTestCase
         $page->assertSee('2 Kurse überschneiden sich');
     }
 
+    public function test_lessons_are_generated_weekly_without_holidays_and_only_once(): void
+    {
+        $this->school();
+        $course = $this->course('Klavier Mia', 'mo', '16:00');
+        $unscheduled = $this->course('Ohne Tag', 'mo', '', ['wochentag' => null, 'raum' => null]);
+        DynamicRecord::forTableName(School::HOLIDAYS)->create(['bezeichnung' => 'Herbstferien', 'von' => '2026-10-05', 'bis' => '2026-10-16']);
+        $generator = app(LessonGenerator::class);
+        $ids = [(int) $course->getKey(), (int) $unscheduled->getKey()];
+
+        // Montage 7.9.–26.10.: 8, davon 2 in den Herbstferien.
+        $plan = $generator->plan($ids, '2026-09-01', '2026-10-31');
+        $this->assertSame([6, 1, 2, 0, ['Ohne Tag']], [count($plan['lessons']), $plan['courses'], $plan['holidays'], $plan['existing'], $plan['unscheduled']]);
+        $this->assertSame(8, count($generator->plan($ids, '2026-09-01', '2026-10-31', skipHolidays: false)['lessons']));
+
+        $this->assertSame(6, $generator->run($ids, '2026-09-01', '2026-10-31')['lessons']);
+        $lesson = DynamicRecord::forTableName(School::LESSONS)->newQuery()->orderBy('datum')->first();
+        $this->assertSame(['2026-09-07', 45, $this->ids['moretti']], [substr((string) $lesson->datum, 0, 10), (int) $lesson->dauer_minuten, (int) $lesson->lehrperson]);
+
+        // Wiederholt: nichts doppelt; Zeitraum auf das Semester begrenzt (beginnt am 17.8.2026).
+        $again = $generator->plan($ids, '2026-01-01', '2026-10-31');
+        $this->assertSame([3, 6, 2], [count($again['lessons']), $again['existing'], $again['holidays']]);
+        $this->assertSame('2026-08-17', $again['lessons'][0]['date']);
+    }
+
+    public function test_generate_lessons_from_a_course_row(): void
+    {
+        $this->travelTo('2026-12-01 10:00:00');
+        $this->school();
+        $course = $this->course('Klavier Mia', 'mo', '16:00');
+
+        Livewire::test(DynamicDataPage::class, ['table' => School::COURSES])
+            ->callAction(TestAction::make('musikschuleLektionenCourse')->table($course))
+            ->assertHasNoFormErrors()
+            ->assertNotified();
+
+        // Ab heute (1.12.2026) bis Semesterende (29.1.2027): 8 Montage; Ferien laut Tabelle gibt es hier keine.
+        $this->assertSame(8, DynamicRecord::forTableName(School::LESSONS)->newQuery()->where('kurs', $course->getKey())->count());
+    }
+
+    public function test_attendance_is_loaded_and_saved_without_duplicates(): void
+    {
+        $this->school();
+        $course = $this->course('Gruppe', 'sa', '10:00', ['max_teilnehmer' => 8, 'kursart' => $this->ids['gruppe'], 'raum' => $this->ids['saal']]);
+        $this->enrol($course, 'mia');
+        $this->enrol($course, 'leo', 'abgemeldet');
+        $lesson = DynamicRecord::forTableName(School::LESSONS)->create(['kurs' => $course->getKey(), 'datum' => '2026-09-05', 'dauer_minuten' => 60, 'lehrperson' => $this->ids['moretti']]);
+        DynamicRecord::forTableName(School::ATTENDANCE)->create(['lektion' => $lesson->getKey(), 'schueler' => $this->ids['leo'], 'status' => 'entschuldigt']);
+
+        $page = Livewire::test(Praesenz::class, ['lektion' => $lesson->getKey()])->set('data.lektion', $lesson->getKey())->call('load');
+        $entries = $page->get('entries');
+        $this->assertSame(['Leo Huber' => ['entschuldigt', false], 'Mia Huber' => ['anwesend', true]],
+            collect($entries)->mapWithKeys(static fn (array $e): array => [$e['name'] => [$e['status'], $e['active']]])->all());
+
+        $page->set('entries.'.$this->ids['mia'].'.status', 'unentschuldigt')->set('entries.'.$this->ids['mia'].'.bemerkung', 'krank?')->call('save')->assertNotified();
+        $page->call('save');
+
+        $rows = DynamicRecord::forTableName(School::ATTENDANCE)->newQuery()->where('lektion', $lesson->getKey())->orderBy('schueler')->get();
+        $leo = $this->ids['leo'];
+        $this->assertSame([['entschuldigt', null], ['unentschuldigt', 'krank?']], $rows->sortBy(static fn ($r): int => (int) $r->schueler === $leo ? 0 : 1)
+            ->map(static fn ($r): array => [$r->status, $r->bemerkung])->values()->all());
+        $page->call('setAll', 'anwesend')->assertSet('entries.'.$this->ids['leo'].'.status', 'anwesend');
+    }
+
+    public function test_waiting_list_hint_when_a_place_becomes_free(): void
+    {
+        $this->school();
+        $course = $this->course('Klavier Mia', 'mo', '16:00');
+        $this->enrol($course, 'mia');
+        $this->enrol($course, 'leo', 'warteliste');
+        $user = auth()->user();
+        $this->assertSame(0, $user->notifications()->count());
+
+        DynamicRecord::forTableName(School::ENROLMENTS)->newQuery()->where('schueler', $this->ids['mia'])->sole()->update(['status' => 'abgemeldet']);
+
+        $notice = $user->notifications()->latest()->first()?->data;
+        $this->assertSame('Klavier Mia: 1 Platz frei', $notice['title']);
+        $this->assertStringContainsString('Leo Huber (seit 15.06.2026)', $notice['body']);
+
+        // Höchstzahl erhöht: wieder ein Hinweis.
+        $course->update(['max_teilnehmer' => 3]);
+        $this->assertEqualsCanonicalizing(['Klavier Mia: 1 Platz frei', 'Klavier Mia: 3 Plätze frei'], $user->notifications()->get()->pluck('data.title')->all());
+    }
+
     public function test_access_needs_the_permissions(): void
     {
         $this->school();
@@ -222,5 +307,9 @@ class MusikschulePlanungTest extends PluginTestCase
 
         $this->actingWithPermissions([MusikschulePlanungPlugin::ID.'.timetable']);
         $this->get(Stundenplan::getUrl())->assertOk()->assertSee('Sie dürfen die Kurse nicht sehen.');
+        $this->get(Praesenz::getUrl())->assertForbidden();
+
+        $this->actingWithPermissions([MusikschulePlanungPlugin::ID.'.attendance', 'data.'.School::ATTENDANCE.'.view']);
+        $this->get(Praesenz::getUrl())->assertOk();
     }
 }

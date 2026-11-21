@@ -31,6 +31,13 @@ final class School
 
     public const string ENROLMENTS = 'musikschule_anmeldungen';
 
+    public const string LESSONS = 'musikschule_lektionen';
+
+    public const string ATTENDANCE = 'musikschule_praesenzen';
+
+    /** Ferien und Feiertage (seit App 1.1); ohne die Tabelle gibt es keine Ferienlücken. */
+    public const string HOLIDAYS = 'musikschule_ferien';
+
     /** Wochentage in der Reihenfolge der Woche (gespeicherte Werte des Auswahlfelds „wochentag“). */
     public const array DAYS = ['mo', 'di', 'mi', 'do', 'fr', 'sa', 'so'];
 
@@ -47,6 +54,8 @@ final class School
         self::SUBJECTS => ['bezeichnung'],
         self::STUDENTS => ['vorname', 'nachname'],
         self::ENROLMENTS => ['datum', 'status', 'rabatt_prozent', 'schueler', 'kurs'],
+        self::LESSONS => ['datum', 'dauer_minuten', 'thema', 'kurs', 'lehrperson'],
+        self::ATTENDANCE => ['status', 'bemerkung', 'lektion', 'schueler'],
     ];
 
     /** @var array<int, int>|null Kursart => Dauer in Minuten */
@@ -184,6 +193,32 @@ final class School
             ->mapWithKeys(static fn (DynamicRecord $s): array => [(int) $s->getKey() => (string) $s->getAttribute('bezeichnung')])->all();
     }
 
+    /** Gibt es die Tabelle Ferien (App ab 1.1)? */
+    public function hasHolidays(): bool
+    {
+        return Saft::hasTable(self::HOLIDAYS) && array_diff(['von', 'bis'], Saft::table(self::HOLIDAYS)->fieldNames()) === [];
+    }
+
+    /** @return list<array{0: string, 1: string, 2: string}> Ferien: von, bis (Y-m-d), Bezeichnung; leer ohne die Tabelle */
+    public function holidays(): array
+    {
+        if (! $this->hasHolidays()) {
+            return [];
+        }
+
+        return Saft::table(self::HOLIDAYS)->withoutAuthorization()->query()->orderBy('von')->get()
+            ->map(static fn (DynamicRecord $h): array => [self::date($h, 'von'), self::date($h, 'bis'), (string) $h->getAttribute('bezeichnung')])
+            ->filter(static fn (array $h): bool => $h[0] !== '' && $h[1] !== '')->values()->all();
+    }
+
+    /** Beginn und Ende eines Semesters (Y-m-d), null wenn es das Semester nicht gibt. */
+    public function semesterRange(int $semester): ?array
+    {
+        $record = Saft::table(self::SEMESTERS)->withoutAuthorization()->find($semester);
+
+        return $record === null ? null : [self::date($record, 'beginn'), self::date($record, 'ende')];
+    }
+
     /** Das laufende Semester (heute zwischen Beginn und Ende), sonst das zuletzt begonnene, sonst das erste. */
     public function currentSemester(): ?int
     {
@@ -219,7 +254,7 @@ final class School
             ->mapWithKeys(static fn (DynamicRecord $r): array => [(int) $r->getKey() => (string) $r->getAttribute('bezeichnung')])->all();
     }
 
-    private static function date(DynamicRecord $record, string $field): string
+    public static function date(DynamicRecord $record, string $field): string
     {
         $value = $record->getAttribute($field);
 

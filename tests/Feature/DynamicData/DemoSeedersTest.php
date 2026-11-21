@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\DynamicData;
 
+use App\Apps\Definition\AppInstaller;
 use App\DynamicData\DataMenu;
 use App\Filament\Pages\DataModelPage;
 use App\Filament\Resources\Reports\ReportResource;
@@ -23,6 +24,9 @@ use Database\Seeders\GitarrenshopDemoSeeder;
 use Database\Seeders\LagerDemoSeeder;
 use Database\Seeders\MusikschuleDemoSeeder;
 use Database\Seeders\VertriebDemoSeeder;
+use Illuminate\Process\PendingProcess;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
 
 /** Demo-Seeder Lager, Vertrieb und Forschung: Tabellen in SAFT selbst, Daten, Menügruppe, Auswertungen. */
@@ -260,11 +264,16 @@ class DemoSeedersTest extends DynamicDataTestCase
         $this->assertCounts([
             'musikschule_faecher' => 8, 'musikschule_kursarten' => 5, 'musikschule_semester' => 2, 'musikschule_raeume' => 5,
             'musikschule_lehrpersonen' => 6, 'musikschule_schueler' => 30, 'musikschule_kurse' => 22, 'musikschule_instrumente' => 10,
-            'musikschule_mietvertraege' => 6, 'musikschule_veranstaltungen' => 3, 'musikschule_lektionen' => 200,
+            'musikschule_mietvertraege' => 6, 'musikschule_veranstaltungen' => 3, 'musikschule_lektionen' => 200, 'musikschule_ferien' => 8,
         ]);
         $app = MusikschuleDemoSeeder::installedApp();
         $this->assertSame(['d5d9d05e-2fe0-4b57-bd17-24219b63beea', 'Musikschule (Demo)', true], [$app->uuid, $app->getTranslation('name', 'de'), $app->is_active]);
-        $this->assertSame(20, CustomTable::query()->where('app_id', $app->id)->count());
+        $this->assertSame(21, CustomTable::query()->where('app_id', $app->id)->count());
+
+        // Keine Lektion in den Ferien (Herbstferien 5.–16.10.2026); zehn je Kurs bis Ende Oktober.
+        $dates = DynamicRecord::forTableName('musikschule_lektionen')->newQuery()->pluck('datum')->map(static fn ($d): string => substr((string) $d, 0, 10));
+        $this->assertSame(0, $dates->filter(static fn (string $d): bool => $d >= '2026-10-05' && $d <= '2026-10-16')->count());
+        $this->assertSame('2026-11-06', $dates->max());
         $this->assertSame(1, Role::query()->where('app_id', $app->id)->count());
 
         // Übernommene Werte: Tarif aus der Kursart, Einzelpreis aus dem Kurs, Stundensatz aus der Lehrperson; Honorar berechnet.
@@ -292,6 +301,40 @@ class DemoSeedersTest extends DynamicDataTestCase
         foreach (Report::query()->where('app_id', $app->id)->get() as $report) {
             $this->assertNotEmpty(app(ReportRunner::class)->run($report, $this->superAdmin())->rows, $report->name);
         }
+    }
+
+    public function test_musikschule_demo_updates_an_installed_app_of_version_1_0(): void
+    {
+        $storage = sys_get_temp_dir().'/saft-musikschule-'.uniqid();
+        $this->app->useStoragePath($storage);
+        Process::fake(static function (PendingProcess $process) {
+            foreach ((array) $process->command as $argument) {
+                if (str_starts_with($argument, '--file=')) {
+                    File::put(substr($argument, 7), 'dump');
+                }
+            }
+
+            return Process::result(output: "-- dump\n");
+        });
+
+        // Stand 1.0: ohne Tabelle Ferien, deren Menü und Rechte.
+        $admin = $this->superAdmin();
+        $old = app(MusikschuleDemoSeeder::class)->appDefinition();
+        $old['app']['version'] = '1.0';
+        $old['tables'] = array_values(array_filter($old['tables'], static fn (array $t): bool => $t['name'] !== 'musikschule_ferien'));
+        $old['menus'] = array_values(array_filter($old['menus'], static fn (array $m): bool => ($m['target']['table'] ?? null) !== 'musikschule_ferien'));
+        $old['roles'][0]['permissions'] = array_values(array_filter($old['roles'][0]['permissions'], static fn (string $p): bool => ! str_contains($p, 'musikschule_ferien')));
+        app(AppInstaller::class)->install($old, null, $admin)->forceFill(['is_active' => true])->save();
+        DynamicRecord::forTableName('musikschule_faecher')->create(['bezeichnung' => 'Harfe']);
+
+        $this->seed(MusikschuleDemoSeeder::class);
+
+        $app = MusikschuleDemoSeeder::installedApp();
+        $this->assertSame(['1.1', 21], [$app->version, CustomTable::query()->where('app_id', $app->id)->count()]);
+        $this->assertTrue(Menu::query()->where('app_id', $app->id)->where('label->de', 'Ferien')->exists());
+        $this->assertTrue(Role::query()->where('app_id', $app->id)->sole()->hasPermissionTo('data.musikschule_ferien.update'));
+        $this->assertCounts(['musikschule_ferien' => 8, 'musikschule_faecher' => 1]);
+        File::deleteDirectory($storage);
     }
 
     public function test_all_three_demos_side_by_side(): void

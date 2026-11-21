@@ -888,10 +888,14 @@ not built by hand but designed with the AI app designer:
 | Listener (rejects) | `src/CourseConflictGuard.php` | `RecordSaving`: teacher or room booked at the same time → `RecordRejected` with a message |
 | Listener (notifies) | `src/RoomCapacityHint.php` | `RecordSaved`: more participants than places → notice in the bell |
 | Bulk action | `src/SemesterRollover.php`, `src/RolloverAction.php` | copy courses and enrollments to another semester, with a preview in the dialog, in one transaction (`Saft::transaction`); button per row and above the table Semesters |
-| Tests | `tests/MusikschulePlanungTest.php` | installs the app from its app definition and tests conflicts, rollover (including “all or nothing”), timetable and permissions |
+| Bulk action with calendar | `src/LessonGenerator.php`, `src/LessonAction.php` | weekly lessons for a period, limited to the semester, skipping holidays and existing dates; one dialog for three places (course row, semester row, above the table Courses) |
+| Entry page | `src/Pages/Praesenz.php`, `resources/views/praesenz.blade.php` | own Livewire page instead of a form: one row per student, loads existing records and on saving creates missing ones or changes modified ones; opened with `?lektion=` from a row action |
+| Listener (notifies with link) | `src/WaitingListHint.php` | `RecordSaved`/`RecordDeleted` on enrollments and courses: place free and people waiting → notice with an action that opens the course via `DataTable::url()` |
+| Optional table | `School::hasHolidays()` | the table Holidays (app 1.1) is not in `requiredTables()`; without it, the switch “Skip holidays” stays off |
+| Tests | `tests/MusikschulePlanungTest.php` | installs the app from its app definition and tests conflicts, rollover (including “all or nothing”), timetable, lessons, attendance, waiting list and permissions |
 
-**Permissions:** *Music school: planning: View timetable* and *Roll over semester*; plus the data permissions on courses
-and enrollments. The rollover writes with the permissions of the signed-in person; the conflict check applies as for any
+**Permissions:** *Music school: planning: View timetable*, *Roll over semester*, *Generate lessons* and *Record
+attendance*; plus the data permissions on courses, enrollments, lessons or attendance. Rollover, lessons and attendance write with the permissions of the signed-in person; the conflict check applies as for any
 other entry.
 
 ## 18. API versions and change log

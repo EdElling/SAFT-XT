@@ -6,7 +6,7 @@ The **Music school** app runs a small music school: students with their contact 
 semester, lessons with attendance, rental instruments, semester invoices with payments, and concerts and recitals.
 All amounts are in Swiss francs (CHF).
 
-It is an example of a medium-sized application: 20 tables, designed with the **AI app designer** and then refined by
+It is an example of a medium-sized application: 21 tables, designed with the **AI app designer** and then refined by
 hand. The demo is installed from an app definition – exactly as via **Apps › Install app**.
 
 | Menu | Tables |
@@ -14,7 +14,7 @@ hand. The demo is installed from an app definition – exactly as via **Apps ›
 | Teaching | Courses, Enrollments, Lessons, Attendance, Events, Performances |
 | People | Students, Contact persons, Student contacts, Teachers, Teacher subjects |
 | Finance & instruments | Invoices, Invoice items, Payments, Rental instruments, Rental contracts |
-| Master data | Subjects, Course types (with semester fee), Semesters, Rooms |
+| Master data | Subjects, Course types (with semester fee), Semesters, Rooms, Holidays |
 
 The sample data shows a completed semester (**HS 2026**) with lessons, invoices and payments, and one that has just
 begun (**FS 2027**) with its first courses and enrollments.
@@ -34,6 +34,10 @@ begun (**FS 2027**) with its first courses and enrollments.
 For each lesson, record date, duration and topic, and below it the **attendance** (present, excused, unexcused). The
 **hourly rate** comes from the teacher; SAFT calculates **hours** and **fee**. On the student, the **attendance rate**
 shows how regularly they come.
+
+**Master data › Holidays** lists school holidays and public holidays without lessons (a single holiday: *From* =
+*To*). With the plugin **Music school: planning** you generate a semester's lessons in one go – skipping these days –
+and record the attendance of a lesson on one page.
 
 ### Semester invoice
 

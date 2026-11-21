@@ -903,10 +903,14 @@ die nicht von Hand, sondern mit dem KI-App-Designer entworfen wurde:
 | Listener (verbietet) | `src/CourseConflictGuard.php` | `RecordSaving`: Lehrperson oder Raum zur selben Zeit belegt → `RecordRejected` mit Meldung |
 | Listener (meldet) | `src/RoomCapacityHint.php` | `RecordSaved`: mehr Teilnehmende als Plätze → Hinweis in der Glocke |
 | Massenaktion | `src/SemesterRollover.php`, `src/RolloverAction.php` | Kurse und Anmeldungen in ein anderes Semester kopieren, mit Vorschau im Dialog, in einer Transaktion (`Saft::transaction`); Knopf je Zeile und über der Tabelle Semester |
-| Tests | `tests/MusikschulePlanungTest.php` | installiert die App aus ihrer App-Definition und prüft Konflikte, Fortschreibung (auch „alles oder nichts“), Stundenplan und Rechte |
+| Massenaktion mit Kalender | `src/LessonGenerator.php`, `src/LessonAction.php` | wöchentliche Lektionen für einen Zeitraum, begrenzt aufs Semester, ohne Ferien und ohne vorhandene Termine; ein Dialog für drei Stellen (Zeile Kurs, Zeile Semester, über der Tabelle Kurse) |
+| Erfassungsseite | `src/Pages/Praesenz.php`, `resources/views/praesenz.blade.php` | eigene Livewire-Seite statt Formular: je Schüler eine Zeile, lädt vorhandene Datensätze und legt beim Speichern fehlende an bzw. ändert geänderte; Aufruf mit `?lektion=` aus einer Zeilenaktion |
+| Listener (meldet mit Link) | `src/WaitingListHint.php` | `RecordSaved`/`RecordDeleted` auf Anmeldungen und Kurse: Platz frei und Wartende → Hinweis mit Aktion, die per `DataTable::url()` den Kurs öffnet |
+| Optionale Tabelle | `School::hasHolidays()` | die Tabelle Ferien (App 1.1) ist nicht in `requiredTables()`; fehlt sie, bleibt der Schalter „Ferien überspringen“ aus |
+| Tests | `tests/MusikschulePlanungTest.php` | installiert die App aus ihrer App-Definition und prüft Konflikte, Fortschreibung (auch „alles oder nichts“), Stundenplan, Lektionen, Präsenzen, Warteliste und Rechte |
 
-**Rechte:** *Musikschule: Planung: Stundenplan ansehen* und *Semester fortschreiben*; dazu die Datenrechte auf Kurse
-bzw. Anmeldungen. Die Fortschreibung schreibt mit den Rechten der angemeldeten Person; die Konfliktprüfung gilt dabei
+**Rechte:** *Musikschule: Planung: Stundenplan ansehen*, *Semester fortschreiben*, *Lektionen erzeugen* und *Präsenz
+erfassen*; dazu die Datenrechte auf Kurse, Anmeldungen, Lektionen bzw. Präsenzen. Fortschreibung, Lektionen und Präsenzen schreiben mit den Rechten der angemeldeten Person; die Konfliktprüfung gilt dabei
 wie bei jeder anderen Erfassung.
 
 ## 18. API-Versionen und Änderungsprotokoll

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Apps\Definition\AppInstaller;
+use App\Apps\Update\ChangeExecutor;
+use App\Apps\Update\ChangePlanner;
 use App\Models\App;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -21,13 +23,27 @@ use RuntimeException;
  *
  *   php artisan db:seed --class=MusikschuleDemoSeeder
  *
- * Wiederholbar: Ist die App schon da (auch unter anderem Namen), ergänzt der Seeder nur fehlende Daten.
+ * Wiederholbar: Ist die App schon da (auch unter anderem Namen), ergänzt der Seeder nur fehlende Daten. Fehlt ihr die
+ * Tabelle Ferien (App-Stand 1.0), wird sie zuerst aktualisiert – derselbe Weg wie „Aktualisieren …“ auf der Seite Apps,
+ * nur mit den vorgewählten Schritten.
  */
 class MusikschuleDemoSeeder extends Seeder
 {
     use SeedsDemoTables;
 
     public const string FILE = 'seeders/apps/musikschule.saft-app.json';
+
+    /** Ferien und Feiertage der Beispieldaten (Kanton Zürich): Bezeichnung, von, bis */
+    public const array HOLIDAYS = [
+        ['Herbstferien', '2026-10-05', '2026-10-16'],
+        ['Weihnachtsferien', '2026-12-21', '2027-01-01'],
+        ['Sportferien', '2027-02-08', '2027-02-19'],
+        ['Karfreitag und Ostern', '2027-03-26', '2027-03-29'],
+        ['Frühlingsferien', '2027-04-19', '2027-04-30'],
+        ['Auffahrt', '2027-05-06', '2027-05-07'],
+        ['Pfingstmontag', '2027-05-17', '2027-05-17'],
+        ['Sommerferien', '2027-07-12', '2027-08-13'],
+    ];
 
     /** @var array<string, mixed>|null */
     private ?array $definitionCache = null;
@@ -47,12 +63,18 @@ class MusikschuleDemoSeeder extends Seeder
 
     public function run(): void
     {
-        if (! $this->demoInstalled()) {
+        $app = self::installedApp();
+
+        if ($app === null) {
             $this->install();
+        } elseif (! $this->demoInstalled()) {
+            $this->update($app);
         }
 
         if (DynamicRecord::forTableName('musikschule_faecher')->newQuery()->doesntExist()) {
             $this->seedRecords();
+        } elseif (DynamicRecord::forTableName('musikschule_ferien')->newQuery()->doesntExist()) {
+            $this->seedHolidays();
         }
 
         $this->seedDemoManual();
@@ -61,11 +83,44 @@ class MusikschuleDemoSeeder extends Seeder
     /** Aus der App-Definition installieren (wie „App installieren“) und aktivieren. */
     private function install(): void
     {
-        $user = User::query()->get()->first(static fn (User $u): bool => $u->isSuperAdmin())
-            ?? throw new RuntimeException('Kein Super-Admin vorhanden – zuerst „php artisan db:seed“ ausführen.');
-
-        $app = app(AppInstaller::class)->install($this->appDefinition(), null, $user);
+        $app = app(AppInstaller::class)->install($this->appDefinition(), null, $this->superAdmin());
         $app->forceFill(['is_active' => true, 'sort_order' => 560])->save();
+    }
+
+    /**
+     * Ältere App (z. B. 1.0 ohne Ferien) auf den Stand der Datei bringen: Änderungsplan wie bei „Aktualisieren …“, nur
+     * die vorgewählten Schritte (nichts Zerstörendes, keine Konflikte mit eigenen Änderungen), ohne die App umzubenennen.
+     * Vorher wird gesichert.
+     */
+    private function update(App $app): void
+    {
+        $user = $this->superAdmin();
+        $plan = app(ChangePlanner::class)->plan($app, $this->appDefinition(), $user);
+
+        if (! $plan->canApply()) {
+            throw new RuntimeException('Musikschule: Aktualisieren nicht möglich – '.implode(' ', $plan->blockers));
+        }
+
+        // Einen eigenen Namen der App behalten (z. B. „Musikschule“ statt „Musikschule (Demo)“).
+        $selected = array_values(array_filter($plan->preselected(), static fn (string $id): bool => ! collect($plan->step($id)?->changes ?? [])
+            ->contains(static fn (array $c): bool => $plan->step($id)?->kind === 'app' && $c['attr'] === 'name')));
+
+        if ($selected !== []) {
+            app(ChangeExecutor::class)->apply($app, $plan, $selected, false, $user);
+        }
+    }
+
+    private function superAdmin(): User
+    {
+        return User::query()->orderBy('id')->get()->first(static fn (User $u): bool => $u->isSuperAdmin())
+            ?? throw new RuntimeException('Kein Super-Admin vorhanden – zuerst „php artisan db:seed“ ausführen.');
+    }
+
+    private function seedHolidays(): void
+    {
+        foreach (self::HOLIDAYS as [$name, $from, $to]) {
+            DynamicRecord::forTableName('musikschule_ferien')->create(['bezeichnung' => $name, 'von' => $from, 'bis' => $to]);
+        }
     }
 
     /**
@@ -113,6 +168,7 @@ class MusikschuleDemoSeeder extends Seeder
     private function seedRecords(): void
     {
         $insert = fn (string $table, array $data): int => (int) DynamicRecord::forTableName('musikschule_'.$table)->create($data)->getKey();
+        $this->seedHolidays();
 
         // Fächer, Kursarten, Semester, Räume
         $subjects = [];
@@ -242,7 +298,7 @@ class MusikschuleDemoSeeder extends Seeder
         $insert('anmeldungen', ['schueler' => $students['Jan Baumann']['id'], 'kurs' => $courses['Klavier Mia']['id'], 'datum' => '2026-07-01', 'status' => 'warteliste']);
         $insert('anmeldungen', ['schueler' => $students['Julia Brunner']['id'], 'kurs' => $courses['Gesang Lara']['id'], 'datum' => '2026-06-10', 'status' => 'abgemeldet']);
 
-        // Lektionen der ersten zehn Wochen mit Präsenzen (gleichmässig gestreut, ohne Zufall)
+        // Zehn Lektionen je Kurs ab Semesterbeginn, ohne Ferienwochen, mit Präsenzen (gleichmässig gestreut, ohne Zufall)
         $themes = ['Tonleitern', 'Neues Stück', 'Rhythmusübungen', 'Repertoire', 'Technik', 'Vorbereitung Vorspiel', 'Improvisation', 'Notenlesen', 'Wiederholung', 'Ensemblespiel'];
         $offset = ['mo' => 0, 'di' => 1, 'mi' => 2, 'do' => 3, 'fr' => 4, 'sa' => 5];
         $n = 0;
@@ -250,14 +306,21 @@ class MusikschuleDemoSeeder extends Seeder
         foreach ($courses as $name => $course) {
             $day = DynamicRecord::forTableName('musikschule_kurse')->newQuery()->findOrFail($course['id'])->wochentag;
 
-            for ($week = 0; $week < 10; $week++) {
-                $date = date('Y-m-d', strtotime('2026-08-17 +'.($week * 7 + $offset[$day]).' days'));
+            for ($week = 0, $date = '2026-08-17'; $week < 10; $date = date('Y-m-d', strtotime($date.' +7 days'))) {
+                $date = date('Y-m-d', strtotime('+'.$offset[$day].' days', (int) strtotime('monday this week', (int) strtotime($date))));
+
+                if (self::inHolidays($date)) {
+                    continue;
+                }
+
                 $lesson = $insert('lektionen', ['kurs' => $course['id'], 'lehrperson' => $course['teacher'], 'datum' => $date, 'dauer_minuten' => $course['minutes'], 'thema' => $themes[($week + $n) % 10]]);
 
                 foreach ($course['members'] as $j => [$student]) {
                     $k = ($week * 7 + $j * 3 + $n) % 17;
                     $insert('praesenzen', ['lektion' => $lesson, 'schueler' => $students[$student]['id'], 'status' => $k === 0 ? 'unentschuldigt' : ($k < 3 ? 'entschuldigt' : 'anwesend')]);
                 }
+
+                $week++;
             }
 
             $n++;
@@ -357,6 +420,17 @@ class MusikschuleDemoSeeder extends Seeder
                 'raum' => $rooms['Raum 1'], 'semester' => $fs, 'wochentag' => 'mo', 'uhrzeit' => '17:30', 'max_teilnehmer' => 1])]);
         $insert('kurse', ['bezeichnung' => 'Workshop Songwriting', 'fach' => $subjects['Gesang'], 'kursart' => $kinds['Workshop']['id'], 'lehrperson' => $teachers['Keller'],
             'raum' => $rooms['Bandraum'], 'semester' => $fs, 'wochentag' => 'sa', 'uhrzeit' => '13:00', 'max_teilnehmer' => 8]);
+    }
+
+    private static function inHolidays(string $date): bool
+    {
+        foreach (self::HOLIDAYS as [, $from, $to]) {
+            if ($date >= $from && $date <= $to) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** Für Tests und Prüfungen: die App, falls installiert. */

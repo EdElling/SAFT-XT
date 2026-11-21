@@ -6,7 +6,7 @@ Die App **Musikschule** verwaltet den Betrieb einer kleinen Musikschule: Schüle
 Kontaktpersonen, Lehrpersonen, Kurse je Semester, Lektionen mit Präsenzen, Mietinstrumente, Semesterrechnungen mit
 Zahlungen sowie Konzerte und Vorspiele. Alle Beträge sind in Franken (CHF).
 
-Sie ist ein Beispiel für eine mittelgrosse Anwendung: 20 Tabellen, entworfen mit dem **KI-App-Designer** und danach
+Sie ist ein Beispiel für eine mittelgrosse Anwendung: 21 Tabellen, entworfen mit dem **KI-App-Designer** und danach
 von Hand verfeinert. Die Demo wird aus einer App-Definition installiert – genau wie über **Apps › App installieren**.
 
 | Menü | Tabellen |
@@ -14,7 +14,7 @@ von Hand verfeinert. Die Demo wird aus einer App-Definition installiert – gena
 | Unterricht | Kurse, Anmeldungen, Lektionen, Präsenzen, Veranstaltungen, Auftritte |
 | Personen | Schüler, Kontaktpersonen, Schüler-Kontakte, Lehrpersonen, Unterrichtsfächer der Lehrpersonen |
 | Finanzen & Instrumente | Rechnungen, Rechnungspositionen, Zahlungen, Mietinstrumente, Mietverträge |
-| Stammdaten | Fächer, Kursarten (mit Semestertarif), Semester, Räume |
+| Stammdaten | Fächer, Kursarten (mit Semestertarif), Semester, Räume, Ferien |
 
 Die Beispieldaten zeigen ein abgeschlossenes Semester (**HS 2026**) mit Unterricht, Rechnungen und Zahlungen und ein
 begonnenes (**FS 2027**) mit den ersten Kursen und Anmeldungen.
@@ -35,6 +35,10 @@ begonnenes (**FS 2027**) mit den ersten Kursen und Anmeldungen.
 Je Unterrichtstermin eine **Lektion** mit Datum, Dauer und Thema erfassen, darunter die **Präsenzen** (anwesend,
 entschuldigt, unentschuldigt). Der **Stundensatz** kommt von der Lehrperson; SAFT rechnet **Stunden** und **Honorar**.
 Bei der Schülerin oder dem Schüler zeigt die **Präsenzquote**, wie regelmässig sie oder er kommt.
+
+Unter **Stammdaten › Ferien** stehen Schulferien und Feiertage ohne Unterricht (ein einzelner Feiertag: *Von* =
+*Bis*). Mit dem Plugin **Musikschule: Planung** erzeugen Sie die Lektionen eines Semesters auf einmal – ohne diese
+Tage – und erfassen die Präsenzen einer Lektion auf einer Seite.
 
 ### Semesterrechnung
 

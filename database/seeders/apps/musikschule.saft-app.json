@@ -22,7 +22,7 @@
         },
         "icon": "heroicon-o-musical-note",
         "prefix": "musikschule",
-        "version": "1.0",
+        "version": "1.1",
         "interface_version": 1,
         "manual": []
     },
@@ -452,6 +452,124 @@
                 "musikschule_lehrfaecher.fach",
                 "musikschule_kurse.fach"
             ]
+        },
+        {
+            "key": "9455c9f0-9bf0-4e25-81a5-e27e89ce6025",
+            "name": "musikschule_ferien",
+            "label": {
+                "de": "Ferien",
+                "en": "Holidays",
+                "fr": "Vacances",
+                "it": "Vacanze"
+            },
+            "description": {
+                "de": "Schulferien und Feiertage ohne Unterricht (von–bis; ein einzelner Feiertag: von = bis). Beim Erzeugen von Lektionen werden diese Tage übersprungen.",
+                "en": "School holidays and public holidays without lessons (from–to; a single holiday: from = to). These days are skipped when lessons are generated.",
+                "fr": "Vacances scolaires et jours fériés sans cours (du–au ; un seul jour férié : du = au). Ces jours sont sautés lors de la création des leçons.",
+                "it": "Vacanze scolastiche e giorni festivi senza lezioni (dal–al; un solo giorno festivo: dal = al). Questi giorni vengono saltati quando si generano le lezioni."
+            },
+            "icon": "heroicon-o-sun",
+            "is_active": true,
+            "export_enabled": true,
+            "import_enabled": true,
+            "fields": [
+                {
+                    "key": "75ff32c7-1a7a-4b38-ad88-ffbe454f182d",
+                    "name": "bezeichnung",
+                    "label": {
+                        "de": "Bezeichnung",
+                        "en": "Name",
+                        "fr": "Désignation",
+                        "it": "Denominazione"
+                    },
+                    "type": "string",
+                    "options": {
+                        "length": 100
+                    },
+                    "validation_rules": null,
+                    "is_required": true,
+                    "is_unique": false,
+                    "is_searchable": true,
+                    "is_sortable": true,
+                    "show_in_table": true,
+                    "show_in_form": true,
+                    "is_active": true,
+                    "sort_order": 0
+                },
+                {
+                    "key": "ab6a27fe-8848-472b-ae44-28e2a01508d2",
+                    "name": "von",
+                    "label": {
+                        "de": "Von",
+                        "en": "From",
+                        "fr": "Du",
+                        "it": "Dal"
+                    },
+                    "type": "date",
+                    "options": null,
+                    "validation_rules": null,
+                    "is_required": true,
+                    "is_unique": false,
+                    "is_searchable": false,
+                    "is_sortable": true,
+                    "show_in_table": true,
+                    "show_in_form": true,
+                    "is_active": true,
+                    "sort_order": 1
+                },
+                {
+                    "key": "7679c54c-8f6d-4317-9b43-0dab102e15bd",
+                    "name": "bis",
+                    "label": {
+                        "de": "Bis",
+                        "en": "To",
+                        "fr": "Au",
+                        "it": "Al"
+                    },
+                    "type": "date",
+                    "options": null,
+                    "validation_rules": null,
+                    "is_required": true,
+                    "is_unique": false,
+                    "is_searchable": false,
+                    "is_sortable": true,
+                    "show_in_table": true,
+                    "show_in_form": true,
+                    "is_active": true,
+                    "sort_order": 2
+                },
+                {
+                    "key": "198b036e-5ed9-44ba-b7b2-54ac40cdca70",
+                    "name": "bemerkung",
+                    "label": {
+                        "de": "Bemerkung",
+                        "en": "Remark",
+                        "fr": "Remarque",
+                        "it": "Osservazione"
+                    },
+                    "type": "text",
+                    "options": null,
+                    "validation_rules": null,
+                    "is_required": false,
+                    "is_unique": false,
+                    "is_searchable": false,
+                    "is_sortable": true,
+                    "show_in_table": false,
+                    "show_in_form": true,
+                    "is_active": true,
+                    "sort_order": 3
+                }
+            ],
+            "rules": [
+                {
+                    "left": "bis",
+                    "operator": ">=",
+                    "right_kind": "field",
+                    "right_field": "von",
+                    "when_filled": true
+                }
+            ],
+            "details": []
         },
         {
             "key": "ac0f21a5-ae3e-410a-93a8-47f7296d855d",
@@ -5249,6 +5367,26 @@
             }
         },
         {
+            "key": "e0b172d0-9228-41f8-ae24-2fd27cfa1d92",
+            "path": "Musikschule › Stammdaten › Ferien",
+            "parent": "Musikschule › Stammdaten",
+            "label": {
+                "de": "Ferien",
+                "en": "Holidays",
+                "fr": "Vacances",
+                "it": "Vacanze"
+            },
+            "icon": "heroicon-o-sun",
+            "permission_name": "data.musikschule_ferien.view",
+            "sort_order": 50,
+            "is_active": true,
+            "target": {
+                "type": "data",
+                "table": "musikschule_ferien",
+                "columns": []
+            }
+        },
+        {
             "key": "2048cceb-af9a-4aa3-b0ab-149a28c99bfd",
             "path": "Musikschule › Unterricht › Präsenzen",
             "parent": "Musikschule › Unterricht",
@@ -5391,6 +5529,12 @@
                 "data.musikschule_faecher.import",
                 "data.musikschule_faecher.update",
                 "data.musikschule_faecher.view",
+                "data.musikschule_ferien.create",
+                "data.musikschule_ferien.delete",
+                "data.musikschule_ferien.export",
+                "data.musikschule_ferien.import",
+                "data.musikschule_ferien.update",
+                "data.musikschule_ferien.view",
                 "data.musikschule_instrumente.create",
                 "data.musikschule_instrumente.delete",
                 "data.musikschule_instrumente.export",

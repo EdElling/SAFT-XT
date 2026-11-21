@@ -134,7 +134,7 @@ class DemoResetTest extends DynamicDataTestCase
         $this->seed(MusikschuleDemoSeeder::class);
         $seeder = app(MusikschuleDemoSeeder::class);
         $tables = $seeder->demoTableNames();
-        $this->assertSame(20, count($tables));
+        $this->assertSame(21, count($tables));
         $this->assertLessThan(array_search('musikschule_rechnungen', $tables, true), array_search('musikschule_kontaktpersonen', $tables, true), 'Verknüpfungsziele zuerst.');
         $before = $this->counts($tables);
         DynamicRecord::forTableName('musikschule_faecher')->newQuery()->where('bezeichnung', 'Violine')->sole()->update(['bezeichnung' => 'Geige']);

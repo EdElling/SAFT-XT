@@ -6,7 +6,7 @@ L'app **Scuola di musica** gestisce una piccola scuola di musica: allievi e le l
 per semestre, lezioni con presenze, strumenti a noleggio, fatture semestrali con pagamenti, concerti e saggi. Tutti
 gli importi sono in franchi svizzeri (CHF).
 
-È un esempio di applicazione di medie dimensioni: 20 tabelle, progettate con il **designer di app IA** e poi rifinite
+È un esempio di applicazione di medie dimensioni: 21 tabelle, progettate con il **designer di app IA** e poi rifinite
 a mano. La demo viene installata da una definizione di app – esattamente come tramite **App › Installa app**.
 
 | Menu | Tabelle |
@@ -14,7 +14,7 @@ a mano. La demo viene installata da una definizione di app – esattamente come 
 | Insegnamento | Corsi, Iscrizioni, Lezioni, Presenze, Eventi, Esibizioni |
 | Persone | Allievi, Persone di contatto, Contatti allievi, Docenti, Materie dei docenti |
 | Finanze & strumenti | Fatture, Posizioni fattura, Pagamenti, Strumenti a noleggio, Contratti di noleggio |
-| Dati di base | Materie, Tipi di corso (con tariffa semestrale), Semestri, Aule |
+| Dati di base | Materie, Tipi di corso (con tariffa semestrale), Semestri, Aule, Vacanze |
 
 I dati di esempio mostrano un semestre concluso (**HS 2026**) con lezioni, fatture e pagamenti e uno appena iniziato
 (**FS 2027**) con i primi corsi e iscrizioni.
@@ -35,6 +35,10 @@ I dati di esempio mostrano un semestre concluso (**HS 2026**) con lezioni, fattu
 Per ogni lezione registrare data, durata e tema e, sotto, le **presenze** (presente, giustificato, ingiustificato). La
 **tariffa oraria** viene dal docente; SAFT calcola **ore** e **onorario**. Nell'allievo, il **tasso di presenza**
 mostra la sua regolarità.
+
+**Dati di base › Vacanze** elenca vacanze scolastiche e giorni festivi senza lezioni (un solo giorno festivo: *Dal* =
+*Al*). Con il plugin **Scuola di musica: pianificazione** generate in una volta le lezioni di un semestre – senza questi
+giorni – e registrate le presenze di una lezione su una sola pagina.
 
 ### Fattura semestrale
 

@@ -126,7 +126,7 @@ und Beispiel-Auswertungen – dieselben Daten wie die externen Demos:
 php artisan db:seed --class=LagerDemoSeeder       # „Lager (Demo)“: Lieferanten, Artikel, Lagerorte, Bestände, Bewegungen …
 php artisan db:seed --class=VertriebDemoSeeder    # „Vertrieb (Demo)“: Kunden, Events, Anfragen, Bestellungen – nutzt die Lager-Artikel
 php artisan db:seed --class=GitarrenshopDemoSeeder  # „Gitarrenshop (Demo)“: Ein- und Ausgaben mit MWST, Belege, Ratenzahlung, Artikelbilder
-php artisan db:seed --class=MusikschuleDemoSeeder   # „Musikschule (Demo)“: 20 Tabellen aus einer App-Definition (KI-App-Designer), Kurse, Lektionen, Rechnungen
+php artisan db:seed --class=MusikschuleDemoSeeder   # „Musikschule (Demo)“: 21 Tabellen aus einer App-Definition (KI-App-Designer), Kurse, Lektionen, Rechnungen
 php artisan db:seed --class=ForschungDemoSeeder   # „Forschung (Demo)“: Organisationen, Personen, Projekte, Publikationen …
 ```
 
