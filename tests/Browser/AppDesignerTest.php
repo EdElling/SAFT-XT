@@ -75,7 +75,14 @@ class AppDesignerTest extends DuskTestCase
                 ->assertSeeIn('[data-designer-app-name]', 'Kurse')
                 ->assertSeeIn('[data-designer-counts]', '2 Tabellen')
                 ->assertSeeIn('[data-designer-table="kurse_kurse"]', 'sum(kurse_anmeldungen.betrag)')
-                ->waitFor('[data-designer-preview] .saft-data-model svg', 20);
+                ->waitFor('[data-designer-preview] .saft-data-model svg', 20)
+                ->assertDontSeeIn('[data-designer-preview] .saft-data-model', 'Räume');
+
+            // Geänderter Entwurf (wie nach „Anpassen“): Das Diagramm wird neu gezeichnet.
+            $this->addRooms();
+            $browser->click('[data-designer-draft="'.$this->draft->id.'"]')
+                ->waitForTextIn('[data-designer-preview] .saft-data-model', 'Räume', 20)
+                ->assertSeeIn('[data-designer-counts]', '3 Tabellen');
 
             $this->clickVisibleButton($browser, 'App erzeugen');
             $browser->waitFor('.fi-modal-window input[id$="prefix"]', 15)
@@ -87,7 +94,19 @@ class AppDesignerTest extends DuskTestCase
 
         $app = App::query()->where('prefix', 'like', 'kurse%')->sole();
         $this->assertTrue($app->is_active);
-        $this->assertSame(['kurse_anmeldungen', 'kurse_kurse'], CustomTable::query()->where('app_id', $app->id)->orderBy('name')->pluck('name')->all());
+        $this->assertSame(['kurse_anmeldungen', 'kurse_kurse', 'kurse_raeume'], CustomTable::query()->where('app_id', $app->id)->orderBy('name')->pluck('name')->all());
         $this->assertSame(AppDraft::CREATED, $this->draft->refresh()->status);
+    }
+
+    /** Entwurf um eine Tabelle ergänzen, wie es eine Runde „Anpassen“ täte. */
+    private function addRooms(): void
+    {
+        $proposal = $this->draft->refresh()->proposal;
+        $proposal['tables'][] = ['name' => 'kurse_raeume', 'label' => ['de' => 'Räume', 'en' => 'Rooms', 'fr' => 'Salles', 'it' => 'Aule'], 'description' => ['de' => '', 'en' => '', 'fr' => '', 'it' => ''], 'icon' => 'home', 'rules' => [], 'fields' => [
+            [...$proposal['tables'][0]['fields'][0], 'name' => 'name'],
+        ]];
+        $compiled = app(DraftCompiler::class)->compile($proposal);
+        $this->assertSame([], $compiled['problems']);
+        $this->draft->forceFill(['proposal' => $proposal, 'definition' => $compiled['definition']])->save();
     }
 }

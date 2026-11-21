@@ -101,7 +101,10 @@
                     @endif
 
                     @if ($diagram !== null)
-                        @include('filament.partials.data-model-diagram', $diagram)
+                        {{-- Das Diagramm ignoriert Livewire (wire:ignore); ein neuer Schlüssel je Datenmodell ersetzt es nach „Anpassen“. --}}
+                        <div wire:key="designer-diagram-{{ md5($diagram['expanded']) }}" data-designer-diagram="{{ md5($diagram['expanded']) }}">
+                            @include('filament.partials.data-model-diagram', $diagram)
+                        </div>
                     @endif
 
                     @foreach ($tables as $table)

@@ -263,4 +263,19 @@ class AppDesignerTest extends DynamicDataTestCase
         $this->get(AppDesignerPage::getUrl())->assertForbidden();
         Livewire::test(ListApps::class)->assertActionHidden('designApp');
     }
+
+    public function test_the_diagram_is_replaced_when_the_draft_changes(): void
+    {
+        $more = $this->courses();
+        $more['tables'][] = ['name' => 'kurse_raeume', 'label' => $this->t('Räume'), 'description' => $this->t(''), 'icon' => 'home', 'rules' => [], 'fields' => [$this->field('name', 'string')]];
+        $this->fake->push($this->courses())->push($more);
+
+        $key = static fn (string $html): string => (string) preg_replace('/.*data-designer-diagram="([0-9a-f]+)".*/s', '$1', $html);
+        $page = Livewire::test(AppDesignerPage::class)->set('prompt', 'Kurse')->call('send');
+        $before = $key($page->html());
+        $page->set('prompt', 'Räume ergänzen')->call('send');
+
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{32}$/', $before);
+        $this->assertNotSame($before, $key($page->html()), 'Neuer Schlüssel: Livewire ersetzt das Diagramm.');
+    }
 }
