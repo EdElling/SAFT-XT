@@ -207,7 +207,8 @@ class QrBillTest extends DynamicDataTestCase
             ->call('save')
             ->assertHasNoErrors();
 
-        $this->assertSame(['strasse' => 'Seestrasse 1', 'plz' => '6300', 'ort' => 'Zug', 'qr_iban' => 'CH44 3199 9123 0008 8901 2'], array_intersect_key(
+        // MySQL ordnet JSON-Schlüssel um: nur Inhalt vergleichen.
+        $this->assertEquals(['strasse' => 'Seestrasse 1', 'plz' => '6300', 'ort' => 'Zug', 'qr_iban' => 'CH44 3199 9123 0008 8901 2'], array_intersect_key(
             (array) DocumentLetterhead::query()->whereNull('app_id')->sole()->sender, array_flip(['strasse', 'plz', 'ort', 'qr_iban']),
         ));
     }
