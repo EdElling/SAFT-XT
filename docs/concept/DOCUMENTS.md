@@ -166,3 +166,5 @@ Jede Etappe ist für sich auslieferbar. D1 ist ohne KI vollständig nutzbar.
   Vorlagen wie die anderen Objekte (Dreiwegvergleich, Konflikte); beim Entfernen bleiben erzeugte Dokumente. Die
   Musikschule (1.2) bringt die Semesterrechnung in der Definition mit, dazu das Dateifeld „Dokumente“ der Rechnungen
   und das Recht *Dokumente: erzeugen* für ihre Rolle.
+- **PDF/A-Prüfung (22.11.2026):** veraPDF bestätigt PDF/A-3b für die erzeugte Rechnung des Gitarrenshops und die
+  Semesterrechnung der Musikschule.
