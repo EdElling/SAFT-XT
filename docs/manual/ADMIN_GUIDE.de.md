@@ -1329,7 +1329,7 @@ KI-Anbieter und den eingeschalteten KI-Assistenten (siehe [Kapitel 7](#7-globale
 **Exportieren:** lädt die App als **App-Definition** herunter (Datei `<präfix>-<version>.saft-app.json`, Format
 `saft-app/1`; Recht *Apps: exportieren*). Immer dabei sind die Tabellen mit Feldern, Regeln und Details, die
 Tabellenverknüpfungen und die Menüs der App; wählbar sind Auswertungen (freigegebene und eigene), Rollen mit Rechten,
-geplante Aufgaben und das Handbuch. Nie enthalten sind Datensätze, Zugangsdaten von Datenbankverbindungen (angebundene
+geplante Aufgaben, Dokumentvorlagen und das Handbuch. Nie enthalten sind Datensätze, das Briefpapier, Zugangsdaten von Datenbankverbindungen (angebundene
 Tabellen nur als Verweis), Systemmenüs, Systemrollen und System-Aufgaben. Jedes Objekt trägt seinen stabilen Schlüssel,
 damit sich eine installierte App später aktualisieren lässt. SAFT prüft die Datei vor dem Herunterladen auf
 Stimmigkeit; der Export steht im Änderungsprotokoll. **Schnittstellen:** Freigaben von Tabellen und Feldern und die
@@ -1345,7 +1345,8 @@ eine gleichnamige Tabelle schon da ist –, Hinweise (gelb) und das Diagramm der
   installierte App wird abgelehnt.
 - **Kopie (neuer Name und Präfix)** – z. B. eine Testkopie auf demselben System: Die Tabellen bekommen das neue Präfix
   (`lager_artikel` → `lager2_artikel`), ebenso alle Verweise darauf (Verknüpfungen, Summen in Formeln, Auswertungen,
-  Menüs, Datenrechte der Rollen); alle Schlüssel sind neu.
+  Menüs, Datenrechte der Rollen, Grundtabelle und Abschnitte wie `{{#lager_positionen}}` in Dokumentvorlagen); alle
+  Schlüssel sind neu.
 
 Die App entsteht **deaktiviert** – prüfen, dann aktivieren. Ist ein Rollenname schon vergeben, erhält die Rolle das
 Präfix der App (z. B. `vertrieb-lager2`); Auswertungen gehören der installierenden Person; Dateifelder kommen ohne
@@ -1402,13 +1403,15 @@ Die **Vorschau** nennt Versionen, Hinderungsgründe (z. B. Datei einer anderen A
 Fehlt ein Feld oder eine Tabelle mit Daten im Paket, wird es zuerst nur **deaktiviert** (Daten bleiben); Löschen ist ein
 eigener Schritt. Ohne Daten wird direkt gelöscht. **Nicht ausführbar** (mit Grund) sind Änderungen, die der
 Table-Designer ablehnen würde – etwa eine Typänderung, bei der Werte verloren gingen (z. B. „1 Wert ist länger als 30
-Zeichen“) – und Änderungen an Schnittstellen, die andere Apps nutzen. Ebenso aktualisiert werden **Tabellenverknüpfungen, Auswertungen, Menüs, Rollen, Aufgaben, Handbuch und angebundene
+Zeichen“) – und Änderungen an Schnittstellen, die andere Apps nutzen. Ebenso aktualisiert werden **Tabellenverknüpfungen, Auswertungen, Menüs, Rollen, Aufgaben, Dokumentvorlagen, Handbuch und angebundene
 Tabellen** – je Eigenschaft (z. B. „Auswertung …: Name A → B“, „Menü …: Gruppe A → B“, „Rolle …: Rechte: + …, − …“):
 
 - **Rollen:** Rechte und ausgeblendete Menüs ändern sich als Differenz; Rechte ausserhalb der App bleiben. Eine neue Rolle
   mit schon vergebenem Namen erhält das Präfix der App.
 - **Auswertungen:** neue gehören der aktualisierenden Person; persönliche Auswertungen anderer bleiben unberührt.
 - **Menüs:** Die Gruppe wird über ihren Schlüssel erkannt – eine umbenannte Gruppe verschiebt ihre Einträge nicht.
+- **Dokumentvorlagen:** Inhalt, Empfänger, Dateiname, Ablage und Aktiv je Eigenschaft. Eine im Paket entfernte Vorlage
+  wird gelöscht; schon erzeugte Dokumente bleiben bei ihren Datensätzen (Hinweis mit Anzahl).
 - **Nicht ausführbar** ist das Entfernen einer Tabellenverknüpfung, die eine bleibende Auswertung nutzt, oder einer
   Menügruppe mit bleibenden Einträgen, ebenso eine Aufgabe unbekannter Art (z. B. aus einem fehlenden Plugin) oder
   ohne ihre Tabelle bzw. Verbindung.
@@ -1421,7 +1424,7 @@ gespeichert.
 
 **Ausführen:** Vorher wird eine Sicherung angelegt; dann laufen die gewählten Schritte über die Operationen des
 Table-Designers mit allen Schutzregeln (angebundene Tabellen, neue Tabellen und Felder, Änderungen, Freigaben, Tabellenverknüpfungen, Auswertungen, Menüs,
-Rollen, Aufgaben, Handbuch, zuletzt Entfernen, Deaktivieren und Löschen). Danach ist das Paket der neue Ausgangsstand und seine Version die Version der App. Scheitert ein Schritt,
+Rollen, Aufgaben, Dokumentvorlagen, Handbuch, zuletzt Entfernen, Deaktivieren und Löschen). Danach ist das Paket der neue Ausgangsstand und seine Version die Version der App. Scheitert ein Schritt,
 bricht das Aktualisieren ab und meldet, wie viele Schritte schon ausgeführt sind und wo die Sicherung liegt; dieselbe
 Datei nochmals gewählt zeigt nur noch den Rest. Aktualisieren steht im Änderungsprotokoll.
 
@@ -1608,6 +1611,15 @@ Beim **Speichern** prüft SAFT die Vorlage:
   aussen werden nicht geladen; Skripte, Frames und externe Stylesheets entfernt SAFT.
 
 Platzhalter führen keinen Code aus; eine Vorlage kann Daten nur anzeigen, nicht verändern.
+
+### Mit der App weitergeben
+
+Dokumentvorlagen gehören zur **App-Definition** (Teil „Dokumentvorlagen“ beim Exportieren, vorgewählt; siehe
+[Apps](#15-apps-fachanwendungen)): Sie gehen mit der App auf ein anderes System und werden beim Aktualisieren
+nachgeführt. Mit einer Kopie der App erhalten Grundtabelle und Abschnitte (`{{#…}}`) das neue Präfix. Das
+**Briefpapier** kommt nicht mit – es gehört zum System, auf dem die App läuft. Passt eine Vorlage nach dem
+Installieren nicht mehr (z. B. ein Feld fehlt), wird sie trotzdem angelegt; die Meldung nach dem Installieren bzw.
+Aktualisieren nennt die Fehler, und die Vorlage lässt sich erst nach dem Anpassen wieder speichern.
 
 ## Anhang A – Rechte im Überblick
 

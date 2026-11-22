@@ -1388,8 +1388,8 @@ Il nécessite un fournisseur d’IA configuré et l’assistant IA activé (voir
 
 **Exporter :** télécharge l’app sous forme de **définition d’app** (fichier `<préfixe>-<version>.saft-app.json`, format
 `saft-app/1` ; droit *Apps : exporter*). Toujours inclus : les tables avec champs, règles et détails, les liaisons de
-tables et les menus de l’app ; au choix : rapports (partagés et propres), rôles avec droits, tâches planifiées et
-manuel. Jamais inclus : enregistrements, identifiants des connexions de base de données (tables connectées seulement
+tables et les menus de l’app ; au choix : rapports (partagés et propres), rôles avec droits, tâches planifiées, modèles de
+documents et manuel. Jamais inclus : enregistrements, papier à lettres, identifiants des connexions de base de données (tables connectées seulement
 comme référence), menus, rôles et tâches système. Chaque objet porte sa clé stable afin qu’une app installée puisse être
 mise à jour plus tard. SAFT vérifie la cohérence du fichier avant le téléchargement ; l’export figure dans le journal des modifications.
 **Interfaces :** les partages de tables et de champs et la version de l’interface sont inclus. Ce que l’app utilise
@@ -1405,7 +1405,8 @@ même nom existe déjà –, remarques (en jaune) et le diagramme des tables. L�
   une app déjà installée est refusée.
 - **copie (nouveau nom et préfixe)** – p. ex. une copie de test sur le même système : les tables reçoivent le nouveau
   préfixe (`lager_artikel` → `lager2_artikel`), de même que toutes les références à elles (liaisons, sommes dans les
-  formules, rapports, menus, droits sur les données des rôles) ; toutes les clés sont nouvelles.
+  formules, rapports, menus, droits sur les données des rôles, table de base et sections comme `{{#lager_positionen}}`
+  dans les modèles de documents) ; toutes les clés sont nouvelles.
 
 L’app est créée **désactivée** – la vérifier, puis l’activer. Si un nom de rôle est déjà pris, le rôle reçoit le préfixe
 de l’app (p. ex. `vertrieb-lager2`) ; les rapports appartiennent à la personne qui installe ; les champs de fichiers
@@ -1462,7 +1463,7 @@ remarques (p. ex. pas de version plus récente) et liste les étapes avec leur c
 Si un champ ou une table avec données manque dans le paquet, il est d’abord seulement **désactivé** (les données
 restent) ; la suppression est une étape à part. Sans données, il est supprimé directement. **Impossibles** (avec motif)
 sont les modifications que le Concepteur de tables refuserait – p. ex. un changement de type qui perdrait des valeurs
-(p. ex. « 1 valeur dépasse 30 caractères ») – et les modifications d’interfaces utilisées par d’autres apps. Sont aussi mis à jour les **liaisons de tables, rapports, menus, rôles, tâches, le manuel et les tables connectées** –
+(p. ex. « 1 valeur dépasse 30 caractères ») – et les modifications d’interfaces utilisées par d’autres apps. Sont aussi mis à jour les **liaisons de tables, rapports, menus, rôles, tâches, modèles de documents, le manuel et les tables connectées** –
 par propriété (p. ex. « Rapport … : nom A → B », « Menu … : groupe A → B », « Rôle … : droits : + …, − … ») :
 
 - **Rôles :** les droits et menus masqués changent par différence ; les droits hors de l’app restent. Un nouveau rôle
@@ -1470,6 +1471,9 @@ par propriété (p. ex. « Rapport … : nom A → B », « Menu … : groupe A 
 - **Rapports :** les nouveaux appartiennent à la personne qui met à jour ; les rapports personnels d’autres restent
   intacts.
 - **Menus :** le groupe est reconnu à sa clé – un groupe renommé ne déplace pas ses entrées.
+- **Modèles de documents :** contenu, destinataire, nom de fichier, classement et actif, propriété par propriété. Un
+  modèle retiré du paquet est supprimé ; les documents déjà générés restent auprès de leurs enregistrements (remarque
+  avec le nombre).
 - **Impossible :** retirer une liaison de tables qu’utilise un rapport qui reste ou un groupe de menu avec des entrées
   qui restent, de même qu’une tâche de type inconnu (p. ex. d’un plugin manquant) ou sans sa table ou connexion.
 - **Tables connectées :** seulement le côté SAFT (libellés, propriétés des colonnes, droits d’écriture, export) ; la
@@ -1481,7 +1485,7 @@ n’est enregistré.
 
 **Exécution :** une sauvegarde est faite d’abord ; puis les étapes choisies passent par les opérations du Concepteur de
 tables avec toutes les règles de protection (tables connectées, nouvelles tables et champs, modifications, partages, liaisons de tables, rapports, menus, rôles,
-tâches, manuel, enfin retrait, désactivation et suppression). Ensuite le paquet est le nouvel état de référence et sa version la version de l’app. Si une étape échoue,
+tâches, modèles de documents, manuel, enfin retrait, désactivation et suppression). Ensuite le paquet est le nouvel état de référence et sa version la version de l’app. Si une étape échoue,
 la mise à jour s’arrête et indique combien d’étapes ont déjà été exécutées et où se trouve la sauvegarde ; choisir à
 nouveau le même fichier ne montre que le reste. La mise à jour figure dans le journal des modifications.
 
@@ -1674,6 +1678,15 @@ justificatif sans client), c’est indiqué au-dessus de l’aperçu.
   les images externes ne sont pas chargées ; SAFT supprime scripts, cadres et feuilles de style externes.
 
 Les espaces réservés n’exécutent pas de code ; un modèle peut seulement afficher des données, pas les modifier.
+
+### Transmettre avec l’app
+
+Les modèles de documents font partie de la **définition de l’app** (partie « Modèles de documents » à l’export,
+présélectionnée ; voir [Apps](#15-apps-applications-métier)) : ils accompagnent l’app sur un autre système et sont
+mis à jour lors de la mise à jour. Dans une copie de l’app, la table de base et les sections (`{{#…}}`) reçoivent le
+nouveau préfixe. Le **papier à lettres** n’est pas inclus – il appartient au système sur lequel l’app tourne. Si un
+modèle ne convient plus après l’installation (p. ex. un champ manque), il est quand même créé ; le message après
+l’installation ou la mise à jour nomme les erreurs, et le modèle ne peut être enregistré à nouveau qu’une fois adapté.
 
 ## Annexe A – Aperçu des droits
 

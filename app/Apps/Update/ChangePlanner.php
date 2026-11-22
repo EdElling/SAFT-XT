@@ -14,8 +14,10 @@ use App\Filament\Resources\Reports\ReportResource;
 use App\Models\App;
 use App\Models\AppBaseline;
 use App\Models\CustomTable;
+use App\Models\DocumentTemplate;
 use App\Models\DynamicRecord;
 use App\Models\Menu;
+use App\Models\RecordFile;
 use App\Models\Report;
 use App\Models\ReportLink;
 use App\Models\Role;
@@ -50,6 +52,7 @@ final class ChangePlanner
         'menus' => ['menu', ['label', 'icon', 'parent', 'permission_name', 'sort_order', 'is_active', 'target']],
         'roles' => ['role', ['name', 'permissions', 'hidden_menus']],
         'tasks' => ['task', ['name', 'type', 'parameters', 'frequency', 'interval_hours', 'at_time', 'weekday', 'is_active']],
+        'documents' => ['document', ['name', 'table', 'recipient', 'body', 'file_name', 'language_field', 'file_field', 'is_active', 'sort_order']],
     ];
 
     public function __construct(
@@ -467,7 +470,7 @@ final class ChangePlanner
         $steps = [];
 
         foreach (self::OBJECTS as $list => [$kind, $attrs]) {
-            $optional = in_array($list, ['reports', 'roles', 'tasks'], true);
+            $optional = in_array($list, ['reports', 'roles', 'tasks', 'documents'], true);
 
             if ($optional && ! in_array($list, $parts, true) && (array) ($target[$list] ?? []) === []) {
                 continue;
@@ -675,6 +678,14 @@ final class ChangePlanner
 
             return [[], $staying->isEmpty() ? null
                 : __('apps.update.notes.menu_children', ['menus' => $staying->map(static fn (Menu $m): string => References::defaultLabel($m->getTranslations('label')))->implode(', ')])];
+        }
+
+        if ($kind === 'document') {
+            // Erzeugte Dokumente bleiben; sie verlieren nur den Verweis auf die Vorlage (Prüfwert bleibt).
+            $template = DocumentTemplate::query()->where('uuid', $key)->first();
+            $files = $template === null ? 0 : RecordFile::query()->where('document_template_id', $template->id)->count();
+
+            return [$files > 0 ? [trans_choice('apps.update.notes.document_files', $files, ['count' => $files])] : [], null];
         }
 
         if ($kind === 'report') {

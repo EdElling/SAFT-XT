@@ -7,8 +7,10 @@ namespace Database\Seeders;
 use App\Apps\Definition\AppInstaller;
 use App\Apps\Update\ChangeExecutor;
 use App\Apps\Update\ChangePlanner;
+use App\Documents\Templates\TemplateFields;
 use App\Models\App;
 use App\Models\CustomTable;
+use App\Models\DocumentTemplate;
 use App\Models\DynamicRecord;
 use App\Models\User;
 use Database\Seeders\Concerns\SeedsDemoTables;
@@ -32,7 +34,7 @@ class MusikschuleDemoSeeder extends Seeder
 {
     use SeedsDemoTables;
 
-    /** Schlüssel der Demo-Vorlage „Semesterrechnung“ (B-124). */
+    /** Schlüssel der Demo-Vorlage „Semesterrechnung“ (B-124; aus der App-Definition, Teil „documents“). */
     public const string INVOICE_TEMPLATE = '8b6e2d94-1f3a-4c7e-a05d-6e9c3b7f2a81';
 
     public const string FILE = 'seeders/apps/musikschule.saft-app.json';
@@ -71,7 +73,8 @@ class MusikschuleDemoSeeder extends Seeder
 
         if ($app === null) {
             $this->install();
-        } elseif (! $this->demoInstalled()) {
+        } elseif (! $this->demoInstalled() || version_compare((string) $app->version, (string) $this->appDefinition()['app']['version'], '<')) {
+            // Ältere App (fehlende Tabellen oder ältere Version, z. B. 1.1 ohne Dokumentvorlage) aktualisieren.
             $this->update($app);
         }
 
@@ -89,12 +92,6 @@ class MusikschuleDemoSeeder extends Seeder
         }
 
         $this->seedDemoManual();
-        $this->demoDocumentTemplate(
-            self::INVOICE_TEMPLATE, 'musikschule_rechnungen', 'Semesterrechnung', 'musikschule-semesterrechnung',
-            "{{#kontaktperson}}{{vorname}} {{nachname}}\n{{strasse}}\n{{plz}} {{ort}}{{/kontaktperson}}\n"
-            ."{{^kontaktperson}}{{schueler.vorname}} {{schueler.nachname}}\n{{schueler.strasse}}\n{{schueler.plz}} {{schueler.ort}}{{/kontaktperson}}",
-            'Semesterrechnung-{{rechnungsnummer}}',
-        );
     }
 
     /** @return list<string> Demo-Tabellen ohne Datensätze */
@@ -137,6 +134,12 @@ class MusikschuleDemoSeeder extends Seeder
 
         if ($selected !== []) {
             app(ChangeExecutor::class)->apply($app, $plan, $selected, false, $user);
+        }
+
+        // Von 1.1 auf 1.2: Die Semesterrechnung legte dieser Seeder schon an (ohne Ablage). Im installierten Stand 1.1
+        // fehlt sie, der Änderungsplan sieht die neue Ablage deshalb als Konflikt – bei der Demo übernehmen.
+        if (TemplateFields::field(CustomTable::query()->where('name', 'musikschule_rechnungen')->firstOrFail(), 'dokumente') !== null) {
+            DocumentTemplate::query()->where('uuid', self::INVOICE_TEMPLATE)->whereNull('file_field')->update(['file_field' => 'dokumente']);
         }
     }
 

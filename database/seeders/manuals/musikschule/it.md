@@ -53,6 +53,9 @@ Copiando una fattura (p. es. per il semestre successivo) vengono riprese le posi
 
 Create la fattura come PDF sulla carta intestata nella riga della fattura con **«Crea documento»** (modello
 «Semesterrechnung») – indirizzata alla persona di contatto, altrimenti all’allievo.
+**«Depositare nel campo ‹Documenti›»** è preselezionato: il PDF viene aggiunto, protetto da scrittura, al campo
+**Documenti** della fattura (ogni creazione come nuova versione). Depositare richiede il diritto di modificare le
+fatture; il ruolo *Musikschule* lo ha.
 
 ### Noleggiare strumenti
 

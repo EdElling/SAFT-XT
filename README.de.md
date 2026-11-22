@@ -88,7 +88,8 @@ PostgreSQL, MySQL oder MariaDB.
   Installation und je App; PDF/A-3b für die Archivierung
 - **Dokumentvorlagen:** HTML mit Platzhaltern je App und Grundtabelle (Felder, Verknüpfungen, Kind-Tabellen als
   Positionen, Formatierungen), mit Code-Editor, Feldauswahl, Live-Vorschau als PDF und Prüfung; Grundgerüste Brief,
-  Rechnung und Datenblatt; Demo-Rechnungen im Gitarrenshop und in der Musikschule
+  Rechnung und Datenblatt; Demo-Rechnungen im Gitarrenshop und in der Musikschule; gehen mit der App-Definition mit
+  (Export, Installieren auch als Kopie, Aktualisieren), das Briefpapier nicht
 - **Dokumente erstellen:** Symbol in der Zeile eines Datensatzes – PDF herunterladen und schreibgeschützt als neue
   Fassung im Dateifeld ablegen, mit Prüfwert (SHA-256) im Änderungsprotokoll
 - **Globale Einstellungen:** Anzeigename und Farbschema der Anwendung (Branding); Anbindung externer KI-Modelle für die

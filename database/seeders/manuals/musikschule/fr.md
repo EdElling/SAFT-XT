@@ -52,6 +52,9 @@ En copiant une facture (p. ex. pour le semestre suivant), ses positions sont rep
 
 Créez la facture en PDF sur le papier à lettres dans la ligne de la facture avec **« Créer un document »** (modèle
 « Semesterrechnung ») – adressée à la personne de contact, sinon à l’élève.
+**« Déposer dans le champ ‹ Documents › »** est présélectionné : le PDF est ajouté, protégé en écriture, au champ
+**Documents** de la facture (chaque création comme nouvelle version). Déposer requiert le droit de modifier les
+factures ; le rôle *Musikschule* l’a.
 
 ### Louer des instruments
 

@@ -14,6 +14,7 @@ use App\Models\AppManual;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DatabaseConnection;
+use App\Models\DocumentTemplate;
 use App\Models\Menu;
 use App\Models\Report;
 use App\Models\ReportLink;
@@ -42,7 +43,7 @@ final readonly class AppDefinition
     public const string FORMAT = 'saft-app/1';
 
     /** Was neben Tabellen und Menüs (immer dabei) mitkommen kann. */
-    public const array PARTS = ['reports', 'roles', 'tasks', 'manual'];
+    public const array PARTS = ['reports', 'roles', 'tasks', 'documents', 'manual'];
 
     public function __construct(
         private DefinitionParts $config,
@@ -111,6 +112,11 @@ final readonly class AppDefinition
                         'is_active' => (bool) $task->is_active,
                     ])->all()
                 : [],
+            // Dokumentvorlagen (B-124, D1d): ohne Briefpapier – das ist das CI der jeweiligen Installation.
+            'documents' => in_array('documents', $parts, true)
+                ? DocumentTemplate::query()->where('app_id', $app->id)->with('customTable')->orderBy('sort_order')->orderBy('name')->get()
+                    ->map(static fn (DocumentTemplate $template): array => self::documentTemplate($template))->all()
+                : [],
         ];
 
         // Ausgeblendete Menüeinträge nur aus dieser App: Rollen tragen aus der Zeit vor den Apps oft Einstellungen für
@@ -129,6 +135,27 @@ final readonly class AppDefinition
     }
 
     /** Felder einer angebundenen Tabelle, wie sie der Table-Connector anlegt (ohne interne IDs). */
+    /**
+     * Dokumentvorlage in der Definition; die Grundtabelle steht als Name.
+     *
+     * @return array<string, mixed>
+     */
+    public static function documentTemplate(DocumentTemplate $template): array
+    {
+        return [
+            'key' => (string) $template->uuid,
+            'name' => $template->name,
+            'table' => (string) $template->customTable?->name,
+            'recipient' => $template->recipient,
+            'body' => $template->body,
+            'file_name' => $template->file_name,
+            'language_field' => $template->language_field,
+            'file_field' => $template->file_field,
+            'is_active' => (bool) $template->is_active,
+            'sort_order' => (int) $template->sort_order,
+        ];
+    }
+
     private const array EXTERNAL_FIELD_KEYS = ['type', 'external_type', 'is_read_only', 'is_generated', 'is_required', 'is_unique', 'is_searchable', 'is_sortable', 'show_in_table', 'show_in_form', 'is_active', 'sort_order'];
 
     /**

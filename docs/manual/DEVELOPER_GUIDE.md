@@ -785,10 +785,12 @@ tools; the database remains authoritative, the definition is generated anew with
 | `tables` | tables in the input format of the table designer like `saft-schema/1` (fields with options and field rules, table rules, details), plus `key` per table and field |
 | `external_tables` | connected tables only as a reference (name, label, name of the connection – without credentials) |
 | `report_links`, `reports`, `menus`, `roles`, `tasks` | as in the configuration package, each with `key`; menus with path (“Lager › Artikel”), parents before children |
+| `documents` | document templates (part `documents`): `key`, `name`, `table` (base table), `recipient`, `body`, `file_name`, `language_field`, `file_field` (field names of the base table), `is_active`, `sort_order`. Sections `{{#table}}` name child tables by name; a copy with a new prefix renames them. The letterhead is not included |
+| `parts` | the selected parts: `reports`, `roles`, `tasks`, `documents`, `manual` (`AppDefinition::PARTS`) |
 
 Every object carries its **stable key** (`key`, UUID), which does not change on renaming. References are given as names
-(“bestellungen.kunde_id”, menu path) so that the file stays readable. Not included are records, credentials, system
-menus, system roles and system tasks. `App\Apps\Definition\AppDefinitionValidator::errors()` checks a definition
+(“bestellungen.kunde_id”, menu path) so that the file stays readable. Not included are records, credentials, the letterhead,
+system menus, system roles and system tasks. `App\Apps\Definition\AppDefinitionValidator::errors()` checks a definition
 (required data, keys, field types, references within the app) and reports errors with a path, e.g.
 `tables[2].fields[5].type: Unknown field type “foo”.`
 

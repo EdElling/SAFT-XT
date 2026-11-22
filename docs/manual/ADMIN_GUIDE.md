@@ -1287,8 +1287,8 @@ assistant switched on (see [chapter 7](#7-global-settings)).
 
 **Export:** downloads the app as an **app definition** (file `<prefix>-<version>.saft-app.json`, format `saft-app/1`;
 permission *Apps: export*). Always included are the tables with fields, rules and details, the table links and the
-menus of the app; optional are reports (shared and own), roles with permissions, scheduled tasks and the manual. Never
-included are records, credentials of database connections (connected tables only as a reference), system menus,
+menus of the app; optional are reports (shared and own), roles with permissions, scheduled tasks, document templates and the manual. Never
+included are records, the letterhead, credentials of database connections (connected tables only as a reference), system menus,
 system roles and system tasks. Every object carries its stable key so that an installed app can be updated later.
 SAFT checks the file for consistency before downloading; the export is recorded in the change log. **Interfaces:**
 shares of tables and fields and the version of the interface are included. What the app uses from other apps is listed
@@ -1303,7 +1303,8 @@ name already exists –, notes (yellow) and the diagram of the tables. It is ins
   installed is refused.
 - **copy (new name and prefix)** – e.g. a test copy on the same system: the tables get the new prefix
   (`lager_artikel` → `lager2_artikel`), as do all references to them (relations, totals in formulas, reports, menus,
-  data permissions of roles); all keys are new.
+  data permissions of roles, base table and sections such as `{{#lager_positionen}}` in document templates); all keys
+  are new.
 
 The app is created **deactivated** – check it, then activate. If a role name is already taken, the role gets the prefix
 of the app (e.g. `vertrieb-lager2`); reports belong to the installing person; file fields come without files. Missing
@@ -1358,13 +1359,15 @@ version) and lists the steps with their rating:
 If a field or table with data is missing in the package, it is first only **deactivated** (data kept); deleting is a
 separate step. Without data it is deleted directly. **Not possible** (with a reason) are changes the table designer
 would refuse – e.g. a type change that would lose values (e.g. “1 value is longer than 30 characters”) – and changes to
-interfaces other apps use. **Table links, reports, menus, roles, tasks, manual and connected tables** are updated as well – per property (e.g.
+interfaces other apps use. **Table links, reports, menus, roles, tasks, document templates, manual and connected tables** are updated as well – per property (e.g.
 “Report …: name A → B”, “Menu …: group A → B”, “Role …: permissions: + …, − …”):
 
 - **Roles:** permissions and hidden menus change as a difference; permissions outside the app stay. A new role whose
   name is already taken gets the prefix of the app.
 - **Reports:** new ones belong to the updating person; personal reports of others stay untouched.
 - **Menus:** the group is recognised by its key – a renamed group does not move its entries.
+- **Document templates:** content, recipient, file name, storage and active per property. A template removed in the
+  package is deleted; documents already generated stay with their records (note with the count).
 - **Not possible** is removing a table link a remaining report uses or a menu group with remaining entries, as well as a
   task of an unknown type (e.g. from a missing plugin) or without its table or connection.
 - **Connected tables:** only the SAFT side (labels, properties of the columns, write permissions, export); updating does
@@ -1373,7 +1376,7 @@ interfaces other apps use. **Table links, reports, menus, roles, tasks, manual a
 If there is nothing to do, the button is **“Close”** – nothing is backed up and no new baseline is saved.
 
 **Running:** a backup is made first; then the selected steps run through the operations of the table designer with all
-protection rules (connected tables, new tables and fields, changes, sharing, table links, reports, menus, roles, tasks, manual,
+protection rules (connected tables, new tables and fields, changes, sharing, table links, reports, menus, roles, tasks, document templates, manual,
 finally removing, deactivating and deleting). Afterwards the package is
 the new baseline and its version the version of the app. If a step fails, updating stops and reports how many steps
 have already been run and where the backup is; choosing the same file again shows only the rest. Updating is recorded
@@ -1562,6 +1565,15 @@ When **saving**, SAFT checks the template:
   are not loaded; SAFT removes scripts, frames and external stylesheets.
 
 Placeholders do not run code; a template can only show data, not change it.
+
+### Passing templates on with the app
+
+Document templates are part of the **app definition** (part “Document templates” when exporting, preselected; see
+[Apps](#15-apps-business-applications)): they travel with the app to another system and are brought up to date when
+updating. In a copy of the app, the base table and sections (`{{#…}}`) get the new prefix. The **letterhead** is not
+included – it belongs to the system the app runs on. If a template no longer fits after installing (e.g. a field is
+missing), it is created anyway; the message after installing or updating names the errors, and the template can only
+be saved again once it has been adjusted.
 
 ## Appendix A – Permissions at a glance
 

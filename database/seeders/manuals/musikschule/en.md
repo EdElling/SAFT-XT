@@ -51,6 +51,8 @@ Copying an invoice (e.g. for the next semester) copies its items, not its paymen
 
 Create the invoice as PDF on the letterhead in the invoice's row with **“Create document”** (template
 “Semesterrechnung”) – addressed to the contact person, otherwise to the student.
+**“Store in field ‘Documents’”** is preselected: the PDF is added write-protected to the invoice's **Documents** field
+(each creation as a new version). Storing needs the permission to edit invoices; the role *Musikschule* has it.
 
 ### Renting instruments
 

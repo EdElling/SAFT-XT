@@ -160,3 +160,9 @@ Jede Etappe ist für sich auslieferbar. D1 ist ohne KI vollständig nutzbar.
   Dateien tragen Vorlage und SHA-256 (`record_files`), entfernen nur mit Lösch-Recht – das Upload-Feld lehnt es sofort
   ab; beim Kopieren eines Datensatzes kommen sie nicht mit. Ereignis „Dokument erzeugt“ im Änderungsprotokoll. Ein
   Dateifeld für die Rechnungen der Musikschule folgt mit der App-Definition (D1d).
+- **D1d (22.11.2026):** Dokumentvorlagen sind ein Teil der App-Definition (`documents`, beim Export vorgewählt), das
+  Briefpapier nicht – es gehört zur Installation. Installieren als Kopie benennt Grundtabelle und Abschnitte `{{#…}}`
+  um; eine Vorlage, die nicht mehr passt, wird trotzdem angelegt und als Hinweis gemeldet. Das Aktualisieren behandelt
+  Vorlagen wie die anderen Objekte (Dreiwegvergleich, Konflikte); beim Entfernen bleiben erzeugte Dokumente. Die
+  Musikschule (1.2) bringt die Semesterrechnung in der Definition mit, dazu das Dateifeld „Dokumente“ der Rechnungen
+  und das Recht *Dokumente: erzeugen* für ihre Rolle.

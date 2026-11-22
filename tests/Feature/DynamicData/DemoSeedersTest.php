@@ -10,6 +10,7 @@ use App\Documents\Templates\TemplateRenderer;
 use App\DynamicData\DataMenu;
 use App\Filament\Pages\DataModelPage;
 use App\Filament\Resources\Reports\ReportResource;
+use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DocumentTemplate;
 use App\Models\DynamicRecord;
@@ -314,6 +315,47 @@ class DemoSeedersTest extends DynamicDataTestCase
         $this->assertStringContainsString('Klavier Laura', $document->html);
         $this->assertNotNull($document->recipient);
         $this->assertSame('Semesterrechnung-'.$bill->rechnungsnummer.'.pdf', $document->fileName);
+        $this->assertSame('dokumente', $template->file_field, 'Ablage im Dateifeld „Dokumente“ der Rechnungen (1.2).');
+        $this->assertTrue(Role::query()->where('app_id', $app->id)->sole()->hasPermissionTo('documents.generate'));
+    }
+
+    public function test_musikschule_demo_updates_version_1_1_with_the_template_from_the_seeder(): void
+    {
+        $storage = sys_get_temp_dir().'/saft-musikschule-'.uniqid();
+        $this->app->useStoragePath($storage);
+        Process::fake(static function (PendingProcess $process) {
+            foreach ((array) $process->command as $argument) {
+                if (str_starts_with($argument, '--file=')) {
+                    File::put(substr($argument, 7), 'dump');
+                }
+            }
+
+            return Process::result(output: "-- dump\n");
+        });
+
+        // Stand 1.1: ohne Dateifeld „Dokumente“, ohne Teil „documents“; die Vorlage legte der Seeder an (ohne Ablage).
+        $admin = $this->superAdmin();
+        $old = app(MusikschuleDemoSeeder::class)->appDefinition();
+        $template = $old['documents'][0];
+        $old['app']['version'] = '1.1';
+        $old['parts'] = ['reports', 'roles'];
+        unset($old['documents']);
+        $old['tables'] = array_map(static fn (array $t): array => $t['name'] === 'musikschule_rechnungen'
+            ? [...$t, 'fields' => array_values(array_filter($t['fields'], static fn (array $f): bool => $f['name'] !== 'dokumente'))] : $t, $old['tables']);
+        $old['roles'][0]['permissions'] = array_values(array_diff($old['roles'][0]['permissions'], ['documents.generate']));
+        $app = app(AppInstaller::class)->install($old, null, $admin);
+        $app->forceFill(['is_active' => true])->save();
+        $table = CustomTable::query()->where('name', 'musikschule_rechnungen')->sole();
+        DocumentTemplate::query()->create(['uuid' => $template['key'], 'app_id' => $app->id, 'custom_table_id' => $table->id,
+            'name' => $template['name'], 'recipient' => $template['recipient'], 'body' => $template['body'], 'file_name' => $template['file_name']]);
+
+        $this->seed(MusikschuleDemoSeeder::class);
+
+        $this->assertSame('1.2', $app->fresh()->version);
+        $this->assertNotNull(CustomField::query()->where('custom_table_id', $table->id)->where('name', 'dokumente')->first());
+        $this->assertSame(['dokumente'], DocumentTemplate::query()->where('app_id', $app->id)->pluck('file_field')->all(), 'Nicht doppelt, mit Ablage.');
+        $this->assertTrue(Role::query()->where('app_id', $app->id)->sole()->hasPermissionTo('documents.generate'));
+        File::deleteDirectory($storage);
     }
 
     public function test_musikschule_demo_updates_an_installed_app_of_version_1_0(): void
@@ -343,7 +385,7 @@ class DemoSeedersTest extends DynamicDataTestCase
         $this->seed(MusikschuleDemoSeeder::class);
 
         $app = MusikschuleDemoSeeder::installedApp();
-        $this->assertSame(['1.1', 21], [$app->version, CustomTable::query()->where('app_id', $app->id)->count()]);
+        $this->assertSame(['1.2', 21], [$app->version, CustomTable::query()->where('app_id', $app->id)->count()]);
         $this->assertTrue(Menu::query()->where('app_id', $app->id)->where('label->de', 'Ferien')->exists());
         $this->assertTrue(Role::query()->where('app_id', $app->id)->sole()->hasPermissionTo('data.musikschule_ferien.update'));
         $this->assertCounts(['musikschule_ferien' => 8, 'musikschule_faecher' => 1]);

@@ -17,6 +17,7 @@ use App\Models\AppBaseline;
 use App\Models\AppManual;
 use App\Models\CustomField;
 use App\Models\CustomTable;
+use App\Models\DocumentTemplate;
 use App\Models\Menu;
 use App\Models\Report;
 use App\Models\ReportLink;
@@ -274,6 +275,42 @@ final class ChangeExecutor
 
         $this->roles($app, $of('role', ChangeStep::CREATE), $of('role', ChangeStep::UPDATE));
         $this->tasks($app, $of('task', ChangeStep::CREATE), $of('task', ChangeStep::UPDATE), $user);
+        $this->documents($app, $of('document', ChangeStep::CREATE), $of('document', ChangeStep::UPDATE));
+    }
+
+    /**
+     * Dokumentvorlagen (B-124, D1d): neue anlegen, geänderte Eigenschaften übernehmen; danach prüfen (Hinweis bei Fehlern).
+     *
+     * @param  list<ChangeStep>  $creates
+     * @param  list<ChangeStep>  $updates
+     */
+    private function documents(App $app, array $creates, array $updates): void
+    {
+        $this->installer->takeNotes();
+
+        foreach ($creates as $step) {
+            $this->installer->createDocumentTemplate($app, [...$step->target, 'key' => $step->key]);
+            $this->done[] = $step->label;
+        }
+
+        foreach ($updates as $step) {
+            $template = DocumentTemplate::query()->where('uuid', $step->key)->firstOrFail();
+            $values = self::values($step->changes);
+            $data = Arr::only($values, ['name', 'recipient', 'body', 'file_name', 'language_field', 'file_field', 'is_active', 'sort_order']);
+
+            if (array_key_exists('table', $values)) {
+                $data['custom_table_id'] = CustomTable::query()->where('name', (string) $values['table'])->firstOrFail()->id;
+            }
+
+            $template->update($data);
+            $this->installer->checkDocumentTemplate($template, $template->customTable()->firstOrFail());
+            $this->done[] = $step->label;
+        }
+
+        // Prüfhinweise zu den Vorlagen als eigene Zeilen im Ergebnis.
+        foreach ($this->installer->takeNotes() as $note) {
+            $this->done[] = $note;
+        }
     }
 
     /**
@@ -476,6 +513,11 @@ final class ChangeExecutor
 
         foreach ($of('task') as $step) {
             ScheduledTask::query()->where('uuid', $step->key)->first()?->delete();
+            $this->done[] = $step->label;
+        }
+
+        foreach ($of('document') as $step) {
+            DocumentTemplate::query()->where('uuid', $step->key)->first()?->delete();
             $this->done[] = $step->label;
         }
 

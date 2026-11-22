@@ -4,7 +4,8 @@
     "api": "1.8",
     "parts": [
         "reports",
-        "roles"
+        "roles",
+        "documents"
     ],
     "app": {
         "key": "d5d9d05e-2fe0-4b57-bd17-24219b63beea",
@@ -22,7 +23,7 @@
         },
         "icon": "heroicon-o-musical-note",
         "prefix": "musikschule",
-        "version": "1.1",
+        "version": "1.2",
         "interface_version": 1,
         "manual": []
     },
@@ -3058,6 +3059,33 @@
                     "show_in_form": true,
                     "is_active": true,
                     "sort_order": 10
+                },
+                {
+                    "key": "5b7f0e2a-93c4-4d61-8e1f-2a6c9d40b7e3",
+                    "name": "dokumente",
+                    "label": {
+                        "de": "Dokumente",
+                        "en": "Documents",
+                        "fr": "Documents",
+                        "it": "Documenti"
+                    },
+                    "type": "file",
+                    "options": {
+                        "kinds": [
+                            "pdf"
+                        ],
+                        "max_mb": 10,
+                        "max_files": 10
+                    },
+                    "validation_rules": null,
+                    "is_required": false,
+                    "is_unique": false,
+                    "is_searchable": false,
+                    "is_sortable": false,
+                    "show_in_table": false,
+                    "show_in_form": true,
+                    "is_active": true,
+                    "sort_order": 11
                 }
             ],
             "rules": [],
@@ -5637,11 +5665,26 @@
                 "data.musikschule_zahlungen.import",
                 "data.musikschule_zahlungen.update",
                 "data.musikschule_zahlungen.view",
+                "documents.generate",
                 "reports.view"
             ],
             "hidden_menus": []
         }
     ],
     "tasks": [],
+    "documents": [
+        {
+            "key": "8b6e2d94-1f3a-4c7e-a05d-6e9c3b7f2a81",
+            "name": "Semesterrechnung",
+            "table": "musikschule_rechnungen",
+            "recipient": "{{#kontaktperson}}{{vorname}} {{nachname}}\n{{strasse}}\n{{plz}} {{ort}}{{/kontaktperson}}\n{{^kontaktperson}}{{schueler.vorname}} {{schueler.nachname}}\n{{schueler.strasse}}\n{{schueler.plz}} {{schueler.ort}}{{/kontaktperson}}",
+            "body": "<p class=\"rechts\">{{datum | DatumLang}}</p>\n\n<h1>Semesterrechnung {{rechnungsnummer}}</h1>\n\n<table>\n    <tr><td width=\"30%\">Semester</td><td width=\"70%\">{{semester}}</td></tr>\n    <tr><td width=\"30%\">Schülerin / Schüler</td><td width=\"70%\">{{schueler}}</td></tr>\n    <tr><td width=\"30%\">Zahlbar bis</td><td width=\"70%\">{{faellig_am}}</td></tr>\n</table>\n\n<table class=\"positionen\">\n    <thead>\n        <tr><th width=\"44%\">Leistung</th><th class=\"rechts\" width=\"12%\">Menge</th><th class=\"rechts\" width=\"16%\">Einzelpreis</th><th class=\"rechts\" width=\"12%\">Rabatt</th><th class=\"rechts\" width=\"16%\">Betrag</th></tr>\n    </thead>\n    <tbody>\n    {{#musikschule_rechnungspositionen}}\n        <tr>\n            <td width=\"44%\">{{text}}<br><span class=\"sekundaer klein\">{{art}}</span></td>\n            <td class=\"rechts\" width=\"12%\">{{menge | Zahl}}</td>\n            <td class=\"rechts\" width=\"16%\">{{einzelpreis | CHF}}</td>\n            <td class=\"rechts\" width=\"12%\">{{#rabatt_prozent}}{{rabatt_prozent | Zahl}} %{{/rabatt_prozent}}</td>\n            <td class=\"rechts\" width=\"16%\">{{betrag | CHF}}</td>\n        </tr>\n    {{/musikschule_rechnungspositionen}}\n        <tr class=\"summe\"><td colspan=\"4\">Total CHF</td><td class=\"rechts\" width=\"16%\">{{summe | CHF}}</td></tr>\n    </tbody>\n</table>\n\n{{#bezahlt}}<p class=\"klein\">Bereits bezahlt: CHF {{bezahlt | CHF}} – offen: CHF {{offen | CHF}}</p>{{/bezahlt}}\n\n{{#bemerkung}}<p>{{bemerkung | Zeilen}}</p>{{/bemerkung}}\n\n<p>Bitte überweisen Sie den Betrag bis {{faellig_am | DatumLang}}. Herzlichen Dank!</p>\n<p class=\"klein sekundaer\">{{absender.firma}}{{#absender.iban}} · IBAN {{absender.iban}}{{/absender.iban}}</p>\n",
+            "file_name": "Semesterrechnung-{{rechnungsnummer}}",
+            "language_field": null,
+            "file_field": "dokumente",
+            "is_active": true,
+            "sort_order": 0
+        }
+    ],
     "requires": []
 }

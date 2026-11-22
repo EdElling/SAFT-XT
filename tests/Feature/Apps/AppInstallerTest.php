@@ -98,7 +98,7 @@ class AppInstallerTest extends DynamicDataTestCase
 
         $analysis = $this->installer()->analyze($definition);
         $this->assertSame([], $analysis->blockers);
-        $this->assertSame(['tables' => 2, 'fields' => 6, 'external_tables' => 0, 'report_links' => 1, 'reports' => 1, 'menus' => 4, 'roles' => 1, 'tasks' => 1, 'manuals' => 1], $analysis->counts);
+        $this->assertSame(['tables' => 2, 'fields' => 6, 'external_tables' => 0, 'report_links' => 1, 'reports' => 1, 'menus' => 4, 'roles' => 1, 'tasks' => 1, 'documents' => 0, 'manuals' => 1], $analysis->counts);
 
         $app = $this->installer()->install($definition, null, $this->admin);
 

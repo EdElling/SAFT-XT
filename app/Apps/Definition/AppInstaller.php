@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Apps\Definition;
 
 use App\Apps\AppInterfaces;
+use App\Documents\Templates\TemplateChecker;
 use App\DynamicData\DataPermissions;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Formula\Parser;
@@ -17,6 +18,7 @@ use App\Models\AppManual;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DatabaseConnection;
+use App\Models\DocumentTemplate;
 use App\Models\Menu;
 use App\Models\Report;
 use App\Models\ReportLink;
@@ -90,6 +92,8 @@ final class AppInstaller
      */
     public function analyze(array $definition, ?array $copy = null): InstallAnalysis
     {
+        // Definitionen vor D1d (B-124) haben keine Dokumentvorlagen.
+        $definition['documents'] = array_values((array) ($definition['documents'] ?? []));
         $blockers = array_slice($this->validator->errors($definition), 0, 20);
 
         if ($blockers !== []) {
@@ -175,6 +179,7 @@ final class AppInstaller
             'menus' => count($definition['menus']),
             'roles' => count($definition['roles']),
             'tasks' => count($definition['tasks']),
+            'documents' => count($definition['documents']),
             'manuals' => count((array) ($definition['app']['manual'] ?? [])),
         ], $copy !== null, $requires);
     }
@@ -324,6 +329,14 @@ final class AppInstaller
         return $this->notes;
     }
 
+    /** @return list<string> Hinweise seit dem letzten Abholen – für das Aktualisieren (ChangeExecutor) */
+    public function takeNotes(): array
+    {
+        [$notes, $this->notes] = [$this->notes, []];
+
+        return $notes;
+    }
+
     /** @param  array<string, mixed>  $definition */
     private function objects(App $app, array $definition, User $user): void
     {
@@ -391,6 +404,60 @@ final class AppInstaller
 
         foreach ((array) ($definition['app']['manual'] ?? []) as $locale => $content) {
             AppManual::query()->create(['app_id' => $app->id, 'locale' => (string) $locale, 'content' => (string) $content]);
+        }
+
+        foreach ($definition['documents'] as $document) {
+            $this->createDocumentTemplate($app, (array) $document);
+        }
+    }
+
+    /**
+     * Dokumentvorlage anlegen (B-124, D1d) und prüfen: Fehler der Vorlage verhindern die Installation nicht, sie stehen
+     * als Hinweis in notes(). Auch für das Aktualisieren (ChangeExecutor).
+     *
+     * @param  array<string, mixed>  $document
+     */
+    public function createDocumentTemplate(App $app, array $document): DocumentTemplate
+    {
+        $table = CustomTable::query()->where('name', (string) $document['table'])->firstOrFail();
+        $template = DocumentTemplate::query()->create([
+            'uuid' => $document['key'],
+            'app_id' => $app->id,
+            'custom_table_id' => $table->id,
+            ...self::documentAttributes($document),
+        ]);
+        $this->checkDocumentTemplate($template, $table);
+
+        return $template;
+    }
+
+    /**
+     * Eigenschaften einer Vorlage aus der Definition (ohne Schlüssel, App und Tabelle).
+     *
+     * @param  array<string, mixed>  $document
+     * @return array<string, mixed>
+     */
+    public static function documentAttributes(array $document): array
+    {
+        return [
+            'name' => (string) $document['name'],
+            'recipient' => $document['recipient'] ?? null,
+            'body' => (string) $document['body'],
+            'file_name' => $document['file_name'] ?? null,
+            'language_field' => $document['language_field'] ?? null,
+            'file_field' => $document['file_field'] ?? null,
+            'is_active' => (bool) ($document['is_active'] ?? true),
+            'sort_order' => (int) ($document['sort_order'] ?? 0),
+        ];
+    }
+
+    /** Vorlage prüfen; Fehler als Hinweis in notes(). */
+    public function checkDocumentTemplate(DocumentTemplate $template, CustomTable $table): void
+    {
+        $errors = app(TemplateChecker::class)->check($table, (string) $template->body, $template->recipient, $template->file_name)['errors'];
+
+        if ($errors !== []) {
+            $this->notes[] = __('apps.install.warnings.document', ['name' => $template->name, 'errors' => implode(' · ', array_slice($errors, 0, 3))]);
         }
     }
 
@@ -570,8 +637,29 @@ final class AppInstaller
             : $p, (array) $r['permissions'])], $definition['roles']);
         $definition['tasks'] = array_map(static fn (array $t): array => isset($t['parameters']['table'])
             ? [...$t, 'parameters' => [...$t['parameters'], 'table' => $table($t['parameters']['table'])]] : $t, $definition['tasks']);
+        // Dokumentvorlagen: Grundtabelle und Abschnitte über Kind-Tabellen ({{#tabelle}}, {{/tabelle__feld}}) umbenennen.
+        $definition['documents'] = array_map(static fn (array $d): array => [
+            ...$d,
+            'table' => $table((string) $d['table']),
+            ...array_map(static fn (?string $text): ?string => $text === null ? null : self::renameSections($text, $table), Arr::only($d, ['recipient', 'body', 'file_name'])),
+        ], $definition['documents']);
 
         return $this->newKeys($definition);
+    }
+
+    /**
+     * Abschnitte einer Dokumentvorlage, die nach einer Kind-Tabelle heissen ({{#tabelle}} … {{/tabelle}}, auch
+     * tabelle__feld), auf die umbenannten Tabellen setzen. Felder tragen kein Präfix und bleiben.
+     *
+     * @param  callable(?string): ?string  $table
+     */
+    public static function renameSections(string $text, callable $table): string
+    {
+        return (string) preg_replace_callback('/(\{\{\s*[#^\/]\s*)([a-z][a-z0-9_]*)/', static function (array $m) use ($table): string {
+            [$name, $field] = str_contains($m[2], '__') ? explode('__', $m[2], 2) : [$m[2], null];
+
+            return $m[1].$table($name).($field !== null ? '__'.$field : '');
+        }, $text);
     }
 
     /**

@@ -799,10 +799,12 @@ erzeugt (`App\Apps\Definition\AppDefinition`).
 | `tables` | Tabellen im Eingabeformat des Table-Designers wie `saft-schema/1` (Felder mit Optionen und Feldregeln, Tabellenregeln, Details), zusätzlich `key` je Tabelle und Feld |
 | `external_tables` | angebundene Tabellen nur als Verweis (Name, Bezeichnung, Name der Verbindung – ohne Zugangsdaten) |
 | `report_links`, `reports`, `menus`, `roles`, `tasks` | wie im Konfigurationspaket, je mit `key`; Menüs mit Pfad („Lager › Artikel“), Eltern vor Kindern |
+| `documents` | Dokumentvorlagen (Teil `documents`): `key`, `name`, `table` (Grundtabelle), `recipient`, `body`, `file_name`, `language_field`, `file_field` (Feldnamen der Grundtabelle), `is_active`, `sort_order`. Abschnitte `{{#tabelle}}` nennen Kind-Tabellen beim Namen; eine Kopie mit neuem Präfix benennt sie um. Das Briefpapier gehört nicht dazu |
+| `parts` | die gewählten Teile: `reports`, `roles`, `tasks`, `documents`, `manual` (`AppDefinition::PARTS`) |
 
 Jedes Objekt trägt seinen **stabilen Schlüssel** (`key`, UUID), der sich beim Umbenennen nicht ändert. Verweise stehen
 als Namen („bestellungen.kunde_id“, Menüpfad), damit die Datei lesbar bleibt. Nicht enthalten sind Datensätze,
-Zugangsdaten, Systemmenüs, Systemrollen und System-Aufgaben. `App\Apps\Definition\AppDefinitionValidator::errors()`
+Zugangsdaten, Briefpapier, Systemmenüs, Systemrollen und System-Aufgaben. `App\Apps\Definition\AppDefinitionValidator::errors()`
 prüft eine Definition (Pflichtangaben, Schlüssel, Feldtypen, Verweise innerhalb der App) und meldet Fehler mit Pfad,
 z. B. `tables[2].fields[5].type: Unbekannter Feldtyp „foo“.`
 

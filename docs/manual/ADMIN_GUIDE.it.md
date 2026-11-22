@@ -1353,8 +1353,8 @@ fornitore IA configurato e l’assistente IA attivato (vedi [capitolo 7](#7-impo
 
 **Esportare:** scarica l’app come **definizione dell’app** (file `<prefisso>-<versione>.saft-app.json`, formato
 `saft-app/1`; diritto *App: esportare*). Sempre inclusi: le tabelle con campi, regole e dettagli, i collegamenti di
-tabelle e i menu dell’app; a scelta: report (condivisi e propri), ruoli con diritti, attività pianificate e manuale. Mai
-inclusi: record, credenziali delle connessioni ai database (tabelle collegate solo come riferimento), menu, ruoli e
+tabelle e i menu dell’app; a scelta: report (condivisi e propri), ruoli con diritti, attività pianificate, modelli di documento e manuale. Mai
+inclusi: record, carta intestata, credenziali delle connessioni ai database (tabelle collegate solo come riferimento), menu, ruoli e
 attività di sistema. Ogni oggetto porta la sua chiave stabile, affinché un’app installata possa essere aggiornata in
 seguito. SAFT controlla la coerenza del file prima del download; l’esportazione è registrata nel registro delle modifiche.
 **Interfacce:** le condivisioni di tabelle e campi e la versione dell’interfaccia sono incluse. Ciò che l’app usa di
@@ -1370,7 +1370,8 @@ con lo stesso nome esiste già –, indicazioni (in giallo) e il diagramma delle
   installata viene rifiutata.
 - **copia (nuovo nome e prefisso)** – ad es. una copia di prova sullo stesso sistema: le tabelle ricevono il nuovo
   prefisso (`lager_artikel` → `lager2_artikel`), così come tutti i riferimenti a esse (collegamenti, somme nelle formule,
-  report, menu, diritti sui dati dei ruoli); tutte le chiavi sono nuove.
+  report, menu, diritti sui dati dei ruoli, tabella di base e sezioni come `{{#lager_positionen}}` nei modelli di
+  documento); tutte le chiavi sono nuove.
 
 L’app viene creata **disattivata** – controllarla, poi attivarla. Se un nome di ruolo è già preso, il ruolo riceve il
 prefisso dell’app (ad es. `vertrieb-lager2`); i report appartengono a chi installa; i campi file arrivano senza file. I
@@ -1425,13 +1426,16 @@ versione più recente) ed elenca i passi con la loro classificazione:
 Se nel pacchetto manca un campo o una tabella con dati, viene prima solo **disattivato** (i dati restano);
 l’eliminazione è un passo a sé. Senza dati viene eliminato direttamente. **Non possibili** (con motivo) sono le
 modifiche che il Designer di tabelle rifiuterebbe – ad es. un cambio di tipo che perderebbe valori (ad es. «1 valore
-supera 30 caratteri») – e le modifiche a interfacce usate da altre app. Vengono aggiornati anche **collegamenti tra tabelle, report, menu, ruoli, attività, manuale e tabelle collegate** – per
+supera 30 caratteri») – e le modifiche a interfacce usate da altre app. Vengono aggiornati anche **collegamenti tra tabelle, report, menu, ruoli, attività, modelli di documento, manuale e tabelle collegate** – per
 proprietà (ad es. «Report …: nome A → B», «Menu …: gruppo A → B», «Ruolo …: diritti: + …, − …»):
 
 - **Ruoli:** diritti e menu nascosti cambiano come differenza; i diritti fuori dall’app restano. Un nuovo ruolo il cui
   nome è già usato riceve il prefisso dell’app.
 - **Report:** quelli nuovi appartengono alla persona che aggiorna; i report personali di altri restano intatti.
 - **Menu:** il gruppo è riconosciuto dalla sua chiave – un gruppo rinominato non sposta le sue voci.
+- **Modelli di documento:** contenuto, destinatario, nome del file, archiviazione e attivo, proprietà per proprietà. Un
+  modello rimosso nel pacchetto viene eliminato; i documenti già generati restano presso i loro record (nota con il
+  numero).
 - **Non possibile** è rimuovere un collegamento tra tabelle usato da un report che resta o un gruppo di menu con voci che
   restano, così come un’attività di tipo sconosciuto (ad es. da un plugin mancante) o senza la sua tabella o connessione.
 - **Tabelle collegate:** solo il lato SAFT (etichette, proprietà delle colonne, diritti di scrittura, esportazione);
@@ -1443,7 +1447,7 @@ riferimento.
 
 **Esecuzione:** prima viene creato un salvataggio; poi i passi scelti passano per le operazioni del Designer di tabelle
 con tutte le regole di protezione (tabelle collegate, nuove tabelle e campi, modifiche, condivisioni, collegamenti tra tabelle, report, menu, ruoli,
-attività, manuale, infine rimozione, disattivazione ed eliminazione). Dopo, il pacchetto è il nuovo stato di riferimento e la sua versione la versione dell’app. Se un passo
+attività, modelli di documento, manuale, infine rimozione, disattivazione ed eliminazione). Dopo, il pacchetto è il nuovo stato di riferimento e la sua versione la versione dell’app. Se un passo
 fallisce, l’aggiornamento si interrompe e indica quanti passi sono già stati eseguiti e dove si trova il salvataggio;
 scegliendo di nuovo lo stesso file si vede solo il resto. L’aggiornamento figura nel registro delle modifiche.
 
@@ -1632,6 +1636,15 @@ Al **salvataggio** SAFT verifica il modello:
   esterne non vengono caricate; SAFT rimuove script, frame e fogli di stile esterni.
 
 I segnaposto non eseguono codice; un modello può solo mostrare dati, non modificarli.
+
+### Trasmettere con l’app
+
+I modelli di documento fanno parte della **definizione dell’app** (parte «Modelli di documenti» all’esportazione,
+preselezionata; vedi [App](#15-app-applicazioni-specialistiche)): accompagnano l’app su un altro sistema e vengono
+aggiornati con l’aggiornamento. In una copia dell’app, la tabella di base e le sezioni (`{{#…}}`) ricevono il nuovo
+prefisso. La **carta intestata** non è inclusa – appartiene al sistema su cui gira l’app. Se dopo l’installazione un
+modello non è più adatto (p. es. manca un campo), viene creato comunque; il messaggio dopo l’installazione o
+l’aggiornamento indica gli errori, e il modello si può salvare di nuovo solo dopo averlo adattato.
 
 ## Allegato A – Panoramica dei diritti
 

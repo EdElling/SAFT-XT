@@ -53,7 +53,7 @@ final class AppDefinitionValidator
             $this->fail('app.name.'.$default, __('apps.definition.errors.missing'));
         }
 
-        foreach (['tables', 'external_tables', 'report_links', 'reports', 'menus', 'roles', 'tasks'] as $list) {
+        foreach (['tables', 'external_tables', 'report_links', 'reports', 'menus', 'roles', 'tasks', 'documents'] as $list) {
             if (! array_is_list((array) ($definition[$list] ?? []))) {
                 $this->fail($list, __('apps.definition.errors.list'));
             }
@@ -84,6 +84,33 @@ final class AppDefinitionValidator
         $menus = $this->menus((array) ($definition['menus'] ?? []), $known, $reports);
         $this->links((array) ($definition['report_links'] ?? []), $known, $reachable);
         $this->roles((array) ($definition['roles'] ?? []), $reachable, $menus);
+
+        // Dokumentvorlagen (B-124): Grundtabelle aus der Definition, Sprach- und Ablagefeld ihre Felder.
+        $fieldsOf = collect((array) ($definition['tables'] ?? []))->mapWithKeys(static fn (mixed $t): array => is_array($t) ? [(string) ($t['name'] ?? '') => array_column((array) ($t['fields'] ?? []), 'name')] : [])->all();
+
+        foreach ((array) ($definition['documents'] ?? []) as $i => $document) {
+            $this->key("documents[{$i}].key", $document['key'] ?? null);
+
+            foreach (['name', 'body'] as $attr) {
+                if (blank($document[$attr] ?? null)) {
+                    $this->fail("documents[{$i}].{$attr}", __('apps.definition.errors.missing'));
+                }
+            }
+
+            $table = (string) ($document['table'] ?? '');
+
+            if (! array_key_exists($table, $fieldsOf)) {
+                $this->fail("documents[{$i}].table", __('apps.definition.errors.unknown_table', ['table' => $table]));
+
+                continue;
+            }
+
+            foreach (['language_field', 'file_field'] as $attr) {
+                if (filled($document[$attr] ?? null) && ! in_array($document[$attr], $fieldsOf[$table], true)) {
+                    $this->fail("documents[{$i}].{$attr}", __('apps.definition.errors.unknown_field', ['field' => $table.'.'.$document[$attr]]));
+                }
+            }
+        }
 
         foreach ((array) ($definition['tasks'] ?? []) as $i => $task) {
             $this->key("tasks[{$i}].key", $task['key'] ?? null);
