@@ -94,7 +94,8 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
 - **Creating documents:** icon in a record's row – download the PDF and store it write-protected as a new version in
   the file field, with checksum (SHA-256) in the change log; for several selected records at once as one PDF for
   printing or as a ZIP; **send by email** (individually with editable text or per record, own permission); mail server
-  in the global settings with “Check connection”
+  in the global settings with “Check connection”; **QR bill** (payment part with receipt to the SIX standard, RF or QR
+  reference, creditor from the letterhead)
 - **Global settings:** display name and colour scheme of the application (branding); connection of external AI models for
   the assistants (provider, model, encrypted API key, daily limit, connection test); personal settings such as language,
   number format and contrast mode under “My settings”
@@ -104,7 +105,7 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
 
 ## Requirements
 
-- PHP 8.4+ with the extensions `pdo_pgsql` or `pdo_mysql`, `intl`, `zip`, `openssl`, `gd`
+- PHP 8.4+ with the extensions `pdo_pgsql` or `pdo_mysql`, `intl`, `zip`, `openssl`, `gd`, `bcmath`, `dom`
 - Composer
 - PostgreSQL 16+ (the database user must be allowed to create schemas) **or** MySQL 8.0.16+ (the user also needs
   rights on the database `<DB>_app_data` for the tables of the table designer); chosen with `DB_CONNECTION` and the

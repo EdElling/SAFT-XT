@@ -52,7 +52,7 @@ final class ChangePlanner
         'menus' => ['menu', ['label', 'icon', 'parent', 'permission_name', 'sort_order', 'is_active', 'target']],
         'roles' => ['role', ['name', 'permissions', 'hidden_menus']],
         'tasks' => ['task', ['name', 'type', 'parameters', 'frequency', 'interval_hours', 'at_time', 'weekday', 'is_active']],
-        'documents' => ['document', ['name', 'table', 'recipient', 'body', 'file_name', 'language_field', 'file_field', 'email_to', 'email_subject', 'email_body', 'email_reply_to', 'is_active', 'sort_order']],
+        'documents' => ['document', ['name', 'table', 'recipient', 'body', 'file_name', 'language_field', 'file_field', 'email_to', 'email_subject', 'email_body', 'email_reply_to', 'qr_bill', 'is_active', 'sort_order']],
     ];
 
     public function __construct(

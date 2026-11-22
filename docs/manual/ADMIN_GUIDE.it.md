@@ -1527,7 +1527,7 @@ un’app chi ha in quell’app il diritto *Documenti: gestire* (tramite un ruolo
 | **Carta intestata** | **Carta intestata prima pagina (PDF)** e **Carta intestata pagine seguenti (PDF)**; senza PDF, **Logo** e **Altezza del logo** |
 | **Carattere e colori** | Carattere aziendale **normale**, **grassetto** e **corsivo** (.ttf); **Colore primario**, **Colore secondario**, **Colore del testo** |
 | **Impaginazione** | Margini in mm per **Prima pagina** e **Pagine seguenti**; **Campo indirizzo** a sinistra o a destra; **Riga del mittente** |
-| **Mittente** | Ditta, indirizzo, numero IVA, IBAN, contatto – compaiono nell’intestazione e sono disponibili nei modelli come segnaposto |
+| **Mittente** | Ditta, indirizzo, numero IVA, IBAN, contatto – compaiono nell’intestazione e sono disponibili nei modelli come segnaposto. Sotto, **Per la fattura QR**: via, numero civico, NPA, località, paese e QR-IBAN (vedi [Fattura QR](#fattura-qr)) |
 | **Archiviazione** | **PDF/A-3b** (attivo per impostazione predefinita); per un’app: *come l’installazione*, *attivo* o *disattivo* |
 
 ### Carta intestata come PDF
@@ -1678,6 +1678,41 @@ Al **salvataggio** SAFT verifica il modello:
   esterne non vengono caricate; SAFT rimuove script, frame e fogli di stile esterni.
 
 I segnaposto non eseguono codice; un modello può solo mostrare dati, non modificarli.
+
+### Fattura QR
+
+Un modello può aggiungere in basso la **sezione pagamento con ricevuta** della fattura QR svizzera (sezione **«Fattura
+QR»** del modello, interruttore **«Allegare fattura QR»**). SAFT segue le *Swiss Implementation Guidelines fattura QR*
+di SIX (versione 2.4): Swiss QR Code di 46 × 46 mm con croce svizzera, carattere Liberation Sans, linee di separazione
+con forbici.
+
+| Impostazione | Significato |
+|---|---|
+| **Sezione pagamento** | **Su un’ultima pagina propria** (senza carta intestata) o **in fondo all’ultima pagina se c’è spazio** – se il contenuto arriva nei 105 mm in basso, va su una pagina propria |
+| **Importo** | con segnaposto, p. es. `{{offen \| Roh}}`; «1'234.50» e «1234,50» vengono letti. Vuoto: campo da compilare |
+| **Valuta** | CHF o EUR |
+| **Riferimento** | p. es. `{{belegnummer}}`. Con un IBAN normale SAFT ne forma un **riferimento RF** (ISO 11649, lettere e cifre), con un **QR-IBAN** un **riferimento QR** dalle cifre (al massimo 26, con cifra di controllo). Vuoto: senza riferimento (solo con IBAN normale) |
+| **Comunicazione** | informazione supplementare per chi paga, al massimo 140 caratteri |
+| **Debitore** | nome, via, numero civico, NPA, località, paese – di solito tramite il collegamento al cliente. Senza nome, NPA o località: campo da compilare |
+
+Il **beneficiario** è il mittente della carta intestata: ditta, IBAN o **QR-IBAN** e l’indirizzo sotto **«Per la fattura
+QR»** (via, numero civico, NPA, località, paese; paese vuoto = CH). Se via, NPA e località lì sono vuoti, SAFT li prende
+dal campo **Indirizzo** se l’ultima riga è «NPA località» (p. es. «8610 Uster», anche «CH-8610 Uster»). Il nome deve
+corrispondere al titolare del conto presso la banca.
+
+**Numero civico:** Lo standard richiede via e numero civico separati. Se il campo del numero civico è vuoto, SAFT separa
+dal nome della via un numero alla fine («Bahnhofstrasse 12a», «Hauptstrasse 3-5») o all’inizio («12, rue du Lac»);
+una casella postale resta com’è. Se il nome della via stesso termina con un numero, indicate il numero civico nel suo
+campo – per il debitore p. es. con un campo a sé nella tabella dei clienti.
+
+**IBAN e QR-IBAN:** L’IBAN deve essere svizzero o del Liechtenstein (CH/LI); SAFT verifica le cifre di controllo al
+salvataggio della carta intestata. Il **QR-IBAN** (posizioni 5–9 tra 30000 e 31999) lo fornisce la banca; con esso i
+pagamenti si attribuiscono automaticamente tramite il riferimento QR. Vale **solo per il CHF** – per fatture in EUR SAFT
+usa sempre l’IBAN normale con riferimento RF.
+
+Gli **errori** (p. es. «Per la fattura QR mancano nella carta intestata: NPA, Località», IBAN non valido, importo che non
+è un numero) compaiono nell’anteprima del modello e nella finestra «Crea documento»; il documento allora non viene
+creato. Per verificare, scansionate il PDF sullo schermo con l’app bancaria – non viene pagato nulla.
 
 ### Trasmettere con l’app
 

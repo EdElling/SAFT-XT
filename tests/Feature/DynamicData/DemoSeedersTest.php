@@ -355,10 +355,11 @@ class DemoSeedersTest extends DynamicDataTestCase
 
         $this->seed(MusikschuleDemoSeeder::class);
 
-        $this->assertSame('1.3', $app->fresh()->version);
+        $this->assertSame('1.4', $app->fresh()->version);
         $this->assertNotNull(CustomField::query()->where('custom_table_id', $table->id)->where('name', 'dokumente')->first());
         $this->assertSame(['dokumente'], DocumentTemplate::query()->where('app_id', $app->id)->pluck('file_field')->all(), 'Nicht doppelt, mit Ablage.');
         $this->assertNotNull(DocumentTemplate::query()->where('app_id', $app->id)->value('email_to'), 'Mit E-Mail (1.3).');
+        $this->assertTrue((bool) (DocumentTemplate::query()->where('app_id', $app->id)->sole()->qr_bill['enabled'] ?? false), 'Mit QR-Rechnung (1.4).');
         $this->assertTrue(Role::query()->where('app_id', $app->id)->sole()->hasPermissionTo('documents.generate'));
         File::deleteDirectory($storage);
     }
@@ -390,7 +391,7 @@ class DemoSeedersTest extends DynamicDataTestCase
         $this->seed(MusikschuleDemoSeeder::class);
 
         $app = MusikschuleDemoSeeder::installedApp();
-        $this->assertSame(['1.3', 21], [$app->version, CustomTable::query()->where('app_id', $app->id)->count()]);
+        $this->assertSame(['1.4', 21], [$app->version, CustomTable::query()->where('app_id', $app->id)->count()]);
         $this->assertTrue(Menu::query()->where('app_id', $app->id)->where('label->de', 'Ferien')->exists());
         $this->assertTrue(Role::query()->where('app_id', $app->id)->sole()->hasPermissionTo('data.musikschule_ferien.update'));
         $this->assertCounts(['musikschule_ferien' => 8, 'musikschule_faecher' => 1]);

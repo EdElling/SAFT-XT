@@ -10,6 +10,7 @@ use App\Documents\LetterheadInspector;
 use App\Documents\LetterheadResolver;
 use App\Documents\PdfFonts;
 use App\Documents\PdfRenderer;
+use App\Documents\QrBill\QrBillFactory;
 use App\Documents\SvgSanitizer;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Models\App;
@@ -28,6 +29,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -229,9 +231,37 @@ class DocumentSettingsPage extends Page
                         TextInput::make('sender.mwst')->label(__('documents.settings.sender_fields.mwst'))->maxLength(60)
                             ->placeholder(fn (): ?string => $inherit() ? $base()->sender['mwst'] : null),
                         TextInput::make('sender.iban')->label(__('documents.settings.sender_fields.iban'))->maxLength(60)
+                            ->rule(static fn (): \Closure => static function (string $attribute, mixed $value, \Closure $fail): void {
+                                if (filled($value) && ! QrBillFactory::ibanValid((string) $value)) {
+                                    $fail(__('documents.settings.iban_invalid'));
+                                }
+                            })
                             ->placeholder(fn (): ?string => $inherit() ? $base()->sender['iban'] : null),
                         Textarea::make('sender.kontakt')->label(__('documents.settings.sender_fields.kontakt'))->rows(2)->maxLength(500)
                             ->placeholder(fn (): ?string => $inherit() ? $base()->sender['kontakt'] : null),
+                        // Zahlungsempfänger der QR-Rechnung (D4a): Adresse in Teilen, wie es der Standard verlangt.
+                        Fieldset::make(__('documents.settings.qr_creditor'))->columnSpanFull()->columns(2)->schema([
+                            Text::make(__('documents.settings.qr_creditor_help'))->columnSpanFull(),
+                            TextInput::make('sender.strasse')->label(__('documents.settings.sender_fields.strasse'))->maxLength(70)
+                                ->placeholder(fn (): ?string => $inherit() ? $base()->sender['strasse'] : null),
+                            TextInput::make('sender.hausnummer')->label(__('documents.settings.sender_fields.hausnummer'))->maxLength(16)
+                                ->placeholder(fn (): ?string => $inherit() ? $base()->sender['hausnummer'] : null),
+                            TextInput::make('sender.plz')->label(__('documents.settings.sender_fields.plz'))->maxLength(16)
+                                ->placeholder(fn (): ?string => $inherit() ? $base()->sender['plz'] : null),
+                            TextInput::make('sender.ort')->label(__('documents.settings.sender_fields.ort'))->maxLength(35)
+                                ->placeholder(fn (): ?string => $inherit() ? $base()->sender['ort'] : null),
+                            TextInput::make('sender.land')->label(__('documents.settings.sender_fields.land'))->maxLength(2)
+                                ->placeholder(fn (): string => $inherit() ? (string) ($base()->sender['land'] ?? 'CH') : 'CH')
+                                ->helperText(__('documents.settings.land_help')),
+                            TextInput::make('sender.qr_iban')->label(__('documents.settings.sender_fields.qr_iban'))->maxLength(40)
+                                ->rule(static fn (): \Closure => static function (string $attribute, mixed $value, \Closure $fail): void {
+                                    if (filled($value) && ! QrBillFactory::isQrIban((string) $value)) {
+                                        $fail(QrBillFactory::ibanValid((string) $value) ? __('documents.settings.qr_iban_invalid') : __('documents.settings.iban_invalid'));
+                                    }
+                                })
+                                ->placeholder(fn (): ?string => $inherit() ? $base()->sender['qr_iban'] : null)
+                                ->helperText(__('documents.settings.qr_iban_help')),
+                        ]),
                     ]),
                 Section::make(__('documents.settings.archive'))
                     ->schema([

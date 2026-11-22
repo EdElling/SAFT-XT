@@ -58,6 +58,9 @@ Create la fattura come PDF sulla carta intestata nella riga della fattura con **
 fatture; il ruolo *Musikschule* lo ha. **«Inviare per e-mail»** invia la fattura all’indirizzo e-mail della persona di
 contatto, altrimenti dell’allievo – per questo il ruolo necessita in più del diritto *Documenti: inviare*
 (volutamente non predefinito).
+In fondo alla fattura semestrale c’è la **fattura QR** (altrimenti su una pagina propria) con l’importo aperto e il
+numero di fattura come riferimento, pagabile dalla persona di contatto o dall’allievo. Il beneficiario è il mittente della carta intestata
+(demo: IBAN di esempio di SIX se non è ancora indicato alcun IBAN).
 
 ### Noleggiare strumenti
 

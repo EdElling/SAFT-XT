@@ -34,7 +34,7 @@ MariaDB – and with MySQL or MariaDB a second database; this is the most common
 
 | Requirement | Details |
 |---|---|
-| **PHP 8.4 or newer** | for the website **and** on the command line (SSH), with the extensions `pdo_pgsql` or `pdo_mysql`, `intl`, `zip`, `mbstring`, `xml`, `curl`, `bcmath`, `openssl`, `gd` (PNG logos in PDF documents); only for SQL Server as an external source also `pdo_sqlsrv` with the Microsoft ODBC Driver 18 |
+| **PHP 8.4 or newer** | for the website **and** on the command line (SSH), with the extensions `pdo_pgsql` or `pdo_mysql`, `intl`, `zip`, `mbstring`, `xml`, `curl`, `bcmath` (among others QR bill), `openssl`, `gd` (PNG logos in PDF documents); only for SQL Server as an external source also `pdo_sqlsrv` with the Microsoft ODBC Driver 18 |
 | **PostgreSQL 16 or newer** | a database of its own; the user must be allowed to create a schema in it (easiest: the user owns the database). A database at the same provider or a separate database service both work. |
 | *or* **MySQL 8.0.16 or newer** | **two** databases with the same user (or one each, see step 2): one for SAFT and one for the tables of the table designer (default name `<database>_app_data`, otherwise set `APP_DATA_SCHEMA`). |
 | *or* **MariaDB 10.11 or newer** | as with MySQL: **two** databases with the same user. A Galera cluster works as well (all tables of SAFT have a primary key and use InnoDB); structure changes in the table designer run cluster-wide and lock briefly, so do larger changes outside peak hours. |

@@ -92,6 +92,11 @@ class MusikschuleDemoSeeder extends Seeder
         }
 
         $this->seedDemoManual();
+        // Zahlungsempfänger der QR-Rechnung (1.4), nur wo im Briefpapier noch nichts steht; Beispiel-IBAN von SIX.
+        $this->demoQrCreditor('musikschule_rechnungen', [
+            'firma' => 'Musikschule Muster', 'strasse' => 'Notenweg 3', 'plz' => '3011', 'ort' => 'Bern', 'land' => 'CH',
+            'iban' => 'CH93 0076 2011 6238 5295 7',
+        ]);
     }
 
     /** @return list<string> Demo-Tabellen ohne Datensätze */
@@ -136,14 +141,14 @@ class MusikschuleDemoSeeder extends Seeder
             app(ChangeExecutor::class)->apply($app, $plan, $selected, false, $user);
         }
 
-        // Von 1.1 an: Die Semesterrechnung legte dieser Seeder schon an (ohne Ablage und E-Mail). Im installierten Stand
-        // 1.1 fehlt sie, der Änderungsplan sieht Ablage (1.2) und E-Mail (1.3) deshalb als Konflikt – bei der Demo
-        // übernehmen, was noch leer ist.
+        // Von 1.1 an: Die Semesterrechnung legte dieser Seeder schon an (ohne Ablage, E-Mail und QR-Rechnung). Im
+        // installierten Stand 1.1 fehlt sie, der Änderungsplan sieht Ablage (1.2), E-Mail (1.3) und QR-Rechnung (1.4)
+        // deshalb als Konflikt – bei der Demo übernehmen, was noch leer ist.
         $package = collect($this->appDefinition()['documents'] ?? [])->firstWhere('key', self::INVOICE_TEMPLATE);
         $template = DocumentTemplate::query()->where('uuid', self::INVOICE_TEMPLATE)->first();
 
         if ($package !== null && $template !== null) {
-            foreach (['file_field', 'email_to', 'email_subject', 'email_body'] as $attribute) {
+            foreach (['file_field', 'email_to', 'email_subject', 'email_body', 'qr_bill'] as $attribute) {
                 if (blank($template->{$attribute}) && filled($package[$attribute] ?? null)
                     && ($attribute !== 'file_field' || TemplateFields::field($template->customTable, (string) $package[$attribute]) !== null)) {
                     $template->{$attribute} = $package[$attribute];

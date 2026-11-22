@@ -6,6 +6,7 @@ namespace App\Filament\Resources\DocumentTemplates\Schemas;
 
 use App\Documents\Assistant\TemplateAssistant;
 use App\Documents\LetterheadResolver;
+use App\Documents\QrBill\QrBillFactory;
 use App\Documents\Templates\TemplateChecker;
 use App\Documents\Templates\TemplateFields;
 use App\Documents\Templates\TemplateSkeletons;
@@ -21,6 +22,7 @@ use App\Models\User;
 use Closure;
 use Filament\Forms\Components\CodeEditor;
 use Filament\Forms\Components\CodeEditor\Enums\Language;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -133,7 +135,7 @@ class DocumentTemplateForm
 
                                     $errors = app(TemplateChecker::class)->check($t, (string) $value, (string) $get('recipient'), (string) $get('file_name'), [
                                         'email_to' => $get('email_to'), 'email_subject' => $get('email_subject'), 'email_body' => $get('email_body'), 'email_reply_to' => $get('email_reply_to'),
-                                    ])['errors'];
+                                    ], (array) ($get('qr_bill') ?? []))['errors'];
 
                                     if ($errors !== []) {
                                         $fail(implode(' · ', array_slice($errors, 0, 5)).(count($errors) > 5 ? ' …' : ''));
@@ -156,6 +158,7 @@ class DocumentTemplateForm
                                     ->extraInputAttributes(['data-template-input' => true, 'style' => 'font-family: ui-monospace, monospace; font-size: .85rem'])
                                     ->live(debounce: self::PREVIEW_DEBOUNCE_MS),
                             ]),
+                            self::qrBillFieldset(),
                         ]),
                     Section::make(__('documents.templates.sections.preview'))
                         ->columnSpan(['default' => 1, 'xl' => 2])
@@ -183,6 +186,37 @@ class DocumentTemplateForm
             count($apps) === 1 => (int) array_key_first($apps),
             default => null,
         };
+    }
+
+    /**
+     * QR-Rechnung (B-124, D4a): Zahlteil mit QR-Code; Zahlungsempfänger aus dem Briefpapier, das Übrige mit Platzhaltern.
+     */
+    private static function qrBillFieldset(): Fieldset
+    {
+        $enabled = static fn (Get $get): bool => (bool) $get('qr_bill.enabled');
+        $text = static fn (string $key, int $max = 200): TextInput => TextInput::make('qr_bill.'.$key)->label(__('documents.qr.fields.'.$key))
+            ->maxLength($max)->extraInputAttributes(['data-template-input' => true])
+            ->live(debounce: self::PREVIEW_DEBOUNCE_MS)->visible($enabled);
+
+        return Fieldset::make(__('documents.templates.sections.qr'))->columnSpanFull()->columns(2)->schema([
+            Toggle::make('qr_bill.enabled')->label(__('documents.qr.fields.enabled'))->helperText(__('documents.qr.fields.enabled_help'))
+                ->live()->columnSpanFull(),
+            Radio::make('qr_bill.position')->label(__('documents.qr.fields.position'))
+                ->options([QrBillFactory::PAGE => __('documents.qr.positions.page'), QrBillFactory::BOTTOM => __('documents.qr.positions.bottom')])
+                ->default(QrBillFactory::PAGE)->live()->columnSpanFull()->visible($enabled),
+            $text('amount')->helperText(__('documents.qr.fields.amount_help')),
+            Select::make('qr_bill.currency')->label(__('documents.qr.fields.currency'))
+                ->options(array_combine(QrBillFactory::CURRENCIES, QrBillFactory::CURRENCIES))->default('CHF')->selectablePlaceholder(false)
+                ->live()->visible($enabled),
+            $text('reference', 100)->helperText(__('documents.qr.fields.reference_help')),
+            $text('message', 300)->helperText(__('documents.qr.fields.message_help')),
+            $text('debtor_name', 300)->helperText(__('documents.qr.fields.debtor_help')),
+            $text('debtor_street', 300),
+            $text('debtor_building_number', 100),
+            $text('debtor_postal_code'),
+            $text('debtor_city', 300),
+            $text('debtor_country')->helperText(__('documents.qr.fields.country_help')),
+        ]);
     }
 
     /** @return array<int, string> */
@@ -307,6 +341,7 @@ class DocumentTemplateForm
             'email_subject' => (string) ($data['email_subject'] ?? ''),
             'email_body' => (string) ($data['email_body'] ?? ''),
             'email_reply_to' => (string) ($data['email_reply_to'] ?? ''),
+            'qr_bill' => is_array($data['qr_bill'] ?? null) ? $data['qr_bill'] : null,
         ]);
 
         return $template;

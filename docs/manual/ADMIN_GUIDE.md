@@ -1460,7 +1460,7 @@ letterhead by anyone with the permission *Documents: manage* in that app (throug
 | **Letterhead** | **Letterhead first page (PDF)** and **Letterhead following pages (PDF)**; without a PDF, **Logo** and **Logo height** |
 | **Font and colours** | House font **regular**, **bold** and **italic** (.ttf); **Primary colour**, **Secondary colour**, **Text colour** |
 | **Page layout** | Margins in mm for **First page** and **Following pages**; **Address field** left or right; **Sender line** |
-| **Sender** | Company, address, VAT number, IBAN, contact – appear in the header and are available to templates as placeholders |
+| **Sender** | Company, address, VAT number, IBAN, contact – appear in the header and are available to templates as placeholders. Below, **For the QR bill**: street, house number, postcode, town, country and QR-IBAN (see [QR bill](#qr-bill)) |
 | **Archiving** | **PDF/A-3b** (on by default); for an app: *as installation*, *on* or *off* |
 
 ### Letterhead as PDF
@@ -1608,6 +1608,40 @@ When **saving**, SAFT checks the template:
   are not loaded; SAFT removes scripts, frames and external stylesheets.
 
 Placeholders do not run code; a template can only show data, not change it.
+
+### QR bill
+
+A template can append the **payment part with receipt** of the Swiss QR bill at the bottom (section **“QR bill”** of the
+template, switch **“Attach QR bill”**). SAFT follows the *Swiss Implementation Guidelines for the QR-bill* by SIX
+(version 2.4): Swiss QR Code 46 × 46 mm with Swiss cross, Liberation Sans font, separating lines with scissors.
+
+| Setting | Meaning |
+|---|---|
+| **Payment part** | **On its own last page** (without letterhead) or **at the bottom of the last page if there is room** – if the content reaches into the bottom 105 mm, it goes on its own page |
+| **Amount** | with placeholders, e.g. `{{offen \| Roh}}`; “1'234.50” and “1234,50” are read. Empty: box to fill in |
+| **Currency** | CHF or EUR |
+| **Reference** | e.g. `{{belegnummer}}`. With a regular IBAN SAFT forms an **RF reference** (ISO 11649, letters and digits), with a **QR-IBAN** a **QR reference** from the digits (at most 26, with check digit). Empty: no reference (regular IBAN only) |
+| **Message** | additional information for the payer, at most 140 characters |
+| **Debtor** | name, street, house number, postcode, town, country – usually via the link to the customer. Without name, postcode or town: box to fill in |
+
+The **creditor** is the sender of the letterhead: company, IBAN or **QR-IBAN** and the address under **“For the QR
+bill”** (street, house number, postcode, town, country; empty country = CH). If street, postcode and town are empty
+there, SAFT takes them from the **Address** field if its last line is “postcode town” (e.g. “8610 Uster”, also
+“CH-8610 Uster”). The name must match the account holder at the bank.
+
+**House number:** The standard requires street and house number separately. If the house number field is empty, SAFT
+splits a number at the end (“Bahnhofstrasse 12a”, “Hauptstrasse 3-5”) or at the beginning (“12, rue du Lac”) off the
+street name; a P.O. box stays as it is. If the street name itself ends in a number, give the house number in its own
+field – for the debtor e.g. with a separate field in the customer table.
+
+**IBAN and QR-IBAN:** The IBAN must be Swiss or Liechtenstein (CH/LI); SAFT checks the check digits when the letterhead
+is saved. You get the **QR-IBAN** (positions 5–9 between 30000 and 31999) from your bank; with it, payments can be
+matched automatically via the QR reference. It applies **to CHF only** – for invoices in EUR SAFT always uses the
+regular IBAN with an RF reference.
+
+**Errors** (e.g. “The letterhead lacks for the QR bill: Postcode, Town”, invalid IBAN, amount not a number) are shown in
+the template preview and in the “Create document” dialog; the document is then not created. To check, scan the PDF on
+screen with your banking app – nothing is paid.
 
 ### Passing templates on with the app
 

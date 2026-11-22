@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Seeders\Concerns;
 
+use App\Documents\LetterheadResolver;
+use App\Documents\QrBill\QrBillFactory;
 use App\DynamicData\DataMenu;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Files\RecordFiles;
@@ -15,6 +17,7 @@ use App\Models\App;
 use App\Models\AppManual;
 use App\Models\CustomField;
 use App\Models\CustomTable;
+use App\Models\DocumentLetterhead;
 use App\Models\DocumentTemplate;
 use App\Models\DynamicRecord;
 use App\Models\Menu;
@@ -213,8 +216,8 @@ trait SeedsDemoTables
      * noch nicht gibt; eine geänderte Vorlage bleibt.
      */
     /**
-     * @param  array{email_to?: string, email_subject?: string, email_body?: string}  $mail  E-Mail (D3b); bei einer schon
-     *                                                                                       angelegten Vorlage nachgetragen, solange leer
+     * @param  array<string, mixed>  $mail  weitere Eigenschaften: E-Mail (D3b), QR-Rechnung (qr_bill, D4a); bei einer schon
+     *                                      angelegten Vorlage je Eigenschaft nachgetragen, solange leer
      */
     protected function demoDocumentTemplate(string $uuid, string $table, string $name, string $file, string $recipient, string $fileName, ?string $fileField = null, array $mail = []): void
     {
@@ -222,9 +225,13 @@ trait SeedsDemoTables
         $existing = DocumentTemplate::query()->where('uuid', $uuid)->first();
 
         if ($existing !== null) {
-            if (blank($existing->email_to) && $mail !== []) {
-                $existing->fill($mail)->save();
+            foreach ($mail as $attribute => $value) {
+                if (blank($existing->{$attribute})) {
+                    $existing->{$attribute} = $value;
+                }
             }
+
+            $existing->save();
 
             return;
         }
@@ -244,6 +251,34 @@ trait SeedsDemoTables
             'file_field' => $fileField,
             ...$mail,
         ]);
+    }
+
+    /**
+     * Zahlungsempfänger der QR-Rechnung (D4a) für die Demo: im Briefpapier der App, aber nur, was im wirksamen
+     * Briefpapier (App oder Installation) noch fehlt – eigene Angaben bleiben.
+     *
+     * @param  array<string, string>  $sender  firma, strasse, plz, ort, land, iban
+     */
+    protected function demoQrCreditor(string $table, array $sender): void
+    {
+        $appId = CustomTable::query()->where('name', $table)->value('app_id');
+
+        if ($appId === null) {
+            return;
+        }
+
+        // Eine vorhandene Adresse im Briefpapier gilt auch für die QR-Rechnung (QrBillFactory::creditor) – nie überschreiben.
+        $effective = QrBillFactory::creditor(app(LetterheadResolver::class)->for((int) $appId)->sender);
+        $missing = array_filter($sender, static fn (string $value, string $key): bool => blank($effective[$key] ?? null)
+            && ! (in_array($key, ['strasse', 'plz', 'ort', 'land'], true) && filled($effective['plz'] ?? null)), ARRAY_FILTER_USE_BOTH);
+
+        if ($missing === []) {
+            return;
+        }
+
+        $row = DocumentLetterhead::query()->firstOrNew(['app_id' => (int) $appId]);
+        $row->sender = [...(array) ($row->sender ?? []), ...$missing];
+        $row->save();
     }
 
     /** @param  array<string, string>  $labels  Bezeichnung je Sprache */

@@ -555,6 +555,11 @@ you a blind copy. The PDF is attached; sent documents are stored with the record
 its email with the template’s subject and text; the message afterwards says how many emails were sent and which
 records have no valid address.
 
+**QR bill:** If the template appends a QR bill, the **payment part with receipt** appears at the bottom of the last
+page or on a page of its own – with amount, reference and your customer as debtor. Customers pay it with their banking
+app (scan the QR code) or at the post office counter. If information is missing (e.g. a valid IBAN in the letterhead) or
+the amount is not a number, a message gives the reason and the document is not created – contact your administration.
+
 ---
 
 ## Appendix A – Field types

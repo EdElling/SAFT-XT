@@ -35,6 +35,10 @@ Create the customer's **invoice** in the receipt's row with **“Create document
 it as PDF and stores it write-protected in the receipt files. With **“Send by email”** (permission *Documents: send*)
 it goes straight to the customer's email address.
 
+At the bottom of the invoice is the **QR bill** with the open amount and the receipt number as reference; if it no
+longer fits on the page, it goes on a page of its own. The creditor is the sender of the letterhead – the demo enters the
+SIX sample IBAN there if no IBAN is set yet. For real invoices, enter your own IBAN (or QR-IBAN) in the letterhead.
+
 ### Part and instalment payments
 
 Record any number of payments for a receipt, each with its own cash receipt. On the receipt, **paid** and **open** show

@@ -607,7 +607,19 @@ final class DynamicRecordActions
 
                     // Feld voll: nicht ablegen, aber herunterladen.
                     Notification::make()->warning()->title($exception->getMessage())->send();
-                    $result = $generator->generate($template, $record, $user(), false);
+
+                    try {
+                        $result = $generator->generate($template, $record, $user(), false);
+                    } catch (TemplateException $error) {
+                        Notification::make()->danger()->title(__('documents.generate.failed'))->body($error->getMessage())->persistent()->send();
+
+                        return null;
+                    }
+                } catch (TemplateException $exception) {
+                    // Vorlage oder Daten nicht umsetzbar (z. B. ungültige IBAN für die QR-Rechnung): Meldung statt Fehlerseite.
+                    Notification::make()->danger()->title(__('documents.generate.failed'))->body($exception->getMessage())->persistent()->send();
+
+                    return null;
                 }
 
                 if ($result['file'] !== null) {

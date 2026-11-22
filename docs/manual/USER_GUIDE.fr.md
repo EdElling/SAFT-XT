@@ -610,6 +610,12 @@ groupée, **« Envoyer par e-mail pour chaque enregistrement »** envoie à chaq
 et le texte du modèle ; le message qui suit indique combien d’e-mails ont été envoyés et quels enregistrements n’ont
 pas d’adresse valable.
 
+**QR-facture :** Si le modèle ajoute une QR-facture, la **section paiement avec récépissé** figure en bas de la
+dernière page ou sur une page propre – avec montant, référence et votre client comme débiteur. Les clients la paient avec
+leur app bancaire (scanner le code QR) ou au guichet postal. S’il manque des informations (p. ex. un IBAN valable dans le
+papier à lettres) ou si le montant n’est pas un nombre, un message indique la raison et le document n’est pas créé –
+adressez-vous à l’administration.
+
 ---
 
 ## Annexe A – Types de champs

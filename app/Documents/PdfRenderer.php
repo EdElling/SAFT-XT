@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Documents;
 
+use App\Documents\QrBill\QrBillFactory;
+use App\Documents\QrBill\QrBillPainter;
 use App\Models\DocumentLetterhead;
 use Com\Tecnick\Pdf\Tcpdf;
 use Illuminate\Support\Facades\File;
+use Sprain\SwissQrBill\QrBill;
 use Throwable;
 
 /**
@@ -29,12 +32,15 @@ final class PdfRenderer
         DocumentLetterhead::RIGHT => ['left' => 118, 'top' => 50, 'width' => 75, 'height' => 45],
     ];
 
+    /** Mindestabstand zwischen Inhalt und Zahlteil der QR-Rechnung auf derselben Seite (mm). */
+    private const float QR_GAP = 5.0;
+
     /** Abstand zwischen Adressfeld und Inhalt (mm). */
     private const float ADDRESS_GAP = 8.0;
 
     /**
      * @param  string  $html  Inhalt (Body) des Dokuments
-     * @param  array{title?: string, author?: string, lang?: string, css?: string, address?: string|null}  $options  address: HTML der Empfängeradresse; mit ihr steht das Adressfeld auf Seite 1
+     * @param  array{title?: string, author?: string, lang?: string, css?: string, address?: string|null, qr?: QrBill|null, qr_position?: string}  $options  address: HTML der Empfängeradresse; mit ihr steht das Adressfeld auf Seite 1. qr: QR-Rechnung, deren Zahlteil auf eine eigene letzte Seite (qr_position page) bzw. unten auf die letzte Seite kommt (bottom, wenn Platz ist)
      */
     public function render(string $html, Letterhead $letterhead, array $options = []): string
     {
@@ -89,7 +95,34 @@ final class PdfRenderer
             $pdf->page->delete(1);
         }
 
+        if (($options['qr'] ?? null) instanceof QrBill) {
+            $this->paymentPart($pdf, $options['qr'], (string) ($options['qr_position'] ?? QrBillFactory::PAGE), (string) ($options['lang'] ?? app()->getLocale()));
+        }
+
         return $pdf->getOutPDFString();
+    }
+
+    /**
+     * Zahlteil der QR-Rechnung: unten auf der letzten Seite, wenn der Inhalt darüber endet (bottom; Hintergrund und
+     * Fusszeile dort werden weiss überdeckt), sonst auf einer eigenen Seite ohne Briefpapier und Fusszeile.
+     */
+    private function paymentPart(PdfDocument $pdf, QrBill $qrBill, string $position, string $language): void
+    {
+        $end = $pdf->getLastHTMLCellEnd();
+        $last = array_key_last($pdf->page->getPages());
+
+        if ($position === QrBillFactory::BOTTOM && (int) $end['page'] === $last && (float) $end['y'] <= QrBillPainter::TOP - self::QR_GAP) {
+            $white = ['lineWidth' => 0, 'lineCap' => 'butt', 'lineJoin' => 'miter', 'dashArray' => [], 'dashPhase' => 0, 'lineColor' => 'white', 'fillColor' => 'white'];
+            $pdf->page->addContent($pdf->graph->getRect(0, QrBillPainter::TOP, 210, 297 - QrBillPainter::TOP, 'F', ['all' => $white]), (int) $last);
+            (new QrBillPainter($qrBill, $language, $pdf, (int) $last))->getPaymentPart();
+
+            return;
+        }
+
+        $pdf->bare = true;
+        $pdf->addPage(self::page(['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0]));
+        $pdf->bare = false;
+        (new QrBillPainter($qrBill, $language, $pdf, (int) array_key_last($pdf->page->getPages())))->getPaymentPart();
     }
 
     private function document(Letterhead $letterhead, ?string $house): PdfDocument

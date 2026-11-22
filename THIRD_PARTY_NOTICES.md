@@ -18,6 +18,7 @@ its declared license is reproduced below.
 |---|---|---|---|
 | anourvalar/eloquent-serialize | 1.3.12 | MIT | Copyright (c) 2019 AnourValar |
 | anthropic-ai/sdk | 1.8.0 | Apache-2.0 AND MIT | Copyright 2023 Anthropic, PBC.; Copyright 2023 Anthropic, PBC. (contributions before version 1.0.0) |
+| bacon/bacon-qr-code | 3.1.1 | BSD-2-Clause | Copyright (c) 2017-present, Ben Scholzen 'DASPRiD' |
 | bezhansalleh/filament-language-switch | 5.1.0 | MIT | Copyright (c) bezhanSalleh <bezhan_salleh@yahoo.com> |
 | blade-ui-kit/blade-heroicons | 2.7.0 | MIT | Copyright (c) Dries Vints |
 | blade-ui-kit/blade-icons | 1.11.0 | MIT | Copyright (c) Dries Vints |
@@ -30,12 +31,14 @@ its declared license is reproduced below.
 | composer/semver | 3.6.0 | MIT | Copyright (C) 2015 Composer |
 | danharrin/date-format-converter | 0.3.1 | MIT | Copyright (c) Dan Harrin |
 | danharrin/livewire-rate-limiting | 2.3.0 | MIT | Copyright (c) Dan Harrin |
+| dasprid/enum | 1.0.7 | BSD-2-Clause | Copyright (c) 2017, Ben Scholzen 'DASPRiD' |
 | dflydev/dot-access-data | 3.0.3 | MIT | Copyright (c) 2012 Dragonfly Development Inc. |
 | doctrine/deprecations | 1.2.0 | MIT | Copyright (c) 2020-2021 Doctrine Project |
 | doctrine/inflector | 2.1.1 | MIT | Copyright (c) 2006-2015 Doctrine Project |
 | doctrine/lexer | 3.0.3 | MIT | Copyright (c) 2006-2018 Doctrine Project |
 | dragonmantank/cron-expression | 3.6.1 | MIT | Copyright (c) 2011 Michael Dowling <mtdowling@gmail.com>, 2016 Chris Tankersley <chris@ctankersley.com>, and contributors |
 | egulias/email-validator | 4.0.4 | MIT | Copyright (c) 2013-2023 Eduardo Gulias Davis |
+| endroid/qr-code | 6.2.0 | MIT | Copyright 2025 (c) Jeroen van den Enden |
 | filament/actions | 5.11.4 | MIT | Copyright (c) the authors of https://github.com/filamentphp/actions |
 | filament/filament | 5.11.4 | MIT | Copyright (c) the authors of https://github.com/filamentphp/panels |
 | filament/forms | 5.11.4 | MIT | Copyright (c) the authors of https://github.com/filamentphp/forms |
@@ -55,6 +58,7 @@ its declared license is reproduced below.
 | guzzlehttp/psr7 | 2.13.3 | MIT | Copyright (c) 2015 Michael Dowling <mtdowling@gmail.com>; Copyright (c) 2015 Márk Sági-Kazár <mark.sagikazar@gmail.com>; Copyright (c) 2015 Graham Campbell <hello@gjcampbell.co.uk> |
 | guzzlehttp/uri-template | 2.0.1 | MIT | Copyright (c) 2014 Michael Dowling <mtdowling@gmail.com>; Copyright (c) 2020 George Mponos <gmponos@gmail.com>; Copyright (c) 2020 Graham Campbell <hello@gjcampbell.co.uk> |
 | kirschbaum-development/eloquent-power-joins | 4.3.6 | MIT | Copyright (c) Luis Dalmolin |
+| kmukku/php-iso11649 | 1.6 | MIT | Copyright (c) Keijo Mukku |
 | laravel/framework | 13.42.0 | MIT | Copyright (c) Taylor Otwell |
 | laravel/prompts | 0.3.27 | MIT | Copyright (c) Taylor Otwell |
 | laravel/serializable-closure | 2.2.0 | MIT | Copyright (c) Taylor Otwell |
@@ -119,6 +123,7 @@ its declared license is reproduced below.
 | spatie/laravel-translatable | 6.15.0 | MIT | Copyright (c) Spatie bvba <info@spatie.be> |
 | spatie/shiki-php | 2.4.0 | MIT | Copyright (c) spatie <info@spatie.be> |
 | spatie/temporary-directory | 2.4.0 | MIT | Copyright (c) Spatie bvba <info@spatie.be> |
+| sprain/swiss-qr-bill | 5.5 | MIT | Copyright (c) 2018 – 2025 Manuel Reinhard |
 | standard-webhooks/standard-webhooks | 1.0.2 | MIT | Copyright (c) the authors of https://github.com/standard-webhooks/standard-webhooks |
 | symfony/clock | 8.1.9 | MIT | Copyright (c) 2022-present Fabien Potencier |
 | symfony/console | 8.1.11 | MIT | Copyright (c) 2004-present Fabien Potencier |
@@ -131,10 +136,12 @@ its declared license is reproduced below.
 | symfony/html-sanitizer | 8.1.11 | MIT | Copyright (c) 2021-present Fabien Potencier |
 | symfony/http-foundation | 8.1.11 | MIT | Copyright (c) 2004-present Fabien Potencier |
 | symfony/http-kernel | 8.1.11 | MIT | Copyright (c) 2004-present Fabien Potencier |
+| symfony/intl | 8.1.10 | MIT | Copyright (c) 2004-present Fabien Potencier |
 | symfony/mailer | 8.1.10 | MIT | Copyright (c) 2019-present Fabien Potencier |
 | symfony/mime | 8.1.10 | MIT | Copyright (c) 2010-present Fabien Potencier |
 | symfony/polyfill-ctype | 1.37.0 | MIT | Copyright (c) 2018-present Fabien Potencier |
 | symfony/polyfill-intl-grapheme | 1.43.3 | MIT | Copyright (c) 2015-present Fabien Potencier |
+| symfony/polyfill-intl-icu | 1.43.3 | MIT | Copyright (c) 2004-present Fabien Potencier |
 | symfony/polyfill-intl-idn | 1.43.0 | MIT | Copyright (c) 2018-present Fabien Potencier and Trevor Rowbotham <trevor.rowbotham@pm.me> |
 | symfony/polyfill-intl-normalizer | 1.43.0 | MIT | Copyright (c) 2015-present Fabien Potencier |
 | symfony/polyfill-mbstring | 1.43.3 | MIT | Copyright (c) 2015-present Fabien Potencier |
@@ -153,6 +160,7 @@ its declared license is reproduced below.
 | symfony/translation | 8.1.11 | MIT | Copyright (c) 2004-present Fabien Potencier |
 | symfony/translation-contracts | 3.8.1 | MIT | Copyright (c) 2018-present Fabien Potencier |
 | symfony/uid | 8.1.9 | MIT | Copyright (c) 2020-present Fabien Potencier |
+| symfony/validator | 8.1.11 | MIT | Copyright (c) 2004-present Fabien Potencier |
 | symfony/var-dumper | 8.1.10 | MIT | Copyright (c) 2014-present Fabien Potencier |
 | tecnickcom/tc-lib-barcode | 2.17.6 | LGPL-3.0-or-later | Copyright (c) 2001-2026 Nicola Asuni - Tecnick.com LTD |
 | tecnickcom/tc-lib-color | 3.1.1 | LGPL-3.0-or-later | Copyright (c) 2015-2026 Nicola Asuni - Tecnick.com LTD |
@@ -300,9 +308,11 @@ https://github.com/kieler/elkjs (and in the npm package `elkjs@0.12.1`).
 |---|---|---|---|
 | Inter (font, shipped with Filament) | 4 | OFL-1.1 | Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter) |
 | DejaVu Sans (font for PDF documents, resources/fonts/pdf) | 2.37 | Bitstream-Vera | Copyright (c) 2003 by Bitstream, Inc.; DejaVu changes are in public domain |
+| Liberation Sans (font for the payment part of QR bills, resources/fonts/pdf) | 2.1.5 | OFL-1.1 | Copyright (c) 2012 Red Hat, Inc. with Reserved Font Name Liberation |
 
 SIL Open Font License 1.1: https://openfontlicense.org/open-font-license-official-text/
 Bitstream Vera Fonts License (DejaVu Sans): reproduced in `resources/fonts/pdf/LICENSE-DejaVu.txt`.
+SIL Open Font License 1.1 (Liberation Sans): reproduced in `resources/fonts/pdf/LICENSE-LiberationSans.txt`.
 
 ## License texts
 
@@ -553,6 +563,32 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
+### BSD-2-Clause – bacon/bacon-qr-code, dasprid/enum
+
+```text
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
 ### MIT – bezhansalleh/filament-language-switch, blade-ui-kit/blade-heroicons, blade-ui-kit/blade-icons, brick/math, chillerlan/php-settings-container, graham-campbell/result-type, guzzlehttp/guzzle, guzzlehttp/promises, guzzlehttp/psr7, guzzlehttp/uri-template, laravel/framework, laravel/prompts, laravel/serializable-closure, laravel/socialite, laravel/tinker, league/csv, league/oauth1-client, league/uri, league/uri-components, league/uri-interfaces, mustache/mustache, nunomaduro/termwind, phpdocumentor/reflection-common, phpdocumentor/type-resolver, psr/container, psy/psysh, ralouphie/getallheaders, ryangjchandler/blade-capture-directive, socialiteproviders/manager, spatie/invade, spatie/laravel-activitylog, spatie/laravel-package-tools, spatie/laravel-permission, spatie/laravel-settings, spatie/laravel-translatable, spatie/shiki-php, spatie/temporary-directory, ueberdosis/tiptap-php, @mermaid-js/parser, katex, khroma, mermaid
 
 ```text
@@ -784,7 +820,7 @@ Apache License
    limitations under the License.
 ```
 
-### MIT – composer/class-map-generator, composer/pcre, composer/semver, dflydev/dot-access-data, doctrine/deprecations, doctrine/inflector, doctrine/lexer, dragonmantank/cron-expression, egulias/email-validator, filament/actions, filament/filament, filament/forms, filament/infolists, filament/notifications, filament/query-builder, filament/schemas, filament/spatie-laravel-settings-plugin, filament/support, filament/tables, filament/widgets, fruitcake/php-cors, league/flysystem, league/flysystem-local, league/mime-type-detection, litesaml/lightsaml, litesaml/schemas, monolog/monolog, nesbot/carbon, php-http/discovery, phpseclib/phpseclib, pragmarx/google2fa, pragmarx/google2fa-qrcode, psr/clock, psr/http-client, psr/http-message, psr/log, ramsey/collection, ramsey/uuid, socialiteproviders/microsoft-azure, socialiteproviders/saml2, symfony/clock, symfony/console, symfony/css-selector, symfony/deprecation-contracts, symfony/error-handler, symfony/event-dispatcher, symfony/event-dispatcher-contracts, symfony/finder, symfony/html-sanitizer, symfony/http-foundation, symfony/http-kernel, symfony/mailer, symfony/mime, symfony/polyfill-ctype, symfony/polyfill-intl-grapheme, symfony/polyfill-intl-idn, symfony/polyfill-intl-normalizer, symfony/polyfill-mbstring, symfony/polyfill-php80, symfony/polyfill-php82, symfony/polyfill-php84, symfony/polyfill-php85, symfony/polyfill-php86, symfony/polyfill-time, symfony/polyfill-uuid, symfony/process, symfony/psr-http-message-bridge, symfony/routing, symfony/service-contracts, symfony/string, symfony/translation, symfony/translation-contracts, symfony/uid, symfony/var-dumper, voku/portable-ascii, iconv-lite
+### MIT – composer/class-map-generator, composer/pcre, composer/semver, dflydev/dot-access-data, doctrine/deprecations, doctrine/inflector, doctrine/lexer, dragonmantank/cron-expression, egulias/email-validator, endroid/qr-code, filament/actions, filament/filament, filament/forms, filament/infolists, filament/notifications, filament/query-builder, filament/schemas, filament/spatie-laravel-settings-plugin, filament/support, filament/tables, filament/widgets, fruitcake/php-cors, kmukku/php-iso11649, league/flysystem, league/flysystem-local, league/mime-type-detection, litesaml/lightsaml, litesaml/schemas, monolog/monolog, nesbot/carbon, php-http/discovery, phpseclib/phpseclib, pragmarx/google2fa, pragmarx/google2fa-qrcode, psr/clock, psr/http-client, psr/http-message, psr/log, ramsey/collection, ramsey/uuid, socialiteproviders/microsoft-azure, socialiteproviders/saml2, sprain/swiss-qr-bill, symfony/clock, symfony/console, symfony/css-selector, symfony/deprecation-contracts, symfony/error-handler, symfony/event-dispatcher, symfony/event-dispatcher-contracts, symfony/finder, symfony/html-sanitizer, symfony/http-foundation, symfony/http-kernel, symfony/intl, symfony/mailer, symfony/mime, symfony/polyfill-ctype, symfony/polyfill-intl-grapheme, symfony/polyfill-intl-icu, symfony/polyfill-intl-idn, symfony/polyfill-intl-normalizer, symfony/polyfill-mbstring, symfony/polyfill-php80, symfony/polyfill-php82, symfony/polyfill-php84, symfony/polyfill-php85, symfony/polyfill-php86, symfony/polyfill-time, symfony/polyfill-uuid, symfony/process, symfony/psr-http-message-bridge, symfony/routing, symfony/service-contracts, symfony/string, symfony/translation, symfony/translation-contracts, symfony/uid, symfony/validator, symfony/var-dumper, voku/portable-ascii, iconv-lite
 
 ```text
 Permission is hereby granted, free of charge, to any person obtaining a copy of

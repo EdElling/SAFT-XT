@@ -6,6 +6,7 @@ namespace App\Documents\Templates;
 
 use App\Documents\LetterheadResolver;
 use App\Documents\PdfRenderer;
+use App\Documents\QrBill\QrBillFactory;
 use App\Models\CustomTable;
 use App\Models\DocumentTemplate;
 use App\Models\DynamicRecord;
@@ -24,6 +25,7 @@ final class TemplateRenderer
         private readonly TemplateEngine $engine,
         private readonly LetterheadResolver $letterheads,
         private readonly PdfRenderer $pdf,
+        private readonly QrBillFactory $qrBills,
     ) {}
 
     /** @throws TemplateException */
@@ -41,7 +43,12 @@ final class TemplateRenderer
             $html = $this->engine->html($template->body, $context);
             $recipient = $this->recipient((string) $template->recipient, $context);
             $fileName = self::fileName($this->engine->text((string) $template->file_name, $context), $template->name);
-            $pdf = $this->pdf->render($html, $letterhead, ['title' => pathinfo($fileName, PATHINFO_FILENAME), 'lang' => $locale, 'address' => $recipient]);
+            // QR-Rechnung (D4a): ungültige Zahlungsdaten ergeben eine TemplateException mit Grund.
+            $qr = QrBillFactory::enabled($template->qr_bill) ? $this->qrBills->build((array) $template->qr_bill, $context, $letterhead) : null;
+            $pdf = $this->pdf->render($html, $letterhead, [
+                'title' => pathinfo($fileName, PATHINFO_FILENAME), 'lang' => $locale, 'address' => $recipient,
+                'qr' => $qr, 'qr_position' => (string) ($template->qr_bill['position'] ?? QrBillFactory::PAGE),
+            ]);
         } finally {
             app()->setLocale($previous[0]);
             Carbon::setLocale($previous[1]);

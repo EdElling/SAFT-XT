@@ -23,7 +23,7 @@
         },
         "icon": "heroicon-o-musical-note",
         "prefix": "musikschule",
-        "version": "1.3",
+        "version": "1.4",
         "interface_version": 1,
         "manual": []
     },
@@ -5686,6 +5686,19 @@
             "email_subject": "Semesterrechnung {{rechnungsnummer}}",
             "email_body": "Guten Tag\n\nIm Anhang erhalten Sie die Semesterrechnung {{rechnungsnummer}} für {{schueler}} ({{semester}}), zahlbar bis {{faellig_am | DatumLang}}.\n\nHerzlichen Dank und freundliche Grüsse\n{{absender.firma}}",
             "email_reply_to": null,
+            "qr_bill": {
+                "enabled": true,
+                "position": "bottom",
+                "amount": "{{offen | Roh}}",
+                "currency": "CHF",
+                "reference": "{{rechnungsnummer}}",
+                "message": "Semesterrechnung {{rechnungsnummer}}",
+                "debtor_name": "{{#kontaktperson}}{{vorname}} {{nachname}}{{/kontaktperson}}{{^kontaktperson}}{{schueler.vorname}} {{schueler.nachname}}{{/kontaktperson}}",
+                "debtor_street": "{{#kontaktperson}}{{strasse}}{{/kontaktperson}}{{^kontaktperson}}{{schueler.strasse}}{{/kontaktperson}}",
+                "debtor_postal_code": "{{#kontaktperson}}{{plz}}{{/kontaktperson}}{{^kontaktperson}}{{schueler.plz}}{{/kontaktperson}}",
+                "debtor_city": "{{#kontaktperson}}{{ort}}{{/kontaktperson}}{{^kontaktperson}}{{schueler.ort}}{{/kontaktperson}}",
+                "debtor_country": ""
+            },
             "is_active": true,
             "sort_order": 0
         }

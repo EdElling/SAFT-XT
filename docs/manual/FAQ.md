@@ -28,6 +28,7 @@
    - [I cannot remove a document from a file field.](#i-cannot-remove-a-document-from-a-file-field)
    - [Checkboxes for selecting are missing in a list.](#checkboxes-for-selecting-are-missing-in-a-list)
    - [A document could not be sent by email.](#a-document-could-not-be-sent-by-email)
+   - [The QR bill is missing or the banking app cannot read it.](#the-qr-bill-is-missing-or-the-banking-app-cannot-read-it)
 
 ---
 ## Frequently asked questions
@@ -126,3 +127,12 @@ guide, section 4.10). Deleted records in the recycle bin cannot be selected.
   read the related table. Enter the address by hand.
 - **“The mail server rejects the sender address …”** or another message from the server: this is a setting of the
   administration (email sending in the global settings). The document was created anyway and – if provided – stored.
+
+### The QR bill is missing or the banking app cannot read it.
+
+- **“The QR bill is invalid” or “The letterhead lacks for the QR bill”:** creditor details (postcode, town, IBAN) are
+  missing in the letterhead or the IBAN is wrong – the administration corrects the letterhead (Administrator guide,
+  chapter 16, “QR bill”).
+- **“The amount of the QR bill is not a number”:** the record has no amount or it is not a number.
+- **The banking app does not recognise the code:** show the PDF at original size on screen or print it (not scaled down,
+  “fit to page” off). The code must be 46 × 46 mm.

@@ -57,6 +57,9 @@ Vorgewählt ist **„Im Feld ‚Dokumente‘ ablegen“**: Das PDF kommt schreib
 (jede Erstellung als neue Fassung). Ablegen braucht das Recht, Rechnungen zu bearbeiten; die Rolle *Musikschule* hat es. **„Per E-Mail senden“** schickt
 die Rechnung an die E-Mail-Adresse der Kontaktperson, sonst der Schülerin bzw. des Schülers – dafür braucht die Rolle
 zusätzlich *Dokumente: versenden* (bewusst nicht vorgegeben).
+Unten auf der Semesterrechnung steht die **QR-Rechnung** (sonst auf einer eigenen Seite) mit dem offenen Betrag und
+der Rechnungsnummer als Referenz, zahlbar durch die Kontaktperson bzw. die Schülerin oder den Schüler. Zahlungsempfänger ist
+der Absender des Briefpapiers (Demo: Beispiel-IBAN von SIX, falls noch keine IBAN eingetragen ist).
 
 ### Instrumente vermieten
 

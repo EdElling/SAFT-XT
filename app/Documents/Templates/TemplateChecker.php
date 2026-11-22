@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Documents\Templates;
 
 use App\Documents\LetterheadResolver;
+use App\Documents\QrBill\QrBillFactory;
 use App\DynamicData\Schema\FieldType;
 use App\Models\CustomTable;
 use Mustache\Exception as MustacheException;
@@ -32,9 +33,10 @@ final class TemplateChecker
 
     /**
      * @param  array{email_to?: ?string, email_subject?: ?string, email_body?: ?string, email_reply_to?: ?string}  $mail  E-Mail-Teile (D3b)
+     * @param  array<string, mixed>|null  $qr  Einstellungen der QR-Rechnung (D4a); geprüft werden ihre Texte
      * @return array{errors: list<string>, warnings: list<string>}
      */
-    public function check(CustomTable $table, string $body, ?string $recipient = null, ?string $fileName = null, array $mail = []): array
+    public function check(CustomTable $table, string $body, ?string $recipient = null, ?string $fileName = null, array $mail = [], ?array $qr = null): array
     {
         $errors = [];
         $parts = ['body' => $body, 'recipient' => (string) $recipient, 'file_name' => (string) $fileName];
@@ -46,6 +48,12 @@ final class TemplateChecker
         foreach ($parts as $part => $template) {
             foreach ($this->placeholders($table, $template) as $error) {
                 $errors[] = __('documents.templates.check.in_'.$part, ['error' => $error]);
+            }
+        }
+
+        foreach (QrBillFactory::enabled($qr) ? QrBillFactory::TEXTS : [] as $key) {
+            foreach ($this->placeholders($table, (string) ($qr[$key] ?? '')) as $error) {
+                $errors[] = __('documents.templates.check.in_qr', ['field' => __('documents.qr.fields.'.$key), 'error' => $error]);
             }
         }
 

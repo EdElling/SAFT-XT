@@ -1570,7 +1570,7 @@ app par qui a, dans cette app, le droit *Documents: gérer* (par un rôle de l�
 | **Papier à lettres** | **Papier à lettres première page (PDF)** et **Papier à lettres pages suivantes (PDF)** ; sans PDF, **Logo** et **Hauteur du logo** |
 | **Police et couleurs** | Police maison **normale**, **grasse** et **italique** (.ttf) ; **Couleur primaire**, **Couleur secondaire**, **Couleur du texte** |
 | **Mise en page** | Marges en mm pour **Première page** et **Pages suivantes** ; **Champ d’adresse** à gauche ou à droite ; **Ligne d’expéditeur** |
-| **Expéditeur** | Entreprise, adresse, numéro TVA, IBAN, contact – figurent dans l’en-tête et sont disponibles comme espaces réservés dans les modèles |
+| **Expéditeur** | Entreprise, adresse, numéro TVA, IBAN, contact – figurent dans l’en-tête et sont disponibles comme espaces réservés dans les modèles. En dessous, **Pour la QR-facture** : rue, numéro, NPA, localité, pays et QR-IBAN (voir [QR-facture](#qr-facture)) |
 | **Archivage** | **PDF/A-3b** (activé par défaut) ; pour une app : *comme l’installation*, *activé* ou *désactivé* |
 
 ### Papier à lettres en PDF
@@ -1721,6 +1721,41 @@ justificatif sans client), c’est indiqué au-dessus de l’aperçu.
   les images externes ne sont pas chargées ; SAFT supprime scripts, cadres et feuilles de style externes.
 
 Les espaces réservés n’exécutent pas de code ; un modèle peut seulement afficher des données, pas les modifier.
+
+### QR-facture
+
+Un modèle peut ajouter en bas la **section paiement avec récépissé** de la QR-facture suisse (section **« QR-facture »**
+du modèle, interrupteur **« Joindre une QR-facture »**). SAFT suit les *Swiss Implementation Guidelines QR-facture* de
+SIX (version 2.4) : Swiss QR Code de 46 × 46 mm avec croix suisse, police Liberation Sans, lignes de séparation avec
+ciseaux.
+
+| Réglage | Signification |
+|---|---|
+| **Section paiement** | **Sur une dernière page propre** (sans papier à lettres) ou **en bas de la dernière page s’il y a la place** – si le contenu atteint les 105 mm du bas, elle va sur une page propre |
+| **Montant** | avec espaces réservés, p. ex. `{{offen \| Roh}}` ; « 1'234.50 » et « 1234,50 » sont lus. Vide : champ à remplir |
+| **Monnaie** | CHF ou EUR |
+| **Référence** | p. ex. `{{belegnummer}}`. Avec un IBAN ordinaire, SAFT en forme une **référence RF** (ISO 11649, lettres et chiffres), avec un **QR-IBAN** une **référence QR** à partir des chiffres (26 au plus, avec chiffre de contrôle). Vide : sans référence (IBAN ordinaire uniquement) |
+| **Communication** | information supplémentaire pour le payeur, 140 caractères au plus |
+| **Débiteur** | nom, rue, numéro, NPA, localité, pays – en général via le lien vers le client. Sans nom, NPA ou localité : champ à remplir |
+
+Le **bénéficiaire** est l’expéditeur du papier à lettres : entreprise, IBAN ou **QR-IBAN** et l’adresse sous **« Pour la
+QR-facture »** (rue, numéro, NPA, localité, pays ; pays vide = CH). Si rue, NPA et localité y sont vides, SAFT les
+reprend du champ **Adresse** si sa dernière ligne est « NPA localité » (p. ex. « 8610 Uster », aussi « CH-8610 Uster »).
+Le nom doit correspondre au titulaire du compte auprès de la banque.
+
+**Numéro :** La norme exige la rue et le numéro séparément. Si le champ du numéro est vide, SAFT sépare du nom de rue un
+numéro en fin (« Bahnhofstrasse 12a », « Hauptstrasse 3-5 ») ou en début (« 12, rue du Lac ») ; une case postale reste
+telle quelle. Si le nom de rue se termine lui-même par un nombre, indiquez le numéro dans son propre champ – pour le
+débiteur p. ex. avec un champ à part dans la table des clients.
+
+**IBAN et QR-IBAN :** L’IBAN doit être suisse ou liechtensteinois (CH/LI) ; SAFT vérifie les chiffres de contrôle à
+l’enregistrement du papier à lettres. Le **QR-IBAN** (positions 5 à 9 entre 30000 et 31999) vous est fourni par la
+banque ; il permet d’attribuer automatiquement les paiements via la référence QR. Il ne vaut **que pour le CHF** – pour
+les factures en EUR, SAFT utilise toujours l’IBAN ordinaire avec une référence RF.
+
+Les **erreurs** (p. ex. « Pour la QR-facture, il manque dans le papier à lettres : NPA, Localité », IBAN non valable,
+montant qui n’est pas un nombre) s’affichent dans l’aperçu du modèle et dans la boîte de dialogue « Créer un document » ;
+le document n’est alors pas créé. Pour vérifier, scannez le PDF à l’écran avec votre app bancaire – rien n’est payé.
 
 ### Transmettre avec l’app
 

@@ -36,6 +36,11 @@ Créez la **facture** du client dans la ligne du justificatif avec **« Créer u
 la télécharge en PDF et la dépose, protégée en écriture, dans les fichiers du justificatif. Avec **« Envoyer par
 e-mail »** (droit *Documents : envoyer*), elle part directement à l’adresse e-mail du client.
 
+En bas de la facture figure la **QR-facture** avec le montant ouvert et le numéro du justificatif comme référence ; si
+elle ne tient plus sur la page, elle va sur une page propre. Le bénéficiaire est l’expéditeur du papier à lettres – la
+démo y inscrit l’IBAN d’exemple de SIX si aucun IBAN n’est encore saisi. Pour de vraies factures, saisissez votre propre
+IBAN (ou QR-IBAN) dans le papier à lettres.
+
 ### Paiements partiels et échelonnés
 
 Saisir autant de paiements que nécessaire pour un justificatif, chacun avec son ticket. Sur le justificatif, **payé**

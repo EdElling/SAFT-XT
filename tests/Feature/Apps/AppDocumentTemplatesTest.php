@@ -51,8 +51,9 @@ class AppDocumentTemplatesTest extends DynamicDataTestCase
             'key' => GitarrenshopDemoSeeder::INVOICE_TEMPLATE, 'name' => 'Rechnung', 'table' => 'gitarren_belege', 'file_name' => 'Rechnung-{{belegnummer}}',
             'language_field' => null, 'file_field' => 'dateien', 'email_to' => '{{kunde_id.email}}', 'email_subject' => 'Rechnung {{belegnummer}}',
             'email_reply_to' => null, 'is_active' => true, 'sort_order' => 0,
-        ]], array_map(static fn (array $d): array => array_diff_key($d, array_flip(['recipient', 'body', 'email_body'])), $definition['documents']));
+        ]], array_map(static fn (array $d): array => array_diff_key($d, array_flip(['recipient', 'body', 'email_body', 'qr_bill'])), $definition['documents']));
         $this->assertStringContainsString('{{#gitarren_buchungen}}', $definition['documents'][0]['body']);
+        $this->assertSame(['enabled' => true, 'reference' => '{{belegnummer}}'], array_intersect_key($definition['documents'][0]['qr_bill'], array_flip(['enabled', 'reference'])), 'QR-Rechnung (D4a) geht mit.');
         $this->assertArrayNotHasKey('letterhead', $definition);
         $this->assertSame([], app(AppDefinitionValidator::class)->errors($definition));
         $this->assertSame([], $this->export(['reports'])['documents'], 'Ohne den Teil keine Vorlagen.');

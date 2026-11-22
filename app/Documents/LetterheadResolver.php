@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\Storage;
  */
 final class LetterheadResolver
 {
-    public const array SENDER_KEYS = ['firma', 'adresse', 'mwst', 'iban', 'kontakt'];
+    /** Absenderdaten; strasse, plz, ort, land und qr_iban für den Zahlungsempfänger der QR-Rechnung (D4a). */
+    public const array SENDER_KEYS = ['firma', 'adresse', 'mwst', 'iban', 'kontakt', 'strasse', 'hausnummer', 'plz', 'ort', 'land', 'qr_iban'];
 
     public const array SIDES = ['top', 'right', 'bottom', 'left'];
 

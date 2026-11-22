@@ -28,6 +28,7 @@
    - [Je ne peux pas retirer un document d’un champ de fichiers.](#je-ne-peux-pas-retirer-un-document-dun-champ-de-fichiers)
    - [Dans une liste, les cases à cocher pour sélectionner manquent.](#dans-une-liste-les-cases-à-cocher-pour-sélectionner-manquent)
    - [Un document n’a pas pu être envoyé par e-mail.](#un-document-na-pas-pu-être-envoyé-par-e-mail)
+   - [La QR-facture manque ou l’app bancaire ne la lit pas.](#la-qr-facture-manque-ou-lapp-bancaire-ne-la-lit-pas)
 
 ---
 ## Questions fréquentes
@@ -134,3 +135,12 @@ corbeille ne peuvent pas être sélectionnés.
 - **« Le serveur de messagerie refuse l’adresse d’expéditeur … »** ou un autre message du serveur : c’est un paramètre
   de l’administration (envoi d’e-mails dans les paramètres globaux). Le document a tout de même été créé et – si prévu –
   déposé.
+
+### La QR-facture manque ou l’app bancaire ne la lit pas.
+
+- **« La QR-facture n’est pas valable » ou « il manque dans le papier à lettres » :** il manque des données du
+  bénéficiaire (NPA, localité, IBAN) dans le papier à lettres ou l’IBAN est erroné – l’administration corrige le papier à
+  lettres (manuel d’administration, chapitre 16, « QR-facture »).
+- **« Le montant de la QR-facture n’est pas un nombre » :** l’enregistrement n’a pas de montant ou ce n’est pas un nombre.
+- **L’app bancaire ne reconnaît pas le code :** afficher le PDF en taille réelle à l’écran ou l’imprimer (sans réduction,
+  « ajuster à la page » désactivé). Le code doit mesurer 46 × 46 mm.

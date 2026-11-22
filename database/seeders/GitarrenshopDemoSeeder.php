@@ -101,8 +101,20 @@ class GitarrenshopDemoSeeder extends Seeder
                 'email_to' => '{{kunde_id.email}}',
                 'email_subject' => 'Rechnung {{belegnummer}}',
                 'email_body' => "Guten Tag {{kunde_id.vorname}} {{kunde_id.name}}\n\nIm Anhang erhalten Sie die Rechnung {{belegnummer}} vom {{datum | DatumLang}}.\n\nBesten Dank für Ihren Einkauf und freundliche Grüsse\n{{absender.firma}}",
+                // QR-Rechnung (D4a): offener Betrag, RF-Referenz aus der Belegnummer, Kunde als Zahlungspflichtiger.
+                'qr_bill' => [
+                    'enabled' => true, 'position' => 'bottom', 'amount' => '{{offen | Roh}}', 'currency' => 'CHF',
+                    'reference' => '{{belegnummer}}', 'message' => 'Rechnung {{belegnummer}}',
+                    'debtor_name' => '{{kunde_id.vorname}} {{kunde_id.name}}', 'debtor_street' => '{{kunde_id.strasse}}',
+                    'debtor_postal_code' => '{{kunde_id.plz}}', 'debtor_city' => '{{kunde_id.ort}}', 'debtor_country' => '{{kunde_id.land | Roh}}',
+                ],
             ],
         );
+        // Beispiel-IBAN aus den Unterlagen von SIX – für eigene Rechnungen im Briefpapier ersetzen.
+        $this->demoQrCreditor('gitarren_belege', [
+            'firma' => 'Gitarrenshop Muster AG', 'strasse' => 'Saitenweg 7', 'plz' => '8004', 'ort' => 'Zürich', 'land' => 'CH',
+            'iban' => 'CH93 0076 2011 6238 5295 7',
+        ]);
     }
 
     /** Fachrolle der App mit allen Rechten auf ihre Tabellen und dem Ansehen der Auswertungen. */

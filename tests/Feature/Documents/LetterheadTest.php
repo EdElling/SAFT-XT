@@ -75,7 +75,7 @@ class LetterheadTest extends TestCase
         DocumentLetterhead::installation()->update([
             'color_primary' => '#112233', 'color_text' => '#000000', 'address_position' => DocumentLetterhead::RIGHT,
             'margins' => ['first' => ['top' => 50], 'next' => ['top' => 20]],
-            'sender' => ['firma' => 'Muster AG', 'iban' => 'CH00 1111'], 'pdfa' => true,
+            'sender' => ['firma' => 'Muster AG', 'iban' => 'CH93 0076 2011 6238 5295 7'], 'pdfa' => true,
         ]);
         DocumentLetterhead::query()->create([
             'app_id' => $this->testApp->id, 'color_primary' => '#aa0000', 'margins' => ['first' => ['left' => 30]],
@@ -85,7 +85,7 @@ class LetterheadTest extends TestCase
         $own = app(LetterheadResolver::class)->for($this->testApp->id);
         $this->assertSame(['#aa0000', '#000000', '#6b7280', DocumentLetterhead::RIGHT, false], [$own->primary, $own->text, $own->secondary, $own->addressPosition, $own->pdfa]);
         $this->assertSame([50.0, 30.0, 20.0], [$own->margins['first']['top'], $own->margins['first']['left'], $own->margins['next']['top']]);
-        $this->assertSame(['Muster AG, Musikschule', 'CH00 1111', null], [$own->sender['firma'], $own->sender['iban'], $own->sender['mwst']]);
+        $this->assertSame(['Muster AG, Musikschule', 'CH93 0076 2011 6238 5295 7', null], [$own->sender['firma'], $own->sender['iban'], $own->sender['mwst']]);
 
         $installation = app(LetterheadResolver::class)->for(null);
         $this->assertSame(['#112233', 'Muster AG', true], [$installation->primary, $installation->sender['firma'], $installation->pdfa]);
@@ -184,7 +184,7 @@ class LetterheadTest extends TestCase
                 'first_page_path' => UploadedFile::fake()->createWithContent('brief.pdf', self::pdf('BRIEF', 2)),
                 'color_primary' => '#123456',
                 'margins' => ['first' => ['top' => '55']],
-                'sender' => ['firma' => 'Muster AG', 'iban' => 'CH00 1111'],
+                'sender' => ['firma' => 'Muster AG', 'iban' => 'CH93 0076 2011 6238 5295 7'],
                 'address_position' => DocumentLetterhead::RIGHT,
                 'pdfa' => true,
             ])
@@ -203,7 +203,7 @@ class LetterheadTest extends TestCase
             ->assertHasNoFormErrors();
 
         $letterhead = app(LetterheadResolver::class)->for($this->testApp->id);
-        $this->assertSame(['Musikschule', 'CH00 1111', '#123456', false], [$letterhead->sender['firma'], $letterhead->sender['iban'], $letterhead->primary, $letterhead->pdfa]);
+        $this->assertSame(['Musikschule', 'CH93 0076 2011 6238 5295 7', '#123456', false], [$letterhead->sender['firma'], $letterhead->sender['iban'], $letterhead->primary, $letterhead->pdfa]);
         $this->assertNotNull($letterhead->firstPage);
 
         Livewire::test(DocumentSettingsPage::class, [])->set('scope', (string) $this->testApp->id)->callAction('reset');

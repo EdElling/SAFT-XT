@@ -55,6 +55,9 @@ Create the invoice as PDF on the letterhead in the invoice's row with **“Creat
 (each creation as a new version). Storing needs the permission to edit invoices; the role *Musikschule* has it. **“Send by email”** sends the invoice to
 the email address of the contact person, otherwise of the student – for this the role also needs *Documents: send*
 (deliberately not preset).
+At the bottom of the semester invoice is the **QR bill** (otherwise on a page of its own) with the open amount and the
+invoice number as reference, payable by the contact person or the student. The creditor is the sender of the letterhead (demo: SIX sample
+IBAN if no IBAN has been entered yet).
 
 ### Renting instruments
 

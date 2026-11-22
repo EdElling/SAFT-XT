@@ -56,6 +56,9 @@ Créez la facture en PDF sur le papier à lettres dans la ligne de la facture av
 **Documents** de la facture (chaque création comme nouvelle version). Déposer requiert le droit de modifier les
 factures ; le rôle *Musikschule* l’a. **« Envoyer par e-mail »** envoie la facture à l’adresse e-mail de la personne
 de contact, sinon de l’élève – il faut pour cela en plus le droit *Documents : envoyer* (volontairement pas prédéfini).
+En bas de la facture semestrielle figure la **QR-facture** (sinon sur une page propre) avec le montant ouvert et le
+numéro de facture comme référence, payable par la personne de contact ou l’élève. Le bénéficiaire est l’expéditeur du papier à
+lettres (démo : IBAN d’exemple de SIX si aucun IBAN n’est encore saisi).
 
 ### Louer des instruments
 

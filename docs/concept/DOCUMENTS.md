@@ -183,5 +183,13 @@ Jede Etappe ist für sich auslieferbar. D1 ist ohne KI vollständig nutzbar.
   (Passwort verschlüsselt, leere Felder = .env, SMTP geht vor `MAIL_MAILER`) mit „Verbindung prüfen“ statt Test-E-Mail:
   verbinden, TLS, Anmeldung und Absender (MAIL FROM, danach RSET), Ursache in der Meldung – GMX lehnt fremde
   Absenderadressen ab. Musikschule 1.3 mit E-Mail an Kontaktperson bzw. Schüler.
+- **D4a (22.11.2026):** QR-Rechnung mit `sprain/swiss-qr-bill` (MIT) für Daten und Prüfung; den Zahlteil zeichnet SAFT
+  selbst mit tc-lib-pdf (Liberation Sans, OFL, eingebettet; QR-Code als Vektor, Schweizerkreuz gezeichnet). Je Vorlage
+  `qr_bill` (JSON): Zahlteil auf eigener letzter Seite (Vorgabe) oder unten, wenn Platz ist; Betrag, Währung, Referenz,
+  Mitteilung, Zahlungspflichtiger mit Platzhaltern. Zahlungsempfänger aus dem Briefpapier (neu Strasse, Hausnummer,
+  PLZ, Ort, Land, QR-IBAN; leer aus der Adresse „PLZ Ort“). Referenz: QR-IBAN → QR-Referenz aus den Ziffern, sonst
+  RF-Referenz. Nach IG 2.4 (gültig ab 14.11.2026): Hausnummer getrennt (ohne eigenes Feld vom Strassennamen abgetrennt),
+  QR-IBAN nur für CHF, Schere auf beiden Trennlinien. Kundentabellen bleiben unverändert. IBAN-Prüfziffer schon beim
+  Speichern des Briefpapiers. DOCX zurückgestellt (D4b).
 - **PDF/A-Prüfung (22.11.2026):** veraPDF bestätigt PDF/A-3b für die erzeugte Rechnung des Gitarrenshops und die
   Semesterrechnung der Musikschule.

@@ -55,7 +55,7 @@ trait PreviewsDocumentTemplate
         }
 
         $template->setRelation('customTable', $table);
-        $errors = app(TemplateChecker::class)->check($table, (string) $template->body, $template->recipient, $template->file_name, $template->only(['email_to', 'email_subject', 'email_body', 'email_reply_to']))['errors'];
+        $errors = app(TemplateChecker::class)->check($table, (string) $template->body, $template->recipient, $template->file_name, $template->only(['email_to', 'email_subject', 'email_body', 'email_reply_to']), $template->qr_bill)['errors'];
 
         if ($errors !== []) {
             $this->dispatch('document-template-preview', pdf: null, message: implode("\n", $errors));

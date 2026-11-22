@@ -585,6 +585,12 @@ possibile. La **cronologia** mostra «documento inviato» con destinatario e ogg
 per e-mail per ogni record»** invia a ogni record la sua e-mail con oggetto e testo del modello; il messaggio successivo
 indica quante e-mail sono state inviate e quali record non hanno un indirizzo valido.
 
+**Fattura QR:** Se il modello aggiunge una fattura QR, la **sezione pagamento con ricevuta** compare in fondo
+all’ultima pagina o su una pagina propria – con importo, riferimento e il vostro cliente come debitore. I clienti la
+pagano con l’app bancaria (scansionando il codice QR) o allo sportello postale. Se mancano dati (p. es. un IBAN valido
+nella carta intestata) o l’importo non è un numero, un messaggio indica il motivo e il documento non viene creato –
+rivolgetevi all’amministrazione.
+
 ---
 
 ## Allegato A – Tipi di campo

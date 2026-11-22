@@ -28,6 +28,7 @@
    - [Non riesco a rimuovere un documento da un campo file.](#non-riesco-a-rimuovere-un-documento-da-un-campo-file)
    - [In un elenco mancano le caselle di spunta per selezionare.](#in-un-elenco-mancano-le-caselle-di-spunta-per-selezionare)
    - [Non è stato possibile inviare un documento per e-mail.](#non-è-stato-possibile-inviare-un-documento-per-e-mail)
+   - [Manca la fattura QR o l’app bancaria non la legge.](#manca-la-fattura-qr-o-lapp-bancaria-non-la-legge)
 
 ---
 ## Domande frequenti
@@ -131,3 +132,12 @@ generare* (manuale utente, sezione 4.10). I record eliminati nel cestino non si 
 - **«Il server di posta rifiuta l’indirizzo mittente …»** o un altro messaggio del server: è un’impostazione
   dell’amministrazione (invio di e-mail nelle impostazioni globali). Il documento è stato comunque creato e – se
   previsto – depositato.
+
+### Manca la fattura QR o l’app bancaria non la legge.
+
+- **«La fattura QR non è valida» o «mancano nella carta intestata»:** nella carta intestata mancano dati del
+  beneficiario (NPA, località, IBAN) o l’IBAN è errato – l’amministrazione corregge la carta intestata (manuale
+  d’amministrazione, capitolo 16, «Fattura QR»).
+- **«L’importo della fattura QR non è un numero»:** il record non ha un importo o non è un numero.
+- **L’app bancaria non riconosce il codice:** mostrare il PDF a grandezza originale sullo schermo o stamparlo (senza
+  riduzione, «adatta alla pagina» disattivato). Il codice deve misurare 46 × 46 mm.

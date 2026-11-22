@@ -36,6 +36,11 @@ Create la **fattura** per il cliente nella riga del giustificativo con **«Crea 
 la scarica come PDF e la deposita, protetta da scrittura, nei file del giustificativo. Con **«Inviare per e-mail»**
 (diritto *Documenti: inviare*) parte subito all’indirizzo e-mail del cliente.
 
+In fondo alla fattura c’è la **fattura QR** con l’importo aperto e il numero del giustificativo come riferimento; se non
+sta più sulla pagina, va su una pagina propria. Il beneficiario è il mittente della carta intestata – la demo vi inserisce
+l’IBAN di esempio di SIX se non è ancora indicato alcun IBAN. Per fatture vere inserite il vostro IBAN (o QR-IBAN) nella
+carta intestata.
+
 ### Pagamenti parziali e rateali
 
 Registrare per un giustificativo quanti pagamenti servono, ognuno con il proprio scontrino. Sul giustificativo,

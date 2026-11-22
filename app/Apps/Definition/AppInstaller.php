@@ -450,6 +450,7 @@ final class AppInstaller
             'email_subject' => $document['email_subject'] ?? null,
             'email_body' => $document['email_body'] ?? null,
             'email_reply_to' => $document['email_reply_to'] ?? null,
+            'qr_bill' => is_array($document['qr_bill'] ?? null) ? $document['qr_bill'] : null,
             'is_active' => (bool) ($document['is_active'] ?? true),
             'sort_order' => (int) ($document['sort_order'] ?? 0),
         ];
@@ -458,7 +459,7 @@ final class AppInstaller
     /** Vorlage prüfen; Fehler als Hinweis in notes(). */
     public function checkDocumentTemplate(DocumentTemplate $template, CustomTable $table): void
     {
-        $errors = app(TemplateChecker::class)->check($table, (string) $template->body, $template->recipient, $template->file_name, $template->only(['email_to', 'email_subject', 'email_body', 'email_reply_to']))['errors'];
+        $errors = app(TemplateChecker::class)->check($table, (string) $template->body, $template->recipient, $template->file_name, $template->only(['email_to', 'email_subject', 'email_body', 'email_reply_to']), $template->qr_bill)['errors'];
 
         if ($errors !== []) {
             $this->notes[] = __('apps.install.warnings.document', ['name' => $template->name, 'errors' => implode(' · ', array_slice($errors, 0, 3))]);
@@ -646,6 +647,7 @@ final class AppInstaller
             ...$d,
             'table' => $table((string) $d['table']),
             ...array_map(static fn (?string $text): ?string => $text === null ? null : self::renameSections($text, $table), Arr::only($d, ['recipient', 'body', 'file_name', 'email_to', 'email_subject', 'email_body', 'email_reply_to'])),
+            ...(is_array($d['qr_bill'] ?? null) ? ['qr_bill' => array_map(static fn (mixed $v): mixed => is_string($v) ? self::renameSections($v, $table) : $v, $d['qr_bill'])] : []),
         ], $definition['documents']);
 
         return $this->newKeys($definition);

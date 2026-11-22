@@ -28,6 +28,7 @@
    - [Ich kann ein Dokument nicht aus einem Dateifeld entfernen.](#ich-kann-ein-dokument-nicht-aus-einem-dateifeld-entfernen)
    - [In einer Liste fehlen die Häkchen zum Auswählen.](#in-einer-liste-fehlen-die-häkchen-zum-auswählen)
    - [Ein Dokument liess sich nicht per E-Mail senden.](#ein-dokument-liess-sich-nicht-per-e-mail-senden)
+   - [Die QR-Rechnung fehlt oder die Banking-App liest sie nicht.](#die-qr-rechnung-fehlt-oder-die-banking-app-liest-sie-nicht)
 
 ---
 ## Häufige Fragen
@@ -131,3 +132,12 @@ erzeugen* (Anwenderhandbuch, Abschnitt 4.10). Gelöschte Datensätze im Papierko
 - **„Der Mailserver lehnt die Absenderadresse … ab“** oder eine andere Meldung des Servers: Das ist eine Einstellung
   der Administration (E-Mail-Versand in den globalen Einstellungen). Das Dokument wurde trotzdem erstellt und – wenn
   vorgesehen – abgelegt.
+
+### Die QR-Rechnung fehlt oder die Banking-App liest sie nicht.
+
+- **„Die QR-Rechnung ist ungültig“ oder „fehlen im Briefpapier“:** Im Briefpapier fehlen Angaben des
+  Zahlungsempfängers (PLZ, Ort, IBAN) oder die IBAN ist falsch – die Administration korrigiert das Briefpapier
+  (Administratorhandbuch, Kapitel 16, „QR-Rechnung“).
+- **„Der Betrag der QR-Rechnung ist keine Zahl“:** Beim Datensatz fehlt der Betrag oder er ist kein Zahlenwert.
+- **Die Banking-App erkennt den Code nicht:** Das PDF in Originalgrösse am Bildschirm zeigen oder ausdrucken (nicht
+  verkleinert, „An Seite anpassen“ aus). Der Code muss 46 × 46 mm gross sein.

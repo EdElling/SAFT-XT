@@ -90,6 +90,9 @@ class ThirdPartyNoticesCommand extends Command
         ], [
             'name' => 'DejaVu Sans (font for PDF documents, resources/fonts/pdf)', 'version' => '2.37', 'license' => 'Bitstream-Vera',
             'copyright' => 'Copyright (c) 2003 by Bitstream, Inc.; DejaVu changes are in public domain', 'text' => null,
+        ], [
+            'name' => 'Liberation Sans (font for the payment part of QR bills, resources/fonts/pdf)', 'version' => '2.1.5', 'license' => 'OFL-1.1',
+            'copyright' => 'Copyright (c) 2012 Red Hat, Inc. with Reserved Font Name Liberation', 'text' => null,
         ]];
 
         File::put(base_path(self::FILE), $this->render($composer, $bundle, $fonts));
@@ -281,6 +284,7 @@ class ThirdPartyNoticesCommand extends Command
         $out .= "\n## Fonts\n\n".$table($fonts)
             ."\nSIL Open Font License 1.1: https://openfontlicense.org/open-font-license-official-text/\n"
             ."Bitstream Vera Fonts License (DejaVu Sans): reproduced in `resources/fonts/pdf/LICENSE-DejaVu.txt`.\n"
+            ."SIL Open Font License 1.1 (Liberation Sans): reproduced in `resources/fonts/pdf/LICENSE-LiberationSans.txt`.\n"
             ."\n## License texts\n\nEach distinct license text is reproduced once, followed by the components it applies to.\n";
 
         // Gleiche Texte (bis auf die Copyright-Zeilen) nur einmal.

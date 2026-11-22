@@ -95,7 +95,8 @@ PostgreSQL, MySQL oder MariaDB.
 - **Dokumente erstellen:** Symbol in der Zeile eines Datensatzes – PDF herunterladen und schreibgeschützt als neue
   Fassung im Dateifeld ablegen, mit Prüfwert (SHA-256) im Änderungsprotokoll; für mehrere ausgewählte Datensätze auf
   einmal als ein PDF zum Drucken oder als ZIP; **per E-Mail senden** (einzeln mit änderbarem Text oder je Datensatz,
-  eigenes Recht); Mailserver in den globalen Einstellungen mit „Verbindung prüfen“
+  eigenes Recht); Mailserver in den globalen Einstellungen mit „Verbindung prüfen“; **QR-Rechnung** (Zahlteil mit
+  Empfangsschein nach SIX-Standard, RF- oder QR-Referenz, Zahlungsempfänger aus dem Briefpapier)
 - **Globale Einstellungen:** Anzeigename und Farbschema der Anwendung (Branding); Anbindung externer KI-Modelle für die
   Assistenten (Anbieter, Modell, verschlüsselter API-Schlüssel, Tageslimit, Verbindungstest); persönliche Einstellungen
   wie Sprache, Zahlenformat und Kontrastmodus unter „Meine Einstellungen“
@@ -105,7 +106,7 @@ PostgreSQL, MySQL oder MariaDB.
 
 ## Voraussetzungen
 
-- PHP 8.4+ mit den Erweiterungen `pdo_pgsql` bzw. `pdo_mysql`, `intl`, `zip`, `openssl`, `gd`
+- PHP 8.4+ mit den Erweiterungen `pdo_pgsql` bzw. `pdo_mysql`, `intl`, `zip`, `openssl`, `gd`, `bcmath`, `dom`
 - Composer
 - PostgreSQL 16+ (der Datenbankbenutzer muss Schemata anlegen dürfen) **oder** MySQL 8.0.16+ (der Benutzer braucht
   zusätzlich Rechte auf die Datenbank `<DB>_app_data` für die Tabellen des Table-Designers); Auswahl über

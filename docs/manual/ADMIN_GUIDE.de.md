@@ -1506,7 +1506,7 @@ in dieser App das Recht *Dokumente: verwalten* hat (über eine Rolle der App, si
 | **Briefpapier** | **Briefpapier erste Seite (PDF)** und **Briefpapier Folgeseiten (PDF)**; ohne PDF **Logo** und **Logohöhe** |
 | **Schrift und Farben** | Hausschrift **normal**, **fett** und **kursiv** (.ttf); **Primärfarbe**, **Sekundärfarbe**, **Textfarbe** |
 | **Satzspiegel** | Ränder in mm für **Erste Seite** und **Folgeseiten**; **Adressfeld** links oder rechts; **Absenderzeile** |
-| **Absender** | Firma, Adresse, MWST-Nummer, IBAN, Kontakt – erscheinen im Kopf und stehen Vorlagen als Platzhalter zur Verfügung |
+| **Absender** | Firma, Adresse, MWST-Nummer, IBAN, Kontakt – erscheinen im Kopf und stehen Vorlagen als Platzhalter zur Verfügung. Darunter **Für die QR-Rechnung**: Strasse, Hausnummer, PLZ, Ort, Land und QR-IBAN (siehe [QR-Rechnung](#qr-rechnung)) |
 | **Archivierung** | **PDF/A-3b** (Vorgabe ein); bei einer App: *wie Installation*, *ein* oder *aus* |
 
 ### Briefpapier als PDF
@@ -1654,6 +1654,40 @@ Beim **Speichern** prüft SAFT die Vorlage:
   aussen werden nicht geladen; Skripte, Frames und externe Stylesheets entfernt SAFT.
 
 Platzhalter führen keinen Code aus; eine Vorlage kann Daten nur anzeigen, nicht verändern.
+
+### QR-Rechnung
+
+Eine Vorlage kann unten den **Zahlteil mit Empfangsschein** der Schweizer QR-Rechnung anfügen (Bereich **„QR-Rechnung“**
+der Vorlage, Schalter **„QR-Rechnung anfügen“**). SAFT folgt den *Swiss Implementation Guidelines QR-Rechnung* von SIX
+(Version 2.4): Swiss QR Code 46 × 46 mm mit Schweizerkreuz, Schrift Liberation Sans, Trennlinien mit Schere.
+
+| Einstellung | Bedeutung |
+|---|---|
+| **Zahlteil** | **Auf eigener letzter Seite** (ohne Briefpapier) oder **unten auf der letzten Seite, wenn Platz ist** – reicht der Inhalt in die unteren 105 mm, kommt er auf eine eigene Seite |
+| **Betrag** | mit Platzhaltern, z. B. `{{offen \| Roh}}`; „1'234.50“ und „1234,50“ werden gelesen. Leer: Feld zum Ausfüllen |
+| **Währung** | CHF oder EUR |
+| **Referenz** | z. B. `{{belegnummer}}`. Mit normaler IBAN bildet SAFT daraus eine **RF-Referenz** (ISO 11649, Buchstaben und Ziffern), mit **QR-IBAN** eine **QR-Referenz** aus den Ziffern (höchstens 26, mit Prüfziffer). Leer: ohne Referenz (nur mit normaler IBAN) |
+| **Mitteilung** | zusätzliche Information für den Zahler, höchstens 140 Zeichen |
+| **Zahlungspflichtiger** | Name, Strasse, Hausnummer, PLZ, Ort, Land – meist aus der Verknüpfung zum Kunden. Ohne Name, PLZ oder Ort: Feld zum Ausfüllen |
+
+**Zahlungsempfänger** ist der Absender des Briefpapiers: Firma, IBAN bzw. **QR-IBAN** und die Adresse unter **„Für
+die QR-Rechnung“** (Strasse, Hausnummer, PLZ, Ort, Land; Land leer = CH). Sind Strasse, PLZ und Ort dort leer, nimmt
+SAFT sie aus dem Feld **Adresse**, wenn dessen letzte Zeile „PLZ Ort“ ist (z. B. „8610 Uster“, auch „CH-8610 Uster“).
+Der Name muss dem Kontoinhaber bei der Bank entsprechen.
+
+**Hausnummer:** Der Standard verlangt Strasse und Hausnummer getrennt. Ist das Feld Hausnummer leer, trennt SAFT eine
+Nummer am Ende („Bahnhofstrasse 12a“, „Hauptstrasse 3-5“) oder am Anfang („12, rue du Lac“) vom Strassennamen ab; ein
+Postfach bleibt, wie es ist. Endet der Strassenname selbst auf eine Zahl, die Hausnummer im eigenen Feld angeben – beim
+Zahlungspflichtigen z. B. mit einem eigenen Feld der Kundentabelle.
+
+**IBAN und QR-IBAN:** Die IBAN muss eine Schweizer oder Liechtensteiner IBAN sein (CH/LI); beim Speichern des
+Briefpapiers prüft SAFT die Prüfziffer. Die **QR-IBAN** (Stellen 5–9 zwischen 30000 und 31999) erhalten Sie von der
+Bank; mit ihr lassen sich Zahlungen über die QR-Referenz automatisch zuordnen. Sie gilt **nur für CHF** – für
+Rechnungen in EUR nimmt SAFT immer die normale IBAN mit RF-Referenz.
+
+**Fehler** (z. B. „Für die QR-Rechnung fehlen im Briefpapier: PLZ, Ort“, ungültige IBAN, Betrag keine Zahl) zeigen die
+Vorschau der Vorlage und der Dialog „Dokument erstellen“; das Dokument wird dann nicht erstellt. Zum Prüfen das PDF am
+Bildschirm mit der Banking-App scannen – dabei wird nichts bezahlt.
 
 ### Mit der App weitergeben
 

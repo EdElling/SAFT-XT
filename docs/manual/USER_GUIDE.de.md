@@ -585,6 +585,12 @@ wenn das möglich ist. Im **Verlauf** steht „Dokument versendet“ mit Empfän
 **„Je Datensatz per E-Mail senden“** jedem Datensatz seine E-Mail mit Betreff und Text der Vorlage; die Meldung danach
 nennt, wie viele E-Mails gesendet wurden und welche Datensätze keine gültige Adresse haben.
 
+**QR-Rechnung:** Hängt die Vorlage eine QR-Rechnung an, steht unten auf der letzten Seite oder auf einer eigenen Seite
+der **Zahlteil mit Empfangsschein** – mit Betrag, Referenz und Ihrem Kunden als Zahlungspflichtigem. Kunden bezahlen
+ihn mit der Banking-App (QR-Code scannen) oder am Postschalter. Fehlen dafür Angaben (z. B. eine gültige IBAN im
+Briefpapier) oder ist der Betrag keine Zahl, erscheint eine Meldung mit dem Grund, und das Dokument wird nicht erstellt
+– wenden Sie sich an die Administration.
+
 ---
 
 ## Anhang A – Feldtypen

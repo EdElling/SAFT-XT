@@ -32,8 +32,15 @@ final class PdfDocument extends Tcpdf
 
     public string $fontFamily = PdfFonts::DEFAULT;
 
+    /** Neue Seiten ohne Briefpapier, Kopf und Fusszeile (eigene Seite für den Zahlteil der QR-Rechnung, D4a). */
+    public bool $bare = false;
+
     public function defaultPageContent(int $pid = -1): string
     {
+        if ($this->bare) {
+            return '';
+        }
+
         $pid = $pid < 0 ? (int) $this->page->getPageId() : $pid;
         $page = $this->page->getPage($pid);
         $left = (float) $page['margin']['PL'];

@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $email_subject
  * @property string|null $email_body
  * @property string|null $email_reply_to
+ * @property array<string, mixed>|null $qr_bill
  * @property bool $is_active
  * @property int $sort_order
  * @property Carbon|null $created_at
@@ -40,6 +41,7 @@ class DocumentTemplate extends Model
         'custom_table_id' => 'int',
         'is_active' => 'bool',
         'sort_order' => 'int',
+        'qr_bill' => 'array',
     ];
 
     protected $fillable = [
@@ -56,6 +58,7 @@ class DocumentTemplate extends Model
         'email_subject',
         'email_body',
         'email_reply_to',
+        'qr_bill',
         'is_active',
         'sort_order',
     ];

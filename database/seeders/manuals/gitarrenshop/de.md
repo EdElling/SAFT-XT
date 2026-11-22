@@ -34,6 +34,11 @@ Die **Rechnung** für den Kunden erstellen Sie in der Zeile des Belegs mit **„
 SAFT lädt sie als PDF herunter und legt sie schreibgeschützt in den Belegdateien ab. Mit **„Per E-Mail senden“**
 (Recht *Dokumente: versenden*) geht sie gleich an die E-Mail-Adresse des Kunden.
 
+Unten auf der Rechnung steht die **QR-Rechnung** mit dem offenen Betrag und der Belegnummer als Referenz; passt sie
+nicht mehr auf die Seite, kommt sie auf eine eigene. Zahlungsempfänger ist der Absender des Briefpapiers – die Demo
+trägt dort die Beispiel-IBAN von SIX ein, wenn noch keine IBAN steht. Für echte Rechnungen die eigene IBAN (oder
+QR-IBAN) im Briefpapier eintragen.
+
 ### Teil- und Ratenzahlung
 
 Zu einem Beleg beliebig viele Zahlungen erfassen, je mit eigenem Kassenbeleg. Beim Beleg zeigen **bezahlt** und
