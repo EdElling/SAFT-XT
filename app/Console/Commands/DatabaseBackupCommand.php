@@ -11,8 +11,8 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
-/** Sichert die gesamte Datenbank inkl. Tabellen des Table-Designers und die Dateien aus Dateifeldern (siehe DatabaseBackup). */
-#[Signature('db:backup {--path= : Zielordner (Standard: storage/backups)} {--php : MySQL/MariaDB: in PHP sichern statt mit mysqldump} {--without-files : Dateien aus Dateifeldern nicht sichern}')]
+/** Sichert die gesamte Datenbank inkl. Tabellen des Table-Designers und die Dateien aus Dateifeldern und Dokumenten (siehe DatabaseBackup). */
+#[Signature('db:backup {--path= : Zielordner (Standard: storage/backups)} {--php : MySQL/MariaDB: in PHP sichern statt mit mysqldump} {--without-files : Dateien aus Dateifeldern und Briefpapier nicht sichern}')]
 #[Description('Erstellt eine Sicherung der Datenbank')]
 class DatabaseBackupCommand extends Command
 {

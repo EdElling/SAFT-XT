@@ -249,6 +249,15 @@ class DatabaseBackupCommandTest extends TestCase
         $this->assertCount(1, File::glob($this->directory.'/*'.DatabaseBackup::FILES_SUFFIX));
 
         File::cleanDirectory($this->directory);
+        Storage::disk('local')->put('documents/letterheads/brief.pdf', 'brief');
+        $this->artisan('db:backup', ['--path' => $this->directory])->assertSuccessful();
+        $zip = new \ZipArchive;
+        $zip->open((string) File::glob($this->directory.'/*'.DatabaseBackup::FILES_SUFFIX)[0]);
+        $this->assertNotFalse($zip->locateName('files/belege/scan/a.pdf'));
+        $this->assertNotFalse($zip->locateName('documents/letterheads/brief.pdf'), 'Das Briefpapier ist mitgesichert.');
+        $zip->close();
+
+        File::cleanDirectory($this->directory);
         $this->artisan('db:backup', ['--path' => $this->directory, '--without-files' => true])
             ->doesntExpectOutputToContain('Dateien gesichert')
             ->assertSuccessful();

@@ -39,7 +39,7 @@ Installing SAFT step by step is described in [Appendix B](INSTALL_DEVELOPMENT.md
 | Compare the linked tables with the schema of their external databases (exit code 1 for differences; `--apply` applies them) | `php artisan table-connector:verify` |
 | Bulk link on the console: all tables not linked yet (`--all`) or single ones (`--table=…`), with `--app=<ID>` (required if there are several apps), `--prefix=`, `--menu-group=<ID>` or `none`, `--role=<name>`, `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--schema=`, `--no-details` | `php artisan table-connector:connect "<connection>" --all` |
 | Choose the database: PostgreSQL, MySQL or MariaDB, with the credentials `PGSQL_*`, `MYSQL_*` or `MARIADB_*` | `DB_CONNECTION=pgsql`, `mysql` or `mariadb` in `.env` |
-| Back up the database (to `storage/backups`; MySQL/MariaDB: main database and `…_app_data` in one `.sql` file, in two parts if `app_data` has its own credentials (`DB_APP_DATA_*`); without a suitable `mysqldump` in PHP with `DB_BACKUP_METHOD=php` or `--php`; path to the program if needed in `PGSQL_DUMP_BINARY`, `MYSQL_DUMP_BINARY` or `MARIADB_DUMP_BINARY`; the files from file fields alongside as `<same name>_files.zip`, without them with `--without-files`) | `php artisan db:backup` |
+| Back up the database (to `storage/backups`; MySQL/MariaDB: main database and `…_app_data` in one `.sql` file, in two parts if `app_data` has its own credentials (`DB_APP_DATA_*`); without a suitable `mysqldump` in PHP with `DB_BACKUP_METHOD=php` or `--php`; path to the program if needed in `PGSQL_DUMP_BINARY`, `MYSQL_DUMP_BINARY` or `MARIADB_DUMP_BINARY`; the files from file fields and the letterhead alongside as `<same name>_files.zip`, without them with `--without-files`) | `php artisan db:backup` |
 | Recalculate computed fields (after changes outside SAFT; optionally table names) | `php artisan computed:recompute` |
 | Change the maximum number of records per export (default 50,000) | `APP_DATA_EXPORT_MAX_ROWS=50000` in `.env` |
 | Change the maximum number of rows per data import into an existing table (default 10,000) | `APP_DATA_IMPORT_MAX_RECORD_ROWS=10000` in `.env` |
@@ -58,10 +58,10 @@ Notes:
   Otherwise a test route is available through which anyone can sign in without a password.
 - **Backups** contain all data. Keep an additional copy outside the server. How to restore a backup is described in
   the [README](../../README.md#operations).
-- **Files from file fields** are saved by `db:backup` as a ZIP next to the database backup (same name with
-  `_files.zip`, without thumbnails). To restore, unzip it into `storage/app/private` after restoring the database
-  (`unzip <file>_files.zip -d storage/app/private`); thumbnails are recreated when first shown. If the files are stored
-  in S3 (`APP_DATA_FILES_DISK=s3`), they are not included – back them up there, e.g. with bucket versioning.
+- **Files from file fields** and the documents' **letterhead** (`documents/`) are saved by `db:backup` as a ZIP next
+  to the database backup (same name with `_files.zip`, without thumbnails). To restore, unzip it into `storage/app/private` after restoring the database
+  (`unzip <file>_files.zip -d storage/app/private`); thumbnails are recreated when first shown. If the files from file
+  fields are stored in S3 (`APP_DATA_FILES_DISK=s3`), they are not included – back them up there, e.g. with bucket versioning.
 - **Apps (from 0.4):** after the update, `php artisan migrate` assigns all existing tables, menus, reports, roles and
   tasks to an app “Existing data”; system roles, system menus and system tasks stay without an app. Splitting into
   separate apps is then done in the interface (see
@@ -69,8 +69,7 @@ Notes:
   been called “Global settings” since then.
 - **Documents (PDF):** SAFT generates PDFs with the library tc-lib-pdf (pure PHP, no external programs). For logos
   as PNG or GIF, PHP needs the extension `gd`. Letterheads, logos and house fonts are stored under
-  `storage/app/private/documents`; they are **not** included in `db:backup` – back up the directory with the other
-  files. SAFT stores converted fonts and reduced logos under `storage/framework/cache/pdf-fonts` and `pdf-logos`; they
+  `storage/app/private/documents` and are included in the ZIP of `db:backup`. SAFT stores converted fonts and reduced logos under `storage/framework/cache/pdf-fonts` and `pdf-logos`; they
   are recreated when needed and may be deleted.
 - **Orphaned files** (uploads from cancelled forms, files of records deleted outside SAFT) are removed after 24 hours by
   the system task *Clean up files* or `php artisan files:prune`.
@@ -257,7 +256,7 @@ shows all available commands, `php artisan help <command>` the options of a comm
 
 | Command | Purpose | Important options |
 |---|---|---|
-| `php artisan db:backup` | Backup of SAFT's database (PostgreSQL, MySQL or MariaDB), plus the files from file fields as a ZIP | `--path=` target folder (default `storage/backups`), `--without-files` without files |
+| `php artisan db:backup` | Backup of SAFT's database (PostgreSQL, MySQL or MariaDB), plus the files from file fields and the letterhead as a ZIP | `--path=` target folder (default `storage/backups`), `--without-files` without files |
 | `php artisan files:prune` | Removes orphaned files from file fields: uploads never saved, files without record and files without entry (after 24 hours); reports entries whose file is missing | `--dry-run` only count, `--hours=` waiting time |
 | `php artisan app-data:verify` | Checks whether the table designer's metadata and the tables in the `app_data` namespace match; exit code 1 on differences (for monitoring) | – |
 | `php artisan auth:mode [local\|sso\|hybrid]` | Shows or sets the sign-in mode, e.g. `auth:mode local` as an emergency exit when no identity provider is reachable | – |

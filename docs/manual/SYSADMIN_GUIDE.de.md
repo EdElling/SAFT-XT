@@ -39,7 +39,7 @@ und [Anhang C](INSTALL_PRODUCTION.de.md) (Produktionsserver, z. B. ein Managed S
 | Angebundene Tabellen mit dem Schema ihrer externen Datenbanken abgleichen (Exit-Code 1 bei Abweichungen; `--apply` übernimmt sie) | `php artisan table-connector:verify` |
 | Massenverknüpfung auf der Konsole: alle noch nicht angebundenen Tabellen (`--all`) oder einzelne (`--table=…`), mit `--app=<ID>` (Pflicht bei mehreren Apps), `--prefix=`, `--menu-group=<ID>` bzw. `none`, `--role=<Name>`, `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--schema=`, `--no-details` | `php artisan table-connector:connect "<Verbindung>" --all` |
 | Datenbank wählen: PostgreSQL, MySQL oder MariaDB, mit den Zugangsdaten `PGSQL_*`, `MYSQL_*` bzw. `MARIADB_*` | `DB_CONNECTION=pgsql`, `mysql` bzw. `mariadb` in der `.env` |
-| Datenbank sichern (nach `storage/backups`; MySQL/MariaDB: Hauptdatenbank und `…_app_data` in einer `.sql`-Datei, bei eigenen Zugangsdaten für `app_data` (`DB_APP_DATA_*`) in zwei Teilen; ohne passendes `mysqldump` mit `DB_BACKUP_METHOD=php` bzw. `--php` in PHP; Pfad zum Programm bei Bedarf in `PGSQL_DUMP_BINARY`, `MYSQL_DUMP_BINARY` bzw. `MARIADB_DUMP_BINARY`; die Dateien aus Dateifeldern daneben als `<gleicher Name>_files.zip`, ohne sie mit `--without-files`) | `php artisan db:backup` |
+| Datenbank sichern (nach `storage/backups`; MySQL/MariaDB: Hauptdatenbank und `…_app_data` in einer `.sql`-Datei, bei eigenen Zugangsdaten für `app_data` (`DB_APP_DATA_*`) in zwei Teilen; ohne passendes `mysqldump` mit `DB_BACKUP_METHOD=php` bzw. `--php` in PHP; Pfad zum Programm bei Bedarf in `PGSQL_DUMP_BINARY`, `MYSQL_DUMP_BINARY` bzw. `MARIADB_DUMP_BINARY`; die Dateien aus Dateifeldern und das Briefpapier daneben als `<gleicher Name>_files.zip`, ohne sie mit `--without-files`) | `php artisan db:backup` |
 | Berechnete Felder neu berechnen (nach Änderungen an SAFT vorbei; optional Tabellennamen) | `php artisan computed:recompute` |
 | Höchstzahl der Datensätze je Export ändern (Vorgabe 50.000) | `APP_DATA_EXPORT_MAX_ROWS=50000` in der `.env` |
 | Höchstzahl der Zeilen je Datenimport in eine bestehende Tabelle ändern (Vorgabe 10'000) | `APP_DATA_IMPORT_MAX_RECORD_ROWS=10000` in der `.env` |
@@ -58,10 +58,10 @@ Hinweise:
   `APP_ENV=production`. Sonst steht eine Test-Route bereit, über die man sich ohne Passwort anmelden kann.
 - **Sicherungen** enthalten alle Daten. Bewahren Sie zusätzlich eine Kopie ausserhalb des Servers auf. Wie Sie eine
   Sicherung einspielen, steht in der [README](../../README.de.md#betrieb).
-- **Dateien aus Dateifeldern** sichert `db:backup` als ZIP neben der Datenbanksicherung (gleicher Name mit
-  `_files.zip`, ohne Vorschaubilder). Zum Wiederherstellen nach dem Einspielen der Datenbank das ZIP in
+- **Dateien aus Dateifeldern** und das **Briefpapier** der Dokumente (`documents/`) sichert `db:backup` als ZIP neben
+  der Datenbanksicherung (gleicher Name mit `_files.zip`, ohne Vorschaubilder). Zum Wiederherstellen nach dem Einspielen der Datenbank das ZIP in
   `storage/app/private` entpacken (`unzip <datei>_files.zip -d storage/app/private`); Vorschaubilder entstehen beim
-  ersten Aufruf neu. Liegen die Dateien in S3 (`APP_DATA_FILES_DISK=s3`), sind sie nicht enthalten – sichern Sie dort,
+  ersten Aufruf neu. Liegen die Dateien aus Dateifeldern in S3 (`APP_DATA_FILES_DISK=s3`), sind sie nicht enthalten – sichern Sie dort,
   z. B. mit Versionierung des Buckets.
 - **Apps (ab 0.4):** Nach dem Update ordnet `php artisan migrate` alle vorhandenen Tabellen, Menüs, Auswertungen,
   Rollen und Aufgaben einer App „Bestehende Daten“ zu; Systemrollen, System-Menüs und System-Aufgaben bleiben ohne App.
@@ -70,8 +70,7 @@ Hinweise:
   heisst seither „Globale Einstellungen“.
 - **Dokumente (PDF):** SAFT erzeugt PDFs mit der Bibliothek tc-lib-pdf (reines PHP, ohne externe Programme). Für
   Logos als PNG oder GIF braucht PHP die Erweiterung `gd`. Briefpapier, Logos und Hausschriften liegen unter
-  `storage/app/private/documents`; sie sind **nicht** in `db:backup` enthalten – das Verzeichnis mit den übrigen Dateien
-  sichern. Umgewandelte Schriften und verkleinerte Logos legt SAFT unter `storage/framework/cache/pdf-fonts` bzw.
+  `storage/app/private/documents` und sind im ZIP von `db:backup` enthalten. Umgewandelte Schriften und verkleinerte Logos legt SAFT unter `storage/framework/cache/pdf-fonts` bzw.
   `pdf-logos` ab; sie entstehen bei Bedarf neu und dürfen gelöscht werden.
 - **Verwaiste Dateien** (Uploads aus abgebrochenen Formularen, Dateien von Datensätzen, die ausserhalb von SAFT gelöscht
   wurden) räumt die System-Aufgabe *Dateien aufräumen* bzw. `php artisan files:prune` nach 24 Stunden weg.
@@ -263,7 +262,7 @@ Alle Befehle im Hauptverzeichnis von SAFT ausführen, auf einem Produktionsserve
 
 | Befehl | Zweck | Wichtige Optionen |
 |---|---|---|
-| `php artisan db:backup` | Sicherung der Datenbank von SAFT (PostgreSQL, MySQL oder MariaDB), dazu die Dateien aus Dateifeldern als ZIP | `--path=` Zielordner (Vorgabe `storage/backups`), `--without-files` ohne Dateien |
+| `php artisan db:backup` | Sicherung der Datenbank von SAFT (PostgreSQL, MySQL oder MariaDB), dazu die Dateien aus Dateifeldern und das Briefpapier als ZIP | `--path=` Zielordner (Vorgabe `storage/backups`), `--without-files` ohne Dateien |
 | `php artisan files:prune` | Räumt verwaiste Dateien aus Dateifeldern auf: nie gespeicherte Uploads, Dateien ohne Datensatz und Dateien ohne Eintrag (nach 24 Stunden); meldet Einträge, deren Datei fehlt | `--dry-run` nur zählen, `--hours=` Wartezeit |
 | `php artisan app-data:verify` | Prüft, ob die Metadaten des Table-Designers und die Tabellen im Namensraum `app_data` übereinstimmen; Exit-Code 1 bei Abweichungen (für die Überwachung) | – |
 | `php artisan auth:mode [local\|sso\|hybrid]` | Zeigt oder setzt den Anmeldemodus, z. B. als Notausgang `auth:mode local`, wenn kein Identity Provider erreichbar ist | – |

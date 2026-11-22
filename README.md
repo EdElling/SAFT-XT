@@ -182,7 +182,7 @@ With MySQL, the `.sql` file contains the main database and `…_app_data` under 
 (`mysql -h 127.0.0.1 -u <user> -p < storage/backups/<file>.sql`); for other names, adjust the `CREATE DATABASE` and
 `USE` lines first.
 
-The files from file fields are in the ZIP file with the same name and `_files.zip`; unzip it after restoring the
+The files from file fields and the documents' letterhead are in the ZIP file with the same name and `_files.zip`; unzip it after restoring the
 database: `unzip storage/backups/<file>_files.zip -d storage/app/private`.
 
 Backups contain all data and stay outside the repository. Keep an additional copy outside this machine.

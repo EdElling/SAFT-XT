@@ -183,7 +183,7 @@ Bei MySQL enthält die `.sql`-Datei Hauptdatenbank und `…_app_data` mit ihren 
 (`mysql -h 127.0.0.1 -u <benutzer> -p < storage/backups/<datei>.sql`); für andere Namen die Zeilen `CREATE DATABASE`
 und `USE` vorher anpassen.
 
-Die Dateien aus Dateifeldern liegen in der ZIP-Datei mit gleichem Namen und `_files.zip`; nach dem Einspielen der
+Die Dateien aus Dateifeldern und das Briefpapier der Dokumente liegen in der ZIP-Datei mit gleichem Namen und `_files.zip`; nach dem Einspielen der
 Datenbank entpacken: `unzip storage/backups/<datei>_files.zip -d storage/app/private`.
 
 Sicherungen enthalten alle Daten und bleiben ausserhalb des Repositorys. Bewahre zusätzlich eine Kopie ausserhalb

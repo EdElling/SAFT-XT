@@ -16,7 +16,8 @@ use ZipArchive;
  * Aufgabe „Datenbank sichern“: PostgreSQL per pg_dump (eine Datenbank, Schema app_data inklusive), MySQL/MariaDB per
  * mysqldump bzw. mariadb-dump oder in PHP (DB_BACKUP_METHOD=php). Liest nur; das Passwort wird nie als Prozessargument
  * übergeben. Dateien: <datenbank>_<JJJJMMTT_HHMMSS>.dump bzw. .sql, Rechte 0600. Dazu die Dateien aus Dateifeldern
- * (B-021) als <gleicher Name>_files.zip, sofern sie lokal liegen; Sicherung und ZIP bilden ein Paar.
+ * (B-021, sofern sie lokal liegen) und das Briefpapier der Dokumente als <gleicher Name>_files.zip; Sicherung und ZIP
+ * bilden ein Paar.
  */
 final class DatabaseBackup
 {
@@ -80,27 +81,40 @@ final class DatabaseBackup
         return $file;
     }
 
+    /** Verzeichnis auf der Disk „local“ mit Briefpapier, Logos und Hausschriften (Dokumente). */
+    public const string DOCUMENTS_DIRECTORY = 'documents';
+
     /**
-     * Dateien aus Dateifeldern neben die Sicherung $dump legen (<name>_files.zip, ohne Vorschaubilder). null, wenn es
-     * keine gibt oder sie nicht lokal liegen (S3: siehe filesAreLocal()).
+     * Dateien neben die Sicherung $dump legen (<name>_files.zip): die Dateien aus Dateifeldern (ohne Vorschaubilder),
+     * sofern sie lokal liegen (S3: siehe filesAreLocal()), und die Dateien der Dokumente (Briefpapier, Logos, Schriften).
+     * Pfade wie im Speicher, damit sich das ZIP in dessen Wurzel (storage/app/private) entpacken lässt. null, wenn es
+     * nichts zu sichern gibt.
      *
      * @throws BackupFailed
      */
     public function backupFiles(string $dump): ?string
     {
-        if (! $this->filesAreLocal()) {
-            return null;
+        /** @var array<string, string> $files Pfad im ZIP => Datei */
+        $files = [];
+        $sources = [[Storage::disk('local'), self::DOCUMENTS_DIRECTORY]];
+
+        if ($this->filesAreLocal()) {
+            array_unshift($sources, [Storage::disk((string) config('dynamic_data.files.disk', 'local')), trim((string) config('dynamic_data.files.directory', 'files'), '/')]);
         }
 
-        $disk = Storage::disk((string) config('dynamic_data.files.disk', 'local'));
-        $directory = trim((string) config('dynamic_data.files.directory', 'files'), '/');
-        $root = $disk->path($directory);
+        foreach ($sources as [$disk, $directory]) {
+            $root = $disk->path($directory);
 
-        if (! File::isDirectory($root)) {
-            return null;
+            if (! File::isDirectory($root)) {
+                continue;
+            }
+
+            foreach (File::allFiles($root) as $file) {
+                if (! str_ends_with($file->getFilename(), '.thumb.jpg')) {
+                    $files[$directory.'/'.str_replace('\\', '/', $file->getRelativePathname())] = $file->getPathname();
+                }
+            }
         }
-
-        $files = array_filter(File::allFiles($root), static fn (\SplFileInfo $file): bool => ! str_ends_with($file->getFilename(), '.thumb.jpg'));
 
         if ($files === []) {
             return null;
@@ -113,9 +127,8 @@ final class DatabaseBackup
             throw new BackupFailed('Die ZIP-Datei mit den Dateien lässt sich nicht anlegen: '.$zipFile);
         }
 
-        foreach ($files as $file) {
-            // Pfad wie im Speicher (files/<tabelle>/<feld>/<datei>), damit sich das ZIP in dessen Wurzel entpacken lässt.
-            $zip->addFile($file->getPathname(), $directory.'/'.str_replace('\\', '/', $file->getRelativePathname()));
+        foreach ($files as $name => $path) {
+            $zip->addFile($path, $name);
         }
 
         if (! $zip->close() || ! File::exists($zipFile)) {
