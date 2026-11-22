@@ -33,7 +33,12 @@
         editor.dispatch({ changes: { from: range.from, to: range.to, insert: text }, selection: { anchor: range.from + text.length } })
         editor.focus()
     },
-}" style="display: flex; flex-direction: column; gap: .6rem">
+}"
+    {{-- Nicht neu zeichnen, solange die Bausteine gleich bleiben – sonst klappen geöffnete Bereiche nach jedem Einfügen
+         wieder zu. Wechselt die Grundtabelle, ändert sich der Schlüssel und die Auswahl wird ersetzt. --}}
+    wire:ignore
+    wire:key="template-picker-{{ md5(json_encode($groups)) }}"
+    style="display: flex; flex-direction: column; gap: .6rem">
     <p style="font-size: .875rem; font-weight: 600">{{ __('documents.templates.picker.title') }}</p>
     <p style="font-size: .75rem; color: var(--gray-500); margin-top: -.4rem">{{ __('documents.templates.picker.help') }}</p>
     @if ($groups === [])

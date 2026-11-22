@@ -1616,9 +1616,10 @@ tabella; altrimenti restano vuoti. La visualizzazione di un collegamento (`{{kun
 
 ### Verifica e anteprima
 
-L’**anteprima** a destra mostra il PDF con un **record di esempio** (predefinito: il più recente) e si aggiorna circa
+L’**anteprima** a destra mostra il PDF con un **record di esempio** (predefinito: il più recente con i campi del destinatario compilati) e si aggiorna circa
 un secondo e mezzo dopo l’ultima immissione – con lo stato non salvato. Gli errori appaiono in rosso al posto
-dell’anteprima, con il numero di riga.
+dell’anteprima, con il numero di riga. Se il destinatario resta vuoto per il record scelto (p. es. un giustificativo
+senza cliente), ciò è indicato sopra l’anteprima.
 
 Al **salvataggio** SAFT verifica il modello:
 

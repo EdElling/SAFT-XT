@@ -103,7 +103,7 @@ return [
             'body' => 'Contenu (HTML)',
             'body_help' => 'HTML avec espaces réservés {{champ}}. Mises en page avec des tableaux ; classes : primaer, sekundaer, klein, rechts, fett, tableau « positionen » avec ligne « summe ».',
             'sample' => 'Enregistrement d’exemple',
-            'sample_first' => 'Enregistrement le plus récent',
+            'sample_first' => 'Enregistrement le plus récent avec destinataire',
         ],
         'kinds' => [
             'empty' => 'Vide',
@@ -116,6 +116,7 @@ return [
             'choose_table' => 'Pour l’aperçu, choisir app, table de base et contenu.',
             'no_records' => 'La table de base n’a pas encore d’enregistrements.',
             'failed' => 'L’aperçu a échoué : :message',
+            'no_recipient' => 'destinataire vide pour cet enregistrement – p. ex. choisir un autre exemple.',
         ],
         'picker' => [
             'title' => 'Choix des champs',

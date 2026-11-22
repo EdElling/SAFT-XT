@@ -1592,9 +1592,10 @@ Tabelle lesen darf; sonst bleiben sie leer. Die Anzeige einer Verknüpfung (`{{k
 
 ### Prüfung und Vorschau
 
-Die **Vorschau** rechts zeigt das PDF mit einem **Beispieldatensatz** (Vorgabe: der neueste) und aktualisiert sich
+Die **Vorschau** rechts zeigt das PDF mit einem **Beispieldatensatz** (Vorgabe: der neueste, bei dem die Felder des Empfängers gefüllt sind) und aktualisiert sich
 etwa anderthalb Sekunden nach der letzten Eingabe – mit dem ungespeicherten Stand. Fehler stehen statt der Vorschau
-in Rot, mit Zeilennummer.
+in Rot, mit Zeilennummer. Bleibt der Empfänger beim gewählten Datensatz leer (z. B. ein Beleg ohne Kunde), steht das
+über der Vorschau.
 
 Beim **Speichern** prüft SAFT die Vorlage:
 

@@ -198,4 +198,20 @@ class DocumentTemplateTest extends DynamicDataTestCase
         $this->assertContains(' | CHF', $inserts);
         $this->assertNotContains('{{beleg_id}}', $inserts, 'Die Rückverknüpfung der Kind-Tabelle fehlt.');
     }
+
+    public function test_preview_prefers_a_sample_with_recipient_and_says_when_it_is_empty(): void
+    {
+        $template = DocumentTemplate::query()->where('uuid', GitarrenshopDemoSeeder::INVOICE_TEMPLATE)->sole();
+        $newest = DynamicRecord::forTableName('gitarren_belege')->newQuery()->orderByDesc('id')->first();
+        $this->assertNull($newest->kunde_id, 'Der neueste Demo-Beleg ist ein Einkauf ohne Kunde.');
+
+        $sample = CreateDocumentTemplate::defaultSample($this->receipts, (string) $template->recipient);
+        $this->assertNotNull($sample->kunde_id);
+        $this->assertSame((int) DynamicRecord::forTableName('gitarren_belege')->newQuery()->whereNotNull('kunde_id')->max('id'), (int) $sample->getKey());
+
+        $this->actingAs($this->superAdmin());
+        Livewire::test(EditDocumentTemplate::class, ['record' => $template->getKey()])
+            ->set('data.sample_id', (string) $newest->getKey())
+            ->assertDispatched('document-template-preview', fn (string $name, array $params): bool => str_contains((string) $params['message'], 'Empfänger bei diesem Datensatz leer'));
+    }
 }

@@ -6,6 +6,7 @@ namespace App\Filament\Resources\DocumentTemplates\Concerns;
 
 use App\Documents\Templates\TemplateChecker;
 use App\Documents\Templates\TemplateException;
+use App\Documents\Templates\TemplateFields;
 use App\Documents\Templates\TemplateRenderer;
 use App\Filament\Resources\DocumentTemplates\Schemas\DocumentTemplateForm;
 use App\Models\CustomTable;
@@ -14,6 +15,7 @@ use App\Models\DynamicRecord;
 use App\Models\User;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Builder;
 use Throwable;
 
 /**
@@ -44,7 +46,7 @@ trait PreviewsDocumentTemplate
         $model = DynamicRecord::forTableName((string) $table?->name);
         $sample = filled($data['sample_id'] ?? null)
             ? $model->newQuery()->find($data['sample_id'])
-            : $model->newQuery()->orderByDesc($model->getKeyName())->first();
+            : ($table === null ? null : self::defaultSample($table, (string) $template->recipient));
 
         if ($table === null || $sample === null) {
             $this->dispatch('document-template-preview', pdf: null, message: __('documents.templates.preview.no_records'));
@@ -64,13 +66,40 @@ trait PreviewsDocumentTemplate
         try {
             $user = auth()->user();
             $document = app(TemplateRenderer::class)->render($template, $sample, $user instanceof User ? $user : null);
-            $this->dispatch('document-template-preview', pdf: base64_encode($document->pdf), message: $document->fileName);
+            $message = $document->fileName.(filled(trim((string) $template->recipient)) && $document->recipient === null ? ' – '.__('documents.templates.preview.no_recipient') : '');
+            $this->dispatch('document-template-preview', pdf: base64_encode($document->pdf), message: $message);
         } catch (TemplateException $exception) {
             $this->dispatch('document-template-preview', pdf: null, message: $exception->getMessage());
         } catch (Throwable $exception) {
             report($exception);
             $this->dispatch('document-template-preview', pdf: null, message: __('documents.templates.preview.failed', ['message' => $exception->getMessage()]));
         }
+    }
+
+    /**
+     * Beispiel ohne Auswahl: der neueste Datensatz, bei dem ein Feld der Grundtabelle aus dem Empfänger gefüllt ist (im
+     * Gitarrenshop ein Beleg mit Kunde, nicht ein Einkauf) – sonst der neueste.
+     */
+    public static function defaultSample(CustomTable $table, string $recipient): ?DynamicRecord
+    {
+        $model = DynamicRecord::forTableName($table->name);
+        preg_match_all('/\{\{\s*[#^&{]?\s*([a-z][a-z0-9_]*)/', $recipient, $matches);
+        $fields = array_values(array_intersect(array_unique($matches[1]), TemplateFields::fields($table)->pluck('name')->all()));
+        $newest = static fn (Builder $query): ?DynamicRecord => $query->orderByDesc($model->getKeyName())->first();
+
+        if ($fields !== []) {
+            $filled = $newest($model->newQuery()->where(static function ($query) use ($fields): void {
+                foreach ($fields as $field) {
+                    $query->orWhereNotNull($field);
+                }
+            }));
+
+            if ($filled !== null) {
+                return $filled;
+            }
+        }
+
+        return $newest($model->newQuery());
     }
 
     /** Hinweise (CSS, Bilder von aussen) nach dem Speichern. */

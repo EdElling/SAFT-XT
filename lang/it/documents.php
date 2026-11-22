@@ -103,7 +103,7 @@ return [
             'body' => 'Contenuto (HTML)',
             'body_help' => 'HTML con segnaposto {{campo}}. Impaginazioni con tabelle; classi: primaer, sekundaer, klein, rechts, fett, tabella «positionen» con riga «summe».',
             'sample' => 'Record di esempio',
-            'sample_first' => 'Record più recente',
+            'sample_first' => 'Record più recente con destinatario',
         ],
         'kinds' => [
             'empty' => 'Vuoto',
@@ -116,6 +116,7 @@ return [
             'choose_table' => 'Per l’anteprima scegliere app, tabella di base e contenuto.',
             'no_records' => 'La tabella di base non ha ancora record.',
             'failed' => 'L’anteprima non è riuscita: :message',
+            'no_recipient' => 'destinatario vuoto per questo record – p. es. scegliere un altro esempio.',
         ],
         'picker' => [
             'title' => 'Scelta dei campi',

@@ -103,7 +103,7 @@ return [
             'body' => 'Inhalt (HTML)',
             'body_help' => 'HTML mit Platzhaltern {{feld}}. Layouts mit Tabellen; Klassen: primaer, sekundaer, klein, rechts, fett, Tabelle „positionen“ mit Zeile „summe“.',
             'sample' => 'Beispieldatensatz',
-            'sample_first' => 'Neuester Datensatz',
+            'sample_first' => 'Neuester Datensatz mit Empfänger',
         ],
         'kinds' => [
             'empty' => 'Leer',
@@ -116,6 +116,7 @@ return [
             'choose_table' => 'Für die Vorschau App, Grundtabelle und Inhalt wählen.',
             'no_records' => 'Die Grundtabelle hat noch keine Datensätze.',
             'failed' => 'Die Vorschau ist fehlgeschlagen: :message',
+            'no_recipient' => 'Empfänger bei diesem Datensatz leer – z. B. ein anderes Beispiel wählen.',
         ],
         'picker' => [
             'title' => 'Feldauswahl',

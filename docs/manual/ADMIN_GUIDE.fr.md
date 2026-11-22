@@ -1658,9 +1658,10 @@ peut lire leur table ; sinon ils restent vides. L’affichage d’une liaison (`
 
 ### Vérification et aperçu
 
-L’**aperçu** à droite montre le PDF avec un **enregistrement d’exemple** (par défaut : le plus récent) et se met à
+L’**aperçu** à droite montre le PDF avec un **enregistrement d’exemple** (par défaut : le plus récent dont les champs du destinataire sont remplis) et se met à
 jour environ une seconde et demie après la dernière saisie – avec l’état non enregistré. Les erreurs apparaissent en
-rouge à la place de l’aperçu, avec le numéro de ligne.
+rouge à la place de l’aperçu, avec le numéro de ligne. Si le destinataire reste vide pour l’enregistrement choisi (p. ex. un
+justificatif sans client), c’est indiqué au-dessus de l’aperçu.
 
 À l’**enregistrement**, SAFT vérifie le modèle :
 

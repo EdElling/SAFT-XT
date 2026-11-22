@@ -1547,9 +1547,10 @@ table; otherwise they stay empty. The display of a relation (`{{kunde_id}}`) alw
 
 ### Check and preview
 
-The **preview** on the right shows the PDF with a **sample record** (default: the newest) and updates about one and a
+The **preview** on the right shows the PDF with a **sample record** (default: the newest whose recipient fields are filled) and updates about one and a
 half seconds after the last input – with the unsaved state. Errors appear in red instead of the preview, with the line
-number.
+number. If the recipient stays empty for the chosen record (e.g. a receipt without customer), this is shown above the
+preview.
 
 When **saving**, SAFT checks the template:
 

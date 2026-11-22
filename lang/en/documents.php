@@ -103,7 +103,7 @@ return [
             'body' => 'Content (HTML)',
             'body_help' => 'HTML with placeholders {{field}}. Layouts with tables; classes: primaer, sekundaer, klein, rechts, fett, table “positionen” with row “summe”.',
             'sample' => 'Sample record',
-            'sample_first' => 'Newest record',
+            'sample_first' => 'Newest record with recipient',
         ],
         'kinds' => [
             'empty' => 'Empty',
@@ -116,6 +116,7 @@ return [
             'choose_table' => 'Choose app, base table and content for the preview.',
             'no_records' => 'The base table has no records yet.',
             'failed' => 'The preview failed: :message',
+            'no_recipient' => 'recipient empty for this record – e.g. choose another sample.',
         ],
         'picker' => [
             'title' => 'Field picker',
