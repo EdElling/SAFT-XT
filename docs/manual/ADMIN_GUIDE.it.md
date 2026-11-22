@@ -28,6 +28,7 @@
 - [13. Funzioni IA](#13-funzioni-ia)
 - [14. Plugin](#14-plugin)
 - [15. App (applicazioni specialistiche)](#15-app-applicazioni-specialistiche)
+- [16. Documenti](#16-documenti)
 - [Allegato A – Panoramica dei diritti](#allegato-a--panoramica-dei-diritti)
 
 ---
@@ -1472,6 +1473,81 @@ nuovo tentativo riprende. Pianificazione, annullamento e rimozione sono registra
 report, i ruoli e le attività esistenti; menu, ruoli e attività di sistema restano senza app. Le nuove installazioni
 iniziano senza app; i dati demo creano ciascuno la propria app (Negozio, Magazzino, Ricerca). «Dati esistenti» si suddivide con «Sposta in un’altra app» (sopra).
 
+## 16. Documenti
+
+**Amministrazione → Applicazione → Documenti**
+
+SAFT genera documenti come fatture e lettere in PDF. Impaginazione e contenuto sono separati: qui definite la **carta
+intestata** – sfondo o intestazione con logo, carattere, colori, margini e mittente. I modelli di contenuto (p. es.
+«Fattura») vi collocano solo i dati e seguiranno in una versione successiva.
+
+**Per chi vale:** In alto, sotto **Carta intestata per**, scegliete **Tutte le app (installazione)** oppure un’app. La
+carta intestata dell’installazione vale per tutte le app. Un’app definisce solo le sue **differenze**: i campi vuoti
+riprendono il valore dell’installazione, mostrato in grigio – così la scuola di musica può avere un proprio logo e
+riprendere tutto il resto. **Rimuovere le differenze** (solo per un’app) cancella impostazioni e file dell’app; poi vale
+di nuovo la carta intestata dell’installazione. Se un’app viene rimossa, anche la sua carta intestata viene cancellata.
+
+**Diritti:** La carta intestata dell’installazione la modifica chi ha *Impostazioni globali: modificare*; quella di
+un’app chi ha in quell’app il diritto *Documenti: gestire* (tramite un ruolo dell’app, vedi
+[capitolo 15](#15-app-applicazioni-specialistiche)).
+
+| Sezione | Impostazioni |
+|---|---|
+| **Carta intestata** | **Carta intestata prima pagina (PDF)** e **Carta intestata pagine seguenti (PDF)**; senza PDF, **Logo** e **Altezza del logo** |
+| **Carattere e colori** | Carattere aziendale **normale**, **grassetto** e **corsivo** (.ttf); **Colore primario**, **Colore secondario**, **Colore del testo** |
+| **Impaginazione** | Margini in mm per **Prima pagina** e **Pagine seguenti**; **Campo indirizzo** a sinistra o a destra; **Riga del mittente** |
+| **Mittente** | Ditta, indirizzo, numero IVA, IBAN, contatto – compaiono nell’intestazione e sono disponibili nei modelli come segnaposto |
+| **Archiviazione** | **PDF/A-3b** (attivo per impostazione predefinita); per un’app: *come l’installazione*, *attivo* o *disattivo* |
+
+### Carta intestata come PDF
+
+La carta intestata è più fedele se arriva già impaginata come PDF (p. es. da InDesign, Affinity o Word). SAFT la pone
+sotto ogni pagina: la pagina 1 del file sotto la prima pagina, la pagina 2 sotto le pagine seguenti. Un file proprio per
+le pagine seguenti sostituisce la pagina 2; senza nessuno dei due, le pagine seguenti restano vuote. Al salvataggio SAFT
+verifica il file: un PDF che non si può leggere (p. es. criptato) viene rifiutato; appare una nota se non è in formato A4
+o – con PDF/A – se contiene probabilmente trasparenze (ombre, superfici semitrasparenti). Esportare una tale carta
+intestata senza trasparenza, p. es. come PDF/X-1a o PDF/A.
+
+I **margini** dell’impaginazione determinano dove sta il testo – sceglierli in modo che non finisca su logo, linee o piè
+di pagina della carta intestata. SAFT pone il piè di pagina con **Pagina x / y** in basso a destra.
+
+### Senza carta intestata PDF: intestazione con logo
+
+Senza PDF, SAFT pone sulla prima pagina una semplice **intestazione** con logo e mittente (ditta, indirizzo, contatto) –
+sul lato **opposto al campo indirizzo**: campo indirizzo a destra (Svizzera), intestazione a sinistra; campo indirizzo a
+sinistra (DIN 5008), intestazione a destra. Se l’intestazione scende più in basso del margine superiore, il contenuto
+inizia sotto di essa.
+
+- **Logo:** SVG, PNG o JPEG, al massimo 1 MB. Un SVG viene ripulito al salvataggio (senza script né riferimenti
+  esterni); convertire il testo in tracciati, altrimenti appare nel carattere predefinito. Ritagliare prima lo spazio
+  vuoto attorno al disegno, altrimenti il logo non è allineato con il mittente. SAFT incorpora le immagini grandi
+  ridotte a 1000 pixel di larghezza.
+- **Altezza del logo:** da 5 a 40 mm, predefinita 15 mm. La larghezza deriva dalle proporzioni, al massimo 80 mm – un
+  logo più largo viene ridotto di conseguenza.
+- I logo PNG e GIF richiedono l’estensione PHP **gd**; se manca sul server, una nota lo segnala al salvataggio (vedi
+  [Appendix C, section 1](INSTALL_PRODUCTION.md#1-what-the-server-must-offer)).
+
+### Carattere, colori e campo indirizzo
+
+- **Carattere aziendale:** file TrueType (.ttf); la sua licenza deve consentire l’incorporazione nei PDF. SAFT verifica
+  al caricamento se il file è utilizzabile. Grassetto e corsivo sono facoltativi – se mancano, appare il carattere
+  normale. Senza carattere aziendale: DejaVu Sans.
+- **Colori:** Il **colore primario** colora titoli e intestazioni delle tabelle, il **colore secondario** la riga del
+  mittente, le linee, il piè di pagina e i testi piccoli, il **colore del testo** il testo corrente.
+- **Campo indirizzo:** in una posizione fissa per buste a finestra – **a sinistra** secondo DIN 5008 (20 mm dal bordo
+  sinistro, 45 mm dal bordo superiore), **a destra** secondo l’uso svizzero (118 mm e 50 mm). Sopra, in piccolo, la
+  **riga del mittente**; se lasciata vuota, SAFT la compone da ditta e indirizzo. Il contenuto inizia sotto il campo
+  indirizzo.
+
+### PDF/A e pagina di prova
+
+**PDF/A-3b** è il formato per l’archiviazione a lungo termine: caratteri incorporati, profilo colore incluso, nulla da
+Internet. È preimpostato per l’installazione e si può cambiare per app.
+
+**Pagina di prova** (in alto a destra) scarica un PDF dallo stato **salvato** – prima salvare, poi verificare. Mostra
+campo indirizzo, carattere, colori, una tabella di posizioni su due pagine (con intestazione della tabella ripetuta) e
+testo fittizio, così si vedono la prima pagina e le pagine seguenti.
+
 ## Allegato A – Panoramica dei diritti
 
 Tutti i diritti, raggruppati per tema, con l’etichetta mostrata modificando un [ruolo](#2-ruoli-e-diritti). Gli utenti
@@ -1500,7 +1576,9 @@ sono riservate e non si possono assegnare a nessun ruolo: **Visualizza come ruol
 
 | Diritto | Effetto |
 |---|---|
-| Impostazioni globali: visualizzare / modificare | nome dell’applicazione, logo, schema di colori, assistenti IA (provider, modello, interruttori) |
+| Impostazioni globali: visualizzare / modificare | nome dell’applicazione, logo, schema di colori, assistenti IA (provider, modello, interruttori); carta intestata dell’installazione (Amministrazione › Applicazione › Documenti) |
+| Documenti: gestire | definire la carta intestata di un’app (diritto dell’app, vedi [capitolo 16](#16-documenti)) |
+| Documenti: generare | generare documenti da modelli (diritto dell’app; i modelli seguiranno in una versione successiva) |
 | Menu: visualizzare / creare / modificare / eliminare | curare l’albero dei menu (gruppi, voci, ordine, diritti delle voci) |
 | App: visualizzare | aprire la pagina «App» e il modello di dati per app |
 | App: gestire | creare, modificare, attivare e disattivare app, caricare il manuale, spostare tabelle, eliminare app vuote |

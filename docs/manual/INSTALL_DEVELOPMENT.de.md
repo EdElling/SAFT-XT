@@ -29,7 +29,7 @@ Server im Internet gilt [Anhang C – Installation auf einem Produktionsserver](
 | Komponente | Version | Wofür |
 |---|---|---|
 | **PHP** | 8.4 oder neuer (entwickelt mit 8.5) | führt SAFT aus |
-| PHP-Erweiterungen | `pdo_pgsql` (bzw. `pdo_mysql`), `intl`, `zip`, `mbstring`, `xml`, `curl`, `bcmath`, `openssl` | Datenbank, Sprachen, Excel-Export, Single Sign-on |
+| PHP-Erweiterungen | `pdo_pgsql` (bzw. `pdo_mysql`), `intl`, `zip`, `mbstring`, `xml`, `curl`, `bcmath`, `openssl`, `gd` | Datenbank, Sprachen, Excel-Export, Single Sign-on, PDF-Dokumente |
 | **Composer** | 2.x | lädt die PHP-Pakete |
 | **PostgreSQL** | 16 oder neuer (entwickelt mit 18) | speichert alle Daten (empfohlen) |
 | *oder* **MySQL** | 8.0.16 oder neuer (getestet mit 8.4) | Alternative zu PostgreSQL |
@@ -50,7 +50,7 @@ Empfohlenes Betriebssystem ist **Linux** (z. B. Ubuntu 26.04 LTS). Unter **Windo
 
 ```bash
 sudo apt update
-sudo apt install -y git unzip php-cli php-pgsql php-intl php-zip php-mbstring php-xml php-curl php-bcmath \
+sudo apt install -y git unzip php-cli php-pgsql php-intl php-zip php-mbstring php-xml php-curl php-bcmath php-gd \
                     postgresql postgresql-client
 ```
 

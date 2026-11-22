@@ -21,13 +21,13 @@ Empfänger, elektronische Rechnungsformate (ZUGFeRD, XRechnung).
 
 | Frage | Entscheidung |
 |---|---|
-| Weg zum PDF | **HTML-Vorlage mit Platzhaltern, gerendert mit mPDF** (reines PHP). Kopf- und Fusszeilen, Seitenzahlen, wiederholte Tabellenköpfe, eingebettete Schriften, PDF als Seitenhintergrund. Verworfen: Headless Chrome (Browsershot, spatie/laravel-pdf) und Gotenberg – brauchen Chromium bzw. einen eigenen Dienst; wkhtmltopdf – nicht mehr gepflegt; dompdf – schwächer bei Seitenumbrüchen. |
+| Weg zum PDF | **HTML-Vorlage mit Platzhaltern, gerendert mit tc-lib-pdf** (reines PHP, LGPL-3.0, Nachfolger von TCPDF). Kopf- und Fusszeilen, Seitenzahlen, wiederholte Tabellenköpfe, eingebettete Schriften, PDF-Seiten als Hintergrund, PDF/A, Signatur. Verworfen: mPDF – GPL-2.0, mit der Lizenz von SAFT XT nicht vereinbar (Abschnitt 10); Headless Chrome (Browsershot, spatie/laravel-pdf) und Gotenberg – brauchen Chromium bzw. einen eigenen Dienst; wkhtmltopdf – nicht mehr gepflegt; dompdf – schwächer bei Seitenumbrüchen, kein PDF/A. |
 | Platzhaltersprache | **Mustache** (logikfrei, sicher): Vorlagen von Admins oder der KI können keinen Code ausführen. Blade scheidet aus (führt PHP aus). Ergänzt um wenige Formatierungen (Abschnitt 5). |
 | Gestaltung und Inhalt | **Getrennt.** Das **Briefpapier** (CI) wird einmal zentral festgelegt; **Inhaltsvorlagen** setzen nur Daten darauf und können das CI nicht verletzen (Abschnitt 3). |
 | Bearbeiten | In SAFT selbst: **Code-Editor** für Inhaltsvorlagen mit Feldauswahl und **Live-Vorschau** als PDF. Später Bausteine im Formular für Fachanwender. Kein WYSIWYG-Designer. |
 | KI | Erzeugt **nur Inhaltsvorlagen** innerhalb des Briefpapiers, nie das CI (Etappe D2). |
 | Zuordnung | Inhaltsvorlagen gehören zu einer **App** und einer **Grundtabelle** (z. B. „Rechnung“ zu *Belege*). Das Briefpapier gilt für die ganze Installation; **je App ein eigenes Briefpapier ab D1**. |
-| Archivierung | **PDF/A-3b** (mPDF), einstellbar, Vorgabe an. Abgelegte Dokumente sind schreibgeschützt; erneutes Erzeugen legt eine neue Fassung an. Prüfwert (SHA-256) im Änderungsprotokoll. **Digitale Signatur später** (eigene Etappe D5 nach einem Versuch). |
+| Archivierung | **PDF/A-3b** (tc-lib-pdf), einstellbar, Vorgabe an. Abgelegte Dokumente sind schreibgeschützt; erneutes Erzeugen legt eine neue Fassung an. Prüfwert (SHA-256) im Änderungsprotokoll. **Digitale Signatur später** (eigene Etappe D5 nach einem Versuch). |
 | Nummernkreise | **Nicht Teil der Dokumente**, eigenes Backlog-Thema B-135 (Feldeigenschaft). Vorlagen zeigen das vorhandene Nummernfeld an. |
 | Recht | Je Vorlage, wie bei Auswertungen: Wer die Grundtabelle lesen darf und das Recht der Vorlage hat, darf das Dokument erzeugen. Vorlagen bearbeiten: eigenes Recht *Dokumentvorlagen: verwalten*. |
 
@@ -38,10 +38,10 @@ Affinity, auch Word) bei der Agentur oder der Kommunikationsabteilung. In SAFT w
 (*Einstellungen › Dokumente*, Recht *Globale Einstellungen: bearbeiten*):
 
 - **Briefpapier als PDF**, getrennt für die **erste Seite** und die **Folgeseiten** (Logo, Linien, Fusszeile mit
-  Adresse, Bank, MWST-Nummer). mPDF legt es als Hintergrund unter jede Seite – pixelgenau wie geliefert, niemand muss
+  Adresse, Bank, MWST-Nummer). SAFT legt es als Hintergrund unter jede Seite – pixelgenau wie geliefert, niemand muss
   es nachbauen. Ohne PDF: einfacher Kopf mit Logo und Absender aus den Einstellungen.
 - **Hausschriften** (TTF hochladen; ohne eigene eine mitgelieferte, gut lesbare Schrift) und **Hausfarben** (Primär-,
-  Sekundär-, Textfarbe) als feste Werte, die alle Vorlagen über CSS-Variablen verwenden.
+  Sekundär-, Textfarbe) als feste Werte, die alle Vorlagen über vorgegebene CSS-Klassen verwenden.
 - **Satzspiegel:** Seitenränder je Seitentyp, Position des **Adressfelds** (Fensterkuvert links oder rechts, Schweiz
   bzw. DIN 5008), Absenderzeile.
 - **Absenderdaten** als Platzhalter für Vorlagen: Firmenname, Adresse, MWST-Nummer, IBAN, Kontakt.
@@ -61,15 +61,16 @@ Briefpapier.
   Grundtabelle, über Verknüpfungen erreichbare Felder (`kunde_id.name`), Kind-Tabellen als Liste
   (`{{#positionen}} … {{/positionen}}`), berechnete Felder, Absenderdaten. Ein Klick fügt den Platzhalter ein.
 - **Live-Vorschau** als PDF mit einem wählbaren Beispieldatensatz, aktualisiert beim Tippen (verzögert).
-- **Prüfung** beim Speichern: unbekannte Felder, nicht geschlossene Abschnitte, HTML, das mPDF nicht darstellen kann
+- **Prüfung** beim Speichern: unbekannte Felder, nicht geschlossene Abschnitte, HTML, das tc-lib-pdf nicht darstellen kann
   (Hinweis statt Fehler).
 - **Mitgelieferte Grundlagen**: „Rechnung“, „Brief“, „Liste“ – als Ausgangspunkt zum Kopieren.
 
 Wer lieber ausserhalb arbeitet, schreibt die Vorlage in einem Texteditor (z. B. VS Code) und fügt sie ein.
 Gestaltungsprogramme sind dafür ungeeignet; sie liefern kein HTML in der nötigen einfachen Form.
 
-**Grenzen von mPDF**, die Vorlagen kennen müssen: kein Flexbox und kein Grid. Layouts entstehen mit Tabellen und festen
-Positionen – für Rechnungen und Briefe ausreichend. Die mitgelieferten Vorlagen zeigen, wie.
+**Grenzen von tc-lib-pdf**, die Vorlagen kennen müssen: kein Flexbox, kein Grid, kein `float` und kein `position`.
+Layouts entstehen mit Tabellen – für Rechnungen und Briefe ausreichend. Kopf, Fuss, Seitenzahlen und das Adressfeld
+setzt SAFT selbst an feste Stellen. Die mitgelieferten Vorlagen zeigen, wie.
 
 ## 5. Platzhalter
 
@@ -117,7 +118,7 @@ installierte App nutzt das Briefpapier der Zielinstallation.
 
 | Etappe | Inhalt | Grösse |
 |---|---|---|
-| **D1 Grundlage** | mPDF; Briefpapier der Installation und je App (PDF-Hintergrund für erste und Folgeseiten, Hausschriften, Hausfarben, Satzspiegel, Absenderdaten); PDF/A-3b, Prüfwert, schreibgeschützte Ablage; Inhaltsvorlagen je App mit Code-Editor, Feldauswahl, Live-Vorschau und Prüfung; mitgelieferte Vorlagen „Rechnung“ und „Brief“; Symbol „Dokument“ in der Zeile, Herunterladen und Ablage im Dateifeld; Rechte; Handbücher. Demo: Rechnung im Gitarrenshop. | gross |
+| **D1 Grundlage** | tc-lib-pdf; Briefpapier der Installation und je App (PDF-Hintergrund für erste und Folgeseiten, Hausschriften, Hausfarben, Satzspiegel, Absenderdaten); PDF/A-3b, Prüfwert, schreibgeschützte Ablage; Inhaltsvorlagen je App mit Code-Editor, Feldauswahl, Live-Vorschau und Prüfung; mitgelieferte Vorlagen „Rechnung“ und „Brief“; Symbol „Dokument“ in der Zeile, Herunterladen und Ablage im Dateifeld; Rechte; Handbücher. Demo: Rechnung im Gitarrenshop. | gross |
 | **D2 KI und Bausteine** | Inhaltsvorlage aus einer Beschreibung (innerhalb des Briefpapiers); Bausteine im Formular für Fachanwender (Layout wählen, Felder im Adressblock, Spalten der Positionstabelle, Summen, Texte) | mittel |
 | **D3 Mehrere und Versand** | Auswahl mehrerer Datensätze → ein PDF bzw. ZIP; Versand per E-Mail mit dem Dokument als Anhang | mittel |
 | **D4 Schweiz und Word** | **QR-Rechnung** (Zahlteil mit QR-Code nach Schweizer Standard, reine PHP-Bibliothek); DOCX für Briefe, die man nachbearbeiten will. Sinnvoll mit Nummernkreisen (B-135) | mittel |
@@ -127,13 +128,13 @@ Jede Etappe ist für sich auslieferbar. D1 ist ohne KI vollständig nutzbar.
 
 ## 9. Risiken
 
-- **CSS-Grenzen von mPDF:** Vorlagen aus dem Web (Flexbox, Grid) sehen im PDF anders aus. Gegenmittel: mitgelieferte
+- **CSS-Grenzen von tc-lib-pdf:** Vorlagen aus dem Web (Flexbox, Grid) sehen im PDF anders aus. Gegenmittel: mitgelieferte
   Vorlagen als Muster, Prüfung mit Hinweisen, Live-Vorschau.
-- **Speicher und Zeit** bei langen Dokumenten (viele Positionen, grosse Briefpapier-PDFs): mPDF braucht dafür mehr
-  Speicher. Gegenmittel: Grenze für Positionen je Dokument, Briefpapier-PDF in der Grösse begrenzt.
+- **Speicher und Zeit** bei langen Dokumenten (viele Positionen, grosse Briefpapier-PDFs): die PDF-Erzeugung braucht
+  dafür mehr Speicher. Gegenmittel: Grenze für Positionen je Dokument, Briefpapier-PDF in der Grösse begrenzt.
 - **Schriften und Lizenzen:** Hausschriften müssen für die Einbettung in PDFs lizenziert sein – Hinweis beim Hochladen.
 - **Sicherheit:** Vorlagen dürfen keine externen Ressourcen laden (Bilder, Schriften, CSS aus dem Internet) und keinen
-  Code ausführen; mPDF wird entsprechend eingeschränkt, Mustache führt keinen Code aus.
+  Code ausführen; tc-lib-pdf lädt nichts aus dem Internet und nur Dateien aus den eigenen Verzeichnissen, Mustache führt keinen Code aus.
 
 ## 10. Entschiedene Punkte (21.11.2026)
 
@@ -144,3 +145,9 @@ Jede Etappe ist für sich auslieferbar. D1 ist ohne KI vollständig nutzbar.
 - **Archivierung:** PDF/A-3b in D1 (erlaubt später eingebettete Rechnungsdaten, ZUGFeRD); PDF/A allein schützt nicht vor
   Änderungen, deshalb schreibgeschützte Ablage und Prüfwert; digitale Signatur (auch mit selbst erzeugtem Zertifikat)
   in D5.
+- **PDF-Bibliothek (22.11.2026):** tc-lib-pdf statt mPDF. mPDF steht unter GPL-2.0; SAFT XT steht unter der
+  PolyForm-Noncommercial-Lizenz mit separaten kommerziellen Lizenzen – das verträgt sich nicht. tc-lib-pdf (LGPL-3.0)
+  darf als Bibliothek eingebunden werden. Ein Versuch mit derselben Probeseite ergab gleichwertige Ergebnisse
+  (Briefpapier auf Seite 1 und Folgeseiten, Adressfeld, wiederholter Tabellenkopf, Seitenzahlen, Hausschrift,
+  PDF/A-3b); dazu kommen eingebaute Signatur (PAdES, für D5) und Factur-X/ZUGFeRD. Weniger CSS als mPDF (siehe
+  Abschnitt 4). Die Bibliothek ist sehr neu (TCPDF 7 ist nur noch eine Hülle darum) – Version eng festgelegt.

@@ -28,6 +28,7 @@
 - [13. KI-Funktionen](#13-ki-funktionen)
 - [14. Plugins](#14-plugins)
 - [15. Apps (Fachanwendungen)](#15-apps-fachanwendungen)
+- [16. Dokumente](#16-dokumente)
 - [Anhang A – Rechte im Überblick](#anhang-a--rechte-im-überblick)
 
 ---
@@ -1451,6 +1452,78 @@ Menüs, Auswertungen, Rollen und Aufgaben; System-Menüs, Systemrollen und Syste
 Installationen beginnen ohne App; die Demo-Daten legen je eine eigene App an (Shop, Lager, Forschung). Aufteilen lässt sich „Bestehende Daten“ mit „In andere App verschieben“
 (oben).
 
+## 16. Dokumente
+
+**Administration → Anwendung → Dokumente**
+
+SAFT erzeugt Dokumente wie Rechnungen und Briefe als PDF. Gestaltung und Inhalt sind getrennt: Hier legen Sie das
+**Briefpapier** fest – Hintergrund oder Kopf mit Logo, Schrift, Farben, Ränder und Absender. Die Inhaltsvorlagen (z. B.
+„Rechnung“) setzen nur die Daten darauf und folgen in einer späteren Version.
+
+**Für wen es gilt:** Oben wählen Sie unter **Briefpapier für** entweder **Alle Apps (Installation)** oder eine App.
+Das Briefpapier der Installation gilt für alle Apps. Eine App legt nur ihre **Abweichungen** fest: Leere Felder
+übernehmen den Wert der Installation, der grau im Feld steht – so kann z. B. die Musikschule ein eigenes Logo haben
+und sonst alles übernehmen. **Abweichungen entfernen** (nur bei einer App) löscht die Einstellungen und Dateien der
+App; danach gilt wieder das Briefpapier der Installation. Wird eine App entfernt, wird ihr Briefpapier mitgelöscht.
+
+**Rechte:** Das Briefpapier der Installation ändert, wer *Globale Einstellungen: bearbeiten* hat; das einer App, wer
+in dieser App das Recht *Dokumente: verwalten* hat (über eine Rolle der App, siehe [Kapitel 15](#15-apps-fachanwendungen)).
+
+| Abschnitt | Einstellungen |
+|---|---|
+| **Briefpapier** | **Briefpapier erste Seite (PDF)** und **Briefpapier Folgeseiten (PDF)**; ohne PDF **Logo** und **Logohöhe** |
+| **Schrift und Farben** | Hausschrift **normal**, **fett** und **kursiv** (.ttf); **Primärfarbe**, **Sekundärfarbe**, **Textfarbe** |
+| **Satzspiegel** | Ränder in mm für **Erste Seite** und **Folgeseiten**; **Adressfeld** links oder rechts; **Absenderzeile** |
+| **Absender** | Firma, Adresse, MWST-Nummer, IBAN, Kontakt – erscheinen im Kopf und stehen Vorlagen als Platzhalter zur Verfügung |
+| **Archivierung** | **PDF/A-3b** (Vorgabe ein); bei einer App: *wie Installation*, *ein* oder *aus* |
+
+### Briefpapier als PDF
+
+Am genauesten wird das Briefpapier, wenn es fertig gestaltet als PDF kommt (z. B. aus InDesign, Affinity oder Word).
+SAFT legt es unter jede Seite: Seite 1 der Datei unter die erste Seite, Seite 2 unter die Folgeseiten. Eine eigene
+Datei für die Folgeseiten ersetzt Seite 2; ohne beides bleiben die Folgeseiten leer. Beim Speichern prüft SAFT die
+Datei: Ein PDF, das sich nicht lesen lässt (z. B. verschlüsselt), wird abgewiesen; ein Hinweis erscheint, wenn es
+nicht A4 ist oder – bei PDF/A – vermutlich Transparenzen enthält (Schatten, halbtransparente Flächen). Ein solches
+Briefpapier ohne Transparenz exportieren, z. B. als PDF/X-1a oder PDF/A.
+
+Die **Ränder** im Satzspiegel bestimmen, wo der Text steht – so wählen, dass er nicht in Logo, Linien oder Fusszeile
+des Briefpapiers läuft. Die Fusszeile mit **Seite x / y** setzt SAFT unten rechts.
+
+### Ohne Briefpapier-PDF: Kopf mit Logo
+
+Ohne PDF setzt SAFT auf die erste Seite einen einfachen **Kopf** mit Logo und Absender (Firma, Adresse, Kontakt) –
+auf der Seite **gegenüber dem Adressfeld**: Adressfeld rechts (Schweiz), Kopf links; Adressfeld links (DIN 5008), Kopf
+rechts. Reicht der Kopf tiefer als der obere Rand, beginnt der Inhalt darunter.
+
+- **Logo:** SVG, PNG oder JPEG, höchstens 1 MB. Ein SVG wird beim Speichern bereinigt (ohne Skripte und Verweise
+  nach aussen); Text darin in Pfade umwandeln, sonst erscheint er in der Standardschrift. Leerraum um die Zeichnung
+  vorher wegschneiden, sonst steht das Logo nicht bündig mit dem Absender. Grosse Bilder bettet SAFT auf 1000 Pixel
+  Breite verkleinert ein.
+- **Logohöhe:** 5 bis 40 mm, Vorgabe 15 mm. Die Breite folgt aus dem Seitenverhältnis, höchstens 80 mm – ein
+  breiteres Logo wird entsprechend kleiner.
+- PNG- und GIF-Logos braucht die PHP-Erweiterung **gd**; fehlt sie auf dem Server, weist ein Hinweis beim Speichern
+  darauf hin (siehe [Anhang C, Abschnitt 1](INSTALL_PRODUCTION.de.md#1-was-der-server-bieten-muss)).
+
+### Schrift, Farben und Adressfeld
+
+- **Hausschrift:** TrueType-Datei (.ttf); ihre Lizenz muss das Einbetten in PDFs erlauben. SAFT prüft beim Hochladen,
+  ob sich die Datei verwenden lässt. Fett und kursiv sind optional – fehlen sie, erscheint die normale Schrift. Ohne
+  Hausschrift: DejaVu Sans.
+- **Farben:** Die **Primärfarbe** färbt Titel und Tabellenköpfe, die **Sekundärfarbe** Absenderzeile, Linien,
+  Fusszeile und kleine Texte, die **Textfarbe** den Fliesstext.
+- **Adressfeld:** an fester Stelle für Fensterkuverts – **links** nach DIN 5008 (20 mm vom linken, 45 mm vom oberen
+  Rand), **rechts** nach Schweizer Brauch (118 mm bzw. 50 mm). Darüber steht klein die **Absenderzeile**; leer
+  gelassen, bildet SAFT sie aus Firma und Adresse. Der Inhalt beginnt unter dem Adressfeld.
+
+### PDF/A und Probeseite
+
+**PDF/A-3b** ist das Format für die Langzeitarchivierung: Schriften eingebettet, Farbprofil enthalten, nichts aus dem
+Internet. Es ist für die Installation voreingestellt und lässt sich je App ändern.
+
+**Probeseite** (oben rechts) lädt ein PDF aus dem **gespeicherten** Stand herunter – erst speichern, dann prüfen. Es
+zeigt Adressfeld, Schrift, Farben, eine Tabelle mit Positionen über zwei Seiten (mit wiederholtem Tabellenkopf) und
+Blindtext, damit erste Seite und Folgeseiten zu sehen sind.
+
 ## Anhang A – Rechte im Überblick
 
 Alle Rechte, nach Themen gruppiert, mit der Bezeichnung, wie sie beim Bearbeiten einer [Rolle](#2-rollen-und-rechte)
@@ -1479,7 +1552,9 @@ entfernen**. „Anzeigen“ ist jeweils Voraussetzung für die übrigen Rechte e
 
 | Recht | Wirkung |
 |---|---|
-| Globale Einstellungen: anzeigen / bearbeiten | Name der Anwendung, Logo, Farbschema, KI-Assistenten (Anbieter, Modell, Schalter) |
+| Globale Einstellungen: anzeigen / bearbeiten | Name der Anwendung, Logo, Farbschema, KI-Assistenten (Anbieter, Modell, Schalter); Briefpapier der Installation (Administration › Anwendung › Dokumente) |
+| Dokumente: verwalten | Briefpapier einer App festlegen (App-Recht, siehe [Kapitel 16](#16-dokumente)) |
+| Dokumente: erzeugen | Dokumente aus Vorlagen erzeugen (App-Recht; die Vorlagen folgen in einer späteren Version) |
 | Menüs: anzeigen / anlegen / bearbeiten / löschen | den Menübaum pflegen (Gruppen, Einträge, Reihenfolge, Rechte der Einträge) |
 | Apps: anzeigen | Seite „Apps“ und Datenmodell je App öffnen |
 | Apps: verwalten | Apps anlegen, bearbeiten, aktivieren und deaktivieren, Handbuch hochladen, Tabellen verschieben, leere Apps löschen |

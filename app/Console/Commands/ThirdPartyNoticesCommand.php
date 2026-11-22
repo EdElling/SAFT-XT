@@ -25,7 +25,10 @@ class ThirdPartyNoticesCommand extends Command
     public const string FILE = 'THIRD_PARTY_NOTICES.md';
 
     /** Echte Copyright-Zeilen („Copyright (c) 2020 …“, „© …“), nicht „COPYRIGHT HOLDERS BE LIABLE …“ aus dem Lizenztext. */
-    private const string COPYRIGHT_LINE = '/^\s*(?:copyright\s*(?:\(c\)|©|\d{4}|by\b)|\(c\)\s*\d{4}|©).*$/mi';
+    private const string COPYRIGHT_LINE = '/^\s*(?:\*\s*)?(?:copyright\s*(?:\(c\)|©|\d{4}|by\b|:)|\(c\)\s*\d{4}|©).*$/mi';
+
+    /** Kopf einer Lizenzdatei mit Paketname und Autor (tc-lib-pdf: „* SOFTWARE : tc-lib-pdf“) – beim Zusammenfassen gleicher Texte ignoriert. */
+    private const string HEADER_LINE = '/^\s*\*\s*(?:software|author)\s*:.*$/mi';
 
     /** Standardtext für Pakete ohne eigene Lizenzdatei (z. B. Filament-Teilpakete; die Datei liegt im Haupt-Repository). */
     private const array STANDARD_TEXTS = [
@@ -84,6 +87,9 @@ class ThirdPartyNoticesCommand extends Command
         $fonts = [[
             'name' => 'Inter (font, shipped with Filament)', 'version' => '4', 'license' => 'OFL-1.1',
             'copyright' => 'Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter)', 'text' => null,
+        ], [
+            'name' => 'DejaVu Sans (font for PDF documents, resources/fonts/pdf)', 'version' => '2.37', 'license' => 'Bitstream-Vera',
+            'copyright' => 'Copyright (c) 2003 by Bitstream, Inc.; DejaVu changes are in public domain', 'text' => null,
         ]];
 
         File::put(base_path(self::FILE), $this->render($composer, $bundle, $fonts));
@@ -221,7 +227,10 @@ class ThirdPartyNoticesCommand extends Command
         }
 
         preg_match_all(self::COPYRIGHT_LINE, $text, $m);
-        $lines = array_slice(array_unique(array_map('trim', $m[0])), 0, 3);
+        // „* COPYRIGHT : 2002-2026 …“ → „Copyright (c) 2002-2026 …“; Zeilen des Lizenztexts selbst (FSF, Vorlage „<year>“) weglassen.
+        $lines = array_map(fn (string $line): string => (string) preg_replace('/^\*\s*copyright\s*:\s*/i', 'Copyright (c) ', trim($line)), $m[0]);
+        $lines = array_filter($lines, fn (string $line): bool => ! str_contains($line, 'Free Software Foundation') && ! str_contains($line, '<year>'));
+        $lines = array_slice(array_values(array_unique($lines)), 0, 3);
 
         return $lines === [] ? null : implode('; ', $lines);
     }
@@ -271,6 +280,7 @@ class ThirdPartyNoticesCommand extends Command
 
         $out .= "\n## Fonts\n\n".$table($fonts)
             ."\nSIL Open Font License 1.1: https://openfontlicense.org/open-font-license-official-text/\n"
+            ."Bitstream Vera Fonts License (DejaVu Sans): reproduced in `resources/fonts/pdf/LICENSE-DejaVu.txt`.\n"
             ."\n## License texts\n\nEach distinct license text is reproduced once, followed by the components it applies to.\n";
 
         // Gleiche Texte (bis auf die Copyright-Zeilen) nur einmal.
@@ -287,7 +297,7 @@ class ThirdPartyNoticesCommand extends Command
             }
 
             $normalized = trim((string) preg_replace(self::COPYRIGHT_LINE, '', $row['text']));
-            $key = sha1((string) preg_replace('/\s+/', ' ', $normalized));
+            $key = sha1((string) preg_replace('/\s+/', ' ', (string) preg_replace(self::HEADER_LINE, '', $normalized)));
             $groups[$key] ??= ['license' => $row['license'], 'text' => $normalized, 'names' => []];
             $groups[$key]['names'][] = $row['name'];
         }

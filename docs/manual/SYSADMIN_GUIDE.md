@@ -67,6 +67,11 @@ Notes:
   separate apps is then done in the interface (see
   [Administrator guide, chapter 15](ADMIN_GUIDE.md#15-apps-business-applications)). The menu entry “App settings” has
   been called “Global settings” since then.
+- **Documents (PDF):** SAFT generates PDFs with the library tc-lib-pdf (pure PHP, no external programs). For logos
+  as PNG or GIF, PHP needs the extension `gd`. Letterheads, logos and house fonts are stored under
+  `storage/app/private/documents`; they are **not** included in `db:backup` – back up the directory with the other
+  files. SAFT stores converted fonts and reduced logos under `storage/framework/cache/pdf-fonts` and `pdf-logos`; they
+  are recreated when needed and may be deleted.
 - **Orphaned files** (uploads from cancelled forms, files of records deleted outside SAFT) are removed after 24 hours by
   the system task *Clean up files* or `php artisan files:prune`.
 - **Upload size:** The maximum size per file field only applies up to PHP's limit. For e.g. 50 MB set

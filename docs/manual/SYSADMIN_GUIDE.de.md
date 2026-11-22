@@ -68,6 +68,11 @@ Hinweise:
   Aufteilen in eigene Apps geschieht danach in der Oberfläche (siehe
   [Administratorhandbuch, Kapitel 15](ADMIN_GUIDE.de.md#15-apps-fachanwendungen)). Der Menüeintrag „App-Einstellungen“
   heisst seither „Globale Einstellungen“.
+- **Dokumente (PDF):** SAFT erzeugt PDFs mit der Bibliothek tc-lib-pdf (reines PHP, ohne externe Programme). Für
+  Logos als PNG oder GIF braucht PHP die Erweiterung `gd`. Briefpapier, Logos und Hausschriften liegen unter
+  `storage/app/private/documents`; sie sind **nicht** in `db:backup` enthalten – das Verzeichnis mit den übrigen Dateien
+  sichern. Umgewandelte Schriften und verkleinerte Logos legt SAFT unter `storage/framework/cache/pdf-fonts` bzw.
+  `pdf-logos` ab; sie entstehen bei Bedarf neu und dürfen gelöscht werden.
 - **Verwaiste Dateien** (Uploads aus abgebrochenen Formularen, Dateien von Datensätzen, die ausserhalb von SAFT gelöscht
   wurden) räumt die System-Aufgabe *Dateien aufräumen* bzw. `php artisan files:prune` nach 24 Stunden weg.
 - **Grösse von Uploads:** Die Höchstgrösse je Dateifeld wirkt nur bis zur Grenze von PHP. Für z. B. 50 MB in der

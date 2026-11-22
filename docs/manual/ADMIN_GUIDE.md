@@ -28,6 +28,7 @@
 - [13. AI functions](#13-ai-functions)
 - [14. Plugins](#14-plugins)
 - [15. Apps (business applications)](#15-apps-business-applications)
+- [16. Documents](#16-documents)
 - [Appendix A – Permissions at a glance](#appendix-a--permissions-at-a-glance)
 
 ---
@@ -1405,6 +1406,80 @@ cancelling and removing are recorded in the change log.
 roles and tasks; system menus, system roles and system tasks stay without an app. New installations start without an
 app; the demo data create one app each (Shop, Warehouse, Research). “Existing data” can be split with “Move to another app” (above).
 
+## 16. Documents
+
+**Administration → Application → Documents**
+
+SAFT generates documents such as invoices and letters as PDF. Design and content are separate: here you define the
+**letterhead** – background or header with logo, font, colours, margins and sender. Content templates (e.g.
+“Invoice”) only place the data on it and follow in a later version.
+
+**Who it applies to:** At the top, under **Letterhead for**, choose either **All apps (installation)** or an app. The
+installation's letterhead applies to all apps. An app only sets its **deviations**: empty fields take the installation
+value shown in grey – for example, the music school can have its own logo and take everything else. **Remove
+deviations** (only for an app) deletes the app's settings and files; the installation's letterhead then applies again.
+When an app is removed, its letterhead is deleted with it.
+
+**Permissions:** The installation's letterhead can be changed by anyone with *Global settings: edit*; an app's
+letterhead by anyone with the permission *Documents: manage* in that app (through a role of the app, see
+[chapter 15](#15-apps-business-applications)).
+
+| Section | Settings |
+|---|---|
+| **Letterhead** | **Letterhead first page (PDF)** and **Letterhead following pages (PDF)**; without a PDF, **Logo** and **Logo height** |
+| **Font and colours** | House font **regular**, **bold** and **italic** (.ttf); **Primary colour**, **Secondary colour**, **Text colour** |
+| **Page layout** | Margins in mm for **First page** and **Following pages**; **Address field** left or right; **Sender line** |
+| **Sender** | Company, address, VAT number, IBAN, contact – appear in the header and are available to templates as placeholders |
+| **Archiving** | **PDF/A-3b** (on by default); for an app: *as installation*, *on* or *off* |
+
+### Letterhead as PDF
+
+The letterhead is most accurate when it comes ready-designed as a PDF (e.g. from InDesign, Affinity or Word). SAFT
+places it under every page: page 1 of the file under the first page, page 2 under the following pages. A separate
+file for the following pages replaces page 2; without either, the following pages stay blank. When saving, SAFT checks
+the file: a PDF that cannot be read (e.g. encrypted) is rejected; a note appears if it is not A4 or – with PDF/A –
+probably contains transparency (shadows, semi-transparent areas). Export such a letterhead without transparency, e.g.
+as PDF/X-1a or PDF/A.
+
+The **margins** in the page layout determine where the text goes – choose them so that it does not run into the logo,
+lines or footer of the letterhead. SAFT places the footer with **Page x / y** at the bottom right.
+
+### Without a letterhead PDF: header with logo
+
+Without a PDF, SAFT puts a simple **header** with logo and sender (company, address, contact) on the first page – on
+the side **opposite the address field**: address field on the right (Switzerland), header on the left; address field
+on the left (DIN 5008), header on the right. If the header reaches lower than the top margin, the content starts below
+it.
+
+- **Logo:** SVG, PNG or JPEG, at most 1 MB. An SVG is cleaned when saved (no scripts and no external references);
+  convert text in it to paths, otherwise it appears in the default font. Crop empty space around the artwork first,
+  otherwise the logo is not aligned with the sender. SAFT embeds large images reduced to 1000 pixels wide.
+- **Logo height:** 5 to 40 mm, default 15 mm. The width follows from the aspect ratio, at most 80 mm – a wider logo
+  is reduced accordingly.
+- PNG and GIF logos need the PHP extension **gd**; if it is missing on the server, a note appears when saving (see
+  [Appendix C, section 1](INSTALL_PRODUCTION.md#1-what-the-server-must-offer)).
+
+### Font, colours and address field
+
+- **House font:** TrueType file (.ttf); its licence must allow embedding in PDFs. SAFT checks on upload whether the
+  file can be used. Bold and italic are optional – if they are missing, the regular font appears. Without a house
+  font: DejaVu Sans.
+- **Colours:** The **primary colour** colours titles and table headers, the **secondary colour** the sender line,
+  lines, footer and small texts, the **text colour** the body text.
+- **Address field:** at a fixed position for window envelopes – **left** according to DIN 5008 (20 mm from the left,
+  45 mm from the top edge), **right** according to Swiss practice (118 mm and 50 mm). Above it, the **sender line** is
+  shown in small print; if left empty, SAFT forms it from company and address. The content starts below the address
+  field.
+
+### PDF/A and sample page
+
+**PDF/A-3b** is the format for long-term archiving: fonts embedded, colour profile included, nothing from the
+internet. It is preset for the installation and can be changed per app.
+
+**Sample page** (top right) downloads a PDF from the **saved** state – save first, then check. It shows the address
+field, font, colours, a table of items over two pages (with repeated table header) and dummy text, so that the first
+page and the following pages can be seen.
+
 ## Appendix A – Permissions at a glance
 
 All permissions, grouped by topic, with the label shown when editing a [role](#2-roles-and-permissions). Users receive
@@ -1433,7 +1508,9 @@ reserved for the super admin and cannot be granted to any role: **View as role**
 
 | Permission | Effect |
 |---|---|
-| Global settings: view / edit | name of the application, logo, colour scheme, AI assistants (provider, model, switches) |
+| Global settings: view / edit | name of the application, logo, colour scheme, AI assistants (provider, model, switches); the installation's letterhead (Administration › Application › Documents) |
+| Documents: manage | set an app's letterhead (app permission, see [chapter 16](#16-documents)) |
+| Documents: generate | generate documents from templates (app permission; the templates follow in a later version) |
 | Menus: view / create / edit / delete | maintain the menu tree (groups, entries, order, permissions of entries) |
 | Apps: view | open the “Apps” page and the data model per app |
 | Apps: manage | create, edit, activate and deactivate apps, upload the manual, move tables, delete empty apps |

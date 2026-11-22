@@ -83,6 +83,9 @@ PostgreSQL, MySQL oder MariaDB.
 - **Apps übertragen:** eine App (Tabellen, Auswertungen, Menüs, Rollen, Aufgaben, Handbuch) als Datei exportieren und in
   einer anderen Installation installieren, z. B. von Test nach Produktion – mit Vorschau und Diagramm, auch als Kopie
   mit neuem Präfix
+- **Briefpapier für PDF-Dokumente:** Briefpapier als PDF-Hintergrund (erste und Folgeseiten) oder Kopf mit Logo,
+  Hausschrift, Hausfarben, Ränder, Adressfeld für Fensterkuverts (links oder rechts) und Absender – für die
+  Installation und je App; PDF/A-3b für die Archivierung (Dokumentvorlagen folgen)
 - **Globale Einstellungen:** Anzeigename und Farbschema der Anwendung (Branding); Anbindung externer KI-Modelle für die
   Assistenten (Anbieter, Modell, verschlüsselter API-Schlüssel, Tageslimit, Verbindungstest); persönliche Einstellungen
   wie Sprache, Zahlenformat und Kontrastmodus unter „Meine Einstellungen“
@@ -92,7 +95,7 @@ PostgreSQL, MySQL oder MariaDB.
 
 ## Voraussetzungen
 
-- PHP 8.4+ mit den Erweiterungen `pdo_pgsql` bzw. `pdo_mysql`, `intl`, `zip`, `openssl`
+- PHP 8.4+ mit den Erweiterungen `pdo_pgsql` bzw. `pdo_mysql`, `intl`, `zip`, `openssl`, `gd`
 - Composer
 - PostgreSQL 16+ (der Datenbankbenutzer muss Schemata anlegen dürfen) **oder** MySQL 8.0.16+ (der Benutzer braucht
   zusätzlich Rechte auf die Datenbank `<DB>_app_data` für die Tabellen des Table-Designers); Auswahl über

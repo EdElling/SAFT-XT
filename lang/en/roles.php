@@ -23,6 +23,7 @@ return [
         'tasks' => 'Scheduled tasks',
         'plugins' => 'Plugins',
         'apps' => 'Apps',
+        'documents' => 'Documents',
         'help' => 'Help',
     ],
     'actions' => [
@@ -35,6 +36,7 @@ return [
         'import' => 'import',
         'assistant' => 'use assistant',
         'manage' => 'manage',
+        'generate' => 'generate',
         'install' => 'install',
         'upgrade' => 'update',
         'design' => 'design with AI',

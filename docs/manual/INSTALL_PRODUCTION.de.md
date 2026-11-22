@@ -34,7 +34,7 @@ MariaDB – und mit MySQL bzw. MariaDB eine zweite Datenbank; das ist der häufi
 
 | Anforderung | Details |
 |---|---|
-| **PHP 8.4 oder neuer** | für die Website **und** auf der Kommandozeile (SSH), mit den Erweiterungen `pdo_pgsql` bzw. `pdo_mysql`, `intl`, `zip`, `mbstring`, `xml`, `curl`, `bcmath`, `openssl`; nur für SQL Server als externe Quelle zusätzlich `pdo_sqlsrv` mit dem Microsoft ODBC Driver 18 |
+| **PHP 8.4 oder neuer** | für die Website **und** auf der Kommandozeile (SSH), mit den Erweiterungen `pdo_pgsql` bzw. `pdo_mysql`, `intl`, `zip`, `mbstring`, `xml`, `curl`, `bcmath`, `openssl`, `gd` (Logos als PNG in PDF-Dokumenten); nur für SQL Server als externe Quelle zusätzlich `pdo_sqlsrv` mit dem Microsoft ODBC Driver 18 |
 | **PostgreSQL 16 oder neuer** | eine eigene Datenbank; der Benutzer muss darin ein Schema anlegen dürfen (am einfachsten: er ist Eigentümer der Datenbank). Eine Datenbank beim gleichen Hoster oder ein separater Datenbankdienst ist beides möglich. |
 | *oder* **MySQL 8.0.16 oder neuer** | **zwei** Datenbanken mit demselben Benutzer (oder je eigenem, siehe Schritt 2): eine für SAFT und eine für die Tabellen des Table-Designers (Vorgabename `<datenbank>_app_data`, sonst in `APP_DATA_SCHEMA` eintragen). |
 | *oder* **MariaDB 10.11 oder neuer** | wie MySQL: **zwei** Datenbanken mit demselben Benutzer. Auch ein Galera-Cluster ist möglich (alle Tabellen von SAFT haben einen Primärschlüssel und nutzen InnoDB); Strukturänderungen im Table-Designer laufen dort clusterweit und sperren kurz, grössere Umbauten daher ausserhalb der Hauptzeit. |

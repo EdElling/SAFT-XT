@@ -23,6 +23,7 @@ return [
         'tasks' => 'Geplante Aufgaben',
         'plugins' => 'Plugins',
         'apps' => 'Apps',
+        'documents' => 'Dokumente',
         'help' => 'Hilfe',
     ],
     'actions' => [
@@ -35,6 +36,7 @@ return [
         'import' => 'importieren',
         'assistant' => 'Assistent nutzen',
         'manage' => 'verwalten',
+        'generate' => 'erzeugen',
         'install' => 'installieren',
         'upgrade' => 'aktualisieren',
         'design' => 'mit KI entwerfen',

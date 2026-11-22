@@ -23,6 +23,7 @@ return [
         'tasks' => 'Tâches planifiées',
         'plugins' => 'Plugins',
         'apps' => 'Apps',
+        'documents' => 'Documents',
         'help' => 'Aide',
     ],
     'actions' => [
@@ -35,6 +36,7 @@ return [
         'import' => 'importer',
         'assistant' => 'utiliser l’assistant',
         'manage' => 'gérer',
+        'generate' => 'générer',
         'install' => 'installer',
         'upgrade' => 'mettre à jour',
         'design' => 'concevoir avec l’IA',

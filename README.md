@@ -82,6 +82,9 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
 ### Other
 - **Transfer apps:** export an app (tables, reports, menus, roles, tasks, manual) as a file and install it in another
   installation, e.g. from test to production – with preview and diagram, also as a copy with a new prefix
+- **Letterhead for PDF documents:** letterhead as a PDF background (first and following pages) or header with logo,
+  house font, house colours, margins, address field for window envelopes (left or right) and sender – for the
+  installation and per app; PDF/A-3b for archiving (document templates follow)
 - **Global settings:** display name and colour scheme of the application (branding); connection of external AI models for
   the assistants (provider, model, encrypted API key, daily limit, connection test); personal settings such as language,
   number format and contrast mode under “My settings”
@@ -91,7 +94,7 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
 
 ## Requirements
 
-- PHP 8.4+ with the extensions `pdo_pgsql` or `pdo_mysql`, `intl`, `zip`, `openssl`
+- PHP 8.4+ with the extensions `pdo_pgsql` or `pdo_mysql`, `intl`, `zip`, `openssl`, `gd`
 - Composer
 - PostgreSQL 16+ (the database user must be allowed to create schemas) **or** MySQL 8.0.16+ (the user also needs
   rights on the database `<DB>_app_data` for the tables of the table designer); chosen with `DB_CONNECTION` and the

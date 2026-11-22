@@ -50,6 +50,7 @@ class MenuSeeder extends Seeder
                 ['label' => ['de' => 'Apps', 'en' => 'Apps', 'fr' => 'Apps', 'it' => 'App'], 'route' => 'filament.admin.resources.apps.index', 'icon' => 'heroicon-o-squares-2x2', 'permission_name' => 'apps.view', 'sort_order' => 5],
                 ['label' => ['de' => 'Menüs', 'en' => 'Menus', 'fr' => 'Menus', 'it' => 'Menu'], 'route' => 'filament.admin.resources.menus.index', 'icon' => 'heroicon-o-bars-3', 'permission_name' => 'menus.view', 'sort_order' => 10],
                 ['label' => ['de' => 'Globale Einstellungen', 'en' => 'Global settings', 'fr' => 'Paramètres globaux', 'it' => 'Impostazioni globali'], 'route' => 'filament.admin.pages.app-settings', 'icon' => 'heroicon-o-adjustments-horizontal', 'permission_name' => 'settings.app.view', 'sort_order' => 20],
+                ['label' => ['de' => 'Dokumente', 'en' => 'Documents', 'fr' => 'Documents', 'it' => 'Documenti'], 'route' => 'filament.admin.pages.document-settings', 'icon' => 'heroicon-o-document-text', 'permission_name' => 'documents.manage', 'sort_order' => 25],
                 ['label' => ['de' => 'Plugins', 'en' => 'Plugins', 'fr' => 'Plugins', 'it' => 'Plugin'], 'route' => 'filament.admin.pages.plugins', 'icon' => 'heroicon-o-puzzle-piece', 'permission_name' => 'plugins.view', 'sort_order' => 30],
             ],
         ],

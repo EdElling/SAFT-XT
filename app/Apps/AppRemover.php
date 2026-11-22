@@ -10,6 +10,7 @@ use App\Exceptions\BusinessRuleException;
 use App\ExternalData\TableConnectorService;
 use App\Models\App;
 use App\Models\CustomTable;
+use App\Models\DocumentLetterhead;
 use App\Models\Menu;
 use App\Models\User;
 use App\Plugins\PluginRegistry;
@@ -219,6 +220,8 @@ final readonly class AppRemover
         $this->schema->dropTables($tables->reject(static fn (CustomTable $t): bool => $t->isExternal())->values());
 
         $app->manuals()->delete();
+        // Briefpapier der App einzeln löschen, damit seine Dateien mitgehen (B-124).
+        DocumentLetterhead::query()->where('app_id', $app->id)->get()->each->delete();
 
         // Einstellungen der Personen: aktuelle App und Dashboard-Anordnung dieser App.
         User::query()->where('current_app_id', $app->id)->update(['current_app_id' => null]);

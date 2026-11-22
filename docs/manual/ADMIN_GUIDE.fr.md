@@ -28,6 +28,7 @@
 - [13. Fonctions IA](#13-fonctions-ia)
 - [14. Plugins](#14-plugins)
 - [15. Apps (applications métier)](#15-apps-applications-métier)
+- [16. Documents](#16-documents)
 - [Annexe A – Aperçu des droits](#annexe-a--aperçu-des-droits)
 
 ---
@@ -1513,6 +1514,81 @@ tables, menus, rapports, rôles et tâches existants ; les menus, rôles et tâc
 installations commencent sans app ; les données de démo créent chacune leur propre app (Boutique, Entrepôt, Recherche). « Données existantes » se répartit avec « Déplacer vers une autre
 app » (ci-dessus).
 
+## 16. Documents
+
+**Administration → Application → Documents**
+
+SAFT génère des documents tels que factures et lettres en PDF. Mise en forme et contenu sont séparés : vous définissez
+ici le **papier à lettres** – arrière-plan ou en-tête avec logo, police, couleurs, marges et expéditeur. Les modèles de
+contenu (p. ex. « Facture ») n’y placent que les données et suivront dans une version ultérieure.
+
+**Pour qui il s’applique :** En haut, sous **Papier à lettres pour**, choisissez **Toutes les apps (installation)** ou
+une app. Le papier à lettres de l’installation s’applique à toutes les apps. Une app ne définit que ses **écarts** :
+les champs vides reprennent la valeur de l’installation, affichée en gris – l’école de musique peut ainsi avoir son
+propre logo et reprendre tout le reste. **Supprimer les écarts** (seulement pour une app) efface les paramètres et
+fichiers de l’app ; le papier à lettres de l’installation s’applique alors de nouveau. Si une app est supprimée, son
+papier à lettres l’est aussi.
+
+**Droits :** Le papier à lettres de l’installation est modifié par qui a *Paramètres globaux: modifier* ; celui d’une
+app par qui a, dans cette app, le droit *Documents: gérer* (par un rôle de l’app, voir
+[chapitre 15](#15-apps-applications-métier)).
+
+| Section | Paramètres |
+|---|---|
+| **Papier à lettres** | **Papier à lettres première page (PDF)** et **Papier à lettres pages suivantes (PDF)** ; sans PDF, **Logo** et **Hauteur du logo** |
+| **Police et couleurs** | Police maison **normale**, **grasse** et **italique** (.ttf) ; **Couleur primaire**, **Couleur secondaire**, **Couleur du texte** |
+| **Mise en page** | Marges en mm pour **Première page** et **Pages suivantes** ; **Champ d’adresse** à gauche ou à droite ; **Ligne d’expéditeur** |
+| **Expéditeur** | Entreprise, adresse, numéro TVA, IBAN, contact – figurent dans l’en-tête et sont disponibles comme espaces réservés dans les modèles |
+| **Archivage** | **PDF/A-3b** (activé par défaut) ; pour une app : *comme l’installation*, *activé* ou *désactivé* |
+
+### Papier à lettres en PDF
+
+Le papier à lettres est le plus fidèle lorsqu’il est fourni déjà mis en page en PDF (p. ex. depuis InDesign, Affinity
+ou Word). SAFT le place sous chaque page : la page 1 du fichier sous la première page, la page 2 sous les pages
+suivantes. Un fichier propre aux pages suivantes remplace la page 2 ; sans l’un ni l’autre, les pages suivantes restent
+vierges. À l’enregistrement, SAFT vérifie le fichier : un PDF illisible (p. ex. chiffré) est refusé ; une remarque
+apparaît s’il n’est pas au format A4 ou – avec PDF/A – s’il contient probablement des transparences (ombres, surfaces
+semi-transparentes). Exporter un tel papier à lettres sans transparence, p. ex. en PDF/X-1a ou PDF/A.
+
+Les **marges** de la mise en page déterminent où se trouve le texte – les choisir de sorte qu’il ne déborde pas sur le
+logo, les lignes ou le pied de page du papier à lettres. SAFT place le pied de page avec **Page x / y** en bas à droite.
+
+### Sans papier à lettres PDF : en-tête avec logo
+
+Sans PDF, SAFT place sur la première page un **en-tête** simple avec logo et expéditeur (entreprise, adresse, contact) –
+du côté **opposé au champ d’adresse** : champ d’adresse à droite (Suisse), en-tête à gauche ; champ d’adresse à gauche
+(DIN 5008), en-tête à droite. Si l’en-tête descend plus bas que la marge supérieure, le contenu commence en dessous.
+
+- **Logo :** SVG, PNG ou JPEG, 1 Mo au plus. Un SVG est nettoyé à l’enregistrement (sans scripts ni références
+  externes) ; convertir son texte en tracés, sinon il apparaît dans la police par défaut. Supprimer d’abord l’espace
+  vide autour du dessin, sinon le logo n’est pas aligné sur l’expéditeur. SAFT intègre les grandes images réduites à
+  1000 pixels de large.
+- **Hauteur du logo :** 5 à 40 mm, 15 mm par défaut. La largeur découle des proportions, au plus 80 mm – un logo plus
+  large est réduit en conséquence.
+- Les logos PNG et GIF nécessitent l’extension PHP **gd** ; si elle manque sur le serveur, une remarque l’indique à
+  l’enregistrement (voir [Appendix C, section 1](INSTALL_PRODUCTION.md#1-what-the-server-must-offer)).
+
+### Police, couleurs et champ d’adresse
+
+- **Police maison :** fichier TrueType (.ttf) ; sa licence doit autoriser l’intégration dans des PDF. SAFT vérifie au
+  téléversement si le fichier est utilisable. Gras et italique sont facultatifs – s’ils manquent, la police normale
+  apparaît. Sans police maison : DejaVu Sans.
+- **Couleurs :** La **couleur primaire** colore les titres et en-têtes de tableau, la **couleur secondaire** la ligne
+  d’expéditeur, les lignes, le pied de page et les petits textes, la **couleur du texte** le texte courant.
+- **Champ d’adresse :** à un emplacement fixe pour enveloppes à fenêtre – **à gauche** selon DIN 5008 (20 mm du bord
+  gauche, 45 mm du bord supérieur), **à droite** selon l’usage suisse (118 mm et 50 mm). Au-dessus figure en petit la
+  **ligne d’expéditeur** ; laissée vide, SAFT la compose à partir de l’entreprise et de l’adresse. Le contenu commence
+  sous le champ d’adresse.
+
+### PDF/A et page d’essai
+
+**PDF/A-3b** est le format d’archivage à long terme : polices intégrées, profil de couleur inclus, rien depuis
+Internet. Il est préréglé pour l’installation et peut être modifié par app.
+
+**Page d’essai** (en haut à droite) télécharge un PDF de l’état **enregistré** – d’abord enregistrer, puis vérifier.
+Il montre le champ d’adresse, la police, les couleurs, un tableau de positions sur deux pages (avec en-tête de tableau
+répété) et du texte factice, afin que la première page et les pages suivantes soient visibles.
+
 ## Annexe A – Aperçu des droits
 
 Tous les droits, regroupés par thème, avec le libellé affiché lors de la modification d’un [rôle](#2-rôles-et-droits).
@@ -1542,7 +1618,9 @@ entrée de menu).
 
 | Droit | Effet |
 |---|---|
-| Paramètres globaux: afficher / modifier | nom de l’application, logo, palette de couleurs, assistants IA (fournisseur, modèle, interrupteurs) |
+| Paramètres globaux: afficher / modifier | nom de l’application, logo, palette de couleurs, assistants IA (fournisseur, modèle, interrupteurs) ; papier à lettres de l’installation (Administration › Application › Documents) |
+| Documents: gérer | définir le papier à lettres d’une app (droit d’app, voir [chapitre 16](#16-documents)) |
+| Documents: générer | générer des documents à partir de modèles (droit d’app ; les modèles suivront dans une version ultérieure) |
 | Menus: afficher / créer / modifier / supprimer | gérer l’arborescence des menus (groupes, entrées, ordre, droits des entrées) |
 | Apps: afficher | ouvrir la page « Apps » et le modèle de données par app |
 | Apps: gérer | créer, modifier, activer et désactiver des apps, téléverser le manuel, déplacer des tables, supprimer les apps vides |
