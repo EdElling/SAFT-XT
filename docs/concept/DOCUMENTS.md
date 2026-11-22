@@ -166,5 +166,10 @@ Jede Etappe ist für sich auslieferbar. D1 ist ohne KI vollständig nutzbar.
   Vorlagen wie die anderen Objekte (Dreiwegvergleich, Konflikte); beim Entfernen bleiben erzeugte Dokumente. Die
   Musikschule (1.2) bringt die Semesterrechnung in der Definition mit, dazu das Dateifeld „Dokumente“ der Rechnungen
   und das Recht *Dokumente: erzeugen* für ihre Rolle.
+- **D2a (22.11.2026):** KI-Assistent im Formular der Vorlage mit eigenem App-Recht *Dokumente: Assistent nutzen*
+  (Migration: alle Rollen mit *Dokumente: verwalten*). Ein Vorschlag ersetzt Empfänger, Inhalt und Dateiname (Name nur,
+  solange leer oder vom Assistenten), „Rückgängig“ einen Schritt. An die KI: Beschreibung, Vorlage, Felder der
+  Grundtabelle, ihrer Verknüpfungen (ein Schritt) und Kind-Tabellen, das Grundgerüst als Stilmuster – nie Datensätze.
+  Auch PDF-Hinweise gehen zur Korrektur zurück. Bausteine (D2b) erst nach Bedarf, eigener Plan.
 - **PDF/A-Prüfung (22.11.2026):** veraPDF bestätigt PDF/A-3b für die erzeugte Rechnung des Gitarrenshops und die
   Semesterrechnung der Musikschule.

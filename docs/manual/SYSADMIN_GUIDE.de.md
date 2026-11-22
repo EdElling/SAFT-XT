@@ -222,7 +222,7 @@ Wer noch einen solchen Eintrag hat, entfernt ihn oder schaltet die Aufgabe aus, 
 
 ## 5. KI-Funktionen
 
-Die KI-Assistenten für Auswertungen und Tabellen (siehe [Administratorhandbuch, Kapitel 13](ADMIN_GUIDE.de.md#13-ki-funktionen))
+Die KI-Assistenten für Auswertungen, Tabellen und Dokumentvorlagen (siehe [Administratorhandbuch, Kapitel 13](ADMIN_GUIDE.de.md#13-ki-funktionen))
 sind ohne Einrichtung **aus**. Anbieter, Modell und API-Schlüssel lassen sich in den globalen Einstellungen eintragen; was
 dort leer bleibt, kommt aus der `.env`:
 

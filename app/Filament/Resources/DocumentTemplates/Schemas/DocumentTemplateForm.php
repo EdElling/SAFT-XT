@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\DocumentTemplates\Schemas;
 
+use App\Documents\Assistant\TemplateAssistant;
 use App\Documents\LetterheadResolver;
 use App\Documents\Templates\TemplateChecker;
 use App\Documents\Templates\TemplateFields;
@@ -53,14 +54,21 @@ class DocumentTemplateForm
                         ->columnSpan(['default' => 1, 'xl' => 3])
                         ->columns(2)
                         ->schema([
-                            TextInput::make('name')->label(__('documents.templates.fields.name'))->required()->maxLength(150)
-                                ->unique(ignoreRecord: true, modifyRuleUsing: static fn (Unique $rule, Get $get): Unique => $rule->where('app_id', $get('app_id'))),
+                            // App zuoberst über die volle Breite der Kachel, über dem KI-Assistenten; vorgewählt die App des
+                            // Reiters der Übersicht (?app=…), sonst die einzige.
                             Select::make('app_id')->label(__('documents.templates.fields.app'))
                                 ->options(static fn (): array => self::appOptions())
-                                ->default(static fn (): ?int => count($apps = self::appOptions()) === 1 ? (int) array_key_first($apps) : null)
-                                ->required()->live()
+                                ->default(static fn (): ?int => self::defaultApp())
+                                ->required()->live()->columnSpanFull()
                                 ->in(static fn (): array => array_keys(self::appOptions()))
                                 ->afterStateUpdated(static fn (Set $set) => $set('custom_table_id', null)),
+                            View::make('filament.components.template-assistant')->columnSpanFull()
+                                ->visible(static fn (Get $get): bool => TemplateAssistant::availableFor(
+                                    ($user = auth()->user()) instanceof User ? $user : null,
+                                    filled($get('app_id')) ? (int) $get('app_id') : null,
+                                )),
+                            TextInput::make('name')->label(__('documents.templates.fields.name'))->required()->maxLength(150)
+                                ->unique(ignoreRecord: true, modifyRuleUsing: static fn (Unique $rule, Get $get): Unique => $rule->where('app_id', $get('app_id'))),
                             Select::make('custom_table_id')->label(__('documents.templates.fields.table'))
                                 ->options(static fn (Get $get): array => filled($get('app_id')) ? self::tableOptions((int) $get('app_id')) : [])
                                 ->required()->live()->searchable()
@@ -142,6 +150,19 @@ class DocumentTemplateForm
                         ]),
                 ]),
             ]);
+    }
+
+    /** App aus der Übersicht (?app=…), sonst die einzige erlaubte. */
+    public static function defaultApp(): ?int
+    {
+        $apps = self::appOptions();
+        $requested = (int) request()->query('app', '0');
+
+        return match (true) {
+            array_key_exists($requested, $apps) => $requested,
+            count($apps) === 1 => (int) array_key_first($apps),
+            default => null,
+        };
     }
 
     /** @return array<int, string> */

@@ -186,6 +186,17 @@ return [
             'payment' => 'Payable dans les 30 jours. Merci de votre commande.',
         ],
     ],
+    'assistant' => [
+        'title' => 'Décrire le modèle (assistant IA)',
+        'placeholder' => 'p. ex. « Facture avec positions, ligne TVA et paiement à 30 jours »',
+        'placeholder_followup' => 'Décrire une modification, p. ex. « ajouter une colonne rabais » ou « texte final plus court »',
+        'choose_table' => 'Choisissez d’abord l’app et la table de base.',
+        'applied' => 'Proposition reprise – vérifiez destinataire, contenu et aperçu. Elle n’est enregistrée qu’avec le modèle.',
+        'undo' => 'Annuler',
+        'undone' => 'État d’avant la proposition rétabli.',
+        'empty_body' => 'Le contenu (body) est vide.',
+        'privacy' => 'Votre description, le modèle et les noms des champs de cette table sont transmis à :provider – aucun enregistrement.',
+    ],
     'generate' => [
         'action' => 'Créer un document',
         'heading' => 'Document pour « :title »',

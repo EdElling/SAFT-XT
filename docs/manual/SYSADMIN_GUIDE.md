@@ -216,7 +216,7 @@ public demo or training systems.
 
 ## 5. AI functions
 
-The AI assistants for reports and tables (see [Administrator guide, chapter 13](ADMIN_GUIDE.md#13-ai-functions)) are
+The AI assistants for reports, tables and document templates (see [Administrator guide, chapter 13](ADMIN_GUIDE.md#13-ai-functions)) are
 **off** until set up. Provider, model and API key can be entered in the global settings; whatever is left empty there
 comes from the `.env`:
 

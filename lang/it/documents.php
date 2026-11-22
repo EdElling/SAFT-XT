@@ -186,6 +186,17 @@ return [
             'payment' => 'Pagabile entro 30 giorni. Grazie per l’ordine.',
         ],
     ],
+    'assistant' => [
+        'title' => 'Descrivere il modello (assistente IA)',
+        'placeholder' => 'p. es. «Fattura con posizioni, riga IVA e pagamento a 30 giorni»',
+        'placeholder_followup' => 'Descrivere una modifica, p. es. «aggiungere una colonna sconto» o «testo finale più breve»',
+        'choose_table' => 'Scegliere prima l’app e la tabella di base.',
+        'applied' => 'Proposta ripresa – verificare destinatario, contenuto e anteprima. Viene salvata solo salvando il modello.',
+        'undo' => 'Annulla',
+        'undone' => 'Stato prima della proposta ripristinato.',
+        'empty_body' => 'Il contenuto (body) è vuoto.',
+        'privacy' => 'La sua descrizione, il modello e i nomi dei campi di questa tabella vengono trasmessi a :provider – nessun record.',
+    ],
     'generate' => [
         'action' => 'Crea documento',
         'heading' => 'Documento per «:title»',

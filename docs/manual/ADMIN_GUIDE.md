@@ -948,13 +948,14 @@ app. System tasks belong to no app.
 
 ## 13. AI functions
 
-SAFT has two assistants that turn descriptions in your own words into a proposal. Both only propose: the result lands
+SAFT has assistants that turn descriptions in your own words into a proposal. They only propose: the result lands
 in the editor or form, is checked there and only takes effect with **Save** or **Create**.
 
 | Assistant | Where | Permission | Can |
 |---|---|---|---|
 | **Reports** | Report editor, field "Describe the report" | Reports: use assistant | Choose base table, rows, columns, values, filters, sorting, number of rows and display; build calculated values and columns as well as figures from values with formulas; ask back; change a proposal on request |
 | **Tables** | Table designer: "Describe the table" when creating, **Adjust with AI** for existing tables | Table designer: use assistant | New table with app (named in the text, otherwise the chosen one; if both are open, it asks), menu group of that app, icon, fields, types (including file fields with kinds, size and number), choices, relations to existing tables, computed fields with a formula (within the same record, e.g. `round(quantity * price, 2)`), field rules (minimum/maximum, length, e-mail, URL) and labels in all four languages. For existing tables as a conversation (dialog with history; questions and notes appear there, a further request refines the proposal, **Apply** carries it out, **Start over** clears the history): new fields – also computed ones with conditions and totals across child tables, e.g. "number of lines above 2 pieces" = `sum(lines.quantity > 2)`; every formula is checked like by hand before it is proposed –, a different icon on request, labels, required/unique/searchable/sortable, further choices, display fields of relations, setting or removing field rules and new table rules (e.g. “delivery date not before order date”). A rule on the same two fields replaces the existing one; contradictory or unfulfillable rules are not proposed – the assistant explains why. Changing types, renaming, deleting, changing or removing existing rules and own rule messages stay manual |
+| **Document templates** | Create or edit a document template, field “Describe the template” | Documents: use assistant (app permission) | Write or, on request, change recipient, content (HTML with placeholders) and file name, when creating also the name; uses only fields of the base table, its relations and child tables and never calculates itself (totals come from computed fields); asks questions. Never the letterhead (see [chapter 16](#16-documents)) |
 | **Help** | **?** button in the header; **Documentation** › tab **AI assistant** | Help: use assistant | Answers questions about using SAFT from the manuals the person may see, with references to the sections; proposes nothing and changes nothing |
 
 ### Setup
@@ -966,7 +967,7 @@ in the editor or form, is checked there and only takes effect with **Save** or *
 
    | Setting | Meaning |
    |---|---|
-   | **Switch on the AI assistant** | Main switch for the report and table assistants |
+   | **Switch on the AI assistant** | Main switch for the report, table and document template assistants |
    | **Provider, model** | Anthropic, Amazon Bedrock or Google Vertex AI; model ID, e.g. `claude-opus-5-5` (with Bedrock prefixed `anthropic.`). Empty = value from `.env` |
    | **Thinking depth** | Low, medium (default), high – higher is more thorough but slower and more expensive |
    | **API key** | Stored encrypted and never shown again; leave empty to keep it, "Delete the stored key" removes it. The activity log shows it masked |
@@ -977,7 +978,8 @@ in the editor or form, is checked there and only takes effect with **Save** or *
    | **Help assistant knows the data model** | Also sends the tables and fields the person may see (for questions like “Where do I enter suppliers?”); default off |
 
 3. **Test connection** checks key and model via the provider's free model query, without saving.
-4. **Grant permissions:** *Reports: use assistant* or *Table designer: use assistant* to the desired roles.
+4. **Grant permissions:** *Reports: use assistant*, *Table designer: use assistant* or *Documents: use assistant*
+   (per app) to the desired roles.
    For the help assistant: *Help: use assistant*.
 5. **Limit per person** (optional): under **Users** in the field **AI requests per day** – empty = default, 0 = blocked.
    The limit is shared by all assistants.
@@ -1510,6 +1512,17 @@ shop and **Semesterrechnung** (semester invoice) in the music school. When an ap
 **Permissions:** Templates can be edited by anyone with the permission *Documents: manage* in the app; the list only
 shows these apps. Placeholders only show what the person may read (see below).
 
+**AI assistant:** With the permission *Documents: use assistant* in the app, the field **“Describe the template”**
+appears at the top of the “Template” section, below the app – e.g. “Reminder with open items and payment within 10
+days”, then “add a discount column”. A proposal replaces recipient, content and file name (when creating also the
+name), and the preview shows it immediately; it is only saved with the template. **Undo** restores the state before,
+**Start over** clears the conversation. Below the field the AI leaves a short note, e.g. when a requested amount is
+missing as a computed field in the table. Only the description, the template and the fields of the base table, its
+relations and child tables are sent to the provider (choice values only with “Send the values of selection fields”) – never
+records. Check errors and PDF hints (e.g. flexbox) go back to the AI once for correction. Set-up, daily limit and log
+as for the other assistants ([chapter 13](#13-ai-functions)). New templates start in the app of the tab selected in the
+list.
+
 **Designing:** Font, colours, header and footer come from the letterhead. The template uses classes for them:
 `primaer`, `sekundaer` (colours), `klein` (small), `fett` (bold), `rechts` (right-aligned); a table with the class
 `positionen` gets a coloured header that is repeated on every page, a row with the class `summe` a line above it.
@@ -1605,6 +1618,7 @@ reserved for the super admin and cannot be granted to any role: **View as role**
 |---|---|
 | Global settings: view / edit | name of the application, logo, colour scheme, AI assistants (provider, model, switches); the installation's letterhead (Administration › Application › Letterhead) |
 | Documents: manage | edit an app's letterhead and document templates (app permission, see [chapter 16](#16-documents)) |
+| Documents: use assistant | AI assistant in the document templates of an app (app permission, see [chapter 16](#16-documents)) |
 | Documents: generate | create and download documents from templates (app permission, plus read permission on the table; storing in a file field also needs the edit permission, removing created documents the delete permission) |
 | Menus: view / create / edit / delete | maintain the menu tree (groups, entries, order, permissions of entries) |
 | Apps: view | open the “Apps” page and the data model per app |

@@ -186,6 +186,17 @@ return [
             'payment' => 'Payable within 30 days. Thank you for your order.',
         ],
     ],
+    'assistant' => [
+        'title' => 'Describe the template (AI assistant)',
+        'placeholder' => 'e.g. “Invoice with items, VAT line and payment within 30 days”',
+        'placeholder_followup' => 'Describe a change, e.g. “add a discount column” or “shorter closing text”',
+        'choose_table' => 'Choose the app and base table first.',
+        'applied' => 'Proposal applied – check recipient, content and preview. It is not saved until you save the template.',
+        'undo' => 'Undo',
+        'undone' => 'State before the proposal restored.',
+        'empty_body' => 'The content (body) is empty.',
+        'privacy' => 'Your description, the template and the names of the fields of this table are sent to :provider – no records.',
+    ],
     'generate' => [
         'action' => 'Create document',
         'heading' => 'Document for “:title”',

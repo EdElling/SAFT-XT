@@ -10,6 +10,7 @@ use App\Documents\Templates\TemplateSkeletons;
 use App\Filament\Resources\DocumentTemplates\DocumentTemplateResource;
 use App\Filament\Resources\DocumentTemplates\Pages\CreateDocumentTemplate;
 use App\Filament\Resources\DocumentTemplates\Pages\EditDocumentTemplate;
+use App\Filament\Resources\DocumentTemplates\Pages\ListDocumentTemplates;
 use App\Filament\Resources\DocumentTemplates\Schemas\DocumentTemplateForm;
 use App\Models\CustomTable;
 use App\Models\DocumentTemplate;
@@ -213,5 +214,20 @@ class DocumentTemplateTest extends DynamicDataTestCase
         Livewire::test(EditDocumentTemplate::class, ['record' => $template->getKey()])
             ->set('data.sample_id', (string) $newest->getKey())
             ->assertDispatched('document-template-preview', fn (string $name, array $params): bool => str_contains((string) $params['message'], 'Empfänger bei diesem Datensatz leer'));
+    }
+
+    public function test_new_template_starts_in_the_app_of_the_active_tab(): void
+    {
+        $this->actingAs($this->superAdmin());
+        $other = self::ensureTestApp();
+        $shop = $this->receipts->app_id;
+
+        Livewire::test(ListDocumentTemplates::class)
+            ->set('activeTab', 'app-'.$shop)
+            ->assertActionHasUrl('create', DocumentTemplateResource::getUrl('create', ['app' => $shop]));
+
+        Livewire::withQueryParams(['app' => $shop])->test(CreateDocumentTemplate::class)->assertSet('data.app_id', $shop);
+        Livewire::withQueryParams(['app' => $other->id])->test(CreateDocumentTemplate::class)->assertSet('data.app_id', $other->id);
+        Livewire::withQueryParams(['app' => 999999])->test(CreateDocumentTemplate::class)->assertSet('data.app_id', null);
     }
 }

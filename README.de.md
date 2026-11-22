@@ -90,6 +90,8 @@ PostgreSQL, MySQL oder MariaDB.
   Positionen, Formatierungen), mit Code-Editor, Feldauswahl, Live-Vorschau als PDF und Prüfung; Grundgerüste Brief,
   Rechnung und Datenblatt; Demo-Rechnungen im Gitarrenshop und in der Musikschule; gehen mit der App-Definition mit
   (Export, Installieren auch als Kopie, Aktualisieren), das Briefpapier nicht
+- **KI-Assistent für Dokumentvorlagen** (optional): Vorlage in eigenen Worten beschreiben oder ändern lassen –
+  Empfänger, Inhalt und Dateiname, geprüft wie jede Vorlage; übertragen wird nur die Struktur der Tabelle, nie Datensätze
 - **Dokumente erstellen:** Symbol in der Zeile eines Datensatzes – PDF herunterladen und schreibgeschützt als neue
   Fassung im Dateifeld ablegen, mit Prüfwert (SHA-256) im Änderungsprotokoll
 - **Globale Einstellungen:** Anzeigename und Farbschema der Anwendung (Branding); Anbindung externer KI-Modelle für die

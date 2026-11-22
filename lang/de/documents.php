@@ -186,6 +186,17 @@ return [
             'payment' => 'Zahlbar innert 30 Tagen. Besten Dank für Ihren Auftrag.',
         ],
     ],
+    'assistant' => [
+        'title' => 'Vorlage beschreiben (KI-Assistent)',
+        'placeholder' => 'z. B. „Rechnung mit Positionen, MWST-Zeile und Zahlungsfrist 30 Tage“',
+        'placeholder_followup' => 'Änderung beschreiben, z. B. „Spalte Rabatt ergänzen“ oder „Schlusstext kürzer“',
+        'choose_table' => 'Zuerst App und Grundtabelle wählen.',
+        'applied' => 'Vorschlag übernommen – Empfänger, Inhalt und Vorschau prüfen. Gespeichert ist er erst, wenn Sie die Vorlage speichern.',
+        'undo' => 'Rückgängig',
+        'undone' => 'Stand vor dem Vorschlag wiederhergestellt.',
+        'empty_body' => 'Der Inhalt (body) ist leer.',
+        'privacy' => 'Ihre Beschreibung, die Vorlage und die Namen der Felder dieser Tabelle werden an :provider übermittelt – keine Datensätze.',
+    ],
     'generate' => [
         'action' => 'Dokument erstellen',
         'heading' => 'Dokument für „:title“',

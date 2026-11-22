@@ -24,6 +24,7 @@ class ListDocumentTemplates extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()];
+        // Neue Vorlage in der App des aktiven Reiters.
+        return [CreateAction::make()->url(fn (): string => DocumentTemplateResource::getUrl('create', str_starts_with((string) $this->activeTab, 'app-') ? ['app' => (int) substr((string) $this->activeTab, 4)] : []))];
     }
 }

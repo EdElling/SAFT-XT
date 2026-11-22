@@ -1026,7 +1026,7 @@ tâches, vous choisissez l’app. Les tâches système n’appartiennent à aucu
 
 ## 13. Fonctions IA
 
-SAFT a deux assistants qui transforment des descriptions formulées avec vos propres mots. Tous deux ne font que
+SAFT a des assistants qui transforment des descriptions formulées avec vos propres mots. Ils ne font que
 proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrôlé et ne prend effet qu’avec
 **Sauvegarder** ou **Créer**.
 
@@ -1034,6 +1034,7 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
 |---|---|---|---|
 | **Rapports** | éditeur de rapports, champ « Décrire le rapport » | Rapports : utiliser l’assistant | choisir la table de base, les lignes, colonnes, valeurs, filtres, le tri, le nombre de lignes et l’affichage ; créer des valeurs et colonnes calculées ainsi que des indicateurs à partir des valeurs avec des formules ; poser des questions ; modifier une proposition sur demande |
 | **Tables** | Concepteur de tables : « Décrire la table » à la création, **Adapter avec l’IA** pour les tables existantes | Concepteur de tables : utiliser l’assistant | nouvelle table avec app (nommée dans le texte, sinon celle choisie ; si les deux manquent, il demande), groupe de menu de cette app, icône, champs, types (y compris champs de fichiers avec types, taille et nombre), options de sélection, liaisons vers des tables existantes, champs calculés avec formule (dans le même enregistrement, p. ex. `round(quantite * prix, 2)`), règles de champ (minimum/maximum, longueur, e-mail, URL) et libellés dans les quatre langues. Pour les tables existantes sous forme de conversation (dialogue avec historique ; questions et remarques y apparaissent, un autre souhait affine la proposition, **Appliquer** l’exécute, **Recommencer** vide l’historique) : nouveaux champs – aussi calculés avec conditions et sommes sur les tables enfants, p. ex. « nombre de lignes au-delà de 2 pièces » = `sum(lignes.quantite > 2)` ; chaque formule est vérifiée comme à la main avant d’être proposée –, une autre icône sur demande, libellés, obligatoire/unique/recherchable/triable, options de sélection supplémentaires, champs affichés des liaisons, définir ou supprimer des règles de champ et nouvelles règles de table (p. ex. « date de livraison pas avant la date de commande »). Une règle sur les deux mêmes champs remplace l’existante ; les règles contradictoires ou jamais remplissables ne sont pas proposées – l’assistant explique pourquoi. Changer de type, renommer, supprimer, modifier ou supprimer des règles existantes et les messages de règles propres restent manuels |
+| **Modèles de documents** | Créer ou modifier un modèle de document, champ « Décrire le modèle » | Documents : utiliser l’assistant (droit d’app) | écrit ou, sur demande, modifie destinataire, contenu (HTML avec espaces réservés) et nom de fichier, à la création aussi le nom ; n’utilise que les champs de la table de base, de ses liaisons et tables enfants et ne calcule jamais lui-même (les totaux viennent de champs calculés) ; pose des questions. Jamais le papier à lettres (voir [chapitre 16](#16-documents)) |
 | **Aide** | bouton **?** dans l’en-tête ; **Documentation** › onglet **Assistant IA** | Aide : utiliser l’assistant | répond aux questions sur l’utilisation à partir des manuels que la personne peut voir, avec renvois aux sections ; ne propose rien et ne modifie rien |
 
 ### Configuration
@@ -1045,7 +1046,7 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
 
    | Réglage | Signification |
    |---|---|
-   | **Activer l’assistant IA** | interrupteur principal pour les assistants de rapports et de tables |
+   | **Activer l’assistant IA** | interrupteur principal pour les assistants de rapports, de tables et de modèles de documents |
    | **Fournisseur, modèle** | Anthropic, Amazon Bedrock ou Google Vertex AI ; ID du modèle, p. ex. `claude-opus-5-5` (pour Bedrock avec le préfixe `anthropic.`). Sans saisie, le fichier `.env` s’applique |
    | **Profondeur de réflexion** | faible, moyenne (par défaut), élevée – plus élevée est plus approfondie, mais plus lente et plus chère |
    | **Clé API** | enregistrée chiffrée et plus jamais affichée ; la laisser vide la conserve, « Supprimer la clé enregistrée » la retire. Elle apparaît masquée dans le journal des modifications |
@@ -1057,8 +1058,8 @@ proposer : le résultat arrive dans l’éditeur ou le formulaire, y est contrô
 
 3. **Tester la connexion** vérifie la clé et le modèle via la requête gratuite des modèles du fournisseur, sans
    enregistrer.
-4. **Attribuer les droits :** *Rapports : utiliser l’assistant* ou *Concepteur de tables : utiliser l’assistant* aux
-   rôles souhaités.
+4. **Attribuer les droits :** *Rapports : utiliser l’assistant*, *Concepteur de tables : utiliser l’assistant* ou
+   *Documents : utiliser l’assistant* (par app) aux rôles souhaités.
    Pour l’assistant d’aide : *Aide : utiliser l’assistant*.
 5. **Limite par personne** (facultatif) : sous **Utilisateurs**, dans le champ **Demandes IA par jour** – vide =
    valeur standard, 0 = bloqué. La limite vaut pour tous les assistants ensemble.
@@ -1622,6 +1623,18 @@ un onglet par app ; **Dupliquer** crée une copie à adapter. Les apps de démon
 **Droits :** Les modèles peuvent être modifiés par qui a, dans l’app, le droit *Documents: gérer* ; la liste n’affiche
 que ces apps. Les espaces réservés n’affichent que ce que la personne peut lire (voir plus bas).
 
+**Assistant IA :** Avec le droit *Documents : utiliser l’assistant* dans l’app, le champ **« Décrire le modèle »**
+apparaît en haut de la section « Modèle », sous l’app – p. ex. « Rappel avec positions ouvertes et paiement à 10
+jours », puis « ajouter une colonne rabais ». Une proposition remplace destinataire, contenu et nom de fichier (à la
+création aussi le nom), l’aperçu l’affiche aussitôt ; elle n’est enregistrée qu’avec le modèle. **Annuler** rétablit
+l’état d’avant, **Recommencer** vide la conversation. Sous le champ, l’IA laisse une courte note, p. ex. quand un
+montant demandé manque comme champ calculé dans la table. Seuls la description, le modèle et les champs de la table de
+base, de ses liaisons et tables enfants sont transmis au fournisseur (valeurs de choix seulement avec « Transmettre les
+valeurs des champs de sélection ») – jamais d’enregistrements. Les erreurs de vérification et les remarques PDF
+(p. ex. flexbox) retournent une fois à l’IA pour correction. Configuration, limite journalière et journal comme pour
+les autres assistants ([chapitre 13](#13-fonctions-ia)). Les nouveaux modèles commencent dans l’app de l’onglet
+choisi dans la liste.
+
 **Mise en forme :** Police, couleurs, en-tête et pied de page viennent du papier à lettres. Le modèle utilise pour
 cela des classes : `primaer`, `sekundaer` (couleurs), `klein` (petit), `fett` (gras), `rechts` (à droite) ; un tableau
 avec la classe `positionen` reçoit un en-tête coloré répété sur chaque page, une ligne avec la classe `summe` un trait
@@ -1719,6 +1732,7 @@ entrée de menu).
 |---|---|
 | Paramètres globaux: afficher / modifier | nom de l’application, logo, palette de couleurs, assistants IA (fournisseur, modèle, interrupteurs) ; papier à lettres de l’installation (Administration › Application › Papier à lettres) |
 | Documents: gérer | modifier le papier à lettres et les modèles de documents d’une app (droit d’app, voir [chapitre 16](#16-documents)) |
+| Documents: utiliser l’assistant | assistant IA dans les modèles de documents d’une app (droit d’app, voir [chapitre 16](#16-documents)) |
 | Documents: générer | créer et télécharger des documents à partir de modèles (droit d’app, plus le droit de lecture sur la table ; le dépôt dans un champ de fichiers requiert en plus le droit de modification, le retrait de documents créés le droit de suppression) |
 | Menus: afficher / créer / modifier / supprimer | gérer l’arborescence des menus (groupes, entrées, ordre, droits des entrées) |
 | Apps: afficher | ouvrir la page « Apps » et le modèle de données par app |

@@ -980,13 +980,14 @@ Sie die App. System-Aufgaben gehören zu keiner App.
 
 ## 13. KI-Funktionen
 
-SAFT hat zwei Assistenten, die Beschreibungen in eigenen Worten umsetzen. Beide schlagen nur vor: Das Ergebnis
+SAFT hat Assistenten, die Beschreibungen in eigenen Worten umsetzen. Sie schlagen nur vor: Das Ergebnis
 landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bzw. **Erstellen** wirksam.
 
 | Assistent | Wo | Recht | Kann |
 |---|---|---|---|
 | **Auswertungen** | Auswertungs-Editor, Feld „Auswertung beschreiben“ | Auswertungen: Assistent nutzen | Grundtabelle, Zeilen, Spalten, Werte, Filter, Sortierung, Anzahl Zeilen und Darstellung wählen; berechnete Werte und Spalten sowie Kennzahlen aus Werten mit Formeln bilden; Rückfragen stellen; einen Vorschlag auf Zuruf ändern |
 | **Tabellen** | Table-Designer: beim Anlegen „Tabelle beschreiben“, bei bestehenden Tabellen **Mit KI anpassen** | Table-Designer: Assistent nutzen | Neue Tabelle mit App (im Text genannt, sonst die gewählte; ist beides offen, fragt er nach), Menügruppe dieser App, Symbol, Feldern, Typen (auch Dateifelder mit Arten, Grösse und Anzahl), Auswahloptionen, Verknüpfungen zu bestehenden Tabellen, berechneten Feldern mit Formel (im selben Datensatz, z. B. `round(menge * preis, 2)`), Feldregeln (Minimum/Maximum, Länge, E-Mail, URL) und Bezeichnungen in allen vier Sprachen. Bei bestehenden Tabellen im Gespräch (Dialog mit Verlauf; Rückfragen und Hinweise erscheinen dort, ein weiterer Wunsch verfeinert den Vorschlag, **Übernehmen** führt ihn aus, **Neu beginnen** leert den Verlauf): neue Felder – auch berechnete mit Bedingungen und Summen über Kind-Tabellen, z. B. „Anzahl Positionen über 2 Stück“ = `sum(positionen.menge > 2)`; jede Formel wird vor dem Vorschlag wie von Hand geprüft –, auf Wunsch ein anderes Symbol, Bezeichnungen, Pflicht/eindeutig/durchsuchbar/sortierbar, weitere Auswahloptionen, Anzeigefelder von Verknüpfungen, Feldregeln setzen oder entfernen und neue Tabellenregeln (z. B. „Lieferdatum nicht vor Bestelldatum“). Eine Regel auf dieselben zwei Felder ersetzt die vorhandene; widersprüchliche oder nie erfüllbare Regeln schlägt er nicht vor, sondern erklärt, warum. Typ ändern, umbenennen, löschen, vorhandene Regeln ändern oder entfernen und eigene Regelmeldungen bleiben Handarbeit |
+| **Dokumentvorlagen** | Dokumentvorlage anlegen oder bearbeiten, Feld „Vorlage beschreiben“ | Dokumente: Assistent nutzen (App-Recht) | Empfänger, Inhalt (HTML mit Platzhaltern) und Dateiname schreiben bzw. auf Zuruf ändern, beim Anlegen auch den Namen; nutzt nur Felder der Grundtabelle, ihrer Verknüpfungen und Kind-Tabellen und rechnet nie selbst (Summen kommen aus berechneten Feldern); Rückfragen stellen. Nie das Briefpapier (siehe [Kapitel 16](#16-dokumente)) |
 | **Hilfe** | Knopf **?** in der Kopfzeile; **Dokumentation** › Reiter **KI-Assistent** | Hilfe: Assistent nutzen | Beantwortet Fragen zur Bedienung aus den Handbüchern, die die Person sehen darf, mit Verweisen auf die Abschnitte; schlägt nichts vor und ändert nichts |
 
 ### Einrichten
@@ -998,7 +999,7 @@ landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bz
 
    | Einstellung | Bedeutung |
    |---|---|
-   | **KI-Assistent einschalten** | Hauptschalter für die Assistenten für Auswertungen und Tabellen |
+   | **KI-Assistent einschalten** | Hauptschalter für die Assistenten für Auswertungen, Tabellen und Dokumentvorlagen |
    | **Anbieter, Modell** | Anthropic, Amazon Bedrock oder Google Vertex AI; Modell-ID, z. B. `claude-opus-5-5` (bei Bedrock mit Präfix `anthropic.`). Ohne Eintrag gilt die `.env` |
    | **Denktiefe** | Niedrig, Mittel (Vorgabe), Hoch – höher ist gründlicher, aber langsamer und teurer |
    | **API-Schlüssel** | Wird verschlüsselt gespeichert und nie wieder angezeigt; leer lassen behält ihn, „Gespeicherten Schlüssel löschen“ entfernt ihn. Im Änderungsprotokoll erscheint er maskiert |
@@ -1009,7 +1010,8 @@ landet im Editor bzw. Formular, wird dort geprüft und erst mit **Speichern** bz
    | **Hilfe-Assistent kennt das Datenmodell** | Schickt zusätzlich die Tabellen und Felder mit, die die Person sehen darf (für Fragen wie „Wo erfasse ich Lieferanten?“); Vorgabe aus |
 
 3. **Verbindung testen** prüft Schlüssel und Modell über die kostenlose Modell-Abfrage des Anbieters, ohne zu speichern.
-4. **Rechte vergeben:** *Auswertungen: Assistent nutzen* bzw. *Table-Designer: Assistent nutzen* an die gewünschten Rollen.
+4. **Rechte vergeben:** *Auswertungen: Assistent nutzen*, *Table-Designer: Assistent nutzen* bzw. *Dokumente: Assistent
+   nutzen* (je App) an die gewünschten Rollen.
    Für den Hilfe-Assistenten: *Hilfe: Assistent nutzen*.
 5. **Limit je Person** (optional): unter **Benutzer** im Feld **KI-Anfragen pro Tag** – leer = Standard, 0 = gesperrt.
    Das Limit gilt gemeinsam für alle Assistenten.
@@ -1555,6 +1557,17 @@ Gitarrenshop und **Semesterrechnung** in der Musikschule. Wird eine App oder die
 **Rechte:** Vorlagen bearbeiten darf, wer in der App das Recht *Dokumente: verwalten* hat; die Liste zeigt nur diese
 Apps. Platzhalter zeigen nur, was die Person lesen darf (siehe unten).
 
+**KI-Assistent:** Mit dem Recht *Dokumente: Assistent nutzen* in der App steht oben im Bereich „Vorlage“, unter der
+App, das Feld **„Vorlage beschreiben“** – z. B. „Mahnung mit offenen Positionen und Zahlungsfrist 10 Tage“ oder danach
+„Spalte Rabatt ergänzen“. Ein Vorschlag ersetzt Empfänger, Inhalt und Dateiname (beim Anlegen auch den Namen), die
+Vorschau zeigt ihn sofort; gespeichert ist er erst mit der Vorlage. **Rückgängig** stellt den Stand davor wieder her,
+**Neu beginnen** leert das Gespräch. Unter dem Feld steht eine kurze Notiz der KI, etwa wenn ein gewünschter Betrag als
+berechnetes Feld in der Tabelle fehlt. An den Anbieter gehen nur die Beschreibung, die Vorlage und die Felder der
+Grundtabelle, ihrer Verknüpfungen und Kind-Tabellen (Auswahlwerte nur mit „Werte von Auswahlfeldern übertragen“) – nie
+Datensätze. Fehler der Prüfung und PDF-Hinweise (z. B. Flexbox) gehen einmal zur Korrektur an die KI zurück. Einrichtung,
+Tageslimit und Protokoll wie bei den anderen Assistenten ([Kapitel 13](#13-ki-funktionen)). Neue Vorlagen beginnen in
+der App des Reiters, der in der Liste gewählt war.
+
 **Gestalten:** Schrift, Farben, Kopf und Fusszeile kommen aus dem Briefpapier. Die Vorlage verwendet dafür Klassen:
 `primaer`, `sekundaer` (Farben), `klein`, `fett`, `rechts`; eine Tabelle mit der Klasse `positionen` erhält einen
 farbigen Kopf, der auf jeder Seite wiederholt wird, eine Zeile mit der Klasse `summe` eine Linie darüber. Spalten und
@@ -1651,6 +1664,7 @@ entfernen**. „Anzeigen“ ist jeweils Voraussetzung für die übrigen Rechte e
 |---|---|
 | Globale Einstellungen: anzeigen / bearbeiten | Name der Anwendung, Logo, Farbschema, KI-Assistenten (Anbieter, Modell, Schalter); Briefpapier der Installation (Administration › Anwendung › Briefpapier) |
 | Dokumente: verwalten | Briefpapier und Dokumentvorlagen einer App bearbeiten (App-Recht, siehe [Kapitel 16](#16-dokumente)) |
+| Dokumente: Assistent nutzen | KI-Assistent in den Dokumentvorlagen einer App (App-Recht, siehe [Kapitel 16](#16-dokumente)) |
 | Dokumente: erzeugen | Dokumente aus Vorlagen erstellen und herunterladen (App-Recht, dazu Leserecht auf die Tabelle; Ablegen im Dateifeld braucht zusätzlich das Bearbeiten-Recht, erstellte Dokumente entfernen das Lösch-Recht) |
 | Menüs: anzeigen / anlegen / bearbeiten / löschen | den Menübaum pflegen (Gruppen, Einträge, Reihenfolge, Rechte der Einträge) |
 | Apps: anzeigen | Seite „Apps“ und Datenmodell je App öffnen |

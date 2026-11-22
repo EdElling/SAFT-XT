@@ -1000,13 +1000,14 @@ per le altre attività scegliete l’app. Le attività di sistema non appartengo
 
 ## 13. Funzioni IA
 
-SAFT ha due assistenti che trasformano descrizioni formulate con parole proprie. Entrambi si limitano a proporre: il
+SAFT ha assistenti che trasformano descrizioni formulate con parole proprie. Si limitano a proporre: il
 risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effettivo solo con **Salva** o **Crea**.
 
 | Assistente | Dove | Diritto | Può |
 |---|---|---|---|
 | **Report** | editor dei report, campo «Descrivere il report» | Report: usare l’assistente | scegliere tabella di base, righe, colonne, valori, filtri, ordinamento, numero di righe e visualizzazione; creare valori e colonne calcolati e indicatori dai valori con formule; porre domande; modificare una proposta su richiesta |
 | **Tabelle** | Designer di tabelle: «Descrivere la tabella» alla creazione, **Adattare con l’IA** per le tabelle esistenti | Designer di tabelle: usare l’assistente | nuova tabella con app (indicata nel testo, altrimenti quella scelta; se mancano entrambe, chiede), gruppo di menu di quell’app, icona, campi, tipi (anche campi file con tipi, dimensione e numero), opzioni di selezione, collegamenti a tabelle esistenti, campi calcolati con formula (nello stesso record, ad es. `round(quantita * prezzo, 2)`), regole di campo (minimo/massimo, lunghezza, e-mail, URL) ed etichette in tutte e quattro le lingue. Per le tabelle esistenti come conversazione (dialogo con cronologia; domande e indicazioni vi compaiono, un’altra richiesta affina la proposta, **Applicare** la esegue, **Ricominciare** svuota la cronologia): nuovi campi – anche calcolati con condizioni e somme sulle tabelle figlie, ad es. «numero di righe oltre 2 pezzi» = `sum(righe.quantita > 2)`; ogni formula viene verificata prima della proposta come a mano –, su richiesta un’altra icona, etichette, obbligatorio/univoco/ricercabile/ordinabile, altre opzioni di selezione, campi visualizzati dei collegamenti, impostare o rimuovere regole di campo e nuove regole di tabella (ad es. «data di consegna non prima della data dell’ordine»). Una regola sugli stessi due campi sostituisce quella esistente; regole contraddittorie o mai soddisfacibili non vengono proposte – l’assistente spiega perché. Cambiare tipo, rinominare, eliminare, modificare o rimuovere regole esistenti e i messaggi propri delle regole restano lavoro manuale |
+| **Modelli di documenti** | Creare o modificare un modello di documento, campo «Descrivere il modello» | Documenti: usare l’assistente (diritto dell’app) | scrive o, su richiesta, modifica destinatario, contenuto (HTML con segnaposto) e nome del file, alla creazione anche il nome; usa solo campi della tabella di base, dei suoi collegamenti e delle tabelle figlie e non calcola mai da sé (i totali vengono da campi calcolati); pone domande. Mai la carta intestata (vedi [capitolo 16](#16-documenti)) |
 | **Aiuto** | pulsante **?** nell’intestazione; **Documentazione** › scheda **Assistente IA** | Aiuto: usare l’assistente | risponde alle domande sull’uso in base ai manuali che la persona può vedere, con rimandi alle sezioni; non propone nulla e non modifica nulla |
 
 ### Configurazione
@@ -1018,7 +1019,7 @@ risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effe
 
    | Impostazione | Significato |
    |---|---|
-   | **Attivare l’assistente IA** | interruttore principale per gli assistenti dei report e delle tabelle |
+   | **Attivare l’assistente IA** | interruttore principale per gli assistenti dei report, delle tabelle e dei modelli di documenti |
    | **Provider, modello** | Anthropic, Amazon Bedrock o Google Vertex AI; ID del modello, ad es. `claude-opus-5-5` (con Bedrock con il prefisso `anthropic.`). Senza inserimento vale il file `.env` |
    | **Profondità di ragionamento** | bassa, media (predefinita), alta – più alta è più accurata, ma più lenta e più cara |
    | **Chiave API** | viene salvata cifrata e non viene mai più mostrata; lasciarla vuota la conserva, «Eliminare la chiave salvata» la rimuove. Nel registro modifiche compare mascherata |
@@ -1030,8 +1031,8 @@ risultato arriva nell’editor o nel modulo, vi viene controllato e diventa effe
 
 3. **Testare la connessione** verifica chiave e modello tramite l’interrogazione gratuita dei modelli del provider,
    senza salvare.
-4. **Assegnare i diritti:** *Report: usare l’assistente* o *Designer di tabelle: usare l’assistente* ai ruoli
-   desiderati.
+4. **Assegnare i diritti:** *Report: usare l’assistente*, *Designer di tabelle: usare l’assistente* o *Documenti:
+   usare l’assistente* (per app) ai ruoli desiderati.
    Per l’assistente di aiuto: *Aiuto: usare l’assistente*.
 5. **Limite per persona** (facoltativo): sotto **Utenti** nel campo **Richieste IA al giorno** – vuoto = valore
    standard, 0 = bloccato. Il limite vale insieme per tutti gli assistenti.
@@ -1580,6 +1581,17 @@ una scheda per app; **Duplica** crea una copia da adattare. Le app dimostrative 
 **Diritti:** I modelli li modifica chi ha nell’app il diritto *Documenti: gestire*; l’elenco mostra solo queste app. I
 segnaposto mostrano solo ciò che la persona può leggere (vedi sotto).
 
+**Assistente IA:** Con il diritto *Documenti: usare l’assistente* nell’app, in cima alla sezione «Modello», sotto
+l’app, appare il campo **«Descrivere il modello»** – p. es. «Sollecito con posizioni aperte e pagamento a 10 giorni», poi
+«aggiungere una colonna sconto». Una proposta sostituisce destinatario, contenuto e nome del file (alla creazione anche
+il nome), l’anteprima la mostra subito; viene salvata solo con il modello. **Annulla** ripristina lo stato precedente,
+**Ricominciare** svuota la conversazione. Sotto il campo l’IA lascia una breve nota, p. es. quando un importo richiesto
+manca come campo calcolato nella tabella. Al fornitore vanno solo la descrizione, il modello e i campi della tabella di
+base, dei suoi collegamenti e delle tabelle figlie (valori di scelta solo con «Trasmettere i valori dei campi di
+selezione») – mai record. Errori della verifica e avvisi PDF (p. es. flexbox) tornano una volta all’IA per la
+correzione. Configurazione, limite giornaliero e protocollo come per gli altri assistenti ([capitolo 13](#13-funzioni-ia)).
+I nuovi modelli iniziano nell’app della scheda scelta nell’elenco.
+
 **Impaginare:** Carattere, colori, intestazione e piè di pagina vengono dalla carta intestata. Il modello usa a tal
 fine delle classi: `primaer`, `sekundaer` (colori), `klein` (piccolo), `fett` (grassetto), `rechts` (a destra); una
 tabella con la classe `positionen` riceve un’intestazione colorata ripetuta su ogni pagina, una riga con la classe
@@ -1676,6 +1688,7 @@ sono riservate e non si possono assegnare a nessun ruolo: **Visualizza come ruol
 |---|---|
 | Impostazioni globali: visualizzare / modificare | nome dell’applicazione, logo, schema di colori, assistenti IA (provider, modello, interruttori); carta intestata dell’installazione (Amministrazione › Applicazione › Carta intestata) |
 | Documenti: gestire | modificare la carta intestata e i modelli di documenti di un’app (diritto dell’app, vedi [capitolo 16](#16-documenti)) |
+| Documenti: usare l’assistente | assistente IA nei modelli di documenti di un’app (diritto dell’app, vedi [capitolo 16](#16-documenti)) |
 | Documenti: generare | creare e scaricare documenti da modelli (diritto dell’app, più il diritto di lettura sulla tabella; il deposito in un campo file richiede in più il diritto di modifica, la rimozione di documenti creati il diritto di cancellazione) |
 | Menu: visualizzare / creare / modificare / eliminare | curare l’albero dei menu (gruppi, voci, ordine, diritti delle voci) |
 | App: visualizzare | aprire la pagina «App» e il modello di dati per app |

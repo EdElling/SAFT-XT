@@ -89,6 +89,8 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
   formats), with code editor, field picker, live PDF preview and check; starting points letter, invoice and data
   sheet; demo invoices in the guitar shop and the music school; travel with the app definition (export, install also
   as a copy, update), the letterhead does not
+- **AI assistant for document templates** (optional): describe a template in your own words or have it changed –
+  recipient, content and file name, checked like any template; only the structure of the table is sent, never records
 - **Creating documents:** icon in a record's row – download the PDF and store it write-protected as a new version in
   the file field, with checksum (SHA-256) in the change log
 - **Global settings:** display name and colour scheme of the application (branding); connection of external AI models for
