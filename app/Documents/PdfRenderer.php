@@ -36,7 +36,7 @@ final class PdfRenderer
     private const float QR_GAP = 5.0;
 
     /** Abstand zwischen Adressfeld und Inhalt (mm). */
-    private const float ADDRESS_GAP = 8.0;
+    public const float ADDRESS_GAP = 8.0;
 
     /**
      * @param  string  $html  Inhalt (Body) des Dokuments

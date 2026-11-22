@@ -7,6 +7,7 @@ namespace App\DynamicData\Ui;
 use App\Documents\DocumentBatch;
 use App\Documents\DocumentGenerator;
 use App\Documents\DocumentMailer;
+use App\Documents\QrBill\QrBillFactory;
 use App\Documents\Templates\TemplateException;
 use App\Documents\Templates\TemplateRenderer;
 use App\DynamicData\DataAccess;
@@ -541,6 +542,10 @@ final class DynamicRecordActions
         $user = static fn (): ?User => auth()->user() instanceof User ? auth()->user() : null;
         $templates = static fn () => $generator->templatesFor($table, $user());
         $chosen = static fn (mixed $id) => $templates()->firstWhere('id', (int) $id) ?? $templates()->first();
+        // Format (D4b): Wahl nur bei Vorlagen mit PDF und Word, sonst das Format der Vorlage.
+        $format = static fn (?DocumentTemplate $template, mixed $state): string => $template !== null && is_string($state) && $template->allowsFormat($state)
+            ? $state : ($template?->defaultFormat() ?? DocumentTemplate::FORMAT_PDF);
+        $docx = static fn (Get $get): bool => $format($chosen($get('template')), $get('format')) === DocumentTemplate::FORMAT_DOCX;
 
         return Action::make($name)
             ->label(__('documents.generate.action'))
@@ -553,6 +558,7 @@ final class DynamicRecordActions
             // Vorgaben beim Öffnen, auch für die E-Mail (aus der Vorlage für diesen Datensatz, vor dem Senden änderbar).
             ->fillForm(static fn (DynamicRecord $record): array => [
                 'template' => $templates()->first()?->id,
+                'format' => $templates()->first()?->defaultFormat() ?? DocumentTemplate::FORMAT_PDF,
                 'store' => true,
                 'send' => false,
                 ...self::mailDefaults($templates()->first(), $record, $user()),
@@ -565,15 +571,23 @@ final class DynamicRecordActions
                         foreach (self::mailDefaults($chosen($state), $record, $user()) as $key => $value) {
                             $set($key, $value);
                         }
+
+                        $set('format', $chosen($state)?->defaultFormat() ?? DocumentTemplate::FORMAT_PDF);
                     })
                     ->visible($templates()->count() > 1),
+                Radio::make('format')->label(__('documents.generate.format'))
+                    ->options(self::formatOptions())->inline()->live()
+                    ->visible(static fn (Get $get): bool => $chosen($get('template'))?->allowsFormat(DocumentTemplate::FORMAT_DOCX) === true
+                        && $chosen($get('template'))?->allowsFormat(DocumentTemplate::FORMAT_PDF) === true),
+                Text::make(static fn (Get $get): string => self::docxHint($chosen($get('template'))))
+                    ->visible($docx),
                 Toggle::make('store')
                     ->label(static fn (Get $get): string => __('documents.generate.store', ['field' => (string) $generator->storageField($chosen($get('template')), $table)?->label]))
                     ->helperText(__('documents.generate.store_help'))
-                    ->visible(static fn (Get $get): bool => $generator->canStore($chosen($get('template')), $table, $record, $user())),
-                // Versand per E-Mail (B-124, D3b): Vorgaben aus der Vorlage, vor dem Senden änderbar.
+                    ->visible(static fn (Get $get): bool => ! $docx($get) && $generator->canStore($chosen($get('template')), $table, $record, $user())),
+                // Versand per E-Mail (B-124, D3b): Vorgaben aus der Vorlage, vor dem Senden änderbar; nur PDF.
                 Toggle::make('send')->label(__('documents.mail.send'))->live()
-                    ->visible(static fn (Get $get): bool => DocumentMailer::canSend($user(), $chosen($get('template')))),
+                    ->visible(static fn (Get $get): bool => ! $docx($get) && DocumentMailer::canSend($user(), $chosen($get('template')))),
                 TextInput::make('mail_to')->label(__('documents.mail.to'))->helperText(__('documents.mail.to_help'))
                     ->required()->maxLength(500)
                     ->rule(static fn (): \Closure => static function (string $attribute, mixed $value, \Closure $fail): void {
@@ -583,23 +597,26 @@ final class DynamicRecordActions
                             $fail(__('documents.mail.no_address', ['value' => implode(', ', $invalid)]));
                         }
                     })
-                    ->visible(static fn (Get $get): bool => (bool) $get('send')),
+                    ->visible(static fn (Get $get): bool => (bool) $get('send') && ! $docx($get)),
                 TextInput::make('mail_subject')->label(__('documents.mail.subject'))->required()->maxLength(300)
-                    ->visible(static fn (Get $get): bool => (bool) $get('send')),
+                    ->visible(static fn (Get $get): bool => (bool) $get('send') && ! $docx($get)),
                 Textarea::make('mail_body')->label(__('documents.mail.body'))->rows(6)
-                    ->visible(static fn (Get $get): bool => (bool) $get('send')),
+                    ->visible(static fn (Get $get): bool => (bool) $get('send') && ! $docx($get)),
                 Hidden::make('mail_reply_to'),
                 Toggle::make('mail_copy')->label(static fn (): string => __('documents.mail.copy', ['email' => (string) $user()?->email]))
-                    ->visible(static fn (Get $get): bool => (bool) $get('send') && filled($user()?->email)),
+                    ->visible(static fn (Get $get): bool => (bool) $get('send') && ! $docx($get) && filled($user()?->email)),
             ])
-            ->action(static function (array $data, DynamicRecord $record, mixed $livewire) use ($generator, $chosen, $user, $table) {
+            ->action(static function (array $data, DynamicRecord $record, mixed $livewire) use ($generator, $chosen, $user, $table, $format) {
                 $template = $chosen($data['template'] ?? null);
-                $send = (bool) ($data['send'] ?? false) && DocumentMailer::canSend($user(), $template);
+                $documentFormat = $format($template, $data['format'] ?? null);
+                $pdf = $documentFormat === DocumentTemplate::FORMAT_PDF;
+                // Word (D4b): nur herunterladen – nie ablegen oder versenden, verbindlich bleibt das PDF.
+                $send = $pdf && (bool) ($data['send'] ?? false) && DocumentMailer::canSend($user(), $template);
                 // Versendete Dokumente werden abgelegt, wenn möglich – nachvollziehbar, was verschickt wurde.
-                $store = ((bool) ($data['store'] ?? false) || $send) && $generator->canStore($template, $table, $record, $user());
+                $store = $pdf && ((bool) ($data['store'] ?? false) || $send) && $generator->canStore($template, $table, $record, $user());
 
                 try {
-                    $result = $generator->generate($template, $record, $user(), $store);
+                    $result = $generator->generate($template, $record, $user(), $store, $documentFormat);
                 } catch (BusinessRuleException $exception) {
                     if ($exception->errorCode !== 'documents.field_full') {
                         throw $exception;
@@ -644,12 +661,25 @@ final class DynamicRecordActions
                     }
                 }
 
-                $pdf = $result['document']->pdf;
+                $content = $result['document']->content();
 
-                return response()->streamDownload(static function () use ($pdf): void {
-                    echo $pdf;
-                }, $result['file']?->name ?? $result['document']->fileName, ['Content-Type' => 'application/pdf']);
+                return response()->streamDownload(static function () use ($content): void {
+                    echo $content;
+                }, $result['file']?->name ?? $result['document']->fileName, ['Content-Type' => $result['document']->mime()]);
             });
+    }
+
+    /** @return array<string, string> Auswahl PDF bzw. Word (D4b) */
+    private static function formatOptions(): array
+    {
+        return [DocumentTemplate::FORMAT_PDF => __('documents.formats.pdf'), DocumentTemplate::FORMAT_DOCX => __('documents.formats.docx')];
+    }
+
+    /** Hinweis zur Word-Fassung: nur herunterladen (Sammelaktion: als ZIP); mit QR-Rechnung: Zahlteil nur im PDF. */
+    private static function docxHint(?DocumentTemplate $template, bool $batch = false): string
+    {
+        return __($batch ? 'documents.generate.docx_hint_batch' : 'documents.generate.docx_hint')
+            .(QrBillFactory::enabled($template?->qr_bill) ? ' '.__('documents.generate.docx_no_qr') : '');
     }
 
     /**
@@ -691,6 +721,9 @@ final class DynamicRecordActions
         $canStore = static fn (mixed $id): bool => ($template = $chosen($id)) !== null
             && $generator->storageField($template, $table) !== null
             && $table->supports('update') && DataAccess::allows($user(), $table, 'update');
+        $format = static fn (?DocumentTemplate $template, mixed $state): string => $template !== null && is_string($state) && $template->allowsFormat($state)
+            ? $state : ($template?->defaultFormat() ?? DocumentTemplate::FORMAT_PDF);
+        $docx = static fn (Get $get): bool => $format($chosen($get('template')), $get('document')) === DocumentTemplate::FORMAT_DOCX;
 
         return BulkAction::make('documentBulk')
             ->label(__('documents.batch.action'))
@@ -706,34 +739,47 @@ final class DynamicRecordActions
                     ->options(static fn (): array => $templates()->mapWithKeys(static fn ($t): array => [$t->id => $t->name])->all())
                     ->default(static fn (): ?int => $templates()->first()?->id)
                     ->required()->selectablePlaceholder(false)->live()
+                    ->afterStateUpdated(static fn (Set $set, ?string $state) => $set('document', $chosen($state)?->defaultFormat() ?? DocumentTemplate::FORMAT_PDF))
                     ->visible(static fn (): bool => $templates()->count() > 1),
+                // Format der Dokumente (D4b), nur bei Vorlagen mit PDF und Word; Word kommt immer als ZIP.
+                Radio::make('document')->label(__('documents.generate.format'))
+                    ->options(self::formatOptions())->inline()->live()
+                    ->default(static fn (): string => $templates()->first()?->defaultFormat() ?? DocumentTemplate::FORMAT_PDF)
+                    ->visible(static fn (Get $get): bool => $chosen($get('template'))?->allowsFormat(DocumentTemplate::FORMAT_DOCX) === true
+                        && $chosen($get('template'))?->allowsFormat(DocumentTemplate::FORMAT_PDF) === true),
+                Text::make(static fn (Get $get): string => self::docxHint($chosen($get('template')), true))
+                    ->visible($docx),
                 Radio::make('format')->label(__('documents.batch.format'))
                     ->options([DocumentBatch::PDF => __('documents.batch.formats.pdf'), DocumentBatch::ZIP => __('documents.batch.formats.zip')])
-                    ->default(DocumentBatch::PDF)->required(),
+                    ->default(DocumentBatch::PDF)->required()
+                    ->visible(static fn (Get $get): bool => ! $docx($get)),
                 Toggle::make('store')
                     ->label(static fn (Get $get): string => __('documents.batch.store', ['field' => (string) $generator->storageField($chosen($get('template')), $table)?->label]))
                     ->helperText(__('documents.generate.store_help'))
                     ->default(true)
-                    ->visible(static fn (Get $get): bool => $canStore($get('template'))),
-                // Versand per E-Mail (B-124, D3b): je Datensatz an die Adresse aus der Vorlage, Text aus der Vorlage.
+                    ->visible(static fn (Get $get): bool => ! $docx($get) && $canStore($get('template'))),
+                // Versand per E-Mail (B-124, D3b): je Datensatz an die Adresse aus der Vorlage, Text aus der Vorlage; nur PDF.
                 Toggle::make('send')->label(__('documents.batch.send'))->helperText(__('documents.batch.send_help'))->default(false)->live()
-                    ->visible(static fn (Get $get): bool => DocumentMailer::canSend($user(), $chosen($get('template')))),
+                    ->visible(static fn (Get $get): bool => ! $docx($get) && DocumentMailer::canSend($user(), $chosen($get('template')))),
                 Toggle::make('mail_copy')->label(static fn (): string => __('documents.mail.copy', ['email' => (string) $user()?->email]))
-                    ->visible(static fn (Get $get): bool => (bool) $get('send') && filled($user()?->email)),
+                    ->visible(static fn (Get $get): bool => (bool) $get('send') && ! $docx($get) && filled($user()?->email)),
             ])
             ->deselectRecordsAfterCompletion()
-            ->action(static function (array $data, EloquentCollection|Collection $records, mixed $livewire) use ($chosen, $canStore, $user) {
+            ->action(static function (array $data, EloquentCollection|Collection $records, mixed $livewire) use ($chosen, $canStore, $user, $format) {
                 $template = $chosen($data['template'] ?? null);
+                $document = $format($template, $data['document'] ?? null);
+                $pdf = $document === DocumentTemplate::FORMAT_PDF;
 
                 try {
                     $result = app(DocumentBatch::class)->run(
                         $template,
                         $records->reject(static fn (DynamicRecord $record): bool => $record->trashed()),
                         $user(),
-                        (bool) ($data['store'] ?? false) && $canStore($template?->id),
+                        $pdf && (bool) ($data['store'] ?? false) && $canStore($template?->id),
                         (string) ($data['format'] ?? DocumentBatch::PDF),
-                        (bool) ($data['send'] ?? false),
+                        $pdf && (bool) ($data['send'] ?? false),
                         (bool) ($data['mail_copy'] ?? false),
+                        $document,
                     );
                 } catch (BusinessRuleException $exception) {
                     Notification::make()->danger()->title($exception->getMessage())->persistent()->send();
@@ -743,7 +789,7 @@ final class DynamicRecordActions
 
                 Notification::make()
                     ->title(trans_choice('documents.batch.done', $result['generated'], ['count' => $result['generated'], 'stored' => $result['stored']])
-                        .($data['send'] ?? false ? ', '.trans_choice('documents.batch.sent', $result['sent'], ['count' => $result['sent']]) : ''))
+                        .($pdf && ($data['send'] ?? false) ? ', '.trans_choice('documents.batch.sent', $result['sent'], ['count' => $result['sent']]) : ''))
                     ->body($result['notes'] === [] ? null : implode("\n", $result['notes']))
                     ->{$result['notes'] === [] ? 'success' : 'warning'}()
                     ->persistent($result['notes'] !== [])

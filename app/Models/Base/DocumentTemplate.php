@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $email_body
  * @property string|null $email_reply_to
  * @property array<string, mixed>|null $qr_bill
+ * @property string $formats
  * @property bool $is_active
  * @property int $sort_order
  * @property Carbon|null $created_at
@@ -59,6 +60,7 @@ class DocumentTemplate extends Model
         'email_body',
         'email_reply_to',
         'qr_bill',
+        'formats',
         'is_active',
         'sort_order',
     ];

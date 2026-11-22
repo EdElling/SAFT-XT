@@ -591,6 +591,11 @@ pagano con l’app bancaria (scansionando il codice QR) o allo sportello postale
 nella carta intestata) o l’importo non è un numero, un messaggio indica il motivo e il documento non viene creato –
 rivolgetevi all’amministrazione.
 
+**In Word:** Se il modello ammette anche Word, scegliete nella finestra il **Formato** **PDF** o **Word**. Il file Word
+(.docx) serve per la rielaborazione, p. es. per adattare una lettera: ha intestazione, campo indirizzo e tabelle come il
+PDF, ma senza sfondo della carta intestata e senza fattura QR. Viene solo scaricato – depositato e inviato per e-mail è
+sempre il PDF. Più record in Word arrivano in uno ZIP.
+
 ---
 
 ## Allegato A – Tipi di campo

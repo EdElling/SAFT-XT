@@ -44,12 +44,17 @@ final class DocumentBatch
     /**
      * @param  iterable<DynamicRecord>  $records
      * @param  bool  $send  je Datensatz per E-Mail an die Adresse aus der Vorlage (D3b); versendete werden abgelegt, wenn möglich
+     * @param  string  $document  Format der Dokumente (D4b): pdf oder docx – Word immer als ZIP, nie abgelegt oder versendet
      * @return array{content: string, file_name: string, mime: string, generated: int, stored: int, sent: int, notes: list<string>}
      *
      * @throws BusinessRuleException wenn es zu viele Datensätze sind, keiner erzeugt werden konnte oder die Vorlage nicht erlaubt ist
      */
-    public function run(DocumentTemplate $template, iterable $records, ?User $user, bool $store, string $format = self::PDF, bool $send = false, bool $copyToMe = false): array
+    public function run(DocumentTemplate $template, iterable $records, ?User $user, bool $store, string $format = self::PDF, bool $send = false, bool $copyToMe = false, string $document = DocumentTemplate::FORMAT_PDF): array
     {
+        if ($document === DocumentTemplate::FORMAT_DOCX) {
+            [$format, $store, $send] = [self::ZIP, false, false];
+        }
+
         $records = collect($records)->values();
         $table = $template->customTable ?? CustomTable::query()->findOrFail($template->custom_table_id);
 
@@ -73,7 +78,7 @@ final class DocumentBatch
             }
 
             try {
-                $result = $this->generator->generate($template, $record, $user, $storeThis);
+                $result = $this->generator->generate($template, $record, $user, $storeThis, $document);
             } catch (BusinessRuleException $exception) {
                 if ($exception->errorCode !== 'documents.field_full') {
                     throw $exception;
@@ -89,7 +94,7 @@ final class DocumentBatch
 
             $stored += $result['file'] !== null ? 1 : 0;
             $name = $result['file']?->name ?? $result['document']->fileName;
-            $documents[] = ['name' => $name, 'pdf' => $result['document']->pdf];
+            $documents[] = ['name' => $name, 'pdf' => $result['document']->content()];
 
             if ($send) {
                 $note = $this->mail($template, $record, $user, $result, $name, $copyToMe);

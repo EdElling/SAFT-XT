@@ -108,6 +108,8 @@ class GitarrenshopDemoSeeder extends Seeder
                     'debtor_name' => '{{kunde_id.vorname}} {{kunde_id.name}}', 'debtor_street' => '{{kunde_id.strasse}}',
                     'debtor_postal_code' => '{{kunde_id.plz}}', 'debtor_city' => '{{kunde_id.ort}}', 'debtor_country' => '{{kunde_id.land | Roh}}',
                 ],
+                // Word-Fassung zum Nachbearbeiten (D4b).
+                'formats' => 'both',
             ],
         );
         // Beispiel-IBAN aus den Unterlagen von SIX – für eigene Rechnungen im Briefpapier ersetzen.

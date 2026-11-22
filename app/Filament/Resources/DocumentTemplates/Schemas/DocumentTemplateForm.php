@@ -114,6 +114,11 @@ class DocumentTemplateForm
                                     ->mapWithKeys(static fn (CustomField $f): array => [$f->name => $f->label.' ('.$f->name.')'])->all())
                                 ->placeholder(__('documents.templates.fields.file_field_none'))
                                 ->helperText(__('documents.templates.fields.file_field_help')),
+                            // Formate (D4b): Word-Fassung aus demselben Inhalt, nur zum Herunterladen.
+                            Select::make('formats')->label(__('documents.templates.fields.formats'))
+                                ->options(array_combine(DocumentTemplate::FORMATS, array_map(static fn (string $f): string => __('documents.formats.'.$f), DocumentTemplate::FORMATS)))
+                                ->default(DocumentTemplate::FORMAT_PDF)->required()->selectablePlaceholder(false)
+                                ->helperText(__('documents.templates.fields.formats_help')),
                             Toggle::make('is_active')->label(__('documents.templates.fields.is_active'))->default(true)->inline(false),
                             TextInput::make('sort_order')->label(__('documents.templates.fields.sort_order'))->numeric()->integer()->default(0),
                             Textarea::make('recipient')->label(__('documents.templates.fields.recipient'))

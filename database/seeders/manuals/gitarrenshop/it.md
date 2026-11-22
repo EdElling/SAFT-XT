@@ -41,6 +41,9 @@ sta più sulla pagina, va su una pagina propria. Il beneficiario è il mittente 
 l’IBAN di esempio di SIX se non è ancora indicato alcun IBAN. Per fatture vere inserite il vostro IBAN (o QR-IBAN) nella
 carta intestata.
 
+Nella finestra si può scegliere anche **Word** come **Formato** – un file .docx da rielaborare, senza fattura QR; viene
+solo scaricato.
+
 ### Pagamenti parziali e rateali
 
 Registrare per un giustificativo quanti pagamenti servono, ognuno con il proprio scontrino. Sul giustificativo,

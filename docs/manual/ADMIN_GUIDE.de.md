@@ -1570,6 +1570,7 @@ Gitarrenshop und **Semesterrechnung** in der Musikschule. Wird eine App oder die
 | **Dateiname** | ohne `.pdf`, mit Platzhaltern, z. B. `Rechnung-{{belegnummer}}`; Zeichen, die Dateisysteme nicht erlauben, ersetzt SAFT |
 | **Sprache aus Feld** | ein Feld mit `de`, `en`, `fr` oder `it` (z. B. Korrespondenzsprache); Zahlen, Daten und Auswahlwerte erscheinen dann in dieser Sprache. Leer: die Sprache der Person. Der feste Text der Vorlage bleibt, wie er ist |
 | **Ablage im Dateifeld** | ein Dateifeld der Grundtabelle, das PDF erlaubt: Beim Erstellen ist „Im Feld … ablegen“ vorgewählt, das Dokument kommt als neue, schreibgeschützte Datei zum Datensatz (Ablegen braucht zusätzlich das Recht, den Datensatz zu bearbeiten). Leer: nur herunterladen |
+| **Formate** | **PDF** (Vorgabe), **Word (DOCX)** oder **PDF und Word**. Bei beiden wählt man beim Erstellen das Format |
 | **E-Mail an** | Adresse mit Platzhaltern, z. B. `{{kunde_id.email}}` oder `{{#kontaktperson}}{{email}}{{/kontaktperson}}{{^kontaktperson}}{{schueler.email}}{{/kontaktperson}}`; mehrere mit Komma. Leer: kein Versand |
 | **Antwort an** | optional: Adresse für Antworten (fest oder mit Platzhaltern), sonst die Absenderadresse |
 | **Betreff**, **Text der E-Mail** | reiner Text mit Platzhaltern; das PDF geht als Anhang mit. Die Vorschau zeigt die E-Mail für den Beispieldatensatz |
@@ -1579,6 +1580,13 @@ Gitarrenshop und **Semesterrechnung** in der Musikschule. Wird eine App oder die
 
 **Rechte:** Vorlagen bearbeiten darf, wer in der App das Recht *Dokumente: verwalten* hat; die Liste zeigt nur diese
 Apps. Platzhalter zeigen nur, was die Person lesen darf (siehe unten).
+
+**Word-Fassung:** Erlaubt die Vorlage Word, entsteht aus demselben Inhalt eine DOCX-Datei zum Nachbearbeiten: Kopf mit
+Logo und Absender (statt eines Briefpapier-PDFs, das Word nicht als Hintergrund übernimmt), Adressfeld an derselben
+Stelle, Tabellen mit den Formaten der Klassen (`positionen` mit wiederholtem Kopf, `summe`, Farben), Seitenzahlen in der
+Fusszeile; Schrift Arial. Ein Logo als SVG und die QR-Rechnung gibt es nur im PDF. Word-Dateien werden nur
+heruntergeladen – nie abgelegt oder per E-Mail versendet: verbindlich bleibt das PDF. In der Sammelaktion kommen sie als
+ZIP. Im Verlauf steht „Dokument erzeugt“ mit Format DOCX.
 
 **Versand per E-Mail:** Wer in der App zusätzlich *Dokumente: versenden* hat, sieht beim Erstellen den Schalter **„Per
 E-Mail senden“** – einzeln mit änderbarem An, Betreff und Text und „Kopie an mich“, in der Sammelaktion je Datensatz an

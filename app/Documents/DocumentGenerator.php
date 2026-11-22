@@ -22,7 +22,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
- * Dokument aus einer Vorlage für einen Datensatz erzeugen (B-124, D1c): PDF zum Herunterladen, auf Wunsch abgelegt im
+ * Dokument aus einer Vorlage für einen Datensatz erzeugen (B-124, D1c): PDF (oder Word, D4b) zum Herunterladen, auf Wunsch abgelegt im
  * Dateifeld der Vorlage – immer als neue Datei (gleicher Name → „Name (2).pdf“), schreibgeschützt mit Prüfwert
  * (SHA-256). Jede Erzeugung steht im Änderungsprotokoll des Datensatzes (Ereignis „document“).
  *
@@ -77,11 +77,12 @@ final class DocumentGenerator
     }
 
     /**
+     * @param  string  $format  pdf oder docx (D4b); Word-Dateien werden nie abgelegt – verbindlich bleibt das PDF
      * @return array{document: RenderedDocument, sha256: string, file: ?RecordFile}
      *
      * @throws BusinessRuleException wenn Ablegen gewünscht, aber nicht erlaubt oder das Dateifeld voll ist
      */
-    public function generate(DocumentTemplate $template, DynamicRecord $record, ?User $user, bool $store): array
+    public function generate(DocumentTemplate $template, DynamicRecord $record, ?User $user, bool $store, string $format = DocumentTemplate::FORMAT_PDF): array
     {
         $table = $template->customTable ?? CustomTable::query()->findOrFail($template->custom_table_id);
 
@@ -89,11 +90,15 @@ final class DocumentGenerator
             throw new BusinessRuleException(__('documents.generate.not_allowed'), 'documents.not_allowed');
         }
 
-        $document = $this->renderer->render($template, $record, $user);
-        $sha256 = hash('sha256', $document->pdf);
+        if (! $template->allowsFormat($format)) {
+            throw new BusinessRuleException(__('documents.generate.format_not_allowed'), 'documents.format_not_allowed');
+        }
+
+        $document = $this->renderer->render($template, $record, $user, $format);
+        $sha256 = hash('sha256', $document->content());
         $file = null;
 
-        if ($store) {
+        if ($store && ! $document->isDocx()) {
             if (! $this->canStore($template, $table, $record, $user)) {
                 throw new BusinessRuleException(__('documents.generate.store_not_allowed'), 'documents.store_not_allowed');
             }
@@ -109,6 +114,7 @@ final class DocumentGenerator
                 'vorlage' => $template->name,
                 'datei' => $file?->name ?? $document->fileName,
                 'sha256' => $sha256,
+                'format' => $document->isDocx() ? 'DOCX' : null,
                 'abgelegt' => $file !== null ? (string) $this->storageField($template, $table)?->label : null,
             ], static fn (mixed $value): bool => $value !== null)])
             ->log(self::EVENT);
@@ -163,8 +169,10 @@ final class DocumentGenerator
         $base = pathinfo($name, PATHINFO_FILENAME);
         $candidate = $name;
 
+        $extension = pathinfo($name, PATHINFO_EXTENSION) ?: 'pdf';
+
         for ($n = 2; in_array($candidate, $existing, true); $n++) {
-            $candidate = $base.' ('.$n.').pdf';
+            $candidate = $base.' ('.$n.').'.$extension;
         }
 
         return $candidate;

@@ -156,6 +156,7 @@ final readonly class AppDefinition
             'email_body' => $template->email_body,
             'email_reply_to' => $template->email_reply_to,
             'qr_bill' => $template->qr_bill,
+            'formats' => $template->formats ?? 'pdf',
             'is_active' => (bool) $template->is_active,
             'sort_order' => (int) $template->sort_order,
         ];

@@ -1593,6 +1593,7 @@ una scheda per app; **Duplica** crea una copia da adattare. Le app dimostrative 
 | **Nome del file** | senza `.pdf`, con segnaposto, p. es. `Fattura-{{belegnummer}}`; SAFT sostituisce i caratteri non ammessi dai file system |
 | **Lingua da campo** | un campo con `de`, `en`, `fr` o `it` (p. es. lingua di corrispondenza); numeri, date e valori di selezione appaiono allora in questa lingua. Vuoto: la lingua della persona. Il testo fisso del modello resta com’è |
 | **Deposito nel campo file** | un campo file della tabella di base che ammette il PDF: alla creazione «Depositare nel campo …» è preselezionato e il documento si aggiunge al record come nuovo file protetto da scrittura (il deposito richiede in più il diritto di modificare il record). Vuoto: solo scaricare |
+| **Formati** | **PDF** (predefinito), **Word (DOCX)** o **PDF e Word**. Con entrambi, il formato si sceglie alla creazione |
 | **E-mail a** | indirizzo con segnaposto, p. es. `{{kunde_id.email}}` o `{{#kontaktperson}}{{email}}{{/kontaktperson}}{{^kontaktperson}}{{schueler.email}}{{/kontaktperson}}`; più indirizzi separati da virgole. Vuoto: nessun invio |
 | **Risposta a** | facoltativo: indirizzo per le risposte (fisso o con segnaposto), altrimenti l’indirizzo mittente |
 | **Oggetto**, **testo dell’e-mail** | testo semplice con segnaposto; il PDF viene allegato. L’anteprima mostra l’e-mail per il record di esempio |
@@ -1602,6 +1603,13 @@ una scheda per app; **Duplica** crea una copia da adattare. Le app dimostrative 
 
 **Diritti:** I modelli li modifica chi ha nell’app il diritto *Documenti: gestire*; l’elenco mostra solo queste app. I
 segnaposto mostrano solo ciò che la persona può leggere (vedi sotto).
+
+**Versione Word:** Se il modello ammette Word, dallo stesso contenuto nasce un file DOCX da rielaborare: intestazione con
+logo e mittente (invece di una carta intestata PDF, che Word non riprende come sfondo), campo indirizzo nello stesso
+punto, tabelle con i formati delle classi (`positionen` con intestazione ripetuta, `summe`, colori), numeri di pagina
+nel piè di pagina; carattere Arial. Un logo SVG e la fattura QR esistono solo nel PDF. I file Word vengono solo
+scaricati – mai depositati né inviati per e-mail: il PDF resta la versione vincolante. Nell’azione multipla arrivano in
+uno ZIP. Nella cronologia compare «Documento generato» con formato DOCX.
 
 **Invio per e-mail:** Chi ha in più *Documenti: inviare* nell’app vede alla creazione l’interruttore **«Inviare per
 e-mail»** – singolarmente con destinatario, oggetto e testo modificabili e «Copia a me», nell’azione di gruppo per ogni

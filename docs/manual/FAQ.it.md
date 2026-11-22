@@ -29,6 +29,7 @@
    - [In un elenco mancano le caselle di spunta per selezionare.](#in-un-elenco-mancano-le-caselle-di-spunta-per-selezionare)
    - [Non è stato possibile inviare un documento per e-mail.](#non-è-stato-possibile-inviare-un-documento-per-e-mail)
    - [Manca la fattura QR o l’app bancaria non la legge.](#manca-la-fattura-qr-o-lapp-bancaria-non-la-legge)
+   - [Il file Word appare diverso dal PDF.](#il-file-word-appare-diverso-dal-pdf)
 
 ---
 ## Domande frequenti
@@ -141,3 +142,9 @@ generare* (manuale utente, sezione 4.10). I record eliminati nel cestino non si 
 - **«L’importo della fattura QR non è un numero»:** il record non ha un importo o non è un numero.
 - **L’app bancaria non riconosce il codice:** mostrare il PDF a grandezza originale sullo schermo o stamparlo (senza
   riduzione, «adatta alla pagina» disattivato). Il codice deve misurare 46 × 46 mm.
+
+### Il file Word appare diverso dal PDF.
+
+La versione Word serve per la rielaborazione, non sostituisce il PDF: una carta intestata come sfondo PDF, un logo SVG
+e la fattura QR esistono solo nel PDF; Word mostra invece il logo (PNG/JPEG) e il mittente come testo nell’intestazione
+e usa il carattere Arial. Per l’invio e il deposito SAFT usa sempre il PDF.

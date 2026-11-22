@@ -52,7 +52,7 @@ final class ChangePlanner
         'menus' => ['menu', ['label', 'icon', 'parent', 'permission_name', 'sort_order', 'is_active', 'target']],
         'roles' => ['role', ['name', 'permissions', 'hidden_menus']],
         'tasks' => ['task', ['name', 'type', 'parameters', 'frequency', 'interval_hours', 'at_time', 'weekday', 'is_active']],
-        'documents' => ['document', ['name', 'table', 'recipient', 'body', 'file_name', 'language_field', 'file_field', 'email_to', 'email_subject', 'email_body', 'email_reply_to', 'qr_bill', 'is_active', 'sort_order']],
+        'documents' => ['document', ['name', 'table', 'recipient', 'body', 'file_name', 'language_field', 'file_field', 'email_to', 'email_subject', 'email_body', 'email_reply_to', 'qr_bill', 'formats', 'is_active', 'sort_order']],
     ];
 
     public function __construct(
@@ -477,7 +477,12 @@ final class ChangePlanner
             }
 
             // Menüs: Elterngruppe über ihren Schlüssel vergleichen – eine umbenannte Gruppe verschiebt ihre Einträge nicht.
-            $objects = static fn (?array $definition): array => $list === 'menus' ? self::withParentKeys((array) ($definition[$list] ?? [])) : (array) ($definition[$list] ?? []);
+            // Dokumentvorlagen: ältere Definitionen ohne „formats“ (vor D4b) gelten als PDF.
+            $objects = static fn (?array $definition): array => match ($list) {
+                'menus' => self::withParentKeys((array) ($definition[$list] ?? [])),
+                'documents' => array_map(static fn (mixed $d): mixed => is_array($d) ? ['formats' => 'pdf', ...$d] : $d, (array) ($definition[$list] ?? [])),
+                default => (array) ($definition[$list] ?? []),
+            };
 
             $steps = [...$steps, ...$this->objectSteps(
                 $kind,

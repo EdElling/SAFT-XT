@@ -57,6 +57,14 @@ class ThirdPartyNoticesCommand extends Command
             'copyright' => 'Copyright 2023 Anthropic, PBC. (contributions before version 1.0.0)',
             'label' => 'anthropic-ai/sdk (contributions before version 1.0.0)',
         ],
+        // LICENSE ist nur der Hinweis „LGPL-3.0“; der Lizenztext selbst steht in COPYING.LESSER (COPYING: die GPL-3.0,
+        // auf der die LGPL aufbaut).
+        'phpoffice/phpword' => [
+            'file' => 'COPYING.LESSER',
+            'license' => 'LGPL-3.0-only',
+            'copyright' => 'Copyright (c) 2010-2025 PHPWord.',
+            'label' => 'phpoffice/phpword (license text)',
+        ],
         // Fork von box/spout: Code bis einschließlich Commit cc42c1d (und davon abgeleiteter) steht unter Apache-2.0.
         'openspout/openspout' => [
             'file' => 'LICENSE-for-cc42c1d',
@@ -135,13 +143,15 @@ class ThirdPartyNoticesCommand extends Command
 
             $authors = implode(', ', array_filter(array_map(fn (array $a): string => (string) ($a['name'] ?? ''), (array) ($package['authors'] ?? []))));
             $source = preg_replace('/\.git$/', '', (string) ($package['source']['url'] ?? $package['homepage'] ?? ''));
+            $license = implode(' OR ', $licenses);
+            $copyright = $this->copyright($text) ?? ($authors !== '' ? 'Copyright (c) '.$authors : ($source !== '' ? 'Copyright (c) the authors of '.$source : '–'));
             $packages[] = [
                 'name' => (string) $package['name'],
                 'version' => ltrim((string) ($package['version'] ?? ''), 'v'),
-                // Mehrere Lizenzen zur Wahl (z. B. nette: BSD oder GPL) – SAFT nutzt die erste (BSD).
-                'license' => implode(' OR ', $licenses).($additional !== null ? ' AND '.$additional['license'] : ''),
-                'copyright' => ($this->copyright($text) ?? ($authors !== '' ? 'Copyright (c) '.$authors : ($source !== '' ? 'Copyright (c) the authors of '.$source : '–')))
-                    .($additional !== null ? '; '.$additional['copyright'] : ''),
+                // Mehrere Lizenzen zur Wahl (z. B. nette: BSD oder GPL) – SAFT nutzt die erste (BSD). Eine weitere Datei mit
+                // derselben Lizenz (nur der volle Text, z. B. PHPWord) und gleiche Copyright-Vermerke erscheinen einmal.
+                'license' => $license.($additional !== null && $additional['license'] !== $license ? ' AND '.$additional['license'] : ''),
+                'copyright' => $copyright.($additional !== null && $additional['copyright'] !== $copyright ? '; '.$additional['copyright'] : ''),
                 'text' => $text,
                 'extra' => $extra,
             ];

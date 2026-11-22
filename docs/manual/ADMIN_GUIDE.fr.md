@@ -1635,6 +1635,7 @@ un onglet par app ; **Dupliquer** crée une copie à adapter. Les apps de démon
 | **Nom de fichier** | sans `.pdf`, avec espaces réservés, p. ex. `Facture-{{belegnummer}}` ; SAFT remplace les caractères interdits par les systèmes de fichiers |
 | **Langue depuis le champ** | un champ contenant `de`, `en`, `fr` ou `it` (p. ex. langue de correspondance) ; nombres, dates et valeurs de sélection apparaissent alors dans cette langue. Vide : la langue de la personne. Le texte fixe du modèle reste tel quel |
 | **Dépôt dans le champ de fichiers** | un champ de fichiers de la table de base qui autorise le PDF : à la création, « Déposer dans le champ … » est présélectionné et le document s’ajoute à l’enregistrement comme nouveau fichier protégé en écriture (le dépôt requiert en plus le droit de modifier l’enregistrement). Vide : seulement télécharger |
+| **Formats** | **PDF** (par défaut), **Word (DOCX)** ou **PDF et Word**. Avec les deux, on choisit le format à la création |
 | **E-mail à** | adresse avec espaces réservés, p. ex. `{{kunde_id.email}}` ou `{{#kontaktperson}}{{email}}{{/kontaktperson}}{{^kontaktperson}}{{schueler.email}}{{/kontaktperson}}` ; plusieurs séparées par des virgules. Vide : pas d’envoi |
 | **Réponse à** | facultatif : adresse pour les réponses (fixe ou avec espaces réservés), sinon l’adresse d’expéditeur |
 | **Objet**, **texte de l’e-mail** | texte simple avec espaces réservés ; le PDF est joint. L’aperçu montre l’e-mail pour l’enregistrement d’exemple |
@@ -1644,6 +1645,13 @@ un onglet par app ; **Dupliquer** crée une copie à adapter. Les apps de démon
 
 **Droits :** Les modèles peuvent être modifiés par qui a, dans l’app, le droit *Documents: gérer* ; la liste n’affiche
 que ces apps. Les espaces réservés n’affichent que ce que la personne peut lire (voir plus bas).
+
+**Version Word :** Si le modèle autorise Word, un fichier DOCX à retravailler est créé à partir du même contenu : en-tête
+avec logo et expéditeur (au lieu d’un papier à lettres PDF, que Word ne reprend pas en arrière-plan), champ d’adresse au
+même endroit, tableaux avec les formats des classes (`positionen` avec en-tête répété, `summe`, couleurs), numéros de
+page dans le pied de page ; police Arial. Un logo SVG et la QR-facture n’existent que dans le PDF. Les fichiers Word sont
+seulement téléchargés – jamais déposés ni envoyés par e-mail : le PDF reste la version qui fait foi. Dans l’action
+groupée, ils arrivent dans un ZIP. L’historique indique « Document généré » avec le format DOCX.
 
 **Envoi par e-mail :** Qui a en plus *Documents : envoyer* dans l’app voit à la création l’interrupteur **« Envoyer par
 e-mail »** – individuellement avec destinataire, objet et texte modifiables et « Copie à moi », dans l’action groupée

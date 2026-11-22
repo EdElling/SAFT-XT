@@ -591,6 +591,11 @@ ihn mit der Banking-App (QR-Code scannen) oder am Postschalter. Fehlen dafür An
 Briefpapier) oder ist der Betrag keine Zahl, erscheint eine Meldung mit dem Grund, und das Dokument wird nicht erstellt
 – wenden Sie sich an die Administration.
 
+**Als Word:** Erlaubt die Vorlage auch Word, wählen Sie im Dialog das **Format** **PDF** oder **Word**. Die Word-Datei
+(.docx) ist zum Nachbearbeiten gedacht, z. B. um einen Brief noch anzupassen: Sie hat Kopf, Adressfeld und Tabellen
+wie das PDF, aber ohne Briefpapier-Hintergrund und ohne QR-Rechnung. Sie wird nur heruntergeladen – abgelegt und per
+E-Mail versendet wird immer das PDF. Mehrere Datensätze als Word kommen als ZIP.
+
 ---
 
 ## Anhang A – Feldtypen

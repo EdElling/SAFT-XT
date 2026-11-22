@@ -29,6 +29,7 @@
    - [Checkboxes for selecting are missing in a list.](#checkboxes-for-selecting-are-missing-in-a-list)
    - [A document could not be sent by email.](#a-document-could-not-be-sent-by-email)
    - [The QR bill is missing or the banking app cannot read it.](#the-qr-bill-is-missing-or-the-banking-app-cannot-read-it)
+   - [The Word file looks different from the PDF.](#the-word-file-looks-different-from-the-pdf)
 
 ---
 ## Frequently asked questions
@@ -136,3 +137,9 @@ guide, section 4.10). Deleted records in the recycle bin cannot be selected.
 - **“The amount of the QR bill is not a number”:** the record has no amount or it is not a number.
 - **The banking app does not recognise the code:** show the PDF at original size on screen or print it (not scaled down,
   “fit to page” off). The code must be 46 × 46 mm.
+
+### The Word file looks different from the PDF.
+
+The Word version is meant for editing, not as a replacement for the PDF: a letterhead as PDF background, an SVG logo and
+the QR bill are only in the PDF; Word instead shows the logo (PNG/JPEG) and sender as text in the header and uses the
+Arial font. For sending and storing, SAFT always uses the PDF.

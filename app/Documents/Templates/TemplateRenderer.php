@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Documents\Templates;
 
+use App\Documents\DocxRenderer;
 use App\Documents\LetterheadResolver;
 use App\Documents\PdfRenderer;
 use App\Documents\QrBill\QrBillFactory;
@@ -26,10 +27,15 @@ final class TemplateRenderer
         private readonly LetterheadResolver $letterheads,
         private readonly PdfRenderer $pdf,
         private readonly QrBillFactory $qrBills,
+        private readonly DocxRenderer $docx,
     ) {}
 
-    /** @throws TemplateException */
-    public function render(DocumentTemplate $template, DynamicRecord $record, ?User $user): RenderedDocument
+    /**
+     * @param  string  $format  pdf oder docx (D4b: Word-Fassung aus demselben Inhalt, ohne QR-Rechnung)
+     *
+     * @throws TemplateException
+     */
+    public function render(DocumentTemplate $template, DynamicRecord $record, ?User $user, string $format = DocumentTemplate::FORMAT_PDF): RenderedDocument
     {
         $table = $template->customTable ?? CustomTable::query()->findOrFail($template->custom_table_id);
         $locale = $this->locale($template, $record);
@@ -43,6 +49,14 @@ final class TemplateRenderer
             $html = $this->engine->html($template->body, $context);
             $recipient = $this->recipient((string) $template->recipient, $context);
             $fileName = self::fileName($this->engine->text((string) $template->file_name, $context), $template->name);
+
+            if ($format === DocumentTemplate::FORMAT_DOCX) {
+                $fileName = pathinfo($fileName, PATHINFO_FILENAME).'.docx';
+                $docx = $this->docx->render($html, $letterhead, ['title' => pathinfo($fileName, PATHINFO_FILENAME), 'lang' => $locale, 'address' => $recipient]);
+
+                return new RenderedDocument($html, $recipient, $fileName, $locale, '', DocumentTemplate::FORMAT_DOCX, $docx);
+            }
+
             // QR-Rechnung (D4a): ungültige Zahlungsdaten ergeben eine TemplateException mit Grund.
             $qr = QrBillFactory::enabled($template->qr_bill) ? $this->qrBills->build((array) $template->qr_bill, $context, $letterhead) : null;
             $pdf = $this->pdf->render($html, $letterhead, [

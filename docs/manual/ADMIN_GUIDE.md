@@ -1525,6 +1525,7 @@ shop and **Semesterrechnung** (semester invoice) in the music school. When an ap
 | **File name** | without `.pdf`, with placeholders, e.g. `Invoice-{{belegnummer}}`; SAFT replaces characters that file systems do not allow |
 | **Language from field** | a field containing `de`, `en`, `fr` or `it` (e.g. correspondence language); numbers, dates and selection values then appear in this language. Empty: the language of the person. The template's fixed text stays as it is |
 | **Store in file field** | a file field of the base table that allows PDF: when creating, “Store in field …” is preselected and the document is added to the record as a new, write-protected file (storing also needs the permission to edit the record). Empty: download only |
+| **Formats** | **PDF** (default), **Word (DOCX)** or **PDF and Word**. With both, the format is chosen when creating |
 | **Email to** | address with placeholders, e.g. `{{kunde_id.email}}` or `{{#kontaktperson}}{{email}}{{/kontaktperson}}{{^kontaktperson}}{{schueler.email}}{{/kontaktperson}}`; several separated by commas. Empty: no sending |
 | **Reply to** | optional: address for replies (fixed or with placeholders), otherwise the sender address |
 | **Subject**, **email text** | plain text with placeholders; the PDF is attached. The preview shows the email for the sample record |
@@ -1534,6 +1535,13 @@ shop and **Semesterrechnung** (semester invoice) in the music school. When an ap
 
 **Permissions:** Templates can be edited by anyone with the permission *Documents: manage* in the app; the list only
 shows these apps. Placeholders only show what the person may read (see below).
+
+**Word version:** If the template allows Word, a DOCX file for editing is created from the same content: header with
+logo and sender (instead of a letterhead PDF, which Word does not take over as background), address field in the same
+place, tables with the formats of the classes (`positionen` with repeated header, `summe`, colours), page numbers in the
+footer; font Arial. An SVG logo and the QR bill are only in the PDF. Word files are only downloaded – never stored or
+sent by email: the PDF remains the binding version. In the bulk action they come as a ZIP. The history shows “Document
+generated” with format DOCX.
 
 **Sending by email:** Whoever also has *Documents: send* in the app sees the switch **“Send by email”** when creating –
 individually with editable to, subject and text and “Copy to me”, in the bulk action per record to the address from the

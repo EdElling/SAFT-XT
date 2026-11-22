@@ -41,6 +41,9 @@ elle ne tient plus sur la page, elle va sur une page propre. Le bénéficiaire e
 démo y inscrit l’IBAN d’exemple de SIX si aucun IBAN n’est encore saisi. Pour de vraies factures, saisissez votre propre
 IBAN (ou QR-IBAN) dans le papier à lettres.
 
+Dans la boîte de dialogue, on peut aussi choisir **Word** comme **Format** – un fichier .docx à retravailler, sans
+QR-facture ; il est seulement téléchargé.
+
 ### Paiements partiels et échelonnés
 
 Saisir autant de paiements que nécessaire pour un justificatif, chacun avec son ticket. Sur le justificatif, **payé**

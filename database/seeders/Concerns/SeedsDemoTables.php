@@ -216,7 +216,7 @@ trait SeedsDemoTables
      * noch nicht gibt; eine geänderte Vorlage bleibt.
      */
     /**
-     * @param  array<string, mixed>  $mail  weitere Eigenschaften: E-Mail (D3b), QR-Rechnung (qr_bill, D4a); bei einer schon
+     * @param  array<string, mixed>  $mail  weitere Eigenschaften: E-Mail (D3b), QR-Rechnung (qr_bill, D4a), Formate (D4b); bei einer schon
      *                                      angelegten Vorlage je Eigenschaft nachgetragen, solange leer
      */
     protected function demoDocumentTemplate(string $uuid, string $table, string $name, string $file, string $recipient, string $fileName, ?string $fileField = null, array $mail = []): void
@@ -226,7 +226,8 @@ trait SeedsDemoTables
 
         if ($existing !== null) {
             foreach ($mail as $attribute => $value) {
-                if (blank($existing->{$attribute})) {
+                // „formats“ hat die Vorgabe pdf (D4b): wie leer behandeln, damit die Demo Word dazubekommt.
+                if (blank($existing->{$attribute}) || ($attribute === 'formats' && $existing->formats === DocumentTemplate::FORMAT_PDF)) {
                     $existing->{$attribute} = $value;
                 }
             }

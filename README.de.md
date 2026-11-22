@@ -96,7 +96,8 @@ PostgreSQL, MySQL oder MariaDB.
   Fassung im Dateifeld ablegen, mit Prüfwert (SHA-256) im Änderungsprotokoll; für mehrere ausgewählte Datensätze auf
   einmal als ein PDF zum Drucken oder als ZIP; **per E-Mail senden** (einzeln mit änderbarem Text oder je Datensatz,
   eigenes Recht); Mailserver in den globalen Einstellungen mit „Verbindung prüfen“; **QR-Rechnung** (Zahlteil mit
-  Empfangsschein nach SIX-Standard, RF- oder QR-Referenz, Zahlungsempfänger aus dem Briefpapier)
+  Empfangsschein nach SIX-Standard, RF- oder QR-Referenz, Zahlungsempfänger aus dem Briefpapier); auf Wunsch auch als
+  **Word-Datei** (DOCX) zum Nachbearbeiten
 - **Globale Einstellungen:** Anzeigename und Farbschema der Anwendung (Branding); Anbindung externer KI-Modelle für die
   Assistenten (Anbieter, Modell, verschlüsselter API-Schlüssel, Tageslimit, Verbindungstest); persönliche Einstellungen
   wie Sprache, Zahlenformat und Kontrastmodus unter „Meine Einstellungen“

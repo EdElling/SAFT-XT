@@ -29,6 +29,7 @@
    - [In einer Liste fehlen die Häkchen zum Auswählen.](#in-einer-liste-fehlen-die-häkchen-zum-auswählen)
    - [Ein Dokument liess sich nicht per E-Mail senden.](#ein-dokument-liess-sich-nicht-per-e-mail-senden)
    - [Die QR-Rechnung fehlt oder die Banking-App liest sie nicht.](#die-qr-rechnung-fehlt-oder-die-banking-app-liest-sie-nicht)
+   - [Die Word-Datei sieht anders aus als das PDF.](#die-word-datei-sieht-anders-aus-als-das-pdf)
 
 ---
 ## Häufige Fragen
@@ -141,3 +142,9 @@ erzeugen* (Anwenderhandbuch, Abschnitt 4.10). Gelöschte Datensätze im Papierko
 - **„Der Betrag der QR-Rechnung ist keine Zahl“:** Beim Datensatz fehlt der Betrag oder er ist kein Zahlenwert.
 - **Die Banking-App erkennt den Code nicht:** Das PDF in Originalgrösse am Bildschirm zeigen oder ausdrucken (nicht
   verkleinert, „An Seite anpassen“ aus). Der Code muss 46 × 46 mm gross sein.
+
+### Die Word-Datei sieht anders aus als das PDF.
+
+Die Word-Fassung ist zum Nachbearbeiten gedacht, nicht als Ersatz für das PDF: Ein Briefpapier als PDF-Hintergrund, ein
+Logo als SVG und die QR-Rechnung gibt es nur im PDF; Word zeigt stattdessen Logo (PNG/JPEG) und Absender als Text im
+Kopf und verwendet die Schrift Arial. Für den Versand und die Ablage nimmt SAFT immer das PDF.

@@ -191,5 +191,11 @@ Jede Etappe ist für sich auslieferbar. D1 ist ohne KI vollständig nutzbar.
   RF-Referenz. Nach IG 2.4 (gültig ab 14.11.2026): Hausnummer getrennt (ohne eigenes Feld vom Strassennamen abgetrennt),
   QR-IBAN nur für CHF, Schere auf beiden Trennlinien. Kundentabellen bleiben unverändert. IBAN-Prüfziffer schon beim
   Speichern des Briefpapiers. DOCX zurückgestellt (D4b).
+- **D4b (22.11.2026):** Word-Fassung aus derselben HTML-Vorlage (Weg A) mit `phpoffice/phpword` (LGPL-3.0); keine
+  eigene Word-Vorlage (Weg B bei Bedarf später). Je Vorlage `formats`: pdf (Vorgabe), docx oder both; Wahl im Dialog.
+  Klassen der Vorlage als Word-Formate, Kopf mit Logo und Absender (Briefpapier-PDF und SVG-Logo nicht in Word),
+  Adressfeld als Tabelle fester Höhe, Schrift Arial. Word wird nur heruntergeladen, nie abgelegt oder versendet (das PDF
+  bleibt verbindlich); Sammelaktion als ZIP; keine QR-Rechnung in Word. Ältere App-Definitionen ohne `formats` gelten
+  als PDF.
 - **PDF/A-Prüfung (22.11.2026):** veraPDF bestätigt PDF/A-3b für die erzeugte Rechnung des Gitarrenshops und die
   Semesterrechnung der Musikschule.

@@ -560,6 +560,11 @@ page or on a page of its own – with amount, reference and your customer as deb
 app (scan the QR code) or at the post office counter. If information is missing (e.g. a valid IBAN in the letterhead) or
 the amount is not a number, a message gives the reason and the document is not created – contact your administration.
 
+**As Word:** If the template also allows Word, choose the **Format** **PDF** or **Word** in the dialog. The Word file
+(.docx) is meant for editing, e.g. to adjust a letter: it has header, address field and tables like the PDF, but without
+letterhead background and without QR bill. It is only downloaded – what is stored and sent by email is always the PDF.
+Several records as Word come as a ZIP.
+
 ---
 
 ## Appendix A – Field types

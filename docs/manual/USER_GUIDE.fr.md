@@ -616,6 +616,12 @@ leur app bancaire (scanner le code QR) ou au guichet postal. S’il manque des i
 papier à lettres) ou si le montant n’est pas un nombre, un message indique la raison et le document n’est pas créé –
 adressez-vous à l’administration.
 
+**En Word :** Si le modèle autorise aussi Word, choisissez dans la boîte de dialogue le **Format** **PDF** ou **Word**. Le
+fichier Word (.docx) est destiné à être retravaillé, p. ex. pour adapter une lettre : il a l’en-tête, le champ d’adresse
+et les tableaux comme le PDF, mais sans arrière-plan du papier à lettres et sans QR-facture. Il est seulement
+téléchargé – c’est toujours le PDF qui est déposé et envoyé par e-mail. Plusieurs enregistrements en Word arrivent dans
+un ZIP.
+
 ---
 
 ## Annexe A – Types de champs

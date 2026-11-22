@@ -39,6 +39,9 @@ nicht mehr auf die Seite, kommt sie auf eine eigene. Zahlungsempfänger ist der 
 trägt dort die Beispiel-IBAN von SIX ein, wenn noch keine IBAN steht. Für echte Rechnungen die eigene IBAN (oder
 QR-IBAN) im Briefpapier eintragen.
 
+Im Dialog lässt sich als **Format** auch **Word** wählen – eine .docx-Datei zum Nachbearbeiten, ohne QR-Rechnung; sie
+wird nur heruntergeladen.
+
 ### Teil- und Ratenzahlung
 
 Zu einem Beleg beliebig viele Zahlungen erfassen, je mit eigenem Kassenbeleg. Beim Beleg zeigen **bezahlt** und

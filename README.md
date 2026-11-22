@@ -95,7 +95,7 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
   the file field, with checksum (SHA-256) in the change log; for several selected records at once as one PDF for
   printing or as a ZIP; **send by email** (individually with editable text or per record, own permission); mail server
   in the global settings with “Check connection”; **QR bill** (payment part with receipt to the SIX standard, RF or QR
-  reference, creditor from the letterhead)
+  reference, creditor from the letterhead); optionally also as a **Word file** (DOCX) for editing
 - **Global settings:** display name and colour scheme of the application (branding); connection of external AI models for
   the assistants (provider, model, encrypted API key, daily limit, connection test); personal settings such as language,
   number format and contrast mode under “My settings”

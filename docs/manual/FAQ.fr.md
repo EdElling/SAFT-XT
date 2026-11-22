@@ -29,6 +29,7 @@
    - [Dans une liste, les cases à cocher pour sélectionner manquent.](#dans-une-liste-les-cases-à-cocher-pour-sélectionner-manquent)
    - [Un document n’a pas pu être envoyé par e-mail.](#un-document-na-pas-pu-être-envoyé-par-e-mail)
    - [La QR-facture manque ou l’app bancaire ne la lit pas.](#la-qr-facture-manque-ou-lapp-bancaire-ne-la-lit-pas)
+   - [Le fichier Word n’a pas le même aspect que le PDF.](#le-fichier-word-na-pas-le-même-aspect-que-le-pdf)
 
 ---
 ## Questions fréquentes
@@ -144,3 +145,9 @@ corbeille ne peuvent pas être sélectionnés.
 - **« Le montant de la QR-facture n’est pas un nombre » :** l’enregistrement n’a pas de montant ou ce n’est pas un nombre.
 - **L’app bancaire ne reconnaît pas le code :** afficher le PDF en taille réelle à l’écran ou l’imprimer (sans réduction,
   « ajuster à la page » désactivé). Le code doit mesurer 46 × 46 mm.
+
+### Le fichier Word n’a pas le même aspect que le PDF.
+
+La version Word est destinée à être retravaillée, elle ne remplace pas le PDF : un papier à lettres en arrière-plan PDF,
+un logo SVG et la QR-facture n’existent que dans le PDF ; Word affiche à la place le logo (PNG/JPEG) et l’expéditeur en
+texte dans l’en-tête et utilise la police Arial. Pour l’envoi et le dépôt, SAFT utilise toujours le PDF.

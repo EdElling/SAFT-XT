@@ -39,6 +39,9 @@ At the bottom of the invoice is the **QR bill** with the open amount and the rec
 longer fits on the page, it goes on a page of its own. The creditor is the sender of the letterhead – the demo enters the
 SIX sample IBAN there if no IBAN is set yet. For real invoices, enter your own IBAN (or QR-IBAN) in the letterhead.
 
+In the dialog you can also choose **Word** as **Format** – a .docx file for editing, without QR bill; it is only
+downloaded.
+
 ### Part and instalment payments
 
 Record any number of payments for a receipt, each with its own cash receipt. On the receipt, **paid** and **open** show

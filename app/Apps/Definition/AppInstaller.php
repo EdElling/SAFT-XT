@@ -451,6 +451,7 @@ final class AppInstaller
             'email_body' => $document['email_body'] ?? null,
             'email_reply_to' => $document['email_reply_to'] ?? null,
             'qr_bill' => is_array($document['qr_bill'] ?? null) ? $document['qr_bill'] : null,
+            'formats' => in_array($document['formats'] ?? null, DocumentTemplate::FORMATS, true) ? $document['formats'] : DocumentTemplate::FORMAT_PDF,
             'is_active' => (bool) ($document['is_active'] ?? true),
             'sort_order' => (int) ($document['sort_order'] ?? 0),
         ];
