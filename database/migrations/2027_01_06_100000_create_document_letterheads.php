@@ -69,7 +69,7 @@ return new class extends Migration
         DB::table('menus')->insert([
             'uuid' => (string) Str::uuid(),
             'parent_id' => $parent ?? $admin,
-            'label' => json_encode(['de' => 'Dokumente', 'en' => 'Documents', 'fr' => 'Documents', 'it' => 'Documenti'], JSON_UNESCAPED_UNICODE),
+            'label' => json_encode(['de' => 'Briefpapier', 'en' => 'Letterhead', 'fr' => 'Papier à lettres', 'it' => 'Carta intestata'], JSON_UNESCAPED_UNICODE),
             'route' => self::ROUTE,
             'icon' => 'heroicon-o-document-text',
             'permission_name' => 'documents.manage',

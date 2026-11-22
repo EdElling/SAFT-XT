@@ -1454,11 +1454,17 @@ Installationen beginnen ohne App; die Demo-Daten legen je eine eigene App an (Sh
 
 ## 16. Dokumente
 
-**Administration → Anwendung → Dokumente**
+SAFT erzeugt Dokumente wie Rechnungen und Briefe als PDF. Gestaltung und Inhalt sind getrennt:
 
-SAFT erzeugt Dokumente wie Rechnungen und Briefe als PDF. Gestaltung und Inhalt sind getrennt: Hier legen Sie das
-**Briefpapier** fest – Hintergrund oder Kopf mit Logo, Schrift, Farben, Ränder und Absender. Die Inhaltsvorlagen (z. B.
-„Rechnung“) setzen nur die Daten darauf und folgen in einer späteren Version.
+- **Briefpapier** (**Administration → Anwendung → Briefpapier**): Hintergrund oder Kopf mit Logo, Schrift, Farben,
+  Ränder und Absender – einmal für die Installation, bei Bedarf je App abweichend.
+- **Dokumentvorlagen** (**Administration → Anwendung → Dokumentvorlagen**): was auf dem Briefpapier steht – Empfänger,
+  Betreff, Positionen, Summen, Texte – mit Platzhaltern für die Felder eines Datensatzes.
+
+Dokumente aus der Zeile eines Datensatzes erzeugen und beim Datensatz ablegen folgt in einer späteren Version; bis dahin
+zeigt die Vorschau der Vorlage das fertige PDF.
+
+### Briefpapier
 
 **Für wen es gilt:** Oben wählen Sie unter **Briefpapier für** entweder **Alle Apps (Installation)** oder eine App.
 Das Briefpapier der Installation gilt für alle Apps. Eine App legt nur ihre **Abweichungen** fest: Leere Felder
@@ -1524,6 +1530,82 @@ Internet. Es ist für die Installation voreingestellt und lässt sich je App än
 zeigt Adressfeld, Schrift, Farben, eine Tabelle mit Positionen über zwei Seiten (mit wiederholtem Tabellenkopf) und
 Blindtext, damit erste Seite und Folgeseiten zu sehen sind.
 
+### Dokumentvorlagen
+
+Eine Vorlage gehört zu einer **App** und einer **Grundtabelle**, z. B. „Rechnung“ zu *Belege*. Die Liste zeigt je App
+einen Reiter; **Kopieren** legt eine Kopie zum Anpassen an. Die Demo-Apps bringen je eine Vorlage mit: **Rechnung** im
+Gitarrenshop und **Semesterrechnung** in der Musikschule. Wird eine App oder die Grundtabelle gelöscht, werden ihre Vorlagen mitgelöscht.
+
+| Feld | Bedeutung |
+|---|---|
+| **Name** | je App eindeutig |
+| **App**, **Grundtabelle** | Die Vorlage gilt für Datensätze dieser Tabelle; ihre Kind-Tabellen (z. B. Positionen) sind darin verfügbar |
+| **Grundgerüst** | nur beim Anlegen: *Leer*, *Brief*, *Rechnung* oder *Datenblatt (alle Felder)*. SAFT baut es aus den Feldern der Grundtabelle, sobald sie gewählt ist – *Rechnung* nimmt die erste Kind-Tabelle als Positionen und berechnete Beträge als Summen |
+| **Dateiname** | ohne `.pdf`, mit Platzhaltern, z. B. `Rechnung-{{belegnummer}}`; Zeichen, die Dateisysteme nicht erlauben, ersetzt SAFT |
+| **Sprache aus Feld** | ein Feld mit `de`, `en`, `fr` oder `it` (z. B. Korrespondenzsprache); Zahlen, Daten und Auswahlwerte erscheinen dann in dieser Sprache. Leer: die Sprache der Person. Der feste Text der Vorlage bleibt, wie er ist |
+| **Aktiv**, **Reihenfolge** | für die Auswahl beim Erzeugen |
+| **Empfänger (Adressfeld)** | eine Zeile je Adresszeile mit Platzhaltern; leere Zeilen fallen weg. SAFT setzt sie ins Adressfeld des Briefpapiers, der Inhalt beginnt darunter. Leer: kein Adressfeld |
+| **Inhalt (HTML)** | der Text des Dokuments als HTML mit Platzhaltern, im Code-Editor mit Hervorhebung |
+
+**Rechte:** Vorlagen bearbeiten darf, wer in der App das Recht *Dokumente: verwalten* hat; die Liste zeigt nur diese
+Apps. Platzhalter zeigen nur, was die Person lesen darf (siehe unten).
+
+**Gestalten:** Schrift, Farben, Kopf und Fusszeile kommen aus dem Briefpapier. Die Vorlage verwendet dafür Klassen:
+`primaer`, `sekundaer` (Farben), `klein`, `fett`, `rechts`; eine Tabelle mit der Klasse `positionen` erhält einen
+farbigen Kopf, der auf jeder Seite wiederholt wird, eine Zeile mit der Klasse `summe` eine Linie darüber. Spalten und
+Layouts entstehen mit Tabellen (Breiten mit `width="40%"`); Flexbox, Grid, `float` und `position` stellt das PDF
+nicht dar. Bilder nur eingebettet (`data:image/…`), nichts aus dem Internet.
+
+### Platzhalter
+
+Ein Platzhalter in doppelten geschweiften Klammern zeigt den Wert **wie in SAFT**: Zahl mit Tausendertrennung, Datum,
+Bezeichnung des Auswahlwerts, Anzeige der Verknüpfung – in der Sprache des Dokuments. Die **Feldauswahl** rechts neben
+der Vorschau fügt Platzhalter per Klick an der Schreibmarke ein, im Empfänger oder im Inhalt.
+
+| Schreibweise | Bedeutung |
+|---|---|
+| `{{belegnummer}}` | Feld der Grundtabelle |
+| `{{kunde_id}}`, `{{kunde_id.ort}}` | Anzeige der Verknüpfung bzw. ein Feld des verknüpften Datensatzes (bis drei Schritte, z. B. `{{kunde_id.firma_id.ort}}`) |
+| `{{#gitarren_buchungen}} … {{/gitarren_buchungen}}` | je Kind-Datensatz wiederholen (z. B. eine Tabellenzeile je Position), in der Reihenfolge der Erfassung; darin die Felder der Kind-Tabelle |
+| `{{#bemerkung}} … {{/bemerkung}}` | nur, wenn das Feld einen Wert hat (bei Ja/Nein: wenn ja) |
+| `{{^gitarren_zahlungen}} … {{/gitarren_zahlungen}}` | nur, wenn es keine gibt bzw. das Feld leer ist |
+| `{{absender.firma}}`, `{{absender.iban}}` | Absender aus dem Briefpapier: `firma`, `adresse`, `mwst`, `iban`, `kontakt` |
+| `{{heute}}` | Datum der Erzeugung |
+
+**Formatierungen** folgen nach einem senkrechten Strich und sind gross geschrieben – so verwechselt SAFT sie nie mit
+einem Feld:
+
+| Formatierung | Ergebnis |
+|---|---|
+| `{{summe \| CHF}}` | Betrag mit zwei Stellen: 1'234.50 |
+| `{{menge \| Zahl}}`, `{{menge \| Zahl:2}}` | Zahl wie gespeichert bzw. mit der Anzahl Stellen |
+| `{{datum \| Datum}}`, `{{datum \| DatumLang}}` | 22.11.2026 bzw. 22. November 2026 |
+| `{{bemerkung \| Zeilen}}` | Zeilenumbrüche behalten (mehrzeiliger Text, Adresse) |
+| `{{status \| Roh}}` | gespeicherter Wert statt Anzeige |
+| `{{name \| Gross}}` | GROSSBUCHSTABEN |
+
+Summen, MWST und Ähnliches rechnen die **berechneten Felder** der Tabellen – die Vorlage zeigt sie nur an. So zeigen
+Dokument und Bildschirm dieselben Beträge. Seitenzahlen setzt SAFT selbst in die Fusszeile.
+
+**Rechte:** Verknüpfte Felder und Kind-Datensätze erscheinen nur, wenn die Person, die das Dokument erzeugt, deren
+Tabelle lesen darf; sonst bleiben sie leer. Die Anzeige einer Verknüpfung (`{{kunde_id}}`) erscheint immer.
+
+### Prüfung und Vorschau
+
+Die **Vorschau** rechts zeigt das PDF mit einem **Beispieldatensatz** (Vorgabe: der neueste) und aktualisiert sich
+etwa anderthalb Sekunden nach der letzten Eingabe – mit dem ungespeicherten Stand. Fehler stehen statt der Vorschau
+in Rot, mit Zeilennummer.
+
+Beim **Speichern** prüft SAFT die Vorlage:
+
+- **Fehler** – Speichern nicht möglich: unbekannte Platzhalter (auch Felder einer Kind-Tabelle ausserhalb ihres
+  Abschnitts), unbekannte Formatierungen, Abschnitte, die nicht oder falsch geschlossen sind, mehr als drei Schritte
+  über Verknüpfungen, Teilvorlagen (`{{> …}}`).
+- **Hinweise** nach dem Speichern: Flexbox, Grid, `float`, `position` und `@media` wirken im PDF nicht; Bilder von
+  aussen werden nicht geladen; Skripte, Frames und externe Stylesheets entfernt SAFT.
+
+Platzhalter führen keinen Code aus; eine Vorlage kann Daten nur anzeigen, nicht verändern.
+
 ## Anhang A – Rechte im Überblick
 
 Alle Rechte, nach Themen gruppiert, mit der Bezeichnung, wie sie beim Bearbeiten einer [Rolle](#2-rollen-und-rechte)
@@ -1552,8 +1634,8 @@ entfernen**. „Anzeigen“ ist jeweils Voraussetzung für die übrigen Rechte e
 
 | Recht | Wirkung |
 |---|---|
-| Globale Einstellungen: anzeigen / bearbeiten | Name der Anwendung, Logo, Farbschema, KI-Assistenten (Anbieter, Modell, Schalter); Briefpapier der Installation (Administration › Anwendung › Dokumente) |
-| Dokumente: verwalten | Briefpapier einer App festlegen (App-Recht, siehe [Kapitel 16](#16-dokumente)) |
+| Globale Einstellungen: anzeigen / bearbeiten | Name der Anwendung, Logo, Farbschema, KI-Assistenten (Anbieter, Modell, Schalter); Briefpapier der Installation (Administration › Anwendung › Briefpapier) |
+| Dokumente: verwalten | Briefpapier und Dokumentvorlagen einer App bearbeiten (App-Recht, siehe [Kapitel 16](#16-dokumente)) |
 | Dokumente: erzeugen | Dokumente aus Vorlagen erzeugen (App-Recht; die Vorlagen folgen in einer späteren Version) |
 | Menüs: anzeigen / anlegen / bearbeiten / löschen | den Menübaum pflegen (Gruppen, Einträge, Reihenfolge, Rechte der Einträge) |
 | Apps: anzeigen | Seite „Apps“ und Datenmodell je App öffnen |

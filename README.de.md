@@ -85,7 +85,10 @@ PostgreSQL, MySQL oder MariaDB.
   mit neuem Präfix
 - **Briefpapier für PDF-Dokumente:** Briefpapier als PDF-Hintergrund (erste und Folgeseiten) oder Kopf mit Logo,
   Hausschrift, Hausfarben, Ränder, Adressfeld für Fensterkuverts (links oder rechts) und Absender – für die
-  Installation und je App; PDF/A-3b für die Archivierung (Dokumentvorlagen folgen)
+  Installation und je App; PDF/A-3b für die Archivierung
+- **Dokumentvorlagen:** HTML mit Platzhaltern je App und Grundtabelle (Felder, Verknüpfungen, Kind-Tabellen als
+  Positionen, Formatierungen), mit Code-Editor, Feldauswahl, Live-Vorschau als PDF und Prüfung; Grundgerüste Brief,
+  Rechnung und Datenblatt; Demo-Rechnungen im Gitarrenshop und in der Musikschule
 - **Globale Einstellungen:** Anzeigename und Farbschema der Anwendung (Branding); Anbindung externer KI-Modelle für die
   Assistenten (Anbieter, Modell, verschlüsselter API-Schlüssel, Tageslimit, Verbindungstest); persönliche Einstellungen
   wie Sprache, Zahlenformat und Kontrastmodus unter „Meine Einstellungen“

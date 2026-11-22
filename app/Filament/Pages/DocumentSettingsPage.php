@@ -39,7 +39,7 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Administration › Anwendung › Dokumente (B-124, D1a): Briefpapier der Installation und je App die Abweichungen.
+ * Administration › Anwendung › Briefpapier (B-124, D1a): Briefpapier der Installation und je App die Abweichungen.
  * Installation: Recht „Globale Einstellungen: bearbeiten“; App: App-Recht documents.manage. „Probeseite“ erzeugt ein
  * PDF mit Blindtext aus dem gespeicherten Stand.
  */

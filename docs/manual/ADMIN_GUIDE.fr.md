@@ -1516,11 +1516,18 @@ app » (ci-dessus).
 
 ## 16. Documents
 
-**Administration → Application → Documents**
+SAFT génère des documents tels que factures et lettres en PDF. Mise en forme et contenu sont séparés :
 
-SAFT génère des documents tels que factures et lettres en PDF. Mise en forme et contenu sont séparés : vous définissez
-ici le **papier à lettres** – arrière-plan ou en-tête avec logo, police, couleurs, marges et expéditeur. Les modèles de
-contenu (p. ex. « Facture ») n’y placent que les données et suivront dans une version ultérieure.
+- **Papier à lettres** (**Administration → Application → Papier à lettres**) : arrière-plan ou en-tête avec logo,
+  police, couleurs, marges et expéditeur – une fois pour l’installation, au besoin avec des écarts par app.
+- **Modèles de documents** (**Administration → Application → Modèles de documents**) : ce qui figure sur le papier à
+  lettres – destinataire, objet, positions, totaux, textes – avec des espaces réservés pour les champs d’un
+  enregistrement.
+
+Générer des documents depuis la ligne d’un enregistrement et les déposer avec celui-ci suivra dans une version
+ultérieure ; d’ici là, l’aperçu du modèle montre le PDF terminé.
+
+### Papier à lettres
 
 **Pour qui il s’applique :** En haut, sous **Papier à lettres pour**, choisissez **Toutes les apps (installation)** ou
 une app. Le papier à lettres de l’installation s’applique à toutes les apps. Une app ne définit que ses **écarts** :
@@ -1589,6 +1596,82 @@ Internet. Il est préréglé pour l’installation et peut être modifié par ap
 Il montre le champ d’adresse, la police, les couleurs, un tableau de positions sur deux pages (avec en-tête de tableau
 répété) et du texte factice, afin que la première page et les pages suivantes soient visibles.
 
+### Modèles de documents
+
+Un modèle se rapporte à une **app** et à une **table de base**, p. ex. « Facture » à *Justificatifs*. La liste affiche
+un onglet par app ; **Dupliquer** crée une copie à adapter. Les apps de démonstration apportent chacune un modèle :
+**Rechnung** (facture) dans le magasin de guitares et **Semesterrechnung** (facture semestrielle) à l’école de musique. Si une app ou la table de base est supprimée, ses modèles le sont aussi.
+
+| Champ | Signification |
+|---|---|
+| **Nom** | unique par app |
+| **App**, **Table de base** | Le modèle s’applique aux enregistrements de cette table ; ses tables enfants (p. ex. positions) y sont disponibles |
+| **Point de départ** | seulement à la création : *Vide*, *Lettre*, *Facture* ou *Fiche (tous les champs)*. SAFT le construit à partir des champs de la table de base dès qu’elle est choisie – *Facture* prend la première table enfant comme positions et les montants calculés comme totaux |
+| **Nom de fichier** | sans `.pdf`, avec espaces réservés, p. ex. `Facture-{{belegnummer}}` ; SAFT remplace les caractères interdits par les systèmes de fichiers |
+| **Langue depuis le champ** | un champ contenant `de`, `en`, `fr` ou `it` (p. ex. langue de correspondance) ; nombres, dates et valeurs de sélection apparaissent alors dans cette langue. Vide : la langue de la personne. Le texte fixe du modèle reste tel quel |
+| **Actif**, **Ordre** | pour le choix lors de la génération |
+| **Destinataire (champ d’adresse)** | une ligne par ligne d’adresse avec espaces réservés ; les lignes vides sont omises. SAFT la place dans le champ d’adresse du papier à lettres, le contenu commence en dessous. Vide : pas de champ d’adresse |
+| **Contenu (HTML)** | le texte du document en HTML avec espaces réservés, dans l’éditeur de code avec coloration |
+
+**Droits :** Les modèles peuvent être modifiés par qui a, dans l’app, le droit *Documents: gérer* ; la liste n’affiche
+que ces apps. Les espaces réservés n’affichent que ce que la personne peut lire (voir plus bas).
+
+**Mise en forme :** Police, couleurs, en-tête et pied de page viennent du papier à lettres. Le modèle utilise pour
+cela des classes : `primaer`, `sekundaer` (couleurs), `klein` (petit), `fett` (gras), `rechts` (à droite) ; un tableau
+avec la classe `positionen` reçoit un en-tête coloré répété sur chaque page, une ligne avec la classe `summe` un trait
+au-dessus. Colonnes et mises en page se construisent avec des tableaux (largeurs avec `width="40%"`) ; le PDF
+n’affiche pas flexbox, grid, `float` ni `position`. Images seulement intégrées (`data:image/…`), rien depuis Internet.
+
+### Espaces réservés
+
+Un espace réservé entre doubles accolades affiche la valeur **comme dans SAFT** : nombre avec séparateur de milliers,
+date, libellé de la valeur de sélection, affichage de la liaison – dans la langue du document. Le **choix des
+champs** à côté de l’aperçu insère les espaces réservés au curseur d’un clic, dans le destinataire ou dans le contenu.
+
+| Écriture | Signification |
+|---|---|
+| `{{belegnummer}}` | champ de la table de base |
+| `{{kunde_id}}`, `{{kunde_id.ort}}` | affichage de la liaison ou champ de l’enregistrement lié (jusqu’à trois étapes, p. ex. `{{kunde_id.firma_id.ort}}`) |
+| `{{#gitarren_buchungen}} … {{/gitarren_buchungen}}` | répéter pour chaque enregistrement enfant (p. ex. une ligne de tableau par position), dans l’ordre de saisie ; à l’intérieur, les champs de la table enfant |
+| `{{#bemerkung}} … {{/bemerkung}}` | seulement si le champ a une valeur (oui/non : si oui) |
+| `{{^gitarren_zahlungen}} … {{/gitarren_zahlungen}}` | seulement s’il n’y en a pas ou si le champ est vide |
+| `{{absender.firma}}`, `{{absender.iban}}` | expéditeur du papier à lettres : `firma`, `adresse`, `mwst`, `iban`, `kontakt` |
+| `{{heute}}` | date de génération |
+
+Les **formats** suivent une barre verticale et commencent par une majuscule – ainsi SAFT ne les confond jamais avec un
+champ :
+
+| Format | Résultat |
+|---|---|
+| `{{summe \| CHF}}` | montant à deux décimales : 1 234,50 |
+| `{{menge \| Zahl}}`, `{{menge \| Zahl:2}}` | nombre tel qu’enregistré ou avec le nombre de décimales |
+| `{{datum \| Datum}}`, `{{datum \| DatumLang}}` | 22/11/2026 ou 22 novembre 2026 |
+| `{{bemerkung \| Zeilen}}` | conserver les sauts de ligne (texte sur plusieurs lignes, adresse) |
+| `{{status \| Roh}}` | valeur enregistrée au lieu de l’affichage |
+| `{{name \| Gross}}` | MAJUSCULES |
+
+Totaux, TVA et autres sont calculés par les **champs calculés** des tables – le modèle ne fait que les afficher. Ainsi
+le document et l’écran montrent les mêmes montants. SAFT place lui-même les numéros de page dans le pied de page.
+
+**Droits :** Les champs liés et les enregistrements enfants n’apparaissent que si la personne qui génère le document
+peut lire leur table ; sinon ils restent vides. L’affichage d’une liaison (`{{kunde_id}}`) apparaît toujours.
+
+### Vérification et aperçu
+
+L’**aperçu** à droite montre le PDF avec un **enregistrement d’exemple** (par défaut : le plus récent) et se met à
+jour environ une seconde et demie après la dernière saisie – avec l’état non enregistré. Les erreurs apparaissent en
+rouge à la place de l’aperçu, avec le numéro de ligne.
+
+À l’**enregistrement**, SAFT vérifie le modèle :
+
+- **Erreurs** – enregistrement impossible : espaces réservés inconnus (aussi les champs d’une table enfant hors de sa
+  section), formats inconnus, sections non ou mal fermées, plus de trois étapes via des liaisons, modèles partiels
+  (`{{> …}}`).
+- **Remarques** après l’enregistrement : flexbox, grid, `float`, `position` et `@media` sont sans effet dans le PDF ;
+  les images externes ne sont pas chargées ; SAFT supprime scripts, cadres et feuilles de style externes.
+
+Les espaces réservés n’exécutent pas de code ; un modèle peut seulement afficher des données, pas les modifier.
+
 ## Annexe A – Aperçu des droits
 
 Tous les droits, regroupés par thème, avec le libellé affiché lors de la modification d’un [rôle](#2-rôles-et-droits).
@@ -1618,8 +1701,8 @@ entrée de menu).
 
 | Droit | Effet |
 |---|---|
-| Paramètres globaux: afficher / modifier | nom de l’application, logo, palette de couleurs, assistants IA (fournisseur, modèle, interrupteurs) ; papier à lettres de l’installation (Administration › Application › Documents) |
-| Documents: gérer | définir le papier à lettres d’une app (droit d’app, voir [chapitre 16](#16-documents)) |
+| Paramètres globaux: afficher / modifier | nom de l’application, logo, palette de couleurs, assistants IA (fournisseur, modèle, interrupteurs) ; papier à lettres de l’installation (Administration › Application › Papier à lettres) |
+| Documents: gérer | modifier le papier à lettres et les modèles de documents d’une app (droit d’app, voir [chapitre 16](#16-documents)) |
 | Documents: générer | générer des documents à partir de modèles (droit d’app ; les modèles suivront dans une version ultérieure) |
 | Menus: afficher / créer / modifier / supprimer | gérer l’arborescence des menus (groupes, entrées, ordre, droits des entrées) |
 | Apps: afficher | ouvrir la page « Apps » et le modèle de données par app |

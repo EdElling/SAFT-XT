@@ -1,0 +1,34 @@
+<p class="rechts">{{datum | DatumLang}}</p>
+
+<h1>Semesterrechnung {{rechnungsnummer}}</h1>
+
+<table>
+    <tr><td width="30%">Semester</td><td width="70%">{{semester}}</td></tr>
+    <tr><td width="30%">Schülerin / Schüler</td><td width="70%">{{schueler}}</td></tr>
+    <tr><td width="30%">Zahlbar bis</td><td width="70%">{{faellig_am}}</td></tr>
+</table>
+
+<table class="positionen">
+    <thead>
+        <tr><th width="44%">Leistung</th><th class="rechts" width="12%">Menge</th><th class="rechts" width="16%">Einzelpreis</th><th class="rechts" width="12%">Rabatt</th><th class="rechts" width="16%">Betrag</th></tr>
+    </thead>
+    <tbody>
+    {{#musikschule_rechnungspositionen}}
+        <tr>
+            <td width="44%">{{text}}<br><span class="sekundaer klein">{{art}}</span></td>
+            <td class="rechts" width="12%">{{menge | Zahl}}</td>
+            <td class="rechts" width="16%">{{einzelpreis | CHF}}</td>
+            <td class="rechts" width="12%">{{#rabatt_prozent}}{{rabatt_prozent | Zahl}} %{{/rabatt_prozent}}</td>
+            <td class="rechts" width="16%">{{betrag | CHF}}</td>
+        </tr>
+    {{/musikschule_rechnungspositionen}}
+        <tr class="summe"><td colspan="4">Total CHF</td><td class="rechts" width="16%">{{summe | CHF}}</td></tr>
+    </tbody>
+</table>
+
+{{#bezahlt}}<p class="klein">Bereits bezahlt: CHF {{bezahlt | CHF}} – offen: CHF {{offen | CHF}}</p>{{/bezahlt}}
+
+{{#bemerkung}}<p>{{bemerkung | Zeilen}}</p>{{/bemerkung}}
+
+<p>Bitte überweisen Sie den Betrag bis {{faellig_am | DatumLang}}. Herzlichen Dank!</p>
+<p class="klein sekundaer">{{absender.firma}}{{#absender.iban}} · IBAN {{absender.iban}}{{/absender.iban}}</p>

@@ -35,7 +35,7 @@ Empfänger, elektronische Rechnungsformate (ZUGFeRD, XRechnung).
 
 Das Briefpapier entsteht dort, wo CI üblicherweise entsteht: in einem Gestaltungsprogramm (InDesign, Illustrator,
 Affinity, auch Word) bei der Agentur oder der Kommunikationsabteilung. In SAFT wird es nur hinterlegt
-(*Einstellungen › Dokumente*, Recht *Globale Einstellungen: bearbeiten*):
+(*Administration › Anwendung › Briefpapier*, Recht *Globale Einstellungen: bearbeiten*):
 
 - **Briefpapier als PDF**, getrennt für die **erste Seite** und die **Folgeseiten** (Logo, Linien, Fusszeile mit
   Adresse, Bank, MWST-Nummer). SAFT legt es als Hintergrund unter jede Seite – pixelgenau wie geliefert, niemand muss
@@ -78,14 +78,13 @@ Mustache, ergänzt um Formatierungen mit `|`:
 
 | Schreibweise | Bedeutung |
 |---|---|
-| `{{belegnummer}}` | Feld der Grundtabelle (Text wird maskiert) |
+| `{{belegnummer}}` | Feld der Grundtabelle, angezeigt wie in SAFT (Zahl, Datum, Bezeichnung des Auswahlwerts, Anzeige der Verknüpfung); Text wird maskiert |
 | `{{kunde_id.name}}`, `{{kunde_id.ort}}` | Feld über eine Verknüpfung (bis 3 Schritte) |
 | `{{#gitarren_buchungen}} … {{/gitarren_buchungen}}` | je Kind-Datensatz wiederholen (Positionen), in der Reihenfolge der Kind-Tabelle |
 | `{{^gitarren_zahlungen}} … {{/gitarren_zahlungen}}` | nur wenn es keine gibt |
-| `{{betrag \| chf}}`, `{{datum \| datum}}`, `{{menge \| zahl:0}}` | Formatierung: Währung, Datum, Zahl mit Stellen – in der Sprache des Dokuments |
-| `{{art \| bezeichnung}}` | Auswahlfeld: Bezeichnung statt gespeichertem Wert |
+| `{{betrag \| CHF}}`, `{{datum \| DatumLang}}`, `{{menge \| Zahl:0}}`, `\| Zeilen`, `\| Roh` | Formatierung: Betrag, Datum, Zahl mit Stellen, Zeilenumbrüche, gespeicherter Wert – in der Sprache des Dokuments. Gross geschrieben, damit sie nie mit einem (immer klein geschriebenen) Feld kollidieren – Mustache sucht Formatierungen wie Platzhalter |
 | `{{absender.firma}}`, `{{absender.iban}}` | Absenderdaten aus dem Briefpapier |
-| `{{heute \| datum}}`, `{{seite}}`, `{{seiten}}` | Datum der Erzeugung, Seitenzahlen (Fusszeile) |
+| `{{heute}}` | Datum der Erzeugung; Seitenzahlen setzt SAFT selbst in die Fusszeile |
 
 Summen, MWST und Ähnliches rechnen die **berechneten Felder** der Tabellen; die Vorlage zeigt sie nur an. So bleibt die
 Vorlage logikfrei, und Dokument und Bildschirm zeigen dieselben Beträge.
@@ -151,3 +150,8 @@ Jede Etappe ist für sich auslieferbar. D1 ist ohne KI vollständig nutzbar.
   (Briefpapier auf Seite 1 und Folgeseiten, Adressfeld, wiederholter Tabellenkopf, Seitenzahlen, Hausschrift,
   PDF/A-3b); dazu kommen eingebaute Signatur (PAdES, für D5) und Factur-X/ZUGFeRD. Weniger CSS als mPDF (siehe
   Abschnitt 4). Die Bibliothek ist sehr neu (TCPDF 7 ist nur noch eine Hülle darum) – Version eng festgelegt.
+- **D1b (22.11.2026):** `{{feld}}` zeigt den Wert wie in SAFT (nicht den gespeicherten; dafür `| Roh`), Formatierungen
+  gross geschrieben. Demo-Vorlagen (Rechnung Gitarrenshop, Semesterrechnung Musikschule) schon in D1b. Die Seite des
+  Briefpapiers heisst „Briefpapier“, die der Vorlagen „Dokumentvorlagen“ (beide unter Administration › Anwendung). Für
+  den KI-Assistenten (D2) sind Platzhalter-Katalog (`TemplateFields`) und Prüfung (`TemplateChecker`) die Grundlage –
+  Vorschlag prüfen und Fehler einmal zur Korrektur zurückgeben wie bei den Auswertungen.

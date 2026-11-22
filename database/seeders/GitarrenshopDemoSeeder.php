@@ -27,6 +27,9 @@ class GitarrenshopDemoSeeder extends Seeder
 {
     use SeedsDemoTables;
 
+    /** Schlüssel der Demo-Vorlage „Rechnung“ (B-124). */
+    public const string INVOICE_TEMPLATE = '3d0f3c1e-7a52-4b8e-9c61-2f8a5b0d4e17';
+
     public const array GROUP = ['de' => 'Gitarrenshop (Demo)', 'en' => 'Guitar shop (demo)', 'fr' => 'Magasin de guitares (démo)', 'it' => 'Negozio di chitarre (demo)'];
 
     public const string ROLE = 'Gitarrenshop';
@@ -89,6 +92,11 @@ class GitarrenshopDemoSeeder extends Seeder
         $this->submenus($group);
         $this->role();
         $this->seedDemoManual();
+        $this->demoDocumentTemplate(
+            self::INVOICE_TEMPLATE, 'gitarren_belege', 'Rechnung', 'gitarrenshop-rechnung',
+            "{{kunde_id.vorname}} {{kunde_id.name}}\n{{kunde_id.strasse}}\n{{kunde_id.plz}} {{kunde_id.ort}}",
+            'Rechnung-{{belegnummer}}',
+        );
     }
 
     /** Fachrolle der App mit allen Rechten auf ihre Tabellen und dem Ansehen der Auswertungen. */

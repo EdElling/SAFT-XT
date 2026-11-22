@@ -15,6 +15,7 @@ use App\Models\App;
 use App\Models\AppManual;
 use App\Models\CustomField;
 use App\Models\CustomTable;
+use App\Models\DocumentTemplate;
 use App\Models\DynamicRecord;
 use App\Models\Menu;
 use App\Models\RecordFile;
@@ -205,6 +206,29 @@ trait SeedsDemoTables
                 ['content' => (string) file_get_contents($file)],
             );
         }
+    }
+
+    /**
+     * Dokumentvorlage der Demo (B-124) aus database/seeders/documents/<datei>.html – nur, wenn es sie (fester Schlüssel)
+     * noch nicht gibt; eine geänderte Vorlage bleibt.
+     */
+    protected function demoDocumentTemplate(string $uuid, string $table, string $name, string $file, string $recipient, string $fileName): void
+    {
+        $customTable = CustomTable::query()->where('name', $table)->first();
+
+        if ($customTable === null || $customTable->app_id === null || DocumentTemplate::query()->where('uuid', $uuid)->exists()) {
+            return;
+        }
+
+        DocumentTemplate::query()->create([
+            'uuid' => $uuid,
+            'app_id' => $customTable->app_id,
+            'custom_table_id' => $customTable->id,
+            'name' => $name,
+            'recipient' => $recipient,
+            'body' => (string) file_get_contents(database_path('seeders/documents/'.$file.'.html')),
+            'file_name' => $fileName,
+        ]);
     }
 
     /** @param  array<string, string>  $labels  Bezeichnung je Sprache */

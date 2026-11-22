@@ -84,7 +84,10 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
   installation, e.g. from test to production – with preview and diagram, also as a copy with a new prefix
 - **Letterhead for PDF documents:** letterhead as a PDF background (first and following pages) or header with logo,
   house font, house colours, margins, address field for window envelopes (left or right) and sender – for the
-  installation and per app; PDF/A-3b for archiving (document templates follow)
+  installation and per app; PDF/A-3b for archiving
+- **Document templates:** HTML with placeholders per app and base table (fields, relations, child tables as items,
+  formats), with code editor, field picker, live PDF preview and check; starting points letter, invoice and data
+  sheet; demo invoices in the guitar shop and the music school
 - **Global settings:** display name and colour scheme of the application (branding); connection of external AI models for
   the assistants (provider, model, encrypted API key, daily limit, connection test); personal settings such as language,
   number format and contrast mode under “My settings”

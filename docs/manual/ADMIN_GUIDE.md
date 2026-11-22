@@ -1408,11 +1408,17 @@ app; the demo data create one app each (Shop, Warehouse, Research). “Existing 
 
 ## 16. Documents
 
-**Administration → Application → Documents**
+SAFT generates documents such as invoices and letters as PDF. Design and content are separate:
 
-SAFT generates documents such as invoices and letters as PDF. Design and content are separate: here you define the
-**letterhead** – background or header with logo, font, colours, margins and sender. Content templates (e.g.
-“Invoice”) only place the data on it and follow in a later version.
+- **Letterhead** (**Administration → Application → Letterhead**): background or header with logo, font, colours,
+  margins and sender – once for the installation, per app with deviations if needed.
+- **Document templates** (**Administration → Application → Document templates**): what is on the letterhead –
+  recipient, subject, items, totals, texts – with placeholders for the fields of a record.
+
+Generating documents from a record's row and storing them with the record follows in a later version; until then the
+template's preview shows the finished PDF.
+
+### Letterhead
 
 **Who it applies to:** At the top, under **Letterhead for**, choose either **All apps (installation)** or an app. The
 installation's letterhead applies to all apps. An app only sets its **deviations**: empty fields take the installation
@@ -1480,6 +1486,81 @@ internet. It is preset for the installation and can be changed per app.
 field, font, colours, a table of items over two pages (with repeated table header) and dummy text, so that the first
 page and the following pages can be seen.
 
+### Document templates
+
+A template belongs to an **app** and a **base table**, e.g. “Invoice” to *Receipts*. The list shows a tab per app;
+**Replicate** creates a copy to adapt. The demo apps come with one template each: **Rechnung** (invoice) in the guitar
+shop and **Semesterrechnung** (semester invoice) in the music school. When an app or the base table is deleted, its templates are deleted with it.
+
+| Field | Meaning |
+|---|---|
+| **Name** | unique per app |
+| **App**, **Base table** | The template applies to records of this table; its child tables (e.g. items) are available in it |
+| **Starting point** | only when creating: *Empty*, *Letter*, *Invoice* or *Data sheet (all fields)*. SAFT builds it from the fields of the base table as soon as it is chosen – *Invoice* takes the first child table as items and computed amounts as totals |
+| **File name** | without `.pdf`, with placeholders, e.g. `Invoice-{{belegnummer}}`; SAFT replaces characters that file systems do not allow |
+| **Language from field** | a field containing `de`, `en`, `fr` or `it` (e.g. correspondence language); numbers, dates and selection values then appear in this language. Empty: the language of the person. The template's fixed text stays as it is |
+| **Active**, **Order** | for the choice when generating |
+| **Recipient (address field)** | one line per address line with placeholders; empty lines are dropped. SAFT places it in the letterhead's address field; the content starts below it. Empty: no address field |
+| **Content (HTML)** | the document's text as HTML with placeholders, in the code editor with highlighting |
+
+**Permissions:** Templates can be edited by anyone with the permission *Documents: manage* in the app; the list only
+shows these apps. Placeholders only show what the person may read (see below).
+
+**Designing:** Font, colours, header and footer come from the letterhead. The template uses classes for them:
+`primaer`, `sekundaer` (colours), `klein` (small), `fett` (bold), `rechts` (right-aligned); a table with the class
+`positionen` gets a coloured header that is repeated on every page, a row with the class `summe` a line above it.
+Columns and layouts are built with tables (widths with `width="40%"`); the PDF does not render flexbox, grid, `float`
+or `position`. Images only embedded (`data:image/…`), nothing from the internet.
+
+### Placeholders
+
+A placeholder in double curly braces shows the value **as in SAFT**: number with thousands separator, date, label of
+the selection value, display of the relation – in the language of the document. The **field picker** next to the
+preview inserts placeholders at the cursor with a click, in the recipient or in the content.
+
+| Notation | Meaning |
+|---|---|
+| `{{belegnummer}}` | field of the base table |
+| `{{kunde_id}}`, `{{kunde_id.ort}}` | display of the relation or a field of the related record (up to three steps, e.g. `{{kunde_id.firma_id.ort}}`) |
+| `{{#gitarren_buchungen}} … {{/gitarren_buchungen}}` | repeat per child record (e.g. one table row per item), in the order of entry; inside, the fields of the child table |
+| `{{#bemerkung}} … {{/bemerkung}}` | only if the field has a value (yes/no: if yes) |
+| `{{^gitarren_zahlungen}} … {{/gitarren_zahlungen}}` | only if there are none or the field is empty |
+| `{{absender.firma}}`, `{{absender.iban}}` | sender from the letterhead: `firma`, `adresse`, `mwst`, `iban`, `kontakt` |
+| `{{heute}}` | date of generation |
+
+**Formats** follow a vertical bar and are capitalised – so SAFT never confuses them with a field:
+
+| Format | Result |
+|---|---|
+| `{{summe \| CHF}}` | amount with two decimals: 1'234.50 |
+| `{{menge \| Zahl}}`, `{{menge \| Zahl:2}}` | number as stored or with the number of decimals |
+| `{{datum \| Datum}}`, `{{datum \| DatumLang}}` | 22/11/2026 or 22 November 2026 |
+| `{{bemerkung \| Zeilen}}` | keep line breaks (multi-line text, address) |
+| `{{status \| Roh}}` | stored value instead of display |
+| `{{name \| Gross}}` | CAPITALS |
+
+Totals, VAT and the like are calculated by the tables' **computed fields** – the template only shows them. So the
+document and the screen show the same amounts. SAFT places page numbers in the footer itself.
+
+**Permissions:** Related fields and child records only appear if the person generating the document may read their
+table; otherwise they stay empty. The display of a relation (`{{kunde_id}}`) always appears.
+
+### Check and preview
+
+The **preview** on the right shows the PDF with a **sample record** (default: the newest) and updates about one and a
+half seconds after the last input – with the unsaved state. Errors appear in red instead of the preview, with the line
+number.
+
+When **saving**, SAFT checks the template:
+
+- **Errors** – saving is not possible: unknown placeholders (also fields of a child table outside its section),
+  unknown formats, sections that are not or wrongly closed, more than three steps across relations, partials
+  (`{{> …}}`).
+- **Notes** after saving: flexbox, grid, `float`, `position` and `@media` have no effect in the PDF; external images
+  are not loaded; SAFT removes scripts, frames and external stylesheets.
+
+Placeholders do not run code; a template can only show data, not change it.
+
 ## Appendix A – Permissions at a glance
 
 All permissions, grouped by topic, with the label shown when editing a [role](#2-roles-and-permissions). Users receive
@@ -1508,8 +1589,8 @@ reserved for the super admin and cannot be granted to any role: **View as role**
 
 | Permission | Effect |
 |---|---|
-| Global settings: view / edit | name of the application, logo, colour scheme, AI assistants (provider, model, switches); the installation's letterhead (Administration › Application › Documents) |
-| Documents: manage | set an app's letterhead (app permission, see [chapter 16](#16-documents)) |
+| Global settings: view / edit | name of the application, logo, colour scheme, AI assistants (provider, model, switches); the installation's letterhead (Administration › Application › Letterhead) |
+| Documents: manage | edit an app's letterhead and document templates (app permission, see [chapter 16](#16-documents)) |
 | Documents: generate | generate documents from templates (app permission; the templates follow in a later version) |
 | Menus: view / create / edit / delete | maintain the menu tree (groups, entries, order, permissions of entries) |
 | Apps: view | open the “Apps” page and the data model per app |

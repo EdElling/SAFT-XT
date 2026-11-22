@@ -32,6 +32,9 @@ class MusikschuleDemoSeeder extends Seeder
 {
     use SeedsDemoTables;
 
+    /** Schlüssel der Demo-Vorlage „Semesterrechnung“ (B-124). */
+    public const string INVOICE_TEMPLATE = '8b6e2d94-1f3a-4c7e-a05d-6e9c3b7f2a81';
+
     public const string FILE = 'seeders/apps/musikschule.saft-app.json';
 
     /** Ferien und Feiertage der Beispieldaten (Kanton Zürich): Bezeichnung, von, bis */
@@ -86,6 +89,12 @@ class MusikschuleDemoSeeder extends Seeder
         }
 
         $this->seedDemoManual();
+        $this->demoDocumentTemplate(
+            self::INVOICE_TEMPLATE, 'musikschule_rechnungen', 'Semesterrechnung', 'musikschule-semesterrechnung',
+            "{{#kontaktperson}}{{vorname}} {{nachname}}\n{{strasse}}\n{{plz}} {{ort}}{{/kontaktperson}}\n"
+            ."{{^kontaktperson}}{{schueler.vorname}} {{schueler.nachname}}\n{{schueler.strasse}}\n{{schueler.plz}} {{schueler.ort}}{{/kontaktperson}}",
+            'Semesterrechnung-{{rechnungsnummer}}',
+        );
     }
 
     /** @return list<string> Demo-Tabellen ohne Datensätze */

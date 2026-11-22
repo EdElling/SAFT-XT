@@ -1,0 +1,36 @@
+<p class="rechts">{{datum | DatumLang}}</p>
+
+<h1>Rechnung {{belegnummer}}</h1>
+
+<table>
+    <tr><td width="30%">Kundennummer</td><td width="70%">{{kunde_id.kundennummer}}</td></tr>
+    <tr><td width="30%">Rechnungsdatum</td><td width="70%">{{datum}}</td></tr>
+</table>
+
+{{#beschreibung}}<p>{{beschreibung | Zeilen}}</p>{{/beschreibung}}
+
+<table class="positionen">
+    <thead>
+        <tr><th width="43%">Bezeichnung</th><th class="rechts" width="15%">Netto</th><th class="rechts" width="12%">MWST</th><th class="rechts" width="15%">MWST CHF</th><th class="rechts" width="15%">Brutto</th></tr>
+    </thead>
+    <tbody>
+    {{#gitarren_buchungen}}
+        <tr>
+            <td width="43%">{{text}}{{#artikel_id}}<br><span class="sekundaer klein">{{inventarnummer}} · {{bezeichnung}}</span>{{/artikel_id}}</td>
+            <td class="rechts" width="15%">{{netto | CHF}}</td>
+            <td class="rechts" width="12%">{{mwst_satz | Roh}} %</td>
+            <td class="rechts" width="15%">{{mwst | CHF}}</td>
+            <td class="rechts" width="15%">{{brutto | CHF}}</td>
+        </tr>
+    {{/gitarren_buchungen}}
+        <tr class="summe"><td colspan="4">Total CHF</td><td class="rechts" width="15%">{{summe | CHF}}</td></tr>
+    </tbody>
+</table>
+
+{{#gitarren_zahlungen}}
+<p class="klein">Zahlung vom {{datum}} ({{zahlungsart}}): CHF {{betrag | CHF}}</p>
+{{/gitarren_zahlungen}}
+<p><span class="fett">Offen: CHF {{offen | CHF}}</span></p>
+
+<p>Zahlbar innert 30 Tagen. Besten Dank für Ihren Einkauf.</p>
+<p class="klein sekundaer">{{absender.firma}}{{#absender.iban}} · IBAN {{absender.iban}}{{/absender.iban}}{{#absender.mwst}} · MWST {{absender.mwst}}{{/absender.mwst}}</p>

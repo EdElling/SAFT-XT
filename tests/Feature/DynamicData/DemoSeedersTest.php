@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature\DynamicData;
 
 use App\Apps\Definition\AppInstaller;
+use App\Documents\Templates\TemplateChecker;
+use App\Documents\Templates\TemplateRenderer;
 use App\DynamicData\DataMenu;
 use App\Filament\Pages\DataModelPage;
 use App\Filament\Resources\Reports\ReportResource;
 use App\Models\CustomTable;
+use App\Models\DocumentTemplate;
 use App\Models\DynamicRecord;
 use App\Models\Menu;
 use App\Models\RecordFile;
@@ -301,6 +304,16 @@ class DemoSeedersTest extends DynamicDataTestCase
         foreach (Report::query()->where('app_id', $app->id)->get() as $report) {
             $this->assertNotEmpty(app(ReportRunner::class)->run($report, $this->superAdmin())->rows, $report->name);
         }
+
+        // Dokumentvorlage „Semesterrechnung“ (B-124): an die Kontaktperson, sonst an die Schülerin bzw. den Schüler.
+        $template = DocumentTemplate::query()->where('uuid', MusikschuleDemoSeeder::INVOICE_TEMPLATE)->sole();
+        $this->assertSame($app->id, $template->app_id);
+        $this->assertSame([], app(TemplateChecker::class)->check($template->customTable, $template->body, $template->recipient, $template->file_name)['errors']);
+        $bill = DynamicRecord::forTableName('musikschule_rechnungen')->newQuery()->findOrFail($line->rechnung);
+        $document = app(TemplateRenderer::class)->render($template, $bill, $this->superAdmin());
+        $this->assertStringContainsString('Klavier Laura', $document->html);
+        $this->assertNotNull($document->recipient);
+        $this->assertSame('Semesterrechnung-'.$bill->rechnungsnummer.'.pdf', $document->fileName);
     }
 
     public function test_musikschule_demo_updates_an_installed_app_of_version_1_0(): void

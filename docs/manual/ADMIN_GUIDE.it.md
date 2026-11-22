@@ -1475,11 +1475,17 @@ iniziano senza app; i dati demo creano ciascuno la propria app (Negozio, Magazzi
 
 ## 16. Documenti
 
-**Amministrazione → Applicazione → Documenti**
+SAFT genera documenti come fatture e lettere in PDF. Impaginazione e contenuto sono separati:
 
-SAFT genera documenti come fatture e lettere in PDF. Impaginazione e contenuto sono separati: qui definite la **carta
-intestata** – sfondo o intestazione con logo, carattere, colori, margini e mittente. I modelli di contenuto (p. es.
-«Fattura») vi collocano solo i dati e seguiranno in una versione successiva.
+- **Carta intestata** (**Amministrazione → Applicazione → Carta intestata**): sfondo o intestazione con logo,
+  carattere, colori, margini e mittente – una volta per l’installazione, se necessario con differenze per app.
+- **Modelli di documenti** (**Amministrazione → Applicazione → Modelli di documenti**): ciò che sta sulla carta
+  intestata – destinatario, oggetto, posizioni, totali, testi – con segnaposto per i campi di un record.
+
+Generare documenti dalla riga di un record e depositarli presso di esso seguirà in una versione successiva; fino ad
+allora l’anteprima del modello mostra il PDF finito.
+
+### Carta intestata
 
 **Per chi vale:** In alto, sotto **Carta intestata per**, scegliete **Tutte le app (installazione)** oppure un’app. La
 carta intestata dell’installazione vale per tutte le app. Un’app definisce solo le sue **differenze**: i campi vuoti
@@ -1548,6 +1554,82 @@ Internet. È preimpostato per l’installazione e si può cambiare per app.
 campo indirizzo, carattere, colori, una tabella di posizioni su due pagine (con intestazione della tabella ripetuta) e
 testo fittizio, così si vedono la prima pagina e le pagine seguenti.
 
+### Modelli di documenti
+
+Un modello si riferisce a un’**app** e a una **tabella di base**, p. es. «Fattura» a *Giustificativi*. L’elenco mostra
+una scheda per app; **Duplica** crea una copia da adattare. Le app dimostrative portano un modello ciascuna:
+**Rechnung** (fattura) nel negozio di chitarre e **Semesterrechnung** (fattura semestrale) nella scuola di musica. Se un’app o la tabella di base viene cancellata, anche i suoi modelli vengono cancellati.
+
+| Campo | Significato |
+|---|---|
+| **Nome** | univoco per app |
+| **App**, **Tabella di base** | Il modello vale per i record di questa tabella; le sue tabelle figlie (p. es. posizioni) vi sono disponibili |
+| **Punto di partenza** | solo alla creazione: *Vuoto*, *Lettera*, *Fattura* o *Scheda (tutti i campi)*. SAFT lo costruisce dai campi della tabella di base non appena è scelta – *Fattura* prende la prima tabella figlia come posizioni e gli importi calcolati come totali |
+| **Nome del file** | senza `.pdf`, con segnaposto, p. es. `Fattura-{{belegnummer}}`; SAFT sostituisce i caratteri non ammessi dai file system |
+| **Lingua da campo** | un campo con `de`, `en`, `fr` o `it` (p. es. lingua di corrispondenza); numeri, date e valori di selezione appaiono allora in questa lingua. Vuoto: la lingua della persona. Il testo fisso del modello resta com’è |
+| **Attivo**, **Ordine** | per la scelta al momento della generazione |
+| **Destinatario (campo indirizzo)** | una riga per ogni riga dell’indirizzo con segnaposto; le righe vuote vengono omesse. SAFT lo pone nel campo indirizzo della carta intestata, il contenuto inizia sotto. Vuoto: nessun campo indirizzo |
+| **Contenuto (HTML)** | il testo del documento in HTML con segnaposto, nell’editor di codice con evidenziazione |
+
+**Diritti:** I modelli li modifica chi ha nell’app il diritto *Documenti: gestire*; l’elenco mostra solo queste app. I
+segnaposto mostrano solo ciò che la persona può leggere (vedi sotto).
+
+**Impaginare:** Carattere, colori, intestazione e piè di pagina vengono dalla carta intestata. Il modello usa a tal
+fine delle classi: `primaer`, `sekundaer` (colori), `klein` (piccolo), `fett` (grassetto), `rechts` (a destra); una
+tabella con la classe `positionen` riceve un’intestazione colorata ripetuta su ogni pagina, una riga con la classe
+`summe` una linea sopra. Colonne e impaginazioni si costruiscono con tabelle (larghezze con `width="40%"`); il PDF non
+visualizza flexbox, grid, `float` né `position`. Immagini solo incorporate (`data:image/…`), nulla da Internet.
+
+### Segnaposto
+
+Un segnaposto tra doppie parentesi graffe mostra il valore **come in SAFT**: numero con separatore delle migliaia,
+data, denominazione del valore di selezione, visualizzazione del collegamento – nella lingua del documento. La
+**scelta dei campi** accanto all’anteprima inserisce i segnaposto al cursore con un clic, nel destinatario o nel
+contenuto.
+
+| Scrittura | Significato |
+|---|---|
+| `{{belegnummer}}` | campo della tabella di base |
+| `{{kunde_id}}`, `{{kunde_id.ort}}` | visualizzazione del collegamento o campo del record collegato (fino a tre passi, p. es. `{{kunde_id.firma_id.ort}}`) |
+| `{{#gitarren_buchungen}} … {{/gitarren_buchungen}}` | ripetere per ogni record figlio (p. es. una riga di tabella per posizione), nell’ordine di registrazione; all’interno i campi della tabella figlia |
+| `{{#bemerkung}} … {{/bemerkung}}` | solo se il campo ha un valore (sì/no: se sì) |
+| `{{^gitarren_zahlungen}} … {{/gitarren_zahlungen}}` | solo se non ce ne sono o il campo è vuoto |
+| `{{absender.firma}}`, `{{absender.iban}}` | mittente dalla carta intestata: `firma`, `adresse`, `mwst`, `iban`, `kontakt` |
+| `{{heute}}` | data della generazione |
+
+I **formati** seguono una barra verticale e iniziano con la maiuscola – così SAFT non li confonde mai con un campo:
+
+| Formato | Risultato |
+|---|---|
+| `{{summe \| CHF}}` | importo con due decimali: 1'234.50 |
+| `{{menge \| Zahl}}`, `{{menge \| Zahl:2}}` | numero come salvato o con il numero di decimali |
+| `{{datum \| Datum}}`, `{{datum \| DatumLang}}` | 22/11/2026 o 22 novembre 2026 |
+| `{{bemerkung \| Zeilen}}` | mantenere gli a capo (testo su più righe, indirizzo) |
+| `{{status \| Roh}}` | valore salvato invece della visualizzazione |
+| `{{name \| Gross}}` | MAIUSCOLE |
+
+Totali, IVA e simili li calcolano i **campi calcolati** delle tabelle – il modello li mostra soltanto. Così documento e
+schermo mostrano gli stessi importi. I numeri di pagina li pone SAFT nel piè di pagina.
+
+**Diritti:** Campi collegati e record figli appaiono solo se la persona che genera il documento può leggerne la
+tabella; altrimenti restano vuoti. La visualizzazione di un collegamento (`{{kunde_id}}`) appare sempre.
+
+### Verifica e anteprima
+
+L’**anteprima** a destra mostra il PDF con un **record di esempio** (predefinito: il più recente) e si aggiorna circa
+un secondo e mezzo dopo l’ultima immissione – con lo stato non salvato. Gli errori appaiono in rosso al posto
+dell’anteprima, con il numero di riga.
+
+Al **salvataggio** SAFT verifica il modello:
+
+- **Errori** – salvataggio impossibile: segnaposto sconosciuti (anche campi di una tabella figlia fuori dalla sua
+  sezione), formati sconosciuti, sezioni non chiuse o chiuse male, più di tre passi tramite collegamenti, modelli
+  parziali (`{{> …}}`).
+- **Note** dopo il salvataggio: flexbox, grid, `float`, `position` e `@media` non hanno effetto nel PDF; le immagini
+  esterne non vengono caricate; SAFT rimuove script, frame e fogli di stile esterni.
+
+I segnaposto non eseguono codice; un modello può solo mostrare dati, non modificarli.
+
 ## Allegato A – Panoramica dei diritti
 
 Tutti i diritti, raggruppati per tema, con l’etichetta mostrata modificando un [ruolo](#2-ruoli-e-diritti). Gli utenti
@@ -1576,8 +1658,8 @@ sono riservate e non si possono assegnare a nessun ruolo: **Visualizza come ruol
 
 | Diritto | Effetto |
 |---|---|
-| Impostazioni globali: visualizzare / modificare | nome dell’applicazione, logo, schema di colori, assistenti IA (provider, modello, interruttori); carta intestata dell’installazione (Amministrazione › Applicazione › Documenti) |
-| Documenti: gestire | definire la carta intestata di un’app (diritto dell’app, vedi [capitolo 16](#16-documenti)) |
+| Impostazioni globali: visualizzare / modificare | nome dell’applicazione, logo, schema di colori, assistenti IA (provider, modello, interruttori); carta intestata dell’installazione (Amministrazione › Applicazione › Carta intestata) |
+| Documenti: gestire | modificare la carta intestata e i modelli di documenti di un’app (diritto dell’app, vedi [capitolo 16](#16-documenti)) |
 | Documenti: generare | generare documenti da modelli (diritto dell’app; i modelli seguiranno in una versione successiva) |
 | Menu: visualizzare / creare / modificare / eliminare | curare l’albero dei menu (gruppi, voci, ordine, diritti delle voci) |
 | App: visualizzare | aprire la pagina «App» e il modello di dati per app |
