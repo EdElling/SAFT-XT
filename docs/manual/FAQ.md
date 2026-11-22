@@ -27,6 +27,7 @@
    - [An app has disappeared from the switcher.](#an-app-has-disappeared-from-the-switcher)
    - [I cannot remove a document from a file field.](#i-cannot-remove-a-document-from-a-file-field)
    - [Checkboxes for selecting are missing in a list.](#checkboxes-for-selecting-are-missing-in-a-list)
+   - [A document could not be sent by email.](#a-document-could-not-be-sent-by-email)
 
 ---
 ## Frequently asked questions
@@ -117,3 +118,11 @@ really has to go, ask someone with the delete permission.
 Checkboxes for selecting several records only appear if there is a bulk action you may use – currently **“Create
 documents”**: the table needs an active document template, and your role the permission *Documents: generate* (user
 guide, section 4.10). Deleted records in the recycle bin cannot be selected.
+
+### A document could not be sent by email.
+
+- **No switch “Send by email”:** the template provides no email, or your role lacks the permission *Documents: send*.
+- **“To” is empty or “no valid email address”:** the record or the related customer has no address – or you may not
+  read the related table. Enter the address by hand.
+- **“The mail server rejects the sender address …”** or another message from the server: this is a setting of the
+  administration (email sending in the global settings). The document was created anyway and – if provided – stored.

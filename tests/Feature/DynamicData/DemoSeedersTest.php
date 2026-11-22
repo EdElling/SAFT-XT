@@ -316,6 +316,10 @@ class DemoSeedersTest extends DynamicDataTestCase
         $this->assertNotNull($document->recipient);
         $this->assertSame('Semesterrechnung-'.$bill->rechnungsnummer.'.pdf', $document->fileName);
         $this->assertSame('dokumente', $template->file_field, 'Ablage im Dateifeld „Dokumente“ der Rechnungen (1.2).');
+        // E-Mail (1.3): an die Kontaktperson, sonst an die Schülerin bzw. den Schüler.
+        $mail = app(TemplateRenderer::class)->mail($template, $bill, $this->superAdmin());
+        $this->assertNotSame([], $mail['to'] ?? []);
+        $this->assertStringContainsString((string) $bill->rechnungsnummer, $mail['subject']);
         $this->assertTrue(Role::query()->where('app_id', $app->id)->sole()->hasPermissionTo('documents.generate'));
     }
 
@@ -351,9 +355,10 @@ class DemoSeedersTest extends DynamicDataTestCase
 
         $this->seed(MusikschuleDemoSeeder::class);
 
-        $this->assertSame('1.2', $app->fresh()->version);
+        $this->assertSame('1.3', $app->fresh()->version);
         $this->assertNotNull(CustomField::query()->where('custom_table_id', $table->id)->where('name', 'dokumente')->first());
         $this->assertSame(['dokumente'], DocumentTemplate::query()->where('app_id', $app->id)->pluck('file_field')->all(), 'Nicht doppelt, mit Ablage.');
+        $this->assertNotNull(DocumentTemplate::query()->where('app_id', $app->id)->value('email_to'), 'Mit E-Mail (1.3).');
         $this->assertTrue(Role::query()->where('app_id', $app->id)->sole()->hasPermissionTo('documents.generate'));
         File::deleteDirectory($storage);
     }
@@ -385,7 +390,7 @@ class DemoSeedersTest extends DynamicDataTestCase
         $this->seed(MusikschuleDemoSeeder::class);
 
         $app = MusikschuleDemoSeeder::installedApp();
-        $this->assertSame(['1.2', 21], [$app->version, CustomTable::query()->where('app_id', $app->id)->count()]);
+        $this->assertSame(['1.3', 21], [$app->version, CustomTable::query()->where('app_id', $app->id)->count()]);
         $this->assertTrue(Menu::query()->where('app_id', $app->id)->where('label->de', 'Ferien')->exists());
         $this->assertTrue(Role::query()->where('app_id', $app->id)->sole()->hasPermissionTo('data.musikschule_ferien.update'));
         $this->assertCounts(['musikschule_ferien' => 8, 'musikschule_faecher' => 1]);

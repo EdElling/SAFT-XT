@@ -31,7 +31,8 @@ Einen Beleg vom Typ *Einnahme* mit dem **Kunden** anlegen (neue Kunden unter **S
 MWST-Satz (in der Regel 8,1 %). SAFT rechnet MWST und Brutto. Beim Artikel den Status auf *Verkauft* setzen.
 
 Die **Rechnung** für den Kunden erstellen Sie in der Zeile des Belegs mit **„Dokument erstellen“** (Vorlage „Rechnung“):
-SAFT lädt sie als PDF herunter und legt sie schreibgeschützt in den Belegdateien ab.
+SAFT lädt sie als PDF herunter und legt sie schreibgeschützt in den Belegdateien ab. Mit **„Per E-Mail senden“**
+(Recht *Dokumente: versenden*) geht sie gleich an die E-Mail-Adresse des Kunden.
 
 ### Teil- und Ratenzahlung
 

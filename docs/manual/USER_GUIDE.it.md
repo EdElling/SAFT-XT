@@ -577,6 +577,14 @@ depositare (p. es. campo pieno) – questi documenti sono comunque nel file. Al 
 (l’amministrazione può modificare il numero); oltre, appare un messaggio e non viene creato nulla. Le caselle di spunta
 esistono solo nelle tabelle con modello di documento; i record eliminati non si possono selezionare.
 
+**Inviare per e-mail:** Se il modello prevede un’e-mail e il vostro ruolo ha il diritto *Documenti: inviare*, il
+dialogo mostra l’interruttore **«Inviare per e-mail»**. **A**, **oggetto** e **testo** sono precompilati dal modello
+(p. es. l’indirizzo del cliente) e si possono modificare prima dell’invio; separate più indirizzi con virgole. **Copia
+a me** vi invia una copia nascosta. Il PDF viene allegato; i documenti inviati vengono depositati presso il record se
+possibile. La **cronologia** mostra «documento inviato» con destinatario e oggetto. Nell’azione di gruppo, **«Inviare
+per e-mail per ogni record»** invia a ogni record la sua e-mail con oggetto e testo del modello; il messaggio successivo
+indica quante e-mail sono state inviate e quali record non hanno un indirizzo valido.
+
 ---
 
 ## Allegato A – Tipi di campo

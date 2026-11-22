@@ -33,7 +33,8 @@ registrazione del genere **Vendita**, il prezzo netto e l’aliquota
 IVA (di solito 8,1 %). SAFT calcola IVA e lordo. Impostare lo stato dell’articolo su *Venduto*.
 
 Create la **fattura** per il cliente nella riga del giustificativo con **«Crea documento»** (modello «Rechnung»): SAFT
-la scarica come PDF e la deposita, protetta da scrittura, nei file del giustificativo.
+la scarica come PDF e la deposita, protetta da scrittura, nei file del giustificativo. Con **«Inviare per e-mail»**
+(diritto *Documenti: inviare*) parte subito all’indirizzo e-mail del cliente.
 
 ### Pagamenti parziali e rateali
 

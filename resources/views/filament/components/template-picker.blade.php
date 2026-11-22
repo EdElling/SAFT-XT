@@ -1,6 +1,6 @@
 {{--
     Feldauswahl für Dokumentvorlagen: Ein Klick fügt den Platzhalter an der Schreibmarke ein – im zuletzt benutzten
-    Feld (Empfänger oder Inhalt), sonst im Inhalt. Der Inhalt ist ein CodeMirror-Editor (Filament CodeEditor); dessen
+    Feld (Empfänger, Inhalt oder E-Mail), sonst im Inhalt. Der Inhalt ist ein CodeMirror-Editor (Filament CodeEditor); dessen
     Instanz liegt in den Alpine-Daten des Editors.
 
     $groups: list<array{label: string, items: list<array{label: string, insert: string, title?: string}>}>
@@ -10,14 +10,14 @@
     init() {
         const scope = $el.closest('form') ?? document
         scope.addEventListener('focusin', (event) => {
-            if (event.target.matches('textarea[data-template-input]') || event.target.closest('.cm-editor')) this.target = event.target
+            if (event.target.matches('textarea[data-template-input], input[data-template-input]') || event.target.closest('.cm-editor')) this.target = event.target
         })
     },
     insert(text) {
         const scope = $el.closest('form') ?? document
         let target = this.target && document.contains(this.target) ? this.target : scope.querySelector('.cm-content')
         if (! target) return
-        if (target.matches('textarea')) {
+        if (target.matches('textarea, input')) {
             const start = target.selectionStart ?? target.value.length
             const end = target.selectionEnd ?? start
             target.value = target.value.slice(0, start) + text + target.value.slice(end)

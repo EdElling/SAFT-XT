@@ -601,6 +601,23 @@ pulsanti, il testo bianco vi raggiunge solo 4,1:1). Il contrasto elevato è un�
 La sezione **Assistente IA per i report** configura provider, modello e chiave delle funzioni IA (vedere
 [capitolo 13](#13-funzioni-ia)).
 
+**Invio di e-mail:** server di posta per tutte le e-mail di SAFT – «reimpostare la password» e documenti per e-mail
+([capitolo 16](#16-documenti)). Una riga in alto mostra cosa vale (p. es. «Attivo: SMTP mail.example.ch, porta 587 ·
+mittente fattura@example.ch · impostato qui»). I campi vuoti riprendono i valori dal `.env`; non appena qui è inserito
+un **server SMTP**, vale al posto di `MAIL_MAILER` del `.env`.
+
+| Impostazione | Significato |
+|---|---|
+| **Server SMTP**, **porta** | vedere presso il provider di hosting o di posta; porta di solito 587 (STARTTLS) o 465 (SSL/TLS) |
+| **Cifratura** | Automatica (STARTTLS se offerto), STARTTLS (obbligatorio), SSL/TLS o nessuna |
+| **Utente**, **password** | accesso al server. La password viene salvata cifrata e mai più mostrata; lasciare vuoto per mantenerla, «Eliminare la password salvata» la rimuove. Il protocollo delle modifiche la mostra mascherata |
+| **Indirizzo mittente** | deve essere adatto al server: molti provider (p. es. GMX, Gmail, Microsoft 365) consentono solo l’indirizzo dell’account o gli alias configurati lì; con un dominio proprio SPF/DKIM devono essere corretti, altrimenti le e-mail finiscono nello spam |
+| **Nome mittente** | vuoto: nome visualizzato dell’applicazione. I documenti riportano il nome dell’azienda dalla carta intestata |
+
+**Verificare la connessione** si connette con i valori del modulo (anche non salvati), verifica cifratura, accesso e
+indirizzo mittente e poi interrompe – non viene inviato nulla. Il messaggio indica la causa: server non raggiungibile,
+cifratura fallita, accesso rifiutato o indirizzo mittente rifiutato, con la risposta del server.
+
 ## 8. Registro modifiche
 
 **Amministrazione → Esercizio → Registro modifiche**
@@ -610,8 +627,8 @@ utenti, ruoli e diritti, menu, strutture delle tabelle, impostazioni nonché acc
 falliti. I segreti (password, chiavi) non vengono mai registrati.
 
 - **Filtri:** utente, evento, tipo di oggetto, periodo. Gli eventi sono: creato, modificato, eliminato, ripristinato,
-  accesso, accesso fallito, uscita, esportato e documento generato (con modello, nome del file e valore di controllo
-  SHA-256).
+  accesso, accesso fallito, uscita, esportato, documento generato (con modello, nome del file e valore di controllo
+  SHA-256) e documento inviato (in più con destinatario, oggetto e copia).
 - **Esportazioni:** vengono registrati tabella, formato, numero di righe, filtro e ricerca, mai i dati esportati.
 - **Utenti:** «Sistema» compare solo dove davvero non era coinvolto alcun utente. Gli utenti eliminati compaiono con
   il nome e «(eliminato)», quelli eliminati definitivamente come «Utente eliminato #12».
@@ -1576,12 +1593,23 @@ una scheda per app; **Duplica** crea una copia da adattare. Le app dimostrative 
 | **Nome del file** | senza `.pdf`, con segnaposto, p. es. `Fattura-{{belegnummer}}`; SAFT sostituisce i caratteri non ammessi dai file system |
 | **Lingua da campo** | un campo con `de`, `en`, `fr` o `it` (p. es. lingua di corrispondenza); numeri, date e valori di selezione appaiono allora in questa lingua. Vuoto: la lingua della persona. Il testo fisso del modello resta com’è |
 | **Deposito nel campo file** | un campo file della tabella di base che ammette il PDF: alla creazione «Depositare nel campo …» è preselezionato e il documento si aggiunge al record come nuovo file protetto da scrittura (il deposito richiede in più il diritto di modificare il record). Vuoto: solo scaricare |
+| **E-mail a** | indirizzo con segnaposto, p. es. `{{kunde_id.email}}` o `{{#kontaktperson}}{{email}}{{/kontaktperson}}{{^kontaktperson}}{{schueler.email}}{{/kontaktperson}}`; più indirizzi separati da virgole. Vuoto: nessun invio |
+| **Risposta a** | facoltativo: indirizzo per le risposte (fisso o con segnaposto), altrimenti l’indirizzo mittente |
+| **Oggetto**, **testo dell’e-mail** | testo semplice con segnaposto; il PDF viene allegato. L’anteprima mostra l’e-mail per il record di esempio |
 | **Attivo**, **Ordine** | per la scelta al momento della creazione |
 | **Destinatario (campo indirizzo)** | una riga per ogni riga dell’indirizzo con segnaposto; le righe vuote vengono omesse. SAFT lo pone nel campo indirizzo della carta intestata, il contenuto inizia sotto. Vuoto: nessun campo indirizzo |
 | **Contenuto (HTML)** | il testo del documento in HTML con segnaposto, nell’editor di codice con evidenziazione |
 
 **Diritti:** I modelli li modifica chi ha nell’app il diritto *Documenti: gestire*; l’elenco mostra solo queste app. I
 segnaposto mostrano solo ciò che la persona può leggere (vedi sotto).
+
+**Invio per e-mail:** Chi ha in più *Documenti: inviare* nell’app vede alla creazione l’interruttore **«Inviare per
+e-mail»** – singolarmente con destinatario, oggetto e testo modificabili e «Copia a me», nell’azione di gruppo per ogni
+record all’indirizzo del modello. Dopo l’installazione nessuno tranne il super-admin ha questo diritto; viene assegnato
+consapevolmente, perché le e-mail escono dall’organizzazione. I documenti inviati vengono depositati se il modello ha un
+campo file e la persona può modificare il record. Se l’indirizzo viene da un collegamento (`kunde_id.email`), la
+persona deve poter leggere la tabella collegata – altrimenti resta vuoto. Server di posta:
+[capitolo 7](#7-impostazioni-globali).
 
 **Assistente IA:** Con il diritto *Documenti: usare l’assistente* nell’app, in cima alla sezione «Modello», sotto
 l’app, appare il campo **«Descrivere il modello»** – p. es. «Sollecito con posizioni aperte e pagamento a 10 giorni», poi
@@ -1691,6 +1719,7 @@ sono riservate e non si possono assegnare a nessun ruolo: **Visualizza come ruol
 | Impostazioni globali: visualizzare / modificare | nome dell’applicazione, logo, schema di colori, assistenti IA (provider, modello, interruttori); carta intestata dell’installazione (Amministrazione › Applicazione › Carta intestata) |
 | Documenti: gestire | modificare la carta intestata e i modelli di documenti di un’app (diritto dell’app, vedi [capitolo 16](#16-documenti)) |
 | Documenti: usare l’assistente | assistente IA nei modelli di documenti di un’app (diritto dell’app, vedi [capitolo 16](#16-documenti)) |
+| Documenti: inviare | inviare per e-mail i documenti creati (diritto dell’app, in più a *Documenti: generare*; assegnato a nessuno dopo l’installazione) |
 | Documenti: generare | creare e scaricare documenti da modelli (diritto dell’app, più il diritto di lettura sulla tabella; il deposito in un campo file richiede in più il diritto di modifica, la rimozione di documenti creati il diritto di cancellazione) |
 | Menu: visualizzare / creare / modificare / eliminare | curare l’albero dei menu (gruppi, voci, ordine, diritti delle voci) |
 | App: visualizzare | aprire la pagina «App» e il modello di dati per app |

@@ -212,11 +212,24 @@ trait SeedsDemoTables
      * Dokumentvorlage der Demo (B-124) aus database/seeders/documents/<datei>.html – nur, wenn es sie (fester Schlüssel)
      * noch nicht gibt; eine geänderte Vorlage bleibt.
      */
-    protected function demoDocumentTemplate(string $uuid, string $table, string $name, string $file, string $recipient, string $fileName, ?string $fileField = null): void
+    /**
+     * @param  array{email_to?: string, email_subject?: string, email_body?: string}  $mail  E-Mail (D3b); bei einer schon
+     *                                                                                       angelegten Vorlage nachgetragen, solange leer
+     */
+    protected function demoDocumentTemplate(string $uuid, string $table, string $name, string $file, string $recipient, string $fileName, ?string $fileField = null, array $mail = []): void
     {
         $customTable = CustomTable::query()->where('name', $table)->first();
+        $existing = DocumentTemplate::query()->where('uuid', $uuid)->first();
 
-        if ($customTable === null || $customTable->app_id === null || DocumentTemplate::query()->where('uuid', $uuid)->exists()) {
+        if ($existing !== null) {
+            if (blank($existing->email_to) && $mail !== []) {
+                $existing->fill($mail)->save();
+            }
+
+            return;
+        }
+
+        if ($customTable === null || $customTable->app_id === null) {
             return;
         }
 
@@ -229,6 +242,7 @@ trait SeedsDemoTables
             'body' => (string) file_get_contents(database_path('seeders/documents/'.$file.'.html')),
             'file_name' => $fileName,
             'file_field' => $fileField,
+            ...$mail,
         ]);
     }
 

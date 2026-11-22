@@ -27,6 +27,7 @@
    - [Eine App ist aus dem Umschalter verschwunden.](#eine-app-ist-aus-dem-umschalter-verschwunden)
    - [Ich kann ein Dokument nicht aus einem Dateifeld entfernen.](#ich-kann-ein-dokument-nicht-aus-einem-dateifeld-entfernen)
    - [In einer Liste fehlen die Häkchen zum Auswählen.](#in-einer-liste-fehlen-die-häkchen-zum-auswählen)
+   - [Ein Dokument liess sich nicht per E-Mail senden.](#ein-dokument-liess-sich-nicht-per-e-mail-senden)
 
 ---
 ## Häufige Fragen
@@ -120,3 +121,13 @@ Dokument verschickt wurde. Ein korrigiertes Dokument erstellen Sie einfach neu �
 Häkchen zum Auswählen mehrerer Datensätze erscheinen nur, wenn es dafür eine Sammelaktion gibt, die Sie nutzen dürfen –
 heute **„Dokumente erstellen“**: Die Tabelle braucht eine aktive Dokumentvorlage, und Ihre Rolle das Recht *Dokumente:
 erzeugen* (Anwenderhandbuch, Abschnitt 4.10). Gelöschte Datensätze im Papierkorb lassen sich nicht auswählen.
+
+### Ein Dokument liess sich nicht per E-Mail senden.
+
+- **Kein Schalter „Per E-Mail senden“:** Die Vorlage sieht keine E-Mail vor, oder Ihrer Rolle fehlt das Recht
+  *Dokumente: versenden*.
+- **„An“ ist leer oder „keine gültige E-Mail-Adresse“:** Beim Datensatz bzw. beim verknüpften Kunden fehlt die
+  Adresse – oder Sie dürfen die verknüpfte Tabelle nicht lesen. Tragen Sie die Adresse von Hand ein.
+- **„Der Mailserver lehnt die Absenderadresse … ab“** oder eine andere Meldung des Servers: Das ist eine Einstellung
+  der Administration (E-Mail-Versand in den globalen Einstellungen). Das Dokument wurde trotzdem erstellt und – wenn
+  vorgesehen – abgelegt.

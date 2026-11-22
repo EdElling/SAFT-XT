@@ -54,7 +54,9 @@ Kopiert man eine Rechnung (z. B. fürs nächste Semester), kommen ihre Positione
 Die Rechnung als PDF auf dem Briefpapier erstellen Sie in der Zeile der Rechnung mit **„Dokument erstellen“** (Vorlage
 „Semesterrechnung“) – adressiert an die Kontaktperson, sonst an die Schülerin bzw. den Schüler.
 Vorgewählt ist **„Im Feld ‚Dokumente‘ ablegen“**: Das PDF kommt schreibgeschützt ins Feld **Dokumente** der Rechnung
-(jede Erstellung als neue Fassung). Ablegen braucht das Recht, Rechnungen zu bearbeiten; die Rolle *Musikschule* hat es.
+(jede Erstellung als neue Fassung). Ablegen braucht das Recht, Rechnungen zu bearbeiten; die Rolle *Musikschule* hat es. **„Per E-Mail senden“** schickt
+die Rechnung an die E-Mail-Adresse der Kontaktperson, sonst der Schülerin bzw. des Schülers – dafür braucht die Rolle
+zusätzlich *Dokumente: versenden* (bewusst nicht vorgegeben).
 
 ### Instrumente vermieten
 

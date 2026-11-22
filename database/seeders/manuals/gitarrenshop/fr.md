@@ -33,7 +33,8 @@ une écriture du genre **Vente**, le prix net et le taux de TVA (en général
 8,1 %). SAFT calcule TVA et brut. Passer le statut de l’article à *Vendu*.
 
 Créez la **facture** du client dans la ligne du justificatif avec **« Créer un document »** (modèle « Rechnung ») : SAFT
-la télécharge en PDF et la dépose, protégée en écriture, dans les fichiers du justificatif.
+la télécharge en PDF et la dépose, protégée en écriture, dans les fichiers du justificatif. Avec **« Envoyer par
+e-mail »** (droit *Documents : envoyer*), elle part directement à l’adresse e-mail du client.
 
 ### Paiements partiels et échelonnés
 

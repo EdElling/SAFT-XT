@@ -32,7 +32,8 @@ booking of the kind **Sale**, the net price and the VAT rate (usually 8.1 %).
 SAFT calculates VAT and gross. Set the item's status to *Sold*.
 
 Create the customer's **invoice** in the receipt's row with **“Create document”** (template “Rechnung”): SAFT downloads
-it as PDF and stores it write-protected in the receipt files.
+it as PDF and stores it write-protected in the receipt files. With **“Send by email”** (permission *Documents: send*)
+it goes straight to the customer's email address.
 
 ### Part and instalment payments
 

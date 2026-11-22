@@ -30,12 +30,20 @@ final class TemplateChecker
         '/<(script|iframe|object|embed|link)\b/i' => 'script',
     ];
 
-    /** @return array{errors: list<string>, warnings: list<string>} */
-    public function check(CustomTable $table, string $body, ?string $recipient = null, ?string $fileName = null): array
+    /**
+     * @param  array{email_to?: ?string, email_subject?: ?string, email_body?: ?string, email_reply_to?: ?string}  $mail  E-Mail-Teile (D3b)
+     * @return array{errors: list<string>, warnings: list<string>}
+     */
+    public function check(CustomTable $table, string $body, ?string $recipient = null, ?string $fileName = null, array $mail = []): array
     {
         $errors = [];
+        $parts = ['body' => $body, 'recipient' => (string) $recipient, 'file_name' => (string) $fileName];
 
-        foreach (['body' => $body, 'recipient' => (string) $recipient, 'file_name' => (string) $fileName] as $part => $template) {
+        foreach (['email_to', 'email_subject', 'email_body', 'email_reply_to'] as $part) {
+            $parts[$part] = (string) ($mail[$part] ?? '');
+        }
+
+        foreach ($parts as $part => $template) {
             foreach ($this->placeholders($table, $template) as $error) {
                 $errors[] = __('documents.templates.check.in_'.$part, ['error' => $error]);
             }

@@ -151,7 +151,7 @@ MAIL_HOST=<provider's SMTP server>
 MAIL_PORT=587
 MAIL_USERNAME=<SMTP user>
 MAIL_PASSWORD=<SMTP password>
-MAIL_FROM_ADDRESS=saft@example.com
+MAIL_FROM_ADDRESS=saft@example.com  # SMTP can also be entered later in the global settings
 
 ADMIN_NAME="<name of the first administrator>"
 ADMIN_EMAIL=<address@example.com>
@@ -375,7 +375,7 @@ backup into a new database and point `PGSQL_DATABASE` or `MYSQL_DATABASE` in `.e
 | Links or redirects show `http://` instead of `https://`, the activity log always shows the same IP address | HTTPS ends before the server (load balancer): set `TRUSTED_PROXIES` (step 4), then `php artisan optimize`. |
 | After switching back to http, the browser still insists on HTTPS | HSTS: after one visit over HTTPS, the browser remembers this for a year. Keep HTTPS; only if there is really no other way, set `SECURITY_HSTS=false` and clear the site data in the browser ([System administration guide, chapter 3](SYSADMIN_GUIDE.md#3-updates-and-security)). |
 | "Page expired" (419) after signing in | `SESSION_SECURE_COOKIE=true` without HTTPS, or `APP_URL` does not match the address used. |
-| Emails do not arrive | Check the SMTP settings; `MAIL_FROM_ADDRESS` must be an address of your own domain. |
+| Emails do not arrive | In the global settings under “Email sending”, use **Check connection** – the message names the cause. The sender address must suit the server (with GMX, Gmail and others the account’s address, with your own domain with SPF/DKIM). |
 | `db:backup` reports "Sicherung fehlgeschlagen" (backup failed) | The message behind it names the reason: program missing (path in `…_DUMP_BINARY`), older than the database server (`server version mismatch`, `Error in field count`) or may not connect. With MySQL and MariaDB, `DB_BACKUP_METHOD=php` helps, otherwise the provider's backup. |
 
 ---

@@ -97,6 +97,11 @@ class GitarrenshopDemoSeeder extends Seeder
             "{{kunde_id.vorname}} {{kunde_id.name}}\n{{kunde_id.strasse}}\n{{kunde_id.plz}} {{kunde_id.ort}}",
             'Rechnung-{{belegnummer}}',
             'dateien',
+            [
+                'email_to' => '{{kunde_id.email}}',
+                'email_subject' => 'Rechnung {{belegnummer}}',
+                'email_body' => "Guten Tag {{kunde_id.vorname}} {{kunde_id.name}}\n\nIm Anhang erhalten Sie die Rechnung {{belegnummer}} vom {{datum | DatumLang}}.\n\nBesten Dank für Ihren Einkauf und freundliche Grüsse\n{{absender.firma}}",
+            ],
         );
     }
 

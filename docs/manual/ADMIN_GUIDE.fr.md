@@ -617,6 +617,23 @@ fond de bouton, le texte blanc n’y atteint que 4,1:1). Le contraste élevé es
 La section **Assistant IA pour les rapports** configure le fournisseur, le modèle et la clé des fonctions IA (voir
 [chapitre 13](#13-fonctions-ia)).
 
+**Envoi d’e-mails :** serveur de messagerie pour tous les e-mails de SAFT – « réinitialiser le mot de passe » et
+documents par e-mail ([chapitre 16](#16-documents)). Une ligne en haut indique ce qui s’applique (p. ex. « Actif : SMTP
+mail.example.ch, port 587 · expéditeur facture@example.ch · défini ici »). Les champs vides reprennent les valeurs du
+`.env` ; dès qu’un **serveur SMTP** est saisi ici, il s’applique à la place de `MAIL_MAILER` du `.env`.
+
+| Paramètre | Signification |
+|---|---|
+| **Serveur SMTP**, **port** | voir chez l’hébergeur ou le fournisseur de messagerie ; port en général 587 (STARTTLS) ou 465 (SSL/TLS) |
+| **Chiffrement** | Automatique (STARTTLS si proposé), STARTTLS (obligatoire), SSL/TLS ou aucun |
+| **Utilisateur**, **mot de passe** | connexion au serveur. Le mot de passe est enregistré chiffré et jamais réaffiché ; laisser vide pour le conserver, « Supprimer le mot de passe enregistré » le retire. Le journal des modifications le montre masqué |
+| **Adresse d’expéditeur** | doit convenir au serveur : de nombreux fournisseurs (p. ex. GMX, Gmail, Microsoft 365) n’autorisent que l’adresse du compte ou les alias qui y sont configurés ; avec un domaine propre, SPF/DKIM doivent être corrects, sinon les e-mails finissent en spam |
+| **Nom d’expéditeur** | vide : nom d’affichage de l’application. Les documents portent le nom de l’entreprise du papier à lettres |
+
+**Vérifier la connexion** se connecte avec les valeurs du formulaire (même non enregistrées), vérifie chiffrement,
+connexion et adresse d’expéditeur puis interrompt – rien n’est envoyé. Le message indique la cause : serveur
+injoignable, chiffrement échoué, connexion refusée ou adresse d’expéditeur refusée, avec la réponse du serveur.
+
 ## 8. Journal des modifications
 
 **Administration → Exploitation → Journal des modifications**
@@ -627,8 +644,8 @@ que les connexions, les déconnexions et les tentatives de connexion échouées.
 sont jamais consignés.
 
 - **Filtres :** utilisateur, événement, type d’objet, période. Les événements sont : créé, modifié, supprimé,
-  restauré, connexion, échec de connexion, déconnexion, exporté et document généré (avec modèle, nom de fichier et
-  valeur de contrôle SHA-256).
+  restauré, connexion, échec de connexion, déconnexion, exporté, document généré (avec modèle, nom de fichier et
+  valeur de contrôle SHA-256) et document envoyé (en plus avec destinataire, objet et copie).
 - **Exports :** sont consignés la table, le format, le nombre de lignes, le filtre et la recherche, jamais les
   données exportées.
 - **Utilisateurs :** « Système » n’apparaît que là où aucun utilisateur n’était réellement impliqué. Les utilisateurs
@@ -1618,12 +1635,23 @@ un onglet par app ; **Dupliquer** crée une copie à adapter. Les apps de démon
 | **Nom de fichier** | sans `.pdf`, avec espaces réservés, p. ex. `Facture-{{belegnummer}}` ; SAFT remplace les caractères interdits par les systèmes de fichiers |
 | **Langue depuis le champ** | un champ contenant `de`, `en`, `fr` ou `it` (p. ex. langue de correspondance) ; nombres, dates et valeurs de sélection apparaissent alors dans cette langue. Vide : la langue de la personne. Le texte fixe du modèle reste tel quel |
 | **Dépôt dans le champ de fichiers** | un champ de fichiers de la table de base qui autorise le PDF : à la création, « Déposer dans le champ … » est présélectionné et le document s’ajoute à l’enregistrement comme nouveau fichier protégé en écriture (le dépôt requiert en plus le droit de modifier l’enregistrement). Vide : seulement télécharger |
+| **E-mail à** | adresse avec espaces réservés, p. ex. `{{kunde_id.email}}` ou `{{#kontaktperson}}{{email}}{{/kontaktperson}}{{^kontaktperson}}{{schueler.email}}{{/kontaktperson}}` ; plusieurs séparées par des virgules. Vide : pas d’envoi |
+| **Réponse à** | facultatif : adresse pour les réponses (fixe ou avec espaces réservés), sinon l’adresse d’expéditeur |
+| **Objet**, **texte de l’e-mail** | texte simple avec espaces réservés ; le PDF est joint. L’aperçu montre l’e-mail pour l’enregistrement d’exemple |
 | **Actif**, **Ordre** | pour le choix lors de la création |
 | **Destinataire (champ d’adresse)** | une ligne par ligne d’adresse avec espaces réservés ; les lignes vides sont omises. SAFT la place dans le champ d’adresse du papier à lettres, le contenu commence en dessous. Vide : pas de champ d’adresse |
 | **Contenu (HTML)** | le texte du document en HTML avec espaces réservés, dans l’éditeur de code avec coloration |
 
 **Droits :** Les modèles peuvent être modifiés par qui a, dans l’app, le droit *Documents: gérer* ; la liste n’affiche
 que ces apps. Les espaces réservés n’affichent que ce que la personne peut lire (voir plus bas).
+
+**Envoi par e-mail :** Qui a en plus *Documents : envoyer* dans l’app voit à la création l’interrupteur **« Envoyer par
+e-mail »** – individuellement avec destinataire, objet et texte modifiables et « Copie à moi », dans l’action groupée
+pour chaque enregistrement à l’adresse du modèle. Après l’installation, personne sauf le super-admin n’a ce droit ; il
+est attribué délibérément, car les e-mails quittent l’organisation. Les documents envoyés sont déposés si le modèle a un
+champ de fichiers et que la personne peut modifier l’enregistrement. Si l’adresse vient d’une liaison
+(`kunde_id.email`), la personne doit pouvoir lire la table liée – sinon elle reste vide. Serveur de messagerie :
+[chapitre 7](#7-paramètres-globaux).
 
 **Assistant IA :** Avec le droit *Documents : utiliser l’assistant* dans l’app, le champ **« Décrire le modèle »**
 apparaît en haut de la section « Modèle », sous l’app – p. ex. « Rappel avec positions ouvertes et paiement à 10
@@ -1735,6 +1763,7 @@ entrée de menu).
 | Paramètres globaux: afficher / modifier | nom de l’application, logo, palette de couleurs, assistants IA (fournisseur, modèle, interrupteurs) ; papier à lettres de l’installation (Administration › Application › Papier à lettres) |
 | Documents: gérer | modifier le papier à lettres et les modèles de documents d’une app (droit d’app, voir [chapitre 16](#16-documents)) |
 | Documents: utiliser l’assistant | assistant IA dans les modèles de documents d’une app (droit d’app, voir [chapitre 16](#16-documents)) |
+| Documents: envoyer | envoyer par e-mail les documents créés (droit d’app, en plus de *Documents : générer* ; attribué à personne après l’installation) |
 | Documents: générer | créer et télécharger des documents à partir de modèles (droit d’app, plus le droit de lecture sur la table ; le dépôt dans un champ de fichiers requiert en plus le droit de modification, le retrait de documents créés le droit de suppression) |
 | Menus: afficher / créer / modifier / supprimer | gérer l’arborescence des menus (groupes, entrées, ordre, droits des entrées) |
 | Apps: afficher | ouvrir la page « Apps » et le modèle de données par app |

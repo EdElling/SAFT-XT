@@ -88,7 +88,7 @@ final class ActivityChanges
      */
     public static function eventOptions(): array
     {
-        $events = ['created', 'updated', 'deleted', 'restored', 'login', 'login_failed', 'logout', 'exported', 'imported', 'role_simulation_started', 'role_simulation_stopped', 'snapshot_created', 'snapshot_deleted', 'password_changed', 'assistant', 'document'];
+        $events = ['created', 'updated', 'deleted', 'restored', 'login', 'login_failed', 'logout', 'exported', 'imported', 'role_simulation_started', 'role_simulation_stopped', 'snapshot_created', 'snapshot_deleted', 'password_changed', 'assistant', 'document', 'document_sent'];
 
         return array_combine($events, array_map(self::eventLabel(...), $events));
     }

@@ -577,6 +577,14 @@ konnte (z. B. Feld voll) – diese Dokumente sind trotzdem in der Datei. Höchst
 Administration kann die Zahl ändern); bei mehr erscheint eine Meldung, und nichts wird erstellt. Die Häkchen gibt es nur
 in Tabellen mit Dokumentvorlage; gelöschte Datensätze lassen sich nicht wählen.
 
+**Per E-Mail senden:** Sieht die Vorlage eine E-Mail vor und hat Ihre Rolle das Recht *Dokumente: versenden*, steht
+im Dialog der Schalter **„Per E-Mail senden“**. **An**, **Betreff** und **Text** sind aus der Vorlage vorausgefüllt
+(z. B. die Adresse des Kunden) und lassen sich vor dem Senden ändern; mehrere Adressen trennen Sie mit Komma. **Kopie an
+mich** schickt Ihnen eine Blindkopie. Das PDF geht als Anhang mit; versendete Dokumente werden beim Datensatz abgelegt,
+wenn das möglich ist. Im **Verlauf** steht „Dokument versendet“ mit Empfänger und Betreff. In der Sammelaktion sendet
+**„Je Datensatz per E-Mail senden“** jedem Datensatz seine E-Mail mit Betreff und Text der Vorlage; die Meldung danach
+nennt, wie viele E-Mails gesendet wurden und welche Datensätze keine gültige Adresse haben.
+
 ---
 
 ## Anhang A – Feldtypen

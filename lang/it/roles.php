@@ -37,6 +37,7 @@ return [
         'assistant' => 'usare l’assistente',
         'manage' => 'gestire',
         'generate' => 'generare',
+        'send' => 'inviare',
         'install' => 'installare',
         'upgrade' => 'aggiornare',
         'design' => 'progettare con l’IA',

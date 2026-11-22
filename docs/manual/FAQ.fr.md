@@ -27,6 +27,7 @@
    - [Une app a disparu du sélecteur.](#une-app-a-disparu-du-sélecteur)
    - [Je ne peux pas retirer un document d’un champ de fichiers.](#je-ne-peux-pas-retirer-un-document-dun-champ-de-fichiers)
    - [Dans une liste, les cases à cocher pour sélectionner manquent.](#dans-une-liste-les-cases-à-cocher-pour-sélectionner-manquent)
+   - [Un document n’a pas pu être envoyé par e-mail.](#un-document-na-pas-pu-être-envoyé-par-e-mail)
 
 ---
 ## Questions fréquentes
@@ -123,3 +124,13 @@ Les cases à cocher pour sélectionner plusieurs enregistrements n’apparaissen
 vous pouvez utiliser – actuellement **« Créer des documents »** : la table doit avoir un modèle de document actif, et
 votre rôle le droit *Documents: générer* (manuel de l’utilisateur, section 4.10). Les enregistrements supprimés dans la
 corbeille ne peuvent pas être sélectionnés.
+
+### Un document n’a pas pu être envoyé par e-mail.
+
+- **Pas d’interrupteur « Envoyer par e-mail » :** le modèle ne prévoit pas d’e-mail, ou votre rôle n’a pas le droit
+  *Documents : envoyer*.
+- **« À » est vide ou « pas d’adresse e-mail valable » :** l’enregistrement ou le client lié n’a pas d’adresse – ou vous
+  ne pouvez pas lire la table liée. Saisissez l’adresse à la main.
+- **« Le serveur de messagerie refuse l’adresse d’expéditeur … »** ou un autre message du serveur : c’est un paramètre
+  de l’administration (envoi d’e-mails dans les paramètres globaux). Le document a tout de même été créé et – si prévu –
+  déposé.

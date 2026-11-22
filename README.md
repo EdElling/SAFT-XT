@@ -93,7 +93,8 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
   recipient, content and file name, checked like any template; only the structure of the table is sent, never records
 - **Creating documents:** icon in a record's row – download the PDF and store it write-protected as a new version in
   the file field, with checksum (SHA-256) in the change log; for several selected records at once as one PDF for
-  printing or as a ZIP
+  printing or as a ZIP; **send by email** (individually with editable text or per record, own permission); mail server
+  in the global settings with “Check connection”
 - **Global settings:** display name and colour scheme of the application (branding); connection of external AI models for
   the assistants (provider, model, encrypted API key, daily limit, connection test); personal settings such as language,
   number format and contrast mode under “My settings”

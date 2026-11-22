@@ -547,6 +547,14 @@ The message afterwards says how many documents were created and stored and, per 
 change the number); with more, a message appears and nothing is created. The checkboxes only exist in tables with a
 document template; deleted records cannot be selected.
 
+**Send by email:** If the template provides an email and your role has the permission *Documents: send*, the dialog
+shows the switch **“Send by email”**. **To**, **subject** and **text** are prefilled from the template (e.g. the
+customer’s address) and can be changed before sending; separate several addresses with commas. **Copy to me** sends
+you a blind copy. The PDF is attached; sent documents are stored with the record where possible. The **history** shows
+“document sent” with recipient and subject. In the bulk action, **“Send by email for each record”** sends each record
+its email with the template’s subject and text; the message afterwards says how many emails were sent and which
+records have no valid address.
+
 ---
 
 ## Appendix A – Field types

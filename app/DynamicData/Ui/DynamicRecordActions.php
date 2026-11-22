@@ -6,6 +6,9 @@ namespace App\DynamicData\Ui;
 
 use App\Documents\DocumentBatch;
 use App\Documents\DocumentGenerator;
+use App\Documents\DocumentMailer;
+use App\Documents\Templates\TemplateException;
+use App\Documents\Templates\TemplateRenderer;
 use App\DynamicData\DataAccess;
 use App\DynamicData\Export\ExportFormat;
 use App\DynamicData\Export\TableExporter;
@@ -18,6 +21,7 @@ use App\Filament\Support\ActivityChanges;
 use App\Models\Activity;
 use App\Models\CustomField;
 use App\Models\CustomTable;
+use App\Models\DocumentTemplate;
 use App\Models\DynamicRecord;
 use App\Models\User;
 use App\Support\AppLocale;
@@ -35,6 +39,8 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\RepeatableEntry\TableColumn;
@@ -544,21 +550,53 @@ final class DynamicRecordActions
             ->modalHeading(fn (DynamicRecord $record): string => __('documents.generate.heading', ['title' => RecordEntries::title($table, $record)]))
             ->modalWidth('md')
             ->modalSubmitActionLabel(__('documents.generate.submit'))
+            // Vorgaben beim Öffnen, auch für die E-Mail (aus der Vorlage für diesen Datensatz, vor dem Senden änderbar).
+            ->fillForm(static fn (DynamicRecord $record): array => [
+                'template' => $templates()->first()?->id,
+                'store' => true,
+                'send' => false,
+                ...self::mailDefaults($templates()->first(), $record, $user()),
+            ])
             ->schema(static fn (DynamicRecord $record): array => [
                 Select::make('template')->label(__('documents.generate.template'))
                     ->options($templates()->mapWithKeys(static fn ($t): array => [$t->id => $t->name])->all())
-                    ->default($templates()->first()?->id)
                     ->required()->selectablePlaceholder(false)->live()
+                    ->afterStateUpdated(static function (Set $set, ?string $state) use ($chosen, $record, $user): void {
+                        foreach (self::mailDefaults($chosen($state), $record, $user()) as $key => $value) {
+                            $set($key, $value);
+                        }
+                    })
                     ->visible($templates()->count() > 1),
                 Toggle::make('store')
                     ->label(static fn (Get $get): string => __('documents.generate.store', ['field' => (string) $generator->storageField($chosen($get('template')), $table)?->label]))
                     ->helperText(__('documents.generate.store_help'))
-                    ->default(true)
                     ->visible(static fn (Get $get): bool => $generator->canStore($chosen($get('template')), $table, $record, $user())),
+                // Versand per E-Mail (B-124, D3b): Vorgaben aus der Vorlage, vor dem Senden änderbar.
+                Toggle::make('send')->label(__('documents.mail.send'))->live()
+                    ->visible(static fn (Get $get): bool => DocumentMailer::canSend($user(), $chosen($get('template')))),
+                TextInput::make('mail_to')->label(__('documents.mail.to'))->helperText(__('documents.mail.to_help'))
+                    ->required()->maxLength(500)
+                    ->rule(static fn (): \Closure => static function (string $attribute, mixed $value, \Closure $fail): void {
+                        [$valid, $invalid] = TemplateRenderer::addresses((string) $value);
+
+                        if ($valid === [] || $invalid !== []) {
+                            $fail(__('documents.mail.no_address', ['value' => implode(', ', $invalid)]));
+                        }
+                    })
+                    ->visible(static fn (Get $get): bool => (bool) $get('send')),
+                TextInput::make('mail_subject')->label(__('documents.mail.subject'))->required()->maxLength(300)
+                    ->visible(static fn (Get $get): bool => (bool) $get('send')),
+                Textarea::make('mail_body')->label(__('documents.mail.body'))->rows(6)
+                    ->visible(static fn (Get $get): bool => (bool) $get('send')),
+                Hidden::make('mail_reply_to'),
+                Toggle::make('mail_copy')->label(static fn (): string => __('documents.mail.copy', ['email' => (string) $user()?->email]))
+                    ->visible(static fn (Get $get): bool => (bool) $get('send') && filled($user()?->email)),
             ])
             ->action(static function (array $data, DynamicRecord $record, mixed $livewire) use ($generator, $chosen, $user, $table) {
                 $template = $chosen($data['template'] ?? null);
-                $store = (bool) ($data['store'] ?? false) && $generator->canStore($template, $table, $record, $user());
+                $send = (bool) ($data['send'] ?? false) && DocumentMailer::canSend($user(), $template);
+                // Versendete Dokumente werden abgelegt, wenn möglich – nachvollziehbar, was verschickt wurde.
+                $store = ((bool) ($data['store'] ?? false) || $send) && $generator->canStore($template, $table, $record, $user());
 
                 try {
                     $result = $generator->generate($template, $record, $user(), $store);
@@ -577,12 +615,55 @@ final class DynamicRecordActions
                     $livewire->dispatch(self::REFRESH_EVENT);
                 }
 
+                if ($send) {
+                    try {
+                        $to = app(DocumentMailer::class)->send($template, $record, $user(), $result['document'], $result['file']?->name ?? $result['document']->fileName, $result['sha256'], [
+                            'to' => (string) ($data['mail_to'] ?? ''),
+                            'subject' => (string) ($data['mail_subject'] ?? ''),
+                            'body' => (string) ($data['mail_body'] ?? ''),
+                            'reply_to' => $data['mail_reply_to'] ?? null,
+                        ], (bool) ($data['mail_copy'] ?? false));
+                        Notification::make()->success()->title(__('documents.mail.sent', ['to' => implode(', ', $to)]))->send();
+                    } catch (BusinessRuleException $exception) {
+                        Notification::make()->danger()->title($exception->getMessage())->persistent()->send();
+                    } catch (\Throwable $exception) {
+                        report($exception);
+                        Notification::make()->danger()->title(DocumentMailer::failure($exception))->persistent()->send();
+                    }
+                }
+
                 $pdf = $result['document']->pdf;
 
                 return response()->streamDownload(static function () use ($pdf): void {
                     echo $pdf;
                 }, $result['file']?->name ?? $result['document']->fileName, ['Content-Type' => 'application/pdf']);
             });
+    }
+
+    /**
+     * Vorgaben der E-Mail-Felder im Dialog aus der Vorlage für den Datensatz – nur mit dem Recht zum Versenden; bei einem
+     * Fehler in der Vorlage leer (die Felder bleiben änderbar).
+     *
+     * @return array{mail_to: string, mail_subject: string, mail_body: string, mail_reply_to: ?string}
+     */
+    private static function mailDefaults(?DocumentTemplate $template, DynamicRecord $record, ?User $user): array
+    {
+        $mail = [];
+
+        if ($template !== null && DocumentMailer::canSend($user, $template)) {
+            try {
+                $mail = app(DocumentMailer::class)->compose($template, $record, $user) ?? [];
+            } catch (TemplateException) {
+                $mail = [];
+            }
+        }
+
+        return [
+            'mail_to' => implode(', ', [...$mail['to'] ?? [], ...$mail['invalid'] ?? []]),
+            'mail_subject' => (string) ($mail['subject'] ?? ''),
+            'mail_body' => (string) ($mail['body'] ?? ''),
+            'mail_reply_to' => $mail['reply_to'] ?? null,
+        ];
     }
 
     /**
@@ -622,6 +703,11 @@ final class DynamicRecordActions
                     ->helperText(__('documents.generate.store_help'))
                     ->default(true)
                     ->visible(static fn (Get $get): bool => $canStore($get('template'))),
+                // Versand per E-Mail (B-124, D3b): je Datensatz an die Adresse aus der Vorlage, Text aus der Vorlage.
+                Toggle::make('send')->label(__('documents.batch.send'))->helperText(__('documents.batch.send_help'))->default(false)->live()
+                    ->visible(static fn (Get $get): bool => DocumentMailer::canSend($user(), $chosen($get('template')))),
+                Toggle::make('mail_copy')->label(static fn (): string => __('documents.mail.copy', ['email' => (string) $user()?->email]))
+                    ->visible(static fn (Get $get): bool => (bool) $get('send') && filled($user()?->email)),
             ])
             ->deselectRecordsAfterCompletion()
             ->action(static function (array $data, EloquentCollection|Collection $records, mixed $livewire) use ($chosen, $canStore, $user) {
@@ -634,6 +720,8 @@ final class DynamicRecordActions
                         $user(),
                         (bool) ($data['store'] ?? false) && $canStore($template?->id),
                         (string) ($data['format'] ?? DocumentBatch::PDF),
+                        (bool) ($data['send'] ?? false),
+                        (bool) ($data['mail_copy'] ?? false),
                     );
                 } catch (BusinessRuleException $exception) {
                     Notification::make()->danger()->title($exception->getMessage())->persistent()->send();
@@ -642,7 +730,8 @@ final class DynamicRecordActions
                 }
 
                 Notification::make()
-                    ->title(trans_choice('documents.batch.done', $result['generated'], ['count' => $result['generated'], 'stored' => $result['stored']]))
+                    ->title(trans_choice('documents.batch.done', $result['generated'], ['count' => $result['generated'], 'stored' => $result['stored']])
+                        .($data['send'] ?? false ? ', '.trans_choice('documents.batch.sent', $result['sent'], ['count' => $result['sent']]) : ''))
                     ->body($result['notes'] === [] ? null : implode("\n", $result['notes']))
                     ->{$result['notes'] === [] ? 'success' : 'warning'}()
                     ->persistent($result['notes'] !== [])

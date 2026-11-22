@@ -136,10 +136,21 @@ class MusikschuleDemoSeeder extends Seeder
             app(ChangeExecutor::class)->apply($app, $plan, $selected, false, $user);
         }
 
-        // Von 1.1 auf 1.2: Die Semesterrechnung legte dieser Seeder schon an (ohne Ablage). Im installierten Stand 1.1
-        // fehlt sie, der Änderungsplan sieht die neue Ablage deshalb als Konflikt – bei der Demo übernehmen.
-        if (TemplateFields::field(CustomTable::query()->where('name', 'musikschule_rechnungen')->firstOrFail(), 'dokumente') !== null) {
-            DocumentTemplate::query()->where('uuid', self::INVOICE_TEMPLATE)->whereNull('file_field')->update(['file_field' => 'dokumente']);
+        // Von 1.1 an: Die Semesterrechnung legte dieser Seeder schon an (ohne Ablage und E-Mail). Im installierten Stand
+        // 1.1 fehlt sie, der Änderungsplan sieht Ablage (1.2) und E-Mail (1.3) deshalb als Konflikt – bei der Demo
+        // übernehmen, was noch leer ist.
+        $package = collect($this->appDefinition()['documents'] ?? [])->firstWhere('key', self::INVOICE_TEMPLATE);
+        $template = DocumentTemplate::query()->where('uuid', self::INVOICE_TEMPLATE)->first();
+
+        if ($package !== null && $template !== null) {
+            foreach (['file_field', 'email_to', 'email_subject', 'email_body'] as $attribute) {
+                if (blank($template->{$attribute}) && filled($package[$attribute] ?? null)
+                    && ($attribute !== 'file_field' || TemplateFields::field($template->customTable, (string) $package[$attribute]) !== null)) {
+                    $template->{$attribute} = $package[$attribute];
+                }
+            }
+
+            $template->save();
         }
     }
 

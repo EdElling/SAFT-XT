@@ -151,6 +151,10 @@ final readonly class AppDefinition
             'file_name' => $template->file_name,
             'language_field' => $template->language_field,
             'file_field' => $template->file_field,
+            'email_to' => $template->email_to,
+            'email_subject' => $template->email_subject,
+            'email_body' => $template->email_body,
+            'email_reply_to' => $template->email_reply_to,
             'is_active' => (bool) $template->is_active,
             'sort_order' => (int) $template->sort_order,
         ];

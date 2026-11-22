@@ -94,7 +94,8 @@ PostgreSQL, MySQL oder MariaDB.
   Empfänger, Inhalt und Dateiname, geprüft wie jede Vorlage; übertragen wird nur die Struktur der Tabelle, nie Datensätze
 - **Dokumente erstellen:** Symbol in der Zeile eines Datensatzes – PDF herunterladen und schreibgeschützt als neue
   Fassung im Dateifeld ablegen, mit Prüfwert (SHA-256) im Änderungsprotokoll; für mehrere ausgewählte Datensätze auf
-  einmal als ein PDF zum Drucken oder als ZIP
+  einmal als ein PDF zum Drucken oder als ZIP; **per E-Mail senden** (einzeln mit änderbarem Text oder je Datensatz,
+  eigenes Recht); Mailserver in den globalen Einstellungen mit „Verbindung prüfen“
 - **Globale Einstellungen:** Anzeigename und Farbschema der Anwendung (Branding); Anbindung externer KI-Modelle für die
   Assistenten (Anbieter, Modell, verschlüsselter API-Schlüssel, Tageslimit, Verbindungstest); persönliche Einstellungen
   wie Sprache, Zahlenformat und Kontrastmodus unter „Meine Einstellungen“

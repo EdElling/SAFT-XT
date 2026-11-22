@@ -601,6 +601,15 @@ Le message qui suit indique combien de documents ont été créés et déposés 
 cocher n’existent que dans les tables avec modèle de document ; les enregistrements supprimés ne peuvent pas être
 sélectionnés.
 
+**Envoyer par e-mail :** Si le modèle prévoit un e-mail et que votre rôle a le droit *Documents : envoyer*, le dialogue
+affiche l’interrupteur **« Envoyer par e-mail »**. **À**, **objet** et **texte** sont préremplis à partir du modèle
+(p. ex. l’adresse du client) et peuvent être modifiés avant l’envoi ; séparez plusieurs adresses par des virgules.
+**Copie à moi** vous envoie une copie cachée. Le PDF est joint ; les documents envoyés sont déposés avec
+l’enregistrement si possible. L’**historique** indique « document envoyé » avec destinataire et objet. Dans l’action
+groupée, **« Envoyer par e-mail pour chaque enregistrement »** envoie à chaque enregistrement son e-mail avec l’objet
+et le texte du modèle ; le message qui suit indique combien d’e-mails ont été envoyés et quels enregistrements n’ont
+pas d’adresse valable.
+
 ---
 
 ## Annexe A – Types de champs

@@ -54,7 +54,8 @@ Créez la facture en PDF sur le papier à lettres dans la ligne de la facture av
 « Semesterrechnung ») – adressée à la personne de contact, sinon à l’élève.
 **« Déposer dans le champ ‹ Documents › »** est présélectionné : le PDF est ajouté, protégé en écriture, au champ
 **Documents** de la facture (chaque création comme nouvelle version). Déposer requiert le droit de modifier les
-factures ; le rôle *Musikschule* l’a.
+factures ; le rôle *Musikschule* l’a. **« Envoyer par e-mail »** envoie la facture à l’adresse e-mail de la personne
+de contact, sinon de l’élève – il faut pour cela en plus le droit *Documents : envoyer* (volontairement pas prédéfini).
 
 ### Louer des instruments
 

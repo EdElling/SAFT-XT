@@ -176,5 +176,12 @@ Jede Etappe ist für sich auslieferbar. D1 ist ohne KI vollständig nutzbar.
   je eigene Seitenzählung) oder ZIP; Ablage je Datensatz wie bei einem Dokument, was nicht abgelegt werden kann, wird
   trotzdem erzeugt und gemeldet. Ohne Queue-Worker direkt in der Anfrage, höchstens `DOCUMENTS_BATCH_MAX` (Vorgabe 50)
   Datensätze. Versand per E-Mail folgt in D3b mit eigenem App-Recht *Dokumente: versenden*.
+- **D3b (22.11.2026):** E-Mail je Vorlage (An, Betreff, Text, Antwort an – Platzhalter, geprüft und in der Vorschau),
+  App-Recht *Dokumente: versenden* ohne automatische Vergabe. Einzeln mit änderbarem An/Betreff/Text und Kopie an sich
+  selbst, als Sammelaktion je Datensatz mit dem Text der Vorlage. Sofort versendet (kein Queue-Worker), versendete
+  Dokumente werden abgelegt, wenn möglich; Ereignis „Dokument versendet“. Mailserver neu in den globalen Einstellungen
+  (Passwort verschlüsselt, leere Felder = .env, SMTP geht vor `MAIL_MAILER`) mit „Verbindung prüfen“ statt Test-E-Mail:
+  verbinden, TLS, Anmeldung und Absender (MAIL FROM, danach RSET), Ursache in der Meldung – GMX lehnt fremde
+  Absenderadressen ab. Musikschule 1.3 mit E-Mail an Kontaktperson bzw. Schüler.
 - **PDF/A-Prüfung (22.11.2026):** veraPDF bestätigt PDF/A-3b für die erzeugte Rechnung des Gitarrenshops und die
   Semesterrechnung der Musikschule.

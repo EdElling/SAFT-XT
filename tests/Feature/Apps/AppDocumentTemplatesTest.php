@@ -49,8 +49,9 @@ class AppDocumentTemplatesTest extends DynamicDataTestCase
         $this->assertContains('documents', $definition['parts']);
         $this->assertSame([[
             'key' => GitarrenshopDemoSeeder::INVOICE_TEMPLATE, 'name' => 'Rechnung', 'table' => 'gitarren_belege', 'file_name' => 'Rechnung-{{belegnummer}}',
-            'language_field' => null, 'file_field' => 'dateien', 'is_active' => true, 'sort_order' => 0,
-        ]], array_map(static fn (array $d): array => array_diff_key($d, array_flip(['recipient', 'body'])), $definition['documents']));
+            'language_field' => null, 'file_field' => 'dateien', 'email_to' => '{{kunde_id.email}}', 'email_subject' => 'Rechnung {{belegnummer}}',
+            'email_reply_to' => null, 'is_active' => true, 'sort_order' => 0,
+        ]], array_map(static fn (array $d): array => array_diff_key($d, array_flip(['recipient', 'body', 'email_body'])), $definition['documents']));
         $this->assertStringContainsString('{{#gitarren_buchungen}}', $definition['documents'][0]['body']);
         $this->assertArrayNotHasKey('letterhead', $definition);
         $this->assertSame([], app(AppDefinitionValidator::class)->errors($definition));

@@ -446,6 +446,10 @@ final class AppInstaller
             'file_name' => $document['file_name'] ?? null,
             'language_field' => $document['language_field'] ?? null,
             'file_field' => $document['file_field'] ?? null,
+            'email_to' => $document['email_to'] ?? null,
+            'email_subject' => $document['email_subject'] ?? null,
+            'email_body' => $document['email_body'] ?? null,
+            'email_reply_to' => $document['email_reply_to'] ?? null,
             'is_active' => (bool) ($document['is_active'] ?? true),
             'sort_order' => (int) ($document['sort_order'] ?? 0),
         ];
@@ -454,7 +458,7 @@ final class AppInstaller
     /** Vorlage prüfen; Fehler als Hinweis in notes(). */
     public function checkDocumentTemplate(DocumentTemplate $template, CustomTable $table): void
     {
-        $errors = app(TemplateChecker::class)->check($table, (string) $template->body, $template->recipient, $template->file_name)['errors'];
+        $errors = app(TemplateChecker::class)->check($table, (string) $template->body, $template->recipient, $template->file_name, $template->only(['email_to', 'email_subject', 'email_body', 'email_reply_to']))['errors'];
 
         if ($errors !== []) {
             $this->notes[] = __('apps.install.warnings.document', ['name' => $template->name, 'errors' => implode(' · ', array_slice($errors, 0, 3))]);
@@ -641,7 +645,7 @@ final class AppInstaller
         $definition['documents'] = array_map(static fn (array $d): array => [
             ...$d,
             'table' => $table((string) $d['table']),
-            ...array_map(static fn (?string $text): ?string => $text === null ? null : self::renameSections($text, $table), Arr::only($d, ['recipient', 'body', 'file_name'])),
+            ...array_map(static fn (?string $text): ?string => $text === null ? null : self::renameSections($text, $table), Arr::only($d, ['recipient', 'body', 'file_name', 'email_to', 'email_subject', 'email_body', 'email_reply_to'])),
         ], $definition['documents']);
 
         return $this->newKeys($definition);

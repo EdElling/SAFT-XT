@@ -25,6 +25,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -130,12 +131,31 @@ class DocumentTemplateForm
                                         return;
                                     }
 
-                                    $errors = app(TemplateChecker::class)->check($t, (string) $value, (string) $get('recipient'), (string) $get('file_name'))['errors'];
+                                    $errors = app(TemplateChecker::class)->check($t, (string) $value, (string) $get('recipient'), (string) $get('file_name'), [
+                                        'email_to' => $get('email_to'), 'email_subject' => $get('email_subject'), 'email_body' => $get('email_body'), 'email_reply_to' => $get('email_reply_to'),
+                                    ])['errors'];
 
                                     if ($errors !== []) {
                                         $fail(implode(' · ', array_slice($errors, 0, 5)).(count($errors) > 5 ? ' …' : ''));
                                     }
                                 }),
+                            // Versand per E-Mail (B-124, D3b): Platzhalter wie im Empfänger; ohne „An“ kein Versand.
+                            Fieldset::make(__('documents.templates.sections.mail'))->columnSpanFull()->columns(2)->schema([
+                                TextInput::make('email_to')->label(__('documents.templates.fields.email_to'))->maxLength(500)
+                                    ->helperText(__('documents.templates.fields.email_to_help'))
+                                    ->extraInputAttributes(['data-template-input' => true])
+                                    ->live(debounce: self::PREVIEW_DEBOUNCE_MS),
+                                TextInput::make('email_reply_to')->label(__('documents.templates.fields.email_reply_to'))->maxLength(300)
+                                    ->helperText(__('documents.templates.fields.email_reply_to_help'))
+                                    ->extraInputAttributes(['data-template-input' => true]),
+                                TextInput::make('email_subject')->label(__('documents.templates.fields.email_subject'))->maxLength(300)->columnSpanFull()
+                                    ->extraInputAttributes(['data-template-input' => true])
+                                    ->live(debounce: self::PREVIEW_DEBOUNCE_MS),
+                                Textarea::make('email_body')->label(__('documents.templates.fields.email_body'))->rows(6)->columnSpanFull()
+                                    ->helperText(__('documents.templates.fields.email_body_help'))
+                                    ->extraInputAttributes(['data-template-input' => true, 'style' => 'font-family: ui-monospace, monospace; font-size: .85rem'])
+                                    ->live(debounce: self::PREVIEW_DEBOUNCE_MS),
+                            ]),
                         ]),
                     Section::make(__('documents.templates.sections.preview'))
                         ->columnSpan(['default' => 1, 'xl' => 2])
@@ -283,6 +303,10 @@ class DocumentTemplateForm
             'body' => (string) ($data['body'] ?? ''),
             'file_name' => (string) ($data['file_name'] ?? ''),
             'language_field' => filled($data['language_field'] ?? null) ? (string) $data['language_field'] : null,
+            'email_to' => (string) ($data['email_to'] ?? ''),
+            'email_subject' => (string) ($data['email_subject'] ?? ''),
+            'email_body' => (string) ($data['email_body'] ?? ''),
+            'email_reply_to' => (string) ($data['email_reply_to'] ?? ''),
         ]);
 
         return $template;

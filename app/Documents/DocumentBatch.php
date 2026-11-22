@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Documents;
 
+use App\Documents\Templates\RenderedDocument;
 use App\Documents\Templates\TemplateException;
 use App\DynamicData\Ui\RecordEntries;
 use App\Exceptions\BusinessRuleException;
@@ -32,6 +33,7 @@ final class DocumentBatch
         private readonly DocumentGenerator $generator,
         private readonly PdfMerger $merger,
         private readonly LetterheadResolver $letterheads,
+        private readonly DocumentMailer $mailer,
     ) {}
 
     public static function max(): int
@@ -41,11 +43,12 @@ final class DocumentBatch
 
     /**
      * @param  iterable<DynamicRecord>  $records
-     * @return array{content: string, file_name: string, mime: string, generated: int, stored: int, notes: list<string>}
+     * @param  bool  $send  je Datensatz per E-Mail an die Adresse aus der Vorlage (D3b); versendete werden abgelegt, wenn möglich
+     * @return array{content: string, file_name: string, mime: string, generated: int, stored: int, sent: int, notes: list<string>}
      *
      * @throws BusinessRuleException wenn es zu viele Datensätze sind, keiner erzeugt werden konnte oder die Vorlage nicht erlaubt ist
      */
-    public function run(DocumentTemplate $template, iterable $records, ?User $user, bool $store, string $format = self::PDF): array
+    public function run(DocumentTemplate $template, iterable $records, ?User $user, bool $store, string $format = self::PDF, bool $send = false, bool $copyToMe = false): array
     {
         $records = collect($records)->values();
         $table = $template->customTable ?? CustomTable::query()->findOrFail($template->custom_table_id);
@@ -57,6 +60,9 @@ final class DocumentBatch
         $documents = [];
         $notes = [];
         $stored = 0;
+        $sent = 0;
+        $send = $send && DocumentMailer::canSend($user, $template);
+        $store = $store || $send;
 
         foreach ($records as $record) {
             $title = RecordEntries::title($table, $record);
@@ -82,7 +88,17 @@ final class DocumentBatch
             }
 
             $stored += $result['file'] !== null ? 1 : 0;
-            $documents[] = ['name' => $result['file']?->name ?? $result['document']->fileName, 'pdf' => $result['document']->pdf];
+            $name = $result['file']?->name ?? $result['document']->fileName;
+            $documents[] = ['name' => $name, 'pdf' => $result['document']->pdf];
+
+            if ($send) {
+                $note = $this->mail($template, $record, $user, $result, $name, $copyToMe);
+                if ($note === null) {
+                    $sent++;
+                } else {
+                    $notes[] = __('documents.batch.not_sent', ['title' => $title, 'message' => $note]);
+                }
+            }
         }
 
         if ($documents === []) {
@@ -102,8 +118,35 @@ final class DocumentBatch
             'mime' => $format === self::ZIP ? 'application/zip' : 'application/pdf',
             'generated' => count($documents),
             'stored' => $stored,
+            'sent' => $sent,
             'notes' => $notes,
         ];
+    }
+
+    /**
+     * E-Mail für einen Datensatz; null bei Erfolg, sonst der Grund.
+     *
+     * @param  array{document: RenderedDocument, sha256: string, file: mixed}  $result
+     */
+    private function mail(DocumentTemplate $template, DynamicRecord $record, ?User $user, array $result, string $name, bool $copyToMe): ?string
+    {
+        try {
+            $mail = $this->mailer->compose($template, $record, $user);
+
+            if ($mail === null || $mail['to'] === []) {
+                return __('documents.mail.no_address', ['value' => implode(', ', $mail['invalid'] ?? [])]);
+            }
+
+            $this->mailer->send($template, $record, $user, $result['document'], $name, $result['sha256'], $mail, $copyToMe);
+
+            return null;
+        } catch (BusinessRuleException|TemplateException $exception) {
+            return $exception->getMessage();
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return DocumentMailer::failure($exception);
+        }
     }
 
     /** @param  list<array{name: string, pdf: string}>  $documents */

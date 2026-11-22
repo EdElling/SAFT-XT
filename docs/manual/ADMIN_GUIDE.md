@@ -578,6 +578,23 @@ background because white text on it only reaches 4.1:1). High contrast is a pers
 The section **AI assistant for reports** sets up provider, model and key of the AI functions (see
 [chapter 13](#13-ai-functions)).
 
+**Email sending:** mail server for all emails from SAFT – “reset password” and documents by email
+([chapter 16](#16-documents)). A line at the top shows what currently applies (e.g. “Active: SMTP mail.example.com,
+port 587 · sender invoice@example.com · set here”). Empty fields take the values from `.env`; as soon as an **SMTP
+server** is entered here, it applies instead of `MAIL_MAILER` in `.env`.
+
+| Setting | Meaning |
+|---|---|
+| **SMTP server**, **port** | see your hosting or mail provider; port usually 587 (STARTTLS) or 465 (SSL/TLS) |
+| **Encryption** | Automatic (STARTTLS if offered), STARTTLS (required), SSL/TLS or none |
+| **User**, **password** | login at the server. The password is stored encrypted and never shown again; leave empty to keep it, “Delete the stored password” removes it. The change log shows it masked |
+| **Sender address** | must suit the mail server: many providers (e.g. GMX, Gmail, Microsoft 365) only allow the account’s address or aliases set up there; with your own domain, SPF/DKIM must be right, otherwise emails end up as spam |
+| **Sender name** | empty: display name of the application. Documents carry the company name from the letterhead |
+
+**Check connection** connects with the values in the form (also unsaved), checks encryption, login and sender address
+and then aborts – nothing is sent. The message names the cause: server not reachable, encryption failed, login
+rejected or sender address rejected, with the server’s answer below.
+
 ## 8. Activity log
 
 **Administration → Operations → Activity log**
@@ -587,7 +604,8 @@ roles and permissions, menus, table structures, settings as well as sign-ins, si
 Secrets (passwords, keys) are never logged.
 
 - **Filters:** user, event, object type, period. The events are: created, updated, deleted, restored, sign-in,
-  sign-in failed, sign-out, exported and document generated (with template, file name and checksum SHA-256).
+  sign-in failed, sign-out, exported, document generated (with template, file name and checksum SHA-256) and document
+  sent (also with recipient, subject and copy).
 - **Exports:** table, format, number of rows, filter and search are recorded, never the exported data.
 - **User:** "System" only appears where really no user was involved. Deleted users appear with their name and
   "(deleted)", permanently deleted ones as "Deleted user #12".
@@ -1507,12 +1525,22 @@ shop and **Semesterrechnung** (semester invoice) in the music school. When an ap
 | **File name** | without `.pdf`, with placeholders, e.g. `Invoice-{{belegnummer}}`; SAFT replaces characters that file systems do not allow |
 | **Language from field** | a field containing `de`, `en`, `fr` or `it` (e.g. correspondence language); numbers, dates and selection values then appear in this language. Empty: the language of the person. The template's fixed text stays as it is |
 | **Store in file field** | a file field of the base table that allows PDF: when creating, “Store in field …” is preselected and the document is added to the record as a new, write-protected file (storing also needs the permission to edit the record). Empty: download only |
+| **Email to** | address with placeholders, e.g. `{{kunde_id.email}}` or `{{#kontaktperson}}{{email}}{{/kontaktperson}}{{^kontaktperson}}{{schueler.email}}{{/kontaktperson}}`; several separated by commas. Empty: no sending |
+| **Reply to** | optional: address for replies (fixed or with placeholders), otherwise the sender address |
+| **Subject**, **email text** | plain text with placeholders; the PDF is attached. The preview shows the email for the sample record |
 | **Active**, **Order** | for the choice when creating |
 | **Recipient (address field)** | one line per address line with placeholders; empty lines are dropped. SAFT places it in the letterhead's address field; the content starts below it. Empty: no address field |
 | **Content (HTML)** | the document's text as HTML with placeholders, in the code editor with highlighting |
 
 **Permissions:** Templates can be edited by anyone with the permission *Documents: manage* in the app; the list only
 shows these apps. Placeholders only show what the person may read (see below).
+
+**Sending by email:** Whoever also has *Documents: send* in the app sees the switch **“Send by email”** when creating –
+individually with editable to, subject and text and “Copy to me”, in the bulk action per record to the address from the
+template. After installation nobody but the super admin has this permission; it is granted deliberately because emails
+leave the organisation. Sent documents are stored if the template has a file field and the person may edit the record.
+If the address comes via a relation (`kunde_id.email`), the person must be allowed to read the related table –
+otherwise it stays empty. Mail server: [chapter 7](#7-global-settings).
 
 **AI assistant:** With the permission *Documents: use assistant* in the app, the field **“Describe the template”**
 appears at the top of the “Template” section, below the app – e.g. “Reminder with open items and payment within 10
@@ -1621,6 +1649,7 @@ reserved for the super admin and cannot be granted to any role: **View as role**
 | Global settings: view / edit | name of the application, logo, colour scheme, AI assistants (provider, model, switches); the installation's letterhead (Administration › Application › Letterhead) |
 | Documents: manage | edit an app's letterhead and document templates (app permission, see [chapter 16](#16-documents)) |
 | Documents: use assistant | AI assistant in the document templates of an app (app permission, see [chapter 16](#16-documents)) |
+| Documents: send | send created documents by email (app permission, in addition to *Documents: generate*; granted to nobody after installation) |
 | Documents: generate | create and download documents from templates (app permission, plus read permission on the table; storing in a file field also needs the edit permission, removing created documents the delete permission) |
 | Menus: view / create / edit / delete | maintain the menu tree (groups, entries, order, permissions of entries) |
 | Apps: view | open the “Apps” page and the data model per app |

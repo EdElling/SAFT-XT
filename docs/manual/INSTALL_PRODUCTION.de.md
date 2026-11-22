@@ -152,7 +152,7 @@ MAIL_HOST=<smtp-server des hosters>
 MAIL_PORT=587
 MAIL_USERNAME=<smtp-benutzer>
 MAIL_PASSWORD=<smtp-passwort>
-MAIL_FROM_ADDRESS=saft@example.ch
+MAIL_FROM_ADDRESS=saft@example.ch  # SMTP lässt sich auch später in den globalen Einstellungen eintragen
 
 ADMIN_NAME="<Name der ersten Administratorin / des ersten Administrators>"
 ADMIN_EMAIL=<adresse@example.ch>
@@ -379,7 +379,7 @@ eine neue Datenbank zurückspielen und `PGSQL_DATABASE` bzw. `MYSQL_DATABASE` in
 | Links oder Weiterleitungen zeigen `http://` statt `https://`, im Protokoll steht immer dieselbe IP-Adresse | HTTPS endet vor dem Server (Load Balancer): `TRUSTED_PROXIES` setzen (Schritt 4), dann `php artisan optimize`. |
 | Browser verlangt nach dem Wechsel zurück auf http weiterhin HTTPS | HSTS: Nach einem Aufruf über HTTPS merkt sich der Browser das ein Jahr lang. HTTPS beibehalten; nur wenn es wirklich nicht anders geht, `SECURITY_HSTS=false` setzen und die Website-Daten im Browser löschen ([Systemhandbuch, Kapitel 3](SYSADMIN_GUIDE.de.md#3-updates-und-sicherheit)). |
 | „Seite abgelaufen“ (419) nach der Anmeldung | `SESSION_SECURE_COOKIE=true` ohne HTTPS, oder `APP_URL` passt nicht zur aufgerufenen Adresse. |
-| E-Mails kommen nicht an | SMTP-Angaben prüfen; `MAIL_FROM_ADDRESS` muss eine Adresse der eigenen Domain sein. |
+| E-Mails kommen nicht an | In den globalen Einstellungen unter „E-Mail-Versand“ **Verbindung prüfen** – die Meldung nennt die Ursache. Die Absenderadresse muss zum Server passen (bei GMX, Gmail u. a. die Adresse des Kontos, bei eigener Domain mit SPF/DKIM). |
 | `db:backup` meldet „Sicherung fehlgeschlagen“ | Die Meldung dahinter nennt den Grund: Programm fehlt (Pfad in `…_DUMP_BINARY`), ist älter als der Datenbankserver (`server version mismatch`, `Error in field count`) oder darf nicht verbinden. Bei MySQL und MariaDB hilft `DB_BACKUP_METHOD=php`, sonst die Sicherung des Hosters. |
 
 ---

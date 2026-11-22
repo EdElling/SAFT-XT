@@ -37,6 +37,7 @@ return [
         'assistant' => 'use assistant',
         'manage' => 'manage',
         'generate' => 'generate',
+        'send' => 'send',
         'install' => 'install',
         'upgrade' => 'update',
         'design' => 'design with AI',

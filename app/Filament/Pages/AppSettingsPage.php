@@ -10,6 +10,8 @@ use App\Filament\Concerns\LimitsFormWidth;
 use App\Settings\AppSettings;
 use App\Support\Branding;
 use App\Support\ColorScheme;
+use App\Support\MailConnectionTester;
+use App\Support\MailSettings;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
@@ -172,7 +174,60 @@ class AppSettingsPage extends SettingsPage
                                 ->action(fn () => $this->testAi()),
                         ])->columnSpanFull(),
                     ]),
+                // E-Mail-Versand (B-124, D3b): SMTP-Server statt nur .env; leere Felder = .env.
+                Section::make(__('settings.mail.section'))
+                    ->description(__('settings.mail.description'))
+                    ->columnSpanFull()
+                    ->columns(2)
+                    ->schema([
+                        Text::make(fn (): string => MailSettings::status().' · '.__('settings.mail.source.'.MailSettings::source(app(AppSettings::class))))->columnSpanFull(),
+                        TextInput::make('mail_host')->label(__('settings.mail.host'))->placeholder((string) config('mail.mailers.smtp.host'))
+                            ->helperText(__('settings.mail.host_help'))->maxLength(200),
+                        TextInput::make('mail_port')->label(__('settings.mail.port'))->integer()->minValue(1)->maxValue(65535)->placeholder('587'),
+                        Select::make('mail_encryption')->label(__('settings.mail.encryption'))
+                            ->options(collect(MailSettings::ENCRYPTIONS)->mapWithKeys(fn (string $e): array => [$e => __('settings.mail.encryptions.'.$e)])->all())
+                            ->placeholder(__('settings.mail.encryptions.auto')),
+                        TextInput::make('mail_username')->label(__('settings.mail.username'))->maxLength(200)->autocomplete('off'),
+                        TextInput::make('mail_password_new')->label(__('settings.mail.password'))->password()->autocomplete('new-password')
+                            ->placeholder(fn (): ?string => filled(app(AppSettings::class)->mail_password) ? __('assistant.settings.api_key_stored') : null)
+                            ->helperText(__('settings.mail.password_help')),
+                        Toggle::make('mail_password_remove')->label(__('settings.mail.password_remove'))
+                            ->visible(fn (): bool => filled(app(AppSettings::class)->mail_password)),
+                        TextInput::make('mail_from_address')->label(__('settings.mail.from_address'))->email()->maxLength(200)
+                            ->placeholder((string) config('mail.from.address'))->helperText(__('settings.mail.from_address_help')),
+                        TextInput::make('mail_from_name')->label(__('settings.mail.from_name'))->maxLength(100)
+                            ->placeholder((string) config('app.name'))->helperText(__('settings.mail.from_name_help')),
+                        Actions::make([
+                            Action::make('checkMail')
+                                ->label(__('settings.mail.check.button'))
+                                ->icon('heroicon-o-signal')
+                                ->color('gray')
+                                ->action(fn () => $this->checkMail()),
+                        ])->columnSpanFull(),
+                    ]),
             ]);
+    }
+
+    /** Verbindung zum SMTP-Server mit den Werten im Formular prüfen (noch nicht gespeichert) – ohne etwas zu versenden. */
+    public function checkMail(): void
+    {
+        abort_unless($this->canEdit(), 403);
+        $settings = clone app(AppSettings::class);
+
+        foreach (['mail_host', 'mail_encryption', 'mail_username', 'mail_from_address', 'mail_from_name'] as $property) {
+            $settings->{$property} = filled($this->data[$property] ?? null) ? trim((string) $this->data[$property]) : null;
+        }
+
+        $settings->mail_port = filled($this->data['mail_port'] ?? null) ? (int) $this->data['mail_port'] : null;
+        $password = filled($this->data['mail_password_new'] ?? null) ? (string) $this->data['mail_password_new'] : null;
+        $result = app(MailConnectionTester::class)->test($settings, $password);
+
+        Notification::make()
+            ->title($result['message'])
+            ->body($result['detail'])
+            ->status($result['ok'] ? 'success' : ($result['kind'] === MailConnectionTester::NO_SMTP ? 'warning' : 'danger'))
+            ->persistent(! $result['ok'])
+            ->send();
     }
 
     private const string MODELS_CACHE = 'ai:models';
@@ -215,9 +270,9 @@ class AppSettingsPage extends SettingsPage
     /** Der gespeicherte API-Schlüssel gelangt nie ins Formular. */
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        unset($data['ai_api_key']);
+        unset($data['ai_api_key'], $data['mail_password']);
 
-        return [...$data, 'ai_api_key_new' => null, 'ai_api_key_remove' => false];
+        return [...$data, 'ai_api_key_new' => null, 'ai_api_key_remove' => false, 'mail_password_new' => null, 'mail_password_remove' => false];
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
@@ -233,6 +288,19 @@ class AppSettingsPage extends SettingsPage
         }
 
         $data['ai_daily_limit'] = filled($data['ai_daily_limit'] ?? null) ? (int) $data['ai_daily_limit'] : null;
+
+        // E-Mail-Versand: Passwort nur ersetzen, wenn ein neues eingegeben oder das gespeicherte entfernt wird.
+        $storedPassword = app(AppSettings::class)->mail_password;
+        $data['mail_password'] = filled($data['mail_password_new'] ?? null)
+            ? (string) $data['mail_password_new']
+            : (($data['mail_password_remove'] ?? false) ? null : $storedPassword);
+        unset($data['mail_password_new'], $data['mail_password_remove']);
+
+        foreach (['mail_host', 'mail_encryption', 'mail_username', 'mail_from_address', 'mail_from_name'] as $property) {
+            $data[$property] = filled($data[$property] ?? null) ? trim((string) $data[$property]) : null;
+        }
+
+        $data['mail_port'] = filled($data['mail_port'] ?? null) ? (int) $data['mail_port'] : null;
 
         // Ersetztes oder entferntes Logo: die alte Datei löschen.
         $data['logo_path'] = filled($data['logo_path'] ?? null) ? (string) $data['logo_path'] : null;

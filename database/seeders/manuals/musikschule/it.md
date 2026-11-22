@@ -55,7 +55,9 @@ Create la fattura come PDF sulla carta intestata nella riga della fattura con **
 «Semesterrechnung») – indirizzata alla persona di contatto, altrimenti all’allievo.
 **«Depositare nel campo ‹Documenti›»** è preselezionato: il PDF viene aggiunto, protetto da scrittura, al campo
 **Documenti** della fattura (ogni creazione come nuova versione). Depositare richiede il diritto di modificare le
-fatture; il ruolo *Musikschule* lo ha.
+fatture; il ruolo *Musikschule* lo ha. **«Inviare per e-mail»** invia la fattura all’indirizzo e-mail della persona di
+contatto, altrimenti dell’allievo – per questo il ruolo necessita in più del diritto *Documenti: inviare*
+(volutamente non predefinito).
 
 ### Noleggiare strumenti
 

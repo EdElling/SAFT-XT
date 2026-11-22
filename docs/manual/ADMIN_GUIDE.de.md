@@ -593,6 +593,24 @@ Schaltflächen ungeeignet, weisse Schrift erreicht darauf nur 4,1:1). Hoher Kont
 Der Abschnitt **KI-Assistent für Auswertungen** richtet Anbieter, Modell und Schlüssel der KI-Funktionen ein (siehe
 [Kapitel 13](#13-ki-funktionen)).
 
+**E-Mail-Versand:** Mailserver für alle E-Mails von SAFT – „Passwort zurücksetzen“ und Dokumente per E-Mail
+([Kapitel 16](#16-dokumente)). Eine Zeile oben zeigt, was gerade gilt (z. B. „Aktiv: SMTP mail.example.ch, Port 587 ·
+Absender rechnung@example.ch · eingestellt hier“). Leere Felder nehmen die Werte aus der `.env`; sobald hier ein
+**SMTP-Server** steht, gilt er statt `MAIL_MAILER` der `.env`.
+
+| Einstellung | Bedeutung |
+|---|---|
+| **SMTP-Server**, **Port** | beim Hoster bzw. Mailanbieter nachsehen; Port meist 587 (STARTTLS) oder 465 (SSL/TLS) |
+| **Verschlüsselung** | Automatisch (STARTTLS, wenn angeboten), STARTTLS (Pflicht), SSL/TLS oder Keine |
+| **Benutzer**, **Passwort** | Anmeldung am Server. Das Passwort wird verschlüsselt gespeichert und nie wieder angezeigt; leer lassen behält es, „Gespeichertes Passwort löschen“ entfernt es. Im Änderungsprotokoll erscheint es maskiert |
+| **Absenderadresse** | muss zum Mailserver passen: Viele Anbieter (z. B. GMX, Gmail, Microsoft 365) erlauben nur die Adresse des Kontos oder dort eingerichtete Aliasse; bei eigener Domain müssen SPF/DKIM stimmen, sonst landen E-Mails im Spam |
+| **Absendername** | leer: Anzeigename der Anwendung. Dokumente tragen als Namen die Firma aus dem Briefpapier |
+
+**Verbindung prüfen** verbindet sich mit den Werten im Formular (auch ungespeichert), prüft Verschlüsselung, Anmeldung
+und Absenderadresse und bricht dann ab – es wird nichts versendet. Die Meldung nennt die Ursache: Server nicht
+erreichbar, Verschlüsselung fehlgeschlagen, Anmeldung abgelehnt oder Absenderadresse abgelehnt, darunter die Antwort
+des Servers.
+
 ## 8. Änderungsprotokoll
 
 **Administration → Betrieb → Änderungsprotokoll**
@@ -602,8 +620,8 @@ Datensätze, Benutzer, Rollen und Rechte, Menüs, Tabellenstrukturen, Einstellun
 und fehlgeschlagene Anmeldeversuche. Geheimnisse (Passwörter, Schlüssel) werden nie protokolliert.
 
 - **Filter:** Benutzer, Ereignis, Objekttyp, Zeitraum. Ereignisse sind: angelegt, geändert, gelöscht,
-  wiederhergestellt, Anmeldung, Anmeldung fehlgeschlagen, Abmeldung, exportiert und Dokument erzeugt (mit Vorlage,
-  Dateiname und Prüfwert SHA-256).
+  wiederhergestellt, Anmeldung, Anmeldung fehlgeschlagen, Abmeldung, exportiert, Dokument erzeugt (mit Vorlage,
+  Dateiname und Prüfwert SHA-256) und Dokument versendet (zusätzlich mit Empfänger, Betreff und Kopie).
 - **Exporte:** Festgehalten werden Tabelle, Format, Zeilenzahl, Filter und Suche, nie die exportierten Daten.
 - **Benutzer:** „System“ steht nur dort, wo wirklich kein Benutzer beteiligt war. Gelöschte Benutzer erscheinen
   mit Namen und „(gelöscht)“, endgültig gelöschte als „Gelöschter Benutzer #12“.
@@ -1552,12 +1570,22 @@ Gitarrenshop und **Semesterrechnung** in der Musikschule. Wird eine App oder die
 | **Dateiname** | ohne `.pdf`, mit Platzhaltern, z. B. `Rechnung-{{belegnummer}}`; Zeichen, die Dateisysteme nicht erlauben, ersetzt SAFT |
 | **Sprache aus Feld** | ein Feld mit `de`, `en`, `fr` oder `it` (z. B. Korrespondenzsprache); Zahlen, Daten und Auswahlwerte erscheinen dann in dieser Sprache. Leer: die Sprache der Person. Der feste Text der Vorlage bleibt, wie er ist |
 | **Ablage im Dateifeld** | ein Dateifeld der Grundtabelle, das PDF erlaubt: Beim Erstellen ist „Im Feld … ablegen“ vorgewählt, das Dokument kommt als neue, schreibgeschützte Datei zum Datensatz (Ablegen braucht zusätzlich das Recht, den Datensatz zu bearbeiten). Leer: nur herunterladen |
+| **E-Mail an** | Adresse mit Platzhaltern, z. B. `{{kunde_id.email}}` oder `{{#kontaktperson}}{{email}}{{/kontaktperson}}{{^kontaktperson}}{{schueler.email}}{{/kontaktperson}}`; mehrere mit Komma. Leer: kein Versand |
+| **Antwort an** | optional: Adresse für Antworten (fest oder mit Platzhaltern), sonst die Absenderadresse |
+| **Betreff**, **Text der E-Mail** | reiner Text mit Platzhaltern; das PDF geht als Anhang mit. Die Vorschau zeigt die E-Mail für den Beispieldatensatz |
 | **Aktiv**, **Reihenfolge** | für die Auswahl beim Erstellen |
 | **Empfänger (Adressfeld)** | eine Zeile je Adresszeile mit Platzhaltern; leere Zeilen fallen weg. SAFT setzt sie ins Adressfeld des Briefpapiers, der Inhalt beginnt darunter. Leer: kein Adressfeld |
 | **Inhalt (HTML)** | der Text des Dokuments als HTML mit Platzhaltern, im Code-Editor mit Hervorhebung |
 
 **Rechte:** Vorlagen bearbeiten darf, wer in der App das Recht *Dokumente: verwalten* hat; die Liste zeigt nur diese
 Apps. Platzhalter zeigen nur, was die Person lesen darf (siehe unten).
+
+**Versand per E-Mail:** Wer in der App zusätzlich *Dokumente: versenden* hat, sieht beim Erstellen den Schalter **„Per
+E-Mail senden“** – einzeln mit änderbarem An, Betreff und Text und „Kopie an mich“, in der Sammelaktion je Datensatz an
+die Adresse aus der Vorlage. Das Recht hat nach der Installation niemand ausser dem Super-Admin; es wird bewusst
+vergeben, weil E-Mails das Haus verlassen. Versendete Dokumente werden abgelegt, wenn die Vorlage ein Dateifeld hat und
+die Person den Datensatz bearbeiten darf. Kommt die Adresse über eine Verknüpfung (`kunde_id.email`), muss die Person
+die verknüpfte Tabelle lesen dürfen – sonst bleibt sie leer. Mailserver: [Kapitel 7](#7-globale-einstellungen).
 
 **KI-Assistent:** Mit dem Recht *Dokumente: Assistent nutzen* in der App steht oben im Bereich „Vorlage“, unter der
 App, das Feld **„Vorlage beschreiben“** – z. B. „Mahnung mit offenen Positionen und Zahlungsfrist 10 Tage“ oder danach
@@ -1667,6 +1695,7 @@ entfernen**. „Anzeigen“ ist jeweils Voraussetzung für die übrigen Rechte e
 | Globale Einstellungen: anzeigen / bearbeiten | Name der Anwendung, Logo, Farbschema, KI-Assistenten (Anbieter, Modell, Schalter); Briefpapier der Installation (Administration › Anwendung › Briefpapier) |
 | Dokumente: verwalten | Briefpapier und Dokumentvorlagen einer App bearbeiten (App-Recht, siehe [Kapitel 16](#16-dokumente)) |
 | Dokumente: Assistent nutzen | KI-Assistent in den Dokumentvorlagen einer App (App-Recht, siehe [Kapitel 16](#16-dokumente)) |
+| Dokumente: versenden | erstellte Dokumente per E-Mail senden (App-Recht, zusätzlich zu *Dokumente: erzeugen*; nach der Installation niemandem vergeben) |
 | Dokumente: erzeugen | Dokumente aus Vorlagen erstellen und herunterladen (App-Recht, dazu Leserecht auf die Tabelle; Ablegen im Dateifeld braucht zusätzlich das Bearbeiten-Recht, erstellte Dokumente entfernen das Lösch-Recht) |
 | Menüs: anzeigen / anlegen / bearbeiten / löschen | den Menübaum pflegen (Gruppen, Einträge, Reihenfolge, Rechte der Einträge) |
 | Apps: anzeigen | Seite „Apps“ und Datenmodell je App öffnen |

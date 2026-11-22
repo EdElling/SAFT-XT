@@ -57,9 +57,27 @@ class AppSettings extends Settings
     /** API-Schlüssel (Anthropic), verschlüsselt gespeichert; wird nie wieder angezeigt. */
     public ?string $ai_api_key;
 
+    /** E-Mail-Versand (B-124, D3b): SMTP-Server; null = MAIL_* aus der .env. Mit Server gilt SMTP statt MAIL_MAILER. */
+    public ?string $mail_host;
+
+    public ?int $mail_port;
+
+    /** tls (STARTTLS, meist Port 587), ssl (Port 465) oder none; null = automatisch. */
+    public ?string $mail_encryption;
+
+    public ?string $mail_username;
+
+    /** SMTP-Passwort, verschlüsselt gespeichert; wird nie wieder angezeigt. */
+    public ?string $mail_password;
+
+    /** Absenderadresse (muss zur Domain des Mailservers passen – SPF/DKIM) und Absendername; null = .env bzw. Anzeigename. */
+    public ?string $mail_from_address;
+
+    public ?string $mail_from_name;
+
     public static function encrypted(): array
     {
-        return ['ai_api_key'];
+        return ['ai_api_key', 'mail_password'];
     }
 
     public static function group(): string

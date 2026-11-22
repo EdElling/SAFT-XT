@@ -22,6 +22,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $file_name
  * @property string|null $language_field
  * @property string|null $file_field
+ * @property string|null $email_to
+ * @property string|null $email_subject
+ * @property string|null $email_body
+ * @property string|null $email_reply_to
  * @property bool $is_active
  * @property int $sort_order
  * @property Carbon|null $created_at
@@ -48,6 +52,10 @@ class DocumentTemplate extends Model
         'file_name',
         'language_field',
         'file_field',
+        'email_to',
+        'email_subject',
+        'email_body',
+        'email_reply_to',
         'is_active',
         'sort_order',
     ];

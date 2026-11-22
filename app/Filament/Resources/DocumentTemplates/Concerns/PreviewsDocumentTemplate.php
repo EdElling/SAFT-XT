@@ -55,7 +55,7 @@ trait PreviewsDocumentTemplate
         }
 
         $template->setRelation('customTable', $table);
-        $errors = app(TemplateChecker::class)->check($table, (string) $template->body, $template->recipient, $template->file_name)['errors'];
+        $errors = app(TemplateChecker::class)->check($table, (string) $template->body, $template->recipient, $template->file_name, $template->only(['email_to', 'email_subject', 'email_body', 'email_reply_to']))['errors'];
 
         if ($errors !== []) {
             $this->dispatch('document-template-preview', pdf: null, message: implode("\n", $errors));
@@ -67,13 +67,34 @@ trait PreviewsDocumentTemplate
             $user = auth()->user();
             $document = app(TemplateRenderer::class)->render($template, $sample, $user instanceof User ? $user : null);
             $message = $document->fileName.(filled(trim((string) $template->recipient)) && $document->recipient === null ? ' – '.__('documents.templates.preview.no_recipient') : '');
-            $this->dispatch('document-template-preview', pdf: base64_encode($document->pdf), message: $message);
+            $this->dispatch('document-template-preview', pdf: base64_encode($document->pdf), message: $message, mail: $this->mailPreview($template, $sample));
         } catch (TemplateException $exception) {
             $this->dispatch('document-template-preview', pdf: null, message: $exception->getMessage());
         } catch (Throwable $exception) {
             report($exception);
             $this->dispatch('document-template-preview', pdf: null, message: __('documents.templates.preview.failed', ['message' => $exception->getMessage()]));
         }
+    }
+
+    /** E-Mail zur Vorlage für den Beispieldatensatz als Text (D3b); null ohne „An“. */
+    private function mailPreview(DocumentTemplate $template, DynamicRecord $sample): ?string
+    {
+        $user = auth()->user();
+        $mail = app(TemplateRenderer::class)->mail($template, $sample, $user instanceof User ? $user : null);
+
+        if ($mail === null) {
+            return null;
+        }
+
+        $to = implode(', ', $mail['to']).($mail['invalid'] !== [] ? ' – '.__('documents.mail.no_address', ['value' => implode(', ', $mail['invalid'])]) : '');
+
+        return implode("\n", array_filter([
+            __('documents.mail.to').': '.($to !== '' ? $to : '–'),
+            $mail['reply_to'] !== null ? __('documents.templates.fields.email_reply_to').': '.$mail['reply_to'] : null,
+            __('documents.mail.subject').': '.$mail['subject'],
+            '',
+            $mail['body'],
+        ], static fn (?string $line): bool => $line !== null));
     }
 
     /**

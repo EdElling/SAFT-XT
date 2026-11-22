@@ -296,7 +296,7 @@ final class ChangeExecutor
         foreach ($updates as $step) {
             $template = DocumentTemplate::query()->where('uuid', $step->key)->firstOrFail();
             $values = self::values($step->changes);
-            $data = Arr::only($values, ['name', 'recipient', 'body', 'file_name', 'language_field', 'file_field', 'is_active', 'sort_order']);
+            $data = Arr::only($values, ['name', 'recipient', 'body', 'file_name', 'language_field', 'file_field', 'email_to', 'email_subject', 'email_body', 'email_reply_to', 'is_active', 'sort_order']);
 
             if (array_key_exists('table', $values)) {
                 $data['custom_table_id'] = CustomTable::query()->where('name', (string) $values['table'])->firstOrFail()->id;

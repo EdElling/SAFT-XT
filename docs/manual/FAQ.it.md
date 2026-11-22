@@ -27,6 +27,7 @@
    - [Un’app è scomparsa dal selettore.](#unapp-è-scomparsa-dal-selettore)
    - [Non riesco a rimuovere un documento da un campo file.](#non-riesco-a-rimuovere-un-documento-da-un-campo-file)
    - [In un elenco mancano le caselle di spunta per selezionare.](#in-un-elenco-mancano-le-caselle-di-spunta-per-selezionare)
+   - [Non è stato possibile inviare un documento per e-mail.](#non-è-stato-possibile-inviare-un-documento-per-e-mail)
 
 ---
 ## Domande frequenti
@@ -120,3 +121,13 @@ utente, sezione 4.10). Se un documento deve davvero sparire, chiedete a qualcuno
 Le caselle di spunta per selezionare più record appaiono solo se esiste un’azione di gruppo che potete usare – oggi
 **«Crea documenti»**: la tabella deve avere un modello di documento attivo e il vostro ruolo il diritto *Documenti:
 generare* (manuale utente, sezione 4.10). I record eliminati nel cestino non si possono selezionare.
+
+### Non è stato possibile inviare un documento per e-mail.
+
+- **Nessun interruttore «Inviare per e-mail»:** il modello non prevede un’e-mail, o al vostro ruolo manca il diritto
+  *Documenti: inviare*.
+- **«A» è vuoto o «nessun indirizzo e-mail valido»:** il record o il cliente collegato non ha un indirizzo – oppure non
+  potete leggere la tabella collegata. Inserite l’indirizzo a mano.
+- **«Il server di posta rifiuta l’indirizzo mittente …»** o un altro messaggio del server: è un’impostazione
+  dell’amministrazione (invio di e-mail nelle impostazioni globali). Il documento è stato comunque creato e – se
+  previsto – depositato.

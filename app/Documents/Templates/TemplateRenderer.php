@@ -50,6 +50,60 @@ final class TemplateRenderer
         return new RenderedDocument($html, $recipient, $fileName, $locale, $pdf);
     }
 
+    /**
+     * E-Mail zur Vorlage für einen Datensatz (B-124, D3b): An (gültige und ungültige Adressen getrennt), Betreff, Text und
+     * Antwortadresse – in der Sprache des Dokuments. null, wenn die Vorlage keine Adresse vorsieht.
+     *
+     * @return array{to: list<string>, invalid: list<string>, subject: string, body: string, reply_to: ?string}|null
+     *
+     * @throws TemplateException
+     */
+    public function mail(DocumentTemplate $template, DynamicRecord $record, ?User $user): ?array
+    {
+        if (blank($template->email_to)) {
+            return null;
+        }
+
+        $table = $template->customTable ?? CustomTable::query()->findOrFail($template->custom_table_id);
+        $locale = $this->locale($template, $record);
+        $previous = [app()->getLocale(), Carbon::getLocale()];
+        app()->setLocale($locale);
+        Carbon::setLocale($locale);
+
+        try {
+            $context = new DocumentContext(new RecordContext($record, $table, $user, $locale), $this->letterheads->for($template->app_id), $locale);
+            $text = fn (?string $part): string => trim($this->engine->text((string) $part, $context));
+            [$to, $invalid] = self::addresses($text($template->email_to));
+            $replyTo = self::addresses($text($template->email_reply_to))[0][0] ?? null;
+
+            return ['to' => $to, 'invalid' => $invalid, 'subject' => $text($template->email_subject), 'body' => $text($template->email_body), 'reply_to' => $replyTo];
+        } finally {
+            app()->setLocale($previous[0]);
+            Carbon::setLocale($previous[1]);
+        }
+    }
+
+    /**
+     * Adressen aus einem Text (getrennt mit Komma, Strichpunkt oder Zeilenumbruch): gültige und ungültige.
+     *
+     * @return array{0: list<string>, 1: list<string>}
+     */
+    public static function addresses(string $text): array
+    {
+        $valid = [];
+        $invalid = [];
+
+        foreach (preg_split('/[,;\s]+/u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $address) {
+            if (filter_var($address, FILTER_VALIDATE_EMAIL) !== false) {
+                $valid[] = $address;
+            } else {
+                $invalid[] = $address;
+            }
+        }
+
+        return [array_values(array_unique($valid)), $invalid];
+    }
+
     /** Sprache aus dem Sprachfeld der Vorlage, wenn es eine angebotene Sprache enthält; sonst die aktuelle. */
     public function locale(DocumentTemplate $template, DynamicRecord $record): string
     {
