@@ -1233,9 +1233,9 @@ leeren Apps – **Löschen**; Apps mit Inhalt werden deaktiviert und entfernt (u
 Kind-Tabellen gibt es innerhalb einer App – über die App-Grenze nur auf **freigegebene** Tabellen (Schnittstellen,
 unten). Der Table-Designer bietet Tabellen derselben App an und freigegebene Tabellen anderer Apps mit deren Namen. Der
 KI-Tabellenassistent wählt beim Anlegen die App aus dem Text (sonst die gewählte) und verwendet nur Menügruppen dieser App; Verknüpfungen setzt er auf Tabellen dieser App oder auf freigegebene Tabellen
-anderer Apps (Anzeige nur freigegebene Felder); beim Anpassen sieht er nur die App der Tabelle. Die Listen der Administration – Table-Designer, Table-Connector, Tabellenverknüpfungen, Rollen, Menüs und Geplante
-Aufgaben – wählen die App über **Reiter** über der Tabelle (Reihenfolge wie auf der Seite „Apps“, mit der Anzahl
-Einträge); vorgewählt ist die aktuelle App der Titelleiste. Rollen, Menüs und Aufgaben haben zusätzlich „System“
+anderer Apps (Anzeige nur freigegebene Felder); beim Anpassen sieht er nur die App der Tabelle. Die Listen der Administration – Table-Designer, Table-Connector, Tabellenverknüpfungen, Rollen, Menüs, Dokumentvorlagen und
+Geplante Aufgaben – wählen die App in der Auswahl **App** über der Tabelle, so breit wie diese (Reihenfolge wie auf der
+Seite „Apps“, mit der Anzahl Einträge); vorgewählt ist die aktuelle App der Titelleiste. Rollen, Menüs und Aufgaben haben zusätzlich „System“
 (Einträge ohne App), alle Listen „Alle“ mit der Spalte „App“.
 
 **Schnittstellen:** Eine App kann einzelne Tabellen für alle anderen Apps **freigeben** – nur lesend. Im Table-Designer
@@ -1558,8 +1558,8 @@ Blindtext, damit erste Seite und Folgeseiten zu sehen sind.
 
 ### Dokumentvorlagen
 
-Eine Vorlage gehört zu einer **App** und einer **Grundtabelle**, z. B. „Rechnung“ zu *Belege*. Die Liste zeigt je App
-einen Reiter; **Kopieren** legt eine Kopie zum Anpassen an. Die Demo-Apps bringen je eine Vorlage mit: **Rechnung** im
+Eine Vorlage gehört zu einer **App** und einer **Grundtabelle**, z. B. „Rechnung“ zu *Belege*. Die Liste zeigt die Vorlagen
+der App, die oben in der Auswahl **App** gewählt ist; **Kopieren** legt eine Kopie zum Anpassen an. Die Demo-Apps bringen je eine Vorlage mit: **Rechnung** im
 Gitarrenshop und **Semesterrechnung** in der Musikschule. Wird eine App oder die Grundtabelle gelöscht, werden ihre Vorlagen mitgelöscht.
 
 | Feld | Bedeutung |
@@ -1604,7 +1604,7 @@ berechnetes Feld in der Tabelle fehlt. An den Anbieter gehen nur die Beschreibun
 Grundtabelle, ihrer Verknüpfungen und Kind-Tabellen (Auswahlwerte nur mit „Werte von Auswahlfeldern übertragen“) – nie
 Datensätze. Fehler der Prüfung und PDF-Hinweise (z. B. Flexbox) gehen einmal zur Korrektur an die KI zurück. Einrichtung,
 Tageslimit und Protokoll wie bei den anderen Assistenten ([Kapitel 13](#13-ki-funktionen)). Neue Vorlagen beginnen in
-der App des Reiters, der in der Liste gewählt war.
+der App, die in der Liste gewählt war.
 
 **Gestalten:** Schrift, Farben, Kopf und Fusszeile kommen aus dem Briefpapier. Die Vorlage verwendet dafür Klassen:
 `primaer`, `sekundaer` (Farben), `klein`, `fett`, `rechts`; eine Tabelle mit der Klasse `positionen` erhält einen

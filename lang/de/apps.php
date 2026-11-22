@@ -13,7 +13,7 @@ return [
     'icon' => 'Symbol',
     'description_page' => 'Fachanwendungen fassen Tabellen, Menüs, Auswertungen, Rollen und Aufgaben zusammen, die zusammengehören. Leere Apps lassen sich löschen; Apps mit Inhalt entfernt nur der Super-Admin (zuerst deaktivieren).',
     'delete_only_empty' => 'Nur leere Apps lassen sich löschen. Apps mit Inhalt: deaktivieren, dann „Entfernen …“ (nur Super-Admin).',
-    'tabs' => ['all' => 'Alle'],
+    'tabs' => ['all' => 'Alle', 'app' => 'App'],
     'system' => 'System',
     'app_help' => 'Gehört zu dieser Fachanwendung; Verknüpfungen sind nur innerhalb einer App möglich.',
     'switch' => [

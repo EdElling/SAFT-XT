@@ -1291,9 +1291,9 @@ formules sur les tables enfants existent au sein d’une app – au-delà de la 
 **partagées** (interfaces, ci-dessous). Le Concepteur de tables propose les tables de la même app et les tables partagées
 d’autres apps avec leur nom. À la création, l’assistant IA des tables reprend l’app du texte (sinon celle choisie) et
 n’utilise que les groupes de menu de cette app ; il crée les liaisons vers des tables de cette app ou vers des tables
-partagées d’autres apps (affichage uniquement de champs partagés) ; à l’adaptation, il ne voit que l’app de la table. Les listes de l’administration – Concepteur de tables, Connecteur de tables, liaisons de tables, rôles, menus et tâches
-planifiées – choisissent l’app par des **onglets** au-dessus de la table (ordre comme sur la page « Apps », avec le
-nombre d’entrées) ; l’app actuelle de la barre de titre est présélectionnée. Rôles, menus et tâches ont en plus
+partagées d’autres apps (affichage uniquement de champs partagés) ; à l’adaptation, il ne voit que l’app de la table. Les listes de l’administration – Concepteur de tables, Connecteur de tables, liaisons de tables, rôles, menus, modèles de
+documents et tâches planifiées – choisissent l’app dans la liste **App** au-dessus de la table, aussi large qu’elle (ordre
+comme sur la page « Apps », avec le nombre d’entrées) ; l’app actuelle de la barre de titre est présélectionnée. Rôles, menus et tâches ont en plus
 « Système » (entrées sans app), toutes les listes « Toutes » avec la colonne « App ».
 
 **Interfaces :** une app peut **partager** des tables avec toutes les autres apps – en lecture seule. Dans le Concepteur
@@ -1624,7 +1624,7 @@ répété) et du texte factice, afin que la première page et les pages suivante
 ### Modèles de documents
 
 Un modèle se rapporte à une **app** et à une **table de base**, p. ex. « Facture » à *Justificatifs*. La liste affiche
-un onglet par app ; **Dupliquer** crée une copie à adapter. Les apps de démonstration apportent chacune un modèle :
+les modèles de l’app choisie dans la liste **App** au-dessus ; **Dupliquer** crée une copie à adapter. Les apps de démonstration apportent chacune un modèle :
 **Rechnung** (facture) dans le magasin de guitares et **Semesterrechnung** (facture semestrielle) à l’école de musique. Si une app ou la table de base est supprimée, ses modèles le sont aussi.
 
 | Champ | Signification |
@@ -1670,8 +1670,8 @@ montant demandé manque comme champ calculé dans la table. Seuls la description
 base, de ses liaisons et tables enfants sont transmis au fournisseur (valeurs de choix seulement avec « Transmettre les
 valeurs des champs de sélection ») – jamais d’enregistrements. Les erreurs de vérification et les remarques PDF
 (p. ex. flexbox) retournent une fois à l’IA pour correction. Configuration, limite journalière et journal comme pour
-les autres assistants ([chapitre 13](#13-fonctions-ia)). Les nouveaux modèles commencent dans l’app de l’onglet
-choisi dans la liste.
+les autres assistants ([chapitre 13](#13-fonctions-ia)). Les nouveaux modèles commencent dans l’app choisie
+dans la liste.
 
 **Mise en forme :** Police, couleurs, en-tête et pied de page viennent du papier à lettres. Le modèle utilise pour
 cela des classes : `primaer`, `sekundaer` (couleurs), `klein` (petit), `fett` (gras), `rechts` (à droite) ; un tableau

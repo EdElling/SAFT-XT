@@ -7,13 +7,16 @@ namespace App\Filament\Concerns;
 use App\Apps\CurrentApp;
 use App\Models\App;
 use App\Models\User;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * App-Auswahl über Reiter für Listen der Administration (B-107): je App ein Reiter in der Reihenfolge der Seite „Apps“,
- * optional „System“ (Einträge ohne App) und „Alle“; vorgewählt ist die aktuelle App der Titelleiste. Die Spalte „App“
- * erscheint nur unter „Alle“ (AppFilter::column).
+ * App-Auswahl für Listen der Administration (B-107): je App ein Eintrag in der Reihenfolge der Seite „Apps“, optional
+ * „System“ (Einträge ohne App) und „Alle“, jeweils mit Anzahl; vorgewählt ist die aktuelle App der Titelleiste. Gezeigt
+ * als Auswahlliste über der Tabelle (wie beim Briefpapier), nicht als Reiter – bei vielen Apps bleibt sie eine Zeile.
+ * Die Spalte „App“ erscheint nur unter „Alle“ (AppFilter::column).
  */
 trait HasAppTabs
 {
@@ -52,7 +55,22 @@ trait HasAppTabs
         return $tabs;
     }
 
-    /** Die aktuelle App der Titelleiste, sonst der erste Reiter. */
+    /** Auswahlliste statt Reitern, gebunden an activeTab (Filterung, Adresse und Vorgabe wie bei Reitern). */
+    public function getTabsContentComponent(): Component
+    {
+        $tabs = $this->getCachedTabs();
+
+        return Select::make('activeTab')
+            ->label(__('apps.tabs.app'))
+            ->options(collect($tabs)->map(static fn (Tab $tab): string => $tab->getLabel().' ('.$tab->getBadge().')')->all())
+            ->selectablePlaceholder(false)
+            // Kennzeichen für PanelAppearance: Seite so breit wie die Tabelle, die Auswahl füllt diese Breite.
+            ->extraFieldWrapperAttributes(['class' => 'saft-app-select'])
+            ->live()
+            ->hidden($tabs === []);
+    }
+
+    /** Die aktuelle App der Titelleiste, sonst der erste Eintrag. */
     public function getDefaultActiveTab(): string|int|null
     {
         $user = auth()->user();

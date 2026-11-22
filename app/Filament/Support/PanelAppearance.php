@@ -216,6 +216,8 @@ final class PanelAppearance
             // Mindestbreite wie bei den Tabellen (unten): Im Behälter ließe sie sich nicht auflösen (100 % von
             // „so breit wie der Inhalt“), die Blätterleiste würde zu schmal. Die Tabelle füllt den Behälter.
             .'.saft-data-page .saft-table-with-record{width:fit-content;max-width:100%;min-width:min(100%,46rem)}'
+            // Admin-Listen mit App-Auswahl (HasAppTabs): Inhalt so breit wie die Tabelle, die Auswahl darüber gleich breit.
+            .'.fi-resource-list-records-page .fi-page-content:has(.saft-app-select){width:fit-content;max-width:100%}'
             .'.saft-data-page .saft-table-with-record .fi-ta{width:100%}'
             // Filament kürzt die Blätterleiste schmaler Tabellen; „1 bis 10 von 30“ und „pro Seite“ bleiben sichtbar.
             .':is(.saft-data-page,.fi-resource-list-records-page,.fi-resource-relation-manager) .fi-pagination'

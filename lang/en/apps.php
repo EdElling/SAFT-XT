@@ -13,7 +13,7 @@ return [
     'icon' => 'Icon',
     'description_page' => 'Business applications group tables, menus, reports, roles and tasks that belong together. Empty apps can be deleted; apps with content can only be removed by the super admin (deactivate first).',
     'delete_only_empty' => 'Only empty apps can be deleted. Apps with content: deactivate, then “Remove …” (super admin only).',
-    'tabs' => ['all' => 'All'],
+    'tabs' => ['all' => 'All', 'app' => 'App'],
     'system' => 'System',
     'app_help' => 'Belongs to this business application; relations are only possible within one app.',
     'switch' => [

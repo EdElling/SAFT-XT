@@ -188,16 +188,20 @@ class AppLifecycleTest extends DynamicDataTestCase
         $this->assertSame($this->hr->id, $this->salesRole->fresh()->app_id);
     }
 
-    public function test_admin_lists_choose_the_app_by_tabs(): void
+    public function test_admin_lists_choose_the_app_from_a_select(): void
     {
         $admin = $this->superAdmin();
         $this->actingAs($admin);
         app(CurrentApp::class)->switch($admin, $this->hr);
 
-        // Reiter je App in der Reihenfolge der Seite „Apps“, „System“ (wo es Einträge ohne App gibt) und „Alle“;
-        // vorgewählt die aktuelle App, die Spalte „App“ nur unter „Alle“.
+        // Auswahlliste (statt Reitern) je App in der Reihenfolge der Seite „Apps“, „System“ (wo es Einträge ohne App gibt)
+        // und „Alle“, mit Anzahl; vorgewählt die aktuelle App, die Spalte „App“ nur unter „Alle“.
         Livewire::test(ListCustomTables::class)
             ->assertSet('activeTab', 'app-'.$this->hr->id)
+            ->assertSeeHtml('<select')
+            ->assertSeeHtml('saft-app-select')
+            ->assertSee($this->hr->name.' (1)')
+            ->assertDontSeeHtml('fi-tabs-item')
             ->assertCanSeeTableRecords([$this->staff])
             ->assertCanNotSeeTableRecords([$this->customers])
             ->assertTableColumnHidden('app.name')

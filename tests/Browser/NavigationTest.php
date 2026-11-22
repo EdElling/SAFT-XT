@@ -84,7 +84,7 @@ class NavigationTest extends DuskTestCase
             // Rollen liegen im Untermenü „Benutzer und Zugriff“: Klick klappt es auf (ohne Seitenwechsel), dann Rollen.
             $this->openSubmenuEntry($browser, 'Benutzer und Zugriff', 'Rollen')->waitForLocation('/admin/roles', 15)
                 ->clickLink('Kunden')->waitForText('ACME GmbH', 15)
-                // Rollenliste wieder da (Systemrollen stehen unter dem Reiter „System“).
+                // Rollenliste wieder da (Systemrollen stehen unter „System“ in der App-Auswahl).
                 ->back()->waitForLocation('/admin/roles', 15)->waitForText('System', 15);
 
             $browser->driver->navigate()->forward();

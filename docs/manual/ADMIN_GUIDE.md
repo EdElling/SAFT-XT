@@ -1201,8 +1201,9 @@ within one app – across the app boundary only to **shared** tables (interfaces
 of the same app and shared tables of other apps with their name. When creating, the AI table assistant takes the app
 from the text (otherwise the chosen one) and only uses menu groups of that app; it sets relations to tables of that app or to shared tables of other apps (display
 only shared fields); when adjusting, it only sees
-the app of the table. The administration lists – table designer, table connector, table links, roles, menus and scheduled tasks – choose
-the app with **tabs** above the table (order as on the “Apps” page, with the number of entries); the current app of the
+the app of the table. The administration lists – table designer, table connector, table links, roles, menus, document templates and scheduled
+tasks – choose the app in the **App** select above the table, as wide as the table (order as on the “Apps” page, with the
+number of entries); the current app of the
 title bar is preselected. Roles, menus and tasks also have “System” (entries without an app), all lists “All” with the
 column “App”.
 
@@ -1513,7 +1514,7 @@ page and the following pages can be seen.
 
 ### Document templates
 
-A template belongs to an **app** and a **base table**, e.g. “Invoice” to *Receipts*. The list shows a tab per app;
+A template belongs to an **app** and a **base table**, e.g. “Invoice” to *Receipts*. The list shows the templates of the app chosen in the **App** select above it;
 **Replicate** creates a copy to adapt. The demo apps come with one template each: **Rechnung** (invoice) in the guitar
 shop and **Semesterrechnung** (semester invoice) in the music school. When an app or the base table is deleted, its templates are deleted with it.
 
@@ -1558,8 +1559,7 @@ name), and the preview shows it immediately; it is only saved with the template.
 missing as a computed field in the table. Only the description, the template and the fields of the base table, its
 relations and child tables are sent to the provider (choice values only with “Send the values of selection fields”) – never
 records. Check errors and PDF hints (e.g. flexbox) go back to the AI once for correction. Set-up, daily limit and log
-as for the other assistants ([chapter 13](#13-ai-functions)). New templates start in the app of the tab selected in the
-list.
+as for the other assistants ([chapter 13](#13-ai-functions)). New templates start in the app selected in the list.
 
 **Designing:** Font, colours, header and footer come from the letterhead. The template uses classes for them:
 `primaer`, `sekundaer` (colours), `klein` (small), `fett` (bold), `rechts` (right-aligned); a table with the class

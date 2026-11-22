@@ -1257,9 +1257,9 @@ e – solo per app vuote – **Elimina**; le app con contenuto vengono disattiva
 tabelle figlie esistono all’interno di un’app – oltre il confine solo verso tabelle **condivise** (interfacce, sotto).
 Il designer di tabelle offre le tabelle della stessa app e le tabelle condivise di altre app con il loro nome. Alla
 creazione l’assistente IA delle tabelle prende l’app dal testo (altrimenti quella scelta) e usa solo gruppi di menu di quell’app; crea collegamenti verso tabelle di quell’app o verso tabelle condivise di altre
-app (visualizzando solo campi condivisi); nell’adattamento vede solo l’app della tabella. Gli elenchi dell’amministrazione – Designer di tabelle, Connettore di tabelle, collegamenti tra tabelle, ruoli, menu e
-attività pianificate – scelgono l’app tramite **schede** sopra la tabella (ordine come nella pagina «App», con il numero
-di voci); è preselezionata l’app attuale della barra del titolo. Ruoli, menu e attività hanno inoltre «Sistema» (voci
+app (visualizzando solo campi condivisi); nell’adattamento vede solo l’app della tabella. Gli elenchi dell’amministrazione – Designer di tabelle, Connettore di tabelle, collegamenti tra tabelle, ruoli, menu, modelli di
+documenti e attività pianificate – scelgono l’app nella selezione **App** sopra la tabella, larga quanto essa (ordine come
+nella pagina «App», con il numero di voci); è preselezionata l’app attuale della barra del titolo. Ruoli, menu e attività hanno inoltre «Sistema» (voci
 senza app), tutti gli elenchi «Tutte» con la colonna «App».
 
 **Interfacce:** un’app può **condividere** singole tabelle con tutte le altre app – in sola lettura. Nel Designer di
@@ -1582,7 +1582,7 @@ testo fittizio, così si vedono la prima pagina e le pagine seguenti.
 ### Modelli di documenti
 
 Un modello si riferisce a un’**app** e a una **tabella di base**, p. es. «Fattura» a *Giustificativi*. L’elenco mostra
-una scheda per app; **Duplica** crea una copia da adattare. Le app dimostrative portano un modello ciascuna:
+i modelli dell’app scelta nella selezione **App** sopra di esso; **Duplica** crea una copia da adattare. Le app dimostrative portano un modello ciascuna:
 **Rechnung** (fattura) nel negozio di chitarre e **Semesterrechnung** (fattura semestrale) nella scuola di musica. Se un’app o la tabella di base viene cancellata, anche i suoi modelli vengono cancellati.
 
 | Campo | Significato |
@@ -1628,7 +1628,7 @@ manca come campo calcolato nella tabella. Al fornitore vanno solo la descrizione
 base, dei suoi collegamenti e delle tabelle figlie (valori di scelta solo con «Trasmettere i valori dei campi di
 selezione») – mai record. Errori della verifica e avvisi PDF (p. es. flexbox) tornano una volta all’IA per la
 correzione. Configurazione, limite giornaliero e protocollo come per gli altri assistenti ([capitolo 13](#13-funzioni-ia)).
-I nuovi modelli iniziano nell’app della scheda scelta nell’elenco.
+I nuovi modelli iniziano nell’app scelta nell’elenco.
 
 **Impaginare:** Carattere, colori, intestazione e piè di pagina vengono dalla carta intestata. Il modello usa a tal
 fine delle classi: `primaer`, `sekundaer` (colori), `klein` (piccolo), `fett` (grassetto), `rechts` (a destra); una
