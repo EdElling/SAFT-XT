@@ -155,3 +155,8 @@ Jede Etappe ist für sich auslieferbar. D1 ist ohne KI vollständig nutzbar.
   Briefpapiers heisst „Briefpapier“, die der Vorlagen „Dokumentvorlagen“ (beide unter Administration › Anwendung). Für
   den KI-Assistenten (D2) sind Platzhalter-Katalog (`TemplateFields`) und Prüfung (`TemplateChecker`) die Grundlage –
   Vorschlag prüfen und Fehler einmal zur Korrektur zurückgeben wie bei den Auswertungen.
+- **D1c (22.11.2026):** Symbol „Dokument erstellen“ nur in Tabellen mit aktiver Vorlage, für Personen mit *Dokumente:
+  erzeugen* und Leserecht; Ablegen im Dateifeld der Vorlage braucht das Bearbeiten-Recht und ist vorgewählt. Erzeugte
+  Dateien tragen Vorlage und SHA-256 (`record_files`), entfernen nur mit Lösch-Recht – das Upload-Feld lehnt es sofort
+  ab; beim Kopieren eines Datensatzes kommen sie nicht mit. Ereignis „Dokument erzeugt“ im Änderungsprotokoll. Ein
+  Dateifeld für die Rechnungen der Musikschule folgt mit der App-Definition (D1d).

@@ -23,6 +23,7 @@ return [
         'snapshot_created' => 'Snapshot taken',
         'assistant' => 'AI assistant',
         'snapshot_deleted' => 'Snapshot deleted',
+        'document' => 'document generated',
         'password_changed' => 'Password changed',
         'system_log_viewed' => 'System log viewed',
         'two_factor_enabled' => 'Two-factor set up',

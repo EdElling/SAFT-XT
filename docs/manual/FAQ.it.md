@@ -25,6 +25,7 @@
    - [Un file non si riesce a caricare.](#un-file-non-si-riesce-a-caricare)
    - [In un collegamento manca una tabella nella scelta.](#in-un-collegamento-manca-una-tabella-nella-scelta)
    - [Un’app è scomparsa dal selettore.](#unapp-è-scomparsa-dal-selettore)
+   - [Non riesco a rimuovere un documento da un campo file.](#non-riesco-a-rimuovere-un-documento-da-un-campo-file)
 
 ---
 ## Domande frequenti
@@ -105,3 +106,10 @@ condividerla – oppure create la nuova tabella in quell’app.
 
 L’amministrazione l’ha disattivata – ad es. per lavori o prima di rimuoverla. I suoi dati restano; non appena viene
 riattivata, ricompare come prima. Chiedete all’amministrazione.
+
+### Non riesco a rimuovere un documento da un campo file.
+
+I documenti che SAFT ha creato da un modello e depositato presso il record (p. es. una fattura) sono protetti da
+scrittura: può rimuoverli solo chi può cancellare i record della tabella. Così resta tracciabile quale documento è
+stato inviato. Create semplicemente di nuovo un documento corretto – appare come nuova versione accanto (manuale
+utente, sezione 4.10). Se un documento deve davvero sparire, chiedete a qualcuno con il diritto di cancellazione.

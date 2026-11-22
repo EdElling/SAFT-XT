@@ -25,6 +25,7 @@
    - [Un fichier ne se téléverse pas.](#un-fichier-ne-se-téléverse-pas)
    - [Une table manque dans le choix d’une liaison.](#une-table-manque-dans-le-choix-dune-liaison)
    - [Une app a disparu du sélecteur.](#une-app-a-disparu-du-sélecteur)
+   - [Je ne peux pas retirer un document d’un champ de fichiers.](#je-ne-peux-pas-retirer-un-document-dun-champ-de-fichiers)
 
 ---
 ## Questions fréquentes
@@ -106,3 +107,11 @@ partager – ou créez la nouvelle table dans cette app.
 
 L’administration l’a désactivée – p. ex. pour des travaux ou avant de la retirer. Ses données sont conservées ; dès
 qu’elle est réactivée, elle réapparaît comme avant. Renseignez-vous auprès de l’administration.
+
+### Je ne peux pas retirer un document d’un champ de fichiers.
+
+Les documents que SAFT a créés à partir d’un modèle et déposés avec l’enregistrement (p. ex. une facture) sont protégés
+en écriture : seules les personnes autorisées à supprimer les enregistrements de la table peuvent les retirer. Ainsi, on
+sait toujours quel document a été envoyé. Créez simplement un document corrigé – il apparaît comme nouvelle version à
+côté (manuel de l’utilisateur, section 4.10). Si un document doit vraiment disparaître, demandez à une personne ayant
+le droit de suppression.

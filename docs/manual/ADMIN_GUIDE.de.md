@@ -602,7 +602,8 @@ Datensätze, Benutzer, Rollen und Rechte, Menüs, Tabellenstrukturen, Einstellun
 und fehlgeschlagene Anmeldeversuche. Geheimnisse (Passwörter, Schlüssel) werden nie protokolliert.
 
 - **Filter:** Benutzer, Ereignis, Objekttyp, Zeitraum. Ereignisse sind: angelegt, geändert, gelöscht,
-  wiederhergestellt, Anmeldung, Anmeldung fehlgeschlagen, Abmeldung und exportiert.
+  wiederhergestellt, Anmeldung, Anmeldung fehlgeschlagen, Abmeldung, exportiert und Dokument erzeugt (mit Vorlage,
+  Dateiname und Prüfwert SHA-256).
 - **Exporte:** Festgehalten werden Tabelle, Format, Zeilenzahl, Filter und Suche, nie die exportierten Daten.
 - **Benutzer:** „System“ steht nur dort, wo wirklich kein Benutzer beteiligt war. Gelöschte Benutzer erscheinen
   mit Namen und „(gelöscht)“, endgültig gelöschte als „Gelöschter Benutzer #12“.
@@ -1461,8 +1462,8 @@ SAFT erzeugt Dokumente wie Rechnungen und Briefe als PDF. Gestaltung und Inhalt 
 - **Dokumentvorlagen** (**Administration → Anwendung → Dokumentvorlagen**): was auf dem Briefpapier steht – Empfänger,
   Betreff, Positionen, Summen, Texte – mit Platzhaltern für die Felder eines Datensatzes.
 
-Dokumente aus der Zeile eines Datensatzes erzeugen und beim Datensatz ablegen folgt in einer späteren Version; bis dahin
-zeigt die Vorschau der Vorlage das fertige PDF.
+Erstellt werden Dokumente in der Zeile eines Datensatzes mit dem Symbol **„Dokument erstellen“** – von Personen mit dem
+Recht *Dokumente: erzeugen* in der App (siehe [Anwenderhandbuch, Abschnitt 4.10](USER_GUIDE.de.md#410-dokumente-erstellen)).
 
 ### Briefpapier
 
@@ -1543,7 +1544,8 @@ Gitarrenshop und **Semesterrechnung** in der Musikschule. Wird eine App oder die
 | **Grundgerüst** | nur beim Anlegen: *Leer*, *Brief*, *Rechnung* oder *Datenblatt (alle Felder)*. SAFT baut es aus den Feldern der Grundtabelle, sobald sie gewählt ist – *Rechnung* nimmt die erste Kind-Tabelle als Positionen und berechnete Beträge als Summen |
 | **Dateiname** | ohne `.pdf`, mit Platzhaltern, z. B. `Rechnung-{{belegnummer}}`; Zeichen, die Dateisysteme nicht erlauben, ersetzt SAFT |
 | **Sprache aus Feld** | ein Feld mit `de`, `en`, `fr` oder `it` (z. B. Korrespondenzsprache); Zahlen, Daten und Auswahlwerte erscheinen dann in dieser Sprache. Leer: die Sprache der Person. Der feste Text der Vorlage bleibt, wie er ist |
-| **Aktiv**, **Reihenfolge** | für die Auswahl beim Erzeugen |
+| **Ablage im Dateifeld** | ein Dateifeld der Grundtabelle, das PDF erlaubt: Beim Erstellen ist „Im Feld … ablegen“ vorgewählt, das Dokument kommt als neue, schreibgeschützte Datei zum Datensatz (Ablegen braucht zusätzlich das Recht, den Datensatz zu bearbeiten). Leer: nur herunterladen |
+| **Aktiv**, **Reihenfolge** | für die Auswahl beim Erstellen |
 | **Empfänger (Adressfeld)** | eine Zeile je Adresszeile mit Platzhaltern; leere Zeilen fallen weg. SAFT setzt sie ins Adressfeld des Briefpapiers, der Inhalt beginnt darunter. Leer: kein Adressfeld |
 | **Inhalt (HTML)** | der Text des Dokuments als HTML mit Platzhaltern, im Code-Editor mit Hervorhebung |
 
@@ -1637,7 +1639,7 @@ entfernen**. „Anzeigen“ ist jeweils Voraussetzung für die übrigen Rechte e
 |---|---|
 | Globale Einstellungen: anzeigen / bearbeiten | Name der Anwendung, Logo, Farbschema, KI-Assistenten (Anbieter, Modell, Schalter); Briefpapier der Installation (Administration › Anwendung › Briefpapier) |
 | Dokumente: verwalten | Briefpapier und Dokumentvorlagen einer App bearbeiten (App-Recht, siehe [Kapitel 16](#16-dokumente)) |
-| Dokumente: erzeugen | Dokumente aus Vorlagen erzeugen (App-Recht; die Vorlagen folgen in einer späteren Version) |
+| Dokumente: erzeugen | Dokumente aus Vorlagen erstellen und herunterladen (App-Recht, dazu Leserecht auf die Tabelle; Ablegen im Dateifeld braucht zusätzlich das Bearbeiten-Recht, erstellte Dokumente entfernen das Lösch-Recht) |
 | Menüs: anzeigen / anlegen / bearbeiten / löschen | den Menübaum pflegen (Gruppen, Einträge, Reihenfolge, Rechte der Einträge) |
 | Apps: anzeigen | Seite „Apps“ und Datenmodell je App öffnen |
 | Apps: verwalten | Apps anlegen, bearbeiten, aktivieren und deaktivieren, Handbuch hochladen, Tabellen verschieben, leere Apps löschen |

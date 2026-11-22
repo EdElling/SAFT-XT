@@ -23,6 +23,7 @@ return [
         'snapshot_created' => 'Datenstand gezogen',
         'assistant' => 'KI-Assistent',
         'snapshot_deleted' => 'Datenstand gelöscht',
+        'document' => 'Dokument erzeugt',
         'password_changed' => 'Passwort geändert',
         'system_log_viewed' => 'Systemprotokoll angesehen',
         'two_factor_enabled' => 'Zwei-Faktor eingerichtet',

@@ -31,6 +31,9 @@ Create a receipt of type *Income* with the **customer** (new customers under **M
 booking of the kind **Sale**, the net price and the VAT rate (usually 8.1 %).
 SAFT calculates VAT and gross. Set the item's status to *Sold*.
 
+Create the customer's **invoice** in the receipt's row with **“Create document”** (template “Rechnung”): SAFT downloads
+it as PDF and stores it write-protected in the receipt files.
+
 ### Part and instalment payments
 
 Record any number of payments for a receipt, each with its own cash receipt. On the receipt, **paid** and **open** show

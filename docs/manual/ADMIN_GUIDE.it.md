@@ -610,7 +610,8 @@ utenti, ruoli e diritti, menu, strutture delle tabelle, impostazioni nonché acc
 falliti. I segreti (password, chiavi) non vengono mai registrati.
 
 - **Filtri:** utente, evento, tipo di oggetto, periodo. Gli eventi sono: creato, modificato, eliminato, ripristinato,
-  accesso, accesso fallito, uscita ed esportato.
+  accesso, accesso fallito, uscita, esportato e documento generato (con modello, nome del file e valore di controllo
+  SHA-256).
 - **Esportazioni:** vengono registrati tabella, formato, numero di righe, filtro e ricerca, mai i dati esportati.
 - **Utenti:** «Sistema» compare solo dove davvero non era coinvolto alcun utente. Gli utenti eliminati compaiono con
   il nome e «(eliminato)», quelli eliminati definitivamente come «Utente eliminato #12».
@@ -1482,8 +1483,8 @@ SAFT genera documenti come fatture e lettere in PDF. Impaginazione e contenuto s
 - **Modelli di documenti** (**Amministrazione → Applicazione → Modelli di documenti**): ciò che sta sulla carta
   intestata – destinatario, oggetto, posizioni, totali, testi – con segnaposto per i campi di un record.
 
-Generare documenti dalla riga di un record e depositarli presso di esso seguirà in una versione successiva; fino ad
-allora l’anteprima del modello mostra il PDF finito.
+I documenti si creano nella riga di un record con l’icona **«Crea documento»** – dalle persone con il diritto
+*Documenti: generare* nell’app (vedi [manuale utente, sezione 4.10](USER_GUIDE.it.md#410-creare-documenti)).
 
 ### Carta intestata
 
@@ -1567,7 +1568,8 @@ una scheda per app; **Duplica** crea una copia da adattare. Le app dimostrative 
 | **Punto di partenza** | solo alla creazione: *Vuoto*, *Lettera*, *Fattura* o *Scheda (tutti i campi)*. SAFT lo costruisce dai campi della tabella di base non appena è scelta – *Fattura* prende la prima tabella figlia come posizioni e gli importi calcolati come totali |
 | **Nome del file** | senza `.pdf`, con segnaposto, p. es. `Fattura-{{belegnummer}}`; SAFT sostituisce i caratteri non ammessi dai file system |
 | **Lingua da campo** | un campo con `de`, `en`, `fr` o `it` (p. es. lingua di corrispondenza); numeri, date e valori di selezione appaiono allora in questa lingua. Vuoto: la lingua della persona. Il testo fisso del modello resta com’è |
-| **Attivo**, **Ordine** | per la scelta al momento della generazione |
+| **Deposito nel campo file** | un campo file della tabella di base che ammette il PDF: alla creazione «Depositare nel campo …» è preselezionato e il documento si aggiunge al record come nuovo file protetto da scrittura (il deposito richiede in più il diritto di modificare il record). Vuoto: solo scaricare |
+| **Attivo**, **Ordine** | per la scelta al momento della creazione |
 | **Destinatario (campo indirizzo)** | una riga per ogni riga dell’indirizzo con segnaposto; le righe vuote vengono omesse. SAFT lo pone nel campo indirizzo della carta intestata, il contenuto inizia sotto. Vuoto: nessun campo indirizzo |
 | **Contenuto (HTML)** | il testo del documento in HTML con segnaposto, nell’editor di codice con evidenziazione |
 
@@ -1661,7 +1663,7 @@ sono riservate e non si possono assegnare a nessun ruolo: **Visualizza come ruol
 |---|---|
 | Impostazioni globali: visualizzare / modificare | nome dell’applicazione, logo, schema di colori, assistenti IA (provider, modello, interruttori); carta intestata dell’installazione (Amministrazione › Applicazione › Carta intestata) |
 | Documenti: gestire | modificare la carta intestata e i modelli di documenti di un’app (diritto dell’app, vedi [capitolo 16](#16-documenti)) |
-| Documenti: generare | generare documenti da modelli (diritto dell’app; i modelli seguiranno in una versione successiva) |
+| Documenti: generare | creare e scaricare documenti da modelli (diritto dell’app, più il diritto di lettura sulla tabella; il deposito in un campo file richiede in più il diritto di modifica, la rimozione di documenti creati il diritto di cancellazione) |
 | Menu: visualizzare / creare / modificare / eliminare | curare l’albero dei menu (gruppi, voci, ordine, diritti delle voci) |
 | App: visualizzare | aprire la pagina «App» e il modello di dati per app |
 | App: gestire | creare, modificare, attivare e disattivare app, caricare il manuale, spostare tabelle, eliminare app vuote |

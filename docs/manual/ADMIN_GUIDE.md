@@ -587,7 +587,7 @@ roles and permissions, menus, table structures, settings as well as sign-ins, si
 Secrets (passwords, keys) are never logged.
 
 - **Filters:** user, event, object type, period. The events are: created, updated, deleted, restored, sign-in,
-  sign-in failed, sign-out and exported.
+  sign-in failed, sign-out, exported and document generated (with template, file name and checksum SHA-256).
 - **Exports:** table, format, number of rows, filter and search are recorded, never the exported data.
 - **User:** "System" only appears where really no user was involved. Deleted users appear with their name and
   "(deleted)", permanently deleted ones as "Deleted user #12".
@@ -1415,8 +1415,8 @@ SAFT generates documents such as invoices and letters as PDF. Design and content
 - **Document templates** (**Administration → Application → Document templates**): what is on the letterhead –
   recipient, subject, items, totals, texts – with placeholders for the fields of a record.
 
-Generating documents from a record's row and storing them with the record follows in a later version; until then the
-template's preview shows the finished PDF.
+Documents are created in a record's row with the icon **“Create document”** – by persons with the permission
+*Documents: generate* in the app (see [user guide, section 4.10](USER_GUIDE.md#410-creating-documents)).
 
 ### Letterhead
 
@@ -1499,7 +1499,8 @@ shop and **Semesterrechnung** (semester invoice) in the music school. When an ap
 | **Starting point** | only when creating: *Empty*, *Letter*, *Invoice* or *Data sheet (all fields)*. SAFT builds it from the fields of the base table as soon as it is chosen – *Invoice* takes the first child table as items and computed amounts as totals |
 | **File name** | without `.pdf`, with placeholders, e.g. `Invoice-{{belegnummer}}`; SAFT replaces characters that file systems do not allow |
 | **Language from field** | a field containing `de`, `en`, `fr` or `it` (e.g. correspondence language); numbers, dates and selection values then appear in this language. Empty: the language of the person. The template's fixed text stays as it is |
-| **Active**, **Order** | for the choice when generating |
+| **Store in file field** | a file field of the base table that allows PDF: when creating, “Store in field …” is preselected and the document is added to the record as a new, write-protected file (storing also needs the permission to edit the record). Empty: download only |
+| **Active**, **Order** | for the choice when creating |
 | **Recipient (address field)** | one line per address line with placeholders; empty lines are dropped. SAFT places it in the letterhead's address field; the content starts below it. Empty: no address field |
 | **Content (HTML)** | the document's text as HTML with placeholders, in the code editor with highlighting |
 
@@ -1592,7 +1593,7 @@ reserved for the super admin and cannot be granted to any role: **View as role**
 |---|---|
 | Global settings: view / edit | name of the application, logo, colour scheme, AI assistants (provider, model, switches); the installation's letterhead (Administration › Application › Letterhead) |
 | Documents: manage | edit an app's letterhead and document templates (app permission, see [chapter 16](#16-documents)) |
-| Documents: generate | generate documents from templates (app permission; the templates follow in a later version) |
+| Documents: generate | create and download documents from templates (app permission, plus read permission on the table; storing in a file field also needs the edit permission, removing created documents the delete permission) |
 | Menus: view / create / edit / delete | maintain the menu tree (groups, entries, order, permissions of entries) |
 | Apps: view | open the “Apps” page and the data model per app |
 | Apps: manage | create, edit, activate and deactivate apps, upload the manual, move tables, delete empty apps |

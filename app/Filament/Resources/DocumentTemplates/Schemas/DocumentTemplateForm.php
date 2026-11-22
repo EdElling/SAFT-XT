@@ -8,6 +8,7 @@ use App\Documents\LetterheadResolver;
 use App\Documents\Templates\TemplateChecker;
 use App\Documents\Templates\TemplateFields;
 use App\Documents\Templates\TemplateSkeletons;
+use App\DynamicData\Files\FileKinds;
 use App\DynamicData\Schema\FieldType;
 use App\Filament\Resources\DocumentTemplates\DocumentTemplateResource;
 use App\Models\App;
@@ -66,6 +67,7 @@ class DocumentTemplateForm
                                 ->helperText(__('documents.templates.fields.table_help'))
                                 ->afterStateUpdated(static function (Set $set, Get $get, ?string $operation) use ($table): void {
                                     $set('language_field', null);
+                                    $set('file_field', null);
                                     $set('sample_id', null);
 
                                     if ($operation === 'create' && ($t = $table($get)) !== null) {
@@ -94,6 +96,13 @@ class DocumentTemplateForm
                                 ->placeholder(__('documents.templates.fields.language_none'))
                                 ->helperText(__('documents.templates.fields.language_field_help'))
                                 ->live(),
+                            Select::make('file_field')->label(__('documents.templates.fields.file_field'))
+                                ->options(static fn (Get $get): array => ($t = $table($get)) === null ? [] : TemplateFields::fields($t)
+                                    ->filter(static fn (CustomField $f): bool => $f->valueType() === FieldType::File
+                                        && (($kinds = (array) ($f->optionsArray()['kinds'] ?? [])) === [] || array_intersect(['pdf', FileKinds::ANY], $kinds) !== []))
+                                    ->mapWithKeys(static fn (CustomField $f): array => [$f->name => $f->label.' ('.$f->name.')'])->all())
+                                ->placeholder(__('documents.templates.fields.file_field_none'))
+                                ->helperText(__('documents.templates.fields.file_field_help')),
                             Toggle::make('is_active')->label(__('documents.templates.fields.is_active'))->default(true)->inline(false),
                             TextInput::make('sort_order')->label(__('documents.templates.fields.sort_order'))->numeric()->integer()->default(0),
                             Textarea::make('recipient')->label(__('documents.templates.fields.recipient'))

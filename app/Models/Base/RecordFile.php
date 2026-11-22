@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $width
  * @property int|null $height
  * @property int|null $uploaded_by
+ * @property int|null $document_template_id
+ * @property string|null $sha256
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property CustomTable $custom_table
@@ -46,6 +48,7 @@ class RecordFile extends Model
         'width' => 'int',
         'height' => 'int',
         'uploaded_by' => 'int',
+        'document_template_id' => 'int',
     ];
 
     protected $fillable = [
@@ -61,6 +64,8 @@ class RecordFile extends Model
         'width',
         'height',
         'uploaded_by',
+        'document_template_id',
+        'sha256',
     ];
 
     public function custom_table(): BelongsTo

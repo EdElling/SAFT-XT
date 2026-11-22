@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $body
  * @property string|null $file_name
  * @property string|null $language_field
+ * @property string|null $file_field
  * @property bool $is_active
  * @property int $sort_order
  * @property Carbon|null $created_at
@@ -46,6 +47,7 @@ class DocumentTemplate extends Model
         'body',
         'file_name',
         'language_field',
+        'file_field',
         'is_active',
         'sort_order',
     ];

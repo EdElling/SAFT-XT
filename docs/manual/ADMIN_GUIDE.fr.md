@@ -627,7 +627,8 @@ que les connexions, les déconnexions et les tentatives de connexion échouées.
 sont jamais consignés.
 
 - **Filtres :** utilisateur, événement, type d’objet, période. Les événements sont : créé, modifié, supprimé,
-  restauré, connexion, échec de connexion, déconnexion et exporté.
+  restauré, connexion, échec de connexion, déconnexion, exporté et document généré (avec modèle, nom de fichier et
+  valeur de contrôle SHA-256).
 - **Exports :** sont consignés la table, le format, le nombre de lignes, le filtre et la recherche, jamais les
   données exportées.
 - **Utilisateurs :** « Système » n’apparaît que là où aucun utilisateur n’était réellement impliqué. Les utilisateurs
@@ -1524,8 +1525,8 @@ SAFT génère des documents tels que factures et lettres en PDF. Mise en forme e
   lettres – destinataire, objet, positions, totaux, textes – avec des espaces réservés pour les champs d’un
   enregistrement.
 
-Générer des documents depuis la ligne d’un enregistrement et les déposer avec celui-ci suivra dans une version
-ultérieure ; d’ici là, l’aperçu du modèle montre le PDF terminé.
+Les documents se créent dans la ligne d’un enregistrement avec l’icône **« Créer un document »** – par les personnes
+ayant le droit *Documents: générer* dans l’app (voir [manuel de l’utilisateur, section 4.10](USER_GUIDE.fr.md#410-créer-des-documents)).
 
 ### Papier à lettres
 
@@ -1609,7 +1610,8 @@ un onglet par app ; **Dupliquer** crée une copie à adapter. Les apps de démon
 | **Point de départ** | seulement à la création : *Vide*, *Lettre*, *Facture* ou *Fiche (tous les champs)*. SAFT le construit à partir des champs de la table de base dès qu’elle est choisie – *Facture* prend la première table enfant comme positions et les montants calculés comme totaux |
 | **Nom de fichier** | sans `.pdf`, avec espaces réservés, p. ex. `Facture-{{belegnummer}}` ; SAFT remplace les caractères interdits par les systèmes de fichiers |
 | **Langue depuis le champ** | un champ contenant `de`, `en`, `fr` ou `it` (p. ex. langue de correspondance) ; nombres, dates et valeurs de sélection apparaissent alors dans cette langue. Vide : la langue de la personne. Le texte fixe du modèle reste tel quel |
-| **Actif**, **Ordre** | pour le choix lors de la génération |
+| **Dépôt dans le champ de fichiers** | un champ de fichiers de la table de base qui autorise le PDF : à la création, « Déposer dans le champ … » est présélectionné et le document s’ajoute à l’enregistrement comme nouveau fichier protégé en écriture (le dépôt requiert en plus le droit de modifier l’enregistrement). Vide : seulement télécharger |
+| **Actif**, **Ordre** | pour le choix lors de la création |
 | **Destinataire (champ d’adresse)** | une ligne par ligne d’adresse avec espaces réservés ; les lignes vides sont omises. SAFT la place dans le champ d’adresse du papier à lettres, le contenu commence en dessous. Vide : pas de champ d’adresse |
 | **Contenu (HTML)** | le texte du document en HTML avec espaces réservés, dans l’éditeur de code avec coloration |
 
@@ -1704,7 +1706,7 @@ entrée de menu).
 |---|---|
 | Paramètres globaux: afficher / modifier | nom de l’application, logo, palette de couleurs, assistants IA (fournisseur, modèle, interrupteurs) ; papier à lettres de l’installation (Administration › Application › Papier à lettres) |
 | Documents: gérer | modifier le papier à lettres et les modèles de documents d’une app (droit d’app, voir [chapitre 16](#16-documents)) |
-| Documents: générer | générer des documents à partir de modèles (droit d’app ; les modèles suivront dans une version ultérieure) |
+| Documents: générer | créer et télécharger des documents à partir de modèles (droit d’app, plus le droit de lecture sur la table ; le dépôt dans un champ de fichiers requiert en plus le droit de modification, le retrait de documents créés le droit de suppression) |
 | Menus: afficher / créer / modifier / supprimer | gérer l’arborescence des menus (groupes, entrées, ordre, droits des entrées) |
 | Apps: afficher | ouvrir la page « Apps » et le modèle de données par app |
 | Apps: gérer | créer, modifier, activer et désactiver des apps, téléverser le manuel, déplacer des tables, supprimer les apps vides |

@@ -49,6 +49,9 @@ and record the attendance of a lesson on one page.
 
 Copying an invoice (e.g. for the next semester) copies its items, not its payments.
 
+Create the invoice as PDF on the letterhead in the invoice's row with **“Create document”** (template
+“Semesterrechnung”) – addressed to the contact person, otherwise to the student.
+
 ### Renting instruments
 
 Record each instrument under **Rental instruments** with inventory number, condition and rental price, and the rental

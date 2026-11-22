@@ -51,6 +51,9 @@ giorni – e registrate le presenze di una lezione su una sola pagina.
 
 Copiando una fattura (p. es. per il semestre successivo) vengono riprese le posizioni, non i pagamenti.
 
+Create la fattura come PDF sulla carta intestata nella riga della fattura con **«Crea documento»** (modello
+«Semesterrechnung») – indirizzata alla persona di contatto, altrimenti all’allievo.
+
 ### Noleggiare strumenti
 
 Registrare ogni strumento in **Strumenti a noleggio** con numero d'inventario, stato e prezzo di noleggio, e il

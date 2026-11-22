@@ -51,6 +51,9 @@ Tage – und erfassen die Präsenzen einer Lektion auf einer Seite.
 
 Kopiert man eine Rechnung (z. B. fürs nächste Semester), kommen ihre Positionen mit, die Zahlungen nicht.
 
+Die Rechnung als PDF auf dem Briefpapier erstellen Sie in der Zeile der Rechnung mit **„Dokument erstellen“** (Vorlage
+„Semesterrechnung“) – adressiert an die Kontaktperson, sonst an die Schülerin bzw. den Schüler.
+
 ### Instrumente vermieten
 
 Unter **Mietinstrumente** jedes Instrument mit Inventarnummer, Zustand und Mietpreis erfassen, unter

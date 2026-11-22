@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Ui;
 
+use App\DynamicData\DataAccess;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Files\FileKinds;
 use App\DynamicData\Files\RecordFiles;
@@ -110,7 +111,29 @@ final class DynamicFormBuilder
 
                 return $record === null ? null : ['name' => $record->name, 'size' => $record->size, 'type' => $record->mime, 'url' => $record->url()];
             })
-            ->dehydrateStateUsing(static fn (mixed $state): ?array => $files->referencesFor($table, $field, is_array($state) ? array_values($state) : $state));
+            ->dehydrateStateUsing(static fn (mixed $state): ?array => $files->referencesFor($table, $field, is_array($state) ? array_values($state) : $state))
+            // Erzeugte Dokumente (B-124) entfernen nur Personen mit Lösch-Recht: ohne dieses lehnt das Feld das Entfernen
+            // sofort ab, mit Meldung (die Prüfung beim Speichern bleibt als Rückfall, RecordFiles::assertDocumentsKept).
+            ->extraAlpineAttributes(static fn (): array => DataAccess::current($table, 'delete') ? [] : ['x-init' => self::protectDocumentsScript($field)]);
+    }
+
+    /** FilePond: Entfernen von Dateien mit der Dokument-Markierung ablehnen und eine Meldung zeigen. */
+    private static function protectDocumentsScript(CustomField $field): string
+    {
+        // JS-Text in einfachen Anführungszeichen, ohne " und ' (steht in einem HTML-Attribut).
+        $js = static fn (string $text): string => "'".substr((string) json_encode($text, JSON_HEX_QUOT | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_TAG | JSON_UNESCAPED_UNICODE), 1, -1)."'";
+        $marker = $js(RecordFile::DOCUMENT_MARKER.'=1');
+        $message = $js(__('documents.generate.protected', ['field' => $field->label]));
+
+        return 'const saftGuard = () => {'
+            .' if (! document.contains($el)) return;'
+            .' const data = Alpine.$data($el);'
+            .' if (! data || ! data.pond) return setTimeout(saftGuard, 150);'
+            .' data.pond.setOptions({ beforeRemoveFile: (item) => {'
+            .' if (! String(item.source ?? \'\').includes('.$marker.')) return true;'
+            .' new FilamentNotification().title('.$message.').danger().send();'
+            .' return false } }) };'
+            .' saftGuard()';
     }
 
     private function field(CustomTable $table, CustomField $field): Field

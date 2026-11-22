@@ -408,6 +408,11 @@ class DynamicRecord extends Model
 
         // Dateifelder (B-021): neue Dateien zuordnen, ersetzte und entfernte löschen; endgültig gelöscht → Dateien weg.
         // Im Papierkorb bleiben die Dateien, damit Wiederherstellen sie zurückbringt.
+        static::saving(static function (self $record): void {
+            if (($record->definition()?->files ?? []) !== [] && ($table = $record->customTable()) !== null) {
+                app(RecordFiles::class)->assertDocumentsKept($record, $table);
+            }
+        });
         static::saved(static function (self $record): void {
             if (($record->definition()?->files ?? []) !== [] && ($table = $record->customTable()) !== null) {
                 app(RecordFiles::class)->sync($record, $table);

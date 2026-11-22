@@ -26,6 +26,7 @@
    - [4.7 Esportare i dati](#47-esportare-i-dati)
    - [4.8 Importare i dati](#48-importare-i-dati)
    - [4.9 Report](#49-report)
+   - [4.10 Creare documenti](#410-creare-documenti)
 - [Allegato A – Tipi di campo](#allegato-a--tipi-di-campo)
 - [Allegato B – Glossario](#allegato-b--glossario)
 
@@ -536,6 +537,28 @@ precedente. I collegamenti tra tabelle collegate della stessa connessione si usa
 diverse** – tabella SAFT con tabella collegata, oppure tabelle di connessioni diverse – fanno da ponte i
 [collegamenti tra tabelle](ADMIN_GUIDE.it.md#11-collegamenti-tra-tabelle); i loro campi compaiono nell’albero dei campi sotto
 l’etichetta del collegamento, ad es. «Contatti › Persona (Ricerca) › Cognome».
+
+### 4.10 Creare documenti
+
+Se per una tabella esiste un **modello di documento** (p. es. «Fattura» per i giustificativi), nella riga di un record
+appare l’icona **«Crea documento»** (freccia in giù); sullo smartphone si trova nella finestra dei dettagli. Appare solo
+se il vostro ruolo ha il diritto *Documenti: generare*.
+
+1. Cliccare sull’icona. Se ci sono più modelli, scegliere il **modello**.
+2. **«Depositare nel campo …»** (preselezionato) deposita il PDF anche presso il record, p. es. nei file del
+   giustificativo. L’interruttore appare solo se il modello ha un campo di deposito e potete modificare il record.
+3. **Crea** scarica il PDF.
+
+Il PDF sta sulla carta intestata della vostra organizzazione, con campo indirizzo per buste a finestra e numeri di
+pagina. Numeri, date e valori di selezione appaiono nella lingua del modello o del record.
+
+I **documenti depositati** sono protetti da scrittura: una nuova creazione deposita una **nuova versione** accanto
+(`Rechnung-V-2025-001 (2).pdf`); nulla viene mai sovrascritto. Può rimuovere un tale documento dal campo file solo chi
+può cancellare i record della tabella; altrimenti appare subito un messaggio e il file resta. Quando si **copia** un
+record, i documenti creati non vengono ripresi. Ogni documento creato figura nella **cronologia** del record
+(«documento generato», con modello, nome del file e valore di controllo SHA-256) – anche se è stato solo scaricato.
+
+Se il campo file è pieno (numero massimo di file), il documento viene solo scaricato; un messaggio lo segnala.
 
 ---
 

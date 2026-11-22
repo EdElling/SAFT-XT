@@ -88,6 +88,8 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
 - **Document templates:** HTML with placeholders per app and base table (fields, relations, child tables as items,
   formats), with code editor, field picker, live PDF preview and check; starting points letter, invoice and data
   sheet; demo invoices in the guitar shop and the music school
+- **Creating documents:** icon in a record's row – download the PDF and store it write-protected as a new version in
+  the file field, with checksum (SHA-256) in the change log
 - **Global settings:** display name and colour scheme of the application (branding); connection of external AI models for
   the assistants (provider, model, encrypted API key, daily limit, connection test); personal settings such as language,
   number format and contrast mode under “My settings”

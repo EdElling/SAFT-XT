@@ -30,6 +30,9 @@ Einzelstücken: Instrumente, Zubehör, Dienstleistungen und Sonstiges. Alle Betr
 Einen Beleg vom Typ *Einnahme* mit dem **Kunden** anlegen (neue Kunden unter **Stammdaten › Kunden**), darunter eine Buchung mit der Art **Verkauf**, dem Nettopreis und dem
 MWST-Satz (in der Regel 8,1 %). SAFT rechnet MWST und Brutto. Beim Artikel den Status auf *Verkauft* setzen.
 
+Die **Rechnung** für den Kunden erstellen Sie in der Zeile des Belegs mit **„Dokument erstellen“** (Vorlage „Rechnung“):
+SAFT lädt sie als PDF herunter und legt sie schreibgeschützt in den Belegdateien ab.
+
 ### Teil- und Ratenzahlung
 
 Zu einem Beleg beliebig viele Zahlungen erfassen, je mit eigenem Kassenbeleg. Beim Beleg zeigen **bezahlt** und

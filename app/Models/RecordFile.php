@@ -13,6 +13,12 @@ use Illuminate\Support\Number;
  */
 class RecordFile extends BaseRecordFile
 {
+    /** Von SAFT aus einer Vorlage erzeugtes Dokument (B-124): schreibgeschützt, mit Prüfwert. */
+    public function isGeneratedDocument(): bool
+    {
+        return $this->document_template_id !== null || $this->sha256 !== null;
+    }
+
     public function isImage(): bool
     {
         return in_array($this->mime, ['image/jpeg', 'image/png', 'image/gif', 'image/webp'], true);
@@ -35,9 +41,12 @@ class RecordFile extends BaseRecordFile
         return Number::fileSize($bytes, precision: $bytes < 1024 * 1024 ? 0 : 1);
     }
 
+    /** Markierung in der Adresse erzeugter Dokumente – das Upload-Feld erkennt sie daran (DynamicFormBuilder). */
+    public const string DOCUMENT_MARKER = 'saft-document';
+
     public function url(bool $thumbnail = false): string
     {
-        return route('files.show', ['file' => $this->id, ...($thumbnail ? ['thumb' => 1] : [])]);
+        return route('files.show', ['file' => $this->id, ...($thumbnail ? ['thumb' => 1] : []), ...($this->isGeneratedDocument() ? [self::DOCUMENT_MARKER => 1] : [])]);
     }
 
     /** Wert im Datensatz: Kennung und Name. @return array{id: string, name: string} */

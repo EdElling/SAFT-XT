@@ -25,6 +25,7 @@
    - [Eine Datei lässt sich nicht hochladen.](#eine-datei-lässt-sich-nicht-hochladen)
    - [Bei einer Verknüpfung fehlt eine Tabelle in der Auswahl.](#bei-einer-verknüpfung-fehlt-eine-tabelle-in-der-auswahl)
    - [Eine App ist aus dem Umschalter verschwunden.](#eine-app-ist-aus-dem-umschalter-verschwunden)
+   - [Ich kann ein Dokument nicht aus einem Dateifeld entfernen.](#ich-kann-ein-dokument-nicht-aus-einem-dateifeld-entfernen)
 
 ---
 ## Häufige Fragen
@@ -105,3 +106,10 @@ freizugeben – oder legen Sie die neue Tabelle in deren App an.
 
 Die Administration hat sie deaktiviert – etwa für Umbauten oder bevor sie entfernt wird. Ihre Daten bleiben erhalten; sobald
 sie wieder aktiviert ist, erscheint sie wie zuvor. Fragen Sie bei der Administration nach.
+
+### Ich kann ein Dokument nicht aus einem Dateifeld entfernen.
+
+Dokumente, die SAFT aus einer Vorlage erstellt und beim Datensatz abgelegt hat (z. B. eine Rechnung), sind
+schreibgeschützt: Entfernen darf sie nur, wer Datensätze der Tabelle löschen darf. So bleibt nachvollziehbar, welches
+Dokument verschickt wurde. Ein korrigiertes Dokument erstellen Sie einfach neu – es erscheint als neue Fassung daneben
+(Anwenderhandbuch, Abschnitt 4.10). Muss ein Dokument wirklich weg, bitten Sie jemanden mit Lösch-Recht.

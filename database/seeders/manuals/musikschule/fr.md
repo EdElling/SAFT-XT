@@ -50,6 +50,9 @@ ces jours – et saisissez les présences d'une leçon sur une seule page.
 
 En copiant une facture (p. ex. pour le semestre suivant), ses positions sont reprises, pas les paiements.
 
+Créez la facture en PDF sur le papier à lettres dans la ligne de la facture avec **« Créer un document »** (modèle
+« Semesterrechnung ») – adressée à la personne de contact, sinon à l’élève.
+
 ### Louer des instruments
 
 Saisir chaque instrument sous **Instruments de location** avec numéro d'inventaire, état et prix de location, et la

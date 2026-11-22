@@ -89,6 +89,8 @@ PostgreSQL, MySQL oder MariaDB.
 - **Dokumentvorlagen:** HTML mit Platzhaltern je App und Grundtabelle (Felder, Verknüpfungen, Kind-Tabellen als
   Positionen, Formatierungen), mit Code-Editor, Feldauswahl, Live-Vorschau als PDF und Prüfung; Grundgerüste Brief,
   Rechnung und Datenblatt; Demo-Rechnungen im Gitarrenshop und in der Musikschule
+- **Dokumente erstellen:** Symbol in der Zeile eines Datensatzes – PDF herunterladen und schreibgeschützt als neue
+  Fassung im Dateifeld ablegen, mit Prüfwert (SHA-256) im Änderungsprotokoll
 - **Globale Einstellungen:** Anzeigename und Farbschema der Anwendung (Branding); Anbindung externer KI-Modelle für die
   Assistenten (Anbieter, Modell, verschlüsselter API-Schlüssel, Tageslimit, Verbindungstest); persönliche Einstellungen
   wie Sprache, Zahlenformat und Kontrastmodus unter „Meine Einstellungen“

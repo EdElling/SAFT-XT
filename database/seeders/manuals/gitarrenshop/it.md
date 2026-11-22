@@ -32,6 +32,9 @@ Creare un giustificativo di tipo *Entrata* con il **cliente** (nuovi clienti in 
 registrazione del genere **Vendita**, il prezzo netto e l’aliquota
 IVA (di solito 8,1 %). SAFT calcola IVA e lordo. Impostare lo stato dell’articolo su *Venduto*.
 
+Create la **fattura** per il cliente nella riga del giustificativo con **«Crea documento»** (modello «Rechnung»): SAFT
+la scarica come PDF e la deposita, protetta da scrittura, nei file del giustificativo.
+
 ### Pagamenti parziali e rateali
 
 Registrare per un giustificativo quanti pagamenti servono, ognuno con il proprio scontrino. Sul giustificativo,

@@ -212,7 +212,7 @@ trait SeedsDemoTables
      * Dokumentvorlage der Demo (B-124) aus database/seeders/documents/<datei>.html – nur, wenn es sie (fester Schlüssel)
      * noch nicht gibt; eine geänderte Vorlage bleibt.
      */
-    protected function demoDocumentTemplate(string $uuid, string $table, string $name, string $file, string $recipient, string $fileName): void
+    protected function demoDocumentTemplate(string $uuid, string $table, string $name, string $file, string $recipient, string $fileName, ?string $fileField = null): void
     {
         $customTable = CustomTable::query()->where('name', $table)->first();
 
@@ -228,6 +228,7 @@ trait SeedsDemoTables
             'recipient' => $recipient,
             'body' => (string) file_get_contents(database_path('seeders/documents/'.$file.'.html')),
             'file_name' => $fileName,
+            'file_field' => $fileField,
         ]);
     }
 

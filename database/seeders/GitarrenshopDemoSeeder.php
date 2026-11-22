@@ -96,6 +96,7 @@ class GitarrenshopDemoSeeder extends Seeder
             self::INVOICE_TEMPLATE, 'gitarren_belege', 'Rechnung', 'gitarrenshop-rechnung',
             "{{kunde_id.vorname}} {{kunde_id.name}}\n{{kunde_id.strasse}}\n{{kunde_id.plz}} {{kunde_id.ort}}",
             'Rechnung-{{belegnummer}}',
+            'dateien',
         );
     }
 

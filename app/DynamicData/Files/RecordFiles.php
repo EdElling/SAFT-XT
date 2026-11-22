@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Files;
 
+use App\DynamicData\DataAccess;
 use App\DynamicData\Schema\FieldType;
+use App\Exceptions\BusinessRuleException;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\RecordFile;
+use App\Models\User;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -92,9 +95,12 @@ final class RecordFiles
             }
 
             $files = RecordFile::query()->whereIn('id', self::ids($references))->whereNotNull('record_id')->get()->keyBy('id');
+            // Erzeugte Dokumente (B-124) gehören zum Original – eine Rechnung kommt nicht mit.
+            $references = array_filter($references, static fn (mixed $reference): bool => is_array($reference)
+                && ! (isset($reference['id'], $files[$reference['id']]) && $files[$reference['id']]->isGeneratedDocument()));
             $data[$field->name] = array_map(fn (array $reference): array => isset($reference['id'], $files[$reference['id']])
                 ? $this->copy($files[$reference['id']])->toReference()
-                : $reference, array_values(array_filter($references, 'is_array')));
+                : $reference, array_values($references));
         }
 
         return $data;
@@ -132,6 +138,33 @@ final class RecordFiles
         $files = RecordFile::query()->whereIn('id', $ids)->pluck('path', 'id');
 
         return array_values(array_filter(array_map(static fn (string $id): ?string => $files[$id] ?? null, $ids)));
+    }
+
+    /**
+     * Vor dem Speichern (B-124): Erzeugte Dokumente sind schreibgeschützt – aus dem Dateifeld entfernen darf sie nur, wer
+     * Datensätze der Tabelle löschen darf. Ohne angemeldete Person (Konsole, Seeder) gilt die Sperre nicht.
+     *
+     * @throws BusinessRuleException
+     */
+    public function assertDocumentsKept(DynamicRecord $record, CustomTable $table): void
+    {
+        $user = auth()->user();
+
+        if (! $user instanceof User || ! $record->exists || DataAccess::allows($user, $table, 'delete')) {
+            return;
+        }
+
+        foreach (self::fileFields($table) as $field) {
+            if (! $record->isDirty($field->name)) {
+                continue;
+            }
+
+            $removed = array_diff(self::ids($record->getOriginal($field->name)), self::ids($record->getAttribute($field->name)));
+
+            if ($removed !== [] && RecordFile::query()->whereIn('id', $removed)->where(static fn ($q) => $q->whereNotNull('document_template_id')->orWhereNotNull('sha256'))->exists()) {
+                throw new BusinessRuleException(__('documents.generate.protected', ['field' => $field->label]), 'documents.protected');
+            }
+        }
     }
 
     /**
@@ -291,6 +324,18 @@ final class RecordFiles
         return is_array($value)
             ? array_values(array_filter(array_map(static fn (mixed $item): ?string => is_array($item) && is_string($item['name'] ?? null) ? $item['name'] : null, $value)))
             : [];
+    }
+
+    /**
+     * Feldwert als Liste von {id, name}; null ohne Dateien.
+     *
+     * @return list<array{id: string, name: string}>|null
+     */
+    public static function references(mixed $value): ?array
+    {
+        $items = self::items($value);
+
+        return is_array($items) ? array_values(array_filter($items, static fn (mixed $item): bool => is_array($item) && isset($item['id']))) : null;
     }
 
     /**

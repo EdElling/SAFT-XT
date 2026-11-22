@@ -26,6 +26,7 @@
    - [4.7 Exporting data](#47-exporting-data)
    - [4.8 Importing data](#48-importing-data)
    - [4.9 Reports](#49-reports)
+   - [4.10 Creating documents](#410-creating-documents)
 - [Appendix A – Field types](#appendix-a--field-types)
 - [Appendix B – Glossary](#appendix-b--glossary)
 
@@ -509,6 +510,28 @@ complete** snapshot always applies; if it is deleted, the report automatically u
 between connected tables of the same connection can be used as usual. **Across sources** – a SAFT table with a
 connected table, or tables of different connections – are joined by [table links](ADMIN_GUIDE.md#11-table-links); their fields
 appear in the field tree under the link's label, e.g. "Contacts › Person (Research) › Last name".
+
+### 4.10 Creating documents
+
+If there is a **document template** for a table (e.g. “Invoice” for receipts), the icon **“Create document”** (arrow
+down) appears in a record's row; on a smartphone it is in the details window. It only appears if your role has the
+permission *Documents: generate*.
+
+1. Click the icon. If there are several templates, choose the **template**.
+2. **“Store in field …”** (preselected) also stores the PDF with the record, e.g. in the receipt files. The switch only
+   appears if the template has a storage field and you may edit the record.
+3. **Create** downloads the PDF.
+
+The PDF is on your organisation's letterhead, with an address field for window envelopes and page numbers. Numbers,
+dates and selection values appear in the language of the template or the record.
+
+**Stored documents** are write-protected: creating again places a **new version** next to it
+(`Rechnung-V-2025-001 (2).pdf`); nothing is ever overwritten. Only those who may delete records of the table may remove
+such a document from the file field; otherwise a message appears immediately when removing, and the file stays. When
+**copying** a record, created documents do not come along. Every created document is shown in the record's **history**
+(“document generated”, with template, file name and checksum SHA-256) – also if it was only downloaded.
+
+If the file field is full (maximum number of files), the document is only downloaded; a message points this out.
 
 ---
 

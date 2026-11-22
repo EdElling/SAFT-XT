@@ -26,6 +26,7 @@
    - [4.7 Daten exportieren](#47-daten-exportieren)
    - [4.8 Daten importieren](#48-daten-importieren)
    - [4.9 Auswertungen](#49-auswertungen)
+   - [4.10 Dokumente erstellen](#410-dokumente-erstellen)
 - [Anhang A – Feldtypen](#anhang-a--feldtypen)
 - [Anhang B – Glossar](#anhang-b--glossar)
 
@@ -538,6 +539,28 @@ automatisch mit dem vorherigen. Verknüpfungen zwischen angebundenen Tabellen de
 gewohnt nutzen. **Zwischen Quellen** – SAFT-Tabelle mit angebundener Tabelle oder Tabellen verschiedener Verbindungen –
 verbinden [Tabellenverknüpfungen](ADMIN_GUIDE.de.md#11-tabellenverknüpfungen); ihre Felder erscheinen im Feldbaum
 unter der Bezeichnung der Verknüpfung, z. B. „Kontakte › Person (Forschung) › Nachname“.
+
+### 4.10 Dokumente erstellen
+
+Gibt es für eine Tabelle eine **Dokumentvorlage** (z. B. „Rechnung“ für Belege), erscheint in der Zeile eines Datensatzes
+das Symbol **„Dokument erstellen“** (Pfeil nach unten); auf dem Smartphone steht es im Details-Fenster. Es erscheint nur,
+wenn Ihre Rolle das Recht *Dokumente: erzeugen* hat.
+
+1. Symbol anklicken. Gibt es mehrere Vorlagen, wählen Sie die **Vorlage**.
+2. **„Im Feld … ablegen“** (vorgewählt) legt das PDF zusätzlich beim Datensatz ab, z. B. in den Belegdateien. Der
+   Schalter erscheint nur, wenn die Vorlage ein Ablagefeld hat und Sie den Datensatz bearbeiten dürfen.
+3. **Erstellen** lädt das PDF herunter.
+
+Das PDF steht auf dem Briefpapier Ihrer Organisation, mit Adressfeld für Fensterkuverts und Seitenzahlen. Zahlen, Daten
+und Auswahlwerte erscheinen in der Sprache der Vorlage bzw. des Datensatzes.
+
+**Abgelegte Dokumente** sind schreibgeschützt: Ein erneutes Erstellen legt eine **neue Fassung** daneben
+(`Rechnung-V-2025-001 (2).pdf`), überschrieben wird nie. Aus dem Dateifeld entfernen darf ein solches Dokument nur, wer
+Datensätze der Tabelle löschen darf; sonst erscheint beim Entfernen sofort eine Meldung, und die Datei bleibt. Beim
+**Kopieren** eines Datensatzes kommen erstellte Dokumente nicht mit. Jedes erstellte Dokument steht im **Verlauf** des
+Datensatzes („Dokument erzeugt“, mit Vorlage, Dateiname und Prüfwert SHA-256) – auch, wenn es nur heruntergeladen wurde.
+
+Ist das Dateifeld voll (Höchstzahl Dateien), wird das Dokument nur heruntergeladen; eine Meldung weist darauf hin.
 
 ---
 

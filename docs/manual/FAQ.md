@@ -25,6 +25,7 @@
    - [A file cannot be uploaded.](#a-file-cannot-be-uploaded)
    - [A table is missing from the choice for a relation.](#a-table-is-missing-from-the-choice-for-a-relation)
    - [An app has disappeared from the switcher.](#an-app-has-disappeared-from-the-switcher)
+   - [I cannot remove a document from a file field.](#i-cannot-remove-a-document-from-a-file-field)
 
 ---
 ## Frequently asked questions
@@ -102,3 +103,10 @@ table in that app.
 
 The administration has deactivated it – e.g. for rework or before it is removed. Its data is kept; as soon as it is
 activated again, it appears as before. Ask the administration.
+
+### I cannot remove a document from a file field.
+
+Documents that SAFT created from a template and stored with the record (e.g. an invoice) are write-protected: only
+those who may delete records of the table may remove them. This keeps it traceable which document was sent. Simply
+create a corrected document again – it appears as a new version next to it (user guide, section 4.10). If a document
+really has to go, ask someone with the delete permission.

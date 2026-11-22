@@ -26,6 +26,7 @@
    - [4.7 Exporter des données](#47-exporter-des-données)
    - [4.8 Importer des données](#48-importer-des-données)
    - [4.9 Rapports](#49-rapports)
+   - [4.10 Créer des documents](#410-créer-des-documents)
 - [Annexe A – Types de champs](#annexe-a--types-de-champs)
 - [Annexe B – Glossaire](#annexe-b--glossaire)
 
@@ -556,6 +557,31 @@ automatiquement avec le précédent. Les liaisons entre tables liées de la mêm
 **Entre sources** – table SAFT et table liée, ou tables de connexions différentes – les
 [liaisons de tables](ADMIN_GUIDE.fr.md#11-liaisons-de-tables) font le lien ; leurs champs apparaissent dans l’arborescence des
 champs sous le libellé de la liaison, p. ex. « Contacts › Personne (Recherche) › Nom ».
+
+### 4.10 Créer des documents
+
+S’il existe un **modèle de document** pour une table (p. ex. « Facture » pour les justificatifs), l’icône **« Créer un
+document »** (flèche vers le bas) apparaît dans la ligne d’un enregistrement ; sur smartphone, elle se trouve dans la
+fenêtre de détails. Elle n’apparaît que si votre rôle a le droit *Documents: générer*.
+
+1. Cliquer sur l’icône. S’il y a plusieurs modèles, choisir le **modèle**.
+2. **« Déposer dans le champ … »** (présélectionné) dépose en plus le PDF avec l’enregistrement, p. ex. dans les
+   fichiers du justificatif. L’interrupteur n’apparaît que si le modèle a un champ de dépôt et que vous pouvez modifier
+   l’enregistrement.
+3. **Créer** télécharge le PDF.
+
+Le PDF figure sur le papier à lettres de votre organisation, avec champ d’adresse pour enveloppes à fenêtre et numéros
+de page. Nombres, dates et valeurs de sélection apparaissent dans la langue du modèle ou de l’enregistrement.
+
+Les **documents déposés** sont protégés en écriture : une nouvelle création dépose une **nouvelle version** à côté
+(`Rechnung-V-2025-001 (2).pdf`) ; rien n’est jamais écrasé. Seules les personnes autorisées à supprimer les
+enregistrements de la table peuvent retirer un tel document du champ de fichiers ; sinon un message apparaît aussitôt
+et le fichier reste. Lors de la **copie** d’un enregistrement, les documents créés ne sont pas repris. Chaque document
+créé figure dans l’**historique** de l’enregistrement (« document généré », avec modèle, nom de fichier et valeur de
+contrôle SHA-256) – même s’il a seulement été téléchargé.
+
+Si le champ de fichiers est plein (nombre maximal de fichiers), le document est seulement téléchargé ; un message le
+signale.
 
 ---
 

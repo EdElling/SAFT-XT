@@ -23,6 +23,7 @@ return [
         'snapshot_created' => 'Stato dei dati acquisito',
         'assistant' => 'Assistente IA',
         'snapshot_deleted' => 'Stato dei dati eliminato',
+        'document' => 'documento generato',
         'password_changed' => 'Password cambiata',
         'system_log_viewed' => 'Registro di sistema consultato',
         'two_factor_enabled' => 'Due fattori configurati',

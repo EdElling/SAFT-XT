@@ -32,6 +32,9 @@ Créer un justificatif de type *Recette* avec le **client** (nouveaux clients so
 une écriture du genre **Vente**, le prix net et le taux de TVA (en général
 8,1 %). SAFT calcule TVA et brut. Passer le statut de l’article à *Vendu*.
 
+Créez la **facture** du client dans la ligne du justificatif avec **« Créer un document »** (modèle « Rechnung ») : SAFT
+la télécharge en PDF et la dépose, protégée en écriture, dans les fichiers du justificatif.
+
 ### Paiements partiels et échelonnés
 
 Saisir autant de paiements que nécessaire pour un justificatif, chacun avec son ticket. Sur le justificatif, **payé**

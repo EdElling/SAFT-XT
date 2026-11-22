@@ -99,7 +99,7 @@ class DynamicDataPageTest extends DynamicDataTestCase
             ->assertHasNoActionErrors();
         $names = array_keys($page->instance()->getTable()->getFlatActions());
         $desktop = array_values(array_filter($names, static fn (string $n): bool => str_ends_with($n, 'Row')));
-        $this->assertSame(['viewRow', 'editRow', 'copyRow', 'historyRow', 'deleteRow', 'restoreRow'], $desktop);
+        $this->assertSame(['viewRow', 'editRow', 'copyRow', 'documentRow', 'historyRow', 'deleteRow', 'restoreRow'], $desktop);
         $this->assertSame('Beta', DynamicRecord::forTable($this->projekte)->newQuery()->value('titel'));
 
         // Umschaltung nach Breite über CSS-Klassen.

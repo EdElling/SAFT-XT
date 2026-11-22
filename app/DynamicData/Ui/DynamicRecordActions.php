@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Ui;
 
+use App\Documents\DocumentGenerator;
 use App\DynamicData\DataAccess;
-use App\DynamicData\RecordCopier;
 use App\DynamicData\Export\ExportFormat;
 use App\DynamicData\Export\TableExporter;
 use App\DynamicData\Import\RecordImportAnalysis;
 use App\DynamicData\Import\RecordImporter;
+use App\DynamicData\RecordCopier;
 use App\DynamicData\Schema\FieldType;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Support\ActivityChanges;
@@ -17,6 +18,7 @@ use App\Models\Activity;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\User;
 use App\Support\AppLocale;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -29,6 +31,8 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\RepeatableEntry\TableColumn;
 use Filament\Infolists\Components\TextEntry;
@@ -363,6 +367,7 @@ final class DynamicRecordActions
             $icon(self::view($table, $locked, 'viewRow')),
             $icon(self::edit($table, $locked, 'editRow'))->after($refresh),
             $icon(self::copy($table, $locked, 'copyRow')),
+            $icon(self::document($table, 'documentRow')),
             $icon(self::history('historyRow'))->visible(self::writable($table)),
             $icon(self::delete($table, 'deleteRow'))->after(fn ($livewire, DynamicRecord $record) => $livewire->dispatch(
                 self::REFRESH_EVENT,
@@ -432,6 +437,7 @@ final class DynamicRecordActions
             ->extraModalFooterActions(fn (DynamicRecord $record): array => [
                 self::edit($table, $locked)->record($record)->after(fn ($livewire) => $livewire->dispatch(self::REFRESH_EVENT)),
                 self::copy($table, $locked)->record($record)->cancelParentActions(),
+                self::document($table)->record($record),
                 self::history()->record($record)->visible(self::writable($table)),
                 self::delete($table)->record($record)->cancelParentActions()->after(fn ($livewire) => $livewire->dispatch(
                     self::REFRESH_EVENT,
@@ -511,6 +517,66 @@ final class DynamicRecordActions
                     ->body($result['children'] > 0 ? trans_choice('data.copy.copied_children', $result['children'], ['count' => $result['children']]) : null)
                     ->send();
                 $livewire->dispatch(self::REFRESH_EVENT);
+            });
+    }
+
+    /**
+     * Dokument aus einer Vorlage erzeugen (B-124, D1c): Vorlage wählen (bei mehreren), auf Wunsch im Dateifeld der Vorlage
+     * ablegen, PDF herunterladen. Nur, wenn es für die Tabelle eine Vorlage gibt, die die Person verwenden darf.
+     */
+    public static function document(CustomTable $table, string $name = 'document'): Action
+    {
+        $generator = app(DocumentGenerator::class);
+        $user = static fn (): ?User => auth()->user() instanceof User ? auth()->user() : null;
+        $templates = static fn () => $generator->templatesFor($table, $user());
+        $chosen = static fn (mixed $id) => $templates()->firstWhere('id', (int) $id) ?? $templates()->first();
+
+        return Action::make($name)
+            ->label(__('documents.generate.action'))
+            ->icon('heroicon-o-document-arrow-down')
+            ->color('gray')
+            ->visible(static fn (?DynamicRecord $record): bool => $templates()->isNotEmpty() && ! ($record?->trashed() ?? false))
+            ->modalHeading(fn (DynamicRecord $record): string => __('documents.generate.heading', ['title' => RecordEntries::title($table, $record)]))
+            ->modalWidth('md')
+            ->modalSubmitActionLabel(__('documents.generate.submit'))
+            ->schema(static fn (DynamicRecord $record): array => [
+                Select::make('template')->label(__('documents.generate.template'))
+                    ->options($templates()->mapWithKeys(static fn ($t): array => [$t->id => $t->name])->all())
+                    ->default($templates()->first()?->id)
+                    ->required()->selectablePlaceholder(false)->live()
+                    ->visible($templates()->count() > 1),
+                Toggle::make('store')
+                    ->label(static fn (Get $get): string => __('documents.generate.store', ['field' => (string) $generator->storageField($chosen($get('template')), $table)?->label]))
+                    ->helperText(__('documents.generate.store_help'))
+                    ->default(true)
+                    ->visible(static fn (Get $get): bool => $generator->canStore($chosen($get('template')), $table, $record, $user())),
+            ])
+            ->action(static function (array $data, DynamicRecord $record, mixed $livewire) use ($generator, $chosen, $user, $table) {
+                $template = $chosen($data['template'] ?? null);
+                $store = (bool) ($data['store'] ?? false) && $generator->canStore($template, $table, $record, $user());
+
+                try {
+                    $result = $generator->generate($template, $record, $user(), $store);
+                } catch (BusinessRuleException $exception) {
+                    if ($exception->errorCode !== 'documents.field_full') {
+                        throw $exception;
+                    }
+
+                    // Feld voll: nicht ablegen, aber herunterladen.
+                    Notification::make()->warning()->title($exception->getMessage())->send();
+                    $result = $generator->generate($template, $record, $user(), false);
+                }
+
+                if ($result['file'] !== null) {
+                    Notification::make()->success()->title(__('documents.generate.stored', ['name' => $result['file']->name]))->send();
+                    $livewire->dispatch(self::REFRESH_EVENT);
+                }
+
+                $pdf = $result['document']->pdf;
+
+                return response()->streamDownload(static function () use ($pdf): void {
+                    echo $pdf;
+                }, $result['file']?->name ?? $result['document']->fileName, ['Content-Type' => 'application/pdf']);
             });
     }
 
