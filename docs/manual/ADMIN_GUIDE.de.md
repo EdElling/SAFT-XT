@@ -1469,6 +1469,8 @@ SAFT erzeugt Dokumente wie Rechnungen und Briefe als PDF. Gestaltung und Inhalt 
 
 Erstellt werden Dokumente in der Zeile eines Datensatzes mit dem Symbol **„Dokument erstellen“** – von Personen mit dem
 Recht *Dokumente: erzeugen* in der App (siehe [Anwenderhandbuch, Abschnitt 4.10](USER_GUIDE.de.md#410-dokumente-erstellen)).
+Für mehrere Datensätze auf einmal wählen sie die Zeilen mit Häkchen und **„Dokumente erstellen“** im Tabellenkopf –
+ein PDF mit allen Dokumenten oder ein ZIP, höchstens 50 je Lauf (`DOCUMENTS_BATCH_MAX`, siehe Systemadministration).
 
 ### Briefpapier
 

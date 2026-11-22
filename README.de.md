@@ -93,7 +93,8 @@ PostgreSQL, MySQL oder MariaDB.
 - **KI-Assistent für Dokumentvorlagen** (optional): Vorlage in eigenen Worten beschreiben oder ändern lassen –
   Empfänger, Inhalt und Dateiname, geprüft wie jede Vorlage; übertragen wird nur die Struktur der Tabelle, nie Datensätze
 - **Dokumente erstellen:** Symbol in der Zeile eines Datensatzes – PDF herunterladen und schreibgeschützt als neue
-  Fassung im Dateifeld ablegen, mit Prüfwert (SHA-256) im Änderungsprotokoll
+  Fassung im Dateifeld ablegen, mit Prüfwert (SHA-256) im Änderungsprotokoll; für mehrere ausgewählte Datensätze auf
+  einmal als ein PDF zum Drucken oder als ZIP
 - **Globale Einstellungen:** Anzeigename und Farbschema der Anwendung (Branding); Anbindung externer KI-Modelle für die
   Assistenten (Anbieter, Modell, verschlüsselter API-Schlüssel, Tageslimit, Verbindungstest); persönliche Einstellungen
   wie Sprache, Zahlenformat und Kontrastmodus unter „Meine Einstellungen“

@@ -171,5 +171,10 @@ Jede Etappe ist für sich auslieferbar. D1 ist ohne KI vollständig nutzbar.
   solange leer oder vom Assistenten), „Rückgängig“ einen Schritt. An die KI: Beschreibung, Vorlage, Felder der
   Grundtabelle, ihrer Verknüpfungen (ein Schritt) und Kind-Tabellen, das Grundgerüst als Stilmuster – nie Datensätze.
   Auch PDF-Hinweise gehen zur Korrektur zurück. Bausteine (D2b) erst nach Bedarf, eigener Plan.
+- **D3a (22.11.2026):** Auswahl per Häkchen in den Datentabellen (Teil 1 von B-133), nur sichtbar mit einer
+  Sammelaktion. Sammelaktion „Dokumente erstellen“: ein zusammengefügtes PDF (Seiten der einzelnen Dokumente unverändert,
+  je eigene Seitenzählung) oder ZIP; Ablage je Datensatz wie bei einem Dokument, was nicht abgelegt werden kann, wird
+  trotzdem erzeugt und gemeldet. Ohne Queue-Worker direkt in der Anfrage, höchstens `DOCUMENTS_BATCH_MAX` (Vorgabe 50)
+  Datensätze. Versand per E-Mail folgt in D3b mit eigenem App-Recht *Dokumente: versenden*.
 - **PDF/A-Prüfung (22.11.2026):** veraPDF bestätigt PDF/A-3b für die erzeugte Rechnung des Gitarrenshops und die
   Semesterrechnung der Musikschule.

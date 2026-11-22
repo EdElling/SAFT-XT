@@ -1490,6 +1490,8 @@ SAFT genera documenti come fatture e lettere in PDF. Impaginazione e contenuto s
 
 I documenti si creano nella riga di un record con l’icona **«Crea documento»** – dalle persone con il diritto
 *Documenti: generare* nell’app (vedi [manuale utente, sezione 4.10](USER_GUIDE.it.md#410-creare-documenti)).
+Per più record alla volta spuntano le righe e scelgono **«Crea documenti»** nell’intestazione della tabella – un PDF
+con tutti i documenti o uno ZIP, al massimo 50 per passaggio (`DOCUMENTS_BATCH_MAX`).
 
 ### Carta intestata
 

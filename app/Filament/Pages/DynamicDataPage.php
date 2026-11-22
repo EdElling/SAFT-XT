@@ -261,6 +261,11 @@ class DynamicDataPage extends Page implements HasTable
                 // Zusammengesetzter Schlüssel: Details und Bearbeiten ja, Auswahl (Master-Detail) nein.
                 ...DynamicRecordActions::rowActions($customTable, [], $customTable->hasKey() ? app(PluginRegistry::class)->dataActions($customTable, DataAction::RECORD) : []),
             ])
+            // Auswahl mehrerer Datensätze (B-133 Teil 1): Häkchen erscheinen nur, wenn eine Sammelaktion sichtbar ist.
+            ->toolbarActions([
+                DynamicRecordActions::documentBulk($customTable),
+            ])
+            ->checkIfRecordIsSelectableUsing(static fn (DynamicRecord $record): bool => ! $record->trashed())
             ->emptyStateHeading(__('data.empty'));
     }
 

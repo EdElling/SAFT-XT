@@ -44,6 +44,7 @@ und [Anhang C](INSTALL_PRODUCTION.de.md) (Produktionsserver, z. B. ein Managed S
 | Höchstzahl der Datensätze je Export ändern (Vorgabe 50.000) | `APP_DATA_EXPORT_MAX_ROWS=50000` in der `.env` |
 | Höchstzahl der Zeilen je Datenimport in eine bestehende Tabelle ändern (Vorgabe 10'000) | `APP_DATA_IMPORT_MAX_RECORD_ROWS=10000` in der `.env` |
 | Höchstzahl der Datensätze je Kopie samt mitkopierten Kind-Datensätzen ändern (Vorgabe 1000) | `APP_DATA_COPY_MAX_RECORDS=1000` in der `.env` |
+| Höchstzahl der Datensätze je Sammellauf „Dokumente erstellen“ ändern (Vorgabe 50). Der Lauf geschieht direkt in der Anfrage, ohne Queue-Worker: mehr Datensätze brauchen mehr Zeit und Speicher (`max_execution_time`, `memory_limit` von PHP) | `DOCUMENTS_BATCH_MAX=50` in der `.env` |
 | Speicher für Dateifelder: `local` (Vorgabe, `storage/app/private/files`) oder `s3` (S3-kompatibler Speicher, z. B. AWS, Infomaniak, Exoscale; Zugangsdaten in `AWS_*`, bei anderen Anbietern als AWS auch `AWS_ENDPOINT` und `AWS_USE_PATH_STYLE_ENDPOINT=true`; vorher `composer require league/flysystem-aws-s3-v3`). Nicht wechseln, solange Dateien gespeichert sind – vorhandene Dateien werden nicht verschoben | `APP_DATA_FILES_DISK=local` in der `.env` |
 | Zeitzone der Anwendung (Vorgabe `Europe/Zurich`) | `APP_TIMEZONE` in der `.env` |
 | Dem Load Balancer des Hosters vertrauen, wenn HTTPS vor dem Server endet (Adressen des Proxys, kommagetrennt) | `TRUSTED_PROXIES` in der `.env` |

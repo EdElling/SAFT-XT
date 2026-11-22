@@ -533,6 +533,20 @@ such a document from the file field; otherwise a message appears immediately whe
 
 If the file field is full (maximum number of files), the document is only downloaded; a message points this out.
 
+**Several records at once** (e.g. all invoices of a term):
+
+1. In the list, choose the records with the **checkboxes** at the start of the row. The checkbox in the table header
+   selects the whole page; SAFT then offers to select **all** the filter shows – also on the further pages.
+2. Click **“Create documents”** in the table header, choose the template and the **output**: **one PDF with all
+   documents** (for printing; each starts on a new first page of the letterhead) or **ZIP with one file per document**.
+3. **“Store in field … for each record”** (preselected) stores each document with its record, as above.
+4. **Create** downloads the file (e.g. `Rechnung-2026-11-22.pdf`).
+
+The message afterwards says how many documents were created and stored and, per record, what could not be stored
+(e.g. field full) – these documents are in the file anyway. At most **50 records** at a time (the administration can
+change the number); with more, a message appears and nothing is created. The checkboxes only exist in tables with a
+document template; deleted records cannot be selected.
+
 ---
 
 ## Appendix A – Field types

@@ -1532,6 +1532,8 @@ SAFT génère des documents tels que factures et lettres en PDF. Mise en forme e
 
 Les documents se créent dans la ligne d’un enregistrement avec l’icône **« Créer un document »** – par les personnes
 ayant le droit *Documents: générer* dans l’app (voir [manuel de l’utilisateur, section 4.10](USER_GUIDE.fr.md#410-créer-des-documents)).
+Pour plusieurs enregistrements à la fois, elles cochent les lignes et choisissent **« Créer des documents »** dans
+l’en-tête du tableau – un PDF avec tous les documents ou un ZIP, au plus 50 par passage (`DOCUMENTS_BATCH_MAX`).
 
 ### Papier à lettres
 

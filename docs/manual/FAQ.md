@@ -26,6 +26,7 @@
    - [A table is missing from the choice for a relation.](#a-table-is-missing-from-the-choice-for-a-relation)
    - [An app has disappeared from the switcher.](#an-app-has-disappeared-from-the-switcher)
    - [I cannot remove a document from a file field.](#i-cannot-remove-a-document-from-a-file-field)
+   - [Checkboxes for selecting are missing in a list.](#checkboxes-for-selecting-are-missing-in-a-list)
 
 ---
 ## Frequently asked questions
@@ -110,3 +111,9 @@ Documents that SAFT created from a template and stored with the record (e.g. an 
 those who may delete records of the table may remove them. This keeps it traceable which document was sent. Simply
 create a corrected document again – it appears as a new version next to it (user guide, section 4.10). If a document
 really has to go, ask someone with the delete permission.
+
+### Checkboxes for selecting are missing in a list.
+
+Checkboxes for selecting several records only appear if there is a bulk action you may use – currently **“Create
+documents”**: the table needs an active document template, and your role the permission *Documents: generate* (user
+guide, section 4.10). Deleted records in the recycle bin cannot be selected.

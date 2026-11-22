@@ -26,6 +26,7 @@
    - [In un collegamento manca una tabella nella scelta.](#in-un-collegamento-manca-una-tabella-nella-scelta)
    - [Un’app è scomparsa dal selettore.](#unapp-è-scomparsa-dal-selettore)
    - [Non riesco a rimuovere un documento da un campo file.](#non-riesco-a-rimuovere-un-documento-da-un-campo-file)
+   - [In un elenco mancano le caselle di spunta per selezionare.](#in-un-elenco-mancano-le-caselle-di-spunta-per-selezionare)
 
 ---
 ## Domande frequenti
@@ -113,3 +114,9 @@ I documenti che SAFT ha creato da un modello e depositato presso il record (p. e
 scrittura: può rimuoverli solo chi può cancellare i record della tabella. Così resta tracciabile quale documento è
 stato inviato. Create semplicemente di nuovo un documento corretto – appare come nuova versione accanto (manuale
 utente, sezione 4.10). Se un documento deve davvero sparire, chiedete a qualcuno con il diritto di cancellazione.
+
+### In un elenco mancano le caselle di spunta per selezionare.
+
+Le caselle di spunta per selezionare più record appaiono solo se esiste un’azione di gruppo che potete usare – oggi
+**«Crea documenti»**: la tabella deve avere un modello di documento attivo e il vostro ruolo il diritto *Documenti:
+generare* (manuale utente, sezione 4.10). I record eliminati nel cestino non si possono selezionare.

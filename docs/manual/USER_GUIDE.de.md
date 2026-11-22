@@ -562,6 +562,21 @@ Datensatzes („Dokument erzeugt“, mit Vorlage, Dateiname und Prüfwert SHA-25
 
 Ist das Dateifeld voll (Höchstzahl Dateien), wird das Dokument nur heruntergeladen; eine Meldung weist darauf hin.
 
+**Mehrere Datensätze auf einmal** (z. B. alle Rechnungen eines Semesters):
+
+1. In der Liste die Datensätze mit den **Häkchen** vorne in der Zeile wählen. Das Häkchen im Tabellenkopf wählt die
+   ganze Seite; danach bietet SAFT an, **alle** zu wählen, die der Filter zeigt – auch auf den weiteren Seiten.
+2. Im Tabellenkopf **„Dokumente erstellen“** anklicken, die Vorlage und die **Ausgabe** wählen: **ein PDF mit allen
+   Dokumenten** (zum Drucken; jedes beginnt auf einer neuen ersten Seite des Briefpapiers) oder **ZIP mit einer Datei
+   je Dokument**.
+3. **„Je Datensatz im Feld … ablegen“** (vorgewählt) legt jedes Dokument bei seinem Datensatz ab, wie oben.
+4. **Erstellen** lädt die Datei herunter (z. B. `Rechnung-2026-11-22.pdf`).
+
+Die Meldung danach nennt, wie viele Dokumente erstellt und abgelegt wurden, und je Datensatz, was nicht abgelegt werden
+konnte (z. B. Feld voll) – diese Dokumente sind trotzdem in der Datei. Höchstens **50 Datensätze** auf einmal (die
+Administration kann die Zahl ändern); bei mehr erscheint eine Meldung, und nichts wird erstellt. Die Häkchen gibt es nur
+in Tabellen mit Dokumentvorlage; gelöschte Datensätze lassen sich nicht wählen.
+
 ---
 
 ## Anhang A – Feldtypen

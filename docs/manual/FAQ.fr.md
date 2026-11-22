@@ -26,6 +26,7 @@
    - [Une table manque dans le choix d’une liaison.](#une-table-manque-dans-le-choix-dune-liaison)
    - [Une app a disparu du sélecteur.](#une-app-a-disparu-du-sélecteur)
    - [Je ne peux pas retirer un document d’un champ de fichiers.](#je-ne-peux-pas-retirer-un-document-dun-champ-de-fichiers)
+   - [Dans une liste, les cases à cocher pour sélectionner manquent.](#dans-une-liste-les-cases-à-cocher-pour-sélectionner-manquent)
 
 ---
 ## Questions fréquentes
@@ -115,3 +116,10 @@ en écriture : seules les personnes autorisées à supprimer les enregistrements
 sait toujours quel document a été envoyé. Créez simplement un document corrigé – il apparaît comme nouvelle version à
 côté (manuel de l’utilisateur, section 4.10). Si un document doit vraiment disparaître, demandez à une personne ayant
 le droit de suppression.
+
+### Dans une liste, les cases à cocher pour sélectionner manquent.
+
+Les cases à cocher pour sélectionner plusieurs enregistrements n’apparaissent que s’il existe une action groupée que
+vous pouvez utiliser – actuellement **« Créer des documents »** : la table doit avoir un modèle de document actif, et
+votre rôle le droit *Documents: générer* (manuel de l’utilisateur, section 4.10). Les enregistrements supprimés dans la
+corbeille ne peuvent pas être sélectionnés.

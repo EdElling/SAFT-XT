@@ -1422,6 +1422,8 @@ SAFT generates documents such as invoices and letters as PDF. Design and content
 
 Documents are created in a record's row with the icon **“Create document”** – by persons with the permission
 *Documents: generate* in the app (see [user guide, section 4.10](USER_GUIDE.md#410-creating-documents)).
+For several records at once they select the rows with checkboxes and **“Create documents”** in the table header – one
+PDF with all documents or a ZIP, at most 50 per run (`DOCUMENTS_BATCH_MAX`, see system administration).
 
 ### Letterhead
 

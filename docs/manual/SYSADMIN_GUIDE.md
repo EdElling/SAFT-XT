@@ -44,6 +44,7 @@ Installing SAFT step by step is described in [Appendix B](INSTALL_DEVELOPMENT.md
 | Change the maximum number of records per export (default 50,000) | `APP_DATA_EXPORT_MAX_ROWS=50000` in `.env` |
 | Change the maximum number of rows per data import into an existing table (default 10,000) | `APP_DATA_IMPORT_MAX_RECORD_ROWS=10000` in `.env` |
 | Change the maximum number of records per copy including child records copied along (default 1000) | `APP_DATA_COPY_MAX_RECORDS=1000` in `.env` |
+| Change the maximum number of records per batch “Create documents” (default 50). The batch runs directly in the request, without a queue worker: more records need more time and memory (PHP `max_execution_time`, `memory_limit`) | `DOCUMENTS_BATCH_MAX=50` in `.env` |
 | Storage for file fields: `local` (default, `storage/app/private/files`) or `s3` (S3-compatible storage, e.g. AWS, Infomaniak, Exoscale; credentials in `AWS_*`, for providers other than AWS also `AWS_ENDPOINT` and `AWS_USE_PATH_STYLE_ENDPOINT=true`; first run `composer require league/flysystem-aws-s3-v3`). Do not switch while files are stored: existing files are not moved | `APP_DATA_FILES_DISK=local` in `.env` |
 | Time zone of the application (default `Europe/Zurich`) | `APP_TIMEZONE` in `.env` |
 | Trust the provider's load balancer when HTTPS ends before the server (proxy addresses, comma-separated) | `TRUSTED_PROXIES` in `.env` |

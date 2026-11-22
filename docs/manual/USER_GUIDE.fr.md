@@ -583,6 +583,24 @@ contrôle SHA-256) – même s’il a seulement été téléchargé.
 Si le champ de fichiers est plein (nombre maximal de fichiers), le document est seulement téléchargé ; un message le
 signale.
 
+**Plusieurs enregistrements à la fois** (p. ex. toutes les factures d’un semestre) :
+
+1. Dans la liste, choisir les enregistrements avec les **cases à cocher** au début de la ligne. La case dans l’en-tête
+   du tableau sélectionne toute la page ; SAFT propose ensuite de sélectionner **tous** ceux que le filtre affiche –
+   aussi sur les pages suivantes.
+2. Cliquer sur **« Créer des documents »** dans l’en-tête du tableau, choisir le modèle et la **sortie** : **un PDF
+   avec tous les documents** (pour imprimer ; chacun commence sur une nouvelle première page du papier à lettres) ou
+   **ZIP avec un fichier par document**.
+3. **« Déposer dans le champ … de chaque enregistrement »** (présélectionné) dépose chaque document auprès de son
+   enregistrement, comme ci-dessus.
+4. **Créer** télécharge le fichier (p. ex. `Rechnung-2026-11-22.pdf`).
+
+Le message qui suit indique combien de documents ont été créés et déposés et, par enregistrement, ce qui n’a pas pu
+être déposé (p. ex. champ plein) – ces documents figurent tout de même dans le fichier. Au plus **50 enregistrements**
+à la fois (l’administration peut modifier ce nombre) ; au-delà, un message apparaît et rien n’est créé. Les cases à
+cocher n’existent que dans les tables avec modèle de document ; les enregistrements supprimés ne peuvent pas être
+sélectionnés.
+
 ---
 
 ## Annexe A – Types de champs

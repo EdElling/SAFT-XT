@@ -26,6 +26,7 @@
    - [Bei einer Verknüpfung fehlt eine Tabelle in der Auswahl.](#bei-einer-verknüpfung-fehlt-eine-tabelle-in-der-auswahl)
    - [Eine App ist aus dem Umschalter verschwunden.](#eine-app-ist-aus-dem-umschalter-verschwunden)
    - [Ich kann ein Dokument nicht aus einem Dateifeld entfernen.](#ich-kann-ein-dokument-nicht-aus-einem-dateifeld-entfernen)
+   - [In einer Liste fehlen die Häkchen zum Auswählen.](#in-einer-liste-fehlen-die-häkchen-zum-auswählen)
 
 ---
 ## Häufige Fragen
@@ -113,3 +114,9 @@ Dokumente, die SAFT aus einer Vorlage erstellt und beim Datensatz abgelegt hat (
 schreibgeschützt: Entfernen darf sie nur, wer Datensätze der Tabelle löschen darf. So bleibt nachvollziehbar, welches
 Dokument verschickt wurde. Ein korrigiertes Dokument erstellen Sie einfach neu – es erscheint als neue Fassung daneben
 (Anwenderhandbuch, Abschnitt 4.10). Muss ein Dokument wirklich weg, bitten Sie jemanden mit Lösch-Recht.
+
+### In einer Liste fehlen die Häkchen zum Auswählen.
+
+Häkchen zum Auswählen mehrerer Datensätze erscheinen nur, wenn es dafür eine Sammelaktion gibt, die Sie nutzen dürfen –
+heute **„Dokumente erstellen“**: Die Tabelle braucht eine aktive Dokumentvorlage, und Ihre Rolle das Recht *Dokumente:
+erzeugen* (Anwenderhandbuch, Abschnitt 4.10). Gelöschte Datensätze im Papierkorb lassen sich nicht auswählen.

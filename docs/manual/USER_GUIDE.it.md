@@ -560,6 +560,23 @@ record, i documenti creati non vengono ripresi. Ogni documento creato figura nel
 
 Se il campo file è pieno (numero massimo di file), il documento viene solo scaricato; un messaggio lo segnala.
 
+**Più record alla volta** (p. es. tutte le fatture di un semestre):
+
+1. Nell’elenco scegliere i record con le **caselle di spunta** all’inizio della riga. La casella nell’intestazione
+   della tabella seleziona l’intera pagina; SAFT propone poi di selezionare **tutti** quelli che il filtro mostra –
+   anche nelle pagine successive.
+2. Cliccare su **«Crea documenti»** nell’intestazione della tabella, scegliere il modello e l’**output**: **un PDF con
+   tutti i documenti** (per stampare; ognuno inizia su una nuova prima pagina della carta intestata) o **ZIP con un
+   file per documento**.
+3. **«Depositare nel campo … di ogni record»** (preselezionato) deposita ogni documento presso il suo record, come
+   sopra.
+4. **Crea** scarica il file (p. es. `Rechnung-2026-11-22.pdf`).
+
+Il messaggio successivo indica quanti documenti sono stati creati e depositati e, per record, cosa non si è potuto
+depositare (p. es. campo pieno) – questi documenti sono comunque nel file. Al massimo **50 record** alla volta
+(l’amministrazione può modificare il numero); oltre, appare un messaggio e non viene creato nulla. Le caselle di spunta
+esistono solo nelle tabelle con modello di documento; i record eliminati non si possono selezionare.
+
 ---
 
 ## Allegato A – Tipi di campo

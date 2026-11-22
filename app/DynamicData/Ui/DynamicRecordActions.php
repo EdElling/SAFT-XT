@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Ui;
 
+use App\Documents\DocumentBatch;
 use App\Documents\DocumentGenerator;
 use App\DynamicData\DataAccess;
 use App\DynamicData\Export\ExportFormat;
@@ -22,6 +23,7 @@ use App\Models\User;
 use App\Support\AppLocale;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -31,6 +33,7 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\RepeatableEntry;
@@ -45,7 +48,9 @@ use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
 use Filament\Tables\Contracts\HasTable;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -577,6 +582,81 @@ final class DynamicRecordActions
                 return response()->streamDownload(static function () use ($pdf): void {
                     echo $pdf;
                 }, $result['file']?->name ?? $result['document']->fileName, ['Content-Type' => 'application/pdf']);
+            });
+    }
+
+    /**
+     * Sammelaktion „Dokumente erstellen“ (B-124, D3a) für die ausgewählten Datensätze: ein PDF zum Drucken oder ein ZIP mit
+     * den einzelnen Dateien, auf Wunsch je Datensatz im Dateifeld der Vorlage abgelegt. Höchstens DocumentBatch::max().
+     */
+    public static function documentBulk(CustomTable $table): BulkAction
+    {
+        $generator = app(DocumentGenerator::class);
+        $user = static fn (): ?User => auth()->user() instanceof User ? auth()->user() : null;
+        $templates = static fn () => $generator->templatesFor($table, $user());
+        $chosen = static fn (mixed $id) => $templates()->firstWhere('id', (int) $id) ?? $templates()->first();
+        $canStore = static fn (mixed $id): bool => ($template = $chosen($id)) !== null
+            && $generator->storageField($template, $table) !== null
+            && $table->supports('update') && DataAccess::allows($user(), $table, 'update');
+
+        return BulkAction::make('documentBulk')
+            ->label(__('documents.batch.action'))
+            ->icon('heroicon-o-document-arrow-down')
+            ->color('gray')
+            ->visible(static fn (): bool => $table->hasSingleKey() && $templates()->isNotEmpty())
+            ->modalHeading(static fn (EloquentCollection|Collection|null $records): string => trans_choice('documents.batch.heading', $records?->count() ?? 0, ['count' => $records?->count() ?? 0]))
+            ->modalDescription(__('documents.batch.description', ['max' => DocumentBatch::max()]))
+            ->modalWidth('md')
+            ->modalSubmitActionLabel(__('documents.generate.submit'))
+            ->schema([
+                Select::make('template')->label(__('documents.generate.template'))
+                    ->options(static fn (): array => $templates()->mapWithKeys(static fn ($t): array => [$t->id => $t->name])->all())
+                    ->default(static fn (): ?int => $templates()->first()?->id)
+                    ->required()->selectablePlaceholder(false)->live()
+                    ->visible(static fn (): bool => $templates()->count() > 1),
+                Radio::make('format')->label(__('documents.batch.format'))
+                    ->options([DocumentBatch::PDF => __('documents.batch.formats.pdf'), DocumentBatch::ZIP => __('documents.batch.formats.zip')])
+                    ->default(DocumentBatch::PDF)->required(),
+                Toggle::make('store')
+                    ->label(static fn (Get $get): string => __('documents.batch.store', ['field' => (string) $generator->storageField($chosen($get('template')), $table)?->label]))
+                    ->helperText(__('documents.generate.store_help'))
+                    ->default(true)
+                    ->visible(static fn (Get $get): bool => $canStore($get('template'))),
+            ])
+            ->deselectRecordsAfterCompletion()
+            ->action(static function (array $data, EloquentCollection|Collection $records, mixed $livewire) use ($chosen, $canStore, $user) {
+                $template = $chosen($data['template'] ?? null);
+
+                try {
+                    $result = app(DocumentBatch::class)->run(
+                        $template,
+                        $records->reject(static fn (DynamicRecord $record): bool => $record->trashed()),
+                        $user(),
+                        (bool) ($data['store'] ?? false) && $canStore($template?->id),
+                        (string) ($data['format'] ?? DocumentBatch::PDF),
+                    );
+                } catch (BusinessRuleException $exception) {
+                    Notification::make()->danger()->title($exception->getMessage())->persistent()->send();
+
+                    return null;
+                }
+
+                Notification::make()
+                    ->title(trans_choice('documents.batch.done', $result['generated'], ['count' => $result['generated'], 'stored' => $result['stored']]))
+                    ->body($result['notes'] === [] ? null : implode("\n", $result['notes']))
+                    ->{$result['notes'] === [] ? 'success' : 'warning'}()
+                    ->persistent($result['notes'] !== [])
+                    ->send();
+
+                if ($result['stored'] > 0) {
+                    $livewire->dispatch(self::REFRESH_EVENT);
+                }
+
+                $content = $result['content'];
+
+                return response()->streamDownload(static function () use ($content): void {
+                    echo $content;
+                }, $result['file_name'], ['Content-Type' => $result['mime']]);
             });
     }
 
