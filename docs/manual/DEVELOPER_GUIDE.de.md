@@ -596,6 +596,9 @@ public function formulaFunctions(): array
 - Formeln rechnen mit Dezimalzahlen: Argumente und Ergebnis sind **Zahlen als Text** („12.35“); rechnen Sie exakt
   (`bcmath`), nicht mit `float`. `null` als Ergebnis bedeutet leer. Ist ein Argument leer, wird die Funktion nicht
   aufgerufen – das Ergebnis ist leer.
+- **Semantik:** Was Leer, Rundung, Vergleiche und Kontexte bedeuten, legt die [Spezifikation der
+  Formelsprache](../concept/FORMULA_SPEC.md) fest; sie nennt auch die reservierten Namen künftiger Funktionen, die ein
+  Plugin nicht belegen darf.
 - **Name:** Kleinbuchstaben, Ziffern und `_`; eingebaute Funktionen (`round`, `sum` …) lassen sich nicht ersetzen. Gibt
   es den Namen in zwei Plugins, gilt das erste nach Kennung – `saft:plugins --check` meldet den Konflikt.
 - Die Funktion erscheint in der Eingabehilfe des Formelfelds unter **Funktionen aus Plugins**. In den Ausdrücken des

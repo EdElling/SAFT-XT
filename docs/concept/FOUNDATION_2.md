@@ -1,6 +1,6 @@
 # Konzept: Fundament 2 (Schreibweg, Nebenläufigkeit, Hintergrundarbeit, Formelsprache, Qualitätssicherung)
 
-Stand: 23.11.2026 · Status: **F0, F1 und F2 umgesetzt (23.11.2026), F3–F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
+Stand: 23.11.2026 · Status: **F0, F1, F2 und F4 umgesetzt (23.11.2026), F3 und F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
 
 ## 1. Ziel
 
@@ -219,6 +219,16 @@ Fortschritt, Dauer, Ergebnis, Abbrechen. Aufräumen: System-Aufgabe „Arbeiten 
   Bedingung.
 - Neue Funktionen (Datum für B-142, `user()` für B-020) werden zuerst in Spezifikation und Tabelle eingetragen.
 
+**Umgesetzt 23.11.2026:** `FORMULA_SPEC.md` mit Funktionsmatrix je Kontext, Syntax, Typen, Leer-Regeln, Genauigkeit,
+Rundung, Vergleichen, Aggregaten, Plugin-Funktionen und den reservierten Namen für B-142, B-020, B-135;
+`formula-conformance.json` mit 75 Fällen und `FormulaConformanceTest` (Feld- und Auswertungskontext, Rundung durch die
+Datenbank). Ergebnis: **keine Abweichung** auf PostgreSQL und MySQL (lokal), MariaDB über die CI. Die Kandidaten oben
+verhalten sich gleich, weil Auswertungen Spalten vorher auf `numeric`/`DECIMAL` wandeln und `ROUND` dort kaufmännisch
+rundet; Vergleiche gibt es in Auswertungen heute nicht. Festgehalten als Entscheidung: SQL rechnet Zwischenergebnisse
+genauer als die 12 Stellen von bcmath, Abweichungen jenseits davon sind hingenommen (Spezifikation Abschnitt 6).
+Zusätzlich `tests/Unit/FormulaSpecTest.php`: die Matrix der Spezifikation muss mit `FormulaAnalyzer` übereinstimmen,
+geplante Funktionen dürfen noch nicht existieren.
+
 ## 8. F5 – Qualitätssicherung und Aufräumen
 
 ### 8.1 Larastan und Architekturtests
@@ -287,7 +297,7 @@ darauf statt auf Laravel-Boost-Boilerplate; `CLAUDE.md` wird auf PHP 8.4 und den
 | **F2 Nebenläufigkeit** | **Umgesetzt 23.11.2026:** `RecordVersion`, `StaleRecordException`, Prüfung mit `lockForUpdate()` im Writer, Meldung mit „Neu laden / Trotzdem speichern“ in Datenansicht und Detailtabelle, elf Edit-Seiten der Verwaltung, Plugin-API, Browser-Test EIN-18, Handbücher | mittel |
 | **F3a Arbeiten** | `work_items`, `WorkType`, Treiber Browser und Scheduler, Seite „Arbeiten“, Aufräumen, Dashboard | mittel |
 | **F3b Umstellung** | Export, Datenimport, Dokumente, Datenstände, Recompute, KI-App-Designer und seine Auswertungen auf Arbeiten; Treiber Queue; Grenzen anheben; Handbücher | gross |
-| **F4 Formelsprache** | `FORMULA_SPEC.md`, Konformitätstabelle, Test über alle Wege und Datenbanken, Abweichungen beheben | mittel |
+| **F4 Formelsprache** | **Umgesetzt 23.11.2026:** `FORMULA_SPEC.md`, 75 Konformitätsfälle, `FormulaConformanceTest` auf drei Datenbanken (keine Abweichung gefunden), `FormulaSpecTest` gegen Drift | mittel |
 | **F5 Architektur** | `ARCHITECTURE.de.md`/`.md`, Lesestellen-Liste (Test 4), `AGENTS.md`, `CLAUDE.md` | klein |
 
 Reihenfolge: F0 → F1 → F2 → F4 → F3a → F3b → F5. F4 vor F3, weil B-142 und B-020 auf die Spezifikation warten, die

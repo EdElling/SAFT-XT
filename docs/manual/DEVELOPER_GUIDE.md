@@ -586,6 +586,9 @@ public function formulaFunctions(): array
 - Formulas calculate with decimals: arguments and result are **numbers as text** ("12.35"); calculate exactly
   (`bcmath`), not with `float`. `null` as the result means empty. If an argument is empty, the function is not called –
   the result is empty.
+- **Semantics:** what empty, rounding, comparisons and contexts mean is defined by the [formula language
+  specification](../concept/FORMULA_SPEC.md) (German); it also lists the reserved names of future functions that a plugin
+  must not use.
 - **Name:** lowercase letters, digits and `_`; built-in functions (`round`, `sum` …) cannot be replaced. If two plugins
   use the same name, the first by ID applies – `saft:plugins --check` reports the conflict.
 - The function appears in the formula field's input help under **Functions from plugins**. It is not available in the
