@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Import;
 
-use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Validation\RecordChecker;
+use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
 use App\Models\CustomField;
 use App\Models\CustomTable;
@@ -19,7 +20,6 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Writer\XLSX\Writer;
-use Throwable;
 
 /**
  * Datenimport in eine bestehende Tabelle des Table-Designers: legt nur neue Datensätze an (Ändern ist nicht
@@ -37,10 +37,7 @@ final class RecordImporter
     /** Kennzeichen eines Pflichtfelds in der Überschrift der Vorlage. */
     private const string REQUIRED_MARK = ' *';
 
-    public function __construct(
-        private readonly DynamicDataNamespace $namespace,
-        private readonly RecordChecker $checker,
-    ) {}
+    public function __construct(private readonly RecordChecker $checker) {}
 
     /**
      * Felder, die sich importieren lassen: aktiv, keine berechneten Felder, keine Systemspalten.
@@ -174,30 +171,18 @@ final class RecordImporter
             throw new BusinessRuleException(__('import.records.invalid'));
         }
 
-        $connection = $this->namespace->connection();
-        $connection->beginTransaction();
-
-        // Kein Eintrag je Datensatz: ein Eintrag „importiert“ fasst den Import zusammen.
-        activity()->disableLogging();
-
-        try {
+        // Alles oder nichts; kein Eintrag je Datensatz: ein Eintrag „importiert“ fasst den Import zusammen (WriteOptions::import()).
+        $writer = app(RecordWriter::class);
+        $writer->batch(static function () use ($writer, $table, $analysis): void {
             foreach ($analysis->rows as $line => $values) {
                 try {
-                    DynamicRecord::forTableName($table->name)->create($values);
+                    $writer->create($table, $values);
                 } catch (RecordRejected $e) {
                     // Abgelehnt von einem Plugin (Ereignis beim Speichern): als Fehler der Zeile melden.
                     throw new BusinessRuleException(__('import.records.row_error', ['row' => $line, 'message' => $e->getMessage()]), previous: $e);
                 }
             }
-
-            $connection->commit();
-        } catch (Throwable $e) {
-            $connection->rollBack();
-
-            throw $e;
-        } finally {
-            activity()->enableLogging();
-        }
+        }, WriteOptions::import());
 
         activity('data')
             ->performedOn($table)

@@ -642,6 +642,9 @@ periodo impostato.
 - Nel widget **«Le mie ultime modifiche»** un clic su una voce porta direttamente al record modificato – per le
   tabelle del Designer di tabelle nella vista dei dati con il record selezionato.
 - Il registro non si può modificare né eliminare – nemmeno dai super-admin.
+- **Tutto o niente:** se il salvataggio o l’eliminazione di un record fallisce (regola violata, rifiuto da parte di un
+  plugin, errore tecnico), l’intera modifica viene annullata – compresi i totali nei record principali, i file e la voce
+  del registro. Ciò che sta nel registro è anche stato salvato.
 
 ## 9. Connessioni ai database
 

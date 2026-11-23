@@ -11,6 +11,8 @@ use App\Documents\Templates\TemplateRenderer;
 use App\DynamicData\DataAccess;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
 use App\Models\CustomField;
 use App\Models\CustomTable;
@@ -138,25 +140,28 @@ final class DocumentGenerator
         $path = $directory.'/'.Str::uuid()->toString().'.pdf';
         $this->files->disk()->put($path, $document->pdf, ['visibility' => 'private']);
 
-        $file = RecordFile::query()->create([
-            'id' => (string) Str::uuid(),
-            'custom_table_id' => $table->id,
-            'field' => $field->name,
-            'record_id' => (string) $record->getKey(),
-            'disk' => $this->files->diskName(),
-            'path' => $path,
-            'name' => $name,
-            'mime' => 'application/pdf',
-            'size' => strlen($document->pdf),
-            'uploaded_by' => auth()->id(),
-            'document_template_id' => $template->id,
-            'sha256' => $sha256,
-        ]);
+        // Dateieintrag und Dateifeld als Einheit (Hauptverbindung und app_data in einer Transaktion des Writers).
+        return app(RecordWriter::class)->batch(function () use ($table, $record, $field, $references, $template, $path, $name, $document, $sha256): RecordFile {
+            $file = RecordFile::query()->create([
+                'id' => (string) Str::uuid(),
+                'custom_table_id' => $table->id,
+                'field' => $field->name,
+                'record_id' => (string) $record->getKey(),
+                'disk' => $this->files->diskName(),
+                'path' => $path,
+                'name' => $name,
+                'mime' => 'application/pdf',
+                'size' => strlen($document->pdf),
+                'uploaded_by' => auth()->id(),
+                'document_template_id' => $template->id,
+                'sha256' => $sha256,
+            ]);
 
-        $record->setAttribute($field->name, [...$references, $file->toReference()]);
-        $record->save();
+            $record->setAttribute($field->name, [...$references, $file->toReference()]);
+            app(RecordWriter::class)->save($record);
 
-        return $file;
+            return $file;
+        }, WriteOptions::defaults()->withOrigin(WriteOptions::DOCUMENT));
     }
 
     /**

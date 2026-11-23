@@ -1,6 +1,6 @@
 # Konzept: Fundament 2 (Schreibweg, Nebenläufigkeit, Hintergrundarbeit, Formelsprache, Qualitätssicherung)
 
-Stand: 23.11.2026 · Status: **F0 umgesetzt (23.11.2026), F1–F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
+Stand: 23.11.2026 · Status: **F0 und F1 umgesetzt (23.11.2026), F2–F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
 
 ## 1. Ziel
 
@@ -53,8 +53,8 @@ Was heute wie läuft:
 
 | Frage | Vorschlag |
 |---|---|
-| Transaktion über zwei Verbindungen | **Transaktion auf `app_data`**, denn dort liegen die Daten. Das Protokoll auf der Hauptverbindung wird **nach dem Commit** geschrieben (`afterCommit`). Scheitert das Protokollieren, bleibt der Datensatz gespeichert und ein Warning im Log. Eine verteilte Transaktion gibt es nicht (verschiedene Server möglich, `DB_APP_DATA_HOST`). |
-| Einziger Schreibweg | Klasse **`RecordWriter`** (`App\DynamicData\Write`). Alle Schreibstellen rufen sie; `DynamicRecord::save()` direkt ist verboten (Architekturtest), ausgenommen innerhalb des Writers. |
+| Transaktion über zwei Verbindungen | **Je eine Transaktion auf beiden Verbindungen** (Entscheid 23.11.2026, statt Protokoll nach dem Commit): der Writer öffnet sie auf der Hauptverbindung und auf der Verbindung der Daten (`app_data` bzw. die externe), committet die Daten zuerst, die Hauptverbindung danach. Scheitert eine Phase, rollen beide zurück – auch Protokoll, Benachrichtigungen und Plugin-Schreibzugriffe auf Systemtabellen. Restrisiko: Daten committet, Commit der Hauptverbindung scheitert → Protokolleintrag fehlt (wie bei `afterCommit`). Eine verteilte Transaktion gibt es nicht (verschiedene Server möglich, `DB_APP_DATA_HOST`). `afterCommit` bleibt für Wirkungen nach aussen (E-Mail, Webhooks). |
+| Einziger Schreibweg | Klasse **`RecordWriter`** (`App\DynamicData\Write`). Oberfläche, Import, Plugin-API, Kopieren, Dokumente rufen sie ausdrücklich mit `WriteOptions`. `DynamicRecord::save()`/`delete()` ausserhalb des Writers **leiten an ihn weiter** statt zu werfen (Entscheid 23.11.2026): bestehender Code, Plugins, Seeder und 230 Teststellen laufen unverändert und bekommen die Transaktion trotzdem. Architekturtest 3 prüft heuristisch, dass App-Code den Writer ausdrücklich nutzt. |
 | Nebenläufigkeit | **Optimistische Sperre** über `updated_at` für Designer-Tabellen; Vergleich der gelesenen Originalwerte für angebundene Tabellen ohne Zeitstempel. Keine pessimistischen Sperren (Webspace, kein Redis). |
 | Hintergrundarbeit | Eine Systemtabelle **`work_items`** („Arbeiten“) mit **wiederaufnehmbaren Schritten** und drei austauschbaren Treibern: Scheduler (vorhandener Cron), Queue-Worker (wenn vorhanden), Browser (für die startende Person). Kein eigenes Framework; der Treiber Queue nutzt Laravels `jobs`-Tabelle. |
 | Formelsprache | **Spezifikation als Dokument** plus **Konformitätstabelle** (JSON), die gegen alle Auswertungswege und alle drei Datenbanken läuft. Die PHP-Auswertung ist die Referenz; wo SQL abweicht, wird das SQL angepasst oder die Funktion für SQL gesperrt. |
@@ -82,8 +82,9 @@ RecordWriter::batch(callable)                 → mixed  (mehrere Aufrufe in ein
 
 ### 4.2 Ablauf eines Aufrufs
 
-1. **Transaktion** auf `app_data` öffnen, falls keine offen ist (`batch()` und Import öffnen sie aussen; der Writer
-   erkennt `transactionLevel() > 0` und schachtelt nicht).
+1. **Transaktionen** auf der Hauptverbindung und auf der Verbindung der Daten öffnen, falls der Writer nicht schon aktiv
+   ist (`WriteContext`; verschachtelte Aufrufe – `batch()`, Summen in Master-Datensätzen, Plugins in Ereignissen – laufen
+   in derselben Transaktion und erben die Optionen).
 2. **Version prüfen** (F2), bei Abweichung `StaleRecordException`.
 3. **Vorher-Phase** (heute in `DynamicRecord::booted()` als `saving`): Vorgaben, Übernehmen aus, fortlaufend,
    `RecordSaving` für Plugins, berechnete Felder, `updated_by`. Später hier: Regeln der Phase `before`,
@@ -91,17 +92,22 @@ RecordWriter::batch(callable)                 → mixed  (mehrere Aufrufe in ein
 4. **Schreiben** (`save()` des Models ohne weitere Hooks).
 5. **Nachher-Phase**: Summen in Master-Datensätzen (`propagate`, jetzt innerhalb derselben Transaktion), Dateien
    abgleichen, `RecordSaved`. Später: Regeln der Phase `after`.
-6. **Commit.** Danach, über `afterCommit` der `app_data`-Verbindung: Protokoll (`activity_log`), Benachrichtigungen,
-   E-Mails, Webhooks (B-060). Bei Rollback passiert davon nichts.
+6. **Commit** der Daten, dann der Hauptverbindung (Protokoll, Benachrichtigungen liegen damit in derselben Einheit).
+   Wirkungen nach aussen (E-Mails, Webhooks B-060) später über `afterCommit`. Bei Rollback passiert davon nichts.
+
+   Umgesetzt: Die Nachher-Phase (5) läuft in den Eloquent-Ereignissen `saved`/`deleted`, solange der Writer den
+   Datensatz schreibt – dort sind die Originalwerte noch die vor der Änderung, was `propagate` (alter und neuer Master)
+   und `previous()` der Plugin-Ereignisse brauchen.
 
 Eine Ausnahme in Schritt 2 bis 5 rollt alles zurück und wird als `BusinessRuleException`, `ValidationException`,
 `RecordRejected` oder `StaleRecordException` unverändert weitergereicht; die Oberfläche zeigt sie wie heute.
 
 ### 4.3 Was aus `DynamicRecord` herauswandert
 
-`DynamicRecord::booted()` behält nur, was das Model zum **Lesen** braucht (Scope für `deleted_at`, Casts, Schlüssel).
-Alles Schreibende zieht in Writer-Phasen um. Das Model bleibt als Typ in der Plugin-API zugesichert; `save()` darauf
-wirft ausserhalb des Writers eine `LogicException` mit Hinweis auf `Saft::table()->update()`.
+`DynamicRecord::booted()` behält nur, was das Model zum **Lesen** braucht (Scope für `deleted_at`, Casts, Schlüssel),
+sowie zwei Zeilen, die die Nachher-Phase in `saved`/`deleted` an `WritePhases` geben. Alles Schreibende liegt in
+`WritePhases` (Reihenfolge wie bisher, dokumentiert). Das Model bleibt als Typ in der Plugin-API zugesichert; `save()`
+und `delete()` ausserhalb des Writers leiten an ihn weiter (Umsetzung 23.11.2026, siehe Abschnitt 3).
 
 ### 4.4 Umstellung der Aufrufer
 
@@ -268,7 +274,7 @@ darauf statt auf Laravel-Boost-Boilerplate; `CLAUDE.md` wird auf PHP 8.4 und den
 | Etappe | Inhalt | Umfang |
 |---|---|---|
 | **F0 Vorbereitung** | **Umgesetzt 23.11.2026** (Commits 2a89a7c, a1512a6, 5562d44, a8277c7, 0bfb415): Larastan Level 5 mit Baseline (336 Meldungen, von 946), Architekturtests 1 und 2, 95 Migrationen umnummeriert, `make:migration` nummeriert, Aufgabenart `activity_prune` (inaktiv, Dashboard-Hinweis), `strict_types` über Pint. Keine Verhaltensänderung für Anwender. | klein |
-| **F1 Schreibweg** | `RecordWriter`, Phasen, `afterCommit`-Protokoll, Umstellung aller Schreibstellen, Architekturtest 3, Plugin-API 1.10, Entwicklerhandbuch Kapitel 9 und 10 | gross |
+| **F1 Schreibweg** | **Umgesetzt 23.11.2026:** `RecordWriter`, `WriteOptions`, `WriteContext`, `WritePhases`; zwei Transaktionen je Vorgang; Umstellung von Datenansicht, Import, Kopieren, Dokumenten, Nachführung, Demo-Reset und Plugin-API; Architekturtest 3; Plugin-API 1.10; Entwickler- und Admin-Handbuch | gross |
 | **F2 Nebenläufigkeit** | Version im Formular, `StaleRecordException`, Dialog „Neu laden / Trotzdem speichern“, Metadaten-Formulare, Browser-Tests | mittel |
 | **F3a Arbeiten** | `work_items`, `WorkType`, Treiber Browser und Scheduler, Seite „Arbeiten“, Aufräumen, Dashboard | mittel |
 | **F3b Umstellung** | Export, Datenimport, Dokumente, Datenstände, Recompute, KI-App-Designer und seine Auswertungen auf Arbeiten; Treiber Queue; Grenzen anheben; Handbücher | gross |
@@ -293,9 +299,9 @@ die Browser-Suite läuft wie üblich vor dem Release auf drei Datenbanken.
 
 **Fragen**
 
-1. **Protokoll-Ort:** `activity_log` auf der Hauptverbindung mit `afterCommit` (Vorschlag) oder eine zweite
-   Protokolltabelle für Datensätze in `app_data`, damit sie in derselben Transaktion liegt? Letzteres trennt das
-   Protokoll in zwei Tabellen und erschwert die Seite „Protokoll“.
+1. **Protokoll-Ort:** ~~`activity_log` auf der Hauptverbindung mit `afterCommit` oder eine zweite Protokolltabelle in
+   `app_data`?~~ **Entschieden 23.11.2026:** `activity_log` bleibt auf der Hauptverbindung, der Writer führt dort eine
+   eigene Transaktion und committet sie nach den Daten (Abschnitt 3).
 2. **„Trotzdem speichern“** anbieten (Vorschlag) oder nur „Neu laden“? Ohne Überschreiben müssen Personen ihre
    Eingaben abschreiben; mit Überschreiben kann die zweite Änderung verloren gehen, aber bewusst und protokolliert.
 3. **Import grösser als ein Block:** eine Transaktion über alle Blöcke (kann auf MySQL lange Sperren halten) oder

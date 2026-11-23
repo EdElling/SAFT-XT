@@ -1135,18 +1135,6 @@ parameters:
 			path: app/Models/DatabaseConnection.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\DynamicRecord\:\:\$created_by\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/DynamicRecord.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\DynamicRecord\:\:\$updated_by\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Models/DynamicRecord.php
-
-		-
 			message: '#^Method App\\Models\\DynamicRecord\:\:performDeleteOnModel\(\) with return type void returns mixed but should not return anything\.$#'
 			identifier: return.void
 			count: 1
@@ -1177,49 +1165,13 @@ parameters:
 			path: app/Models/DynamicRecord.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>copies" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Models/DynamicRecord.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>databaseDefaults" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Models/DynamicRecord.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>dependents" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Models/DynamicRecord.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>files" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 3
-			path: app/Models/DynamicRecord.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>hasKey" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/DynamicRecord.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>sequences" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Models/DynamicRecord.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>systemColumns" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Models/DynamicRecord.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>uuidKey" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/DynamicRecord.php

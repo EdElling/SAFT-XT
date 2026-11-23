@@ -58,7 +58,7 @@ mitbringen:
 | Arten geplanter Aufgaben | Klassen, die `App\Tasks\TaskType` umsetzen |
 
 **Was zugesichert ist:** Die Programmierschnittstelle für Plugins (Plugin-API) hat eine **eigene Versionsnummer**,
-unabhängig von SAFT – derzeit **1.9**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
+unabhängig von SAFT – derzeit **1.10**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, alle Klassen unter `App\Plugins\Api` (ausser
 `ApiManifest`), die Test-Basis `App\Plugins\Testing\PluginTestCase`, für Arten geplanter Aufgaben
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` und `App\Tasks\TaskSkipped` sowie das Trait
@@ -428,7 +428,7 @@ Saft::transaction(function (): void { /* mehrere Änderungen: alles oder nichts 
 | `->files($datensatz, 'feld')`, `->attachFile($datensatz, 'feld', $datei, $name)`, `->detachFile($datensatz, 'feld', $id)` | Dateien eines Felds vom Typ „Datei“ lesen, anhängen und entfernen (seit API 1.8, siehe unten) |
 | `->url($datensatz)` | Adresse der Datenansicht, mit dem Datensatz ausgewählt (ohne `$datensatz`: die Tabelle) – für Links aus eigenen Seiten; die Rechte prüft die Datenansicht (seit API 1.9) |
 | `->withoutAuthorization()` | Kopie ohne Rechteprüfung, für Hintergrundarbeit |
-| `Saft::transaction(fn …)` | Mehrere Änderungen als Einheit |
+| `Saft::transaction(fn …)` | Mehrere Änderungen als Einheit. Jede einzelne Änderung (`create`, `update`, `delete`) ist für sich schon eine Transaktion über Datensatz, Summen in Master-Datensätzen, Dateien und Protokoll (seit API 1.10) |
 | `Saft::notify($person, $meldung)` | Benachrichtigung in die Glocke (siehe unten) |
 
 **Rechte:** Jede Methode prüft die Datenrechte der angemeldeten Person und wirft sonst eine
@@ -536,9 +536,10 @@ angelegt oder geändert).
 - **Ablehnen** in `RecordSaving` oder `RecordDeleting`: `throw new RecordRejected('Meldung für die Anzeige');`. SAFT
   speichert nichts und zeigt „Aktion nicht möglich“ mit Ihrer Meldung an; beim Import erscheint sie als Fehler der
   Zeile, und der ganze Import wird nicht ausgeführt.
-- **Folgeänderungen** in `RecordSaved` und `RecordDeleted` schreiben Sie über `Saft::table(…)`. Sie laufen in derselben
-  Transaktion, wenn die auslösende Änderung in einer Transaktion steht; lösen Sie selbst Ereignisse aus, achten Sie auf
-  Endlosschleifen.
+- **Folgeänderungen** in `RecordSaved` und `RecordDeleted` schreiben Sie über `Saft::table(…)`. Sie laufen immer in
+  derselben Transaktion wie die auslösende Änderung (seit API 1.10, Datensatz, Summen, Dateien und Protokoll): Wirft ein
+  Listener dort eine Ausnahme, wird auch die auslösende Änderung zurückgerollt. Lösen Sie selbst Ereignisse aus, achten
+  Sie auf Endlosschleifen.
 - **Demo-Daten:** Beim Einspielen der Demo-Daten (`db:seed --class=…DemoSeeder`) sind die Ereignisse für Plugins
   ausgeschaltet – Ihre Regeln wirken dort nicht.
 - **Löschen verknüpfter Datensätze** lehnt SAFT selbst ab, solange Datensätze anderer Tabellen darauf verweisen –
@@ -917,7 +918,7 @@ wie bei jeder anderen Erfassung.
 
 ## 18. API-Versionen und Änderungsprotokoll
 
-Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.9**). Sie steht in `config/saft.php`
+Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.10**). Sie steht in `config/saft.php`
 (`api_versions`) und erscheint unter **Dokumentation › Über SAFT XT** sowie auf der Seite **Plugins**.
 
 | Änderung | Version | Wirkung für Plugins |
@@ -946,6 +947,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 | API | SAFT | Änderungen |
 |---|---|---|
+| **1.10** | 0.6.0 | Jede Änderung über `DataTable` (auch `$record->save()` auf einem Datensatz) läuft in einer eigenen Transaktion über Daten und Protokoll; `RecordSaved` und `RecordDeleted` laufen **innerhalb** dieser Transaktion – wirft ein Listener dort, wird die auslösende Änderung zurückgerollt (bisher nur in der Dokumentation so beschrieben). `Saft::transaction()` und `DataTable::transaction()` fassen mehrere Änderungen in einer Transaktion zusammen (unverändert). Neu: `DynamicRecord::definition()` (intern, kein Vertrag) |
 | **1.9** | 0.5.0 | `DataTable::url()` – Adresse der Datenansicht mit ausgewähltem Datensatz, z. B. für Links aus einem Stundenplan |
 | **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` und `detachFile()` sowie `StoredFile` – Dateien aus Feldern vom Typ „Datei“ lesen, anhängen (mit den Prüfungen des Formulars) und entfernen |
 | **1.7** | 0.1 | `MenuSuggestion` mit optionalem `subgroup` – Menüvorschlag in ein Untermenü der Gruppe (dritte Ebene) |

@@ -661,6 +661,9 @@ le délai configuré.
 - Dans le widget **« Mes dernières modifications »**, un clic sur une entrée mène directement à l’enregistrement
   modifié – pour les tables du Concepteur de tables dans la vue des données avec l’enregistrement sélectionné.
 - Le journal ne peut être ni modifié ni supprimé – pas même par les super-admins.
+- **Tout ou rien :** si l’enregistrement ou la suppression d’un enregistrement échoue (règle violée, refus par un
+  plugin, erreur technique), toute la modification est annulée – y compris les totaux dans les enregistrements maîtres,
+  les fichiers et l’entrée du journal. Ce qui figure dans le journal a bien été enregistré.
 
 ## 9. Connexions aux bases de données
 

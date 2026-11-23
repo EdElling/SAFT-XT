@@ -634,6 +634,9 @@ Einträge hin, die älter als die eingestellte Frist sind.
 - Im Dashboard-Widget **„Meine letzten Änderungen“** führt ein Klick auf einen Eintrag direkt zum geänderten
   Datensatz – bei Tabellen des Table-Designers in die Datenansicht mit dem Datensatz ausgewählt.
 - Das Protokoll kann nicht bearbeitet oder gelöscht werden – auch nicht von Super-Admins.
+- **Alles oder nichts:** Scheitert das Speichern oder Löschen eines Datensatzes (Regelverstoss, Ablehnung durch ein
+  Plugin, technischer Fehler), wird die ganze Änderung zurückgenommen – samt Summen in übergeordneten Datensätzen,
+  Dateien und Protokolleintrag. Was im Protokoll steht, ist auch gespeichert.
 
 ## 9. Datenbankverbindungen
 

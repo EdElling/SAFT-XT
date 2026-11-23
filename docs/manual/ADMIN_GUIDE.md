@@ -617,6 +617,9 @@ switched on; it ships switched off, and the dashboard points out entries older t
 - In the dashboard widget **"My recent changes"**, clicking an entry leads directly to the changed record; for tables
   of the table designer into the data view with the record selected.
 - The log cannot be edited or deleted, not even by super admins.
+- **All or nothing:** if saving or deleting a record fails (rule violation, rejection by a plugin, technical error), the
+  whole change is rolled back – including totals in master records, files and the log entry. What is in the log has
+  been saved.
 
 ## 9. Database connections
 

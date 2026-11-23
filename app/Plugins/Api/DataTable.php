@@ -10,6 +10,8 @@ use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Ui\DynamicFormBuilder;
 use App\DynamicData\Validation\RecordChecker;
+use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Pages\DynamicDataPage;
 use App\Models\CustomField;
@@ -112,7 +114,7 @@ final class DataTable
         $this->assertWritable();
         $this->validate($values);
 
-        return DynamicRecord::forTable($this->table)->create($values);
+        return app(RecordWriter::class)->create($this->table, $values, WriteOptions::plugin());
     }
 
     /**
@@ -126,9 +128,8 @@ final class DataTable
         $this->assertWritable();
         $record = $this->resolve($record);
         $this->validate($values, $record);
-        $record->update($values);
 
-        return $record;
+        return app(RecordWriter::class)->update($record, $values, WriteOptions::plugin());
     }
 
     /** @throws RecordRejected */
@@ -136,7 +137,7 @@ final class DataTable
     {
         $this->authorize('delete');
         $this->assertWritable();
-        $this->resolve($record)->delete();
+        app(RecordWriter::class)->delete($this->resolve($record), WriteOptions::plugin());
     }
 
     /**
@@ -233,7 +234,7 @@ final class DataTable
         }
 
         $stored = app(RecordFiles::class)->store($this->table, $definition, $upload);
-        $record->update([$field => [...$references, $stored->toReference()]]);
+        app(RecordWriter::class)->update($record, [$field => [...$references, $stored->toReference()]], WriteOptions::plugin());
 
         return StoredFile::from($stored->fresh() ?? $stored);
     }
@@ -250,7 +251,7 @@ final class DataTable
             static fn (mixed $item): bool => ! is_array($item) || ($item['id'] ?? null) !== $fileId,
         ));
 
-        $record->update([$field => $references === [] ? null : $references]);
+        app(RecordWriter::class)->update($record, [$field => $references === [] ? null : $references], WriteOptions::plugin());
     }
 
     /**
@@ -261,7 +262,7 @@ final class DataTable
      */
     public function transaction(Closure $callback): mixed
     {
-        return Saft::transaction($callback);
+        return app(RecordWriter::class)->batch($callback, WriteOptions::plugin());
     }
 
     private function resolve(DynamicRecord|int|string $record): DynamicRecord

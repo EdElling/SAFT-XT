@@ -4,32 +4,24 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\DynamicData\DeleteGuard;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Eloquent\OptionalSoftDeletingScope;
-use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Formula\Recalculator;
-use App\DynamicData\Rules\CopySource;
-use App\DynamicData\Rules\SequenceSuggester;
 use App\DynamicData\Schema\IdentifierValidator;
 use App\DynamicData\TableDefinition;
 use App\DynamicData\Ui\KeylessRow;
+use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteContext;
+use App\DynamicData\Write\WritePhases;
 use App\Exceptions\BusinessRuleException;
 use App\ExternalData\ConnectionRegistry;
 use App\ExternalData\ExternalTableUnavailable;
 use App\Models\Concerns\HasAuditLog;
-use App\Plugins\Api\Events\RecordDeleted;
-use App\Plugins\Api\Events\RecordDeleting;
-use App\Plugins\Api\Events\RecordEvent;
-use App\Plugins\Api\Events\RecordSaved;
-use App\Plugins\Api\Events\RecordSaving;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Str;
 use LogicException;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -55,12 +47,6 @@ class DynamicRecord extends Model
     private static array $definitions = [];
 
     private ?string $definitionName = null;
-
-    /** Für die Ereignisse der Plugins: wurde beim letzten Speichern angelegt? */
-    private bool $creatingForEvents = false;
-
-    /** Ereignisse für Plugins vorübergehend aus (Demo-Daten einspielen). */
-    private static bool $pluginEventsMuted = false;
 
     public static function forTable(CustomTable $table): self
     {
@@ -192,14 +178,21 @@ class DynamicRecord extends Model
      */
     public function beforeActivityLogged(Model $activity, string $event): void
     {
-        $key = $this->activityKey();
+        $properties = collect($activity->getAttribute('properties') ?? []);
 
-        if ($key === null || is_int($key) || ctype_digit((string) $key)) {
-            return;
+        // Woher die Änderung kam (Datenansicht, Import, Plugin …), siehe WriteOptions::$origin.
+        if (WriteContext::active()) {
+            $properties->put('via', WriteContext::options()->origin);
         }
 
-        $activity->setAttribute('subject_id', null);
-        $activity->setAttribute('properties', collect($activity->getAttribute('properties') ?? [])->put('key', (string) $key));
+        $key = $this->activityKey();
+
+        if ($key !== null && ! is_int($key) && ! ctype_digit((string) $key)) {
+            $activity->setAttribute('subject_id', null);
+            $properties->put('key', (string) $key);
+        }
+
+        $activity->setAttribute('properties', $properties);
     }
 
     public function hasSoftDeleteColumn(): bool
@@ -218,7 +211,12 @@ class DynamicRecord extends Model
         return $this->definition()?->writable ?? true;
     }
 
-    private function definition(): ?TableDefinition
+    /**
+     * Definition der Tabelle für die Phasen des Schreibwegs (App\DynamicData\Write).
+     *
+     * @internal kein Teil der Plugin-API
+     */
+    public function definition(): ?TableDefinition
     {
         return $this->definitionName === null ? null : (self::$definitions[$this->definitionName] ?? null);
     }
@@ -311,130 +309,54 @@ class DynamicRecord extends Model
             ->dontLogEmptyChanges();
     }
 
+    /**
+     * Nachher-Phase des Schreibwegs (Summen in Master-Datensätzen, Dateien, Ereignisse für Plugins) – in den
+     * Eloquent-Ereignissen, weil dort die Originalwerte noch die vor der Änderung sind. Nur während der Writer den
+     * Datensatz schreibt; die Vorher-Phase ruft der Writer selbst (App\DynamicData\Write\WritePhases).
+     */
     protected static function booted(): void
     {
-        // Externe Tabellen sind vorerst nur lesbar – auch außerhalb der Oberfläche.
-        static::saving(static function (self $record): void {
-            if (! $record->isWritable()) {
-                throw new LogicException("Tabelle {$record->definitionName()} ist nur lesbar.");
-            }
-        });
-
-        static::deleting(static function (self $record): void {
-            if (! $record->isWritable()) {
-                throw new LogicException("Tabelle {$record->definitionName()} ist nur lesbar.");
-            }
-        });
-
-        static::creating(static function (self $record): void {
-            if (! $record->hasSoftDeleteColumn()) {
-                // Leere Werte nicht als NULL schreiben, wo die Datenbank einen Vorgabewert hat (z. B. Status „geplant“).
-                foreach ($record->definition()?->databaseDefaults ?? [] as $column) {
-                    if ($record->getAttribute($column) === null) {
-                        unset($record->attributes[$column]);
-                    }
-                }
-
-                // MySQL meldet eine UUID-Vorgabe nicht zurück: Schlüssel selbst vergeben.
-                if (($record->definition()?->uuidKey ?? false) && blank($record->getKey())) {
-                    $record->setAttribute($record->getKeyName(), (string) Str::uuid());
-                }
-
-                self::dispatchPluginEvent(RecordSaving::class, $record);
-
-                return;
-            }
-
-            // Vorgaben aus dem Master-Datensatz für leere Felder (Kopie, z. B. Einzelpreis ← Artikel → Preis).
-            foreach ($record->definition()?->copies ?? [] as $field => $copy) {
-                if ($record->getAttribute($field) === null) {
-                    $record->setAttribute($field, CopySource::lookup($copy['table'], $copy['source'], $record->getAttribute($copy['relation'])));
-                }
-            }
-
-            // Fortlaufende Felder, die leer geblieben sind (z. B. nicht im Formular): höchster Wert + 1.
-            foreach ($record->definition()?->sequences ?? [] as $field => $scope) {
-                if ($record->getAttribute($field) === null) {
-                    $next = SequenceSuggester::nextIn($record, $field, $scope, $scope === null ? null : $record->getAttribute($scope));
-
-                    if ($next !== null) {
-                        $record->setAttribute($field, $next);
-                    }
-                }
-            }
-
-            // Plugins vor den Formeln: Werte, die ein Listener setzt, fliessen in berechnete Felder ein.
-            self::dispatchPluginEvent(RecordSaving::class, $record);
-
-            $record->recalculate();
-
-            $record->created_by ??= auth()->id();
-            $record->updated_by = auth()->id() ?? $record->created_by;
-        });
-
-        static::updating(static function (self $record): void {
-            if (! $record->hasSoftDeleteColumn()) {
-                // Schlüssel angebundener Tabellen sind fest (sonst verlören Verknüpfungen und Protokoll ihren Bezug).
-                if ($record->isDirty($record->compositeKey() === [] ? $record->getKeyName() : $record->compositeKey())) {
-                    throw new LogicException("Der Schlüssel von {$record->definitionName()} ist nicht änderbar.");
-                }
-
-                self::dispatchPluginEvent(RecordSaving::class, $record);
-
-                return;
-            }
-
-            self::dispatchPluginEvent(RecordSaving::class, $record);
-
-            $record->recalculate();
-
-            $record->updated_by = auth()->id() ?? $record->updated_by;
-        });
-
-        // Summen & Co. in Master-Datensätzen nachführen (berechnete Felder, Table-Designer).
-        foreach (['saved', 'deleted', 'restored'] as $event) {
-            static::registerModelEvent($event, static function (self $record): void {
-                if ($record->hasSoftDeleteColumn() && ($dependents = $record->definition()?->dependents ?? []) !== []) {
-                    app(Recalculator::class)->propagate($record, $dependents);
-                }
-            });
-        }
-
-        // Löschsperre, solange aktive Detail-Datensätze per Verknüpfung auf diesen zeigen.
-        static::deleting(static function (self $record): void {
-            app(DeleteGuard::class)->assertDeletable($record);
-            self::dispatchPluginEvent(RecordDeleting::class, $record);
-        });
-
-        // Dateifelder (B-021): neue Dateien zuordnen, ersetzte und entfernte löschen; endgültig gelöscht → Dateien weg.
-        // Im Papierkorb bleiben die Dateien, damit Wiederherstellen sie zurückbringt.
-        static::saving(static function (self $record): void {
-            if (($record->definition()?->files ?? []) !== [] && ($table = $record->customTable()) !== null) {
-                app(RecordFiles::class)->assertDocumentsKept($record, $table);
-            }
-        });
         static::saved(static function (self $record): void {
-            if (($record->definition()?->files ?? []) !== [] && ($table = $record->customTable()) !== null) {
-                app(RecordFiles::class)->sync($record, $table);
-            }
-        });
-        static::forceDeleted(static function (self $record): void {
-            if (($record->definition()?->files ?? []) !== [] && ($table = $record->customTable()) !== null) {
-                app(RecordFiles::class)->deleteForRecord($table, (string) $record->getKey());
+            if (WriteContext::performing($record)) {
+                app(WritePhases::class)->afterSave($record, WriteContext::creating($record), WriteContext::options());
             }
         });
 
-        // Ereignisse für Plugins (nach SAFTs eigenen Nacharbeiten).
-        static::saved(static fn (self $record) => self::dispatchPluginEvent(RecordSaved::class, $record));
-        static::deleted(static fn (self $record) => self::dispatchPluginEvent(RecordDeleted::class, $record));
+        static::deleted(static function (self $record): void {
+            if (WriteContext::performing($record)) {
+                app(WritePhases::class)->afterDelete($record, $record->isForceDeleting() || ! $record->hasSoftDeleteColumn(), WriteContext::options());
+            }
+        });
     }
 
     /**
-     * Ereignis der Programmierschnittstelle auslösen – nur wenn ein Plugin zuhört. RecordSaving und RecordDeleting
-     * laufen nach SAFTs eigenen Vorgaben (fortlaufend, Übernehmen aus, berechnete Felder, Löschsperre).
+     * Schreiben läuft über den RecordWriter (Fundament 2, F1): Transaktion, Vorher- und Nachher-Phase, Ereignisse.
+     * Ausserhalb des Writers leitet das Model dorthin; nur der Writer selbst führt den Eloquent-Schreibvorgang aus.
      *
-     * @param  class-string<RecordEvent>  $event
+     * @param  array<string, mixed>  $options
      */
+    public function save(array $options = []): bool
+    {
+        if (WriteContext::performing($this)) {
+            return parent::save($options);
+        }
+
+        app(RecordWriter::class)->save($this);
+
+        return true;
+    }
+
+    public function delete(): ?bool
+    {
+        if (WriteContext::performing($this)) {
+            return parent::delete();
+        }
+
+        app(RecordWriter::class)->delete($this);
+
+        return true;
+    }
+
     /**
      * Ohne Ereignisse für Plugins ausführen – für feste Datensätze wie die Demo-Daten, auf die Geschäftsregeln von
      * Plugins nicht wirken sollen.
@@ -446,30 +368,7 @@ class DynamicRecord extends Model
      */
     public static function withoutPluginEvents(\Closure $callback): mixed
     {
-        $muted = self::$pluginEventsMuted;
-        self::$pluginEventsMuted = true;
-
-        try {
-            return $callback();
-        } finally {
-            self::$pluginEventsMuted = $muted;
-        }
-    }
-
-    private static function dispatchPluginEvent(string $event, self $record): void
-    {
-        if (self::$pluginEventsMuted) {
-            return;
-        }
-
-        // Ob angelegt oder geändert wird, steht nur vor dem Speichern sicher fest (wasRecentlyCreated bleibt am Objekt).
-        if ($event === RecordSaving::class) {
-            $record->creatingForEvents = ! $record->exists;
-        }
-
-        if (Event::hasListeners($event)) {
-            Event::dispatch(new $event($record->definitionName(), $record, in_array($event, [RecordSaving::class, RecordSaved::class], true) && $record->creatingForEvents));
-        }
+        return WriteContext::withoutPluginEvents($callback);
     }
 
     private function applyDefinition(TableDefinition $definition): static

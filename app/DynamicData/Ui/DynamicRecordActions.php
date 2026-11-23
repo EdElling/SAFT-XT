@@ -17,6 +17,8 @@ use App\DynamicData\Import\RecordImportAnalysis;
 use App\DynamicData\Import\RecordImporter;
 use App\DynamicData\RecordCopier;
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Support\ActivityChanges;
 use App\Models\Activity;
@@ -86,7 +88,7 @@ final class DynamicRecordActions
             ->schema(self::form($table, array_keys($preset), $preset))
             ->authorize(fn (): bool => DataAccess::current($table, 'create'))
             // Die Verknüpfung zur Haupttabelle wird immer gesetzt, auch wenn sie im Formular fehlt oder nur lesbar ist.
-            ->using(fn (array $data): DynamicRecord => tap(DynamicRecord::forTable($table)->fill($data)->forceFill($preset))->save())
+            ->using(fn (array $data): DynamicRecord => app(RecordWriter::class)->save(DynamicRecord::forTable($table)->fill($data)->forceFill($preset), WriteOptions::ui()))
             ->after(fn ($livewire) => $livewire->dispatch(self::REFRESH_EVENT));
     }
 
@@ -482,9 +484,8 @@ final class DynamicRecordActions
 
                 // Der Schlüssel einer angebundenen Tabelle ist nach dem Anlegen fest.
                 $fixed = $table->isExternal() ? [...$locked, ...$table->keyColumns()] : $locked;
-                $record->update(array_diff_key($data, array_flip($fixed)));
 
-                return $record;
+                return app(RecordWriter::class)->update($record, array_diff_key($data, array_flip($fixed)), WriteOptions::ui());
             });
     }
 
@@ -844,7 +845,12 @@ final class DynamicRecordActions
         // Ein bereits gelöschter Datensatz wird nicht erneut gelöscht (Filaments eigene Regel ginge durch visible() verloren).
         $delete = DeleteAction::make($name)
             ->visible(fn (?Model $record = null): bool => $table->supports('delete') && ! self::trashed($record))
-            ->authorize(fn (): bool => DataAccess::current($table, 'delete'));
+            ->authorize(fn (): bool => DataAccess::current($table, 'delete'))
+            ->using(static function (DynamicRecord $record): bool {
+                app(RecordWriter::class)->delete($record, WriteOptions::ui());
+
+                return true;
+            });
 
         // Ohne deleted_at gibt es kein Wiederherstellen: ausdrücklich sagen, dass Löschen endgültig ist.
         return $table->isExternal() ? $delete->modalDescription(__('data.delete_permanently')) : $delete;
@@ -855,7 +861,12 @@ final class DynamicRecordActions
         // Nur bei gelöschten Datensätzen – visible() ersetzt Filaments eigene Sichtbarkeitsregel.
         return RestoreAction::make($name)
             ->visible(fn (?Model $record = null): bool => ! $table->isExternal() && self::trashed($record))
-            ->authorize(fn (): bool => DataAccess::current($table, 'delete'));
+            ->authorize(fn (): bool => DataAccess::current($table, 'delete'))
+            ->using(static function (DynamicRecord $record): bool {
+                app(RecordWriter::class)->restore($record, WriteOptions::ui());
+
+                return true;
+            });
     }
 
     private static function trashed(?Model $record): bool
@@ -865,7 +876,26 @@ final class DynamicRecordActions
 
     public static function deleteBulk(CustomTable $table): DeleteBulkAction
     {
-        return DeleteBulkAction::make()->visible(! $table->isExternal())->authorize(fn (): bool => DataAccess::current($table, 'delete'));
+        return DeleteBulkAction::make()
+            ->visible(! $table->isExternal())
+            ->authorize(fn (): bool => DataAccess::current($table, 'delete'))
+            // Je Datensatz ein Schreibvorgang wie bei Filament, aber über den Writer (Löschsperre, Summen, Ereignisse, Transaktion).
+            ->using(static function (DeleteBulkAction $action, EloquentCollection|Collection $records): void {
+                $reported = false;
+
+                foreach ($records as $record) {
+                    try {
+                        app(RecordWriter::class)->delete($record, WriteOptions::ui());
+                    } catch (\Throwable $exception) {
+                        $action->reportBulkProcessingFailure();
+
+                        if (! $reported) {
+                            report($exception);
+                            $reported = true;
+                        }
+                    }
+                }
+            });
     }
 
     /** Verlauf nur, wo über SAFT geschrieben werden kann; sonst gibt es nichts zu zeigen. */

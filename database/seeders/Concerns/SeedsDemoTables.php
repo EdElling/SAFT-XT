@@ -11,6 +11,8 @@ use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Formula\Recalculator;
 use App\DynamicData\Schema\FieldDefinitionNormalizer;
+use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Reports\ReportResource;
 use App\Models\App;
@@ -86,10 +88,11 @@ trait SeedsDemoTables
         $oldFiles = RecordFile::query()->whereIn('custom_table_id', $tables->pluck('id'))->get();
 
         return DynamicRecord::withoutPluginEvents(function () use ($names, $tables, $namespace, $db, $oldFiles): int {
-            $db->transaction(function () use ($tables): void {
+            // Feste Demo-Daten: ohne Ereignisse an Plugins und ohne Protokoll je Datensatz, alles in einer Transaktion.
+            app(RecordWriter::class)->batch(function () use ($tables): void {
                 $this->deleteDemoRecords($tables);
                 $this->reseedDemoData();
-            });
+            }, WriteOptions::seed(), $db);
 
             app(RecordFiles::class)->delete($oldFiles);
 

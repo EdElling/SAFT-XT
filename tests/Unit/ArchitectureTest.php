@@ -12,6 +12,11 @@ use PHPUnit\Framework\TestCase;
  * 1. Raw-SQL nur in den Dialektklassen (DDL, Auswertungen), im Dumper und an begründeten Ausnahmen.
  * 2. Ob eine Person Super-Admin ist, entscheidet allein User::isSuperAdmin(); kein hasRole() oder
  *    Rollenvergleich am Namen anderswo – jede solche Stelle wäre eine Lücke in „Ansicht als Rolle“.
+ * 3. Datensätze des Table-Designers schreibt nur der RecordWriter (App\DynamicData\Write): Transaktion, Phasen,
+ *    Ereignisse. DynamicRecord::save()/delete() leiten zwar dorthin, doch App-Code ruft den Writer ausdrücklich, damit
+ *    Optionen (Herkunft, Protokoll, Ereignisse, Version) sichtbar sind. Geprüft wird heuristisch: Aufrufketten auf
+ *    DynamicRecord::forTable…() und Schreibmethoden auf Variablen, die Datensätze halten, in Dateien, die DynamicRecord
+ *    verwenden.
  *
  * Eine neue Ausnahme braucht einen Grund in der Liste unten; der Zähler je Datei verhindert, dass
  * eine erlaubte Datei unbemerkt weitere Stellen bekommt.
@@ -45,6 +50,14 @@ class ArchitectureTest extends TestCase
         'app/Auth/RoleSimulation.php' => [1, 'canSimulate() muss die echten Rollen in der Datenbank lesen, während die geladenen Rollen simuliert sind'],
     ];
 
+    private const string RECORD_WRITE_PATTERN = '/DynamicRecord::forTable(?:Name)?\([^)]*\)(?:->fill\([^)]*\)|->forceFill\([^)]*\))*->(create|save|update|delete|forceDelete|restore)\(|\$(record|records|copy|parent|child|row|current|existing|model|entry)->(save|saveQuietly|update|updateQuietly|delete|deleteQuietly|forceDelete|restore)\(/';
+
+    /** Seeder: feste Demo-Daten, Struktur (DDL) und Daten gemischt; das Model leitet ohnehin an den Writer weiter. */
+    private const array RECORD_WRITE_HOMES = ['app/DynamicData/Write/', 'database/seeders/'];
+
+    /** @var array<string, array{0: int, 1: string}> */
+    private const array RECORD_WRITE_EXCEPTIONS = [];
+
     public function test_raw_sql_only_in_dialects_and_listed_exceptions(): void
     {
         $this->assertRule(self::RAW_SQL_PATTERN, self::RAW_SQL_HOMES, self::RAW_SQL_EXCEPTIONS,
@@ -57,16 +70,28 @@ class ArchitectureTest extends TestCase
             'Super-Admin-Erkennung über den Rollennamen: User::isSuperAdmin() bzw. User::superAdmins() nutzen');
     }
 
+    public function test_records_are_only_written_through_the_record_writer(): void
+    {
+        $this->assertRule(self::RECORD_WRITE_PATTERN, self::RECORD_WRITE_HOMES, self::RECORD_WRITE_EXCEPTIONS,
+            'Datensatz direkt geschrieben: RecordWriter (create/update/save/delete/restore/batch) mit WriteOptions nutzen',
+            static fn (string $file, string $source): bool => str_contains($source, 'DynamicRecord'));
+    }
+
     /**
      * @param  list<string>  $homes
      * @param  array<string, array{0: int, 1: string}>  $exceptions
+     * @param  (\Closure(string, string): bool)|null  $onlyFiles  Datei (Pfad, Inhalt) prüfen?
      */
-    private function assertRule(string $pattern, array $homes, array $exceptions, string $message): void
+    private function assertRule(string $pattern, array $homes, array $exceptions, string $message, ?\Closure $onlyFiles = null): void
     {
         $violations = [];
         $unused = $exceptions;
 
         foreach ($this->phpFiles() as $file) {
+            if ($onlyFiles !== null && ! $onlyFiles($file, (string) file_get_contents(self::ROOT.$file))) {
+                continue;
+            }
+
             $hits = $this->hits($file, $pattern);
 
             if ($hits === [] || $this->inHome($file, $homes)) {
@@ -112,13 +137,14 @@ class ArchitectureTest extends TestCase
         return array_any($homes, static fn (string $home): bool => str_starts_with($file, $home));
     }
 
-    /** @return list<string> Pfade relativ zum Projekt unter app/ und database/ */
+    /** @return list<string> Pfade relativ zum Projekt unter app/, database/ und plugins/*\/src */
     private function phpFiles(): array
     {
         $files = [];
 
-        foreach (['app', 'database'] as $dir) {
-            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(self::ROOT.$dir, \FilesystemIterator::SKIP_DOTS));
+        foreach (['app', 'database', ...glob(self::ROOT.'plugins/*/src') ?: []] as $dir) {
+            $path = str_starts_with($dir, '/') ? $dir : self::ROOT.$dir;
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS));
 
             foreach ($iterator as $info) {
                 if ($info->getExtension() === 'php') {

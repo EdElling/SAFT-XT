@@ -8,6 +8,8 @@ use App\Apps\AppInterfaces;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Schema\FieldDefinitionNormalizer;
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
 use App\Models\CustomField;
 use App\Models\CustomTable;
@@ -108,16 +110,15 @@ final class RecordCopier
 
         $this->assertCopyable($tree);
 
-        return app(DynamicDataNamespace::class)->connection()->transaction(function () use ($table, $record, $data, $locked, $tree, $count): array {
-            $copy = DynamicRecord::forTable($table)->fill($this->files->copyOwned($table, $data))
-                ->forceFill(array_intersect_key($record->getAttributes(), array_flip($locked)));
-            $copy->save();
+        return app(RecordWriter::class)->batch(function () use ($table, $record, $data, $locked, $tree, $count): array {
+            $copy = app(RecordWriter::class)->save(DynamicRecord::forTable($table)->fill($this->files->copyOwned($table, $data))
+                ->forceFill(array_intersect_key($record->getAttributes(), array_flip($locked))));
 
             $map = [$table->name => [(string) $record->getKey() => $copy->getKey()]];
             $this->copyNodes($tree, $map);
 
             return ['record' => $copy, 'children' => $count];
-        });
+        }, WriteOptions::defaults()->withOrigin(WriteOptions::COPY));
     }
 
     /**
@@ -165,8 +166,7 @@ final class RecordCopier
                     }
                 }
 
-                $copy = DynamicRecord::forTable($child)->fill($values)->forceFill([$node['via'] => $map[$parent][(string) $row->getAttribute($node['via'])]]);
-                $copy->save();
+                $copy = app(RecordWriter::class)->save(DynamicRecord::forTable($child)->fill($values)->forceFill([$node['via'] => $map[$parent][(string) $row->getAttribute($node['via'])]]));
                 $map[$child->name][(string) $row->getKey()] = $copy->getKey();
             }
 

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Api;
 
-use App\DynamicData\DynamicDataNamespace;
+use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteOptions;
 use App\Models\CustomTable;
 use App\Models\User;
 use App\Plugins\PluginRegistry;
@@ -67,6 +68,6 @@ final class Saft
      */
     public static function transaction(Closure $callback): mixed
     {
-        return app(DynamicDataNamespace::class)->connection()->transaction($callback);
+        return app(RecordWriter::class)->batch($callback, WriteOptions::plugin());
     }
 }

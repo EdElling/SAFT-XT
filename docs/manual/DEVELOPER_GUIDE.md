@@ -57,7 +57,7 @@ A plugin is an ordinary **Composer package** with a plugin class and a service p
 | Kinds of scheduled tasks | classes implementing `App\Tasks\TaskType` |
 
 **What is guaranteed:** the programming interface for plugins (plugin API) has its **own version number**,
-independent of SAFT – currently **1.9**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
+independent of SAFT – currently **1.10**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, all classes under `App\Plugins\Api` (except
 `ApiManifest`), the test base `App\Plugins\Testing\PluginTestCase`, for kinds of scheduled tasks
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` and `App\Tasks\TaskSkipped`, and the trait
@@ -421,7 +421,7 @@ Saft::transaction(function (): void { /* several changes: all or nothing */ });
 | `->files($record, 'field')`, `->attachFile($record, 'field', $file, $name)`, `->detachFile($record, 'field', $id)` | read, attach and remove files of a field of type “File” (since API 1.8, see below) |
 | `->url($record)` | address of the data view with the record selected (without `$record`: the table) – for links from your own pages; the data view checks the permissions (since API 1.9) |
 | `->withoutAuthorization()` | copy without permission checks, for background work |
-| `Saft::transaction(fn …)` | several changes as one unit |
+| `Saft::transaction(fn …)` | several changes as one unit. Each single change (`create`, `update`, `delete`) is already a transaction of its own across the record, totals in master records, files and the activity log (since API 1.10) |
 | `Saft::notify($person, $notification)` | notification in the bell (see below) |
 
 **Permissions:** every method checks the data permissions of the signed-in person and otherwise throws an
@@ -527,8 +527,9 @@ or changed).
 - **Reject** in `RecordSaving` or `RecordDeleting`: `throw new RecordRejected('Message for display');`. SAFT saves
   nothing and shows “Action not possible” with your message; in an import it appears as an error of the row and the
   whole import is not carried out.
-- **Follow-up changes** in `RecordSaved` and `RecordDeleted` are written through `Saft::table(…)`. They run in the same
-  transaction if the triggering change is in one; if you trigger events yourself, beware of endless loops.
+- **Follow-up changes** in `RecordSaved` and `RecordDeleted` are written through `Saft::table(…)`. They always run in the
+  same transaction as the triggering change (since API 1.10: record, totals, files and activity log): if a listener
+  throws there, the triggering change is rolled back as well. If you trigger events yourself, beware of endless loops.
 - **Demo data:** while demo data is being loaded (`db:seed --class=…DemoSeeder`), events for plugins are switched off –
   your rules do not apply there.
 - **Deleting related records** is rejected by SAFT itself as long as records of other tables refer to them – no
@@ -902,7 +903,7 @@ other entry.
 
 ## 18. API versions and change log
 
-The plugin API has its own version number **major.minor** (currently **1.9**). It is set in `config/saft.php`
+The plugin API has its own version number **major.minor** (currently **1.10**). It is set in `config/saft.php`
 (`api_versions`) and shown under **Documentation › About SAFT XT** and on the **Plugins** page.
 
 | Change | Version | Effect on plugins |
@@ -930,6 +931,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 | API | SAFT | Changes |
 |---|---|---|
+| **1.10** | 0.6.0 | Every change through `DataTable` (also `$record->save()` on a record) runs in its own transaction across data and activity log; `RecordSaved` and `RecordDeleted` run **inside** that transaction – if a listener throws there, the triggering change is rolled back (previously only described that way in the documentation). `Saft::transaction()` and `DataTable::transaction()` combine several changes into one transaction (unchanged). New: `DynamicRecord::definition()` (internal, not part of the contract) |
 | **1.9** | 0.5.0 | `DataTable::url()` – address of the data view with a selected record, e.g. for links from a timetable |
 | **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` and `detachFile()` plus `StoredFile` – read, attach (with the form's checks) and remove files of fields of type “File” |
 | **1.7** | 0.1 | `MenuSuggestion` with optional `subgroup` – menu suggestion into a submenu of the group (third level) |

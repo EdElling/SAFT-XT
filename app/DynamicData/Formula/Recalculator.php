@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\DynamicData\Formula;
 
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteOptions;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -123,7 +125,7 @@ final class Recalculator
                         $parent->recalculate();
 
                         if ($parent->isDirty()) {
-                            $parent->save();
+                            app(RecordWriter::class)->save($parent);
                         }
                     }
                 }
@@ -152,17 +154,21 @@ final class Recalculator
         $model = DynamicRecord::forTable($table->loadMissing('fields'));
         $changed = 0;
 
-        $model->newQuery()->withTrashed()->orderBy('id')->chunkById(500, function ($records) use (&$changed): void {
-            foreach ($records as $record) {
-                /** @var DynamicRecord $record */
-                $record->recalculate();
+        $writer = app(RecordWriter::class);
 
-                if ($record->isDirty()) {
-                    $record->timestamps = false;
-                    $record->saveQuietly();
-                    $changed++;
+        $model->newQuery()->withTrashed()->orderBy('id')->chunkById(500, function ($records) use ($writer, &$changed): void {
+            // Ein Block je Transaktion; der Writer schreibt ohne Phasen, Protokoll und Zeitstempel.
+            $writer->batch(function () use ($records, $writer, &$changed): void {
+                foreach ($records as $record) {
+                    /** @var DynamicRecord $record */
+                    $record->recalculate();
+
+                    if ($record->isDirty()) {
+                        $writer->persist($record);
+                        $changed++;
+                    }
                 }
-            }
+            }, WriteOptions::defaults()->withOrigin(WriteOptions::RECOMPUTE));
         });
 
         foreach (self::parentsOf($table->name) as $parent) {
