@@ -422,6 +422,7 @@ Saft::transaction(function (): void { /* mehrere Änderungen: alles oder nichts 
 | `->label()`, `->name()`, `->fieldNames()` | Bezeichnung, interner Name, technische Namen der aktiven Felder |
 | `->query()`, `->find($id)` | Lesen; Datensätze im Papierkorb sind ausgenommen |
 | `->create($werte)`, `->update($datensatz, $werte)`, `->delete($datensatz)` | Schreiben; `$datensatz` als Model oder Schlüssel |
+| `->version($datensatz)`, `->update($datensatz, $werte, $version)` | Optimistische Sperre (seit API 1.10): `version()` beim Lesen merken (z. B. versteckt im Formular Ihrer Seite) und bei `update()` mitgeben. Hat jemand den Datensatz inzwischen geändert, wirft SAFT `StaleRecordException` (`changedBy`, `changedAt`, `currentVersion`) und speichert nichts; mit `currentVersion` lässt sich bewusst überschreiben. Ohne `$version` prüft SAFT nichts |
 | `->validate($werte, $vorhanden)` | Prüfen ohne zu speichern |
 | `->can('update')`, `->authorize('update')` | Datenrechte der angemeldeten Person (`view`, `create`, `update`, `delete`, `export`, `import`) |
 | `->formFields(only: [...], except: [...])` | Formularfelder aus dem Table-Designer für eigene Masken |
@@ -947,7 +948,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 | API | SAFT | Änderungen |
 |---|---|---|
-| **1.10** | 0.6.0 | Jede Änderung über `DataTable` (auch `$record->save()` auf einem Datensatz) läuft in einer eigenen Transaktion über Daten und Protokoll; `RecordSaved` und `RecordDeleted` laufen **innerhalb** dieser Transaktion – wirft ein Listener dort, wird die auslösende Änderung zurückgerollt (bisher nur in der Dokumentation so beschrieben). `Saft::transaction()` und `DataTable::transaction()` fassen mehrere Änderungen in einer Transaktion zusammen (unverändert). Neu: `DynamicRecord::definition()` (intern, kein Vertrag) |
+| **1.10** | 0.6.0 | Jede Änderung über `DataTable` (auch `$record->save()` auf einem Datensatz) läuft in einer eigenen Transaktion über Daten und Protokoll; `RecordSaved` und `RecordDeleted` laufen **innerhalb** dieser Transaktion – wirft ein Listener dort, wird die auslösende Änderung zurückgerollt (bisher nur in der Dokumentation so beschrieben). `Saft::transaction()` und `DataTable::transaction()` fassen mehrere Änderungen in einer Transaktion zusammen (unverändert). Optimistische Sperre: `DataTable::version()`, `update()` mit `$expectedVersion`, `StaleRecordException`. Neu: `DynamicRecord::definition()` (intern, kein Vertrag) |
 | **1.9** | 0.5.0 | `DataTable::url()` – Adresse der Datenansicht mit ausgewähltem Datensatz, z. B. für Links aus einem Stundenplan |
 | **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` und `detachFile()` sowie `StoredFile` – Dateien aus Feldern vom Typ „Datei“ lesen, anhängen (mit den Prüfungen des Formulars) und entfernen |
 | **1.7** | 0.1 | `MenuSuggestion` mit optionalem `subgroup` – Menüvorschlag in ein Untermenü der Gruppe (dritte Ebene) |

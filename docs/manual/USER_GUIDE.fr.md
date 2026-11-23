@@ -285,8 +285,12 @@ aussi les entrées supprimées, que vous pouvez récupérer via **Restaurer** su
 entre-temps la même valeur dans un champ unique, le message « Conflit de données » s’affiche et l’enregistrement reste
 supprimé.
 
-> **Enregistrement supprimé entre-temps ?** Si quelqu’un a supprimé l’enregistrement pendant que vous le modifiez,
-> l’enregistrement des modifications est refusé avec un avertissement. Les valeurs enregistrées restent alors inchangées.
+> **Modifié ou supprimé entre-temps ?** Si quelqu’un modifie l’enregistrement pendant que vous le modifiez, SAFT
+> signale « Modifié entre-temps » avec le nom et l’heure lors de l’enregistrement, et la fenêtre reste ouverte avec vos
+> saisies. **Recharger** la ferme et affiche l’état actuel ; **Enregistrer quand même** écrase la modification de l’autre
+> personne avec vos saisies (noté dans l’historique comme écrasement délibéré). Si l’enregistrement a été supprimé,
+> l’enregistrement des modifications est refusé. Il en va de même pour les formulaires de l’administration (rôles,
+> utilisateurs, menus, tables …).
 
 ### 4.3 Tables liées : la vue maître-détail
 

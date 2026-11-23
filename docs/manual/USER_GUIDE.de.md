@@ -277,8 +277,11 @@ gelöschte Einträge anzeigen und über **Wiederherstellen** in der Zeile (Smart
 Datensatz mit demselben Wert in einem eindeutigen Feld, erscheint die Meldung „Datenkonflikt“, und der Datensatz
 bleibt gelöscht.
 
-> **Datensatz inzwischen gelöscht?** Hat jemand den Datensatz gelöscht, während Sie ihn bearbeiten, wird das
-> Speichern mit einem Hinweis abgelehnt. Die gespeicherten Werte bleiben dann unverändert.
+> **Inzwischen geändert oder gelöscht?** Hat jemand den Datensatz geändert, während Sie ihn bearbeiten, meldet SAFT
+> beim Speichern „Inzwischen geändert“ mit Name und Uhrzeit, und das Fenster bleibt mit Ihren Eingaben offen. **Neu laden**
+> schliesst es und zeigt den aktuellen Stand; **Trotzdem speichern** überschreibt die fremde Änderung mit Ihren Eingaben
+> (im Verlauf als bewusstes Überschreiben vermerkt). Wurde der Datensatz gelöscht, wird das Speichern abgelehnt. Dasselbe
+> gilt für die Formulare der Verwaltung (Rollen, Benutzer, Menüs, Tabellen …).
 
 ### 4.3 Verknüpfte Tabellen: die Master-Detail-Ansicht
 

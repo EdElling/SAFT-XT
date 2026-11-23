@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Api;
 
+use App\DynamicData\Write\StaleRecordException;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Models\DynamicRecord;
 use App\Models\User;
@@ -39,6 +40,7 @@ final class ApiManifest
         Manual::class,
         RecordListener::class,
         RecordRejected::class,
+        StaleRecordException::class,
         Events\RecordEvent::class,
         Events\RecordSaving::class,
         Events\RecordSaved::class,

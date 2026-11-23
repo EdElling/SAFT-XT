@@ -414,6 +414,7 @@ Saft::transaction(function (): void { /* several changes: all or nothing */ });
 | `Saft::table($name)` | table designer table (connected tables read-only) |
 | `->label()`, `->name()`, `->fieldNames()` | label, internal name, technical names of the active fields |
 | `->query()`, `->find($id)` | reading; records in the recycle bin are excluded |
+| `->version($record)`, `->update($record, $values, $version)` | optimistic locking (since API 1.10): remember `version()` when reading (e.g. hidden in the form of your page) and pass it to `update()`. If someone has changed the record in the meantime, SAFT throws `StaleRecordException` (`changedBy`, `changedAt`, `currentVersion`) and saves nothing; `currentVersion` allows a deliberate overwrite. Without `$version` SAFT checks nothing |
 | `->create($values)`, `->update($record, $values)`, `->delete($record)` | writing; `$record` as model or key |
 | `->validate($values, $existing)` | validate without saving |
 | `->can('update')`, `->authorize('update')` | data permissions of the signed-in person (`view`, `create`, `update`, `delete`, `export`, `import`) |
@@ -931,7 +932,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 | API | SAFT | Changes |
 |---|---|---|
-| **1.10** | 0.6.0 | Every change through `DataTable` (also `$record->save()` on a record) runs in its own transaction across data and activity log; `RecordSaved` and `RecordDeleted` run **inside** that transaction – if a listener throws there, the triggering change is rolled back (previously only described that way in the documentation). `Saft::transaction()` and `DataTable::transaction()` combine several changes into one transaction (unchanged). New: `DynamicRecord::definition()` (internal, not part of the contract) |
+| **1.10** | 0.6.0 | Every change through `DataTable` (also `$record->save()` on a record) runs in its own transaction across data and activity log; `RecordSaved` and `RecordDeleted` run **inside** that transaction – if a listener throws there, the triggering change is rolled back (previously only described that way in the documentation). `Saft::transaction()` and `DataTable::transaction()` combine several changes into one transaction (unchanged). Optimistic locking: `DataTable::version()`, `update()` with `$expectedVersion`, `StaleRecordException`. New: `DynamicRecord::definition()` (internal, not part of the contract) |
 | **1.9** | 0.5.0 | `DataTable::url()` – address of the data view with a selected record, e.g. for links from a timetable |
 | **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` and `detachFile()` plus `StoredFile` – read, attach (with the form's checks) and remove files of fields of type “File” |
 | **1.7** | 0.1 | `MenuSuggestion` with optional `subgroup` – menu suggestion into a submenu of the group (third level) |

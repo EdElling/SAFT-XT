@@ -1,6 +1,17 @@
 {
     "version": "1.10",
     "surface": {
+        "App\\DynamicData\\Write\\StaleRecordException": [
+            "class extends App\\Exceptions\\BusinessRuleException",
+            "const CODE = \"record_stale\"",
+            "function __construct(string $message, string $currentVersion, ?string $changedBy = null, ?Illuminate\\Support\\Carbon $changedAt = null)",
+            "property ?Illuminate\\Support\\Carbon $changedAt",
+            "property ?string $changedBy",
+            "property ?string $title",
+            "property string $currentVersion",
+            "property string $errorCode",
+            "static function for(App\\Models\\DynamicRecord $current): App\\DynamicData\\Write\\StaleRecordException"
+        ],
         "App\\Filament\\Concerns\\LimitsFormWidth": [
             "trait",
             "function getExtraBodyAttributes(): array",
@@ -41,9 +52,10 @@
             "function name(): string",
             "function query(): Illuminate\\Database\\Eloquent\\Builder",
             "function transaction(Closure $callback): mixed",
-            "function update(App\\Models\\DynamicRecord|string|int $record, array $values): App\\Models\\DynamicRecord",
+            "function update(App\\Models\\DynamicRecord|string|int $record, array $values, ?string $expectedVersion = null): App\\Models\\DynamicRecord",
             "function url(App\\Models\\DynamicRecord|string|int|null $record = null): string",
             "function validate(array $values, ?App\\Models\\DynamicRecord $existing = null): void",
+            "function version(App\\Models\\DynamicRecord|string|int $record): string",
             "function withoutAuthorization(): App\\Plugins\\Api\\DataTable"
         ],
         "App\\Plugins\\Api\\Events\\RecordDeleted": [

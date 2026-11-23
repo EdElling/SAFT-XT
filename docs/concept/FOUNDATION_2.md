@@ -1,6 +1,6 @@
 # Konzept: Fundament 2 (Schreibweg, Nebenläufigkeit, Hintergrundarbeit, Formelsprache, Qualitätssicherung)
 
-Stand: 23.11.2026 · Status: **F0 und F1 umgesetzt (23.11.2026), F2–F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
+Stand: 23.11.2026 · Status: **F0, F1 und F2 umgesetzt (23.11.2026), F3–F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
 
 ## 1. Ziel
 
@@ -131,17 +131,26 @@ schon so beschrieben, stimmte aber nicht. Im Changelog ausdrücklich nennen.
 
 ## 5. F2 – Verlorene Änderungen verhindern
 
-- Beim Lesen für ein Formular merkt sich die Oberfläche `updated_at` (Designer-Tabellen) als **Version**; bei
-  angebundenen Tabellen ohne Zeitstempel die gelesenen Werte aller Spalten des Formulars.
+- **Umgesetzt 23.11.2026, Abweichung:** Die Version ist für alle Tabellen eine **Prüfsumme über die Rohwerte der
+  bearbeitbaren Felder** (`RecordVersion`, ohne berechnete Felder und Systemspalten), nicht `updated_at`. Grund: Eine
+  nachgeführte Summe im Master-Datensatz (Bestellposition erfasst) änderte `updated_at` und löste einen Fehlalarm aus,
+  obwohl niemand ein bearbeitbares Feld geändert hat; angebundene Tabellen ohne Zeitstempel sind so gleich geschützt.
+  `updated_by`/`updated_at` liefern nur den Meldungstext. Das Formular trägt die Version in einem versteckten Feld.
 - Der Writer vergleicht in Schritt 2 innerhalb der Transaktion (`SELECT … FOR UPDATE` über den Query Builder,
   `lockForUpdate()`, portabel) und wirft `StaleRecordException`, wenn der Stand abweicht.
 - Die Oberfläche zeigt: „*Anna Muster* hat diesen Datensatz um 14:32 geändert. Ihre Eingaben wurden nicht gespeichert.“
   mit den Knöpfen **Neu laden** und **Trotzdem speichern** (nur wenn die Person das Recht *ändern* hat; das ist ein
-  bewusstes Überschreiben und steht so im Protokoll).
+  bewusstes Überschreiben und steht so im Protokoll, `overwrote`). Umgesetzt als Meldung mit zwei Aktionen, die
+  Livewire-Ereignisse an die Komponente mit dem offenen Formular senden (`HandlesStaleRecords`): „Trotzdem speichern“
+  setzt die Version im offenen Formular auf den aktuellen Stand und schickt es erneut ab – das ganze Formular
+  überschreibt dann den fremden Stand.
 - Sammeländerung (B-133) und Läufe (B-137) arbeiten ohne Version je Datensatz, dafür mit **Vorschau und Transaktion**;
   der Writer prüft dort nichts, das steht in `origin`.
-- Metadaten (Rollen, Auswertungen, Menüs, Dokumentvorlagen) bekommen denselben Schutz über Filaments
-  Formular-Hook; der `DynamicSchemaService` behält zusätzlich seine Sperre je Tabelle.
+- Metadaten: die elf Bearbeiten-Seiten der Verwaltung (`EditRecord`) prüfen `updated_at` über das Trait
+  `DetectsConcurrentEdits` (Hook `beforeValidate`), gleiche Meldung, gleiche Knöpfe; wer geändert hat, kommt aus dem
+  Änderungsprotokoll. Nicht dabei: der Auswertungs-Designer und die Feld-Modale des Table-Designers (dort schützt die
+  Sperre je Tabelle im `DynamicSchemaService`).
+- Plugin-API 1.10: `DataTable::version()`, `update(…, $expectedVersion)`, `StaleRecordException` zugesichert.
 
 Nicht Ziel: Anzeige „wird gerade bearbeitet von …“ (bräuchte Heartbeats, bringt auf Webspace wenig).
 
@@ -275,7 +284,7 @@ darauf statt auf Laravel-Boost-Boilerplate; `CLAUDE.md` wird auf PHP 8.4 und den
 |---|---|---|
 | **F0 Vorbereitung** | **Umgesetzt 23.11.2026** (Commits 2a89a7c, a1512a6, 5562d44, a8277c7, 0bfb415): Larastan Level 5 mit Baseline (336 Meldungen, von 946), Architekturtests 1 und 2, 95 Migrationen umnummeriert, `make:migration` nummeriert, Aufgabenart `activity_prune` (inaktiv, Dashboard-Hinweis), `strict_types` über Pint. Keine Verhaltensänderung für Anwender. | klein |
 | **F1 Schreibweg** | **Umgesetzt 23.11.2026:** `RecordWriter`, `WriteOptions`, `WriteContext`, `WritePhases`; zwei Transaktionen je Vorgang; Umstellung von Datenansicht, Import, Kopieren, Dokumenten, Nachführung, Demo-Reset und Plugin-API; Architekturtest 3; Plugin-API 1.10; Entwickler- und Admin-Handbuch | gross |
-| **F2 Nebenläufigkeit** | Version im Formular, `StaleRecordException`, Dialog „Neu laden / Trotzdem speichern“, Metadaten-Formulare, Browser-Tests | mittel |
+| **F2 Nebenläufigkeit** | **Umgesetzt 23.11.2026:** `RecordVersion`, `StaleRecordException`, Prüfung mit `lockForUpdate()` im Writer, Meldung mit „Neu laden / Trotzdem speichern“ in Datenansicht und Detailtabelle, elf Edit-Seiten der Verwaltung, Plugin-API, Browser-Test EIN-18, Handbücher | mittel |
 | **F3a Arbeiten** | `work_items`, `WorkType`, Treiber Browser und Scheduler, Seite „Arbeiten“, Aufräumen, Dashboard | mittel |
 | **F3b Umstellung** | Export, Datenimport, Dokumente, Datenstände, Recompute, KI-App-Designer und seine Auswertungen auf Arbeiten; Treiber Queue; Grenzen anheben; Handbücher | gross |
 | **F4 Formelsprache** | `FORMULA_SPEC.md`, Konformitätstabelle, Test über alle Wege und Datenbanken, Abweichungen beheben | mittel |
@@ -302,8 +311,8 @@ die Browser-Suite läuft wie üblich vor dem Release auf drei Datenbanken.
 1. **Protokoll-Ort:** ~~`activity_log` auf der Hauptverbindung mit `afterCommit` oder eine zweite Protokolltabelle in
    `app_data`?~~ **Entschieden 23.11.2026:** `activity_log` bleibt auf der Hauptverbindung, der Writer führt dort eine
    eigene Transaktion und committet sie nach den Daten (Abschnitt 3).
-2. **„Trotzdem speichern“** anbieten (Vorschlag) oder nur „Neu laden“? Ohne Überschreiben müssen Personen ihre
-   Eingaben abschreiben; mit Überschreiben kann die zweite Änderung verloren gehen, aber bewusst und protokolliert.
+2. **„Trotzdem speichern“** ~~anbieten oder nur „Neu laden“?~~ **Entschieden 23.11.2026:** beide Knöpfe; Überschreiben
+   steht im Protokoll (`overwrote`).
 3. **Import grösser als ein Block:** eine Transaktion über alle Blöcke (kann auf MySQL lange Sperren halten) oder
    Staging-Tabelle mit Umhängen am Ende (mehr Aufwand, saubere Transaktion)? Vorschlag: eine Transaktion bis zur
    heutigen Grenze von 10'000 Datensätzen, darüber Staging erst bei Bedarf.

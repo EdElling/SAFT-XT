@@ -10,7 +10,9 @@ use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Ui\DynamicFormBuilder;
 use App\DynamicData\Validation\RecordChecker;
+use App\DynamicData\Write\RecordVersion;
 use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\StaleRecordException;
 use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Pages\DynamicDataPage;
@@ -118,18 +120,29 @@ final class DataTable
     }
 
     /**
+     * Stand des Datensatzes für die optimistische Sperre (seit API 1.10): beim Lesen merken (z. B. versteckt im Formular
+     * Ihrer Seite) und bei update() als $expectedVersion mitgeben.
+     */
+    public function version(DynamicRecord|int|string $record): string
+    {
+        return RecordVersion::of($this->resolve($record));
+    }
+
+    /**
      * @param  array<string, mixed>  $values  nur die zu ändernden Felder
+     * @param  string|null  $expectedVersion  Stand aus version(); weicht der aktuelle ab, wird nichts gespeichert (seit API 1.10)
      *
      * @throws ValidationException|RecordRejected
+     * @throws StaleRecordException wenn der Datensatz inzwischen geändert wurde; currentVersion erlaubt bewusstes Überschreiben
      */
-    public function update(DynamicRecord|int|string $record, array $values): DynamicRecord
+    public function update(DynamicRecord|int|string $record, array $values, ?string $expectedVersion = null): DynamicRecord
     {
         $this->authorize('update');
         $this->assertWritable();
         $record = $this->resolve($record);
         $this->validate($values, $record);
 
-        return app(RecordWriter::class)->update($record, $values, WriteOptions::plugin());
+        return app(RecordWriter::class)->update($record, $values, WriteOptions::plugin()->expecting($expectedVersion));
     }
 
     /** @throws RecordRejected */

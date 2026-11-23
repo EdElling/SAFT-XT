@@ -265,8 +265,11 @@ missing.
 filter and bring them back with **Restore** in the row (smartphone: "Details → Restore"). If another record now has the same value in a unique field, the
 message "Data conflict" appears, and the record stays deleted.
 
-> **Record deleted in the meantime?** If someone deletes the record while you are editing it, saving is rejected
-> with a notice. The stored values then remain unchanged.
+> **Changed or deleted in the meantime?** If someone changes the record while you are editing it, SAFT reports
+> "Changed in the meantime" with name and time when you save, and the window stays open with your input. **Reload**
+> closes it and shows the current state; **Save anyway** overwrites the other change with your input (noted in the
+> history as a deliberate overwrite). If the record has been deleted, saving is rejected. The same applies to the forms
+> of the administration (roles, users, menus, tables …).
 
 ### 4.3 Related tables: the master-detail view
 

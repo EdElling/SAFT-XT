@@ -274,8 +274,11 @@ I pulsanti visibili dipendono dai vostri diritti: con il solo diritto di lettura
 eliminate, che potete recuperare con **Ripristina** nella riga (smartphone: «Dettagli → Ripristina»). Se nel frattempo un altro record ha lo stesso valore in
 un campo univoco, compare il messaggio «Conflitto di dati» e il record resta eliminato.
 
-> **Record eliminato nel frattempo?** Se qualcuno ha eliminato il record mentre lo state modificando, il salvataggio
-> viene rifiutato con un avviso. I valori salvati restano allora invariati.
+> **Modificato o eliminato nel frattempo?** Se qualcuno modifica il record mentre lo state modificando, al salvataggio
+> SAFT segnala «Modificato nel frattempo» con nome e ora, e la finestra resta aperta con i vostri dati. **Ricarica** la
+> chiude e mostra lo stato attuale; **Salva comunque** sovrascrive la modifica altrui con i vostri dati (annotato nella
+> cronologia come sovrascrittura voluta). Se il record è stato eliminato, il salvataggio viene rifiutato. Lo stesso vale
+> per i moduli dell’amministrazione (ruoli, utenti, menu, tabelle …).
 
 ### 4.3 Tabelle collegate: la vista master-detail
 
