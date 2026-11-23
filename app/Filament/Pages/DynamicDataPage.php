@@ -18,6 +18,7 @@ use App\DynamicData\Ui\KeylessRow;
 use App\DynamicData\Ui\RecordEntries;
 use App\ExternalData\ExternalTableUnavailable;
 use App\ExternalData\SchemaComparison;
+use App\Filament\Concerns\HandlesStaleRecords;
 use App\Filament\Concerns\RemembersTableColumns;
 use App\Filament\Concerns\RemembersTableState;
 use App\Livewire\DynamicDetailTable;
@@ -60,6 +61,7 @@ use Throwable;
  */
 class DynamicDataPage extends Page implements HasTable
 {
+    use HandlesStaleRecords;
     use InteractsWithTable, RemembersTableColumns {
         getTableRecordKey as private filamentTableRecordKey;
         resolveTableRecord as private filamentResolveTableRecord;

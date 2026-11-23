@@ -10,6 +10,7 @@ use App\DynamicData\DetailSource;
 use App\DynamicData\Ui\DynamicRecordActions;
 use App\DynamicData\Ui\DynamicTableBuilder;
 use App\DynamicData\Ui\KeylessRow;
+use App\Filament\Concerns\HandlesStaleRecords;
 use App\Filament\Concerns\RemembersTableColumns;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -37,6 +38,7 @@ use Livewire\Component;
  */
 class DynamicDetailTable extends Component implements HasActions, HasSchemas, HasTable
 {
+    use HandlesStaleRecords;
     use InteractsWithActions;
     use InteractsWithSchemas;
     use InteractsWithTable, RemembersTableColumns {

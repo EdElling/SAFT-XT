@@ -21,6 +21,11 @@ return [
         'details' => 'Details',
         'view' => 'View',
     ],
+    'stale' => [
+        'reload' => 'Reload',
+        'overwrite' => 'Save anyway',
+        'hint' => '"Reload" shows the current state; "Save anyway" overwrites the other change with your input.',
+    ],
     'copy' => [
         'children' => 'Copy along',
         'children_help' => 'Records that belong to this one; their link then points to the copy.',

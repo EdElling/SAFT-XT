@@ -224,6 +224,39 @@ class DataEntryTest extends DuskTestCase
         });
     }
 
+    /** EIN-18: Gleichzeitiges Bearbeiten (Fundament 2, F2) – Meldung „Inzwischen geändert“ mit „Trotzdem speichern“ und „Neu laden“. */
+    public function test_concurrent_edit_warns_and_offers_overwrite_or_reload(): void
+    {
+        $record = DynamicRecord::forTable($this->daten)->create(['titel' => 'Original']);
+        $other = fn (string $title) => DynamicRecord::forTable($this->daten)->newQuery()->findOrFail($record->id)->update(['titel' => $title]);
+
+        $this->browse(function (Browser $browser) use ($record, $other): void {
+            $this->login($browser, self::ADMIN);
+            $browser->visit('/admin/data/daten')->waitForText('Original', 15);
+            $this->clickVisibleButton($browser, 'Bearbeiten')->waitFor('input[id$=".titel"]', 15);
+            $browser->clear('input[id$=".titel"]')->type('input[id$=".titel"]', 'Meine Fassung');
+
+            // Inzwischen ändert jemand anderes: Speichern wird abgelehnt, das Fenster bleibt offen.
+            $other('Fremde Fassung');
+            $this->clickVisibleButton($browser, 'Speichern')->waitForText('Inzwischen geändert', 15)
+                ->assertSee('Trotzdem speichern')->assertSee('Neu laden')->assertVisible('input[id$=".titel"]');
+            $this->assertSame('Fremde Fassung', $record->fresh()->titel);
+
+            // Trotzdem speichern: die eigene Fassung überschreibt.
+            $this->clickVisibleButton($browser, 'Trotzdem speichern')->waitForText('Gespeichert', 15)->waitUntilMissing('input[id$=".titel"]', 15);
+            $this->assertSame('Meine Fassung', $record->fresh()->titel);
+
+            // Neu laden: Fenster zu, Tabelle zeigt den fremden Stand.
+            $browser->waitForText('Meine Fassung', 15);
+            $this->clickVisibleButton($browser, 'Bearbeiten')->waitFor('input[id$=".titel"]', 15);
+            $browser->clear('input[id$=".titel"]')->type('input[id$=".titel"]', 'Zweite Fassung');
+            $other('Noch fremder');
+            $this->clickVisibleButton($browser, 'Speichern')->waitForText('Inzwischen geändert', 15);
+            $this->clickVisibleButton($browser, 'Neu laden')->waitUntilMissing('input[id$=".titel"]', 15)->waitForText('Noch fremder', 15);
+            $this->assertSame('Noch fremder', $record->fresh()->titel);
+        });
+    }
+
     /** EIN-07: Emojis können per WebDriver nicht getippt werden und werden direkt gespeichert. */
     public function test_special_characters_are_stored_and_shown_unchanged(): void
     {

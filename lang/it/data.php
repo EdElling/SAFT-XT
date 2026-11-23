@@ -21,6 +21,11 @@ return [
         'details' => 'Dettagli',
         'view' => 'Visualizza',
     ],
+    'stale' => [
+        'reload' => 'Ricarica',
+        'overwrite' => 'Salva comunque',
+        'hint' => '«Ricarica» mostra lo stato attuale; «Salva comunque» sovrascrive la modifica altrui con i suoi dati.',
+    ],
     'copy' => [
         'children' => 'Copiare insieme',
         'children_help' => 'Record che appartengono a questo; il loro collegamento punta poi alla copia.',

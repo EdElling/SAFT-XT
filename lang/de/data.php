@@ -21,6 +21,11 @@ return [
         'details' => 'Details',
         'view' => 'Ansehen',
     ],
+    'stale' => [
+        'reload' => 'Neu laden',
+        'overwrite' => 'Trotzdem speichern',
+        'hint' => '„Neu laden“ zeigt den aktuellen Stand; „Trotzdem speichern“ überschreibt die fremde Änderung mit Ihren Eingaben.',
+    ],
     'copy' => [
         'children' => 'Mitkopieren',
         'children_help' => 'Datensätze, die zu diesem gehören; ihre Verknüpfung zeigt danach auf die Kopie.',

@@ -17,7 +17,9 @@ use App\DynamicData\Import\RecordImportAnalysis;
 use App\DynamicData\Import\RecordImporter;
 use App\DynamicData\RecordCopier;
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Write\RecordVersion;
 use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\StaleRecordException;
 use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Support\ActivityChanges;
@@ -50,6 +52,7 @@ use Filament\Infolists\Components\RepeatableEntry\TableColumn;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Callout;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -76,6 +79,15 @@ final class DynamicRecordActions
 
     /** Kaskade neu aufbauen (z. B. nach Löschen eines ausgewählten Datensatzes). */
     public const string REFRESH_EVENT = 'cascade-refresh';
+
+    /** Versteckte Felder im Bearbeiten-Formular: gelesener Stand (RecordVersion) und bewusstes Überschreiben (F2). */
+    public const string VERSION_FIELD = '_version';
+
+    public const string OVERWRITE_FIELD = '_overwrite';
+
+    public const string STALE_RELOAD_EVENT = 'stale-record-reload';
+
+    public const string STALE_OVERWRITE_EVENT = 'stale-record-overwrite';
 
     /**
      * @param  array<string, mixed>  $preset  feste Werte (z. B. Verknüpfung zur Haupttabelle)
@@ -468,13 +480,19 @@ final class DynamicRecordActions
     public static function edit(CustomTable $table, array $locked = [], ?string $name = null): EditAction
     {
         return EditAction::make($name)
-            ->schema(self::form($table, $locked))
+            ->schema(self::form($table, $locked, [], [Hidden::make(self::VERSION_FIELD), Hidden::make(self::OVERWRITE_FIELD)]))
+            // Stand beim Öffnen: weicht er beim Speichern vom aktuellen ab, meldet der Writer „inzwischen geändert“ (F2).
+            ->mutateRecordDataUsing(static fn (array $data, DynamicRecord $record): array => [...$data, self::VERSION_FIELD => RecordVersion::of($record), self::OVERWRITE_FIELD => false])
             ->visible($table->supports('update'))
             ->authorize(fn (): bool => DataAccess::current($table, 'update'))
             // Nur die Schaltfläche ausblenden: Ein bereits offenes Formular muss die Meldung beim Speichern erreichen.
             ->hidden(fn (mixed $livewire, ?DynamicRecord $record): bool => ($record?->trashed() ?? false)
                 && array_intersect(['edit', 'editRow'], array_column($livewire->mountedActions ?? [], 'name')) === [])
-            ->using(function (DynamicRecord $record, array $data) use ($locked, $table): DynamicRecord {
+            ->using(function (DynamicRecord $record, array $data, Action $action, mixed $livewire) use ($locked, $table): DynamicRecord {
+                $version = isset($data[self::VERSION_FIELD]) ? (string) $data[self::VERSION_FIELD] : null;
+                $overwrite = (bool) ($data[self::OVERWRITE_FIELD] ?? false);
+                unset($data[self::VERSION_FIELD], $data[self::OVERWRITE_FIELD]);
+
                 // Das Formular kann älter sein als eine Löschung in einem anderen Fenster.
                 $current = $record->newQuery()->withTrashed()->find($record->getKey());
 
@@ -485,8 +503,37 @@ final class DynamicRecordActions
                 // Der Schlüssel einer angebundenen Tabelle ist nach dem Anlegen fest.
                 $fixed = $table->isExternal() ? [...$locked, ...$table->keyColumns()] : $locked;
 
-                return app(RecordWriter::class)->update($record, array_diff_key($data, array_flip($fixed)), WriteOptions::ui());
+                try {
+                    return app(RecordWriter::class)->update($record, array_diff_key($data, array_flip($fixed)), WriteOptions::ui()->expecting($version, $overwrite));
+                } catch (StaleRecordException $exception) {
+                    self::notifyStale($exception, $livewire);
+
+                    // Fenster bleibt offen, die Eingaben bleiben erhalten; weiter geht es über die Knöpfe der Meldung.
+                    throw new Halt;
+                }
             });
+    }
+
+    /**
+     * Meldung „inzwischen geändert“ mit „Neu laden“ und „Trotzdem speichern“ (HandlesStaleRecords in der Komponente,
+     * die das Formular offen hat).
+     */
+    private static function notifyStale(StaleRecordException $exception, mixed $livewire): void
+    {
+        $component = (string) $livewire->getId();
+
+        Notification::make()
+            ->danger()
+            ->persistent()
+            ->title($exception->title ?? __('errors.titles.stale_record'))
+            ->body($exception->getMessage().' '.__('data.stale.hint'))
+            ->actions([
+                Action::make('reload')->label(__('data.stale.reload'))->button()
+                    ->dispatch(self::STALE_RELOAD_EVENT, ['component' => $component])->close(),
+                Action::make('overwrite')->label(__('data.stale.overwrite'))->color('gray')
+                    ->dispatch(self::STALE_OVERWRITE_EVENT, ['component' => $component, 'version' => $exception->currentVersion])->close(),
+            ])
+            ->send();
     }
 
     /**
@@ -907,11 +954,12 @@ final class DynamicRecordActions
     /**
      * @param  list<string>  $except
      * @param  array<string, mixed>  $preset  feste Werte (z. B. Verknüpfung zur Haupttabelle)
+     * @param  list<Component>  $extra  weitere Komponenten, z. B. versteckte Felder
      */
-    public static function form(CustomTable $table, array $except = [], array $preset = []): \Closure
+    public static function form(CustomTable $table, array $except = [], array $preset = [], array $extra = []): \Closure
     {
         return fn (Schema $schema): Schema => $schema
-            ->components(app(DynamicFormBuilder::class)->components($table, $except, $preset))
+            ->components([...app(DynamicFormBuilder::class)->components($table, $except, $preset), ...$extra])
             ->columns(2);
     }
 

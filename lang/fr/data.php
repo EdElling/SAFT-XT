@@ -21,6 +21,11 @@ return [
         'details' => 'Détails',
         'view' => 'Afficher',
     ],
+    'stale' => [
+        'reload' => 'Recharger',
+        'overwrite' => 'Enregistrer quand même',
+        'hint' => '« Recharger » affiche l’état actuel ; « Enregistrer quand même » écrase la modification de l’autre personne avec vos saisies.',
+    ],
     'copy' => [
         'children' => 'Copier avec',
         'children_help' => 'Enregistrements qui appartiennent à celui-ci ; leur liaison pointe ensuite vers la copie.',
