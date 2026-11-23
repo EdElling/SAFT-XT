@@ -76,7 +76,11 @@ class PluginsTest extends DuskTestCase
                 ->assertDontSee(':count');
             $this->clickVisibleButton($browser, 'Schliessen')->pause(400);
 
-            $this->clickVisibleButton($browser, 'Menüeinträge anlegen')->pause(400);
+            // In der Zeile von Lager-Umbuchung – auch andere Plugins (z. B. Musikschule: Planung) schlagen Menüeinträge vor.
+            $browser->driver->findElement(WebDriverBy::xpath(
+                "//tr[.//*[normalize-space(.)='lager-umbuchung']]//button[normalize-space(.)='Menüeinträge anlegen' or @aria-label='Menüeinträge anlegen']",
+            ))->click();
+            $browser->pause(400);
             $this->clickVisibleButton($browser, 'Bestätigen')
                 ->waitForText('1 Menüeinträge angelegt.', 15)
                 ->waitForTextIn(self::SELECTOR_SIDEBAR, 'Lager führen', 15)

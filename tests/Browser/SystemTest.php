@@ -433,7 +433,8 @@ class SystemTest extends DuskTestCase
                 table: table.getBoundingClientRect().width,
                 columns: table.querySelector('.fi-ta-table')?.getBoundingClientRect().width ?? 0,
                 minimum: parseFloat(getComputedStyle(table).minWidth) || 0,
-                content: document.querySelector('.fi-page-content').getBoundingClientRect().width,
+                // Breite der Seite, nicht des Inhalts: Listen mit App-Auswahl sind nur so breit wie die Tabelle.
+                content: document.querySelector('.fi-page').getBoundingClientRect().width,
                 pageScrolls: document.documentElement.scrollWidth > document.documentElement.clientWidth,
             };
         JS, [$selector]);
