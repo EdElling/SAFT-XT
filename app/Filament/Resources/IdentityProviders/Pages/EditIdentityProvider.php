@@ -6,6 +6,7 @@ namespace App\Filament\Resources\IdentityProviders\Pages;
 
 use App\Auth\Sso\Drivers\SamlDriver;
 use App\Auth\Sso\IdentityProviderType;
+use App\Filament\Concerns\DetectsConcurrentEdits;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Filament\Resources\IdentityProviders\Actions\TestConnectionAction;
 use App\Filament\Resources\IdentityProviders\IdentityProviderResource;
@@ -18,6 +19,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditIdentityProvider extends EditRecord
 {
+    use DetectsConcurrentEdits;
     use LimitsFormWidth;
 
     protected static string $resource = IdentityProviderResource::class;

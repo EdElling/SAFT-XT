@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Users\Pages;
 
 use App\Auth\TwoFactor;
 use App\Filament\Concerns\AuditsRelationChanges;
+use App\Filament\Concerns\DetectsConcurrentEdits;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
@@ -19,6 +20,7 @@ use Filament\Resources\Pages\EditRecord;
 class EditUser extends EditRecord
 {
     use AuditsRelationChanges;
+    use DetectsConcurrentEdits;
     use LimitsFormWidth;
 
     protected static string $resource = UserResource::class;

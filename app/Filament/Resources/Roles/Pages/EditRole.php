@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Roles\Pages;
 
 use App\Filament\Concerns\AuditsRelationChanges;
+use App\Filament\Concerns\DetectsConcurrentEdits;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Filament\Resources\Roles\Actions\CopyRoleAction;
 use App\Filament\Resources\Roles\RoleResource;
@@ -15,6 +16,7 @@ use Spatie\Permission\PermissionRegistrar;
 class EditRole extends EditRecord
 {
     use AuditsRelationChanges;
+    use DetectsConcurrentEdits;
     use LimitsFormWidth;
 
     protected static string $resource = RoleResource::class;

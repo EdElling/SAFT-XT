@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Apps\Pages;
 
+use App\Filament\Concerns\DetectsConcurrentEdits;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Filament\Resources\Apps\AppResource;
 use App\Filament\Resources\Apps\Schemas\AppForm;
@@ -13,6 +14,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditApp extends EditRecord
 {
+    use DetectsConcurrentEdits;
     use LimitsFormWidth;
 
     protected static string $resource = AppResource::class;

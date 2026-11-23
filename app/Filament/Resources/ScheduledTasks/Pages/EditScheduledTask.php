@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\ScheduledTasks\Pages;
 
+use App\Filament\Concerns\DetectsConcurrentEdits;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Filament\Resources\ScheduledTasks\ScheduledTaskResource;
 use App\Filament\Resources\ScheduledTasks\Schemas\ScheduledTaskForm;
@@ -15,6 +16,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditScheduledTask extends EditRecord
 {
+    use DetectsConcurrentEdits;
     use LimitsFormWidth;
 
     protected static string $resource = ScheduledTaskResource::class;

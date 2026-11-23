@@ -13,6 +13,7 @@ use App\DynamicData\Rules\TableRule;
 use App\DynamicData\Rules\TableRuleNormalizer;
 use App\DynamicData\Usages\TableUsages;
 use App\Exceptions\BusinessRuleException;
+use App\Filament\Concerns\DetectsConcurrentEdits;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Filament\Pages\DynamicDataPage;
 use App\Filament\Resources\CustomTables\CustomTableResource;
@@ -33,6 +34,7 @@ use Illuminate\Support\Arr;
 
 class EditCustomTable extends EditRecord
 {
+    use DetectsConcurrentEdits;
     use LimitsFormWidth;
 
     protected static string $resource = CustomTableResource::class;

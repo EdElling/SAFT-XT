@@ -7,6 +7,7 @@ namespace App\Filament\Resources\TableConnector\Pages;
 use App\Exceptions\BusinessRuleException;
 use App\ExternalData\SchemaComparison;
 use App\ExternalData\TableConnectorService;
+use App\Filament\Concerns\DetectsConcurrentEdits;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Filament\Pages\DynamicDataPage;
 use App\Filament\Resources\TableConnector\Actions\AssignConnectionAction;
@@ -23,6 +24,7 @@ use Throwable;
 
 class EditConnectedTable extends EditRecord
 {
+    use DetectsConcurrentEdits;
     use LimitsFormWidth;
 
     protected static string $resource = TableConnectorResource::class;

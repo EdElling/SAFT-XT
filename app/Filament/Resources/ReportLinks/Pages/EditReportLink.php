@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\ReportLinks\Pages;
 
+use App\Filament\Concerns\DetectsConcurrentEdits;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Filament\Resources\ReportLinks\ReportLinkResource;
 use App\Filament\Resources\ReportLinks\Schemas\ReportLinkForm;
@@ -12,6 +13,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditReportLink extends EditRecord
 {
+    use DetectsConcurrentEdits;
     use LimitsFormWidth;
 
     protected static string $resource = ReportLinkResource::class;

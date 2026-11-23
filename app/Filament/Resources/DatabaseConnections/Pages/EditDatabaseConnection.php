@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\DatabaseConnections\Pages;
 
 use App\ExternalData\ConnectionRegistry;
+use App\Filament\Concerns\DetectsConcurrentEdits;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Filament\Resources\DatabaseConnections\Actions\DeleteDatabaseConnectionAction;
 use App\Filament\Resources\DatabaseConnections\Actions\TestDatabaseConnectionAction;
@@ -15,6 +16,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditDatabaseConnection extends EditRecord
 {
+    use DetectsConcurrentEdits;
     use LimitsFormWidth;
 
     protected static string $resource = DatabaseConnectionResource::class;
