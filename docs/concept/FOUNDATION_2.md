@@ -1,6 +1,6 @@
 # Konzept: Fundament 2 (Schreibweg, Nebenläufigkeit, Hintergrundarbeit, Formelsprache, Qualitätssicherung)
 
-Stand: 23.11.2026 · Status: **erster Vorschlag zur Diskussion** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
+Stand: 23.11.2026 · Status: **F0 umgesetzt (23.11.2026), F1–F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
 
 ## 1. Ziel
 
@@ -214,21 +214,25 @@ Fortschritt, Dauer, Ergebnis, Abbrechen. Aufräumen: System-Aufgabe „Arbeiten 
 - Architekturtests (eigene Testklasse, wie `PluginApiContractTest`):
   1. `DB::raw`, `selectRaw`, `whereRaw` … nur in `App\Reports\Dialects`, `App\DynamicData\Ddl`, `App\Database`
      und einer begründeten Ausnahmeliste.
-  2. Kein `hasRole('super-admin')` und kein `ROLE_SUPER_ADMIN` ausserhalb von `User::isSuperAdmin()` und der
-     Rollenverwaltung; heute 23 Stellen.
+  2. Keine Erkennung einer *Person* als Super-Admin über den Rollennamen (`hasRole`, `roles()->where`,
+     `User::role`) ausserhalb von `User::isSuperAdmin()` und `User::superAdmins()`; begründete Ausnahme
+     `RoleSimulation::canSimulate()`. Die Konstante `ROLE_SUPER_ADMIN` bleibt erlaubt, wo sie die Rolle aus
+     Auswahllisten ausschliesst (Entscheid 23.11.2026, enger als zuerst formuliert).
   3. Kein `->save()`, `->update()`, `->delete()`, `->create()` auf `DynamicRecord` ausserhalb von
      `App\DynamicData\Write`.
   4. Jede Stelle, die `DynamicRecord::forTable()` lesend aufruft, steht in einer Liste mit Begründung
      (`tests/Fixtures/read-sites.json`). Das ist die Vorbereitung auf den Zeilenrechte-Scope aus `ROW_ACCESS.md` 7.
-- Reliese-Vorlage ergänzt `declare(strict_types=1);` in den Base-Models.
+- `declare(strict_types=1);` in den Base-Models über die Pint-Regel `declare_strict_types` (`pint.json`), weil Reliese
+  1.x keine eigene Vorlage erlaubt; Pint nach jedem `code:models` laufen lassen (Entscheid 23.11.2026).
 
 ### 8.2 Migrationen umbenennen
 
-- Einmaliges Skript benennt alle 85 Dateien in `0001_01_01_000001_…` bis `0001_01_01_000085_…` um (Reihenfolge wie
-  heute). Keine Inhaltsänderung.
-- Konvention (`CLAUDE.md`): neue Migrationen nehmen die nächste Nummer; `php artisan make:migration` wird durch
-  `saft:make-migration` ergänzt, das die Nummer vergibt. Ein Unit-Test prüft Monotonie und dass kein echtes Datum
-  vorkommt.
+- Einmaliges Skript benennt alle Dateien in `0001_01_01_000001_…` bis `0001_01_01_000095_…` um (Reihenfolge wie
+  heute). Keine Inhaltsänderung. Es sind 95, nicht 85: die zehn Settings-Migrationen unter `database/settings` liegen
+  in derselben Sortierung und gehören darum in dieselbe Nummernfolge (umgesetzt 23.11.2026).
+- Konvention (`CLAUDE.md`): neue Migrationen nehmen die nächste Nummer. Kein eigener Befehl: `NumberedMigrationCreator`
+  ersetzt den Datumspräfix, damit vergibt `php artisan make:migration` selbst die Nummer; nach `make:settings-migration`
+  die Datei von Hand umbenennen. `tests/Unit/MigrationNamingTest.php` prüft Muster, Eindeutigkeit und Lückenlosigkeit.
 - Folge: Entwicklungs-, Test- und Dusk-Datenbanken werden mit `migrate:fresh` neu aufgesetzt (Testdatenbanken ohnehin);
   die Strato-Demo wird mit 0.6.0 neu installiert. In den Release-Notes 0.6.0: „Installationen vor 0.6.0 müssen neu
   aufgesetzt werden; es gibt keine produktiven.“
@@ -263,7 +267,7 @@ darauf statt auf Laravel-Boost-Boilerplate; `CLAUDE.md` wird auf PHP 8.4 und den
 
 | Etappe | Inhalt | Umfang |
 |---|---|---|
-| **F0 Vorbereitung** | Larastan Level 5 mit Baseline, Architekturtests 1 und 2, Migrationen umbenennen, `saft:make-migration`, Protokoll kürzen, Reliese-Vorlage. Keine Verhaltensänderung für Anwender. | klein |
+| **F0 Vorbereitung** | **Umgesetzt 23.11.2026** (Commits 2a89a7c, a1512a6, 5562d44, a8277c7, 0bfb415): Larastan Level 5 mit Baseline (336 Meldungen, von 946), Architekturtests 1 und 2, 95 Migrationen umnummeriert, `make:migration` nummeriert, Aufgabenart `activity_prune` (inaktiv, Dashboard-Hinweis), `strict_types` über Pint. Keine Verhaltensänderung für Anwender. | klein |
 | **F1 Schreibweg** | `RecordWriter`, Phasen, `afterCommit`-Protokoll, Umstellung aller Schreibstellen, Architekturtest 3, Plugin-API 1.10, Entwicklerhandbuch Kapitel 9 und 10 | gross |
 | **F2 Nebenläufigkeit** | Version im Formular, `StaleRecordException`, Dialog „Neu laden / Trotzdem speichern“, Metadaten-Formulare, Browser-Tests | mittel |
 | **F3a Arbeiten** | `work_items`, `WorkType`, Treiber Browser und Scheduler, Seite „Arbeiten“, Aufräumen, Dashboard | mittel |
