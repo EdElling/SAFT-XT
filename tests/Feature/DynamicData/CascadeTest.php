@@ -285,7 +285,7 @@ class CascadeTest extends DynamicDataTestCase
         $kundenMenu->update(['view_config' => ['columns' => [1], 'details' => [$this->fieldId('bestellungen', 'rechnung_an_id')]]]);
         Schema::table('custom_tables', fn ($t) => $t->dropColumn('detail_field_ids'));
 
-        (require database_path('migrations/2026_11_16_100000_move_detail_configuration_to_custom_tables.php'))->up();
+        (require database_path('migrations/0001_01_01_000023_move_detail_configuration_to_custom_tables.php'))->up();
 
         $this->assertSame([$this->fieldId('bestellungen', 'rechnung_an_id')], $this->kunden->fresh()->detail_field_ids);
         $this->assertSame(['columns' => [1]], $kundenMenu->fresh()->view_config);

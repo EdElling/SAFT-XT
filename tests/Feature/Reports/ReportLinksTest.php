@@ -254,7 +254,7 @@ class ReportLinksTest extends TestCase
         $default = DB::table('menus')->insertGetId(['label' => json_encode(['de' => 'Verknüpfungen für Auswertungen', 'en' => 'Report links', 'fr' => 'Liaisons pour rapports', 'it' => 'Collegamenti per report'], JSON_UNESCAPED_UNICODE), 'route' => $route, 'sort_order' => 73, 'is_active' => true]);
         $custom = DB::table('menus')->insertGetId(['label' => json_encode(['de' => 'Meine Links', 'en' => 'My links']), 'route' => $route, 'sort_order' => 74, 'is_active' => true]);
 
-        (require database_path('migrations/2026_12_07_100000_rename_report_links_menu_entry.php'))->up();
+        (require database_path('migrations/0001_01_01_000046_rename_report_links_menu_entry.php'))->up();
 
         $label = fn (int $id): array => json_decode((string) DB::table('menus')->where('id', $id)->value('label'), true);
         $this->assertSame(['de' => 'Tabellenverknüpfungen', 'en' => 'Table links', 'fr' => 'Liaisons de tables', 'it' => 'Collegamenti tra tabelle'], $label($default));

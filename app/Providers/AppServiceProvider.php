@@ -12,6 +12,7 @@ use App\Auth\Sso\Drivers\SamlDriver;
 use App\Auth\Sso\IdentityProviderType;
 use App\Auth\Sso\PendingSsoLogout;
 use App\Auth\Sso\SsoDriverRegistry;
+use App\Database\Migrations\NumberedMigrationCreator;
 use App\Filament\Pages\DataModelPage;
 use App\Http\Responses\LogoutResponse;
 use App\Models\Activity as AppActivity;
@@ -64,6 +65,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        // Migrationen fortlaufend nummerieren statt datieren (Fundament 2, F0).
+        $this->app->extend('migration.creator', static fn ($creator, $app): NumberedMigrationCreator => new NumberedMigrationCreator($app['files'], $app->basePath('stubs')));
+
         // pdo_sqlsrv übernimmt beim Laden die Locale des Systems (setlocale(LC_ALL, "")). Meldungen von
         // Datenbankbibliotheken (z. B. libpq, ausgewertet im ConnectionTester) und Zahlenformate
         // bleiben neutral; LC_CTYPE (UTF-8) braucht der SQL-Server-Treiber und bleibt.

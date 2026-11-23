@@ -173,7 +173,7 @@ class AppsTest extends DynamicDataTestCase
         }
         DB::table('apps')->delete();
 
-        (require database_path('migrations/2026_12_27_100200_assign_existing_objects_to_app.php'))->up();
+        (require database_path('migrations/0001_01_01_000075_assign_existing_objects_to_app.php'))->up();
 
         $app = App::query()->sole();
         $this->assertSame('Bestehende Daten', $app->getTranslation('name', 'de'));
@@ -191,7 +191,7 @@ class AppsTest extends DynamicDataTestCase
     {
         App::query()->each(static fn (App $app) => $app->delete());
 
-        (require database_path('migrations/2026_12_27_100200_assign_existing_objects_to_app.php'))->up();
+        (require database_path('migrations/0001_01_01_000075_assign_existing_objects_to_app.php'))->up();
 
         $this->assertSame(0, App::query()->count());
     }
