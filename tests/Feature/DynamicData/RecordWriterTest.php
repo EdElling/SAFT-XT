@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\DynamicData;
 
+use App\DynamicData\Write\RecordVersion;
 use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\StaleRecordException;
 use App\DynamicData\Write\WriteOptions;
+use App\Exceptions\BusinessRuleException;
 use App\Models\Activity;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -153,6 +156,63 @@ class RecordWriterTest extends DynamicDataTestCase
         $this->writer()->batch(fn () => DynamicRecord::forTable($this->table())->create(['titel' => 'importiert']), WriteOptions::import());
         $this->assertSame(1, Activity::query()->where('log_name', 'dynamic.projekte')->count(), 'Import: kein Eintrag je Datensatz.');
         $this->assertSame(3, $this->recordCount());
+    }
+
+    public function test_version_detects_concurrent_changes_and_allows_a_deliberate_overwrite(): void
+    {
+        $anna = User::factory()->create(['name' => 'Anna Muster']);
+        $table = $this->table();
+        $record = $this->writer()->create($table, ['titel' => 'Alpha', 'anzahl' => 1]);
+        $version = RecordVersion::of($record->fresh());
+
+        // Jemand anderes ändert inzwischen.
+        $this->actingAs($anna);
+        $this->writer()->update(DynamicRecord::forTable($table)->newQuery()->findOrFail($record->id), ['anzahl' => 2]);
+
+        try {
+            $this->writer()->update($record, ['titel' => 'Beta'], WriteOptions::ui()->expecting($version));
+            $this->fail('StaleRecordException erwartet.');
+        } catch (StaleRecordException $e) {
+            $this->assertSame('Anna Muster', $e->changedBy);
+            $this->assertStringContainsString('Anna Muster hat diesen Datensatz um', $e->getMessage());
+            $this->assertSame('Inzwischen geändert', $e->title);
+            $this->assertSame(RecordVersion::of($record->fresh()), $e->currentVersion);
+        }
+
+        $this->assertSame('Alpha', $record->fresh()->titel, 'Nichts gespeichert.');
+
+        // Bewusst überschreiben: mit der aktuellen Version aus der Meldung.
+        $this->writer()->update($record, ['titel' => 'Beta'], WriteOptions::ui()->expecting($e->currentVersion, overwriting: true));
+        $this->assertSame(['Beta', 2], [$record->fresh()->titel, $record->fresh()->anzahl], 'Die fremde Änderung bleibt, die eigene kommt dazu.');
+        $this->assertTrue(Activity::query()->where('log_name', 'dynamic.projekte')->orderByDesc('id')->firstOrFail()->properties['overwrote']);
+
+        // Ohne Version prüft der Writer nichts (Sammeländerung, Läufe, Plugins ohne Formular).
+        $this->writer()->update($record, ['titel' => 'Gamma']);
+        $this->assertSame('Gamma', $record->fresh()->titel);
+    }
+
+    public function test_version_ignores_computed_fields_and_reports_deleted_records(): void
+    {
+        $table = $this->table();
+        $this->service()->addField($table->fresh(), [
+            'name' => 'doppelt', 'label' => 'Doppelt', 'type' => 'computed',
+            'options' => ['result' => 'decimal', 'precision' => 12, 'scale' => 2, 'formula' => 'budget * 2'],
+        ]);
+        $record = DynamicRecord::forTableName('projekte')->create(['titel' => 'A', 'budget' => 10]);
+
+        $this->assertNotContains('doppelt', RecordVersion::fields($record));
+        $this->assertContains('budget', RecordVersion::fields($record));
+        $this->assertSame(RecordVersion::of($record->fresh()), RecordVersion::of(DynamicRecord::forTableName('projekte')->newQuery()->findOrFail($record->id)), 'Gleicher Stand, gleiche Version.');
+
+        $version = RecordVersion::of($record->fresh());
+        $record->fresh()->delete();
+
+        try {
+            $this->writer()->update($record, ['titel' => 'B'], WriteOptions::ui()->expecting($version));
+            $this->fail('Gelöscht erwartet.');
+        } catch (BusinessRuleException $e) {
+            $this->assertSame('dynamic.record_deleted', $e->errorCode);
+        }
     }
 
     public function test_logging_state_is_restored_after_a_silent_write(): void

@@ -8,6 +8,7 @@ return [
     'titles' => [
         'default' => 'Errore',
         'business_rule' => 'Azione non possibile',
+        'stale_record' => 'Modificato nel frattempo',
         'conflict' => 'Conflitto di dati',
         'database' => 'Errore del database',
         '401' => 'Non autenticato',
@@ -45,6 +46,8 @@ return [
     ],
     'rules' => [
         'record_deleted' => 'Questo record è stato eliminato nel frattempo e non può più essere modificato.',
+        'stale_record' => ':user ha modificato questo record alle :time. I suoi dati non sono stati salvati.',
+        'stale_record_unknown' => 'Questo record è stato modificato nel frattempo da qualcun altro. I suoi dati non sono stati salvati.',
         'unknown_icon' => 'Questa icona non è nota. Esempio di nome valido: heroicon-o-users.',
         'super_admin_role_protected' => 'Il ruolo «super-admin» è fondamentale per il sistema e non può essere eliminato né rinominato.',
         'default_role_protected' => 'Questo ruolo è impostato come ruolo predefinito per i nuovi utenti e non può essere eliminato né rinominato. Modifica prima il ruolo predefinito in «Autenticazione».',

@@ -8,6 +8,7 @@ return [
     'titles' => [
         'default' => 'Fehler',
         'business_rule' => 'Aktion nicht möglich',
+        'stale_record' => 'Inzwischen geändert',
         'conflict' => 'Datenkonflikt',
         'database' => 'Datenbankfehler',
         '401' => 'Nicht angemeldet',
@@ -45,6 +46,8 @@ return [
     ],
     'rules' => [
         'record_deleted' => 'Dieser Datensatz wurde inzwischen gelöscht und kann nicht mehr geändert werden.',
+        'stale_record' => ':user hat diesen Datensatz um :time geändert. Ihre Eingaben wurden nicht gespeichert.',
+        'stale_record_unknown' => 'Dieser Datensatz wurde inzwischen von jemand anderem geändert. Ihre Eingaben wurden nicht gespeichert.',
         'unknown_icon' => 'Dieses Icon ist nicht bekannt. Beispiel für einen gültigen Namen: heroicon-o-users.',
         'super_admin_role_protected' => 'Die Rolle „super-admin“ ist systemkritisch und kann weder gelöscht noch umbenannt werden.',
         'default_role_protected' => 'Diese Rolle ist als Standardrolle für neue Benutzer eingestellt und kann weder gelöscht noch umbenannt werden. Ändern Sie zuerst die Standardrolle unter „Authentifizierung“.',

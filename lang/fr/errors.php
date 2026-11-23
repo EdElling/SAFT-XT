@@ -8,6 +8,7 @@ return [
     'titles' => [
         'default' => 'Erreur',
         'business_rule' => 'Action impossible',
+        'stale_record' => 'Modifié entre-temps',
         'conflict' => 'Conflit de données',
         'database' => 'Erreur de base de données',
         '401' => 'Non authentifié',
@@ -45,6 +46,8 @@ return [
     ],
     'rules' => [
         'record_deleted' => 'Cet enregistrement a été supprimé entre-temps et ne peut plus être modifié.',
+        'stale_record' => ':user a modifié cet enregistrement à :time. Vos saisies n’ont pas été enregistrées.',
+        'stale_record_unknown' => 'Cet enregistrement a été modifié entre-temps par quelqu’un d’autre. Vos saisies n’ont pas été enregistrées.',
         'unknown_icon' => 'Cette icône est inconnue. Exemple de nom valide : heroicon-o-users.',
         'super_admin_role_protected' => 'Le rôle « super-admin » est essentiel au système et ne peut être ni supprimé ni renommé.',
         'default_role_protected' => 'Ce rôle est défini comme rôle par défaut des nouveaux utilisateurs et ne peut être ni supprimé ni renommé. Modifiez d’abord le rôle par défaut sous « Authentification ».',

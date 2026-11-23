@@ -183,6 +183,10 @@ class DynamicRecord extends Model
         // Woher die Änderung kam (Datenansicht, Import, Plugin …), siehe WriteOptions::$origin.
         if (WriteContext::active()) {
             $properties->put('via', WriteContext::options()->origin);
+
+            if (WriteContext::options()->overwriting) {
+                $properties->put('overwrote', true);
+            }
         }
 
         $key = $this->activityKey();
@@ -198,6 +202,26 @@ class DynamicRecord extends Model
     public function hasSoftDeleteColumn(): bool
     {
         return $this->definition()?->systemColumns ?? true;
+    }
+
+    /**
+     * Die Zeile dieses Datensatzes, wie sie jetzt in der Datenbank steht (auch im Papierkorb), für die optimistische
+     * Sperre des Writers – mit lock: true gesperrt bis zum Ende der Transaktion (FOR UPDATE, portabel).
+     *
+     * @internal
+     */
+    public function currentRow(bool $lock = false): ?self
+    {
+        $query = $this->newQueryWithoutScopes();
+
+        if ($lock) {
+            $query->lockForUpdate();
+        }
+
+        /** @var self|null $row */
+        $row = $this->setKeysForSelectQuery($query)->first();
+
+        return $row;
     }
 
     /** Eindeutiger Schlüssel vorhanden; sonst ist getKey() nur eine Spalte zum Lesen. */

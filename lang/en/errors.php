@@ -8,6 +8,7 @@ return [
     'titles' => [
         'default' => 'Error',
         'business_rule' => 'Action not possible',
+        'stale_record' => 'Changed in the meantime',
         'conflict' => 'Data conflict',
         'database' => 'Database error',
         '401' => 'Unauthenticated',
@@ -45,6 +46,8 @@ return [
     ],
     'rules' => [
         'record_deleted' => 'This record has been deleted in the meantime and can no longer be changed.',
+        'stale_record' => ':user changed this record at :time. Your input has not been saved.',
+        'stale_record_unknown' => 'This record has been changed by someone else in the meantime. Your input has not been saved.',
         'unknown_icon' => 'This icon is not known. Example of a valid name: heroicon-o-users.',
         'super_admin_role_protected' => 'The “super-admin” role is system-critical and cannot be deleted or renamed.',
         'default_role_protected' => 'This role is configured as the default role for new users and cannot be deleted or renamed. Change the default role under “Authentication” first.',

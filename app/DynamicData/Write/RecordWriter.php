@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DynamicData\Write;
 
 use App\DynamicData\DynamicDataNamespace;
+use App\Exceptions\BusinessRuleException;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use Closure;
@@ -51,6 +52,11 @@ final class RecordWriter
     {
         return $this->transactional($record->getConnection(), $options, function (WriteOptions $options) use ($record): DynamicRecord {
             $creating = ! $record->exists;
+
+            if (! $creating && $options->expectedVersion !== null) {
+                $this->assertVersion($record, $options->expectedVersion);
+            }
+
             $this->phases->beforeSave($record, $creating, $options);
             // Die Nachher-Phase läuft im Eloquent-Ereignis „saved“ (DynamicRecord::booted()): dort sind die Originalwerte
             // noch nicht abgeglichen, was Summen in Master-Datensätzen und previous() der Plugin-Ereignisse brauchen.
@@ -110,6 +116,26 @@ final class RecordWriter
             $record->timestamps = false;
             WriteContext::perform($record, static fn (): bool => $record->saveQuietly());
         });
+    }
+
+    /**
+     * Optimistische Sperre (F2): den aktuellen Stand in der Transaktion sperren und mit der Version vergleichen, die das
+     * Formular gelesen hat. Gelöscht → wie bisher „inzwischen gelöscht“; geändert → StaleRecordException mit der
+     * aktuellen Version, mit der sich bewusst überschreiben lässt.
+     *
+     * @throws BusinessRuleException|StaleRecordException
+     */
+    private function assertVersion(DynamicRecord $record, string $expected): void
+    {
+        $current = $record->currentRow(lock: true);
+
+        if ($current === null || ($current->hasSoftDeleteColumn() && $current->getAttribute('deleted_at') !== null)) {
+            throw new BusinessRuleException(__('errors.rules.record_deleted'), 'dynamic.record_deleted');
+        }
+
+        if (RecordVersion::of($current) !== $expected) {
+            throw StaleRecordException::for($current);
+        }
     }
 
     /**

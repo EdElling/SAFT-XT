@@ -10,7 +10,8 @@ namespace App\DynamicData\Write;
  * - origin: wer schreibt (kommt als „via“ in die Eigenschaften des Protokolleintrags)
  * - pluginEvents: RecordSaving/RecordSaved/RecordDeleting/RecordDeleted an Plugins senden
  * - log: Einträge im Änderungsprotokoll je Datensatz (der Import schreibt stattdessen einen Sammeleintrag)
- * - expectedVersion: Stand, den das Formular gelesen hat (Fundament 2, F2 – noch ohne Wirkung)
+ * - expectedVersion: Stand (RecordVersion), den das Formular gelesen hat; weicht der aktuelle ab → StaleRecordException
+ * - overwriting: bewusstes Überschreiben nach einer Meldung („Trotzdem speichern“), kommt ins Protokoll
  */
 final readonly class WriteOptions
 {
@@ -36,6 +37,7 @@ final readonly class WriteOptions
         public bool $pluginEvents = true,
         public bool $log = true,
         public ?string $expectedVersion = null,
+        public bool $overwriting = false,
     ) {}
 
     public static function defaults(): self
@@ -67,16 +69,22 @@ final readonly class WriteOptions
 
     public function withOrigin(string $origin): self
     {
-        return new self($origin, $this->pluginEvents, $this->log, $this->expectedVersion);
+        return new self($origin, $this->pluginEvents, $this->log, $this->expectedVersion, $this->overwriting);
     }
 
     public function withoutLog(): self
     {
-        return new self($this->origin, $this->pluginEvents, false, $this->expectedVersion);
+        return new self($this->origin, $this->pluginEvents, false, $this->expectedVersion, $this->overwriting);
     }
 
     public function withoutPluginEvents(): self
     {
-        return new self($this->origin, false, $this->log, $this->expectedVersion);
+        return new self($this->origin, false, $this->log, $this->expectedVersion, $this->overwriting);
+    }
+
+    /** @param  bool  $overwriting  die Version ist die nach einer Meldung „inzwischen geändert“ neu gelesene */
+    public function expecting(?string $version, bool $overwriting = false): self
+    {
+        return new self($this->origin, $this->pluginEvents, $this->log, $version, $overwriting);
     }
 }
