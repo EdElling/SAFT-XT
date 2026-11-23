@@ -1,0 +1,987 @@
+[
+  {
+    "formula": "a + b",
+    "fields": {
+      "a": "1.5",
+      "b": "2.25"
+    },
+    "expected": "3.75",
+    "note": "Addition",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a - b",
+    "fields": {
+      "a": "1.5",
+      "b": "2.25"
+    },
+    "expected": "-0.75",
+    "note": "Subtraktion, negativ",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a * b",
+    "fields": {
+      "a": "1.5",
+      "b": "2.25"
+    },
+    "expected": "3.38",
+    "note": "3.375 kaufmännisch auf 2 Stellen",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a / b",
+    "fields": {
+      "a": "10",
+      "b": "4"
+    },
+    "expected": "2.5",
+    "note": "Division",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a + b * c",
+    "fields": {
+      "a": "1",
+      "b": "2",
+      "c": "3"
+    },
+    "expected": "7",
+    "note": "Punkt vor Strich",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "(a + b) * c",
+    "fields": {
+      "a": "1",
+      "b": "2",
+      "c": "3"
+    },
+    "expected": "9",
+    "note": "Klammern",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a - b - c",
+    "fields": {
+      "a": "10",
+      "b": "3",
+      "c": "2"
+    },
+    "expected": "5",
+    "note": "Linksassoziativ",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a / b / c",
+    "fields": {
+      "a": "100",
+      "b": "5",
+      "c": "2"
+    },
+    "expected": "10",
+    "note": "Linksassoziativ Division",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "-a + b",
+    "fields": {
+      "a": "1",
+      "b": "2"
+    },
+    "expected": "1",
+    "note": "Vorzeichen",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "-(a - b)",
+    "fields": {
+      "a": "1",
+      "b": "3"
+    },
+    "expected": "2",
+    "note": "Vorzeichen vor Klammer",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a * -1",
+    "fields": {
+      "a": "2.5"
+    },
+    "expected": "-2.5",
+    "note": "negatives Literal über Vorzeichen",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "i / 2",
+    "fields": {
+      "i": "3"
+    },
+    "expected": "1.5",
+    "note": "Ganzzahl durch Zahl ohne Abschneiden",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "i + a",
+    "fields": {
+      "i": "3",
+      "a": "1.5"
+    },
+    "expected": "4.5",
+    "note": "Ganzzahl plus Dezimal",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a - a",
+    "fields": {
+      "a": "5"
+    },
+    "expected": "0",
+    "note": "Null",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a * 0.081",
+    "fields": {
+      "a": "100"
+    },
+    "expected": "8.1",
+    "note": "MWST",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a * b",
+    "fields": {
+      "a": "1.0001",
+      "b": "2"
+    },
+    "expected": "2.0002",
+    "scale": 4,
+    "note": "4 Stellen",
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a * b",
+    "fields": {
+      "a": "123456789.123456",
+      "b": "1000"
+    },
+    "expected": "123456789123.456",
+    "scale": 3,
+    "note": "grosse Zahl",
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a / b",
+    "fields": {
+      "a": "1",
+      "b": "0"
+    },
+    "expected": null,
+    "note": "Division durch 0 ist leer",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a / b",
+    "fields": {
+      "a": "1"
+    },
+    "expected": null,
+    "note": "Division durch leer ist leer",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a + b",
+    "fields": {
+      "a": "1"
+    },
+    "expected": null,
+    "note": "Addition mit leer ist leer",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "-a",
+    "fields": {},
+    "expected": null,
+    "note": "Vorzeichen auf leer",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "coalesce(b, 0) + a",
+    "fields": {
+      "a": "1"
+    },
+    "expected": "1",
+    "note": "coalesce ersetzt leer",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "coalesce(a, b)",
+    "fields": {
+      "b": "5"
+    },
+    "expected": "5",
+    "note": "coalesce zweiter Wert",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "coalesce(a, b, c)",
+    "fields": {},
+    "expected": null,
+    "note": "coalesce alle leer",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "coalesce(a / b, 0)",
+    "fields": {
+      "a": "1",
+      "b": "0"
+    },
+    "expected": "0",
+    "note": "Division durch 0 abgefangen",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "min(a, b)",
+    "fields": {
+      "a": "1"
+    },
+    "expected": null,
+    "note": "min mit leer ist leer",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "max(a, b)",
+    "fields": {
+      "a": "1"
+    },
+    "expected": null,
+    "note": "max mit leer ist leer",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "round(a, 2)",
+    "fields": {},
+    "expected": null,
+    "note": "round auf leer",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "abs(a)",
+    "fields": {},
+    "expected": null,
+    "note": "abs auf leer",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "round(a, 2)",
+    "fields": {
+      "a": "2.675"
+    },
+    "expected": "2.68",
+    "note": "kaufmännisch, exakt dezimal",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "round(a, 2)",
+    "fields": {
+      "a": "1.005"
+    },
+    "expected": "1.01",
+    "note": "kaufmännisch",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "round(a)",
+    "fields": {
+      "a": "2.5"
+    },
+    "expected": "3",
+    "scale": 0,
+    "note": "ab 5 weg von 0",
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "round(a)",
+    "fields": {
+      "a": "-2.5"
+    },
+    "expected": "-3",
+    "scale": 0,
+    "note": "negativ weg von 0",
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "round(a)",
+    "fields": {
+      "a": "2.4999"
+    },
+    "expected": "2",
+    "scale": 0,
+    "note": "unter 5 abrunden",
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "round(a, 1)",
+    "fields": {
+      "a": "0.05"
+    },
+    "expected": "0.1",
+    "scale": 1,
+    "note": "Grenze 1 Stelle",
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "round(a, 3)",
+    "fields": {
+      "a": "2.0005"
+    },
+    "expected": "2.001",
+    "scale": 3,
+    "note": "Grenze 3 Stellen",
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "round(a / b, 2)",
+    "fields": {
+      "a": "1",
+      "b": "8"
+    },
+    "expected": "0.13",
+    "note": "0.125 nach Division",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a / b",
+    "fields": {
+      "a": "1",
+      "b": "8"
+    },
+    "expected": "0.13",
+    "note": "Rundung auf das Ziel ohne round()",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a / b",
+    "fields": {
+      "a": "10",
+      "b": "3"
+    },
+    "expected": "3.33",
+    "note": "nicht abbrechend",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "(a / b) * b",
+    "fields": {
+      "a": "10",
+      "b": "3"
+    },
+    "expected": "10",
+    "note": "abgeschnittenes Zwischenergebnis, nach Rundung gleich",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a / b * 100",
+    "fields": {
+      "a": "2",
+      "b": "3"
+    },
+    "expected": "66.67",
+    "note": "Prozent",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "round(a / b, 10)",
+    "fields": {
+      "a": "2",
+      "b": "3"
+    },
+    "expected": "0.6666666667",
+    "scale": 10,
+    "note": "10 Stellen: PHP schneidet bei 12 ab, rundet dann",
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "abs(a)",
+    "fields": {
+      "a": "-3.5"
+    },
+    "expected": "3.5",
+    "note": "abs negativ",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "abs(a - b)",
+    "fields": {
+      "a": "1",
+      "b": "4"
+    },
+    "expected": "3",
+    "note": "abs Differenz",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "min(a, b, c)",
+    "fields": {
+      "a": "3",
+      "b": "1",
+      "c": "2"
+    },
+    "expected": "1",
+    "note": "min drei Werte",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "max(a, b, c)",
+    "fields": {
+      "a": "3",
+      "b": "1",
+      "c": "2"
+    },
+    "expected": "3",
+    "note": "max drei Werte",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "min(a, b)",
+    "fields": {
+      "a": "2",
+      "b": "2"
+    },
+    "expected": "2",
+    "note": "min gleich",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "max(a, -b)",
+    "fields": {
+      "a": "-5",
+      "b": "3"
+    },
+    "expected": "-3",
+    "note": "max negativ",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report"
+    ]
+  },
+  {
+    "formula": "a > b",
+    "fields": {
+      "a": "2",
+      "b": "1"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "Vergleich wahr"
+  },
+  {
+    "formula": "a > b",
+    "fields": {
+      "a": "2"
+    },
+    "expected": "0",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "Vergleich mit leer ist 0"
+  },
+  {
+    "formula": "a <> b",
+    "fields": {
+      "a": "2"
+    },
+    "expected": "0",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "ungleich mit leer ist 0"
+  },
+  {
+    "formula": "a = i",
+    "fields": {
+      "a": "1",
+      "i": "1"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "1.000000 = 1 numerisch"
+  },
+  {
+    "formula": "t = 'Alpha'",
+    "fields": {
+      "t": "Alpha"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "Text gleich"
+  },
+  {
+    "formula": "t = 'alpha'",
+    "fields": {
+      "t": "Alpha"
+    },
+    "expected": "0",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "Text gross-/kleinschreibungsabhängig"
+  },
+  {
+    "formula": "t < 'B'",
+    "fields": {
+      "t": "Alpha"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "Text binär geordnet"
+  },
+  {
+    "formula": "s = 'offen'",
+    "fields": {
+      "s": "offen"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "Auswahl: gespeicherter Wert"
+  },
+  {
+    "formula": "d > '2026-01-01'",
+    "fields": {
+      "d": "2026-05-10"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "Datum chronologisch als Text"
+  },
+  {
+    "formula": "d = '2026-05-10'",
+    "fields": {
+      "d": "2026-05-10"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "Datum gleich"
+  },
+  {
+    "formula": "j",
+    "fields": {
+      "j": "1"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "Ja/Nein als Zahl"
+  },
+  {
+    "formula": "j = 0",
+    "fields": {
+      "j": "0"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "Nein ist 0"
+  },
+  {
+    "formula": "if(j, a, b)",
+    "fields": {
+      "j": "1",
+      "a": "10",
+      "b": "20"
+    },
+    "expected": "10",
+    "contexts": [
+      "field"
+    ],
+    "note": "Ja/Nein als Bedingung",
+    "scale": 2
+  },
+  {
+    "formula": "if(a > b, a, b)",
+    "fields": {
+      "a": "1",
+      "b": "2"
+    },
+    "expected": "2",
+    "contexts": [
+      "field"
+    ],
+    "note": "if sonst",
+    "scale": 2
+  },
+  {
+    "formula": "if(a > b, a)",
+    "fields": {
+      "a": "1",
+      "b": "2"
+    },
+    "expected": null,
+    "contexts": [
+      "field"
+    ],
+    "note": "if ohne sonst ist leer",
+    "scale": 2
+  },
+  {
+    "formula": "if(a > b, a, b)",
+    "fields": {
+      "b": "2"
+    },
+    "expected": "2",
+    "contexts": [
+      "field"
+    ],
+    "note": "leere Bedingung wählt sonst",
+    "scale": 2
+  },
+  {
+    "formula": "if(a > b and c = 1, 1, 0)",
+    "fields": {
+      "a": "2",
+      "b": "1",
+      "c": "1"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "and"
+  },
+  {
+    "formula": "a > b or c = 1",
+    "fields": {
+      "a": "1",
+      "b": "2",
+      "c": "1"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "or"
+  },
+  {
+    "formula": "a > b and c / 0 = 1",
+    "fields": {
+      "a": "1",
+      "b": "2",
+      "c": "1"
+    },
+    "expected": "0",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "kurzgeschlossen, rechte Seite egal"
+  },
+  {
+    "formula": "(a > b) + (b > c)",
+    "fields": {
+      "a": "3",
+      "b": "2",
+      "c": "1"
+    },
+    "expected": "2",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "Vergleiche sind Zahlen"
+  },
+  {
+    "formula": "if(t = 'Alpha', a, -a)",
+    "fields": {
+      "t": "Beta",
+      "a": "5"
+    },
+    "expected": "-5",
+    "contexts": [
+      "field"
+    ],
+    "note": "Text in Bedingung",
+    "scale": 2
+  },
+  {
+    "formula": "contains(t, 'LPH')",
+    "fields": {
+      "t": "Alpha"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "contains ohne Gross-/Kleinschreibung"
+  },
+  {
+    "formula": "startswith(t, 'al')",
+    "fields": {
+      "t": "Alpha"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "startswith"
+  },
+  {
+    "formula": "endswith(t, 'ha')",
+    "fields": {
+      "t": "Alpha"
+    },
+    "expected": "1",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "endswith"
+  },
+  {
+    "formula": "contains(t, 'x')",
+    "fields": {
+      "t": "Alpha"
+    },
+    "expected": "0",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "contains nicht enthalten"
+  },
+  {
+    "formula": "contains(t, 'a')",
+    "fields": {},
+    "expected": "0",
+    "scale": 0,
+    "contexts": [
+      "field"
+    ],
+    "note": "contains mit leer ist 0"
+  },
+  {
+    "formula": "round(if(a > 0, a * 1.081, a), 2)",
+    "fields": {
+      "a": "100"
+    },
+    "expected": "108.1",
+    "contexts": [
+      "field"
+    ],
+    "note": "if in Rechnung",
+    "scale": 2
+  }
+]
