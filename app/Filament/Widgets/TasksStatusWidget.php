@@ -10,6 +10,7 @@ use App\Filament\Widgets\Concerns\RequiresPermissions;
 use App\Models\ScheduledTask;
 use App\Models\TaskRun;
 use App\Tasks\TaskRunner;
+use App\Tasks\Types\ActivityPruneTask;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -66,7 +67,7 @@ class TasksStatusWidget extends TableWidget
             ]);
     }
 
-    /** Ampel als Satz: zuerst ein fehlender Scheduler, dann fehlgeschlagene Aufgaben. */
+    /** Ampel als Satz: zuerst ein fehlender Scheduler, dann fehlgeschlagene Aufgaben; dazu der Hinweis auf das ungekürzte Änderungsprotokoll. */
     private function status(): HtmlString
     {
         $failing = ScheduledTask::query()->where('is_active', true)->where('consecutive_failures', '>', 0)->get();
@@ -83,6 +84,15 @@ class TasksStatusWidget extends TableWidget
             $parts[] = $line('text-danger-600 dark:text-danger-400 font-medium', '✖', __('tasks.widget.failing', ['tasks' => $failing->map->displayName()->implode(', ')]), 'failing');
         }
 
-        return new HtmlString($parts === [] ? $line('text-success-600 dark:text-success-400', '✔', __('tasks.widget.ok'), 'ok') : implode('<br>', $parts));
+        $parts = $parts === [] ? [$line('text-success-600 dark:text-success-400', '✔', __('tasks.widget.ok'), 'ok')] : $parts;
+
+        // Änderungsprotokoll kürzen ist ausgeliefert aus (löscht Personendaten endgültig); solange es alte Einträge gibt, steht das hier.
+        $prune = ScheduledTask::query()->where('type', ActivityPruneTask::KEY)->where('is_system', true)->first();
+
+        if ($prune !== null && ! $prune->is_active && ActivityPruneTask::hasOverdueEntries($prune->parameterValues())) {
+            $parts[] = $line('text-gray-600 dark:text-gray-400', 'ℹ', __('tasks.widget.activity_hint', ['days' => ActivityPruneTask::days($prune->parameterValues())]), 'activity');
+        }
+
+        return new HtmlString(implode('<br>', $parts));
     }
 }

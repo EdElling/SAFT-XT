@@ -46,6 +46,10 @@ return [
         'only_with_snapshot_help' => 'Switched off: all connected tables of the connection, including those without a snapshot.',
         'keep_days' => 'Keep runs (days)',
         'keep_days_help' => 'Older entries in the run log are deleted.',
+        'activity_days' => 'Keep activity log (days)',
+        'activity_days_help' => 'Older entries in the activity log are permanently deleted.',
+        'auth_days' => 'Keep sign-ins (days)',
+        'auth_days_help' => 'Applies to sign-ins, sign-outs and failed attempts.',
     ],
     'frequency' => [
         'hourly' => 'Hourly',
@@ -71,6 +75,7 @@ return [
         'snapshot_refresh' => 'Refresh snapshot',
         'snapshot_prune' => 'Clean up snapshots',
         'task_runs_prune' => 'Clean up run log',
+        'activity_prune' => 'Trim activity log',
     ],
     'describe_type' => [
         'files_prune' => 'Orphaned files from file fields (uploads never saved, files without record)',
@@ -79,6 +84,7 @@ return [
         'backup_prune' => 'Backups older than :days days, the :keep newest stay',
         'snapshot_prune' => 'Retention periods of all snapshots, aborted runs',
         'task_runs_prune' => 'Runs older than :days days',
+        'activity_prune' => 'Entries older than :days days, sign-ins older than :auth_days days',
     ],
     'results' => [
         'files_prune' => ':deleted orphaned files deleted (:size).',
@@ -95,6 +101,7 @@ return [
         'skipped_tables' => 'Skipped (being refreshed right now): :tables.',
         'failed_tables' => 'Failed:',
         'task_runs_prune' => ':deleted runs deleted.',
+        'activity_prune' => ':deleted entries deleted, :auth of them sign-ins.',
     ],
     'status' => [
         'success' => 'Succeeded',
@@ -131,6 +138,7 @@ return [
     'widget' => [
         'ok' => 'All scheduled tasks are fine.',
         'failing' => 'Failed: :tasks',
+        'activity_hint' => 'The activity log contains entries older than :days days. The task "Trim activity log" is switched off.',
         'empty' => 'No runs yet.',
         'task' => 'Task',
         'when' => 'Time',

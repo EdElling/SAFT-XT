@@ -641,7 +641,9 @@ injoignable, chiffrement échoué, connexion refusée ou adresse d’expéditeur
 Chaque modification dans l’application est consignée : qui, quand, quoi, avec **avant/après**. Cela comprend les
 enregistrements, les utilisateurs, les rôles et les droits, les menus, les structures de tables, les paramètres ainsi
 que les connexions, les déconnexions et les tentatives de connexion échouées. Les secrets (mots de passe, clés) ne
-sont jamais consignés.
+sont jamais consignés. Le journal grandit jusqu’à ce que la tâche système **Raccourcir le journal des modifications**
+(chapitre 12) soit activée ; elle est désactivée à la livraison, et le tableau de bord signale les entrées plus anciennes que
+le délai configuré.
 
 - **Filtres :** utilisateur, événement, type d’objet, période. Les événements sont : créé, modifié, supprimé,
   restauré, connexion, échec de connexion, déconnexion, exporté, document généré (avec modèle, nom de fichier et
@@ -982,6 +984,7 @@ devant le libellé.
 | Actualiser les états d’une connexion | connexion à une base de données ; « Uniquement les tables qui ont déjà un état » (activé par défaut) | nouveaux états de toutes les tables liées de la connexion (ou de celles déjà utilisées), l’une après l’autre. Si une table échoue, les autres continuent ; l’exécution est alors considérée comme échouée et nomme les tables |
 | Nettoyer les états des données (système) | – | applique la conservation de tous les états des données, même sans nouvelle actualisation, et nettoie les exécutions interrompues ; par défaut tous les jours à 03:15 |
 | Nettoyer le journal des exécutions (système) | conserver les exécutions (jours, 90 par défaut) | supprime les entrées plus anciennes du journal des exécutions ; par défaut tous les jours à 03:30 |
+| Raccourcir le journal des modifications (système) | conserver le journal des modifications (jours, 365 par défaut) ; conserver les connexions (jours, 90 par défaut) | supprime définitivement les entrées plus anciennes du journal des modifications (chapitre 8) ; désactivée à la livraison, le tableau de bord signale les entrées plus anciennes ; par défaut tous les jours à 03:45 |
 | Sauvegarder la base de données (système) | sauvegarder aussi les fichiers des champs de fichiers (activé par défaut) | sauvegarde comme `php artisan db:backup` vers `storage/backups`, les fichiers des champs de fichiers en ZIP à côté (seulement s’ils se trouvent sur le serveur) ; en cas d’échec, l’exécution en indique la raison et la cloche avertit les super-admins ; par défaut tous les jours à 02:30 |
 | Nettoyer les sauvegardes (système) | conserver les sauvegardes (jours, 14 par défaut) ; conserver au moins (3 par défaut) | supprime les sauvegardes plus anciennes dans `storage/backups` (une sauvegarde et son ZIP comptent pour une), les plus récentes restent toujours ; par défaut tous les jours à 02:45 |
 | Nettoyer les fichiers (système) | – | supprime les fichiers orphelins des champs de fichiers : téléversements de formulaires interrompus, fichiers d’enregistrements qui n’existent plus et fichiers sans entrée – chaque fois seulement après 24 heures ; l’exécution ne fait que signaler les fichiers manquants ; par défaut tous les jours à 03:00 |

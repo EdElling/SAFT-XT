@@ -46,6 +46,10 @@ return [
         'only_with_snapshot_help' => 'Disattivato: tutte le tabelle collegate della connessione, anche quelle senza stato.',
         'keep_days' => 'Conservare le esecuzioni (giorni)',
         'keep_days_help' => 'Le voci più vecchie del registro delle esecuzioni vengono eliminate.',
+        'activity_days' => 'Conservare il registro modifiche (giorni)',
+        'activity_days_help' => 'Le voci più vecchie del registro modifiche vengono eliminate definitivamente.',
+        'auth_days' => 'Conservare gli accessi (giorni)',
+        'auth_days_help' => 'Vale per accessi, uscite e tentativi falliti.',
     ],
     'frequency' => [
         'hourly' => 'Ogni ora',
@@ -71,6 +75,7 @@ return [
         'snapshot_refresh' => 'Aggiornare lo stato dei dati',
         'snapshot_prune' => 'Pulire gli stati dei dati',
         'task_runs_prune' => 'Pulire il registro delle esecuzioni',
+        'activity_prune' => 'Accorciare il registro modifiche',
     ],
     'describe_type' => [
         'files_prune' => 'File orfani dei campi file (caricamenti mai salvati, file senza record)',
@@ -79,6 +84,7 @@ return [
         'backup_prune' => 'Backup più vecchi di :days giorni, restano i :keep più recenti',
         'snapshot_prune' => 'Periodi di conservazione di tutti gli stati, esecuzioni interrotte',
         'task_runs_prune' => 'Esecuzioni più vecchie di :days giorni',
+        'activity_prune' => 'Voci più vecchie di :days giorni, accessi più vecchi di :auth_days giorni',
     ],
     'results' => [
         'files_prune' => ':deleted file orfani eliminati (:size).',
@@ -95,6 +101,7 @@ return [
         'skipped_tables' => 'Saltate (in fase di aggiornamento): :tables.',
         'failed_tables' => 'Non riuscite:',
         'task_runs_prune' => ':deleted esecuzioni eliminate.',
+        'activity_prune' => ':deleted voci eliminate, di cui :auth accessi.',
     ],
     'status' => [
         'success' => 'Riuscita',
@@ -131,6 +138,7 @@ return [
     'widget' => [
         'ok' => 'Tutte le attività pianificate sono in ordine.',
         'failing' => 'Non riuscite: :tasks',
+        'activity_hint' => 'Il registro modifiche contiene voci più vecchie di :days giorni. L’attività «Accorciare il registro modifiche» è disattivata.',
         'empty' => 'Ancora nessuna esecuzione.',
         'task' => 'Attività',
         'when' => 'Ora',

@@ -624,7 +624,9 @@ cifratura fallita, accesso rifiutato o indirizzo mittente rifiutato, con la risp
 
 Ogni modifica nell’applicazione viene registrata: chi, quando, cosa, con **prima/dopo**. Ne fanno parte record,
 utenti, ruoli e diritti, menu, strutture delle tabelle, impostazioni nonché accessi, uscite e tentativi di accesso
-falliti. I segreti (password, chiavi) non vengono mai registrati.
+falliti. I segreti (password, chiavi) non vengono mai registrati. Il registro cresce finché l’attività di sistema **Accorciare il registro
+modifiche** (capitolo 12) non viene attivata; alla consegna è disattivata e la dashboard segnala le voci più vecchie del
+periodo impostato.
 
 - **Filtri:** utente, evento, tipo di oggetto, periodo. Gli eventi sono: creato, modificato, eliminato, ripristinato,
   accesso, accesso fallito, uscita, esportato, documento generato (con modello, nome del file e valore di controllo
@@ -958,6 +960,7 @@ ha un **tipo**, i relativi **parametri** e una **pianificazione**:
 | Aggiornare gli stati di una connessione | connessione al database; «Solo tabelle che hanno già uno stato» (predefinito: attivo) | nuovi stati di tutte le tabelle collegate della connessione (o di quelle già usate), una dopo l’altra. Se una tabella fallisce, le altre continuano; l’esecuzione vale allora come fallita e nomina le tabelle |
 | Pulire gli stati dei dati (sistema) | – | applica la conservazione di tutti gli stati dei dati, anche senza nuovo aggiornamento, e ripulisce le esecuzioni interrotte; predefinito ogni giorno alle 03:15 |
 | Pulire il registro delle esecuzioni (sistema) | conservare le esecuzioni (giorni, predefinito 90) | elimina le voci più vecchie del registro delle esecuzioni; predefinito ogni giorno alle 03:30 |
+| Accorciare il registro modifiche (sistema) | conservare il registro modifiche (giorni, predefinito 365); conservare gli accessi (giorni, predefinito 90) | elimina definitivamente le voci più vecchie del registro modifiche (capitolo 8); disattivata alla consegna, la dashboard segnala le voci più vecchie; predefinito ogni giorno alle 03:45 |
 | Eseguire il backup del database (sistema) | salvare anche i file dei campi file (predefinito attivo) | backup come `php artisan db:backup` in `storage/backups`, i file dei campi file come ZIP accanto (solo se si trovano sul server); se non riesce, l’esecuzione ne indica il motivo e la campanella avvisa i super-admin; predefinito ogni giorno alle 02:30 |
 | Ripulire i backup (sistema) | conservare i backup (giorni, predefinito 14); conservare almeno (predefinito 3) | elimina i backup più vecchi in `storage/backups` (un backup e il suo ZIP contano come uno), i più recenti restano sempre; predefinito ogni giorno alle 02:45 |
 | Ripulire i file (sistema) | – | elimina i file orfani dei campi file: caricamenti da moduli interrotti, file di record che non esistono più e file senza voce – ogni volta solo dopo 24 ore; l’esecuzione segnala soltanto i file mancanti; predefinito ogni giorno alle 03:00 |

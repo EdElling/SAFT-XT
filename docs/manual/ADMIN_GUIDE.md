@@ -601,7 +601,8 @@ rejected or sender address rejected, with the server’s answer below.
 
 Every change in the application is logged: who, when, what, with **before/after**. This includes records, users,
 roles and permissions, menus, table structures, settings as well as sign-ins, sign-outs and failed sign-in attempts.
-Secrets (passwords, keys) are never logged.
+Secrets (passwords, keys) are never logged. The log grows until the system task **Trim activity log** (chapter 12) is
+switched on; it ships switched off, and the dashboard points out entries older than the configured period.
 
 - **Filters:** user, event, object type, period. The events are: created, updated, deleted, restored, sign-in,
   sign-in failed, sign-out, exported, document generated (with template, file name and checksum SHA-256) and document
@@ -911,6 +912,7 @@ foreign key). For large connected tables the source field should have an index i
 | Refresh snapshots of a connection | database connection; "Only tables that already have a snapshot" (on by default) | new snapshots of all (or the already used) connected tables of the connection, one after another. If a table fails, the others continue; the run then counts as failed and names the tables |
 | Clean up snapshots (system) | – | enforces the retention of all snapshots, also without a new refresh, and cleans up aborted runs; default daily 03:15 |
 | Clean up run log (system) | keep runs (days, default 90) | deletes older entries in the run log; default daily 03:30 |
+| Trim activity log (system) | keep activity log (days, default 365); keep sign-ins (days, default 90) | permanently deletes older entries in the activity log (chapter 8); shipped switched off, the dashboard points out older entries; default daily 03:45 |
 | Back up database (system) | include files from file fields (default on) | backup like `php artisan db:backup` to `storage/backups`, the files from file fields as a ZIP alongside (only if they are stored on the server); if it fails, the run names the reason and the bell notifies the super admins; default daily 02:30 |
 | Clean up backups (system) | keep backups (days, default 14); always keep at least (default 3) | deletes older backups in `storage/backups` (a backup and its ZIP count as one), the newest always stay; default daily 02:45 |
 | Clean up files (system) | – | deletes orphaned files from file fields: uploads from cancelled forms, files of records that no longer exist and files without entry – each only after 24 hours; the run only names missing files; default daily 03:00 |

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Tasks;
 
 use App\Filament\Widgets\TasksStatusWidget;
+use App\Models\Activity;
 use App\Models\ScheduledTask;
 use App\Models\TaskRun;
 use App\Tasks\TaskRunner;
@@ -35,6 +36,26 @@ class TasksStatusWidgetTest extends TestCase
         $this->assertFalse(TasksStatusWidget::canView());
         $this->actingAs($this->userWithPermissions(['widgets.tasks', 'tasks.view']));
         $this->assertTrue(TasksStatusWidget::canView());
+    }
+
+    public function test_hint_while_activity_log_is_not_trimmed(): void
+    {
+        $this->actingAs($this->superAdmin());
+        $prune = ScheduledTask::query()->where('type', 'activity_prune')->sole();
+        $old = new Activity(['log_name' => 'data', 'description' => 'alt', 'properties' => []]);
+        $old->created_at = now()->subDays(400);
+        $old->save();
+
+        Livewire::test(TasksStatusWidget::class)
+            ->assertSeeHtml('data-tasks-status="activity"')
+            ->assertSee('älter als 365 Tage');
+
+        $prune->update(['is_active' => true]);
+        Livewire::test(TasksStatusWidget::class)->assertDontSeeHtml('data-tasks-status="activity"');
+
+        $prune->update(['is_active' => false]);
+        $old->delete();
+        Livewire::test(TasksStatusWidget::class)->assertDontSeeHtml('data-tasks-status="activity"');
     }
 
     public function test_traffic_light_and_latest_runs(): void

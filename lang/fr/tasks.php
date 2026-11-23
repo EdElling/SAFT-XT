@@ -46,6 +46,10 @@ return [
         'only_with_snapshot_help' => 'Désactivé : toutes les tables connectées de la connexion, y compris celles sans état.',
         'keep_days' => 'Conserver les exécutions (jours)',
         'keep_days_help' => 'Les entrées plus anciennes du journal des exécutions sont supprimées.',
+        'activity_days' => 'Conserver le journal des modifications (jours)',
+        'activity_days_help' => 'Les entrées plus anciennes du journal des modifications sont définitivement supprimées.',
+        'auth_days' => 'Conserver les connexions (jours)',
+        'auth_days_help' => 'S’applique aux connexions, déconnexions et tentatives échouées.',
     ],
     'frequency' => [
         'hourly' => 'Toutes les heures',
@@ -71,6 +75,7 @@ return [
         'snapshot_refresh' => 'Actualiser l’état des données',
         'snapshot_prune' => 'Nettoyer les états des données',
         'task_runs_prune' => 'Nettoyer le journal des exécutions',
+        'activity_prune' => 'Raccourcir le journal des modifications',
     ],
     'describe_type' => [
         'files_prune' => 'Fichiers orphelins des champs de fichiers (téléversements jamais enregistrés, fichiers sans enregistrement)',
@@ -79,6 +84,7 @@ return [
         'backup_prune' => 'Sauvegardes de plus de :days jours, les :keep plus récentes restent',
         'snapshot_prune' => 'Durées de conservation de tous les états, exécutions interrompues',
         'task_runs_prune' => 'Exécutions de plus de :days jours',
+        'activity_prune' => 'Entrées de plus de :days jours, connexions de plus de :auth_days jours',
     ],
     'results' => [
         'files_prune' => ':deleted fichiers orphelins supprimés (:size).',
@@ -95,6 +101,7 @@ return [
         'skipped_tables' => 'Ignorées (en cours d’actualisation) : :tables.',
         'failed_tables' => 'Échecs :',
         'task_runs_prune' => ':deleted exécutions supprimées.',
+        'activity_prune' => ':deleted entrées supprimées, dont :auth connexions.',
     ],
     'status' => [
         'success' => 'Réussie',
@@ -131,6 +138,7 @@ return [
     'widget' => [
         'ok' => 'Toutes les tâches planifiées sont en ordre.',
         'failing' => 'Échec : :tasks',
+        'activity_hint' => 'Le journal des modifications contient des entrées de plus de :days jours. La tâche « Raccourcir le journal des modifications » est désactivée.',
         'empty' => 'Pas encore d’exécution.',
         'task' => 'Tâche',
         'when' => 'Heure',

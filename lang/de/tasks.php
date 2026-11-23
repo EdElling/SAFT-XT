@@ -46,6 +46,10 @@ return [
         'only_with_snapshot_help' => 'Ausgeschaltet: alle angebundenen Tabellen der Verbindung, auch solche ohne Datenstand.',
         'keep_days' => 'Läufe aufbewahren (Tage)',
         'keep_days_help' => 'Ältere Einträge im Laufprotokoll werden gelöscht.',
+        'activity_days' => 'Protokoll aufbewahren (Tage)',
+        'activity_days_help' => 'Ältere Einträge im Änderungsprotokoll werden endgültig gelöscht.',
+        'auth_days' => 'Anmeldungen aufbewahren (Tage)',
+        'auth_days_help' => 'Gilt für An- und Abmeldungen und fehlgeschlagene Versuche.',
     ],
     'frequency' => [
         'hourly' => 'Stündlich',
@@ -71,6 +75,7 @@ return [
         'snapshot_refresh' => 'Datenstand aktualisieren',
         'snapshot_prune' => 'Datenstände bereinigen',
         'task_runs_prune' => 'Laufprotokoll bereinigen',
+        'activity_prune' => 'Änderungsprotokoll kürzen',
     ],
     'describe_type' => [
         'files_prune' => 'Verwaiste Dateien aus Dateifeldern (nicht gespeicherte Uploads, Dateien ohne Datensatz)',
@@ -79,6 +84,7 @@ return [
         'backup_prune' => 'Sicherungen älter als :days Tage, die :keep neuesten bleiben',
         'snapshot_prune' => 'Aufbewahrungsfristen aller Datenstände, abgebrochene Läufe',
         'task_runs_prune' => 'Läufe älter als :days Tage',
+        'activity_prune' => 'Einträge älter als :days Tage, Anmeldungen älter als :auth_days Tage',
     ],
     'results' => [
         'files_prune' => ':deleted verwaiste Dateien gelöscht (:size).',
@@ -95,6 +101,7 @@ return [
         'skipped_tables' => 'Übersprungen (wird gerade aktualisiert): :tables.',
         'failed_tables' => 'Fehlgeschlagen:',
         'task_runs_prune' => ':deleted Läufe gelöscht.',
+        'activity_prune' => ':deleted Einträge gelöscht, davon :auth Anmeldungen.',
     ],
     'status' => [
         'success' => 'Erfolgreich',
@@ -131,6 +138,7 @@ return [
     'widget' => [
         'ok' => 'Alle geplanten Aufgaben in Ordnung.',
         'failing' => 'Fehlgeschlagen: :tasks',
+        'activity_hint' => 'Das Änderungsprotokoll enthält Einträge, die älter als :days Tage sind. Die Aufgabe „Änderungsprotokoll kürzen“ ist ausgeschaltet.',
         'empty' => 'Noch keine Läufe.',
         'task' => 'Aufgabe',
         'when' => 'Zeit',

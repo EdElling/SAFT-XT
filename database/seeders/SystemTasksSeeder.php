@@ -20,6 +20,8 @@ class SystemTasksSeeder extends Seeder
         ['type' => 'files_prune', 'at_time' => '03:00', 'parameters' => null],
         ['type' => 'snapshot_prune', 'at_time' => '03:15', 'parameters' => null],
         ['type' => 'task_runs_prune', 'at_time' => '03:30', 'parameters' => ['days' => 90]],
+        // Löscht Personendaten endgültig: ausgeschaltet, bis die Administration die Fristen bestätigt (Hinweis auf dem Dashboard).
+        ['type' => 'activity_prune', 'at_time' => '03:45', 'parameters' => ['days' => 365, 'auth_days' => 90], 'is_active' => false],
         // Zerstörerisch: ausgeschaltet, und auch eingeschaltet nur mit DEMO_RESET=true.
         ['type' => 'demo_reset', 'at_time' => '04:00', 'parameters' => ['demos' => ['shop', 'lager', 'forschung'], 'backup' => true], 'is_active' => false],
     ];
