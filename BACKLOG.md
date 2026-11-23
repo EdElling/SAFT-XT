@@ -83,7 +83,7 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 | Nr. | Thema | Beschreibung | Status | Bezug |
 |---|---|---|---|---|
-| B-060 | REST-Anbindungen (Import/Export, Webhooks) | SAFT als Client: Daten aus fremden REST-APIs holen bzw. senden – Adresse, Anmeldung (API-Schlüssel/OAuth2, verschlüsselt), Seitenweise, Zuordnung JSON → Felder mit Vorschau, Abgleich über Schlüsselfeld, von Hand oder als geplante Aufgabe mit Protokoll; Webhooks bei Ereignissen (B-025). Komplexe Anbindungen (ERP, Buchhaltung) als Plugins. SAFT als Server: B-023. | offen | – |
+| B-060 | REST-Anbindungen (Import/Export, Webhooks) | SAFT als Client: Daten aus fremden REST-APIs holen bzw. senden – Adresse, Anmeldung (API-Schlüssel/OAuth2, verschlüsselt), Seitenweise, Zuordnung JSON → Felder mit Vorschau, Abgleich über Schlüsselfeld, von Hand oder als geplante Aufgabe mit Protokoll; Webhooks bei Ereignissen (B-142). Komplexe Anbindungen (ERP, Buchhaltung) als Plugins. SAFT als Server: B-023. **Konzept** (Entwurf 23.11.2026): [docs/concept/REST_CONNECTIONS.md](docs/concept/REST_CONNECTIONS.md) – Laravel HTTP-Client als Grundlage; Verbindung (Anmeldung inkl. OAuth2 Client Credentials, Grenzen, SSRF-Schutz) → Abruf (Seitenweise, Pfad + Formel je Feld, Abgleich mit Schlüssel, Vorschau, eine Transaktion), Senden (Körper aus Zuordnung, Antwort in Felder) und Webhooks (`saft-event/1`, HMAC-Signatur) über einen Postausgang mit Wiederholung, der auch ohne Queue-Worker läuft; Etappen A1 Abrufen, A2 Senden/Webhooks, A3 inkrementell/verschachtelt/Nachschlagetabelle, A4 OAuth2 mit Anmeldung, OpenAPI, KI, `Saft::connection()` für Plugins. | Konzept (Entwurf) | B-023, B-117, B-133, B-142 |
 
 ## Technik und Betrieb
 
