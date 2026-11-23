@@ -12,6 +12,8 @@ use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Translation\HasLocalePreference;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -102,6 +104,18 @@ class User extends BaseUser implements FilamentUser, HasAppAuthentication, HasAp
     public function isSuperAdmin(): bool
     {
         return $this->hasRole(self::ROLE_SUPER_ADMIN);
+    }
+
+    /**
+     * Alle Super-Admins (z. B. für Benachrichtigungen). Die einzige Stelle neben isSuperAdmin(), die die
+     * Rolle am Namen erkennt (tests/Unit/ArchitectureTest.php).
+     *
+     * @param  Builder<User>  $query
+     */
+    #[Scope]
+    protected function superAdmins(Builder $query): void
+    {
+        $query->role(self::ROLE_SUPER_ADMIN);
     }
 
     public function getAppAuthenticationSecret(): ?string

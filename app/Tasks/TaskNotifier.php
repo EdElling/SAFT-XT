@@ -33,7 +33,7 @@ final class TaskNotifier
         $default = (string) config('app.locale');
 
         try {
-            foreach (User::role(User::ROLE_SUPER_ADMIN)->where('is_active', true)->orderBy('id')->get() as $admin) {
+            foreach (User::query()->superAdmins()->where('is_active', true)->orderBy('id')->get() as $admin) {
                 App::setLocale($admin->locale ?: $default);
 
                 $notification = Notification::make()
