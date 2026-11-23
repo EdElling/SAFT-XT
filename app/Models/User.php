@@ -82,6 +82,7 @@ class User extends BaseUser implements FilamentUser, HasAppAuthentication, HasAp
         return $this->belongsToMany(Report::class, 'dashboard_reports')->withPivot('sort_order')->withTimestamps()->orderByPivot('sort_order');
     }
 
+    /** @return HasMany<SocialAccount, $this> */
     public function socialAccounts(): HasMany
     {
         return $this->social_accounts();

@@ -122,17 +122,19 @@ class Menu extends BaseMenu
         });
     }
 
+    /** @return BelongsTo<Menu, $this> */
     public function parent(): BelongsTo
     {
         return $this->menu();
     }
 
+    /** @return HasMany<Menu, $this> */
     public function children(): HasMany
     {
         return $this->menus()->orderBy('sort_order');
     }
 
-    /** Rollen, die diesen Eintrag ausblenden. */
+    /** @return BelongsToMany<Role, $this> Rollen, die diesen Eintrag ausblenden. */
     public function hiddenForRoles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'menu_role_hidden');

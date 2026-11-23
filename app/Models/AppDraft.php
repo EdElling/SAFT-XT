@@ -24,11 +24,13 @@ class AppDraft extends BaseAppDraft
     /** Der Verlauf ist lang und ändert sich bei jeder Antwort; protokolliert werden Titel, Status und erzeugte App. */
     protected array $auditExcept = ['history', 'proposal', 'definition', 'reports'];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<App, $this> */
     public function app(): BelongsTo
     {
         return $this->belongsTo(App::class);

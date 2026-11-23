@@ -3,7 +3,7 @@
 # (z. B. von Dependabot): dann nur die Feature-Tests, auf allen drei Datenbanken. Kein Lauf bei Push.
 #
 # Je Testart (Feature, Browser) und Datenbank von SAFT (PostgreSQL, MySQL, MariaDB) ein eigener Job,
-# alle parallel. Die Datenbanken sind Wegwerf-Container dieses Laufs; die Passwörter hier sind
+# alle parallel; dazu die statische Analyse (Larastan) als eigener Job ohne Datenbank. Die Datenbanken sind Wegwerf-Container dieses Laufs; die Passwörter hier sind
 # reine Testwerte.
 name: Tests
 
@@ -56,6 +56,32 @@ env:
   MSSQL_PASSWORD: saft-ci-Mssql1
 
 jobs:
+  # Statische Analyse (Larastan, Level 5 mit Baseline): schnell, ohne Datenbank, parallel zu den Tests.
+  analyse:
+    name: Statische Analyse
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_pgsql, pdo_mysql, intl, zip, bcmath, gd
+          coverage: none
+
+      - name: Composer-Cache
+        uses: actions/cache@v6
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-${{ env.PHP_VERSION }}-${{ hashFiles('composer.lock') }}
+
+      - name: Pakete installieren
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: PHPStan
+        run: composer analyse
+
   tests:
     name: ${{ matrix.suite == 'browser' && 'Browser' || 'Feature' }}-Tests (${{ matrix.database }})
     runs-on: ubuntu-24.04

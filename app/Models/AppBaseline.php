@@ -21,11 +21,13 @@ class AppBaseline extends BaseAppBaseline
     /** Aus einem Paket aktualisiert (Etappe 6): das angewendete Paket ist der neue Ausgangsstand. */
     public const string UPDATED = 'updated';
 
+    /** @return BelongsTo<App, $this> */
     public function app(): BelongsTo
     {
         return $this->belongsTo(App::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function installer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'installed_by');

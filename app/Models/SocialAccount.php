@@ -25,6 +25,7 @@ class SocialAccount extends BaseSocialAccount
         ];
     }
 
+    /** @return BelongsTo<IdentityProvider, $this> */
     public function identityProvider(): BelongsTo
     {
         return $this->identity_provider();

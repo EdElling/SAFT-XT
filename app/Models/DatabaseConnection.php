@@ -71,6 +71,7 @@ class DatabaseConnection extends BaseDatabaseConnection
         });
     }
 
+    /** @return HasMany<CustomTable, $this> */
     public function customTables(): HasMany
     {
         return $this->hasMany(CustomTable::class);

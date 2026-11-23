@@ -1,0 +1,16 @@
+# Statische Analyse (Fundament 2, F0): composer analyse. Level 5 mit Baseline für den Bestand;
+# die Baseline darf nur kleiner werden (tests/Unit/StaticAnalysisBaselineTest.php). Ziel bis 1.0: Level 7.
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    paths:
+        - app
+        - config
+        - database
+        - routes
+    tmpDir: storage/framework/phpstan
+    reportUnmatchedIgnoredErrors: true
+    treatPhpDocTypesAsCertain: false

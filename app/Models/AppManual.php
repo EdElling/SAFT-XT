@@ -30,6 +30,7 @@ class AppManual extends Model
     /** Inhalt nicht ins Änderungsprotokoll (kann lang sein); das Hochladen protokolliert die Seite „Apps“ selbst. */
     protected array $auditExcept = ['content'];
 
+    /** @return BelongsTo<App, $this> */
     public function app(): BelongsTo
     {
         return $this->belongsTo(App::class);

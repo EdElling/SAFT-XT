@@ -53,7 +53,7 @@ class Role extends SpatieRole
         return $copy;
     }
 
-    /** Menüeinträge, die diese Rolle ausblendet (siehe Menu::visibleFor). */
+    /** @return BelongsToMany<Menu, $this> Menüeinträge, die diese Rolle ausblendet (siehe Menu::visibleFor). */
     public function hiddenMenus(): BelongsToMany
     {
         return $this->belongsToMany(Menu::class, 'menu_role_hidden');

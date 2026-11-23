@@ -1,0 +1,1465 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Ai/AiConnectionTester.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Apps/AppInterfaces.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 5
+			path: app/Apps/AppInterfaces.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:assignRole\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Apps/AppMover.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 3
+			path: app/Apps/AppMover.php
+
+		-
+			message: '#^Parameter \#1 \$permission of method Spatie\\Permission\\Models\\Role\:\:revokePermissionTo\(\) expects array\<Spatie\\Permission\\Contracts\\Permission\|string\>\|BackedEnum\|Spatie\\Permission\\Contracts\\Permission\|string, Illuminate\\Database\\Eloquent\\Collection\<int, Spatie\\Permission\\Models\\Permission\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Apps/AppMover.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>sort_order" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Apps/AppMover.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Role\:\:\$app_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Apps/AppPermissions.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\Role\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Apps/AppPermissions.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:contains\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|Illuminate\\Database\\Eloquent\\Model\|int\|string, Closure\(App\\Models\\Role\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Apps/AppPermissions.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 6
+			path: app/Apps/AppRemover.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$app_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Apps/CurrentApp.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$permissions\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Apps/CurrentApp.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Support\\HigherOrderCollectionProxy\<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:\$permissions\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Apps/CurrentApp.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Role\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Apps/Definition/AppDefinition.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$interface_version\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Apps/Definition/AppDefinition.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prefix\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Apps/Definition/AppDefinition.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Apps/Definition/AppDefinition.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:getTranslations\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Apps/Definition/AppDefinition.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Apps/Definition/AppDefinition.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_values contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Apps/Definition/AppDefinition.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: non\-empty\-array\<string, mixed\>, Closure\(App\\Models\\Report\)\: non\-empty\-array\<string, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Apps/Definition/AppDefinition.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>interface_version" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Apps/Definition/AppDefinition.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>uuid" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Apps/Definition/AppDefinition.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$interface_version\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Apps/Definition/AppInstaller.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Apps/Definition/AppInstaller.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Apps/Definition/AppInstaller.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 3
+			path: app/Apps/Definition/AppInstaller.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Apps/Definition/AppInstaller.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Apps/Definition/DefinitionParts.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Apps/Designer/AppDesigner.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Apps/Designer/AppDesigner.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\CustomField\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Apps/Designer/AppDesigner.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\CustomTable\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Apps/Designer/AppDesigner.php
+
+		-
+			message: '#^Offset ''children'' on array\{label\: array\{de\: ''Anwendung'', en\: ''Application'', fr\: ''Application'', it\: ''Applicazione''\}, icon\: ''heroicon\-o\-squares…'', sort_order\: 30, children\: array\{array\{label\: array\{de\: ''Apps'', en\: ''Apps'', fr\: ''Apps'', it\: ''App''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-squares…'', permission_name\: ''apps\.view'', sort_order\: 5\}, array\{label\: array\{de\: ''Menüs'', en\: ''Menus'', fr\: ''Menus'', it\: ''Menu''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-bars\-3'', permission_name\: ''menus\.view'', sort_order\: 10\}, array\{label\: array\{de\: ''Globale…'', en\: ''Global settings'', fr\: ''Paramètres globaux'', it\: ''Impostazioni globali''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o…'', permission_name\: ''settings\.app\.view'', sort_order\: 20\}, array\{label\: array\{de\: ''Briefpapier'', en\: ''Letterhead'', fr\: ''Papier à lettres'', it\: ''Carta intestata''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-document…'', permission_name\: ''documents\.manage'', sort_order\: 25\}, array\{label\: array\{de\: ''Dokumentvorlagen'', en\: ''Document templates'', fr\: ''Modèles de documents'', it\: ''Modelli di documenti''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-document…'', permission_name\: ''documents\.manage'', sort_order\: 26\}, array\{label\: array\{de\: ''Plugins'', en\: ''Plugins'', fr\: ''Plugins'', it\: ''Plugin''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-puzzle…'', permission_name\: ''plugins\.view'', sort_order\: 30\}\}\}\|array\{label\: array\{de\: ''Benutzer und Zugriff'', en\: ''Users and access'', fr\: ''Utilisateurs et…'', it\: ''Utenti e accesso''\}, icon\: ''heroicon\-o\-user…'', sort_order\: 10, children\: array\{array\{label\: array\{de\: ''Benutzer'', en\: ''Users'', fr\: ''Utilisateurs'', it\: ''Utenti''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-users'', permission_name\: ''users\.view'', sort_order\: 10\}, array\{label\: array\{de\: ''Rollen'', en\: ''Roles'', fr\: ''Rôles'', it\: ''Ruoli''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-shield…'', permission_name\: ''roles\.view'', sort_order\: 20\}, array\{label\: array\{de\: ''Authentifizierung'', en\: ''Authentication'', fr\: ''Authentification'', it\: ''Autenticazione''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-lock…'', permission_name\: ''settings\.auth\.view'', sort_order\: 30\}, array\{label\: array\{de\: ''Identity Provider'', en\: ''Identity providers'', fr\: ''Fournisseurs…'', it\: ''Provider di identità''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-finger…'', permission_name\: ''identity_providers…'', sort_order\: 40\}\}\}\|array\{label\: array\{de\: ''Betrieb'', en\: ''Operations'', fr\: ''Exploitation'', it\: ''Esercizio''\}, icon\: ''heroicon\-o\-wrench…'', sort_order\: 40, children\: array\{array\{label\: array\{de\: ''Geplante Aufgaben'', en\: ''Scheduled tasks'', fr\: ''Tâches planifiées'', it\: ''Attività pianificate''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-calendar…'', permission_name\: ''tasks\.view'', sort_order\: 10\}, array\{label\: array\{de\: ''Änderungsprotokoll'', en\: ''Activity log'', fr\: ''Journal des…'', it\: ''Registro modifiche''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-clock'', permission_name\: ''activity_log\.view'', sort_order\: 20\}, array\{label\: array\{de\: ''Systemprotokoll'', en\: ''System log'', fr\: ''Journal système'', it\: ''Registro di sistema''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-document…'', permission_name\: ''system_log\.view'', sort_order\: 30\}\}\}\|array\{label\: array\{de\: ''Datenbank'', en\: ''Database'', fr\: ''Base de données'', it\: ''Database''\}, icon\: ''heroicon\-o\-circle…'', sort_order\: 20, children\: array\{array\{label\: array\{de\: ''Table\-Designer'', en\: ''Table designer'', fr\: ''Concepteur de tables'', it\: ''Designer di tabelle''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-table…'', permission_name\: ''custom_tables\.view'', sort_order\: 10\}, array\{label\: array\{de\: ''Tabellenverknüpfung…'', en\: ''Table links'', fr\: ''Liaisons de tables'', it\: ''Collegamenti tra…''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-arrows…'', permission_name\: ''report_links\.view'', sort_order\: 20\}, array\{label\: array\{de\: ''Datenbankverbindung…'', en\: ''Database connections'', fr\: ''Connexions aux…'', it\: ''Connessioni ai…''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-server…'', permission_name\: ''database…'', sort_order\: 30\}, array\{label\: array\{de\: ''Table\-Connector'', en\: ''Table connector'', fr\: ''Connecteur de tables'', it\: ''Connettore di…''\}, route\: ''filament\.admin…'', icon\: ''heroicon\-o\-link'', permission_name\: ''table_connector\.view'', sort_order\: 40\}\}\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Apps/SystemObjects.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 2
+			path: app/Apps/Update/ChangeExecutor.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Apps/Update/ChangePlanner.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Auth/Sso/SsoUserResolver.php
+
+		-
+			message: '#^Property App\\Models\\Base\\IdentityProvider\:\:\$settings \(string\|null\) does not accept array\<mixed\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Auth/Sso/Testing/EntraConnectionTester.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Auth/Sso/Testing/IdentityProviderTester.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Documentation/Documentation.php
+
+		-
+			message: '#^Dead catch \- App\\Documents\\Templates\\TemplateException is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 1
+			path: app/Documents/DocumentBatch.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Documents/DocumentBatch.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Documents/DocumentGenerator.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>childNodes" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Documents/DocxRenderer.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>pdfa" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Documents/LetterheadResolver.php
+
+		-
+			message: '#^Parameter \#1 \$type of static method App\\DynamicData\\Rules\\RuleFieldTypes\:\:group\(\) expects App\\DynamicData\\Schema\\FieldType\|null, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/DynamicData/Assistant/RuleText.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/DynamicData/Assistant/TableAssistant.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 5
+			path: app/DynamicData/Assistant/TableAssistant.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/DynamicData/Assistant/TableAssistant.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_values contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/DynamicData/Assistant/TableAssistant.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\App\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/DynamicData/Assistant/TableAssistant.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\CustomField\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 5
+			path: app/DynamicData/Assistant/TableAssistant.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\CustomTable\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/DynamicData/Assistant/TableAssistant.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/DynamicData/Assistant/TableAssistant.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>validation_rules" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/DynamicData/Assistant/TableAssistant.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/DynamicData/DataMenu.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>view_config" in empty\(\) is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/DynamicData/DataMenu.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withoutTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/DynamicData/Eloquent/OptionalSoftDeletingScope.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:getQualifiedDeletedAtColumn\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/DynamicData/Eloquent/OptionalSoftDeletingScope.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Database\\Eloquent\\Builder\<TModel of Illuminate\\Database\\Eloquent\\Model\>\:\:applies\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 2
+			path: app/DynamicData/Eloquent/OptionalSoftDeletingScope.php
+
+		-
+			message: '#^Parameter \#1 \$builder \(Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\) of method App\\DynamicData\\Eloquent\\OptionalSoftDeletingScope\:\:apply\(\) should be compatible with parameter \$builder \(Illuminate\\Database\\Eloquent\\Builder\<covariant Illuminate\\Database\\Eloquent\\Model\>\) of method Illuminate\\Database\\Eloquent\\Scope\<Illuminate\\Database\\Eloquent\\Model\>\:\:apply\(\)$#'
+			identifier: method.childParameterType
+			count: 1
+			path: app/DynamicData/Eloquent/OptionalSoftDeletingScope.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between ''\('' and ''\)'' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/DynamicData/Formula/Parser.php
+
+		-
+			message: '#^Method App\\DynamicData\\Import\\DataImporter\:\:run\(\) never assigns null to &\$created so it can be removed from the by\-ref type\.$#'
+			identifier: parameterByRef.unusedType
+			count: 1
+			path: app/DynamicData/Import/DataImporter.php
+
+		-
+			message: '#^Method App\\DynamicData\\Import\\ImportAnalyzer\:\:read\(\) never assigns null to &\$rowCount so it can be removed from the by\-ref type\.$#'
+			identifier: parameterByRef.unusedType
+			count: 1
+			path: app/DynamicData/Import/ImportAnalyzer.php
+
+		-
+			message: '#^Parameter &\$lookups by\-ref type of method App\\DynamicData\\Import\\RecordImporter\:\:relation\(\) expects array\<string, array\<string, list\<int\|string\>\>\>, non\-empty\-array\<string, array\<string, list\<mixed\>\>\> given\.$#'
+			identifier: parameterByRef.type
+			count: 1
+			path: app/DynamicData/Import/RecordImporter.php
+
+		-
+			message: '#^Parameter &\$map by\-ref type of method App\\DynamicData\\RecordCopier\:\:copyNodes\(\) expects array\<string, array\<string, int\|string\>\>, array\<string, array\<string, mixed\>\> given\.$#'
+			identifier: parameterByRef.type
+			count: 1
+			path: app/DynamicData/RecordCopier.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>fields" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/DynamicData/Rules/CopySource.php
+
+		-
+			message: '#^Parameter \#1 \$type of static method App\\DynamicData\\Rules\\RuleFieldTypes\:\:group\(\) expects App\\DynamicData\\Schema\\FieldType\|null, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/DynamicData/Rules/RuleFieldTypes.php
+
+		-
+			message: '#^Parameter \#1 \$type of static method App\\DynamicData\\Rules\\RuleFieldTypes\:\:group\(\) expects App\\DynamicData\\Schema\\FieldType\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/DynamicData/Rules/TableRuleNormalizer.php
+
+		-
+			message: '#^Parameter \#1 \$type of static method App\\DynamicData\\Rules\\RuleFieldTypes\:\:group\(\) expects App\\DynamicData\\Schema\\FieldType\|null, string\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/DynamicData/Rules/TableRuleNormalizer.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/DynamicData/Rules/TableRuleNormalizer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/DynamicData/Schema/FieldDefinitionNormalizer.php
+
+		-
+			message: '#^Cannot call method fields\(\) on null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/DynamicData/Schema/FieldDefinitionNormalizer.php
+
+		-
+			message: '#^Match arm comparison between \$this\(App\\DynamicData\\Schema\\FieldType\)&App\\DynamicData\\Schema\\FieldType\:\:File and App\\DynamicData\\Schema\\FieldType\:\:File is always true\.$#'
+			identifier: match.alwaysTrue
+			count: 1
+			path: app/DynamicData/Schema/FieldType.php
+
+		-
+			message: '#^Cannot call method cast\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/DynamicData/TableDefinition.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/DynamicData/TableDefinition.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/DynamicData/Ui/DynamicFormBuilder.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>exists" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/DynamicData/Ui/DynamicFormBuilder.php
+
+		-
+			message: '#^Method Filament\\Notifications\\Notification\:\:persistent\(\) invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/DynamicData/Ui/DynamicRecordActions.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type mixed\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/DynamicData/Ui/DynamicRecordActions.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/DynamicData/Ui/DynamicRecordActions.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: App\\DynamicData\\Schema\\FieldType\:\:Computed$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/DynamicData/Ui/DynamicTableBuilder.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between Filament\\Tables\\Filters\\Filter\|Filament\\Tables\\Filters\\SelectFilter and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/DynamicData/Ui/DynamicTableBuilder.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/DynamicData/Validation/FieldRuleCheck.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>copies" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/DynamicData/Validation/RecordChecker.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>sequences" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/DynamicData/Validation/RecordChecker.php
+
+		-
+			message: '#^Constant App\\Exceptions\\Database\\DatabaseErrorClassifier\:\:SQLSTATE \(array\<string, App\\Exceptions\\Database\\DatabaseErrorType\>\) does not accept value array\<int\|string, App\\Exceptions\\Database\\DatabaseErrorType\:\:CheckViolation\|App\\Exceptions\\Database\\DatabaseErrorType\:\:Concurrency\|App\\Exceptions\\Database\\DatabaseErrorType\:\:ForeignKeyViolation\|App\\Exceptions\\Database\\DatabaseErrorType\:\:NotNullViolation\|App\\Exceptions\\Database\\DatabaseErrorType\:\:UniqueViolation\|App\\Exceptions\\Database\\DatabaseErrorType\:\:ValueOutOfRange\>\.$#'
+			identifier: classConstant.value
+			count: 1
+			path: app/Exceptions/Database/DatabaseErrorClassifier.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exceptions/ErrorPresenter.php
+
+		-
+			message: '#^Cannot call method sslModes\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/ExternalData/ConnectionRegistry.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/ExternalData/ConnectionRegistry.php
+
+		-
+			message: '#^Cannot call method isSystemSchema\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/ExternalData/ConnectionTester.php
+
+		-
+			message: '#^Offset 1 on array\{non\-falsy\-string, '''', non\-empty\-string\}\|array\{non\-falsy\-string, non\-falsy\-string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/ExternalData/PostgresCheckTranslator.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/ExternalData/SchemaInspector.php
+
+		-
+			message: '#^Parameter \#1 \$driver of method App\\ExternalData\\ExternalTypeMapper\:\:map\(\) expects App\\ExternalData\\ConnectionDriver, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/ExternalData/SchemaInspector.php
+
+		-
+			message: '#^Offset 1 on array\{non\-empty\-string, '''', '''', ''\!\=''\|''\<''\|''\<\=''\|''\<\>''\|''\=''\|''\>''\|''\>\=''\}\|array\{non\-empty\-string, '''', non\-falsy\-string\}\|array\{non\-empty\-string, non\-falsy\-string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/ExternalData/SqlServerCheckTranslator.php
+
+		-
+			message: '#^Cannot call method checkTranslator\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/ExternalData/TableConnectorService.php
+
+		-
+			message: '#^Method App\\ExternalData\\TableConnectorService\:\:baseType\(\) should return App\\DynamicData\\Schema\\FieldType but returns string\.$#'
+			identifier: return.type
+			count: 1
+			path: app/ExternalData/TableConnectorService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/ExternalData/TableConnectorService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Forms/Components/DataPermissionMatrix.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Filament/Forms/Components/DataPermissionMatrix.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Pages/AppDataModelPage.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Pages/AppDesignerPage.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>history" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Pages/AppDesignerPage.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>reports" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Pages/AppDesignerPage.php
+
+		-
+			message: '#^Method Filament\\Notifications\\Notification\:\:persistent\(\) invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Filament/Pages/AppSettingsPage.php
+
+		-
+			message: '#^Access to an undefined property App\\Filament\\Pages\\DocumentSettingsPage\:\:\$form\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Pages/DocumentSettingsPage.php
+
+		-
+			message: '#^Offset ''hausnummer'' does not exist on array\{firma\: string\|null, adresse\: string\|null, mwst\: string\|null, iban\: string\|null, kontakt\: string\|null\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Filament/Pages/DocumentSettingsPage.php
+
+		-
+			message: '#^Offset ''ort'' does not exist on array\{firma\: string\|null, adresse\: string\|null, mwst\: string\|null, iban\: string\|null, kontakt\: string\|null\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Filament/Pages/DocumentSettingsPage.php
+
+		-
+			message: '#^Offset ''plz'' does not exist on array\{firma\: string\|null, adresse\: string\|null, mwst\: string\|null, iban\: string\|null, kontakt\: string\|null\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Filament/Pages/DocumentSettingsPage.php
+
+		-
+			message: '#^Offset ''qr_iban'' does not exist on array\{firma\: string\|null, adresse\: string\|null, mwst\: string\|null, iban\: string\|null, kontakt\: string\|null\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Filament/Pages/DocumentSettingsPage.php
+
+		-
+			message: '#^Offset ''strasse'' does not exist on array\{firma\: string\|null, adresse\: string\|null, mwst\: string\|null, iban\: string\|null, kontakt\: string\|null\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Filament/Pages/DocumentSettingsPage.php
+
+		-
+			message: '#^Parameter \#2 \$replace of function __ expects array\<string, bool\|\(Closure\(string\)\: string\)\|float\|int\|string\|null\>, array\{app\: array\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Pages/DocumentSettingsPage.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>margins" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Pages/DocumentSettingsPage.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>pdfa" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Pages/DocumentSettingsPage.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>sender" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Pages/DocumentSettingsPage.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: mixed$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Filament/Pages/DynamicDataPage.php
+
+		-
+			message: '#^Access to an undefined property App\\Filament\\Pages\\MySettingsPage\:\:\$form\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Pages/MySettingsPage.php
+
+		-
+			message: '#^Access to an undefined property App\\Filament\\Pages\\RoleSimulationPage\:\:\$form\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Pages/RoleSimulationPage.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>text" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Pages/SystemLogPage.php
+
+		-
+			message: '#^Method App\\Filament\\Resources\\Activities\\ActivityResource\:\:getEloquentQuery\(\) should return Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Activity\> but returns Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Filament/Resources/Activities/ActivityResource.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 11
+			path: app/Filament/Resources/Apps/Actions/AppLifecycleActions.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Resources/Apps/Actions/AppManualAction.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 2
+			path: app/Filament/Resources/Apps/Actions/ExportAppAction.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Resources/Apps/Actions/InstallAppAction.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 2
+			path: app/Filament/Resources/Apps/Actions/UpdateAppAction.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>version" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/Apps/Actions/UpdateAppAction.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Resources/Apps/AppResource.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 2
+			path: app/Filament/Resources/Apps/Tables/AppsTable.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:designer\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Resources/CustomTables/CustomTableResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$label\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/CustomTables/Pages/EditCustomTable.php
+
+		-
+			message: '#^Access to an undefined property App\\Filament\\Resources\\CustomTables\\Pages\\ImportCustomTable\:\:\$form\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Resources/CustomTables/Pages/ImportCustomTable.php
+
+		-
+			message: '#^Call to an undefined method Filament\\Forms\\Components\\Field\:\:maxLength\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Resources/CustomTables/Pages/ImportCustomTable.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Resources/CustomTables/Pages/ListCustomTables.php
+
+		-
+			message: '#^Method App\\Filament\\Resources\\CustomTables\\RelationManagers\\CustomFieldsRelationManager\:\:typeDetails\(\) never returns string so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Filament/Resources/CustomTables/RelationManagers/CustomFieldsRelationManager.php
+
+		-
+			message: '#^Parameter \#1 \$type of static method App\\DynamicData\\Rules\\RuleFieldTypes\:\:group\(\) expects App\\DynamicData\\Schema\\FieldType\|null, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/CustomTables/Schemas/CustomTableForm.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>detail_field_ids" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/CustomTables/Schemas/CustomTableForm.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Filament/Resources/CustomTables/Schemas/CustomTableForm.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/CustomTables/Schemas/FieldForm.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/CustomTables/Schemas/FieldForm.php
+
+		-
+			message: '#^Method App\\Filament\\Resources\\CustomTables\\Schemas\\FieldForm\:\:pluginCheckHint\(\) never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Filament/Resources/CustomTables/Schemas/FieldForm.php
+
+		-
+			message: '#^Parameter \#1 \$type of static method App\\Filament\\Resources\\CustomTables\\Schemas\\FieldForm\:\:typeTitle\(\) expects App\\DynamicData\\Schema\\FieldType, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/CustomTables/Schemas/FieldForm.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>app_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Filament/Resources/CustomTables/Schemas/FieldForm.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>known_schemas" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/DatabaseConnections/Schemas/DatabaseConnectionForm.php
+
+		-
+			message: '#^Anonymous function should return App\\Models\\DynamicRecord\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Filament/Resources/DocumentTemplates/Pages/CreateDocumentTemplate.php
+
+		-
+			message: '#^Anonymous function should return App\\Models\\DynamicRecord\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Filament/Resources/DocumentTemplates/Pages/EditDocumentTemplate.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Resources/DocumentTemplates/Pages/ListDocumentTemplates.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/DocumentTemplates/Schemas/DocumentTemplateForm.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/IdentityProviders/Schemas/IdentityProviderForm.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>secrets" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/IdentityProviders/Schemas/IdentityProviderForm.php
+
+		-
+			message: '#^Parameter \#1 \$record of static method App\\Filament\\Resources\\Menus\\Schemas\\MenuForm\:\:fill\(\) expects App\\Models\\Menu, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/Menus/Pages/EditMenu.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Resources/Menus/Pages/ListMenus.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Resources/ReportLinks/Pages/ListReportLinks.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/ReportLinks/Schemas/ReportLinkForm.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/ReportLinks/Tables/ReportLinksTable.php
+
+		-
+			message: '#^Access to an undefined property App\\Filament\\Resources\\Reports\\Pages\\ReportDesigner\:\:\$form\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Filament/Resources/Reports/Pages/ReportDesigner.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:visibleTo\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Resources/Reports/ReportResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Role\:\:\$app_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/Roles/Actions/CopyRoleAction.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Resources/Roles/Pages/ListRoles.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Role\:\:\$app_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Resources/Roles/Schemas/RoleForm.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Resources/Roles/Schemas/RoleForm.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Resources/Roles/Schemas/RoleForm.php
+
+		-
+			message: '#^Binary operation "\." between '' \('' and array results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: app/Filament/Resources/Roles/Schemas/RoleForm.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/Roles/Schemas/RoleForm.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>sort_order" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Filament/Resources/Roles/Schemas/RoleForm.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Resources/ScheduledTasks/Pages/ListScheduledTasks.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>type" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/ScheduledTasks/Schemas/ScheduledTaskForm.php
+
+		-
+			message: '#^Parameter \#1 \$body of method Filament\\Notifications\\Notification\:\:body\(\) expects Closure\|string\|null, Illuminate\\Support\\HtmlString\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/TableConnector/Pages/EditConnectedTable.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Resources/TableConnector/Pages/ListConnectedTables.php
+
+		-
+			message: '#^Anonymous function never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Filament/Resources/TableConnector/RelationManagers/ConnectedColumnsRelationManager.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>check_constraints" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/TableConnector/Schemas/ConnectedTableForm.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:external\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Resources/TableConnector/TableConnectorResource.php
+
+		-
+			message: '#^Method App\\Filament\\Resources\\Users\\UserResource\:\:getRecordRouteBindingEloquentQuery\(\) should return Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\User\> but returns Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Filament/Resources/Users/UserResource.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Support/AppSelect.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Filament/Support/MoveToAppAction.php
+
+		-
+			message: '#^Method App\\Filament\\Support\\MoveToAppAction\:\:forTables\(\) should return Filament\\Actions\\BulkAction but returns Filament\\Actions\\Action\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Filament/Support/MoveToAppAction.php
+
+		-
+			message: '#^Method App\\Filament\\Support\\RecordLink\:\:keyedSubject\(\) should return App\\Models\\DynamicRecord\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Filament/Support/RecordLink.php
+
+		-
+			message: '#^Parameter \#2 \$query of static method App\\DynamicData\\Ui\\KeylessRow\:\:constrain\(\) expects Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>, Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\DynamicRecord\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Support/RecordLink.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>app_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Support/TableLabelHint.php
+
+		-
+			message: '#^Called ''slice'' on Laravel collection, but could have been retrieved as a query\.$#'
+			identifier: larastan.noUnnecessaryCollectionCall
+			count: 1
+			path: app/Help/HelpAssistant.php
+
+		-
+			message: '#^Parameter \#1 \$type of method App\\Auth\\Sso\\SsoDriverRegistry\:\:for\(\) expects App\\Auth\\Sso\\IdentityProviderType, string given\.$#'
+			identifier: argument.type
+			count: 3
+			path: app/Http/Controllers/Auth/SsoController.php
+
+		-
+			message: '#^Parameter \#1 \$type of method App\\Auth\\Sso\\SsoDriverRegistry\:\:for\(\) expects App\\Auth\\Sso\\IdentityProviderType, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Responses/LogoutResponse.php
+
+		-
+			message: '#^Call to function method_exists\(\) with Spatie\\LaravelSettings\\Settings and ''encrypted'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Listeners/LogSettingsChanges.php
+
+		-
+			message: '#^Method App\\Models\\Activity\:\:morphInstanceTo\(\) should return Illuminate\\Database\\Eloquent\\Relations\\MorphTo\<Illuminate\\Database\\Eloquent\\Model, \$this\(App\\Models\\Activity\)\> but returns Illuminate\\Database\\Eloquent\\Relations\\MorphTo\<App\\Models\\DynamicRecord\|static\(App\\Models\\Activity\), \$this\(App\\Models\\Activity\)\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/Activity.php
+
+		-
+			message: '#^Parameter \#1 \$query of method App\\Models\\Activity\:\:newMorphTo\(\) expects Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\DynamicRecord\|static\(App\\Models\\Activity\)\>, Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\DynamicRecord\>\|Illuminate\\Database\\Eloquent\\Builder\<static\(App\\Models\\Activity\)\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Activity.php
+
+		-
+			message: '#^Anonymous function with return type void returns null but should not return anything\.$#'
+			identifier: return.void
+			count: 2
+			path: app/Models/App.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Models/App.php
+
+		-
+			message: '#^Cannot call method valueType\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/CustomField.php
+
+		-
+			message: '#^Cannot call method defaultSchema\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/DatabaseConnection.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\DynamicRecord\:\:\$created_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\DynamicRecord\:\:\$updated_by\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Method App\\Models\\DynamicRecord\:\:performDeleteOnModel\(\) with return type void returns mixed but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Method App\\Models\\DynamicRecord\:\:setKeysForSaveQuery\(\) should return Illuminate\\Database\\Eloquent\\Builder\<static\(App\\Models\\DynamicRecord\)\> but returns Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>compositeKey" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>computed" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>copies" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>databaseDefaults" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>dependents" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>files" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>hasKey" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>sequences" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>systemColumns" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>uuidKey" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>writable" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/DynamicRecord.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Role\:\:\$app_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Menu.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\Role\)\: bool given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Models/Menu.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: \(array\<int, int\|string\>\|Illuminate\\Support\\Collection\<int, int\|string\>\), Closure\(App\\Models\\Role\)\: array\<int, int\|string\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Menu.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:every\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|Illuminate\\Database\\Eloquent\\Model\|string, Closure\(App\\Models\\Role\)\: bool given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Models/Menu.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/ReportLink.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Role\:\:\$app_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Role.php
+
+		-
+			message: '#^Property App\\Models\\Base\\ScheduledTask\:\:\$next_run_at \(Carbon\\Carbon\|null\) does not accept Carbon\\CarbonImmutable\|null\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Models/ScheduledTask.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:getAppAuthenticationRecoveryCodes\(\) should return array\<string\>\|null but returns string\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Plugins\\Api\\DataTable\:\:find\(\) should return App\\Models\\DynamicRecord\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Plugins/Api/DataTable.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Plugins/Api/DataTable.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Plugins/Context/SchemaExporter.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\CustomField\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Plugins/Context/SchemaExporter.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Plugins/PluginInspector.php
+
+		-
+			message: '#^Parameter \#3 \$joins of method App\\Reports\\DefinitionResolver\:\:attachDisplays\(\) expects array\<string, array\{alias\: string, parent\: string, relation\: App\\Models\\CustomField, table\: App\\Models\\CustomTable, key\: string\}\>, array\<string, array\{alias\: string, parent\: string, relation\: App\\Models\\CustomField, table\: App\\Models\\CustomTable\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Reports/DefinitionResolver.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Reports/DefinitionResolver.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Reports/DefinitionResolver.php
+
+		-
+			message: '#^Property App\\Reports\\Editor\\FieldCatalog\:\:\$links \(Illuminate\\Support\\Collection\<int, Illuminate\\Support\\Collection\<int, App\\Models\\ReportLink\>\>\|null\) does not accept Illuminate\\Database\\Eloquent\\Collection\<\(int\|string\), Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ReportLink\>\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Reports/Editor/FieldCatalog.php
+
+		-
+			message: '#^Property App\\Reports\\Editor\\FieldCatalog\:\:\$links \(Illuminate\\Support\\Collection\<int, Illuminate\\Support\\Collection\<int, App\\Models\\ReportLink\>\>\|null\) is never assigned Illuminate\\Support\\Collection\<int, Illuminate\\Support\\Collection\<int, App\\Models\\ReportLink\>\> so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: app/Reports/Editor/FieldCatalog.php
+
+		-
+			message: '#^Offset ''calc'' does not exist on array\{key\: string, field\: string\|null, agg\: ''calc'', label\: string\|null\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Reports/ReportDescriber.php
+
+		-
+			message: '#^Parameter &\$errors by\-ref type of method App\\Reports\\ReportExpression\:\:walk\(\) expects list\<string\>, non\-empty\-list\<\(array\|string\)\> given\.$#'
+			identifier: parameterByRef.type
+			count: 8
+			path: app/Reports/ReportExpression.php
+
+		-
+			message: '#^Cannot call method addColumn\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Services/DynamicSchemaService.php
+
+		-
+			message: '#^Parameter \#1 \$target of static method App\\DynamicData\\Rules\\CopySource\:\:compatible\(\) expects App\\DynamicData\\Schema\\FieldType, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/DynamicSchemaService.php
+
+		-
+			message: '#^Parameter \#1 \$type of static method App\\DynamicData\\Rules\\RuleFieldTypes\:\:group\(\) expects App\\DynamicData\\Schema\\FieldType\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/DynamicSchemaService.php
+
+		-
+			message: '#^Parameter \#3 \$type of method App\\Services\\DynamicSchemaService\:\:recreateColumn\(\) expects App\\DynamicData\\Schema\\FieldType, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/DynamicSchemaService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Tasks/TaskRunner.php
+
+		-
+			message: '#^Cannot cast array to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Tasks/Types/DemoResetTask.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Tasks/Types/SnapshotRefreshTask.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Tasks/Types/SnapshotRefreshTask.php
+
+		-
+			message: '#^Class Spatie\\LaravelData\\Data not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: config/settings.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 3
+			path: database/seeders/DatabaseSeeder.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function array_filter expects \(callable\(string\)\: bool\)\|null, ''strlen'' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: database/seeders/GitarrenshopDemoSeeder.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\DynamicRecord\:\:\$einkaufspreis\.$#'
+			identifier: property.notFound
+			count: 1
+			path: database/seeders/LagerDemoSeeder.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_active" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: database/seeders/MenuSeeder.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\DynamicRecord\:\:\$mietpreis\.$#'
+			identifier: property.notFound
+			count: 1
+			path: database/seeders/MusikschuleDemoSeeder.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\DynamicRecord\:\:\$summe\.$#'
+			identifier: property.notFound
+			count: 1
+			path: database/seeders/MusikschuleDemoSeeder.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\DynamicRecord\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\DynamicRecord\>\:\:\$wochentag\.$#'
+			identifier: property.notFound
+			count: 1
+			path: database/seeders/MusikschuleDemoSeeder.php
+
+		-
+			message: '#^Method Database\\Seeders\\MusikschuleDemoSeeder\:\:installedApp\(\) should return App\\Models\\App\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: database/seeders/MusikschuleDemoSeeder.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>changes" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: database/seeders/MusikschuleDemoSeeder.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\DynamicRecord\:\:\$verkaufspreis\.$#'
+			identifier: property.notFound
+			count: 1
+			path: database/seeders/VertriebDemoSeeder.php

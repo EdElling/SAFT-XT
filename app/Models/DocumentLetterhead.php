@@ -46,6 +46,7 @@ class DocumentLetterhead extends BaseDocumentLetterhead
         });
     }
 
+    /** @return BelongsTo<App, $this> */
     public function app(): BelongsTo
     {
         return $this->belongsTo(App::class);

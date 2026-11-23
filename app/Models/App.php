@@ -94,6 +94,7 @@ class App extends BaseApp
         return $this->removal_due_at !== null && $this->removal_due_at->lte(now());
     }
 
+    /** @return BelongsTo<User, $this> */
     public function removalRequester(): BelongsTo
     {
         return $this->belongsTo(User::class, 'removal_requested_by');
@@ -128,6 +129,7 @@ class App extends BaseApp
         return $ids->count() === 1 ? (int) $ids->first() : null;
     }
 
+    /** @return HasMany<AppBaseline, $this> */
     public function baselines(): HasMany
     {
         return $this->hasMany(AppBaseline::class);
@@ -139,6 +141,7 @@ class App extends BaseApp
         return $this->baselines()->latest('id')->first();
     }
 
+    /** @return HasMany<AppManual, $this> */
     public function manuals(): HasMany
     {
         return $this->hasMany(AppManual::class);
@@ -153,31 +156,37 @@ class App extends BaseApp
         return $manual?->content;
     }
 
+    /** @return HasMany<CustomTable, $this> */
     public function customTables(): HasMany
     {
         return $this->hasMany(CustomTable::class);
     }
 
+    /** @return HasMany<Menu, $this> */
     public function menus(): HasMany
     {
         return $this->hasMany(Menu::class);
     }
 
+    /** @return HasMany<Report, $this> */
     public function reports(): HasMany
     {
         return $this->hasMany(Report::class);
     }
 
+    /** @return HasMany<ReportLink, $this> */
     public function reportLinks(): HasMany
     {
         return $this->hasMany(ReportLink::class);
     }
 
+    /** @return HasMany<Role, $this> */
     public function roles(): HasMany
     {
         return $this->hasMany(Role::class);
     }
 
+    /** @return HasMany<ScheduledTask, $this> */
     public function scheduledTasks(): HasMany
     {
         return $this->hasMany(ScheduledTask::class);

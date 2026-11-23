@@ -47,7 +47,7 @@ class CustomField extends BaseCustomField
         ];
     }
 
-    /** Nicht "table()": kollidiert mit Eloquents interner Eigenschaft $table. */
+    /** @return BelongsTo<CustomTable, $this> Nicht "table()": kollidiert mit Eloquents interner Eigenschaft $table. */
     public function customTable(): BelongsTo
     {
         return $this->custom_table();

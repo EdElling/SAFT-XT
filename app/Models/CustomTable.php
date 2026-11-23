@@ -157,6 +157,7 @@ class CustomTable extends BaseCustomTable
         return ! $this->isExternal() || $this->supports('create') || $this->supports('update') || $this->supports('delete');
     }
 
+    /** @return BelongsTo<DatabaseConnection, $this> */
     public function databaseConnection(): BelongsTo
     {
         return $this->belongsTo(DatabaseConnection::class);
@@ -174,6 +175,7 @@ class CustomTable extends BaseCustomTable
         return $this->snapshots()->where('status', DataSnapshot::COMPLETE)->orderByDesc('finished_at')->orderByDesc('id')->first();
     }
 
+    /** @return HasMany<CustomField, $this> */
     public function fields(): HasMany
     {
         return $this->hasMany(CustomField::class)->orderBy('sort_order')->orderBy('id');

@@ -79,16 +79,19 @@ class IdentityProvider extends BaseIdentityProvider
         return 'slug';
     }
 
+    /** @return BelongsTo<Role, $this> */
     public function defaultRole(): BelongsTo
     {
         return $this->role();
     }
 
+    /** @return HasMany<IdentityProviderRoleMapping, $this> */
     public function socialAccounts(): HasMany
     {
         return $this->social_accounts();
     }
 
+    /** @return HasMany<IdentityProviderRoleMapping, $this> */
     public function roleMappings(): HasMany
     {
         return $this->hasMany(IdentityProviderRoleMapping::class);

@@ -17,6 +17,7 @@ class AiHelpConversation extends BaseAiHelpConversation
 {
     use HasAuditLog;
 
+    /** @return HasMany<AiHelpMessage, $this> */
     public function messages(): HasMany
     {
         return $this->ai_help_messages()->orderBy('id');
