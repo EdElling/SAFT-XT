@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Tasks\Types\ActivityPruneTask;
 use App\Tasks\Types\BackupPruneTask;
 use App\Tasks\Types\DatabaseBackupTask;
 use App\Tasks\Types\DemoResetTask;
@@ -22,6 +23,7 @@ return [
         SnapshotConnectionRefreshTask::class,
         SnapshotPruneTask::class,
         TaskRunsPruneTask::class,
+        ActivityPruneTask::class,
         FilesPruneTask::class,
         DatabaseBackupTask::class,
         BackupPruneTask::class,
