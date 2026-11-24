@@ -18,6 +18,9 @@ return [
         'documents' => 'Dokumente erstellen',
         'record_import' => 'Daten importieren',
         'snapshot_refresh' => 'Datenstand ziehen',
+        'app_designer_turn' => 'App entwerfen',
+        'app_designer_create' => 'App erzeugen',
+        'app_designer_reports' => 'Auswertungen der App anlegen',
     ],
     'export' => [
         'done' => '1 Zeile exportiert.|:count Zeilen exportiert.',

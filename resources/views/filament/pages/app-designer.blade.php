@@ -1,4 +1,5 @@
-{{-- KI-App-Designer (B-107, Etappe 7a): Entwürfe | Gespräch | Vorschau. --}}
+{{-- KI-App-Designer (B-107, Etappe 7a): Entwürfe | Gespräch | Vorschau. Arbeiten (Runde, Erzeugen, Auswertungen) treibt der
+     eingebettete Fortschritt; die Seite fragt alle 2 s nach, solange eine offen ist (Fundament 2, F3b). --}}
 <x-filament-panels::page>
     <style>
         .saft-designer { display: grid; grid-template-columns: minmax(10rem, 13rem) minmax(0, 1fr) minmax(0, 1.25fr); gap: 1.25rem; align-items: start; }
@@ -25,7 +26,7 @@
         .saft-designer .preview td.detail { color: var(--gray-500); font-family: ui-monospace, monospace; overflow-wrap: anywhere; }
     </style>
 
-    <div class="saft-designer" data-app-designer>
+    <div class="saft-designer" data-app-designer @if ($workId !== null || $reportsWorkId !== null) wire:poll.2s="poll" @endif>
             <nav class="drafts" aria-label="{{ __('app_designer.drafts') }}" data-designer-drafts>
                 <strong style="padding: .2rem .45rem">{{ __('app_designer.drafts') }}</strong>
                 @forelse ($drafts as $item)
@@ -54,12 +55,12 @@
                     <p class="note" data-designer-created>{{ __('app_designer.created_note', ['app' => (string) $current->app?->name]) }}</p>
 
                     @if ($reports !== [])
-                        {{-- Auswertungen nach dem Erzeugen (Etappe 7c): je Aufruf eine; die Schleife läuft, solange eine wartet. --}}
-                        <div wire:key="report-run-{{ $reportRun }}"
-                             x-data
-                             x-init="if (@js($pending)) { (async () => { while (await $wire.createNextReport()) {} })() }"
-                             data-designer-reports>
+                        {{-- Auswertungen nach dem Erzeugen (Etappe 7c): je Schritt der Arbeit eine; der Fortschritt treibt sie. --}}
+                        <div data-designer-reports>
                             <p class="font-semibold text-sm">{{ __('app_designer.reports.heading') }}</p>
+                            @if ($reportsWorkId !== null)
+                                @livewire(\App\Livewire\WorkProgress::class, ['workId' => $reportsWorkId], key('designer-reports-'.$reportsWorkId))
+                            @endif
                             <ul style="display: flex; flex-direction: column; gap: .35rem; margin-top: .35rem">
                                 @php($first = array_search(\App\Apps\Designer\DraftReports::PENDING, array_column($reports, 'status'), true))
                                 @foreach ($reports as $i => $report)
@@ -86,6 +87,12 @@
                 @elseif (! $available)
                     {{-- Ohne KI: Entwürfe und Vorschau bleiben, nur keine neuen Runden. --}}
                     <p class="text-sm text-warning-700 dark:text-warning-400" data-designer-unavailable>{{ __('app_designer.unavailable') }}</p>
+                @elseif ($workId !== null)
+                    {{-- Eine Runde oder das Erzeugen läuft: der Fortschritt treibt die Arbeit, die Seite fragt nach. --}}
+                    <div data-designer-working>
+                        <p class="note" style="margin-bottom: .5rem">{{ $creating ? __('app_designer.work.creating') : __('app_designer.working') }}</p>
+                        @livewire(\App\Livewire\WorkProgress::class, ['workId' => $workId], key('designer-work-'.$workId))
+                    </div>
                 @else
                     <form wire:submit="send" style="display: flex; flex-direction: column; gap: .5rem">
                         <textarea wire:model="prompt" placeholder="{{ $messages === [] ? __('app_designer.placeholder_new') : __('app_designer.placeholder_change') }}" aria-label="{{ __('app_designer.prompt') }}" data-designer-prompt></textarea>

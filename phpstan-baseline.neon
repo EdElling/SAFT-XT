@@ -607,12 +607,6 @@ parameters:
 			path: app/Filament/Pages/AppDataModelPage.php
 
 		-
-			message: '#^Cannot cast array to string\.$#'
-			identifier: cast.string
-			count: 1
-			path: app/Filament/Pages/AppDesignerPage.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>history" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1

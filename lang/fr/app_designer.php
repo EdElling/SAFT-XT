@@ -8,6 +8,12 @@ return [
     'translation_failed' => 'Les libellés n’ont pas pu être traduits (:error). L’app est tout de même créée ; complétez les traductions dans le concepteur de tables, à la main ou avec « Adapter avec l’IA ».',
     'translation_log' => 'Traduction de :count libellés (concepteur d’apps)',
     'to_app' => 'Vers la nouvelle app',
+    'work' => [
+        'proposal' => 'Proposition prête – voir l’aperçu.',
+        'reports_done' => '1 rapport créé.|:count rapports créés.',
+        'reports_failed' => '1 impossible.|:count impossibles.',
+        'creating' => 'L’app est en cours de création … traduction des libellés, création des tables et des menus.',
+    ],
     'reports' => [
         'preview' => 'Rapports (créés après l’app)',
         'create' => 'Créer ces rapports proposés',

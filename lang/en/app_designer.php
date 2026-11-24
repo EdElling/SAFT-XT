@@ -8,6 +8,12 @@ return [
     'translation_failed' => 'The labels could not be translated (:error). The app has been created anyway; add the translations in the table designer, by hand or with "Adjust with AI".',
     'translation_log' => 'Translation of :count labels (app designer)',
     'to_app' => 'To the new app',
+    'work' => [
+        'proposal' => 'Proposal ready – see the preview.',
+        'reports_done' => '1 report created.|:count reports created.',
+        'reports_failed' => '1 not possible.|:count not possible.',
+        'creating' => 'The app is being created … translating labels, creating tables and menus.',
+    ],
     'reports' => [
         'preview' => 'Reports (created after the app)',
         'create' => 'Create these proposed reports',

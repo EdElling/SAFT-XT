@@ -27,7 +27,10 @@ use Throwable;
 /**
  * KI-App-Designer (B-107, Etappe 7a): Aus einer Beschreibung entsteht im Gespräch ein Entwurf einer ganzen App –
  * Tabellen, Felder, Verknüpfungen, berechnete Felder, Regeln, Menüs. Der Entwurf wird geprüft (DraftCompiler) und als
- * App-Definition gespeichert, aber erst mit create() angelegt (AppInstaller), samt Fachrolle; die App ist danach aktiv.
+ * App-Definition gespeichert, aber erst mit dem Anlegen installiert (AppInstaller), samt Fachrolle; die App ist danach
+ * aktiv. Die langen KI-Anfragen laufen als Arbeiten mit langen Schritten (Fundament 2, F3b): eine Runde ist
+ * App\Work\Types\AppDesignerTurnWork (propose()), das Anlegen App\Work\Types\AppDesignerCreateWork (prepareCreate(),
+ * translateDefinition(), install()); das Zeitlimit von PHP hebt dort der Runner an.
  *
  * An die KI gehen nur Beschreibung, Entwurf und die Struktur freigegebener Tabellen anderer Apps – nie Datensätze.
  */
@@ -84,7 +87,17 @@ final class AppDesigner
         TXT;
 
     /** Hinweis des letzten create(), wenn die Übersetzung nicht gelang (die App ist trotzdem erzeugt). */
-    public ?string $translationWarning = null;
+    /** Dauer, die eine KI-Anfrage des Designers höchstens hat; ein Schritt rechnet mit zwei Anfragen (Korrekturrunde). */
+    public static function timeoutSeconds(): int
+    {
+        return max((int) config('ai.timeout', 120), (int) config('ai.designer_timeout', 900));
+    }
+
+    /** Zeit für einen Schritt mit bis zu zwei KI-Anfragen (LongSteps::stepSeconds()). */
+    public static function stepSeconds(): int
+    {
+        return 2 * self::timeoutSeconds() + 60;
+    }
 
     public function __construct(
         private readonly AssistantClient $client,
@@ -125,13 +138,11 @@ final class AppDesigner
         ];
         $conversation = new AiConversation($this->client);
         // Eine ganze App ist eine lange Antwort (oft 2–3 Minuten, bei grossen Apps und langsamen Modellen deutlich mehr):
-        // eigene, höhere Grenzen für Länge und Dauer, für die Anfrage Platz für eine Korrekturrunde.
-        $timeout = max((int) config('ai.timeout', 120), (int) config('ai.designer_timeout', 900));
+        // eigene, höhere Grenzen für Länge und Dauer; das Zeitlimit von PHP hebt der Runner der Arbeit an (LongSteps).
         config([
-            'ai.timeout' => $timeout,
+            'ai.timeout' => self::timeoutSeconds(),
             'ai.max_tokens' => max((int) config('ai.max_tokens', 16000), (int) config('ai.designer_max_tokens', 32000)),
         ]);
-        @set_time_limit(2 * $timeout + 60);
 
         try {
             // Das Schema einer ganzen App ist dem Anbieter als Grammatik zu gross („grammar too large“): nur als Vorgabe
@@ -171,16 +182,14 @@ final class AppDesigner
     }
 
     /**
-     * App anlegen: Definition installieren (Name änderbar; ein anderes Präfix benennt die Tabellen um), aktivieren und
-     * in die App wechseln. Die vorgeschlagenen Auswertungen warten danach auf DraftReports (Etappe 7c). Wer kein
-     * Super-Admin ist, erhält die Fachrolle – sonst sähe er die Tabellen seiner App nicht.
+     * Anlegen, Teil 1: darf die Person, ist der Entwurf noch offen, und ist der Vorschlag weiterhin gültig? Seit dem
+     * Vorschlag kann z. B. ein Tabellenname vergeben worden sein.
+     *
+     * @return array<string, mixed> die geprüfte Definition
      *
      * @throws BusinessRuleException
      */
-    /**
-     * @param  bool|list<int>  $reports  true = alle vorgeschlagenen Auswertungen, false bzw. [] = keine, sonst die Indizes
-     */
-    public function create(User $user, AppDraft $draft, ?string $name = null, ?string $prefix = null, bool|array $reports = true): App
+    public function prepareCreate(User $user, AppDraft $draft): array
     {
         abort_unless($user->can('apps.design') && $draft->user_id === $user->id, 403);
 
@@ -188,20 +197,47 @@ final class AppDesigner
             throw new BusinessRuleException(__('app_designer.errors.nothing_to_create'));
         }
 
-        // Vor dem Anlegen noch einmal prüfen: Seit dem Vorschlag kann z. B. ein Tabellenname vergeben worden sein.
         $compiled = $this->compiler->compile((array) $draft->proposal);
 
         if ($compiled['problems'] !== [] || $compiled['definition'] === null) {
             throw new BusinessRuleException(implode(' ', $compiled['problems']));
         }
 
-        // Im Gespräch entstehen die Bezeichnungen nur in einer Sprache; die übrigen jetzt einmal übersetzen.
-        $timeout = max((int) config('ai.timeout', 120), (int) config('ai.designer_timeout', 900));
-        config(['ai.timeout' => $timeout]);
-        @set_time_limit(2 * $timeout + 60);
-        $translated = $this->translator->translate($user, $compiled['definition']);
-        $definition = $translated['definition'];
-        $this->translationWarning = $translated['warning'];
+        return $compiled['definition'];
+    }
+
+    /**
+     * Anlegen, Teil 2 (lang): Im Gespräch entstehen die Bezeichnungen nur in einer Sprache; die übrigen einmal
+     * übersetzen. Scheitert das, kommt die Definition unübersetzt mit einer Warnung zurück.
+     *
+     * @param  array<string, mixed>  $definition
+     * @return array{definition: array<string, mixed>, warning: string|null}
+     */
+    public function translateDefinition(User $user, array $definition): array
+    {
+        config(['ai.timeout' => self::timeoutSeconds()]);
+
+        return $this->translator->translate($user, $definition);
+    }
+
+    /**
+     * Anlegen, Teil 3: Definition installieren (Name änderbar; ein anderes Präfix benennt die Tabellen um), aktivieren
+     * und in die App wechseln. Die vorgeschlagenen Auswertungen warten danach auf DraftReports (Etappe 7c). Wer kein
+     * Super-Admin ist, erhält die Fachrolle – sonst sähe er die Tabellen seiner App nicht.
+     *
+     * @param  array<string, mixed>  $definition  aus translateDefinition()
+     * @param  bool|list<int>  $reports  true = alle vorgeschlagenen Auswertungen, false bzw. [] = keine, sonst die Indizes
+     *
+     * @throws BusinessRuleException
+     */
+    public function install(User $user, AppDraft $draft, array $definition, ?string $name = null, ?string $prefix = null, bool|array $reports = true): App
+    {
+        abort_unless($user->can('apps.design') && $draft->user_id === $user->id, 403);
+
+        if ($draft->status !== AppDraft::DRAFT) {
+            throw new BusinessRuleException(__('app_designer.errors.already_created'));
+        }
+
         $default = (string) config('locales.default');
         $prefix = filled($prefix) ? strtolower(trim((string) $prefix)) : $definition['app']['prefix'];
 

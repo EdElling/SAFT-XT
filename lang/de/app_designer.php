@@ -8,6 +8,12 @@ return [
     'translation_failed' => 'Die Bezeichnungen konnten nicht übersetzt werden (:error). Die App ist trotzdem erzeugt; ergänzen Sie die Übersetzungen im Table-Designer, von Hand oder mit „Mit KI anpassen“.',
     'translation_log' => 'Übersetzung von :count Bezeichnungen (App-Designer)',
     'to_app' => 'Zur neuen App',
+    'work' => [
+        'proposal' => 'Vorschlag erstellt – siehe Vorschau.',
+        'reports_done' => '1 Auswertung angelegt.|:count Auswertungen angelegt.',
+        'reports_failed' => '1 nicht möglich.|:count nicht möglich.',
+        'creating' => 'Die App wird erzeugt … Bezeichnungen übersetzen, Tabellen und Menüs anlegen.',
+    ],
     'reports' => [
         'preview' => 'Auswertungen (werden nach dem Erzeugen angelegt)',
         'create' => 'Diese vorgeschlagenen Auswertungen anlegen',

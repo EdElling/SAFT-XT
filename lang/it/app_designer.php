@@ -8,6 +8,12 @@ return [
     'translation_failed' => 'Non è stato possibile tradurre le etichette (:error). L’app è comunque creata; completi le traduzioni nel designer di tabelle, a mano o con «Adatta con l’IA».',
     'translation_log' => 'Traduzione di :count etichette (progettista di app)',
     'to_app' => 'Alla nuova app',
+    'work' => [
+        'proposal' => 'Proposta pronta – vedere l’anteprima.',
+        'reports_done' => '1 report creato.|:count report creati.',
+        'reports_failed' => '1 non possibile.|:count non possibili.',
+        'creating' => 'L’app viene creata … traduzione delle etichette, creazione di tabelle e menu.',
+    ],
     'reports' => [
         'preview' => 'Report (creati dopo l’app)',
         'create' => 'Crea questi report proposti',

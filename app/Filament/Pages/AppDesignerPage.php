@@ -10,11 +10,15 @@ use App\Apps\Designer\AppDesigner;
 use App\Apps\Designer\DesignerResult;
 use App\Apps\Designer\DraftReports;
 use App\DynamicData\Schema\FieldType;
-use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Apps\AppResource;
 use App\Filament\Resources\Reports\ReportResource;
 use App\Models\AppDraft;
 use App\Models\User;
+use App\Models\WorkItem;
+use App\Work\Types\AppDesignerCreateWork;
+use App\Work\Types\AppDesignerReportsWork;
+use App\Work\Types\AppDesignerTurnWork;
+use App\Work\WorkService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
@@ -27,6 +31,11 @@ use Livewire\Attributes\Url;
 /**
  * KI-App-Designer (B-107, Etappe 7a): Entwürfe links, Gespräch in der Mitte, Vorschau rechts (Diagramm, Tabellen,
  * Hinweise); „App erzeugen“ legt die App an, aktiviert sie und wechselt hinein. Recht apps.design.
+ *
+ * Die langen KI-Anfragen laufen als Arbeiten (Fundament 2, F3b): Die Seite startet eine Runde, das Erzeugen oder die
+ * Auswertungen und blockiert nicht mehr – der eingebettete Fortschritt (App\Livewire\WorkProgress) treibt die Arbeit im
+ * Browser, solange sich das Zeitlimit anheben lässt, sonst der Scheduler; die Seite fragt alle 2 s nach und übernimmt
+ * das Ergebnis (Gespräch, Meldung, Wechsel in die App).
  */
 class AppDesignerPage extends Page
 {
@@ -45,8 +54,11 @@ class AppDesignerPage extends Page
     /** Meldung unter der Eingabe (Fehler der letzten Runde). */
     public ?string $notice = null;
 
-    /** Lauf der Auswertungen (Etappe 7c): wechselt beim Erzeugen und Wiederholen und startet die Schleife im Browser neu. */
-    public int $reportRun = 0;
+    /** Offene Arbeit zu diesem Entwurf (Runde oder Erzeugen), die die Seite treibt und abfragt. */
+    public ?int $workId = null;
+
+    /** Arbeit, die die Auswertungen der erzeugten App anlegt (Etappe 7c). */
+    public ?int $reportsWorkId = null;
 
     public static function canAccess(): bool
     {
@@ -66,18 +78,20 @@ class AppDesignerPage extends Page
     public function mount(): void
     {
         $this->draft ??= AppDraft::query()->where('user_id', auth()->id())->where('status', AppDraft::DRAFT)->latest('updated_at')->value('id');
+        $this->attachWork();
     }
 
     public function newDraft(): void
     {
         $this->draft = app(AppDesigner::class)->start($this->user())->id;
-        $this->reset('prompt', 'notice');
+        $this->reset('prompt', 'notice', 'workId', 'reportsWorkId');
     }
 
     public function openDraft(int $id): void
     {
         $this->draft = $this->ownDraft($id)?->id;
-        $this->reset('notice');
+        $this->reset('notice', 'workId', 'reportsWorkId');
+        $this->attachWork();
     }
 
     public function deleteDraft(int $id): void
@@ -89,34 +103,119 @@ class AppDesignerPage extends Page
         }
     }
 
-    /** Eine Runde mit der KI; die Antwort steht danach im Gespräch, der Vorschlag in der Vorschau. */
+    /** Eine Runde mit der KI starten; die Antwort kommt über poll() ins Gespräch, der Vorschlag in die Vorschau. */
     public function send(): void
     {
         $this->notice = null;
 
-        if (trim($this->prompt) === '') {
+        if (trim($this->prompt) === '' || $this->openWork() !== null) {
             return;
         }
 
-        $designer = app(AppDesigner::class);
-        $draft = $this->current() ?? $designer->start($this->user());
+        $draft = $this->current() ?? app(AppDesigner::class)->start($this->user());
         $this->draft = $draft->id;
-
-        try {
-            $result = $designer->propose($this->user(), $draft, $this->prompt);
-        } catch (BusinessRuleException $e) {
-            $this->notice = $e->getMessage();
-
-            return;
-        }
-
-        if ($result->status === DesignerResult::ERROR) {
-            $this->notice = $result->message;
-
-            return;
-        }
-
+        $this->workId = app(WorkService::class)->start(AppDesignerTurnWork::KEY, ['draft_id' => $draft->id, 'text' => $this->prompt], $this->user())->id;
         $this->prompt = '';
+    }
+
+    /** Alle 2 s, solange eine Arbeit offen ist: ist sie zu Ende, das Ergebnis übernehmen. */
+    public function poll(): void
+    {
+        if ($this->workId !== null) {
+            $item = WorkItem::query()->find($this->workId);
+
+            if ($item === null || ! $item->isOpen()) {
+                $this->workId = null;
+
+                if ($item !== null) {
+                    $this->finished($item);
+                }
+            }
+        }
+
+        if ($this->reportsWorkId !== null && ! (WorkItem::query()->find($this->reportsWorkId)?->isOpen() ?? false)) {
+            $this->reportsWorkId = null;
+        }
+    }
+
+    /** Ergebnis einer beendeten Arbeit: Runde → Meldung unter der Eingabe; Erzeugen → Meldungen, Auswertungen oder in die App. */
+    private function finished(WorkItem $item): void
+    {
+        $result = (array) ($item->result ?? []);
+
+        if ($item->type === AppDesignerTurnWork::KEY) {
+            $failed = $item->status !== WorkItem::DONE || ($result['status'] ?? null) === DesignerResult::ERROR;
+
+            if ($failed) {
+                $this->notice = $item->status === WorkItem::DONE ? (string) ($result['message'] ?? '') : (string) $item->message;
+                // Die Eingabe bleibt stehen, damit sie sich verbessern lässt.
+                $this->prompt = $this->prompt === '' ? (string) ($item->parameterValues()['text'] ?? '') : $this->prompt;
+            }
+
+            return;
+        }
+
+        if ($item->type !== AppDesignerCreateWork::KEY) {
+            return;
+        }
+
+        if ($item->status !== WorkItem::DONE) {
+            Notification::make()->danger()->title(__('app_designer.create_failed'))->body((string) $item->message)->persistent()->send();
+
+            return;
+        }
+
+        Notification::make()->success()->title((string) $item->message)->send();
+
+        if (filled($result['warning'] ?? null)) {
+            Notification::make()->warning()->title((string) $result['warning'])->persistent()->send();
+        }
+
+        // Ohne Auswertungen gleich in die App (vollständig neu laden: Menü, Umschalter, Rechte). Sonst bleibt die Seite
+        // und zeigt den Fortschritt der Auswertungen; „Zur neuen App“ führt danach hinein.
+        if (($draft = $this->current()) === null || ! DraftReports::pending($draft)) {
+            $this->redirect(Dashboard::getUrl(), navigate: false);
+
+            return;
+        }
+
+        $this->ensureReportsWork($draft);
+    }
+
+    /** Warten Auswertungen und legt sie keine Arbeit an, eine starten. */
+    private function ensureReportsWork(AppDraft $draft): void
+    {
+        if ($draft->status !== AppDraft::CREATED || ! DraftReports::pending($draft)) {
+            return;
+        }
+
+        $this->reportsWorkId = ($this->openWorkOf([AppDesignerReportsWork::KEY], $draft)
+            ?? app(WorkService::class)->start(AppDesignerReportsWork::KEY, ['draft_id' => $draft->id], $this->user(), $draft->app_id))->id;
+    }
+
+    /** Beim Öffnen: laufende Arbeiten dieses Entwurfs wieder aufnehmen (die Seite wurde z. B. neu geladen). */
+    private function attachWork(): void
+    {
+        $draft = $this->current();
+
+        if ($draft === null) {
+            return;
+        }
+
+        $this->workId = $this->openWorkOf([AppDesignerTurnWork::KEY, AppDesignerCreateWork::KEY], $draft)?->id;
+        $this->reportsWorkId = $this->openWorkOf([AppDesignerReportsWork::KEY], $draft)?->id;
+    }
+
+    private function openWork(): ?WorkItem
+    {
+        return $this->workId === null ? null : WorkItem::query()->whereKey($this->workId)->whereIn('status', WorkItem::OPEN)->first();
+    }
+
+    /** @param  list<string>  $types */
+    private function openWorkOf(array $types, AppDraft $draft): ?WorkItem
+    {
+        return WorkItem::query()->where('user_id', auth()->id())->whereIn('type', $types)->whereIn('status', WorkItem::OPEN)->latest('id')->get()
+            ->first(static fn (WorkItem $item): bool => (int) ($item->parameterValues()['draft_id'] ?? 0) === $draft->id);
     }
 
     protected function getHeaderActions(): array
@@ -151,57 +250,30 @@ class AppDesignerPage extends Page
                         ->bulkToggleable()
                         ->visible(fn (): bool => DraftReports::fromProposal((array) $this->current()?->proposal) !== []),
                 ])
+                // Als Arbeit (Fundament 2, F3b): übersetzen, dann anlegen; das Ergebnis übernimmt poll() → finished().
                 ->action(function (array $data): void {
-                    $designer = app(AppDesigner::class);
+                    $draft = $this->current();
 
-                    try {
-                        $app = $designer->create($this->user(), $this->current() ?? throw new BusinessRuleException(__('app_designer.errors.nothing_to_create')), $data['name'], $data['prefix'], array_values(array_map('intval', (array) ($data['reports'] ?? []))));
-                    } catch (BusinessRuleException $e) {
-                        Notification::make()->danger()->title(__('app_designer.create_failed'))->body($e->getMessage())->persistent()->send();
-
+                    if ($draft === null || $this->openWork() !== null) {
                         return;
                     }
 
-                    Notification::make()->success()->title(__('app_designer.created', ['app' => (string) $app->name]))->send();
-
-                    if (filled($warning = $designer->translationWarning)) {
-                        Notification::make()->warning()->title($warning)->persistent()->send();
-                    }
-
-                    // Ohne Auswertungen gleich in die App (vollständig neu laden: Menü, Umschalter, Rechte). Sonst bleibt die
-                    // Seite und zeigt den Fortschritt; „Zur neuen App“ führt danach hinein.
-                    if (! DraftReports::pending($this->current())) {
-                        $this->redirect(Dashboard::getUrl(), navigate: false);
-
-                        return;
-                    }
-
-                    $this->reportRun++;
+                    $this->workId = app(WorkService::class)->start(AppDesignerCreateWork::KEY, [
+                        'draft_id' => $draft->id,
+                        'name' => (string) $data['name'],
+                        'prefix' => (string) $data['prefix'],
+                        'reports' => array_values(array_map('intval', (array) ($data['reports'] ?? []))),
+                    ], $this->user())->id;
                 }),
         ];
     }
 
-    /**
-     * Die nächste Auswertung anlegen (aus der Schleife im Browser, je Aufruf eine). true = es wartet noch eine.
-     */
-    public function createNextReport(): bool
-    {
-        $draft = $this->current();
-
-        if ($draft === null) {
-            return false;
-        }
-
-        app(DraftReports::class)->next($this->user(), $draft);
-
-        return DraftReports::pending($draft->refresh());
-    }
-
+    /** Eine nicht mögliche Auswertung noch einmal: Status zurück, neue Arbeit. */
     public function retryReport(int $index): void
     {
         if (($draft = $this->current()) !== null) {
             app(DraftReports::class)->retry($this->user(), $draft, $index);
-            $this->reportRun++;
+            $this->ensureReportsWork($draft->refresh());
         }
     }
 
@@ -227,6 +299,9 @@ class AppDesignerPage extends Page
             'reports' => array_map(static fn (array $r): array => [...$r, 'url' => filled($r['report_id'] ?? null) ? ReportResource::getUrl('view', ['record' => $r['report_id']]) : null], (array) ($draft?->reports ?? [])),
             'pending' => $draft !== null && DraftReports::pending($draft),
             'appUrl' => Dashboard::getUrl(),
+            'workId' => $this->workId,
+            'reportsWorkId' => $this->reportsWorkId,
+            'creating' => $this->workId !== null && WorkItem::query()->whereKey($this->workId)->where('type', AppDesignerCreateWork::KEY)->exists(),
         ];
     }
 

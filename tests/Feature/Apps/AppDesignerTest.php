@@ -23,10 +23,16 @@ use App\Models\Menu;
 use App\Models\Report;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\WorkItem;
 use App\Reports\Assistant\AssistantClient;
 use App\Reports\Assistant\AssistantReply;
 use App\Settings\AppSettings;
+use App\Work\Types\AppDesignerCreateWork;
+use App\Work\Types\AppDesignerReportsWork;
+use App\Work\WorkRunner;
+use App\Work\WorkService;
 use Illuminate\Support\Str;
+use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Tests\Fakes\FakeAssistantClient;
 use Tests\Feature\DynamicData\DynamicDataTestCase;
@@ -58,6 +64,32 @@ class AppDesignerTest extends DynamicDataTestCase
     {
         DraftTranslator::$chunk = 120;
         parent::tearDown();
+    }
+
+    /** App aus dem Entwurf erzeugen – als Arbeit bis zum Ende (Fundament 2, F3b), wie die Seite sie startet. */
+    private function createApp(AppDraft $draft, ?string $name = null, ?string $prefix = null, bool|array $reports = true): WorkItem
+    {
+        return app(WorkService::class)->startAndDrive(AppDesignerCreateWork::KEY, array_filter(['draft_id' => $draft->id, 'name' => $name, 'prefix' => $prefix, 'reports' => $reports], static fn (mixed $v): bool => $v !== null), $this->admin);
+    }
+
+    /** Die Seite hat eine Arbeit gestartet: zu Ende treiben (wie der Browser) und die Seite nachfragen lassen. */
+    private function finish(Testable $page): Testable
+    {
+        foreach (WorkItem::query()->whereIn('status', WorkItem::OPEN)->orderBy('id')->get() as $item) {
+            app(WorkService::class)->drive($item);
+        }
+
+        return $page->call('poll');
+    }
+
+    /** Nur das Erzeugen zu Ende treiben (die Auswertungen bleiben für die Prüfung je Schritt), dann nachfragen. */
+    private function finishCreation(Testable $page): Testable
+    {
+        foreach (WorkItem::query()->where('type', AppDesignerCreateWork::KEY)->whereIn('status', WorkItem::OPEN)->get() as $item) {
+            app(WorkService::class)->drive($item);
+        }
+
+        return $page->call('poll');
     }
 
     /** @return array<string, string> */
@@ -174,7 +206,9 @@ class AppDesignerTest extends DynamicDataTestCase
         $this->fake->push($this->courses());
         $designer->propose($this->admin, $draft, 'Kursverwaltung');
 
-        $app = $designer->create($this->admin, $draft->refresh());
+        $item = $this->createApp($draft->refresh());
+        $this->assertSame([WorkItem::DONE, 'App „Kurse“ erzeugt.', 2, 2], [$item->status, $item->message, $item->done, $item->total]);
+        $app = App::query()->findOrFail((int) $item->result['app_id']);
 
         $this->assertTrue($app->is_active);
         $this->assertSame($app->id, app(CurrentApp::class)->id($this->admin->refresh()), 'Gleich in der neuen App.');
@@ -198,8 +232,9 @@ class AppDesignerTest extends DynamicDataTestCase
         $course = DynamicRecord::forTableName('kurse_kurse')->newQuery()->findOrFail($course->id);
         $this->assertSame([2, '120.00'], [(int) $course->anmeldungen, (string) $course->einnahmen]);
 
-        $this->expectException(BusinessRuleException::class);
-        $designer->create($this->admin, $draft->refresh());
+        // Noch einmal: der Entwurf ist schon erzeugt.
+        $again = $this->createApp($draft->refresh());
+        $this->assertSame([WorkItem::FAILED, 'Es gibt noch keinen Entwurf, aus dem sich eine App erzeugen lässt.'], [$again->status, $again->message]);
     }
 
     public function test_create_with_another_name_and_prefix_and_availability(): void
@@ -209,7 +244,7 @@ class AppDesignerTest extends DynamicDataTestCase
         $this->fake->push($this->courses());
         $designer->propose($this->admin, $draft, 'Kursverwaltung');
 
-        $app = $designer->create($this->admin, $draft->refresh(), 'Musikschule', 'musik');
+        $app = App::query()->findOrFail((int) $this->createApp($draft->refresh(), 'Musikschule', 'musik')->result['app_id']);
         $this->assertSame(['Musikschule', 'musik'], [$app->getTranslation('name', 'de'), rtrim((string) $app->prefix, '_')]);
         $this->assertTrue(CustomTable::query()->where('name', 'musik_kurse')->exists(), 'Ein anderes Präfix benennt die Tabellen um.');
         $this->assertFalse(CustomTable::query()->where('name', 'kurse_kurse')->exists());
@@ -231,6 +266,12 @@ class AppDesignerTest extends DynamicDataTestCase
             ->set('prompt', 'Kursverwaltung mit Anmeldungen')
             ->call('send')
             ->assertSet('prompt', '')
+            // Die Runde läuft als Arbeit: Fortschritt statt Eingabe, bis sie zu Ende ist.
+            ->assertSeeHtml('data-designer-working')
+            ->assertSee('Die KI entwirft');
+        $this->assertSame(1, WorkItem::query()->where('type', 'app_designer_turn')->whereIn('status', WorkItem::OPEN)->count());
+        $page = $this->finish($page)
+            ->assertSet('workId', null)
             ->assertSee('Kursverwaltung mit Anmeldungen')
             ->assertSee('Vorschlag mit den Tabellen kurse_teilnehmende, kurse_kurse, kurse_anmeldungen – siehe Vorschau.')
             ->assertSee('= sum(if(kurse_anmeldungen.bezahlt, kurse_anmeldungen.betrag, 0))')
@@ -244,6 +285,8 @@ class AppDesignerTest extends DynamicDataTestCase
             ->setActionData(['reports' => []])
             ->callMountedAction()
             ->assertHasNoActionErrors()
+            ->assertSee('Die App wird erzeugt');
+        $this->finish($page)
             ->assertNotified('App „Kurse“ erzeugt.')
             ->assertRedirect(Dashboard::getUrl());
         $this->assertTrue(App::query()->where('prefix', 'like', 'kurse%')->sole()->is_active);
@@ -265,9 +308,10 @@ class AppDesignerTest extends DynamicDataTestCase
         // KI-Fehler (zweimal ungültig) als Meldung unter der Eingabe; die Eingabe bleibt stehen.
         $broken = $this->courses(['tables' => []]);
         $this->fake->push($broken)->push($broken);
-        Livewire::test(AppDesignerPage::class)
+        $page = Livewire::test(AppDesignerPage::class)
             ->set('prompt', 'Leer')
-            ->call('send')
+            ->call('send');
+        $this->finish($page)
             ->assertSet('prompt', 'Leer')
             ->assertSee('Kein gültiger Entwurf: Der Entwurf hat keine Tabellen.');
 
@@ -288,9 +332,9 @@ class AppDesignerTest extends DynamicDataTestCase
         $this->fake->push($this->courses())->push($more);
 
         $key = static fn (string $html): string => (string) preg_replace('/.*data-designer-diagram="([0-9a-f]+)".*/s', '$1', $html);
-        $page = Livewire::test(AppDesignerPage::class)->set('prompt', 'Kurse')->call('send');
+        $page = $this->finish(Livewire::test(AppDesignerPage::class)->set('prompt', 'Kurse')->call('send'));
         $before = $key($page->html());
-        $page->set('prompt', 'Räume ergänzen')->call('send');
+        $this->finish($page->set('prompt', 'Räume ergänzen')->call('send'));
 
         $this->assertMatchesRegularExpression('/^[0-9a-f]{32}$/', $before);
         $this->assertNotSame($before, $key($page->html()), 'Neuer Schlüssel: Livewire ersetzt das Diagramm.');
@@ -314,25 +358,32 @@ class AppDesignerTest extends DynamicDataTestCase
     public function test_reports_are_created_one_by_one_after_the_app(): void
     {
         $this->fake->push($this->courses());
-        $page = Livewire::test(AppDesignerPage::class)->set('prompt', 'Kursverwaltung')->call('send')
+        $page = $this->finish(Livewire::test(AppDesignerPage::class)->set('prompt', 'Kursverwaltung')->call('send'))
             ->assertSee('Auswertungen (werden nach dem Erzeugen angelegt)')
             ->assertSee('Einnahmen je Kurs');
 
         $page->mountAction('createApp')
             ->assertSchemaStateSet(['reports' => [0, 1]])
             ->callMountedAction()
-            ->assertHasNoActionErrors()
+            ->assertHasNoActionErrors();
+        // Erzeugt: die Seite bleibt, startet die Arbeit für die Auswertungen und zeigt den Fortschritt.
+        $this->finishCreation($page)
             ->assertNoRedirect()
             ->assertSee('⏳ wird erstellt …')
             ->assertSee('Zur neuen App');
         $draft = AppDraft::query()->sole();
         $this->assertSame([DraftReports::PENDING, DraftReports::PENDING], array_column($draft->reports, 'status'));
+        $work = WorkItem::query()->where('type', AppDesignerReportsWork::KEY)->sole();
+        $this->assertSame([WorkItem::QUEUED, $work->id], [$work->status, $page->get('reportsWorkId')]);
 
-        // Je Aufruf eine Auswertung: die erste gelingt, die zweite kommt als Rückfrage zurück.
+        // Je Schritt (langer Schritt: genau einer je Aufruf) eine Auswertung: die erste gelingt, die zweite kommt als Rückfrage zurück.
+        $runner = app(WorkRunner::class);
         $this->fake->push($this->report('Einnahmen je Kurs', 'kurse_anmeldungen', ['kurse_anmeldungen.kurs_id'], [['sum', 'kurse_anmeldungen.betrag']]));
-        $this->assertTrue($page->instance()->createNextReport());
+        $work = $runner->advance($work, 30);
+        $this->assertSame([WorkItem::RUNNING, 1, 2], [$work->status, $work->done, $work->total]);
         $this->fake->push(['kind' => 'question', 'question' => 'Welcher Zeitraum?', 'title' => '', 'base' => null, 'rows' => [], 'columns' => [], 'values' => [], 'filters' => [], 'sort' => null, 'limit' => null, 'visual' => 'table']);
-        $this->assertFalse($page->instance()->createNextReport());
+        $work = $runner->advance($work, 30);
+        $this->assertSame([WorkItem::DONE, '1 Auswertung angelegt. 1 nicht möglich.'], [$work->status, $work->message]);
 
         $draft->refresh();
         $this->assertSame([DraftReports::CREATED, DraftReports::FAILED], array_column($draft->reports, 'status'));
@@ -343,11 +394,13 @@ class AppDesignerTest extends DynamicDataTestCase
         $group = Menu::query()->where('app_id', $draft->app_id)->where('label->de', 'Auswertungen')->sole();
         $this->assertSame(['Einnahmen je Kurs'], Menu::query()->where('parent_id', $group->id)->get()->map(fn (Menu $m): string => $m->getTranslation('label', 'de'))->all());
 
-        // Nicht möglich: Grund und „Erneut versuchen“; danach gelingt sie.
-        $page->call('$refresh')->assertSee('nicht möglich: Welcher Zeitraum?')->assertSee('Erneut versuchen')
+        // Nicht möglich: Grund und „Erneut versuchen“; das startet eine neue Arbeit, danach gelingt sie.
+        $page->call('poll')->assertSet('reportsWorkId', null)->assertSee('nicht möglich: Welcher Zeitraum?')->assertSee('Erneut versuchen')
             ->call('retryReport', 1);
+        $retry = WorkItem::query()->where('type', AppDesignerReportsWork::KEY)->latest('id')->first();
+        $this->assertNotSame($work->id, $retry->id);
         $this->fake->push($this->report('Anmeldungen je Kurs', 'kurse_anmeldungen', ['kurse_anmeldungen.kurs_id'], [['count', null]], 'table'));
-        $this->assertFalse($page->instance()->createNextReport());
+        $this->assertSame(WorkItem::DONE, $runner->advance($retry, 30)->status);
         $this->assertSame([DraftReports::CREATED, DraftReports::CREATED], array_column($draft->refresh()->reports, 'status'));
         $this->assertSame(2, Report::query()->where('app_id', $draft->app_id)->count());
     }
@@ -355,13 +408,13 @@ class AppDesignerTest extends DynamicDataTestCase
     public function test_proposed_reports_can_be_deselected_one_by_one(): void
     {
         $this->fake->push($this->courses());
-        Livewire::test(AppDesignerPage::class)->set('prompt', 'Kursverwaltung')->call('send')
+        $page = $this->finish(Livewire::test(AppDesignerPage::class)->set('prompt', 'Kursverwaltung')->call('send'))
             ->mountAction('createApp')
             // Nur die zweite Auswertung anlegen.
             ->setActionData(['reports' => [1]])
             ->callMountedAction()
-            ->assertHasNoActionErrors()
-            ->assertNoRedirect();
+            ->assertHasNoActionErrors();
+        $this->finishCreation($page)->assertNoRedirect();
 
         $this->assertSame(['Anmeldungen je Kurs'], array_column(AppDraft::query()->sole()->reports, 'title'));
     }
@@ -414,10 +467,11 @@ class AppDesignerTest extends DynamicDataTestCase
         foreach (range(1, 5) as $i) {
             $this->fake->push($this->translation());
         }
-        $app = $designer->create($this->admin, $draft);
+        $item = $this->createApp($draft);
+        $app = App::query()->findOrFail((int) $item->result['app_id']);
         $translations = array_slice($this->fake->requests, 1);
         $this->assertGreaterThan(1, count($translations), 'Mehrere Teile.');
-        $this->assertNull($designer->translationWarning);
+        $this->assertNull($item->result['warning']);
 
         $courses = CustomTable::query()->where('name', 'kurse_kurse')->sole();
         $this->assertSame(['Kurse', 'EN Kurse', 'IT Kurse'], [$courses->getTranslation('label', 'de'), $courses->getTranslation('label', 'en'), $courses->getTranslation('label', 'it')]);
@@ -435,9 +489,10 @@ class AppDesignerTest extends DynamicDataTestCase
 
         // Zweimal unvollständig: kein weiterer Versuch, die App entsteht trotzdem.
         $this->fake->push(['translations' => []])->push(['translations' => []]);
-        $app = $designer->create($this->admin, $draft);
+        $item = $this->createApp($draft);
+        $app = App::query()->findOrFail((int) $item->result['app_id']);
 
-        $this->assertStringStartsWith('Die Bezeichnungen konnten nicht übersetzt werden', (string) $designer->translationWarning);
+        $this->assertStringStartsWith('Die Bezeichnungen konnten nicht übersetzt werden', (string) $item->result['warning']);
         $this->assertTrue($app->is_active);
         $this->assertSame('Kurse', CustomTable::query()->where('name', 'kurse_kurse')->sole()->getTranslation('label', 'en'), 'Ohne Übersetzung gilt die Vorgabesprache.');
     }

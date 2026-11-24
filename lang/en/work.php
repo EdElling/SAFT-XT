@@ -18,6 +18,9 @@ return [
         'documents' => 'Create documents',
         'record_import' => 'Import data',
         'snapshot_refresh' => 'Take snapshot',
+        'app_designer_turn' => 'Design app',
+        'app_designer_create' => 'Create app',
+        'app_designer_reports' => 'Create the app’s reports',
     ],
     'export' => [
         'done' => '1 row exported.|:count rows exported.',
