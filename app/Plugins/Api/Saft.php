@@ -6,6 +6,7 @@ namespace App\Plugins\Api;
 
 use App\Apps\CurrentApp;
 use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteContext;
 use App\DynamicData\Write\WriteOptions;
 use App\Filament\Resources\WorkItems\WorkItemResource;
 use App\Models\CustomTable;
@@ -72,6 +73,18 @@ final class Saft
     public static function transaction(Closure $callback): mixed
     {
         return app(RecordWriter::class)->batch($callback, WriteOptions::plugin());
+    }
+
+    /**
+     * Wirkung nach aussen (E-Mail, Aufruf eines Dienstes) erst nach dem Commit des laufenden Schreibvorgangs – etwa aus
+     * einem RecordSaved-Listener oder innerhalb von Saft::transaction() (seit API 1.10). Wird die Änderung
+     * zurückgerollt, läuft der Callback nicht; ohne laufenden Schreibvorgang läuft er sofort.
+     *
+     * @param  Closure(): void  $callback
+     */
+    public static function afterCommit(Closure $callback): void
+    {
+        WriteContext::afterCommit($callback);
     }
 
     /**

@@ -12,6 +12,7 @@ use Closure;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Support\ActivityLogStatus;
+use Throwable;
 
 /**
  * Der einzige Schreibweg für Datensätze des Table-Designers und beschreibbarer angebundener Tabellen (Fundament 2, F1).
@@ -155,11 +156,22 @@ final class RecordWriter
         $options ??= WriteOptions::defaults();
         $main = DB::connection();
 
-        return WriteContext::run($options, static fn (): mixed => $main->transaction(
-            static fn (): mixed => $data->getName() === $main->getName()
-                ? $work($options)
-                : $data->transaction(static fn (): mixed => $work($options)),
-        ));
+        try {
+            $result = WriteContext::run($options, static fn (): mixed => $main->transaction(
+                static fn (): mixed => $data->getName() === $main->getName()
+                    ? $work($options)
+                    : $data->transaction(static fn (): mixed => $work($options)),
+            ));
+        } catch (Throwable $e) {
+            WriteContext::discardAfterCommit();
+
+            throw $e;
+        }
+
+        // Beide Verbindungen sind committet: jetzt die Wirkungen nach aussen (WriteContext::afterCommit()).
+        WriteContext::flushAfterCommit();
+
+        return $result;
     }
 
     /** Der eigentliche Eloquent-Schreibvorgang; bei log: false ohne Eintrag im Änderungsprotokoll. */

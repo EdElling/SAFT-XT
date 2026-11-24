@@ -61,7 +61,8 @@ independent of SAFT – currently **1.10**. Guaranteed are the classes `App\Plug
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, all classes under `App\Plugins\Api` (except
 `ApiManifest`), the test base `App\Plugins\Testing\PluginTestCase`, for kinds of scheduled tasks
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` and `App\Tasks\TaskSkipped`, for kinds of jobs `App\Work\WorkType`,
-`App\Work\WorkPlan`, `App\Work\WorkStep`, `App\Work\StepOutcome` and `App\Work\WritesRecords`, and the trait
+`App\Work\WorkPlan`, `App\Work\WorkStep`, `App\Work\StepOutcome`, `App\Work\WritesRecords`, `App\Work\CleansUp` and
+`App\Work\LongSteps`, and the trait
 `App\Filament\Concerns\LimitsFormWidth`; of `App\Models\DynamicRecord` (records) and
 `App\Models\User` only the class as a type with its Eloquent behaviour. Everything stays compatible within an API major
 version. All other SAFT classes are internal – plugins do not use them (a test checks this). Details:
@@ -426,6 +427,7 @@ Saft::transaction(function (): void { /* several changes: all or nothing */ });
 | `->withoutAuthorization()` | copy without permission checks, for background work |
 | `Saft::transaction(fn …)` | several changes as one unit. Each single change (`create`, `update`, `delete`) is already a transaction of its own across the record, totals in master records, files and the activity log (since API 1.10) |
 | `Saft::startWork($kind, $parameters)` | Start a [job](#a8-scheduled-tasks) (since API 1.10) as the signed-in person in their current app; returns the address of the job with its progress |
+| `Saft::afterCommit($callback)` | An outward effect (e-mail, call to a service) only after the running write has been committed (since API 1.10) – from a `RecordSaved` listener or inside `Saft::transaction()`; it does not run after a rollback, and runs at once when no write is in progress |
 | `Saft::notify($person, $notification)` | notification in the bell (see below) |
 
 **Permissions:** every method checks the data permissions of the signed-in person and otherwise throws an
@@ -938,7 +940,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 | API | SAFT | Changes |
 |---|---|---|
-| **1.10** | 0.6.0 | Every change through `DataTable` (also `$record->save()` on a record) runs in its own transaction across data and activity log; `RecordSaved` and `RecordDeleted` run **inside** that transaction – if a listener throws there, the triggering change is rolled back (previously only described that way in the documentation). `Saft::transaction()` and `DataTable::transaction()` combine several changes into one transaction (unchanged). Optimistic locking: `DataTable::version()`, `update()` with `$expectedVersion`, `StaleRecordException`. Kinds of jobs: `SaftPlugin::workTypes()`, `Saft::startWork()`, `WorkType`, `WorkPlan`, `WorkStep`, `StepOutcome`, `WritesRecords`. New: `DynamicRecord::definition()` (internal, not part of the contract) |
+| **1.10** | 0.6.0 | Every change through `DataTable` (also `$record->save()` on a record) runs in its own transaction across data and activity log; `RecordSaved` and `RecordDeleted` run **inside** that transaction – if a listener throws there, the triggering change is rolled back (previously only described that way in the documentation). `Saft::transaction()` and `DataTable::transaction()` combine several changes into one transaction (unchanged). Optimistic locking: `DataTable::version()`, `update()` with `$expectedVersion`, `StaleRecordException`. Kinds of jobs: `SaftPlugin::workTypes()`, `Saft::startWork()`, `WorkType`, `WorkPlan`, `WorkStep`, `StepOutcome`, `WritesRecords`, `CleansUp` (clean up on failure or cancellation), `LongSteps` (indivisible long steps such as AI requests). `Saft::afterCommit()` for outward effects only after the commit. New: `DynamicRecord::definition()` (internal, not part of the contract) |
 | **1.9** | 0.5.0 | `DataTable::url()` – address of the data view with a selected record, e.g. for links from a timetable |
 | **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` and `detachFile()` plus `StoredFile` – read, attach (with the form's checks) and remove files of fields of type “File” |
 | **1.7** | 0.1 | `MenuSuggestion` with optional `subgroup` – menu suggestion into a submenu of the group (third level) |
@@ -1969,6 +1971,16 @@ final class InventoryCountWork implements WorkType
     }
 }
 ```
+
+**Cleaning up, long steps, outward effects:** If a cancelled or failed job leaves something behind that should not
+stay (half-created records, an intermediate table), the kind also implements `CleansUp`: SAFT calls
+`abort($parameters, $state, $status)` with the last saved state before the job ends – also when a waiting job is
+cancelled, then with an empty state. Result files in the job's folder are removed by SAFT itself. If a step cannot be
+split and takes longer than a few seconds (a request to the AI), the kind implements `LongSteps` and names the maximum
+duration in `stepSeconds()`: SAFT raises PHP's time limit for it, runs exactly one such step per call and leaves it to the
+scheduler when the time limit cannot be raised in the browser. Whatever a step does outwardly (e-mail, call to a
+service) belongs in `Saft::afterCommit(fn () => …)`: in a writing kind (`WritesRecords`) it runs only once the block has
+been saved – a rolled-back block sends nothing.
 
 ### A.9 Shipping a manual
 

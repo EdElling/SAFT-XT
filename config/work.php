@@ -18,6 +18,10 @@ return [
     'browser_budget' => (int) env('WORK_BROWSER_BUDGET', 15),
     'scheduler_budget' => (int) env('WORK_SCHEDULER_BUDGET', 50),
 
+    // So lange arbeitet eine Aktion (Export, Dokumente, Datenstand …) direkt im Request an der eben gestarteten Arbeit
+    // mit, bevor sie auf die Seite der Arbeit weiterleitet; unter max_execution_time.
+    'inline_budget' => (int) env('WORK_INLINE_BUDGET', 10),
+
     // Der Scheduler übernimmt eine Arbeit, an der so viele Sekunden niemand mehr gearbeitet hat.
     'takeover_seconds' => (int) env('WORK_TAKEOVER_SECONDS', 30),
 

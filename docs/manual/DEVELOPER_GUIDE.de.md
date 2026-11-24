@@ -62,7 +62,8 @@ unabhängig von SAFT – derzeit **1.10**. Zugesichert sind die Klassen `App\Plu
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, alle Klassen unter `App\Plugins\Api` (ausser
 `ApiManifest`), die Test-Basis `App\Plugins\Testing\PluginTestCase`, für Arten geplanter Aufgaben
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` und `App\Tasks\TaskSkipped`, für Arten von Arbeiten `App\Work\WorkType`,
-`App\Work\WorkPlan`, `App\Work\WorkStep`, `App\Work\StepOutcome` und `App\Work\WritesRecords` sowie das Trait
+`App\Work\WorkPlan`, `App\Work\WorkStep`, `App\Work\StepOutcome`, `App\Work\WritesRecords`, `App\Work\CleansUp` und
+`App\Work\LongSteps` sowie das Trait
 `App\Filament\Concerns\LimitsFormWidth`; von `App\Models\DynamicRecord` (Datensätze) und
 `App\Models\User` nur die Klasse als Typ mit ihrem Eloquent-Verhalten. Innerhalb einer API-Major-Version bleibt alles
 kompatibel. Alle übrigen Klassen von SAFT sind intern – Plugins verwenden sie nicht (ein Test prüft das). Einzelheiten:
@@ -433,6 +434,7 @@ Saft::transaction(function (): void { /* mehrere Änderungen: alles oder nichts 
 | `->withoutAuthorization()` | Kopie ohne Rechteprüfung, für Hintergrundarbeit |
 | `Saft::transaction(fn …)` | Mehrere Änderungen als Einheit. Jede einzelne Änderung (`create`, `update`, `delete`) ist für sich schon eine Transaktion über Datensatz, Summen in Master-Datensätzen, Dateien und Protokoll (seit API 1.10) |
 | `Saft::startWork($art, $parameter)` | Eine [Arbeit](#a8-geplante-aufgaben) starten (seit API 1.10), als angemeldete Person in ihrer aktuellen App; liefert die Adresse der Arbeit mit Fortschritt |
+| `Saft::afterCommit($callback)` | Wirkung nach aussen (E-Mail, Aufruf eines Dienstes) erst nach dem Commit des laufenden Schreibvorgangs (seit API 1.10) – aus einem `RecordSaved`-Listener oder innerhalb von `Saft::transaction()`; nach einem Rollback läuft sie nicht, ohne Schreibvorgang sofort |
 | `Saft::notify($person, $meldung)` | Benachrichtigung in die Glocke (siehe unten) |
 
 **Rechte:** Jede Methode prüft die Datenrechte der angemeldeten Person und wirft sonst eine
@@ -954,7 +956,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 | API | SAFT | Änderungen |
 |---|---|---|
-| **1.10** | 0.6.0 | Jede Änderung über `DataTable` (auch `$record->save()` auf einem Datensatz) läuft in einer eigenen Transaktion über Daten und Protokoll; `RecordSaved` und `RecordDeleted` laufen **innerhalb** dieser Transaktion – wirft ein Listener dort, wird die auslösende Änderung zurückgerollt (bisher nur in der Dokumentation so beschrieben). `Saft::transaction()` und `DataTable::transaction()` fassen mehrere Änderungen in einer Transaktion zusammen (unverändert). Optimistische Sperre: `DataTable::version()`, `update()` mit `$expectedVersion`, `StaleRecordException`. Arten von Arbeiten: `SaftPlugin::workTypes()`, `Saft::startWork()`, `WorkType`, `WorkPlan`, `WorkStep`, `StepOutcome`, `WritesRecords`. Neu: `DynamicRecord::definition()` (intern, kein Vertrag) |
+| **1.10** | 0.6.0 | Jede Änderung über `DataTable` (auch `$record->save()` auf einem Datensatz) läuft in einer eigenen Transaktion über Daten und Protokoll; `RecordSaved` und `RecordDeleted` laufen **innerhalb** dieser Transaktion – wirft ein Listener dort, wird die auslösende Änderung zurückgerollt (bisher nur in der Dokumentation so beschrieben). `Saft::transaction()` und `DataTable::transaction()` fassen mehrere Änderungen in einer Transaktion zusammen (unverändert). Optimistische Sperre: `DataTable::version()`, `update()` mit `$expectedVersion`, `StaleRecordException`. Arten von Arbeiten: `SaftPlugin::workTypes()`, `Saft::startWork()`, `WorkType`, `WorkPlan`, `WorkStep`, `StepOutcome`, `WritesRecords`, `CleansUp` (aufräumen bei Fehlschlag oder Abbruch), `LongSteps` (unteilbare lange Schritte, etwa KI-Anfragen). `Saft::afterCommit()` für Wirkungen nach aussen erst nach dem Commit. Neu: `DynamicRecord::definition()` (intern, kein Vertrag) |
 | **1.9** | 0.5.0 | `DataTable::url()` – Adresse der Datenansicht mit ausgewähltem Datensatz, z. B. für Links aus einem Stundenplan |
 | **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` und `detachFile()` sowie `StoredFile` – Dateien aus Feldern vom Typ „Datei“ lesen, anhängen (mit den Prüfungen des Formulars) und entfernen |
 | **1.7** | 0.1 | `MenuSuggestion` mit optionalem `subgroup` – Menüvorschlag in ein Untermenü der Gruppe (dritte Ebene) |
@@ -1997,6 +1999,17 @@ final class InventoryCountWork implements WorkType
     }
 }
 ```
+
+**Aufräumen, lange Schritte, Wirkungen nach aussen:** Hinterlässt eine abgebrochene oder fehlgeschlagene Arbeit etwas,
+das nicht bleiben soll (halb angelegte Datensätze, eine Zwischentabelle), setzt die Art zusätzlich `CleansUp` um: SAFT
+ruft `abort($parameter, $zustand, $status)` mit dem letzten gespeicherten Zustand, bevor die Arbeit endet – auch beim
+Abbruch einer wartenden Arbeit, dann mit leerem Zustand. Ergebnisdateien im Ordner der Arbeit räumt SAFT selbst weg.
+Lässt sich ein Schritt nicht teilen und dauert er länger als einige Sekunden (eine Anfrage an die KI), setzt die Art
+`LongSteps` um und nennt in `stepSeconds()` die Höchstdauer: SAFT hebt das Zeitlimit von PHP dafür an, führt je Aufruf
+genau einen solchen Schritt aus und überlässt ihn dem Scheduler, wenn sich das Zeitlimit im Browser nicht anheben lässt.
+Was ein Schritt nach aussen wirkt (E-Mail, Aufruf eines Dienstes), gehört in `Saft::afterCommit(fn () => …)`: Bei einer
+schreibenden Art (`WritesRecords`) läuft es erst, wenn der Block gespeichert ist – ein zurückgerollter Block verschickt
+nichts.
 
 ### A.9 Handbuch mitliefern
 

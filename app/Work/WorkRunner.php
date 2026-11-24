@@ -30,6 +30,10 @@ use Throwable;
  * Abgebrochene Prozesse: Vor jedem Schritt wird „stalls“ erhöht und gespeichert, nach dem Schritt zurückgesetzt. Endet
  * ein Prozess mitten im Schritt, bleibt der Zähler stehen; ab work.max_stalls gilt die Arbeit als fehlgeschlagen,
  * damit ein Schritt, der PHP jedes Mal abbricht, nicht endlos wiederholt wird.
+ *
+ * Lange Schritte (LongSteps, F3b): Zeitlimit und Sperre werden auf stepSeconds() angehoben; der Browser-Treiber lässt
+ * einen solchen Schritt aus, wenn sich das Zeitlimit nicht anheben lässt – dann übernimmt der Scheduler. Arten mit
+ * CleansUp räumen vor dem Abschluss als „fehlgeschlagen“ oder „abgebrochen“ hinter sich auf.
  */
 final readonly class WorkRunner
 {
@@ -39,6 +43,7 @@ final readonly class WorkRunner
         private RecordWriter $writer,
         private RoleSimulation $simulation,
         private WorkNotifier $notifier,
+        private TimeLimit $timeLimit,
     ) {}
 
     public static function lockKey(WorkItem $item): string
@@ -52,7 +57,7 @@ final readonly class WorkRunner
      */
     public function advance(WorkItem $item, float $budgetSeconds, bool $interactive = false): WorkItem
     {
-        $lock = Cache::lock(self::lockKey($item), (int) ceil($budgetSeconds) + 120);
+        $lock = Cache::lock(self::lockKey($item), (int) ceil($budgetSeconds) + 120 + $this->longStepSeconds($item));
 
         if (! $lock->get()) {
             return $item->refresh();
@@ -67,7 +72,7 @@ final readonly class WorkRunner
 
             $deadline = microtime(true) + $budgetSeconds;
 
-            $this->within($item, fn () => $this->steps($item, $deadline));
+            $this->within($item, fn () => $this->steps($item, $deadline, $interactive));
 
             if (! $interactive && ! $item->isOpen()) {
                 $this->notifier->concluded($item);
@@ -79,7 +84,7 @@ final readonly class WorkRunner
         }
     }
 
-    private function steps(WorkItem $item, float $deadline): void
+    private function steps(WorkItem $item, float $deadline, bool $interactive): void
     {
         try {
             if ($item->cancel_requested_at !== null) {
@@ -109,6 +114,12 @@ final readonly class WorkRunner
             }
 
             do {
+                // Ein langer Schritt braucht mehr Zeit, als der Treiber hat: Limit anheben; geht das im Browser nicht,
+                // bleibt der Schritt dem Scheduler (der nach takeover_seconds übernimmt, weil der Heartbeat ausbleibt).
+                if ($type instanceof LongSteps && ! $this->timeLimit->extend(max(1, $type->stepSeconds()) + 30) && $interactive) {
+                    return;
+                }
+
                 $item->forceFill(['stalls' => $item->stalls + 1, 'heartbeat_at' => now()])->save();
                 $step = new WorkStep($item->parameterValues(), (array) ($item->state ?? []), $deadline, $item->directory());
                 $outcome = $type instanceof WritesRecords
@@ -125,6 +136,11 @@ final readonly class WorkRunner
                 if (WorkItem::query()->whereKey($item->id)->whereNotNull('cancel_requested_at')->exists()) {
                     $this->finish($item, WorkItem::CANCELLED, __('work.cancelled'));
 
+                    return;
+                }
+
+                // Ein langer Schritt je Aufruf: Zeitlimit und Sperre sind für genau einen bemessen.
+                if ($type instanceof LongSteps) {
                     return;
                 }
             } while (microtime(true) < $deadline);
@@ -171,6 +187,10 @@ final readonly class WorkRunner
      */
     public function finish(WorkItem $item, string $status, string $message, array $result = [], ?array $errorDetail = null): void
     {
+        if (in_array($status, [WorkItem::FAILED, WorkItem::CANCELLED], true)) {
+            $this->cleanUp($item, $status);
+        }
+
         $item->forceFill([
             'status' => $status,
             'message' => $message,
@@ -188,6 +208,35 @@ final readonly class WorkRunner
         if ($status !== WorkItem::DONE) {
             Storage::disk('local')->deleteDirectory($item->directory());
         }
+    }
+
+    /**
+     * Arten mit CleansUp räumen mit dem letzten gespeicherten Zustand auf. Ein Fehler dabei hält den Abschluss nicht
+     * auf, er steht nur im Protokoll.
+     */
+    private function cleanUp(WorkItem $item, string $status): void
+    {
+        $registry = app(WorkRegistry::class);
+        $type = $registry->has($item->type) ? $registry->get($item->type) : null;
+
+        if (! $type instanceof CleansUp) {
+            return;
+        }
+
+        try {
+            $this->within($item, fn () => $type->abort($item->parameterValues(), (array) ($item->state ?? []), $status));
+        } catch (Throwable $e) {
+            Log::warning('Aufräumen einer Arbeit fehlgeschlagen', ['work' => $item->uuid, 'type' => $item->type, 'error' => $e->getMessage(), 'exception' => $e]);
+        }
+    }
+
+    /** Sekunden eines langen Schritts (LongSteps), sonst 0 – für die Dauer der Sperre. */
+    private function longStepSeconds(WorkItem $item): int
+    {
+        $registry = app(WorkRegistry::class);
+        $type = $registry->has($item->type) ? $registry->get($item->type) : null;
+
+        return $type instanceof LongSteps ? max(1, $type->stepSeconds()) + 30 : 0;
     }
 
     /**

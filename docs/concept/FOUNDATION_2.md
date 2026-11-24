@@ -1,6 +1,6 @@
 # Konzept: Fundament 2 (Schreibweg, Nebenläufigkeit, Hintergrundarbeit, Formelsprache, Qualitätssicherung)
 
-Stand: 23.11.2026 · Status: **F0, F1, F2, F4 (23.11.2026) und F3a (24.11.2026) umgesetzt, F3b und F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
+Stand: 23.11.2026 · Status: **F0, F1, F2, F4 (23.11.2026) und F3a (24.11.2026) umgesetzt, F3b geplant (§6.6, 24.11.2026), F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
 
 ## 1. Ziel
 
@@ -238,6 +238,104 @@ Fortschritt, Dauer, Ergebnis, Abbrechen. Aufräumen: System-Aufgabe „Arbeiten 
 - **Aufräumen** als System-Aufgabe `work_prune`, ab Werk aktiv und stündlich (die 24 h für Ergebnisse sollen auch
   eingehalten werden). Der Treiber Queue folgt mit F3b.
 
+### 6.6 F3b – Planung der Umstellung (Vorschlag 24.11.2026)
+
+**Ausgangslage im Code (nach F3a):** Sieben Stellen arbeiten noch synchron im Request und verlassen sich auf
+`set_time_limit`: `TableExporter::write()` (300 s, Grenze 50'000 Zeilen), `RecordImporter::import()` (Grenze 10'000
+Zeilen, alles im Speicher), `DocumentBatch::run()` (Grenze 50), `SnapshotService::refreshLocked()` (600 s, Grenze
+200'000, Cache-Sperre je Tabelle und `failHanging()` als eigener Hänger-Mechanismus), `Recalculator::recomputeTable()`
+aus dem Table-Designer (`DynamicSchemaService` nach Anlegen oder Ändern eines berechneten Felds),
+`AppDesigner::propose()`/`create()` (je 2 × 900 s + 60) und die Auswertungen des App-Designers als Schleife im Browser
+(`while (await $wire.createNextReport())`). Dazu kommt der noch fehlende Treiber Queue.
+
+**Grundsätze**
+
+1. **Eine Fassung je Arbeit.** Die Fachklasse bleibt die Logik (Zelle schreiben, Zeile prüfen, Dokument erzeugen,
+   Block kopieren); die Art (`App\Work\Types\*Work`) zerlegt sie in Blöcke und hält den Cursor. Es gibt danach keinen
+   synchronen Weg mehr daneben – Konsole und Aufgaben treiben dieselbe Arbeit bis zum Ende (`startAndDrive()`).
+2. **Starten und kurz mitarbeiten.** Neue Methode `WorkService::startAndAdvance($type, $parameters, $budget)`: legt
+   die Arbeit an und treibt sie sofort im laufenden Request voran (Vorgabe 10 s, unter `max_execution_time`). Ist sie
+   dann fertig, bekommt die Person das Ergebnis wie heute (Download, Meldung); sonst leitet die Aktion auf die Seite der
+   Arbeit weiter, wo ihr Browser weiterarbeitet und der Scheduler übernimmt. Kleine Mengen – der Normalfall – fühlen
+   sich damit nicht anders an als heute, und die bestehenden Browser-Tests bleiben weitgehend gültig.
+3. **Grenzen werden Schutz vor Versehen, nicht vor Zeitlimits.** Sie bleiben konfigurierbar, aber grosszügig
+   (Tabelle unten); `0` heisst ohne Grenze.
+4. **Zwei optionale Schnittstellen** neben `WritesRecords` (Plugin-API 1.10 ist noch unveröffentlicht, deshalb kein
+   1.11): `CleansUp` mit `abort(array $parameters, array $state, string $status): void` – der Runner ruft sie vor dem
+   Abschluss als *fehlgeschlagen* oder *abgebrochen*, auch beim sofortigen Abbruch aus `WorkService::cancel()`, als
+   startende Person (Datenstand-Zeilen entfernen, importierte Datensätze zurücknehmen). `LongSteps` mit
+   `stepSeconds(): int` für Schritte, die sich nicht teilen lassen (eine KI-Anfrage): der Runner hebt `set_time_limit`
+   und die Dauer der Sperre auf diesen Wert; der Browser-Treiber führt einen solchen Schritt nur aus, wenn
+   `set_time_limit()` wahr liefert (sonst Scheduler oder Queue); der Queue-Job setzt sein `timeout` darauf.
+5. **Wirkungen nach aussen erst nach dem Commit.** `WriteContext::afterCommit(Closure)`: läuft nach dem Commit der
+   Hauptverbindung, ohne offene Transaktion sofort. Erster Nutzer ist der E-Mail-Versand der Dokumente innerhalb eines
+   schreibenden Schritts (ein zurückgerollter Block darf keine Mails hinterlassen). Das ist der in §4.2 Schritt 6
+   angekündigte Mechanismus; B-060 und B-142 bauen darauf.
+
+**Die Arten im Einzelnen**
+
+| Art | Parameter | Schritte und Cursor | Ergebnis | Aufrufer | Grenze neu |
+|---|---|---|---|---|---|
+| `export` | Tabelle, Felder, Format, Titel, **serialisierte Abfrage**, Filter und Suche (fürs Protokoll) | `prepare()`: zählen. Schritt: Block von 1'000 Zeilen ab letzter ID, an die Datei anhängen. CSV: Zeilen anhängen. **XLSX: eigener anhängbarer Blattschreiber** (`XlsxStreamWriter`): Zeilen als XML-Fragment in `sheet.xml`, Texte als `inlineStr` (damit keine Formelausführung), Zahl-, Datums- und Fettstile aus `prepare()`; der letzte Schritt packt das Paket mit `ZipArchive`. Tabellen ohne eindeutigen Schlüssel wie heute in einem Durchgang (ein Schritt, nicht wiederaufnehmbar). Protokoll `exported` am Ende. | `export.xlsx`/`.csv`, 24 h | `DynamicRecordActions::exportAs()` → `startAndAdvance`; fertig → `streamDownload` aus dem Arbeitsordner (Datei bleibt dort), sonst Weiterleitung | `export_max_rows` 50'000 → **500'000** (Frage 6) |
+| `record_import` (`WritesRecords`, `CleansUp`) | Tabelle, Dateiname; die hochgeladene Datei wird beim Start in den Arbeitsordner kopiert | **Phase „prüfen“:** Blöcke von Zeilen ab Zeilennummer; Werte wandeln und prüfen wie heute (`value()`, `RecordChecker`); Eindeutigkeit innerhalb der Datei über `unique.json` im Arbeitsordner; bis 50 Meldungen im Zustand, Fehler zählen. Fehler → Arbeit fehlgeschlagen mit der Liste. **Phase „einspielen“:** Datei erneut lesen, bis zum Cursor überspringen, Datensätze über den Writer anlegen (`WriteOptions::import()`), bis das Budget aufgebraucht ist; angelegte IDs in `created.json`. `abort()` löscht sie endgültig – **alles oder nichts ohne lange Transaktion und ohne Staging** (Frage 3). Sammeleintrag `imported` am Ende. | Zahl der Datensätze | Assistent bleibt zweistufig: Schritt 1 prüft synchron vollständig bis 2'000 Zeilen (wie heute), darüber nur Spaltenzuordnung und Zeilenzahl mit dem Hinweis, dass vollständig im Hintergrund geprüft wird; Bestätigen → `startAndAdvance` | `max_record_rows` 10'000 → **100'000** (Datei bleibt 20 MB) |
+| `documents` (`WritesRecords`) | Vorlage, IDs der gewählten Datensätze, Optionen (ablegen, PDF/ZIP, senden, Kopie, Dokumentformat) | Schritt: Datensätze einzeln bis Budget, je Datensatz wie heute (`DocumentGenerator::generate()`, ablegen, Notizen); PDF je Dokument als Datei `0001.pdf` im Arbeitsordner; Zähler und Notizen (bis 50) im Zustand; E-Mail über `afterCommit`. Letzter Schritt: `PdfMerger` oder ZIP. `DocumentBatch::run()` wird zu `one()` und `assemble()`, die Schleife wandert in die Art. | `Vorlage-Datum.pdf`/`.zip`, Meldung mit erzeugt/abgelegt/gesendet und Notizen | `documentBulk` → `startAndAdvance`; fertig → Download und Meldung wie heute, sonst Weiterleitung | `documents.batch_max` 50 → **0 (ohne)**; Hinweis: das Zusammenführen zu einem PDF hält alle Seiten im Speicher, für sehr grosse Läufe ZIP |
+| `snapshot_refresh` (`CleansUp`) | Tabelle | `prepare()`: `DataSnapshot` *läuft* anlegen, Kopie anlegen oder ergänzen (`ensureTable`), zählen. Schritt: Block von 1'000 Zeilen aus der Quelle, Cursor = Schlüsselwerte der letzten Zeile (Keyset über die Schlüsselspalten, bei mehreren über verschachtelte `where`, portabel); ohne Schlüssel ein Durchgang wie heute. Ende: *vollständig*, Protokoll, `prune()`. `abort()`: Zeilen entfernen, Stand *fehlgeschlagen*. **Entfallen:** Cache-Sperre `snapshots:table:*` (eine offene Arbeit derselben Tabelle gilt als *beschäftigt*) und `failHanging()` (Hänger erkennt der Runner über `stalls`). Neue Spalte `data_snapshots.work_item_id` (Migration 100) verknüpft Reiter und Arbeit. | Zeilen | Reiter „Datenstände“ → `startAndAdvance(5 s)`, danach Meldung mit Link, falls noch offen. Auswertungs-Designer (Dialog „veralteter Datenstand“) → `startAndAdvance`; bleibt die Arbeit offen, Hinweis statt Auswertung. Aufgaben `snapshot_refresh` und `snapshot_connection_refresh` → `startAndDrive()`; der Lauf nennt die Arbeit | `snapshot_max_rows` 200'000 → **1'000'000** |
+| `recompute` (vorhanden) | Tabellen | unverändert | | `DynamicSchemaService` nach Anlegen oder Ändern eines berechneten Felds → `startAndAdvance(5 s)`; bleibt die Arbeit offen, Meldung „Berechnete Felder werden neu berechnet“ mit Link. `computed:recompute` unverändert | – |
+| `app_designer_turn` (`LongSteps`) | Entwurf, Text | **Ein Schritt** = `AppDesigner::propose()` (bis zu zwei KI-Anfragen; `stepSeconds()` = 2 × `ai.designer_timeout` + 60, `set_time_limit` wandert aus `propose()` in den Runner). Gesprächsstand steht wie heute im Entwurf, der Zustand bleibt leer. | Meldung (Frage, Fehler) | Seite `send()` startet die Arbeit, zeigt „Die KI arbeitet …“ und fragt alle 2 s nach (Browser treibt, wenn `set_time_limit` greift – wie heute, aber die Seite blockiert nicht mehr); nach Abschluss Nachrichten neu laden, Fehler aus `message` | – |
+| `app_designer_create` (`LongSteps`) | Entwurf, Name, Präfix, Auswertungen | Schritt 1: übersetzen (KI, `DefinitionTranslator`). Schritt 2: anlegen (`AppInstaller`, Fachrolle, App wechseln) und Auswertungen vormerken. | App | Aktion „App anlegen“ startet die Arbeit; die Seite leitet nach Abschluss ins Dashboard der App | – |
+| `app_designer_reports` (`LongSteps`) | Entwurf | Je Schritt eine Auswertung (`DraftReports::next()`), Cursor = Index; Status je Auswertung weiter im Entwurf. **Ersetzt** die Schleife `createNextReport()` im Browser. „Wiederholen“ setzt den Status zurück und startet eine neue Arbeit. | Zahl der Auswertungen | Seite fragt die Arbeit ab und zeigt die Liste wie heute | – |
+
+Serialisierte Abfrage (Export): `anourvalar/eloquent-serialize` ist über Filament schon installiert und wird in
+`composer.json` ausdrücklich aufgenommen. Die Aktion serialisiert `getFilteredSortedTableQuery()`; der Schritt hängt den
+entpackten Grundbauplan (`getQuery()`, mit Filtern, Suche, Sortierung und den Unterabfragen der Anzeigefelder) an
+`DynamicRecord::forTable($table)->newQuery()->withoutGlobalScopes()->setQuery(…)`, damit Casts und Definition der
+Tabelle gelten. Das ist in der Umsetzung zuerst zu prüfen (Test: Filter, Suche, Sortierung, Detailtabelle).
+
+**Treiber Queue**
+
+- Job `App\Jobs\AdvanceWork` (`ShouldQueue`, `ShouldBeUnique` je Arbeit): ruft `advance()` mit `work.queue_budget`
+  (50 s) und reiht sich erneut ein, solange die Arbeit offen ist; `timeout` = Budget bzw. `stepSeconds()` + 30. Fehler
+  behandelt der Runner, der Job meldet keinen.
+- Aktiv nur mit **`WORK_DRIVER=queue`** (`work.driver`: `auto` | `queue`); auf der `sync`-Verbindung nie (sonst liefe
+  die ganze Arbeit im Request). Dann dispatcht `WorkService::start()` den Job, `WorkProgress` zeigt nur noch an, und
+  der Scheduler bleibt Rückfallebene: steht der Worker, übernimmt `work:run` nach `takeover_seconds` wie bisher.
+- Sysadmin-Handbuch: Abschnitt „Mit Queue-Worker“ (`php artisan queue:work --max-time=3600` als systemd-Dienst oder
+  unter Supervisor; `QUEUE_CONNECTION=database`, Tabelle `jobs` ist vorhanden). Tests mit `Queue::fake()` und einem
+  von Hand ausgeführten Job.
+
+**Nicht umgestellt (mit Grund):** Tabellen-Import aus Datei (`DataImporter`: legt Schema an, DDL), Massenverknüpfung
+(`BulkConnectTables`: DDL je Tabelle, eigene Portionen über `wire:poll`), geplante Aufgaben (`TaskRunner`), App
+entfernen, Datensatz kopieren (Grenze 1'000 in einer Transaktion), Konfigurations- und App-Export, Export von
+Auswertungen (`reports.max_rows` 5'000; zusammen mit B-138 anschauen), Sicherung je App (B-141 ist noch Konzept).
+
+**Entscheidungen, die dieser Vorschlag trifft**
+
+1. XLSX über einen eigenen anhängbaren Blattschreiber (vollständig wiederaufnehmbar) statt Zwischendatei plus
+   OpenSpout in einem langen Schlussschritt. OpenSpout bleibt für Lesen, Vorlagen und Importe.
+2. `startAndAdvance` mit 10 s im Request, Weiterleitung nur, wenn die Arbeit danach noch offen ist.
+3. Grenzen: Export 500'000, Datenimport 100'000, Dokumente ohne Grenze, Datenstände 1'000'000 (alle weiter über
+   `.env`, `0` = ohne).
+4. Import-Assistent: synchrone Vollprüfung bis 2'000 Zeilen, darüber Prüfung im Hintergrund; der Bestätigungsschritt
+   bleibt.
+5. Lange Schritte (KI) treibt auch der Browser, wenn `set_time_limit` greift; sonst Scheduler oder Queue.
+6. Queue ausdrücklich über `WORK_DRIVER=queue`, keine Erkennung eines Workers.
+
+**Teilschritte, je einer mit eigenem Commit nach grünen Tests**
+
+| Nr. | Inhalt | Tests |
+|---|---|---|
+| 1 | **Umgesetzt 24.11.2026:** `startAndAdvance()`/`startAndDrive()`, `CleansUp`, `LongSteps` (genau ein langer Schritt je Aufruf; `TimeLimit` kapselt `set_time_limit`), `WriteContext::afterCommit()` und `Saft::afterCommit()`, `ApiManifest`/`plugin-api.json`, Entwicklerhandbuch | `WorkRunnerTest`, `RecordWriterTest` erweitert |
+| 2 | Export mit `XlsxStreamWriter`, serialisierte Abfrage; Nachberechnung aus dem Table-Designer als Arbeit | `TableExportTest`, `TableDesignerTest`; XLSX mit OpenSpout-Reader zurücklesen (Zahlen, Daten, Texte mit `=`), auf drei Datenbanken über die CI |
+| 3 | Dokumente | `DocumentBatchTest`, `DocumentMailTest` (afterCommit) |
+| 4 | Datenimport mit Rücknahme | `RecordImportTest`, `PluginApiTest` (Ablehnung → Rücknahme) |
+| 5 | Datenstände samt Aufgaben, Migration 100 | `SnapshotTest`, `SnapshotTasksTest`, `ReportLinksTest` |
+| 6 | KI-App-Designer: Runde, Anlegen, Auswertungen | `AppDesignerTest` (KI gefälscht) |
+| 7 | Treiber Queue | neuer `AdvanceWorkJobTest` |
+| 8 | Handbücher in allen Fassungen (Anwender 4.x Export, Import, Dokumente; Admin Datenstände, Arbeiten, Dokumente; Sysadmin `.env`-Tabelle, §4, Queue; FAQ), Konzept §6.3/§10/§11, Backlog, Testliste | Browser-Tests der betroffenen Batches: `ExportTest`, `AppDesignerTest`, `ReportSnapshotsTest`; neue Fälle für die Seite „Arbeiten“ (aus F3a offen), EXP-09, IMP-09/10, PDF-12, TCO-27, FAP-20 bis FAP-22 nachführen |
+
+Jeder Teilschritt lässt sich für sich ausliefern; die Reihenfolge geht vom Einfachen (Export, nur lesen) zum
+Heiklen (Import mit Rücknahme, KI mit langen Schritten).
+
 ## 7. F4 – Formelsprache: Spezifikation und Konformität
 
 - **`docs/concept/FORMULA_SPEC.md`**: Typen (Zahl, Text, Wahrheitswert, Datum, leer), Leer-Regeln je Operator und
@@ -330,7 +428,7 @@ darauf statt auf Laravel-Boost-Boilerplate; `CLAUDE.md` wird auf PHP 8.4 und den
 | **F1 Schreibweg** | **Umgesetzt 23.11.2026:** `RecordWriter`, `WriteOptions`, `WriteContext`, `WritePhases`; zwei Transaktionen je Vorgang; Umstellung von Datenansicht, Import, Kopieren, Dokumenten, Nachführung, Demo-Reset und Plugin-API; Architekturtest 3; Plugin-API 1.10; Entwickler- und Admin-Handbuch | gross |
 | **F2 Nebenläufigkeit** | **Umgesetzt 23.11.2026:** `RecordVersion`, `StaleRecordException`, Prüfung mit `lockForUpdate()` im Writer, Meldung mit „Neu laden / Trotzdem speichern“ in Datenansicht und Detailtabelle, elf Edit-Seiten der Verwaltung, Plugin-API, Browser-Test EIN-18, Handbücher | mittel |
 | **F3a Arbeiten** | **Umgesetzt 24.11.2026:** `work_items`, `WorkType` (Plugin-API 1.10 mit `SaftPlugin::workTypes()` und `Saft::startWork()`), `WorkRunner` mit Treibern Browser (`WorkProgress`) und Scheduler (`work:run`), Seite „Arbeiten“ bzw. „Meine Arbeiten“, Download, Benachrichtigung, Aufräumen (`work_prune`, stündlich), Dashboard; Pilot `computed:recompute` als Arbeit. Entscheide in §6.5 | mittel |
-| **F3b Umstellung** | Export, Datenimport, Dokumente, Datenstände, Recompute, KI-App-Designer und seine Auswertungen auf Arbeiten; Treiber Queue; Grenzen anheben; Handbücher | gross |
+| **F3b Umstellung** | Export, Datenimport, Dokumente, Datenstände, Recompute, KI-App-Designer und seine Auswertungen auf Arbeiten; Treiber Queue; Grenzen anheben; Handbücher. **Planung in §6.6 (24.11.2026)**, acht Teilschritte | gross |
 | **F4 Formelsprache** | **Umgesetzt 23.11.2026:** `FORMULA_SPEC.md`, 75 Konformitätsfälle, `FormulaConformanceTest` auf drei Datenbanken (keine Abweichung gefunden), `FormulaSpecTest` gegen Drift | mittel |
 | **F5 Architektur** | `ARCHITECTURE.de.md`/`.md`, Lesestellen-Liste (Test 4), `AGENTS.md`, `CLAUDE.md` | klein |
 
@@ -359,13 +457,15 @@ die Browser-Suite läuft wie üblich vor dem Release auf drei Datenbanken.
    steht im Protokoll (`overwrote`).
 3. **Import grösser als ein Block:** eine Transaktion über alle Blöcke (kann auf MySQL lange Sperren halten) oder
    Staging-Tabelle mit Umhängen am Ende (mehr Aufwand, saubere Transaktion)? Vorschlag: eine Transaktion bis zur
-   heutigen Grenze von 10'000 Datensätzen, darüber Staging erst bei Bedarf.
+   heutigen Grenze von 10'000 Datensätzen, darüber Staging erst bei Bedarf. **Vorschlag F3b (§6.6):** weder noch – Blöcke
+   mit eigener Transaktion, angelegte IDs merken und bei Fehler oder Abbruch zurücknehmen.
 4. **Plugin-API Major-Version** nutzen, um `DynamicRecord` ganz aus der API zu nehmen (nur noch `DataTable` und ein
    schlankes `Record`-Objekt)? Jetzt wäre es billig; später nie mehr. Vorschlag: nein, der Typ ist nützlich für
    Eloquent-Abfragen; nur `save()` sperren.
 5. **Migrationen zusammenfassen** statt umbenennen (ein Satz `create_*`-Migrationen für 0.6.0)? Schneller bei Tests,
    aber drei Datenbanken und Daten-Migrationen (Menüs, Rechte) bergen Risiko. Vorschlag: nur umbenennen.
 6. **Export-Grenze** nach F3b ganz aufheben oder bei z. B. 500'000 Zeilen belassen (Speicherplatz unter `work/`)?
+   **Vorschlag F3b (§6.6):** 500'000 als Vorgabe, `0` = ohne Grenze.
 7. **Löschkonzept** (Aufbewahrung je Tabelle, Papierkorb-Frist, Anonymisierung): eigenes Backlog-Thema mit Konzept,
    oder als F6 anhängen? Vorschlag: eigenes Thema, weil fachliche Entscheidungen je App nötig sind.
 8. **Larastan-Level** 5 oder gleich 6 zum Start? Level 6 verlangt Array-Typen in allen PHPDocs; bei 67'000 Zeilen eine

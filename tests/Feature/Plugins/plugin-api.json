@@ -146,6 +146,7 @@
         ],
         "App\\Plugins\\Api\\Saft": [
             "class",
+            "static function afterCommit(Closure $callback): void",
             "static function hasTable(string $name): bool",
             "static function notify(App\\Models\\User $user, Filament\\Notifications\\Notification $notification): void",
             "static function plugin(string $id): App\\Plugins\\SaftPlugin",
@@ -240,6 +241,14 @@
             "abstract function label(): string",
             "abstract function parameterFields(): array",
             "abstract function run(array $parameters): App\\Tasks\\TaskResult"
+        ],
+        "App\\Work\\CleansUp": [
+            "interface",
+            "abstract function abort(array $parameters, array $state, string $status): void"
+        ],
+        "App\\Work\\LongSteps": [
+            "interface",
+            "abstract function stepSeconds(): int"
         ],
         "App\\Work\\StepOutcome": [
             "class",

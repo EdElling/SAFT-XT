@@ -7,12 +7,14 @@ namespace App\DynamicData\Write;
 use App\Models\DynamicRecord;
 use Closure;
 use SplObjectStorage;
+use Throwable;
 
 /**
  * Zustand des laufenden Schreibvorgangs je Prozess: die aktiven Optionen (verschachtelte Aufrufe erben sie, es gibt
  * nur eine Transaktion) und die Datensätze, die der Writer gerade in die Datenbank schreibt. Solange ein Datensatz
  * darin steht, führt DynamicRecord::save()/delete() den Eloquent-Schreibvorgang selbst aus; sonst leitet das Model
- * an den RecordWriter weiter.
+ * an den RecordWriter weiter. Dazu die Wirkungen nach aussen (afterCommit), die erst nach dem Commit des äussersten
+ * Schreibvorgangs laufen dürfen.
  */
 final class WriteContext
 {
@@ -24,6 +26,9 @@ final class WriteContext
 
     /** Ereignisse für Plugins vorübergehend aus (DynamicRecord::withoutPluginEvents()). */
     private static bool $pluginEventsMuted = false;
+
+    /** @var list<Closure(): void> Wirkungen nach aussen, die auf den Commit des äussersten Schreibvorgangs warten. */
+    private static array $afterCommit = [];
 
     public static function active(): bool
     {
@@ -80,6 +85,55 @@ final class WriteContext
         } finally {
             self::$performing->detach($record);
         }
+    }
+
+    /**
+     * Wirkung nach aussen (E-Mail, Webhook, Aufruf eines Dienstes) erst, wenn der äusserste Schreibvorgang committet
+     * ist (Fundament 2, F3b): Ein zurückgerollter Block darf keine Spuren hinterlassen. Ohne laufenden Schreibvorgang
+     * läuft der Callback sofort.
+     *
+     * @param  Closure(): void  $callback
+     */
+    public static function afterCommit(Closure $callback): void
+    {
+        if (! self::active()) {
+            $callback();
+
+            return;
+        }
+
+        self::$afterCommit[] = $callback;
+    }
+
+    /**
+     * Nach dem Commit: alle wartenden Wirkungen ausführen, auch wenn eine davon scheitert; der erste Fehler wird danach
+     * weitergereicht.
+     *
+     * @internal nur für den RecordWriter
+     */
+    public static function flushAfterCommit(): void
+    {
+        $callbacks = self::$afterCommit;
+        self::$afterCommit = [];
+        $first = null;
+
+        foreach ($callbacks as $callback) {
+            try {
+                $callback();
+            } catch (Throwable $e) {
+                $first ??= $e;
+            }
+        }
+
+        if ($first !== null) {
+            throw $first;
+        }
+    }
+
+    /** @internal nur für den RecordWriter: nach einem Rollback verfallen die wartenden Wirkungen. */
+    public static function discardAfterCommit(): void
+    {
+        self::$afterCommit = [];
     }
 
     public static function pluginEventsEnabled(): bool

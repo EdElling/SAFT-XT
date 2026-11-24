@@ -10,24 +10,32 @@ use App\Models\Activity;
 use App\Models\DynamicRecord;
 use App\Models\Role;
 use App\Models\WorkItem;
+use App\Work\TimeLimit;
 use App\Work\WorkRunner;
 use App\Work\WorkService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\DynamicData\DynamicDataTestCase;
+use Tests\Fixtures\Work\CleaningWork;
 use Tests\Fixtures\Work\CountingWork;
+use Tests\Fixtures\Work\LongWork;
 use Tests\Fixtures\Work\WritingWork;
 
-/** Arbeiten (Fundament 2, F3a): Runner, Sperre, Wiederaufnahme, Abbrechen, Fehler, Kontext, work:run. */
+/**
+ * Arbeiten (Fundament 2, F3a): Runner, Sperre, Wiederaufnahme, Abbrechen, Fehler, Kontext, work:run. F3b: lange
+ * Schritte, Aufräumen, Starten mit Mitarbeit im Request und bis zum Ende.
+ */
 class WorkRunnerTest extends DynamicDataTestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
         app()->setLocale('de');
-        config(['work.types' => [...(array) config('work.types'), CountingWork::class, WritingWork::class]]);
+        config(['work.types' => [...(array) config('work.types'), CountingWork::class, WritingWork::class, LongWork::class, CleaningWork::class]]);
         CountingWork::$steps = 0;
+        LongWork::$steps = 0;
+        CleaningWork::$aborts = [];
         Storage::fake('local');
     }
 
@@ -216,5 +224,85 @@ class WorkRunnerTest extends DynamicDataTestCase
         $this->travel(1)->minutes();
         $this->artisan('work:run')->assertSuccessful();
         $this->assertSame(2, $record->fresh()->doppelt);
+    }
+
+    public function test_long_steps_raise_the_time_limit_and_run_one_per_call(): void
+    {
+        $item = app(WorkService::class)->start(LongWork::KEY);
+
+        // Ein langer Schritt je Aufruf, obwohl das Budget grösser ist: nach ihm ist die Zeit des Treibers vorbei.
+        $item = $this->runner()->advance($item, 30);
+        $this->assertSame([WorkItem::RUNNING, 1, 1], [$item->status, $item->done, LongWork::$steps]);
+
+        $item = $this->runner()->advance($item, 30);
+        $this->assertSame([WorkItem::DONE, 2], [$item->status, LongWork::$steps]);
+        // Zeitlimit von PHP auf stepSeconds() + 30 angehoben (in der Konsole ohne Limit: bleibt 0).
+        $this->assertContains($item->result['time_limit'], [0, 1030]);
+    }
+
+    public function test_the_browser_leaves_long_steps_alone_when_the_time_limit_can_not_be_raised(): void
+    {
+        app()->instance(TimeLimit::class, new class extends TimeLimit
+        {
+            public function extend(int $seconds): bool
+            {
+                return false;
+            }
+        });
+
+        $item = app(WorkService::class)->start(LongWork::KEY);
+
+        // Browser (interactive): kein Schritt, kein Heartbeat – der Scheduler übernimmt.
+        $item = $this->runner()->advance($item, 30, interactive: true);
+        $this->assertSame([WorkItem::RUNNING, 0, 0], [$item->status, $item->done, LongWork::$steps]);
+
+        // Scheduler: läuft trotzdem.
+        $item = $this->runner()->advance($item, 30);
+        $this->assertSame([WorkItem::RUNNING, 1], [$item->status, LongWork::$steps]);
+    }
+
+    public function test_cleaning_work_aborts_on_failure_and_cancel_but_not_on_success(): void
+    {
+        $admin = $this->superAdmin();
+
+        $failed = $this->runner()->advance(app(WorkService::class)->start(CleaningWork::KEY, ['fail_in_step' => 2], $admin), 30);
+        $this->assertSame(WorkItem::FAILED, $failed->status);
+        $this->assertSame([['state' => ['step' => 1], 'status' => WorkItem::FAILED, 'user' => $admin->id]], CleaningWork::$aborts);
+        $this->assertNull(Auth::user());
+
+        // Sofortiger Abbruch ohne Treiber: aufräumen mit dem letzten Zustand.
+        CleaningWork::$aborts = [];
+        $idle = $this->runner()->advance(app(WorkService::class)->start(CleaningWork::KEY, [], $admin), 0);
+        $this->assertSame(WorkItem::CANCELLED, app(WorkService::class)->cancel($idle)->status);
+        $this->assertSame([['state' => ['step' => 1], 'status' => WorkItem::CANCELLED, 'user' => $admin->id]], CleaningWork::$aborts);
+
+        // Noch nie gelaufen: leerer Zustand.
+        CleaningWork::$aborts = [];
+        app(WorkService::class)->cancel(app(WorkService::class)->start(CleaningWork::KEY));
+        $this->assertSame([['state' => [], 'status' => WorkItem::CANCELLED, 'user' => null]], CleaningWork::$aborts);
+
+        // Erfolg: nichts aufzuräumen. Scheitert das Aufräumen, endet die Arbeit trotzdem.
+        CleaningWork::$aborts = [];
+        $this->assertSame(WorkItem::DONE, $this->runner()->advance(app(WorkService::class)->start(CleaningWork::KEY), 30)->status);
+        $this->assertSame([], CleaningWork::$aborts);
+        $item = $this->runner()->advance(app(WorkService::class)->start(CleaningWork::KEY, ['fail_in_step' => 1, 'fail_abort' => true]), 30);
+        $this->assertSame([WorkItem::FAILED, 1], [$item->status, count(CleaningWork::$aborts)]);
+    }
+
+    public function test_start_and_advance_finishes_small_work_in_the_request_and_leaves_large_work_open(): void
+    {
+        $admin = $this->superAdmin();
+
+        $small = app(WorkService::class)->startAndAdvance(CountingWork::KEY, ['total' => 6, 'per_step' => 3], $admin);
+        $this->assertSame([WorkItem::DONE, 'Gezählt bis 6'], [$small->status, $small->message]);
+        // Die Person war dabei: keine Benachrichtigung.
+        $this->assertSame(0, $admin->notifications()->count());
+
+        // Nicht fertig im Budget (hier: ein langer Schritt je Aufruf): die Arbeit bleibt offen, der Aufrufer leitet auf
+        // ihre Seite weiter.
+        $large = app(WorkService::class)->startAndAdvance(LongWork::KEY, [], $admin);
+        $this->assertSame([WorkItem::RUNNING, 1], [$large->status, $large->done]);
+
+        $this->assertSame(WorkItem::DONE, app(WorkService::class)->startAndDrive(CountingWork::KEY, ['total' => 30, 'per_step' => 3])->status);
     }
 }

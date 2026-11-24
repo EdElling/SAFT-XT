@@ -6,6 +6,7 @@ namespace App\Livewire;
 
 use App\Filament\Resources\WorkItems\Tables\WorkItemsTable;
 use App\Models\WorkItem;
+use App\Work\TimeLimit;
 use App\Work\WorkRunner;
 use App\Work\WorkService;
 use Illuminate\Contracts\View\View;
@@ -49,10 +50,7 @@ class WorkProgress extends Component
     /** Zeitbudget je Abfrage: work.browser_budget, höchstens max_execution_time − 5 s, mindestens 1 s. */
     public static function budget(): float
     {
-        $budget = (float) config('work.browser_budget', 15);
-        $limit = (int) ini_get('max_execution_time');
-
-        return max(1.0, $limit > 0 ? min($budget, $limit - 5) : $budget);
+        return app(TimeLimit::class)->budget((float) config('work.browser_budget', 15));
     }
 
     private function item(): WorkItem

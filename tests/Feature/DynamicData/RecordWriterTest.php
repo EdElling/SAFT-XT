@@ -7,6 +7,7 @@ namespace Tests\Feature\DynamicData;
 use App\DynamicData\Write\RecordVersion;
 use App\DynamicData\Write\RecordWriter;
 use App\DynamicData\Write\StaleRecordException;
+use App\DynamicData\Write\WriteContext;
 use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
 use App\Models\Activity;
@@ -16,6 +17,7 @@ use App\Models\User;
 use App\Plugins\Api\Events\RecordSaved;
 use App\Plugins\Api\Events\RecordSaving;
 use App\Plugins\Api\RecordRejected;
+use App\Plugins\Api\Saft;
 use Illuminate\Support\Facades\Event;
 use RuntimeException;
 use Spatie\Activitylog\Support\ActivityLogStatus;
@@ -221,5 +223,49 @@ class RecordWriterTest extends DynamicDataTestCase
         $this->assertFalse(app(ActivityLogStatus::class)->disabled());
         $this->writer()->create($this->table(), ['titel' => 'normal']);
         $this->assertSame(1, Activity::query()->where('log_name', 'dynamic.projekte')->count());
+    }
+
+    public function test_after_commit_runs_once_both_connections_are_committed_and_never_after_a_rollback(): void
+    {
+        $writer = app(RecordWriter::class);
+        $ran = [];
+
+        $writer->batch(function () use ($writer, &$ran): void {
+            $writer->create($this->table(), ['titel' => 'A']);
+            Saft::afterCommit(function () use (&$ran): void {
+                $ran[] = 'a';
+            });
+            $writer->batch(function () use (&$ran): void {
+                WriteContext::afterCommit(function () use (&$ran): void {
+                    $ran[] = 'b';
+                });
+            });
+            // Noch nichts: die Transaktion ist offen.
+            $this->assertSame([], $ran);
+        });
+        $this->assertSame(['a', 'b'], $ran);
+
+        // Rollback: die Wirkung verfällt.
+        try {
+            $writer->batch(function () use ($writer, &$ran): void {
+                $writer->create($this->table(), ['titel' => 'B']);
+                WriteContext::afterCommit(function () use (&$ran): void {
+                    $ran[] = 'verworfen';
+                });
+
+                throw new RuntimeException('abbrechen');
+            });
+            $this->fail('Ausnahme erwartet.');
+        } catch (RuntimeException) {
+        }
+        $this->assertSame(['a', 'b'], $ran);
+
+        // Ohne Schreibvorgang sofort; später sammelt sich nichts Altes an.
+        WriteContext::afterCommit(function () use (&$ran): void {
+            $ran[] = 'sofort';
+        });
+        $this->assertSame(['a', 'b', 'sofort'], $ran);
+        $writer->batch(fn () => null);
+        $this->assertSame(['a', 'b', 'sofort'], $ran);
     }
 }

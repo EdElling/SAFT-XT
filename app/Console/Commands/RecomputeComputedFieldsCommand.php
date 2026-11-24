@@ -6,7 +6,6 @@ namespace App\Console\Commands;
 
 use App\Models\WorkItem;
 use App\Work\Types\RecomputeWork;
-use App\Work\WorkRunner;
 use App\Work\WorkService;
 use Illuminate\Console\Command;
 
@@ -23,7 +22,7 @@ final class RecomputeComputedFieldsCommand extends Command
 
     protected $description = 'Berechnet die berechneten Felder des Table-Designers neu';
 
-    public function handle(WorkService $work, WorkRunner $runner): int
+    public function handle(WorkService $work): int
     {
         $names = array_values(array_map('strval', (array) $this->argument('table')));
 
@@ -33,23 +32,14 @@ final class RecomputeComputedFieldsCommand extends Command
             return self::SUCCESS;
         }
 
-        $item = $work->start(RecomputeWork::KEY, ['tables' => $names]);
-
         if ($this->option('background')) {
+            $item = $work->start(RecomputeWork::KEY, ['tables' => $names]);
             $this->components->info(__('work.started', ['id' => $item->uuid]));
 
             return self::SUCCESS;
         }
 
-        while ($item->isOpen()) {
-            $started = microtime(true);
-            $item = $runner->advance($item, 60);
-
-            // Sofort zurück, aber offen: Ein anderer Treiber hat die Sperre – warten statt drängeln.
-            if ($item->isOpen() && microtime(true) - $started < 1) {
-                usleep(500_000);
-            }
-        }
+        $item = $work->startAndDrive(RecomputeWork::KEY, ['tables' => $names]);
 
         if ($item->status !== WorkItem::DONE) {
             $this->components->error((string) $item->message);

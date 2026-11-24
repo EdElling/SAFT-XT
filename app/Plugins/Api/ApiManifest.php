@@ -15,6 +15,8 @@ use App\Plugins\Testing\PluginTestCase;
 use App\Tasks\TaskResult;
 use App\Tasks\TaskSkipped;
 use App\Tasks\TaskType;
+use App\Work\CleansUp;
+use App\Work\LongSteps;
 use App\Work\StepOutcome;
 use App\Work\WorkPlan;
 use App\Work\WorkStep;
@@ -65,6 +67,8 @@ final class ApiManifest
         WorkStep::class,
         StepOutcome::class,
         WritesRecords::class,
+        CleansUp::class,
+        LongSteps::class,
     ];
 
     /** @var list<class-string> */
