@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Plugins\Api;
 
+use App\Apps\CurrentApp;
 use App\DynamicData\Write\RecordWriter;
 use App\DynamicData\Write\WriteOptions;
+use App\Filament\Resources\WorkItems\WorkItemResource;
 use App\Models\CustomTable;
 use App\Models\User;
 use App\Plugins\PluginRegistry;
 use App\Plugins\SaftPlugin;
+use App\Work\WorkService;
 use Closure;
 use Filament\Notifications\Notification;
 use InvalidArgumentException;
@@ -69,5 +72,24 @@ final class Saft
     public static function transaction(Closure $callback): mixed
     {
         return app(RecordWriter::class)->batch($callback, WriteOptions::plugin());
+    }
+
+    /**
+     * Eine Arbeit starten (seit API 1.10): als die angemeldete Person in ihrer aktuellen App. Liefert die Adresse der
+     * Arbeit – dorthin weiterleiten, dann treibt der Browser der Person sie voran und zeigt den Fortschritt; verlässt sie
+     * die Seite, übernimmt der Scheduler.
+     *
+     * @param  string  $type  Kennung der Art (WorkType::key(), aus SaftPlugin::workTypes())
+     * @param  array<string, mixed>  $parameters  JSON-fähig; kommen in prepare() und WorkStep::$parameters an
+     *
+     * @throws InvalidArgumentException wenn es die Art nicht gibt
+     */
+    public static function startWork(string $type, array $parameters = []): string
+    {
+        $user = auth()->user();
+        $user = $user instanceof User ? $user : null;
+        $item = app(WorkService::class)->start($type, $parameters, $user, app(CurrentApp::class)->id($user));
+
+        return WorkItemResource::getUrl('view', ['record' => $item], panel: 'admin');
     }
 }

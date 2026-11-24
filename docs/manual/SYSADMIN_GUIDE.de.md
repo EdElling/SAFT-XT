@@ -215,6 +215,16 @@ Das Ende der Logdatei zeigt *Administration › Betrieb › Systemprotokoll* (Re
 SSH-Zugang, z. B. auf Webspaces. Gelesen werden höchstens die letzten 2 MB; Dateien `laravel.log` und
 `laravel-JJJJ-MM-TT.log` (Log-Kanal `daily`) in `storage/logs`.
 
+**Arbeiten:** Derselbe Cron-Eintrag treibt auch die [Arbeiten](ADMIN_GUIDE.de.md#arbeiten) voran: `work:run` läuft
+jede Minute höchstens 50 Sekunden und übernimmt Arbeiten, deren startende Person die Seite verlassen hat. Bei gröberen
+Cron-Intervallen geht eine verlassene Arbeit entsprechend später weiter; ohne Cron nur bei offener Seite. Im Browser
+arbeitet SAFT je Abfrage höchstens 15 Sekunden, immer unter `max_execution_time` von PHP. Ergebnisdateien liegen in
+`storage/app/private/work/<uuid>/` und werden von der System-Aufgabe *Arbeiten aufräumen* (stündlich) gelöscht.
+Fehlschläge stehen unter ihrer Referenz in `storage/logs/laravel.log` (Eintrag `Arbeit fehlgeschlagen`). Optionale
+Einstellungen in der `.env`: `WORK_BROWSER_BUDGET` (15), `WORK_SCHEDULER_BUDGET` (50), `WORK_TAKEOVER_SECONDS` (30),
+`WORK_MAX_STALLS` (Abbrüche desselben Schritts bis zum Fehlschlag, 3), `WORK_RESULT_HOURS` (24),
+`WORK_STUCK_MINUTES` (ab wann das Dashboard warnt, 10). Ein Queue-Worker ist nicht nötig.
+
 **System-Aufgaben für Sicherungen und Demos:** *Datenbank sichern* (02:30, mit den Dateien aus Dateifeldern),
 *Sicherungen aufräumen* (02:45, 14 Tage, mindestens 3; Sicherung und ZIP zählen als eine) und *Dateien aufräumen*
 (03:00) laufen ab Installation; damit ersetzt der Scheduler einen eigenen Cron-Eintrag für `db:backup`.
@@ -269,7 +279,8 @@ Alle Befehle im Hauptverzeichnis von SAFT ausführen, auf einem Produktionsserve
 | `php artisan app-data:verify` | Prüft, ob die Metadaten des Table-Designers und die Tabellen im Namensraum `app_data` übereinstimmen; Exit-Code 1 bei Abweichungen (für die Überwachung) | – |
 | `php artisan auth:mode [local\|sso\|hybrid]` | Zeigt oder setzt den Anmeldemodus, z. B. als Notausgang `auth:mode local`, wenn kein Identity Provider erreichbar ist | – |
 | `php artisan auth:two-factor-reset <email>` | Löscht Authenticator-App und Wiederherstellungscodes eines Kontos; die Person meldet sich mit dem Passwort an und richtet neu ein. Steht im Änderungsprotokoll | – |
-| `php artisan computed:recompute [tabelle …]` | Berechnet die berechneten Felder neu (ohne Angabe: alle Tabellen mit berechneten Feldern) | interne Tabellennamen |
+| `php artisan computed:recompute [tabelle …]` | Berechnet die berechneten Felder neu (ohne Angabe: alle Tabellen mit berechneten Feldern); läuft als [Arbeit](ADMIN_GUIDE.de.md#arbeiten) und zeigt danach die Zahl der geänderten Datensätze je Tabelle | interne Tabellennamen; `--background` nur starten, der Scheduler rechnet |
+| `php artisan work:run` | Treibt offene Arbeiten voran, an denen seit 30 Sekunden niemand arbeitet; ruft der Scheduler jede Minute auf | `--budget=` Sekunden (Vorgabe 50) |
 | `php artisan table-connector:verify [tabelle …]` | Vergleicht angebundene Tabellen mit dem Schema der externen Datenbank; Exit-Code 1 bei Abweichungen | `--apply` übernimmt Abweichungen wie „Neu einlesen“ |
 | `php artisan table-connector:connect <verbindung>` | Massenverknüpfung auf der Konsole (ohne Zeitlimit des Webservers) | `--all` bzw. `--table=` (mehrfach), `--app=` (ID der App), `--schema=`, `--prefix=`, `--menu-group=` (ID oder `none`), `--role=` (mehrfach), `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--no-details` |
 | `php artisan tasks:list` | Geplante Aufgaben mit Zeitplan, nächstem und letztem Lauf; letzter Aufruf des Schedulers | – |

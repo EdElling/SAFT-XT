@@ -21,6 +21,7 @@ return [
         'reports' => 'Rapports',
         'report_links' => 'Liaisons de tables',
         'tasks' => 'Tâches planifiées',
+        'work' => 'Travaux',
         'plugins' => 'Plugins',
         'apps' => 'Apps',
         'documents' => 'Documents',
@@ -28,6 +29,8 @@ return [
     ],
     'actions' => [
         'details' => 'voir les détails techniques',
+        'view_any' => 'voir tous',
+        'cancel_any' => 'annuler ceux des autres',
         'view' => 'afficher',
         'create' => 'créer',
         'update' => 'modifier',

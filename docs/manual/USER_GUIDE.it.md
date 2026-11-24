@@ -112,6 +112,11 @@ dall’account aziendale.
   vale una sola volta. Se l’autenticazione a due fattori è obbligatoria per il vostro account, SAFT vi porta
   direttamente alla configurazione dopo l’accesso. Non vale per l’accesso tramite single sign-on – lì è responsabile la
   vostra azienda. Telefono e codici persi: l’amministrazione reimposta il secondo fattore.
+- **I miei lavori:** SAFT esegue i lavori lunghi – come il ricalcolo di molti record – a passi. Nel menu utente,
+  **I miei lavori** mostra ciò che avete avviato, con stato e avanzamento. Aprendo un lavoro vedete una barra di
+  avanzamento; finché la pagina è aperta, SAFT procede a piena velocità. Potete anche chiudere la pagina: il lavoro
+  continua in background e la campanella vi avvisa quando è terminato o non è riuscito. **Annulla** lo termina dopo il
+  passo in corso. Se un lavoro produce un file, scaricatelo con **Scarica il risultato** – resta disponibile 24 ore.
 
 - **A sinistra** si trova il **menu**. Mostra solo le aree per le quali avete diritti. Sotto **Dati** trovate le
   tabelle, sotto **Amministrazione** le funzioni di gestione. Le voci con una freccia
@@ -150,7 +155,7 @@ dall’account aziendale.
 | Attività di accesso | Accessi degli ultimi 7 giorni, tentativi falliti, utenti connessi | admin |
 | Panoramica utenti | utenti attivi, inattivi, senza ruolo, con SSO | admin |
 | Stato dei provider di identità | stato delle connessioni single sign-on, certificati in scadenza | admin |
-| Attività pianificate | semaforo (tutto in ordine, attività fallite, lo scheduler non è in esecuzione) e le ultime esecuzioni | admin |
+| Attività pianificate | semaforo (tutto in ordine, attività fallite, lo scheduler non è in esecuzione, lavori bloccati o falliti) e le ultime esecuzioni | admin |
 | Ultime modifiche (intero sistema) | le voci più recenti del registro modifiche | admin |
 
 > **Consiglio di sicurezza:** se «Il mio ultimo accesso» mostra un momento in cui non avete effettuato l’accesso, o

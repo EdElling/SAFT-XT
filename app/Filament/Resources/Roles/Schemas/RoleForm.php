@@ -32,7 +32,7 @@ class RoleForm
 {
     /** Bereiche der Funktionsrechte; der Schlüssel der Sprachdatei ersetzt Punkte durch Unterstriche. */
     /** Bereiche der allgemeinen Rechte von SAFT selbst (ohne data.* und ohne Plugins). */
-    public const array RESOURCES = ['users', 'roles', 'menus', 'activity_log', 'identity_providers', 'settings.auth', 'settings.app', 'widgets', 'custom_tables', 'database_connections', 'table_connector', 'reports', 'report_links', 'documents', 'tasks', 'plugins', 'apps', 'help', 'system_log'];
+    public const array RESOURCES = ['users', 'roles', 'menus', 'activity_log', 'identity_providers', 'settings.auth', 'settings.app', 'widgets', 'custom_tables', 'database_connections', 'table_connector', 'reports', 'report_links', 'documents', 'tasks', 'work', 'plugins', 'apps', 'help', 'system_log'];
 
     public static function configure(Schema $schema): Schema
     {

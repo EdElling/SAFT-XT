@@ -209,6 +209,16 @@ the run under **Details** (permission *Scheduled tasks: see technical details*).
 (permission *System log: view*) shows the end of the log file – useful without SSH access, e.g. on web hosting. At most
 the last 2 MB are read; files `laravel.log` and `laravel-YYYY-MM-DD.log` (log channel `daily`) in `storage/logs`.
 
+**Jobs:** The same cron entry also drives the [jobs](ADMIN_GUIDE.md#jobs) forward: `work:run` runs every minute for
+at most 50 seconds and takes over jobs whose starting person has left the page. With coarser cron intervals an
+abandoned job continues correspondingly later; without cron only while the page is open. In the browser SAFT works at
+most 15 seconds per request, always below PHP's `max_execution_time`. Result files are stored in
+`storage/app/private/work/<uuid>/` and deleted by the system task *Clean up jobs* (hourly). Failures are logged under
+their reference in `storage/logs/laravel.log` (entry `Arbeit fehlgeschlagen`). Optional settings in `.env`:
+`WORK_BROWSER_BUDGET` (15), `WORK_SCHEDULER_BUDGET` (50), `WORK_TAKEOVER_SECONDS` (30), `WORK_MAX_STALLS` (aborts of the
+same step until failure, 3), `WORK_RESULT_HOURS` (24), `WORK_STUCK_MINUTES` (when the dashboard warns, 10). A queue
+worker is not needed.
+
 **System tasks for backups and demos:** *Back up database* (02:30, with the files from file fields), *Clean up
 backups* (02:45, 14 days, at least 3; a backup and its ZIP count as one) and *Clean up files* (03:00) run from
 installation on; the scheduler thus replaces a separate cron entry for `db:backup`. If you still have such
@@ -263,7 +273,8 @@ shows all available commands, `php artisan help <command>` the options of a comm
 | `php artisan app-data:verify` | Checks whether the table designer's metadata and the tables in the `app_data` namespace match; exit code 1 on differences (for monitoring) | – |
 | `php artisan auth:mode [local\|sso\|hybrid]` | Shows or sets the sign-in mode, e.g. `auth:mode local` as an emergency exit when no identity provider is reachable | – |
 | `php artisan auth:two-factor-reset <email>` | Deletes the authenticator app and recovery codes of an account; the person signs in with the password and sets up again. Recorded in the activity log | – |
-| `php artisan computed:recompute [table …]` | Recalculates the computed fields (without arguments: all tables with computed fields) | internal table names |
+| `php artisan computed:recompute [table …]` | Recalculates the computed fields (without arguments: all tables with computed fields); runs as a [job](ADMIN_GUIDE.md#jobs) and then shows the number of changed records per table | internal table names; `--background` only start, the scheduler computes |
+| `php artisan work:run` | Drives open jobs forward that nobody has worked on for 30 seconds; the scheduler calls it every minute | `--budget=` seconds (default 50) |
 | `php artisan table-connector:verify [table …]` | Compares connected tables with the schema of the external database; exit code 1 on differences | `--apply` takes over differences like "Re-read" |
 | `php artisan table-connector:connect <connection>` | Bulk link on the console (without the web server's time limit) | `--all` or `--table=` (repeatable), `--app=` (ID of the app), `--schema=`, `--prefix=`, `--menu-group=` (ID or `none`), `--role=` (repeatable), `--export`, `--create`, `--update`, `--delete`, `--inactive`, `--no-details` |
 | `php artisan tasks:list` | Scheduled tasks with schedule, next and last run; last scheduler call | – |

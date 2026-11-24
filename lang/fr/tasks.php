@@ -46,6 +46,8 @@ return [
         'only_with_snapshot_help' => 'Désactivé : toutes les tables connectées de la connexion, y compris celles sans état.',
         'keep_days' => 'Conserver les exécutions (jours)',
         'keep_days_help' => 'Les entrées plus anciennes du journal des exécutions sont supprimées.',
+        'work_keep_days' => 'Conserver les travaux (jours)',
+        'work_keep_days_help' => 'Les travaux terminés de la page « Travaux » sont ensuite supprimés. Les fichiers de résultat ne sont conservés que 24 heures.',
         'activity_days' => 'Conserver le journal des modifications (jours)',
         'activity_days_help' => 'Les entrées plus anciennes du journal des modifications sont définitivement supprimées.',
         'auth_days' => 'Conserver les connexions (jours)',
@@ -75,6 +77,7 @@ return [
         'snapshot_refresh' => 'Actualiser l’état des données',
         'snapshot_prune' => 'Nettoyer les états des données',
         'task_runs_prune' => 'Nettoyer le journal des exécutions',
+        'work_prune' => 'Nettoyer les travaux',
         'activity_prune' => 'Raccourcir le journal des modifications',
     ],
     'describe_type' => [
@@ -84,6 +87,7 @@ return [
         'backup_prune' => 'Sauvegardes de plus de :days jours, les :keep plus récentes restent',
         'snapshot_prune' => 'Durées de conservation de tous les états, exécutions interrompues',
         'task_runs_prune' => 'Exécutions de plus de :days jours',
+        'work_prune' => 'Résultats expirés, travaux de plus de :days jours',
         'activity_prune' => 'Entrées de plus de :days jours, connexions de plus de :auth_days jours',
     ],
     'results' => [
@@ -101,6 +105,7 @@ return [
         'skipped_tables' => 'Ignorées (en cours d’actualisation) : :tables.',
         'failed_tables' => 'Échecs :',
         'task_runs_prune' => ':deleted exécutions supprimées.',
+        'work_prune' => 'Travaux supprimés : :deleted, dossiers de résultat supprimés : :files.',
         'activity_prune' => ':deleted entrées supprimées, dont :auth connexions.',
     ],
     'status' => [

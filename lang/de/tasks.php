@@ -46,6 +46,8 @@ return [
         'only_with_snapshot_help' => 'Ausgeschaltet: alle angebundenen Tabellen der Verbindung, auch solche ohne Datenstand.',
         'keep_days' => 'Läufe aufbewahren (Tage)',
         'keep_days_help' => 'Ältere Einträge im Laufprotokoll werden gelöscht.',
+        'work_keep_days' => 'Arbeiten aufbewahren (Tage)',
+        'work_keep_days_help' => 'Beendete Arbeiten auf der Seite „Arbeiten“ werden danach gelöscht. Ergebnisdateien gibt es nur 24 Stunden.',
         'activity_days' => 'Protokoll aufbewahren (Tage)',
         'activity_days_help' => 'Ältere Einträge im Änderungsprotokoll werden endgültig gelöscht.',
         'auth_days' => 'Anmeldungen aufbewahren (Tage)',
@@ -75,6 +77,7 @@ return [
         'snapshot_refresh' => 'Datenstand aktualisieren',
         'snapshot_prune' => 'Datenstände bereinigen',
         'task_runs_prune' => 'Laufprotokoll bereinigen',
+        'work_prune' => 'Arbeiten aufräumen',
         'activity_prune' => 'Änderungsprotokoll kürzen',
     ],
     'describe_type' => [
@@ -84,6 +87,7 @@ return [
         'backup_prune' => 'Sicherungen älter als :days Tage, die :keep neuesten bleiben',
         'snapshot_prune' => 'Aufbewahrungsfristen aller Datenstände, abgebrochene Läufe',
         'task_runs_prune' => 'Läufe älter als :days Tage',
+        'work_prune' => 'Ergebnisse nach Ablauf, Arbeiten älter als :days Tage',
         'activity_prune' => 'Einträge älter als :days Tage, Anmeldungen älter als :auth_days Tage',
     ],
     'results' => [
@@ -101,6 +105,7 @@ return [
         'skipped_tables' => 'Übersprungen (wird gerade aktualisiert): :tables.',
         'failed_tables' => 'Fehlgeschlagen:',
         'task_runs_prune' => ':deleted Läufe gelöscht.',
+        'work_prune' => 'Arbeiten gelöscht: :deleted, Ergebnisordner gelöscht: :files.',
         'activity_prune' => ':deleted Einträge gelöscht, davon :auth Anmeldungen.',
     ],
     'status' => [

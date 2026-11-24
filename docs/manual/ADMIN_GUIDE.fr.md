@@ -988,6 +988,7 @@ devant le libellé.
 | Nettoyer les états des données (système) | – | applique la conservation de tous les états des données, même sans nouvelle actualisation, et nettoie les exécutions interrompues ; par défaut tous les jours à 03:15 |
 | Nettoyer le journal des exécutions (système) | conserver les exécutions (jours, 90 par défaut) | supprime les entrées plus anciennes du journal des exécutions ; par défaut tous les jours à 03:30 |
 | Raccourcir le journal des modifications (système) | conserver le journal des modifications (jours, 365 par défaut) ; conserver les connexions (jours, 90 par défaut) | supprime définitivement les entrées plus anciennes du journal des modifications (chapitre 8) ; désactivée à la livraison, le tableau de bord signale les entrées plus anciennes ; par défaut tous les jours à 03:45 |
+| Nettoyer les travaux (système) | conserver les travaux (jours, 30 par défaut) | supprime les fichiers de résultat des [travaux](#travaux) après 24 heures et les travaux terminés après le nombre de jours réglé ; par défaut toutes les heures à la minute 20 |
 | Sauvegarder la base de données (système) | sauvegarder aussi les fichiers des champs de fichiers (activé par défaut) | sauvegarde comme `php artisan db:backup` vers `storage/backups`, les fichiers des champs de fichiers en ZIP à côté (seulement s’ils se trouvent sur le serveur) ; en cas d’échec, l’exécution en indique la raison et la cloche avertit les super-admins ; par défaut tous les jours à 02:30 |
 | Nettoyer les sauvegardes (système) | conserver les sauvegardes (jours, 14 par défaut) ; conserver au moins (3 par défaut) | supprime les sauvegardes plus anciennes dans `storage/backups` (une sauvegarde et son ZIP comptent pour une), les plus récentes restent toujours ; par défaut tous les jours à 02:45 |
 | Nettoyer les fichiers (système) | – | supprime les fichiers orphelins des champs de fichiers : téléversements de formulaires interrompus, fichiers d’enregistrements qui n’existent plus et fichiers sans entrée – chaque fois seulement après 24 heures ; l’exécution ne fait que signaler les fichiers manquants ; par défaut tous les jours à 03:00 |
@@ -1044,6 +1045,40 @@ sont actuellement pas exécutées » figure au-dessus de la liste.
 
 **App :** les tâches liées à une table appartiennent à son [app](#15-apps-applications-métier) ; pour les autres
 tâches, vous choisissez l’app. Les tâches système n’appartiennent à aucune app.
+
+
+### Travaux
+
+SAFT effectue les travaux longs en courtes étapes avec un état intermédiaire enregistré, afin qu’ils n’échouent pas sur
+une limite de temps du serveur web. Il existe aujourd’hui le type **Recalculer les champs calculés**
+(`php artisan computed:recompute`, voir [Administration système](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)) ; les
+plugins peuvent apporter leurs propres types.
+
+**Administration › Exploitation › Travaux** (droit *Travaux : voir tous*) liste les travaux de toutes les personnes,
+l’onglet **Les miens** uniquement les vôtres. Sans ce droit, chacun voit ses propres travaux via **Mes travaux** dans le
+menu utilisateur. Colonnes : type avec description, démarré par (*Système* pour les travaux lancés depuis la console),
+app, statut (en attente, en cours, terminé, échoué, annulé), progression, démarré, durée et message. Tant que quelque
+chose est en cours, la liste se met à jour d’elle-même.
+
+**Déroulement :** tant que la personne qui a démarré le travail garde sa page ouverte, son navigateur le fait avancer.
+Si elle ferme la page, le planificateur prend le relais après 30 secondes, et la cloche annonce « terminé » ou
+« échoué » à la fin. Si une étape est interrompue (p. ex. par la limite de temps du serveur), la suivante reprend à
+l’état enregistré ; si la même étape est interrompue trois fois, le travail est considéré comme échoué. En arrière-plan,
+un travail s’exécute avec les droits de la personne qui l’a démarré – sous *Afficher en tant que rôle* avec les rôles
+choisis – et dans l’app où il a été démarré. Sans planificateur (cron), les travaux ne progressent que page ouverte.
+
+**Annuler :** vos propres travaux toujours, ceux des autres avec le droit *Travaux : annuler ceux des autres*. Un
+travail en attente s’arrête immédiatement, un travail en cours après l’étape actuelle. Ce qu’un travail d’écriture a
+modifié jusque-là reste : chaque étape est enregistrée entièrement ou pas du tout.
+
+**Résultats :** si un travail produit un fichier, celui-ci est disponible pendant 24 heures sous **Télécharger le
+résultat** – pour la personne qui l’a démarré et avec *Travaux : voir tous*. La tâche système **Nettoyer les travaux**
+supprime ensuite le fichier et, après 30 jours, le travail lui-même.
+
+**Échec :** comme pour les tâches, le message indique une référence ; **Détails** (droit *Travaux : voir les détails
+techniques*) montre l’erreur, l’emplacement et la trace. Le widget **Tâches planifiées** du tableau de bord signale les
+travaux sans progression depuis plus de 10 minutes (le planificateur ne tourne généralement pas) et les travaux échoués
+au cours des dernières 24 heures. Démarrage, fin, annulation et échec figurent dans le journal des modifications.
 
 ---
 
@@ -1826,6 +1861,9 @@ entrée de menu).
 | Tâches planifiées: afficher | liste des tâches et de leurs exécutions |
 | Tâches planifiées: créer / modifier / supprimer | configurer, modifier (aussi « Exécuter maintenant »), retirer des tâches |
 | Tâches planifiées: voir les détails techniques | détails des erreurs des exécutions échouées (trace) |
+| Travaux: voir tous | page « Travaux » avec les travaux de toutes les personnes ; télécharger leurs résultats |
+| Travaux: annuler ceux des autres | annuler les travaux d’autres personnes (chacun peut annuler les siens) |
+| Travaux: voir les détails techniques | détails des erreurs des travaux échoués (trace) |
 | Journal système: afficher | lire le fichier journal du serveur (lecture seule) |
 | Aide: utiliser l’assistant | utiliser l’assistant d’aide IA (bouton « ? ») |
 

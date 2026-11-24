@@ -46,6 +46,8 @@ return [
         'only_with_snapshot_help' => 'Disattivato: tutte le tabelle collegate della connessione, anche quelle senza stato.',
         'keep_days' => 'Conservare le esecuzioni (giorni)',
         'keep_days_help' => 'Le voci più vecchie del registro delle esecuzioni vengono eliminate.',
+        'work_keep_days' => 'Conservare i lavori (giorni)',
+        'work_keep_days_help' => 'I lavori terminati nella pagina «Lavori» vengono poi eliminati. I file di risultato restano disponibili solo 24 ore.',
         'activity_days' => 'Conservare il registro modifiche (giorni)',
         'activity_days_help' => 'Le voci più vecchie del registro modifiche vengono eliminate definitivamente.',
         'auth_days' => 'Conservare gli accessi (giorni)',
@@ -75,6 +77,7 @@ return [
         'snapshot_refresh' => 'Aggiornare lo stato dei dati',
         'snapshot_prune' => 'Pulire gli stati dei dati',
         'task_runs_prune' => 'Pulire il registro delle esecuzioni',
+        'work_prune' => 'Pulire i lavori',
         'activity_prune' => 'Accorciare il registro modifiche',
     ],
     'describe_type' => [
@@ -84,6 +87,7 @@ return [
         'backup_prune' => 'Backup più vecchi di :days giorni, restano i :keep più recenti',
         'snapshot_prune' => 'Periodi di conservazione di tutti gli stati, esecuzioni interrotte',
         'task_runs_prune' => 'Esecuzioni più vecchie di :days giorni',
+        'work_prune' => 'Risultati scaduti, lavori più vecchi di :days giorni',
         'activity_prune' => 'Voci più vecchie di :days giorni, accessi più vecchi di :auth_days giorni',
     ],
     'results' => [
@@ -101,6 +105,7 @@ return [
         'skipped_tables' => 'Saltate (in fase di aggiornamento): :tables.',
         'failed_tables' => 'Non riuscite:',
         'task_runs_prune' => ':deleted esecuzioni eliminate.',
+        'work_prune' => 'Lavori eliminati: :deleted, cartelle di risultato eliminate: :files.',
         'activity_prune' => ':deleted voci eliminate, di cui :auth accessi.',
     ],
     'status' => [

@@ -109,6 +109,11 @@ company login.
   is required for your account, SAFT takes you straight to the setup after signing in. It does not apply to sign-in via
   single sign-on – your organisation is responsible there. Lost phone and codes: the administration resets the second
   factor.
+- **My jobs:** SAFT does long jobs – such as recomputing many records – in steps. In the user menu, **My jobs** shows
+  what you have started, with status and progress. If you open a job, you see a progress bar; as long as the page is
+  open, SAFT keeps working at full speed. You may also close the page: the job continues in the background, and the
+  bell tells you when it is done or has failed. **Cancel** ends it after the current step. If a job produces a file,
+  download it with **Download result** – it stays available for 24 hours.
 
 - The **menu** is on the **left**. It only shows the areas you have permissions for. Under **Data** you find the
   tables, under **Administration** the management functions. Entries with an arrow **›** on the right are submenus
@@ -147,7 +152,7 @@ company login.
 | Sign-in activity | Sign-ins of the last 7 days, failed attempts, signed-in users | admins |
 | User overview | Active and inactive users, users without role, with SSO | admins |
 | Identity provider status | State of the single sign-on connections, expiring certificates | admins |
-| Scheduled tasks | Traffic light (all fine, failed tasks, scheduler not running) and the latest runs | admins |
+| Scheduled tasks | Traffic light (all fine, failed tasks, scheduler not running, stuck or failed jobs) and the latest runs | admins |
 | Recent changes (system-wide) | The latest entries in the activity log | admins |
 
 > **Security tip:** If "My last sign-in" shows a time at which you did not sign in, or failed attempts, please

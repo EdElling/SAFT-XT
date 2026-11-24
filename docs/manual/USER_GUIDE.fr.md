@@ -115,6 +115,12 @@ déconnecté du compte de l’entreprise.
   facteurs est obligatoire pour votre compte, SAFT vous mène directement à la configuration après la connexion. Elle ne
   s’applique pas à la connexion par authentification unique – votre entreprise en est responsable. Téléphone et codes
   perdus : l’administration réinitialise le second facteur.
+- **Mes travaux :** SAFT effectue les travaux longs – comme le recalcul de nombreux enregistrements – par étapes. Dans
+  le menu utilisateur, **Mes travaux** affiche ce que vous avez démarré, avec le statut et la progression. En ouvrant un
+  travail, vous voyez une barre de progression ; tant que la page est ouverte, SAFT avance à pleine vitesse. Vous pouvez
+  aussi fermer la page : le travail se poursuit en arrière-plan, et la cloche vous indique quand il est terminé ou a
+  échoué. **Annuler** l’arrête après l’étape en cours. Si un travail produit un fichier, téléchargez-le avec
+  **Télécharger le résultat** – il reste disponible 24 heures.
 
 - **À gauche** se trouve le **menu**. Il n’affiche que les domaines pour lesquels vous avez des droits. Sous
   **Données** se trouvent les tables, sous **Administration** les fonctions de gestion. Les entrées
@@ -157,7 +163,7 @@ déconnecté du compte de l’entreprise.
 | Activité de connexion | Connexions des 7 derniers jours, échecs, utilisateurs connectés | admins |
 | Aperçu des utilisateurs | utilisateurs actifs, inactifs, sans rôle, avec SSO | admins |
 | État des fournisseurs d’identité | état des connexions d’authentification unique, certificats arrivant à échéance | admins |
-| Tâches planifiées | feu tricolore (tout va bien, tâches échouées, le planificateur ne tourne pas) et les dernières exécutions | admins |
+| Tâches planifiées | feu tricolore (tout va bien, tâches échouées, le planificateur ne tourne pas, travaux bloqués ou échoués) et les dernières exécutions | admins |
 | Dernières modifications (tout le système) | les entrées les plus récentes du journal des modifications | admins |
 
 > **Conseil de sécurité :** si « Ma dernière connexion » indique une date à laquelle vous ne vous êtes pas connecté,

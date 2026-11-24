@@ -149,6 +149,7 @@
             "static function hasTable(string $name): bool",
             "static function notify(App\\Models\\User $user, Filament\\Notifications\\Notification $notification): void",
             "static function plugin(string $id): App\\Plugins\\SaftPlugin",
+            "static function startWork(string $type, array $parameters = []): string",
             "static function table(string $name): App\\Plugins\\Api\\DataTable",
             "static function transaction(Closure $callback): mixed"
         ],

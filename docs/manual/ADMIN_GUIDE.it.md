@@ -964,6 +964,7 @@ ha un **tipo**, i relativi **parametri** e una **pianificazione**:
 | Pulire gli stati dei dati (sistema) | – | applica la conservazione di tutti gli stati dei dati, anche senza nuovo aggiornamento, e ripulisce le esecuzioni interrotte; predefinito ogni giorno alle 03:15 |
 | Pulire il registro delle esecuzioni (sistema) | conservare le esecuzioni (giorni, predefinito 90) | elimina le voci più vecchie del registro delle esecuzioni; predefinito ogni giorno alle 03:30 |
 | Accorciare il registro modifiche (sistema) | conservare il registro modifiche (giorni, predefinito 365); conservare gli accessi (giorni, predefinito 90) | elimina definitivamente le voci più vecchie del registro modifiche (capitolo 8); disattivata alla consegna, la dashboard segnala le voci più vecchie; predefinito ogni giorno alle 03:45 |
+| Pulire i lavori (sistema) | conservare i lavori (giorni, predefinito 30) | elimina i file di risultato dei [lavori](#lavori) dopo 24 ore e i lavori terminati dopo il numero di giorni impostato; predefinito ogni ora al minuto 20 |
 | Eseguire il backup del database (sistema) | salvare anche i file dei campi file (predefinito attivo) | backup come `php artisan db:backup` in `storage/backups`, i file dei campi file come ZIP accanto (solo se si trovano sul server); se non riesce, l’esecuzione ne indica il motivo e la campanella avvisa i super-admin; predefinito ogni giorno alle 02:30 |
 | Ripulire i backup (sistema) | conservare i backup (giorni, predefinito 14); conservare almeno (predefinito 3) | elimina i backup più vecchi in `storage/backups` (un backup e il suo ZIP contano come uno), i più recenti restano sempre; predefinito ogni giorno alle 02:45 |
 | Ripulire i file (sistema) | – | elimina i file orfani dei campi file: caricamenti da moduli interrotti, file di record che non esistono più e file senza voce – ogni volta solo dopo 24 ore; l’esecuzione segnala soltanto i file mancanti; predefinito ogni giorno alle 03:00 |
@@ -1018,6 +1019,39 @@ attività pianificate al momento non vengono eseguite».
 
 **App:** le attività relative a una tabella appartengono alla sua [app](#15-app-applicazioni-specialistiche);
 per le altre attività scegliete l’app. Le attività di sistema non appartengono ad alcuna app.
+
+
+### Lavori
+
+SAFT esegue i lavori lunghi in brevi passi con uno stato intermedio salvato, affinché non falliscano per un limite di
+tempo del server web. Oggi esiste il tipo **Ricalcolare i campi calcolati** (`php artisan computed:recompute`, vedi
+[Amministrazione di sistema](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)); i plugin possono portare tipi propri.
+
+**Amministrazione › Esercizio › Lavori** (diritto *Lavori: vedere tutti*) elenca i lavori di tutte le persone, la
+scheda **I miei** solo i vostri. Senza questo diritto, ognuno vede i propri lavori tramite **I miei lavori** nel menu
+utente. Colonne: tipo con descrizione, avviato da (*Sistema* per i lavori dalla console), app, stato (in attesa, in
+corso, terminato, fallito, annullato), avanzamento, avviato, durata e messaggio. Finché qualcosa è in corso, l’elenco si
+aggiorna da solo.
+
+**Come procede un lavoro:** finché la persona che l’ha avviato tiene aperta la pagina del lavoro, il suo browser lo fa
+avanzare. Se chiude la pagina, dopo 30 secondi subentra lo scheduler, e alla fine la campanella segnala «terminato» o
+«fallito». Se un passo si interrompe (ad es. per il limite di tempo del server), il successivo riprende dallo stato
+salvato; se lo stesso passo si interrompe tre volte, il lavoro è considerato fallito. In background un lavoro viene
+eseguito con i diritti della persona che l’ha avviato – con *Visualizza come ruolo* con i ruoli scelti – e nell’app in
+cui è stato avviato. Senza scheduler (cron) i lavori proseguono solo con la pagina aperta.
+
+**Annullare:** i propri lavori sempre, quelli altrui con il diritto *Lavori: annullare quelli altrui*. Un lavoro in
+attesa termina subito, uno in corso dopo il passo attuale. Ciò che un lavoro di scrittura ha modificato fino ad allora
+rimane: ogni passo viene salvato interamente o per niente.
+
+**Risultati:** se un lavoro produce un file, questo è disponibile per 24 ore con **Scarica il risultato** – per la
+persona che l’ha avviato e con *Lavori: vedere tutti*. L’attività di sistema **Pulire i lavori** elimina poi il file e,
+dopo 30 giorni, il lavoro stesso.
+
+**Errore:** come per le attività, il messaggio indica un riferimento; **Dettagli** (diritto *Lavori: vedere i dettagli
+tecnici*) mostra errore, posizione e traccia. Il widget **Attività pianificate** della dashboard segnala i lavori senza
+avanzamento da oltre 10 minuti (di solito lo scheduler non è in esecuzione) e quelli falliti nelle ultime 24 ore. Avvio,
+fine, annullamento ed errore figurano nel registro modifiche.
 
 ---
 
@@ -1782,6 +1816,9 @@ sono riservate e non si possono assegnare a nessun ruolo: **Visualizza come ruol
 | Attività pianificate: visualizzare | elenco delle attività e delle loro esecuzioni |
 | Attività pianificate: creare / modificare / eliminare | configurare, modificare (anche «Esegui ora»), rimuovere attività |
 | Attività pianificate: vedere i dettagli tecnici | dettagli degli errori delle esecuzioni fallite (stack trace) |
+| Lavori: vedere tutti | pagina «Lavori» con i lavori di tutte le persone; scaricarne i risultati |
+| Lavori: annullare quelli altrui | annullare i lavori di altre persone (ognuno può annullare i propri) |
+| Lavori: vedere i dettagli tecnici | dettagli degli errori dei lavori falliti (stack trace) |
 | Registro di sistema: visualizzare | leggere il file di log del server (sola lettura) |
 | Aiuto: usare l’assistente | usare l’assistente IA di aiuto (pulsante «?») |
 

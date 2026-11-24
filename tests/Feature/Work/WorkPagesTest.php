@@ -10,6 +10,7 @@ use App\Filament\Widgets\TasksStatusWidget;
 use App\Livewire\WorkProgress;
 use App\Models\User;
 use App\Models\WorkItem;
+use App\Plugins\Api\Saft;
 use App\Work\WorkRunner;
 use App\Work\WorkService;
 use Filament\Actions\Testing\TestAction;
@@ -158,5 +159,18 @@ class WorkPagesTest extends TestCase
     {
         $this->actingAs($this->userWithPermissions())->get(WorkItemResource::getUrl('index', ['tab' => ListWorkItems::MINE]))->assertOk();
         $this->get('/admin')->assertSee('Meine Arbeiten');
+    }
+
+    public function test_plugins_start_work_through_the_api(): void
+    {
+        $anna = $this->userWithPermissions();
+        $this->actingAs($anna);
+
+        $url = Saft::startWork(CountingWork::KEY, ['total' => 3]);
+        $item = WorkItem::query()->latest('id')->firstOrFail();
+
+        $this->assertSame([CountingWork::KEY, $anna->id, ['total' => 3], WorkItem::QUEUED], [$item->type, $item->user_id, $item->parameters, $item->status]);
+        $this->assertSame(WorkItemResource::getUrl('view', ['record' => $item]), $url);
+        $this->get($url)->assertOk();
     }
 }

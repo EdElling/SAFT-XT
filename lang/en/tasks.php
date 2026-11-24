@@ -46,6 +46,8 @@ return [
         'only_with_snapshot_help' => 'Switched off: all connected tables of the connection, including those without a snapshot.',
         'keep_days' => 'Keep runs (days)',
         'keep_days_help' => 'Older entries in the run log are deleted.',
+        'work_keep_days' => 'Keep jobs (days)',
+        'work_keep_days_help' => 'Finished jobs on the “Jobs” page are deleted afterwards. Result files are kept for 24 hours only.',
         'activity_days' => 'Keep activity log (days)',
         'activity_days_help' => 'Older entries in the activity log are permanently deleted.',
         'auth_days' => 'Keep sign-ins (days)',
@@ -75,6 +77,7 @@ return [
         'snapshot_refresh' => 'Refresh snapshot',
         'snapshot_prune' => 'Clean up snapshots',
         'task_runs_prune' => 'Clean up run log',
+        'work_prune' => 'Clean up jobs',
         'activity_prune' => 'Trim activity log',
     ],
     'describe_type' => [
@@ -84,6 +87,7 @@ return [
         'backup_prune' => 'Backups older than :days days, the :keep newest stay',
         'snapshot_prune' => 'Retention periods of all snapshots, aborted runs',
         'task_runs_prune' => 'Runs older than :days days',
+        'work_prune' => 'Expired results, jobs older than :days days',
         'activity_prune' => 'Entries older than :days days, sign-ins older than :auth_days days',
     ],
     'results' => [
@@ -101,6 +105,7 @@ return [
         'skipped_tables' => 'Skipped (being refreshed right now): :tables.',
         'failed_tables' => 'Failed:',
         'task_runs_prune' => ':deleted runs deleted.',
+        'work_prune' => 'Jobs deleted: :deleted, result folders deleted: :files.',
         'activity_prune' => ':deleted entries deleted, :auth of them sign-ins.',
     ],
     'status' => [

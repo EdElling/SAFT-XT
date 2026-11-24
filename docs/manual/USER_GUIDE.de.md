@@ -112,6 +112,12 @@ Firmen-Login abgemeldet.
   für Ihr Konto vorgeschrieben, führt SAFT Sie nach der Anmeldung direkt zur Einrichtung. Bei der Anmeldung per Single
   Sign-On entfällt sie – dort ist Ihre Firma zuständig. Handy und Codes verloren: Die Administration setzt den zweiten
   Faktor zurück.
+- **Meine Arbeiten:** Lange Arbeiten – etwa das Neuberechnen vieler Datensätze – erledigt SAFT in Schritten. Im
+  Benutzermenü zeigt **Meine Arbeiten**, was Sie gestartet haben, mit Status und Fortschritt. Öffnen Sie eine Arbeit,
+  sehen Sie einen Fortschrittsbalken; solange die Seite offen ist, arbeitet SAFT zügig weiter. Sie dürfen die Seite
+  auch schliessen: Die Arbeit läuft im Hintergrund weiter, und die Glocke meldet, wenn sie fertig oder fehlgeschlagen
+  ist. **Abbrechen** beendet sie nach dem laufenden Schritt. Liefert eine Arbeit eine Datei, laden Sie sie mit
+  **Ergebnis herunterladen** – sie bleibt 24 Stunden verfügbar.
 
 - **Links** befindet sich das **Menü**. Es zeigt nur die Bereiche, für die Sie Rechte haben. Unter **Daten**
   finden Sie die Tabellen, unter **Administration** die Verwaltungsfunktionen. Einträge mit einem Pfeil **›** rechts sind
@@ -152,7 +158,7 @@ Firmen-Login abgemeldet.
 | Anmeldeaktivität | Anmeldungen der letzten 7 Tage, Fehlversuche, angemeldete Benutzer | Admins |
 | Benutzerübersicht | aktive, inaktive Benutzer, Benutzer ohne Rolle, mit SSO | Admins |
 | Identity-Provider-Status | Zustand der Single-Sign-On-Anbindungen, ablaufende Zertifikate | Admins |
-| Geplante Aufgaben | Ampel (alles in Ordnung, fehlgeschlagene Aufgaben, Scheduler läuft nicht) und die letzten Läufe | Admins |
+| Geplante Aufgaben | Ampel (alles in Ordnung, fehlgeschlagene Aufgaben, Scheduler läuft nicht, hängende oder fehlgeschlagene Arbeiten) und die letzten Läufe | Admins |
 | Letzte Änderungen (systemweit) | die jüngsten Einträge im Änderungsprotokoll | Admins |
 
 > **Sicherheitstipp:** Zeigt „Meine letzte Anmeldung“ einen Zeitpunkt, an dem Sie sich nicht angemeldet haben,

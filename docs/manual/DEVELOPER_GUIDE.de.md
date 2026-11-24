@@ -61,7 +61,8 @@ mitbringen:
 unabhängig von SAFT – derzeit **1.10**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, alle Klassen unter `App\Plugins\Api` (ausser
 `ApiManifest`), die Test-Basis `App\Plugins\Testing\PluginTestCase`, für Arten geplanter Aufgaben
-`App\Tasks\TaskType`, `App\Tasks\TaskResult` und `App\Tasks\TaskSkipped` sowie das Trait
+`App\Tasks\TaskType`, `App\Tasks\TaskResult` und `App\Tasks\TaskSkipped`, für Arten von Arbeiten `App\Work\WorkType`,
+`App\Work\WorkPlan`, `App\Work\WorkStep`, `App\Work\StepOutcome` und `App\Work\WritesRecords` sowie das Trait
 `App\Filament\Concerns\LimitsFormWidth`; von `App\Models\DynamicRecord` (Datensätze) und
 `App\Models\User` nur die Klasse als Typ mit ihrem Eloquent-Verhalten. Innerhalb einer API-Major-Version bleibt alles
 kompatibel. Alle übrigen Klassen von SAFT sind intern – Plugins verwenden sie nicht (ein Test prüft das). Einzelheiten:
@@ -290,6 +291,7 @@ final class LagerUmbuchungPlugin extends SaftPlugin
 | `permissions()` | nein | Aktion => Bezeichnung; der Name des Rechts ist `<id>.<aktion>` (`permissionName('execute')`) |
 | `menuSuggestions()` | nein | Liste von `MenuSuggestion`, siehe [Kapitel 7](#7-rechte-und-menü) |
 | `taskTypes()` | nein | Klassen zusätzlicher Arten geplanter Aufgaben, siehe [Anhang A.8](#a8-geplante-aufgaben) |
+| `workTypes()` | nein | Klassen zusätzlicher Arten von Arbeiten (lange Arbeiten in Schritten, seit API 1.10), siehe [Anhang A.8](#a8-geplante-aufgaben) |
 | `requiredTables()` | nein | Tabellen und Felder des Table-Designers, die das Plugin braucht, siehe [Kapitel 9](#9-auf-daten-zugreifen) |
 | `recordListeners()` | nein | Listener für Änderungen an Tabellen, siehe [Kapitel 10](#10-auf-änderungen-reagieren-ereignisse) |
 | `dataActions()` | nein | Knöpfe in Datenansichten, siehe [Kapitel 11](#11-aktionen-in-datenansichten) |
@@ -430,6 +432,7 @@ Saft::transaction(function (): void { /* mehrere Änderungen: alles oder nichts 
 | `->url($datensatz)` | Adresse der Datenansicht, mit dem Datensatz ausgewählt (ohne `$datensatz`: die Tabelle) – für Links aus eigenen Seiten; die Rechte prüft die Datenansicht (seit API 1.9) |
 | `->withoutAuthorization()` | Kopie ohne Rechteprüfung, für Hintergrundarbeit |
 | `Saft::transaction(fn …)` | Mehrere Änderungen als Einheit. Jede einzelne Änderung (`create`, `update`, `delete`) ist für sich schon eine Transaktion über Datensatz, Summen in Master-Datensätzen, Dateien und Protokoll (seit API 1.10) |
+| `Saft::startWork($art, $parameter)` | Eine [Arbeit](#a8-geplante-aufgaben) starten (seit API 1.10), als angemeldete Person in ihrer aktuellen App; liefert die Adresse der Arbeit mit Fortschritt |
 | `Saft::notify($person, $meldung)` | Benachrichtigung in die Glocke (siehe unten) |
 
 **Rechte:** Jede Methode prüft die Datenrechte der angemeldeten Person und wirft sonst eine
@@ -951,7 +954,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 | API | SAFT | Änderungen |
 |---|---|---|
-| **1.10** | 0.6.0 | Jede Änderung über `DataTable` (auch `$record->save()` auf einem Datensatz) läuft in einer eigenen Transaktion über Daten und Protokoll; `RecordSaved` und `RecordDeleted` laufen **innerhalb** dieser Transaktion – wirft ein Listener dort, wird die auslösende Änderung zurückgerollt (bisher nur in der Dokumentation so beschrieben). `Saft::transaction()` und `DataTable::transaction()` fassen mehrere Änderungen in einer Transaktion zusammen (unverändert). Optimistische Sperre: `DataTable::version()`, `update()` mit `$expectedVersion`, `StaleRecordException`. Neu: `DynamicRecord::definition()` (intern, kein Vertrag) |
+| **1.10** | 0.6.0 | Jede Änderung über `DataTable` (auch `$record->save()` auf einem Datensatz) läuft in einer eigenen Transaktion über Daten und Protokoll; `RecordSaved` und `RecordDeleted` laufen **innerhalb** dieser Transaktion – wirft ein Listener dort, wird die auslösende Änderung zurückgerollt (bisher nur in der Dokumentation so beschrieben). `Saft::transaction()` und `DataTable::transaction()` fassen mehrere Änderungen in einer Transaktion zusammen (unverändert). Optimistische Sperre: `DataTable::version()`, `update()` mit `$expectedVersion`, `StaleRecordException`. Arten von Arbeiten: `SaftPlugin::workTypes()`, `Saft::startWork()`, `WorkType`, `WorkPlan`, `WorkStep`, `StepOutcome`, `WritesRecords`. Neu: `DynamicRecord::definition()` (intern, kein Vertrag) |
 | **1.9** | 0.5.0 | `DataTable::url()` – Adresse der Datenansicht mit ausgewähltem Datensatz, z. B. für Links aus einem Stundenplan |
 | **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` und `detachFile()` sowie `StoredFile` – Dateien aus Feldern vom Typ „Datei“ lesen, anhängen (mit den Prüfungen des Formulars) und entfernen |
 | **1.7** | 0.1 | `MenuSuggestion` mit optionalem `subgroup` – Menüvorschlag in ein Untermenü der Gruppe (dritte Ebene) |
@@ -1947,6 +1950,53 @@ $this->expectException(TaskSkipped::class);                // z. B. ohne Lager-D
   bewusst wählen.
 - **Lange Läufe:** Ein Lauf hat keine Zeitbegrenzung. Viele Daten in Stücken verarbeiten und das Ergebnis knapp
   halten.
+
+**Arbeiten statt langer Läufe (seit API 1.10):** Was eine Person anstösst und das länger als einige Sekunden dauert,
+gehört nicht in eine Aufgabe, sondern in eine **Art von Arbeit** (`SaftPlugin::workTypes()`). SAFT zerlegt sie in
+Schritte: `prepare()` liefert Startzustand und Menge, `step()` arbeitet einen Block ab und gibt den neuen Zustand
+zurück, bis `StepOutcome::finished()`. Zwischen zwei Schritten kann der Prozess wechseln (Browser der Person,
+Scheduler) – alles, was der nächste Schritt braucht, steht im Zustand. Jeder Schritt läuft als die startende Person;
+`WorkStep::remaining()` nennt die verbleibenden Sekunden, `WorkStep::path('datei.csv')` einen Pfad für eine
+Ergebnisdatei, die die Seite *Arbeiten* 24 Stunden zum Herunterladen anbietet (Name in `finished(…, ['file' => …])`).
+Schreibt die Art Datensätze, setzt sie zusätzlich `WritesRecords` um: Dann sind ein Schritt und sein Fortschritt eine
+Transaktion. Gestartet wird eine Arbeit mit `Saft::startWork('lager_tafel_inventory_count', ['location' => …])`, als
+angemeldete Person in ihrer aktuellen App; die Methode liefert die Adresse der Arbeit – leiten Sie dorthin weiter
+(`redirect($url)` in einer Aktion), dann sieht die Person den Fortschritt.
+
+```php
+use App\Work\StepOutcome;
+use App\Work\WorkPlan;
+use App\Work\WorkStep;
+use App\Work\WorkType;
+
+final class InventoryCountWork implements WorkType
+{
+    public function key(): string { return 'lager_tafel_inventory_count'; }
+
+    public function label(): string { return __('lager-tafel::work.inventory_count'); }
+
+    public function describe(array $parameters): string { return (string) ($parameters['location'] ?? ''); }
+
+    public function prepare(array $parameters): WorkPlan
+    {
+        // Menge für den Fortschrittsbalken; null, wenn unbekannt.
+        return new WorkPlan(['after' => 0], Saft::table('lager_bestaende')->query()->count());
+    }
+
+    public function step(WorkStep $step): StepOutcome
+    {
+        $rows = Saft::table('lager_bestaende')->query()
+            ->where('id', '>', $step->state['after'])->orderBy('id')->limit(500)->get();
+
+        if ($rows->isEmpty()) {
+            return StepOutcome::finished(__('lager-tafel::work.done'));
+        }
+
+        // … Block verarbeiten; der Cursor wandert mit.
+        return StepOutcome::continue(['after' => $rows->last()->id], $rows->count());
+    }
+}
+```
 
 ### A.9 Handbuch mitliefern
 

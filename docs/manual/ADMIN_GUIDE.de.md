@@ -945,6 +945,7 @@ deren **Parameter** und einen **Zeitplan**:
 | Datenstände bereinigen (System) | – | setzt die Aufbewahrung aller Datenstände durch, auch ohne neue Aktualisierung, und räumt abgebrochene Läufe auf; Vorgabe täglich 03:15 |
 | Laufprotokoll bereinigen (System) | Läufe aufbewahren (Tage, Vorgabe 90) | löscht ältere Einträge im Laufprotokoll; Vorgabe täglich 03:30 |
 | Änderungsprotokoll kürzen (System) | Protokoll aufbewahren (Tage, Vorgabe 365); Anmeldungen aufbewahren (Tage, Vorgabe 90) | löscht ältere Einträge im Änderungsprotokoll endgültig (Kapitel 8); ausgeliefert ausgeschaltet, das Dashboard weist auf ältere Einträge hin; Vorgabe täglich 03:45 |
+| Arbeiten aufräumen (System) | Arbeiten aufbewahren (Tage, Vorgabe 30) | löscht Ergebnisdateien der [Arbeiten](#arbeiten) nach 24 Stunden und beendete Arbeiten nach der eingestellten Zahl von Tagen; Vorgabe stündlich zur Minute 20 |
 | Datenbank sichern (System) | Dateien aus Dateifeldern mitsichern (Vorgabe an) | Sicherung wie `php artisan db:backup` nach `storage/backups`, die Dateien aus Dateifeldern als ZIP daneben (nur wenn sie auf dem Server liegen); scheitert sie, nennt der Lauf den Grund und die Glocke meldet es den Super-Admins; Vorgabe täglich 02:30 |
 | Sicherungen aufräumen (System) | Sicherungen aufbewahren (Tage, Vorgabe 14); mindestens behalten (Vorgabe 3) | löscht ältere Sicherungen in `storage/backups` (eine Sicherung und ihr ZIP zählen als eine), die neuesten bleiben immer; Vorgabe täglich 02:45 |
 | Dateien aufräumen (System) | – | löscht verwaiste Dateien aus Dateifeldern: Uploads aus abgebrochenen Formularen, Dateien von Datensätzen, die es nicht mehr gibt, und Dateien ohne Eintrag – jeweils erst nach 24 Stunden; fehlende Dateien nennt der Lauf nur; Vorgabe täglich 03:00 |
@@ -999,6 +1000,39 @@ Server (siehe [Systemadministration](SYSADMIN_GUIDE.de.md#4-geplante-aufgaben-un
 
 **App:** Aufgaben zu einer Tabelle gehören zu deren [App](#15-apps-fachanwendungen); für andere Aufgaben wählen
 Sie die App. System-Aufgaben gehören zu keiner App.
+
+### Arbeiten
+
+Lange Arbeiten erledigt SAFT in kurzen Schritten mit gespeichertem Zwischenstand, damit sie an keinem Zeitlimit des
+Webservers scheitern. Heute gibt es die Art **Berechnete Felder neu berechnen** (`php artisan computed:recompute`,
+siehe [Systemadministration](SYSADMIN_GUIDE.de.md#4-geplante-aufgaben-und-cron)); Plugins können eigene Arten
+mitbringen.
+
+**Administration › Betrieb › Arbeiten** (Recht *Arbeiten: alle sehen*) listet die Arbeiten aller Personen, im Reiter
+**Meine** nur die eigenen. Ohne dieses Recht sieht jede Person ihre eigenen Arbeiten über **Meine Arbeiten** im
+Benutzermenü. Spalten: Art mit Beschreibung, gestartet von (*System* für Arbeiten aus der Konsole), App, Status
+(wartet, läuft, fertig, fehlgeschlagen, abgebrochen), Fortschritt, gestartet, Dauer und Meldung. Solange etwas läuft,
+aktualisiert sich die Liste selbst.
+
+**Wie eine Arbeit läuft:** Solange die startende Person die Seite der Arbeit offen hat, treibt ihr Browser sie voran.
+Schliesst sie die Seite, übernimmt der Scheduler nach 30 Sekunden, und die Glocke meldet am Ende „fertig“ oder
+„fehlgeschlagen“. Bricht ein Schritt ab (etwa am Zeitlimit des Servers), setzt der nächste beim gespeicherten Stand
+fort; bricht derselbe Schritt dreimal ab, gilt die Arbeit als fehlgeschlagen. Im Hintergrund läuft eine Arbeit mit den
+Rechten der startenden Person – unter *Ansicht als Rolle* mit den gewählten Rollen – und in der App, in der sie
+gestartet wurde. Ohne Scheduler (Cron) laufen Arbeiten nur bei offener Seite weiter.
+
+**Abbrechen:** eigene Arbeiten immer, fremde mit dem Recht *Arbeiten: fremde abbrechen*. Eine wartende Arbeit endet
+sofort, eine laufende nach dem aktuellen Schritt. Was eine schreibende Arbeit bis dahin geändert hat, bleibt: Jeder
+Schritt wird ganz oder gar nicht gespeichert.
+
+**Ergebnisse:** Liefert eine Arbeit eine Datei, steht sie 24 Stunden unter **Ergebnis herunterladen** bereit – für die
+startende Person und mit *Arbeiten: alle sehen*. Die System-Aufgabe **Arbeiten aufräumen** löscht danach die Datei und
+nach 30 Tagen die Arbeit selbst.
+
+**Fehlschlag:** Wie bei den Aufgaben nennt die Meldung eine Referenz; **Details** (Recht *Arbeiten: technische Details
+sehen*) zeigt Fehler, Ort und Ablauf. Das Dashboard-Widget **Geplante Aufgaben** meldet Arbeiten, die seit über
+10 Minuten keinen Fortschritt machen (meist läuft dann der Scheduler nicht), und Arbeiten, die in den letzten
+24 Stunden fehlgeschlagen sind. Start, Ende, Abbruch und Fehlschlag stehen im Änderungsprotokoll.
 
 ---
 
@@ -1757,6 +1791,9 @@ entfernen**. „Anzeigen“ ist jeweils Voraussetzung für die übrigen Rechte e
 | Geplante Aufgaben: anzeigen | Liste der Aufgaben und ihrer Läufe |
 | Geplante Aufgaben: anlegen / bearbeiten / löschen | Aufgaben einrichten, ändern (auch „Jetzt ausführen“), entfernen |
 | Geplante Aufgaben: technische Details sehen | Fehlerdetails fehlgeschlagener Läufe (Stack-Trace) |
+| Arbeiten: alle sehen | Seite „Arbeiten“ mit den Arbeiten aller Personen; deren Ergebnisse herunterladen |
+| Arbeiten: fremde abbrechen | Arbeiten anderer Personen abbrechen (eigene darf jede Person abbrechen) |
+| Arbeiten: technische Details sehen | Fehlerdetails fehlgeschlagener Arbeiten (Stack-Trace) |
 | Systemprotokoll: anzeigen | die Logdatei des Servers lesen (nur lesen) |
 | Hilfe: Assistent nutzen | den KI-Hilfe-Assistenten (Knopf „?“) verwenden |
 

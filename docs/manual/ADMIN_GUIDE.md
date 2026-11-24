@@ -916,6 +916,7 @@ foreign key). For large connected tables the source field should have an index i
 | Clean up snapshots (system) | – | enforces the retention of all snapshots, also without a new refresh, and cleans up aborted runs; default daily 03:15 |
 | Clean up run log (system) | keep runs (days, default 90) | deletes older entries in the run log; default daily 03:30 |
 | Trim activity log (system) | keep activity log (days, default 365); keep sign-ins (days, default 90) | permanently deletes older entries in the activity log (chapter 8); shipped switched off, the dashboard points out older entries; default daily 03:45 |
+| Clean up jobs (system) | keep jobs (days, default 30) | deletes result files of [jobs](#jobs) after 24 hours and finished jobs after the set number of days; default hourly at minute 20 |
 | Back up database (system) | include files from file fields (default on) | backup like `php artisan db:backup` to `storage/backups`, the files from file fields as a ZIP alongside (only if they are stored on the server); if it fails, the run names the reason and the bell notifies the super admins; default daily 02:30 |
 | Clean up backups (system) | keep backups (days, default 14); always keep at least (default 3) | deletes older backups in `storage/backups` (a backup and its ZIP count as one), the newest always stay; default daily 02:45 |
 | Clean up files (system) | – | deletes orphaned files from file fields: uploads from cancelled forms, files of records that no longer exist and files without entry – each only after 24 hours; the run only names missing files; default daily 03:00 |
@@ -966,6 +967,38 @@ currently not running".
 
 **App:** tasks for a table belong to its [app](#15-apps-business-applications); for other tasks you choose the
 app. System tasks belong to no app.
+
+
+### Jobs
+
+SAFT does long jobs in short steps with a saved intermediate state, so that they do not fail at a time limit of the
+web server. Today there is the type **Recompute computed fields** (`php artisan computed:recompute`, see
+[System administration](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)); plugins can bring their own types.
+
+**Administration › Operations › Jobs** (permission *Jobs: see all*) lists the jobs of all people, the tab **Mine** only
+your own. Without this permission, everyone sees their own jobs via **My jobs** in the user menu. Columns: type with
+description, started by (*System* for jobs from the console), app, status (queued, running, done, failed, cancelled),
+progress, started, duration and message. While something is running, the list refreshes itself.
+
+**How a job runs:** As long as the person who started it has the job's page open, their browser drives it forward. If
+they close the page, the scheduler takes over after 30 seconds, and the bell reports "done" or "failed" at the end. If a
+step is aborted (for example at the server's time limit), the next one continues from the saved state; if the same step
+is aborted three times, the job counts as failed. In the background a job runs with the permissions of the person who
+started it – under *View as role* with the chosen roles – and in the app in which it was started. Without the
+scheduler (cron), jobs only continue while the page is open.
+
+**Cancel:** your own jobs always, other people's with the permission *Jobs: cancel other people's*. A queued job ends
+at once, a running one after the current step. What a writing job has changed until then stays: each step is saved
+completely or not at all.
+
+**Results:** If a job produces a file, it is available for 24 hours under **Download result** – for the person who
+started it and with *Jobs: see all*. The system task **Clean up jobs** then deletes the file and, after 30 days, the job
+itself.
+
+**Failure:** As with tasks, the message gives a reference; **Details** (permission *Jobs: see technical details*) shows
+error, location and trace. The dashboard widget **Scheduled tasks** reports jobs without progress for over 10 minutes
+(usually the scheduler is not running) and jobs that failed in the last 24 hours. Start, end, cancellation and failure
+are recorded in the activity log.
 
 ---
 
@@ -1710,6 +1743,9 @@ reserved for the super admin and cannot be granted to any role: **View as role**
 | Scheduled tasks: view | list of tasks and their runs |
 | Scheduled tasks: create / edit / delete | set up, change (also “Run now”), remove tasks |
 | Scheduled tasks: see technical details | error details of failed runs (stack trace) |
+| Jobs: see all | "Jobs" page with the jobs of all people; download their results |
+| Jobs: cancel other people's | cancel jobs of other people (everyone may cancel their own) |
+| Jobs: see technical details | error details of failed jobs (stack trace) |
 | System log: view | read the server's log file (read only) |
 | Help: use assistant | use the AI help assistant (“?” button) |
 

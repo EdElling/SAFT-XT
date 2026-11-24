@@ -11,6 +11,7 @@ use App\Tasks\Types\SnapshotConnectionRefreshTask;
 use App\Tasks\Types\SnapshotPruneTask;
 use App\Tasks\Types\SnapshotRefreshTask;
 use App\Tasks\Types\TaskRunsPruneTask;
+use App\Tasks\Types\WorkPruneTask;
 
 /*
 | Geplante Aufgaben (Administration › Geplante Aufgaben). Ausgeführt vom Laravel-Scheduler
@@ -28,6 +29,7 @@ return [
         DatabaseBackupTask::class,
         BackupPruneTask::class,
         DemoResetTask::class,
+        WorkPruneTask::class,
     ],
 
     // Ein Lauf, der länger als so viele Stunden auf „läuft“ steht, gilt als abgebrochen.

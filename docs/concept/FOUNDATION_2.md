@@ -1,6 +1,6 @@
 # Konzept: Fundament 2 (Schreibweg, Nebenläufigkeit, Hintergrundarbeit, Formelsprache, Qualitätssicherung)
 
-Stand: 23.11.2026 · Status: **F0, F1, F2 und F4 umgesetzt (23.11.2026), F3 und F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
+Stand: 23.11.2026 · Status: **F0, F1, F2, F4 (23.11.2026) und F3a (24.11.2026) umgesetzt, F3b und F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
 
 ## 1. Ziel
 
@@ -228,9 +228,12 @@ Fortschritt, Dauer, Ergebnis, Abbrechen. Aufräumen: System-Aufgabe „Arbeiten 
   Vertrag oben) und hat keine Oberfläche. Der Befehl startet eine Arbeit und treibt sie in der Konsole selbst voran,
   mit `--background` überlässt er sie `work:run`. Die Nachberechnung nach Formeländerungen im Table-Designer bleibt
   bis F3b synchron.
-- **Plugins** steuern Arten über `SaftPlugin::workTypes()` bei (Plugin-API 1.10, noch unveröffentlicht).
+- **Plugins** steuern Arten über `SaftPlugin::workTypes()` bei und starten Arbeiten mit `Saft::startWork()`, das die
+  Adresse der Arbeit liefert (Plugin-API 1.10, noch unveröffentlicht). Ohne `startWork()` wären Arten für Plugins
+  nutzlos gewesen, weil Plugins nur die API verwenden dürfen.
 - **Zugang:** „Meine Arbeiten“ im Benutzermenü für alle, „Betrieb › Arbeiten“ für `work.view_any`; dieselbe Seite.
-  Rechte `work.view_any`, `work.cancel_any`, `work.details`. Eigene Arbeiten sehen und abbrechen darf jede Person.
+  Rechte `work.view_any`, `work.cancel_any`, `work.details` (im Rollen-Dialog unter „Arbeiten“; Rollen mit
+  `tasks.details` erhalten `work.details` per Migration). Eigene Arbeiten sehen und abbrechen darf jede Person.
 - **Benachrichtigung** (Datenbank-Benachrichtigung des Panels), wenn eine Arbeit nicht im Browser zu Ende ging.
 - **Aufräumen** als System-Aufgabe `work_prune`, ab Werk aktiv und stündlich (die 24 h für Ergebnisse sollen auch
   eingehalten werden). Der Treiber Queue folgt mit F3b.
@@ -326,7 +329,7 @@ darauf statt auf Laravel-Boost-Boilerplate; `CLAUDE.md` wird auf PHP 8.4 und den
 | **F0 Vorbereitung** | **Umgesetzt 23.11.2026** (Commits 2a89a7c, a1512a6, 5562d44, a8277c7, 0bfb415): Larastan Level 5 mit Baseline (336 Meldungen, von 946), Architekturtests 1 und 2, 95 Migrationen umnummeriert, `make:migration` nummeriert, Aufgabenart `activity_prune` (inaktiv, Dashboard-Hinweis), `strict_types` über Pint. Keine Verhaltensänderung für Anwender. | klein |
 | **F1 Schreibweg** | **Umgesetzt 23.11.2026:** `RecordWriter`, `WriteOptions`, `WriteContext`, `WritePhases`; zwei Transaktionen je Vorgang; Umstellung von Datenansicht, Import, Kopieren, Dokumenten, Nachführung, Demo-Reset und Plugin-API; Architekturtest 3; Plugin-API 1.10; Entwickler- und Admin-Handbuch | gross |
 | **F2 Nebenläufigkeit** | **Umgesetzt 23.11.2026:** `RecordVersion`, `StaleRecordException`, Prüfung mit `lockForUpdate()` im Writer, Meldung mit „Neu laden / Trotzdem speichern“ in Datenansicht und Detailtabelle, elf Edit-Seiten der Verwaltung, Plugin-API, Browser-Test EIN-18, Handbücher | mittel |
-| **F3a Arbeiten** | `work_items`, `WorkType`, Treiber Browser und Scheduler, Seite „Arbeiten“, Aufräumen, Dashboard | mittel |
+| **F3a Arbeiten** | **Umgesetzt 24.11.2026:** `work_items`, `WorkType` (Plugin-API 1.10 mit `SaftPlugin::workTypes()` und `Saft::startWork()`), `WorkRunner` mit Treibern Browser (`WorkProgress`) und Scheduler (`work:run`), Seite „Arbeiten“ bzw. „Meine Arbeiten“, Download, Benachrichtigung, Aufräumen (`work_prune`, stündlich), Dashboard; Pilot `computed:recompute` als Arbeit. Entscheide in §6.5 | mittel |
 | **F3b Umstellung** | Export, Datenimport, Dokumente, Datenstände, Recompute, KI-App-Designer und seine Auswertungen auf Arbeiten; Treiber Queue; Grenzen anheben; Handbücher | gross |
 | **F4 Formelsprache** | **Umgesetzt 23.11.2026:** `FORMULA_SPEC.md`, 75 Konformitätsfälle, `FormulaConformanceTest` auf drei Datenbanken (keine Abweichung gefunden), `FormulaSpecTest` gegen Drift | mittel |
 | **F5 Architektur** | `ARCHITECTURE.de.md`/`.md`, Lesestellen-Liste (Test 4), `AGENTS.md`, `CLAUDE.md` | klein |
