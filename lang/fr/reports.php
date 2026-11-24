@@ -134,6 +134,7 @@ return [
         ],
         'snapshot_creating' => 'Création de l’instantané …',
         'snapshot_failed' => 'Impossible de créer l’instantané pour « :table »',
+        'snapshot_pending' => 'L’instantané pour « :table » est créé en arrière-plan ; la table pourra être choisie ensuite.',
         'snapshot_created' => 'Instantané créé : :tables',
         'stale_heading' => 'Actualiser l’instantané ?',
         'stale_description' => 'L’instantané des tables suivantes date de plus de :hours heures :',

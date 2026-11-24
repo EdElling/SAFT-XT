@@ -134,6 +134,7 @@ return [
         ],
         'snapshot_creating' => 'Creazione dell’istantanea …',
         'snapshot_failed' => 'Impossibile creare l’istantanea per «:table»',
+        'snapshot_pending' => 'L’istantanea per «:table» viene creata in background; la tabella potrà essere scelta in seguito.',
         'snapshot_created' => 'Istantanea creata: :tables',
         'stale_heading' => 'Aggiornare l’istantanea?',
         'stale_description' => 'L’istantanea delle seguenti tabelle è più vecchia di :hours ore:',

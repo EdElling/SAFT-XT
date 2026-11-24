@@ -134,6 +134,7 @@ return [
         ],
         'snapshot_creating' => 'Datenstand wird erzeugt …',
         'snapshot_failed' => 'Datenstand für „:table“ konnte nicht erzeugt werden',
+        'snapshot_pending' => 'Datenstand für „:table“ wird im Hintergrund erzeugt; die Tabelle lässt sich danach wählen.',
         'snapshot_created' => 'Datenstand erzeugt: :tables',
         'stale_heading' => 'Datenstand erneuern?',
         'stale_description' => 'Der Datenstand folgender Tabellen ist älter als :hours Stunden:',

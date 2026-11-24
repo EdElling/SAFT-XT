@@ -54,7 +54,7 @@ final class CleaningWork implements CleansUp, WorkType
         return $number === 3 ? StepOutcome::finished('Drei Schritte', [], 1) : StepOutcome::continue(['step' => $number], 1);
     }
 
-    public function abort(WorkStep $step, string $status): void
+    public function abort(WorkStep $step, string $status, string $message): void
     {
         self::$aborts[] = ['state' => $step->state, 'status' => $status, 'user' => Auth::id()];
 

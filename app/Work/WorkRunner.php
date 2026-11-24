@@ -188,7 +188,7 @@ final readonly class WorkRunner
     public function finish(WorkItem $item, string $status, string $message, array $result = [], ?array $errorDetail = null): void
     {
         if (in_array($status, [WorkItem::FAILED, WorkItem::CANCELLED], true)) {
-            $this->cleanUp($item, $status);
+            $this->cleanUp($item, $status, $message);
         }
 
         $item->forceFill([
@@ -214,7 +214,7 @@ final readonly class WorkRunner
      * Arten mit CleansUp räumen mit dem letzten gespeicherten Zustand auf. Ein Fehler dabei hält den Abschluss nicht
      * auf, er steht nur im Protokoll.
      */
-    private function cleanUp(WorkItem $item, string $status): void
+    private function cleanUp(WorkItem $item, string $status, string $message): void
     {
         $registry = app(WorkRegistry::class);
         $type = $registry->has($item->type) ? $registry->get($item->type) : null;
@@ -225,7 +225,7 @@ final readonly class WorkRunner
 
         try {
             $step = new WorkStep($item->parameterValues(), (array) ($item->state ?? []), microtime(true), $item->directory());
-            $this->within($item, fn () => $type->abort($step, $status));
+            $this->within($item, fn () => $type->abort($step, $status, $message));
         } catch (Throwable $e) {
             Log::warning('Aufräumen einer Arbeit fehlgeschlagen', ['work' => $item->uuid, 'type' => $item->type, 'error' => $e->getMessage(), 'exception' => $e]);
         }

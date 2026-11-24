@@ -11,9 +11,10 @@ use App\Models\CustomTable;
 use App\Models\DataSnapshot;
 use App\Models\ScheduledTask;
 use App\Models\TaskRun;
+use App\Models\WorkItem;
 use App\Tasks\TaskRunner;
+use App\Work\WorkService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
 use Tests\Concerns\InteractsWithAdmin;
@@ -61,18 +62,22 @@ class SnapshotTasksTest extends TestCase
         $this->assertSame(20, $snapshot->row_count);
         $this->assertNull($snapshot->created_by, 'Automatisch, ohne Person.');
         $this->assertNull(Activity::query()->where('event', 'snapshot_created')->sole()->causer_id);
-        $this->assertSame(['snapshot_id' => $snapshot->id, 'rows' => 20], $run->result);
+        $this->assertSame(['snapshot_id' => $snapshot->id, 'rows' => 20, 'work' => $snapshot->work->uuid], $run->result, 'Der Lauf nennt die Arbeit.');
+        $this->assertSame([WorkItem::DONE, 20, 20], [$snapshot->work->status, $snapshot->work->done, $snapshot->work->total]);
     }
 
     public function test_refresh_of_the_same_table_never_runs_twice(): void
     {
-        $lock = Cache::lock('snapshots:table:'.$this->people()->id, 60);
-        $this->assertTrue($lock->get());
+        $busy = $this->busySnapshot($this->people());
 
         $run = app(TaskRunner::class)->run($this->refreshTask(), TaskRun::SCHEDULE);
         $this->assertSame(ScheduledTask::SKIPPED, $run->status);
         $this->assertSame('Diese Tabelle wird gerade aktualisiert. Bitte später noch einmal versuchen.', $run->message);
-        $lock->release();
+
+        // Abbruch der laufenden Arbeit: der halbe Stand ist fehlgeschlagen, die Tabelle wieder frei.
+        app(WorkService::class)->cancel($busy);
+        $this->assertSame([DataSnapshot::FAILED, 'Abgebrochen.'], [DataSnapshot::query()->sole()->status, DataSnapshot::query()->sole()->message]);
+        $this->assertSame(ScheduledTask::SUCCESS, app(TaskRunner::class)->run($this->refreshTask(), TaskRun::SCHEDULE)->status);
 
         // Fehlt die Tabelle, schlägt die Aufgabe mit einer klaren Meldung fehl.
         $gone = ScheduledTask::create(['type' => 'snapshot_refresh', 'parameters' => ['table_id' => 999999], 'frequency' => 'daily']);
@@ -88,7 +93,7 @@ class SnapshotTasksTest extends TestCase
         $people->update(['snapshot_max_days' => 7]);
         $old->update(['finished_at' => now()->subDays(10)]);
 
-        // Abgebrochener Lauf von vor 3 Stunden mit halb kopierten Zeilen.
+        // Verwaister Lauf von vor 3 Stunden (Arbeit weg) mit halb kopierten Zeilen.
         $aborted = DataSnapshot::create(['custom_table_id' => $people->id, 'status' => DataSnapshot::RUNNING, 'started_at' => now()->subHours(3)]);
         $copy = app(DynamicDataNamespace::class)->connection()->table($service->qualified($people));
         $row = (array) $copy->where(SnapshotService::SNAPSHOT_COLUMN, $newest->id)->first();

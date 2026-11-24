@@ -7,6 +7,7 @@ return [
     'description' => 'Unveränderliche Kopien dieser Tabelle für Auswertungen. Auswertungen rechnen immer mit dem neuesten vollständigen Stand. Löschungen in der Quelle wirken erst mit dem nächsten Stand; ältere Stände entfernt die Aufbewahrung.',
     'refresh' => 'Jetzt aktualisieren',
     'refreshed' => 'Datenstand gezogen: :rows Zeilen',
+    'started' => 'Der Datenstand wird im Hintergrund gezogen; die Liste zeigt ihn, sobald er vollständig ist.',
     'retention' => 'Aufbewahrung',
     'keep' => 'Letzte Stände behalten',
     'keep_help' => 'Mindestens 1; der neueste Stand bleibt immer.',

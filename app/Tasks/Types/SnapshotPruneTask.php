@@ -11,7 +11,7 @@ use App\Tasks\TaskType;
 
 /**
  * System-Aufgabe: Aufbewahrungsfristen aller Datenstände durchsetzen, auch ohne neue Aktualisierung
- * (Datenschutz), und abgebrochene Läufe aufräumen.
+ * (Datenschutz), und verwaiste Stände „läuft“ aufräumen (ihre Arbeit ist weg, ohne aufgeräumt zu haben).
  */
 final readonly class SnapshotPruneTask implements TaskType
 {
@@ -44,7 +44,7 @@ final readonly class SnapshotPruneTask implements TaskType
 
     public function run(array $parameters): TaskResult
     {
-        $aborted = $this->snapshots->failHanging((int) config('tasks.snapshot_hanging_hours', 2));
+        $aborted = $this->snapshots->failAbandoned();
         $deleted = 0;
 
         foreach (CustomTable::query()->external()->whereHas('snapshots')->get() as $table) {

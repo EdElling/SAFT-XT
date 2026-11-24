@@ -17,6 +17,7 @@ return [
         'export' => 'Exporter',
         'documents' => 'Créer des documents',
         'record_import' => 'Importer des données',
+        'snapshot_refresh' => 'Prendre un état des données',
     ],
     'export' => [
         'done' => '1 ligne exportée.|:count lignes exportées.',

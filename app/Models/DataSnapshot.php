@@ -34,6 +34,21 @@ class DataSnapshot extends BaseDataSnapshot
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * Die Arbeit, die den Stand zieht oder gezogen hat (Fundament 2, F3b); leer, wenn sie aufgeräumt wurde.
+     *
+     * @return BelongsTo<WorkItem, $this>
+     */
+    public function work(): BelongsTo
+    {
+        return $this->belongsTo(WorkItem::class, 'work_item_id');
+    }
+
+    public function isRunning(): bool
+    {
+        return $this->status === self::RUNNING;
+    }
+
     public function isComplete(): bool
     {
         return $this->status === self::COMPLETE;

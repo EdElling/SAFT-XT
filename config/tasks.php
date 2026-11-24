@@ -38,6 +38,4 @@ return [
     // Läuft der Scheduler länger nicht, warnt die Verwaltung (Minuten).
     'heartbeat_minutes' => (int) env('TASKS_HEARTBEAT_MINUTES', 15),
 
-    // Datenstände, die so lange auf „läuft“ stehen, entfernt die Aufgabe „Datenstände bereinigen“.
-    'snapshot_hanging_hours' => (int) env('TASKS_SNAPSHOT_HANGING_HOURS', 2),
 ];

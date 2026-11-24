@@ -9,11 +9,11 @@ namespace App\Work;
  * angelegte Datensätze, eine Zwischentabelle). Der Runner ruft abort() vor dem Abschluss als „fehlgeschlagen“ oder
  * „abgebrochen“ als die startende Person – auch beim sofortigen Abbruch einer wartenden Arbeit, dann mit leerem Zustand.
  * $step trägt Parameter, den letzten gespeicherten Zustand und den Ordner der Arbeit (ohne Zeitbudget); dessen Dateien
- * löscht der Runner danach selbst.
+ * löscht der Runner danach selbst. $message ist die Meldung, mit der die Arbeit endet (Fehler oder „Abgebrochen“).
  *
  * @api
  */
 interface CleansUp
 {
-    public function abort(WorkStep $step, string $status): void;
+    public function abort(WorkStep $step, string $status, string $message): void;
 }

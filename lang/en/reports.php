@@ -134,6 +134,7 @@ return [
         ],
         'snapshot_creating' => 'Creating data snapshot …',
         'snapshot_failed' => 'Could not create a data snapshot for “:table”',
+        'snapshot_pending' => 'The data snapshot for “:table” is being created in the background; the table can be chosen afterwards.',
         'snapshot_created' => 'Data snapshot created: :tables',
         'stale_heading' => 'Refresh data snapshot?',
         'stale_description' => 'The data snapshot of the following tables is older than :hours hours:',

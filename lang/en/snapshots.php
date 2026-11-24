@@ -7,6 +7,7 @@ return [
     'description' => 'Immutable copies of this table for reports. Reports always use the newest complete snapshot. Deletions in the source take effect only with the next snapshot; retention removes older snapshots.',
     'refresh' => 'Refresh now',
     'refreshed' => 'Snapshot taken: :rows rows',
+    'started' => 'The snapshot is being taken in the background; the list shows it once it is complete.',
     'retention' => 'Retention',
     'keep' => 'Keep last snapshots',
     'keep_help' => 'At least 1; the newest snapshot is always kept.',

@@ -16,11 +16,16 @@ use App\Filament\Resources\TableConnector\RelationManagers\SnapshotsRelationMana
 use App\Models\CustomTable;
 use App\Models\DataSnapshot;
 use App\Models\User;
+use App\Models\WorkItem;
 use App\Reports\Editor\FieldCatalog;
 use App\Reports\InvalidReportException;
 use App\Reports\ReportDefinition;
 use App\Reports\ReportRunner;
 use App\Services\DynamicSchemaService;
+use App\Work\TimeLimit;
+use App\Work\Types\SnapshotRefreshWork;
+use App\Work\WorkRunner;
+use App\Work\WorkService;
 use Database\Seeders\ExternalResearchDatabase;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Database\Query\Builder;
@@ -229,6 +234,85 @@ class SnapshotTest extends TestCase
             'base' => $people->id,
             'fields' => [$this->ref('name', 'fdb_personen.nachname')],
         ]), $this->admin);
+    }
+
+    /** Als Arbeit in Schritten: Keyset-Cursor über den Schlüssel, Zeilen und Fortschritt je Schritt; Abbruch verwirft den Stand. */
+    public function test_snapshot_is_copied_in_steps_and_cancelling_discards_it(): void
+    {
+        config(['reports.snapshot_chunk' => 7]);
+        $people = $this->table('fdb_personen');
+        $good = $this->service()->refresh($people, $this->admin);
+        $this->assertSame(20, $good->row_count);
+        $this->assertSame([WorkItem::DONE, 20], [$good->work->status, $good->work->done]);
+
+        // Budget 0 (TimeLimit gefälscht, denn das Budget wird sonst auf 1 s aufgerundet): je Aufruf ein Block von 7 Zeilen.
+        app()->instance(TimeLimit::class, new class extends TimeLimit
+        {
+            public function budget(float $wanted, int $margin = 5): float
+            {
+                return 0.0;
+            }
+        });
+        $runner = app(WorkRunner::class);
+        $item = $this->service()->start($people, $this->admin);
+        $snapshot = DataSnapshot::query()->where('work_item_id', $item->id)->sole();
+        $this->assertSame([WorkItem::RUNNING, 7, 20, 7, DataSnapshot::RUNNING], [$item->status, $item->done, $item->total, $item->state['rows'], $snapshot->status]);
+        $this->assertSame(array_values($people->keyColumns()), array_keys($item->state['after']), 'Cursor sind die Schlüsselwerte der letzten Zeile.');
+        $this->assertSame(7, $this->copy($people)->where(SnapshotService::SNAPSHOT_COLUMN, $snapshot->id)->count());
+        $this->assertTrue($this->service()->busy($people));
+        $this->assertSame($item->id, $this->service()->openWork($people)?->id);
+
+        try {
+            $this->service()->start($people, $this->admin);
+            $this->fail('Beschäftigt erwartet.');
+        } catch (BusinessRuleException $e) {
+            $this->assertSame(SnapshotService::BUSY, $e->errorCode);
+        }
+
+        $item = $runner->advance($item, 0);
+        $this->assertSame(14, $this->copy($people)->where(SnapshotService::SNAPSHOT_COLUMN, $snapshot->id)->count(), 'Keine doppelten Zeilen.');
+
+        app(WorkService::class)->cancel($item);
+        $snapshot->refresh();
+        $this->assertSame([DataSnapshot::FAILED, 'Abgebrochen.'], [$snapshot->status, $snapshot->message]);
+        $this->assertSame(0, $this->copy($people)->where(SnapshotService::SNAPSHOT_COLUMN, $snapshot->id)->count(), 'Der halbe Stand ist weg.');
+        $this->assertSame($good->id, $people->latestSnapshot()?->id, 'Der vorherige bleibt gültig.');
+        $this->assertFalse($this->service()->busy($people));
+
+        // Zu Ende getrieben: drei Blöcke, dann der Rest.
+        $done = $runner->advance($this->service()->start($people, $this->admin), 30);
+        $this->assertSame([WorkItem::DONE, 'Datenstand gezogen: 20 Zeilen', 20], [$done->status, $done->message, $done->done]);
+        $this->assertSame(20, $people->latestSnapshot()?->row_count);
+    }
+
+    /** Reicht das Budget nicht, läuft der Stand im Hintergrund weiter: Hinweis mit Link, Status „läuft“ verweist auf die Arbeit. */
+    public function test_snapshot_tab_reports_a_snapshot_that_continues_in_the_background(): void
+    {
+        $this->actingAs($this->admin);
+        config(['reports.snapshot_chunk' => 7]);
+        app()->instance(TimeLimit::class, new class extends TimeLimit
+        {
+            public function budget(float $wanted, int $margin = 5): float
+            {
+                return 0.0;
+            }
+        });
+        $people = $this->table('fdb_personen');
+        $tab = fn () => Livewire::test(SnapshotsRelationManager::class, ['ownerRecord' => $people->fresh(), 'pageClass' => EditConnectedTable::class]);
+
+        $tab()->callTableAction('refreshSnapshot')->assertNotified('Der Datenstand wird im Hintergrund gezogen; die Liste zeigt ihn, sobald er vollständig ist.');
+        $snapshot = $people->snapshots()->sole();
+        $this->assertSame([DataSnapshot::RUNNING, WorkItem::RUNNING], [$snapshot->status, $snapshot->work->status]);
+        $tab()->assertSee('läuft');
+
+        // Noch einmal: beschäftigt.
+        $tab()->callTableAction('refreshSnapshot')->assertNotified('Diese Tabelle wird gerade aktualisiert. Bitte später noch einmal versuchen.');
+
+        // Der Scheduler zieht den Stand zu Ende.
+        $this->travel(1)->minutes();
+        $this->artisan('work:run')->assertSuccessful();
+        $this->assertSame([DataSnapshot::COMPLETE, 20], [$snapshot->fresh()->status, $snapshot->fresh()->row_count]);
+        $this->assertSame(1, Activity::query()->where('event', 'snapshot_created')->count());
     }
 
     public function test_snapshot_tab_refreshes_sets_retention_and_deletes(): void

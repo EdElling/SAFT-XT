@@ -12,7 +12,7 @@ use App\Tasks\TaskSkipped;
 use App\Tasks\TaskType;
 use Filament\Forms\Components\Select;
 
-/** Neuen Datenstand einer angebundenen Tabelle ziehen (Table-Connector › Datenstände). */
+/** Neuen Datenstand einer angebundenen Tabelle ziehen (Table-Connector › Datenstände) – als Arbeit, auf die der Lauf wartet. */
 final readonly class SnapshotRefreshTask implements TaskType
 {
     public const string KEY = 'snapshot_refresh';
@@ -73,7 +73,7 @@ final readonly class SnapshotRefreshTask implements TaskType
 
         return new TaskResult(
             __('tasks.results.snapshot_refresh', ['rows' => number_format((int) $snapshot->row_count, 0, '.', '\'')]),
-            ['snapshot_id' => $snapshot->id, 'rows' => (int) $snapshot->row_count],
+            ['snapshot_id' => $snapshot->id, 'rows' => (int) $snapshot->row_count, 'work' => $snapshot->work?->uuid],
         );
     }
 

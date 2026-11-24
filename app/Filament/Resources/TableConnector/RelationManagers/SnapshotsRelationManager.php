@@ -7,11 +7,13 @@ namespace App\Filament\Resources\TableConnector\RelationManagers;
 use App\Exceptions\BusinessRuleException;
 use App\ExternalData\Snapshots\SnapshotService;
 use App\Filament\Resources\ScheduledTasks\ScheduledTaskResource;
+use App\Filament\Resources\WorkItems\WorkItemResource;
 use App\Filament\Support\RowIcons;
 use App\Models\CustomTable;
 use App\Models\DataSnapshot;
 use App\Models\ScheduledTask;
 use App\Models\User;
+use App\Models\WorkItem;
 use App\Tasks\SnapshotSchedules;
 use App\Tasks\Types\SnapshotRefreshTask;
 use Filament\Actions\Action;
@@ -25,7 +27,9 @@ use Illuminate\Support\HtmlString;
 
 /**
  * Datenstände einer angebundenen Tabelle: Liste, „Jetzt aktualisieren“, Aufbewahrung und Löschen.
- * Ansehen mit table_connector.view, alles Ändernde mit table_connector.update.
+ * Ansehen mit table_connector.view, alles Ändernde mit table_connector.update. Gezogen wird ein Stand als Arbeit
+ * (Fundament 2, F3b): kleine Tabellen sind nach der kurzen Mitarbeit im Request fertig, grosse laufen im Hintergrund –
+ * der Stand „läuft“ verweist auf seine Arbeit, die Liste fragt derweil nach.
  */
 class SnapshotsRelationManager extends RelationManager
 {
@@ -96,7 +100,8 @@ class SnapshotsRelationManager extends RelationManager
     {
         return $table
             ->description(fn (): HtmlString => new HtmlString(e(__('snapshots.description')).'<br><span data-snapshot-schedule>'.$this->scheduleLine().'</span>'))
-            ->modifyQueryUsing(fn ($query) => $query->with('creator'))
+            ->modifyQueryUsing(fn ($query) => $query->with(['creator', 'work']))
+            ->poll(fn (): ?string => $this->ownerTable()->snapshots()->where('status', DataSnapshot::RUNNING)->exists() ? '5s' : null)
             ->defaultSort('started_at', 'desc')
             ->emptyStateHeading(__('snapshots.none'))
             ->columns([
@@ -111,7 +116,11 @@ class SnapshotsRelationManager extends RelationManager
                         DataSnapshot::COMPLETE => 'success',
                         DataSnapshot::FAILED => 'danger',
                         default => 'warning',
-                    }),
+                    })
+                    // Ein laufender Stand führt zu seiner Arbeit (Fortschritt, Abbrechen).
+                    ->url(fn (DataSnapshot $record): ?string => $record->isRunning() && $record->work !== null && (self::user()?->can('view', $record->work) ?? false)
+                        ? WorkItemResource::getUrl('view', ['record' => $record->work])
+                        : null),
                 TextColumn::make('row_count')
                     ->label(__('snapshots.rows'))
                     ->numeric(thousandsSeparator: '\'')
@@ -130,14 +139,24 @@ class SnapshotsRelationManager extends RelationManager
                     ->label(__('snapshots.refresh'))
                     ->icon('heroicon-o-arrow-path')
                     ->authorize(fn (): bool => self::allowed('update'))
+                    // Als Arbeit mit 5 s Mitarbeit: fertig → Meldung wie bisher, sonst Hinweis mit Link auf die Arbeit.
                     ->action(function (): void {
                         try {
-                            $snapshot = app(SnapshotService::class)->refresh($this->ownerTable(), self::user());
-                            Notification::make()->success()
-                                ->title(__('snapshots.refreshed', ['rows' => number_format((int) $snapshot->row_count, 0, ',', '\'')]))
-                                ->send();
+                            $item = app(SnapshotService::class)->start($this->ownerTable(), self::user(), 5.0);
                         } catch (BusinessRuleException $e) {
                             Notification::make()->danger()->title($e->getMessage())->send();
+
+                            return;
+                        }
+
+                        if ($item->status === WorkItem::DONE) {
+                            Notification::make()->success()->title((string) $item->message)->send();
+                        } elseif ($item->isOpen()) {
+                            Notification::make()->info()->title(__('snapshots.started'))
+                                ->actions([Action::make('open')->label(__('work.notifications.open'))->url(WorkItemResource::getUrl('view', ['record' => $item]))])
+                                ->send();
+                        } else {
+                            Notification::make()->danger()->title((string) $item->message)->persistent()->send();
                         }
                     }),
                 Action::make('retention')

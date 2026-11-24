@@ -2002,8 +2002,8 @@ final class InventoryCountWork implements WorkType
 
 **Aufräumen, lange Schritte, Wirkungen nach aussen:** Hinterlässt eine abgebrochene oder fehlgeschlagene Arbeit etwas,
 das nicht bleiben soll (halb angelegte Datensätze, eine Zwischentabelle), setzt die Art zusätzlich `CleansUp` um: SAFT
-ruft `abort($schritt, $status)` mit dem letzten gespeicherten Zustand (`$schritt->state`, Parameter und Ordner der
-Arbeit wie in einem Schritt), bevor die Arbeit endet – auch beim Abbruch einer wartenden Arbeit, dann mit leerem
+ruft `abort($schritt, $status, $meldung)` mit dem letzten gespeicherten Zustand (`$schritt->state`, Parameter und
+Ordner der Arbeit wie in einem Schritt) und der Meldung, mit der die Arbeit endet, bevor sie endet – auch beim Abbruch einer wartenden Arbeit, dann mit leerem
 Zustand. Ergebnisdateien im Ordner der Arbeit räumt SAFT danach selbst weg.
 Lässt sich ein Schritt nicht teilen und dauert er länger als einige Sekunden (eine Anfrage an die KI), setzt die Art
 `LongSteps` um und nennt in `stepSeconds()` die Höchstdauer: SAFT hebt das Zeitlimit von PHP dafür an, führt je Aufruf

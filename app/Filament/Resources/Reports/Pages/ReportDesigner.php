@@ -10,10 +10,12 @@ use App\DynamicData\Schema\FieldType;
 use App\Exceptions\BusinessRuleException;
 use App\ExternalData\Snapshots\SnapshotService;
 use App\Filament\Resources\Reports\ReportResource;
+use App\Filament\Resources\WorkItems\WorkItemResource;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\Report;
 use App\Models\User;
+use App\Models\WorkItem;
 use App\Reports\Assistant\AssistantResult;
 use App\Reports\Assistant\ReportAssistant;
 use App\Reports\DefinitionResolver;
@@ -255,13 +257,30 @@ class ReportDesigner extends Page
                 continue;
             }
 
+            // Als Arbeit (Fundament 2, F3b): kleine Tabellen sind nach der Mitarbeit im Request fertig; grosse laufen im
+            // Hintergrund weiter – dann Hinweis mit Link statt Auswertung, die Tabelle lässt sich danach wählen.
             try {
-                app(SnapshotService::class)->refresh($table, $user);
-                $created[] = (string) $table->label;
+                $item = app(SnapshotService::class)->start($table, $user);
             } catch (BusinessRuleException $e) {
                 Notification::make()->danger()->persistent()
                     ->title(__('reports.ui.snapshot_failed', ['table' => $table->label]))
                     ->body($e->getMessage())
+                    ->send();
+
+                continue;
+            }
+
+            if ($item->status === WorkItem::DONE) {
+                $created[] = (string) $table->label;
+            } elseif ($item->isOpen()) {
+                Notification::make()->info()->persistent()
+                    ->title(__('reports.ui.snapshot_pending', ['table' => $table->label]))
+                    ->actions([Action::make('open')->label(__('work.notifications.open'))->url(WorkItemResource::getUrl('view', ['record' => $item]))])
+                    ->send();
+            } else {
+                Notification::make()->danger()->persistent()
+                    ->title(__('reports.ui.snapshot_failed', ['table' => $table->label]))
+                    ->body((string) $item->message)
                     ->send();
             }
         }

@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property Carbon $started_at
  * @property Carbon|null $finished_at
  * @property int|null $created_by
+ * @property int|null $work_item_id
  * @property string|null $message
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -35,6 +36,7 @@ class DataSnapshot extends Model
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
         'created_by' => 'int',
+        'work_item_id' => 'int',
     ];
 
     protected $fillable = [
@@ -44,6 +46,7 @@ class DataSnapshot extends Model
         'started_at',
         'finished_at',
         'created_by',
+        'work_item_id',
         'message',
     ];
 }

@@ -76,8 +76,12 @@ final readonly class WorkService
      */
     public function startAndAdvance(string $type, array $parameters = [], ?User $user = null, ?int $appId = null, ?float $budget = null, array $files = []): WorkItem
     {
-        $item = $this->start($type, $parameters, $user, $appId, $files);
+        return $this->advance($this->start($type, $parameters, $user, $appId, $files), $budget);
+    }
 
+    /** Im laufenden Request an einer Arbeit mitarbeiten, bis zu $budget Sekunden (Vorgabe work.inline_budget). */
+    public function advance(WorkItem $item, ?float $budget = null): WorkItem
+    {
         return $this->runner->advance($item, $this->timeLimit->budget($budget ?? (float) config('work.inline_budget', 10)), interactive: true);
     }
 

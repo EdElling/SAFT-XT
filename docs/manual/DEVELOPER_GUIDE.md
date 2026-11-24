@@ -1974,8 +1974,8 @@ final class InventoryCountWork implements WorkType
 
 **Cleaning up, long steps, outward effects:** If a cancelled or failed job leaves something behind that should not
 stay (half-created records, an intermediate table), the kind also implements `CleansUp`: SAFT calls
-`abort($step, $status)` with the last saved state (`$step->state`, parameters and the job's folder as in a step) before
-the job ends – also when a waiting job is cancelled, then with an empty state. Result files in the job's folder are
+`abort($step, $status, $message)` with the last saved state (`$step->state`, parameters and the job's folder as in a
+step) and the message the job ends with, before the job ends – also when a waiting job is cancelled, then with an empty state. Result files in the job's folder are
 removed by SAFT itself afterwards. If a step cannot be
 split and takes longer than a few seconds (a request to the AI), the kind implements `LongSteps` and names the maximum
 duration in `stepSeconds()`: SAFT raises PHP's time limit for it, runs exactly one such step per call and leaves it to the

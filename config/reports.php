@@ -16,9 +16,12 @@ return [
     'max_crosstab_columns' => (int) env('REPORTS_MAX_CROSSTAB_COLUMNS', 50),
 
     /*
-    | Datenstände angebundener Tabellen: höchstens so viele Zeilen je Stand (synchrones Kopieren).
+    | Datenstände angebundener Tabellen: höchstens so viele Zeilen je Stand (Schutz vor Versehen, 0 = ohne Grenze);
+    | gezogen wird als Arbeit in Blöcken (Fundament 2, F3b).
     */
-    'snapshot_max_rows' => (int) env('REPORTS_SNAPSHOT_MAX_ROWS', 200000),
+    'snapshot_max_rows' => (int) env('REPORTS_SNAPSHOT_MAX_ROWS', 1000000),
+    // Zeilen je Block beim Kopieren; die Arbeit kopiert Blöcke, bis ihr Zeitbudget knapp wird.
+    'snapshot_chunk' => (int) env('REPORTS_SNAPSHOT_CHUNK', 1000),
 
     // Älter als so viele Stunden: Beim Auswählen im Editor fragen, ob ein neuer Datenstand erzeugt werden soll.
     'snapshot_stale_hours' => (int) env('REPORTS_SNAPSHOT_STALE_HOURS', 24),

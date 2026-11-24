@@ -7,6 +7,7 @@ return [
     'description' => 'Copie immutabili di questa tabella per i report. I report usano sempre lo stato completo più recente. Le cancellazioni nella fonte hanno effetto solo con lo stato successivo; la conservazione rimuove gli stati più vecchi.',
     'refresh' => 'Aggiorna ora',
     'refreshed' => 'Stato acquisito: :rows righe',
+    'started' => 'Lo stato dei dati viene acquisito in background; l’elenco lo mostrerà appena completo.',
     'retention' => 'Conservazione',
     'keep' => 'Mantieni gli ultimi stati',
     'keep_help' => 'Almeno 1; lo stato più recente resta sempre.',

@@ -112,7 +112,7 @@ final readonly class RecordImportWork implements CleansUp, WorkType, WritesRecor
      * Zurücknehmen: alle Datensätze, die Schritte dieser Arbeit angelegt haben, endgültig löschen – ohne Ereignisse an
      * Plugins (eine Geschäftsregel darf das Zurücknehmen nicht verhindern) und ohne Protokoll je Datensatz.
      */
-    public function abort(WorkStep $step, string $status): void
+    public function abort(WorkStep $step, string $status, string $message): void
     {
         $file = $step->path(self::CREATED);
         $table = CustomTable::query()->find((int) ($step->parameters['table_id'] ?? 0));

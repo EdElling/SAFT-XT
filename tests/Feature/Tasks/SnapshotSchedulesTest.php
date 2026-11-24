@@ -16,8 +16,8 @@ use App\Models\User;
 use App\Tasks\SnapshotSchedules;
 use App\Tasks\TaskRunner;
 use App\Tasks\Types\SnapshotConnectionRefreshTask;
+use App\Work\WorkService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 use Tests\Concerns\InteractsWithAdmin;
 use Tests\Concerns\UsesExternalResearchDatabase;
@@ -73,15 +73,14 @@ class SnapshotSchedulesTest extends TestCase
         // Alle angebundenen Tabellen der Verbindung; eine gerade laufende wird übersprungen.
         $all = $this->connectionTask(onlyWithSnapshot: false);
         $total = CustomTable::query()->external()->where('database_connection_id', $people->database_connection_id)->count();
-        $lock = Cache::lock('snapshots:table:'.$people->id, 60);
-        $lock->get();
+        $busy = $this->busySnapshot($people);
         $run = app(TaskRunner::class)->run($all, TaskRun::MANUAL);
-        $lock->release();
+        app(WorkService::class)->cancel($busy);
 
         $this->assertSame(ScheduledTask::SUCCESS, $run->status, (string) $run->message);
         $this->assertStringStartsWith(($total - 1).' von '.$total.' Tabellen aktualisiert', $run->message);
         $this->assertStringContainsString('Übersprungen (wird gerade aktualisiert): '.$people->label, $run->message);
-        $this->assertSame($total - 1, CustomTable::query()->external()->whereHas('snapshots')->count() - 1);
+        $this->assertSame($total, CustomTable::query()->external()->whereHas('snapshots')->count());
     }
 
     public function test_schedules_per_table_and_connection_and_stale_threshold(): void

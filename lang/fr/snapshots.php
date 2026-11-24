@@ -7,6 +7,7 @@ return [
     'description' => 'Copies immuables de cette table pour les rapports. Les rapports utilisent toujours l’état complet le plus récent. Les suppressions dans la source ne s’appliquent qu’avec l’état suivant ; la conservation supprime les états plus anciens.',
     'refresh' => 'Actualiser maintenant',
     'refreshed' => 'État pris : :rows lignes',
+    'started' => 'L’état des données est pris en arrière-plan ; la liste l’affichera dès qu’il sera complet.',
     'retention' => 'Conservation',
     'keep' => 'Conserver les derniers états',
     'keep_help' => 'Au moins 1 ; l’état le plus récent est toujours conservé.',
