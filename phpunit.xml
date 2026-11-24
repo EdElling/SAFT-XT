@@ -42,6 +42,18 @@
         <env name="TWO_FACTOR_ENFORCE" value="false"/>
         <env name="DEMO_RESET" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
+        <!-- Arbeiten (Fundament 2): Vorgaben festlegen, damit Werte zum Zuschauen in der .env die Tests nicht verändern -->
+        <env name="WORK_DRIVER" value="auto"/>
+        <env name="WORK_INLINE_BUDGET" value="10"/>
+        <env name="WORK_BROWSER_BUDGET" value="15"/>
+        <env name="WORK_SCHEDULER_BUDGET" value="50"/>
+        <env name="WORK_QUEUE_BUDGET" value="50"/>
+        <env name="APP_DATA_EXPORT_CHUNK" value="1000"/>
+        <env name="APP_DATA_IMPORT_CHECK_ROWS" value="2000"/>
+        <env name="APP_DATA_IMPORT_MAX_RECORD_ROWS" value="100000"/>
+        <env name="REPORTS_SNAPSHOT_CHUNK" value="1000"/>
+        <env name="REPORTS_SNAPSHOT_MAX_ROWS" value="1000000"/>
+        <env name="DOCUMENTS_BATCH_MAX" value="0"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>

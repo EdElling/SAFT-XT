@@ -16,6 +16,7 @@ use App\Work\WorkService;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Filament\Support\Facades\FilamentView;
 use Livewire\Livewire;
 use Tests\Concerns\InteractsWithAdmin;
 use Tests\Fixtures\Work\CountingWork;
@@ -113,6 +114,11 @@ class WorkPagesTest extends TestCase
 
         $this->actingAs($anna)->get(route('work.download', $item->uuid))->assertOk()
             ->assertHeader('X-Content-Type-Options', 'nosniff')->assertDownload('ergebnis.txt');
+        // Ein echter Download, kein Seitenwechsel im SPA-Modus (sonst zeigt der Browser die Datei als Text).
+        $this->assertFalse(FilamentView::hasSpaMode(route('work.download', $item->uuid)));
+        Livewire::test(WorkProgress::class, ['workId' => $item->id])
+            ->assertSeeHtml('href="'.route('work.download', $item->uuid).'"')
+            ->assertDontSeeHtml('wire:navigate href="'.route('work.download', $item->uuid).'"');
         $this->actingAs($this->userWithPermissions())->get(route('work.download', $item->uuid))->assertForbidden();
         $this->actingAs($this->userWithPermissions(['work.view_any']))->get(route('work.download', $item->uuid))->assertOk();
 

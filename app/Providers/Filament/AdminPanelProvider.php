@@ -72,8 +72,9 @@ class AdminPanelProvider extends PanelProvider
             ->colors(fn (): array => PanelAppearance::colors())
             ->spa()
             // SSO-Anmeldung und -Abmeldung leiten zum Identity Provider weiter (andere Domain): echter Seitenwechsel,
-            // sonst lädt der SPA-Modus die Weiterleitung per JavaScript nach und der Browser blockiert sie.
-            ->spaUrlExceptions(fn (): array => [url('/auth/sso/*')])
+            // sonst lädt der SPA-Modus die Weiterleitung per JavaScript nach und der Browser blockiert sie. Ergebnisdateien
+            // der Arbeiten sind Downloads: per JavaScript nachgeladen, zeigte der Browser den Inhalt der Datei als Seite.
+            ->spaUrlExceptions(fn (): array => [url('/auth/sso/*'), url('/work/*/download')])
             // Volle Fensterbreite statt Filaments Vorgabe von 80rem, damit breite Tabellen nicht unnötig scrollen.
             ->maxContentWidth(Width::Full)
             // Seitenleiste so breit wie der längste Menüeintrag der aktuellen Sprache, begrenzt (siehe STYLES_AFTER).
