@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     // Version von SAFT (bei jedem Release anheben); erscheint unter „Dokumentation › Über SAFT“.
-    'version' => '0.6.0',
+    'version' => '0.6.1',
 
     // Status des Releases (wie auf GitHub, z. B. „pre-release“); leer, sobald es ein reguläres Release ist.
     'release_status' => 'pre-release',
