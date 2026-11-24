@@ -229,9 +229,11 @@ class RecordWriterTest extends DynamicDataTestCase
     {
         $writer = app(RecordWriter::class);
         $ran = [];
+        // Vor dem Batch: DDL innerhalb der Transaktion würde sie auf MySQL implizit beenden.
+        $table = $this->table();
 
-        $writer->batch(function () use ($writer, &$ran): void {
-            $writer->create($this->table(), ['titel' => 'A']);
+        $writer->batch(function () use ($writer, $table, &$ran): void {
+            $writer->create($table, ['titel' => 'A']);
             Saft::afterCommit(function () use (&$ran): void {
                 $ran[] = 'a';
             });
@@ -247,8 +249,8 @@ class RecordWriterTest extends DynamicDataTestCase
 
         // Rollback: die Wirkung verfällt.
         try {
-            $writer->batch(function () use ($writer, &$ran): void {
-                $writer->create($this->table(), ['titel' => 'B']);
+            $writer->batch(function () use ($writer, $table, &$ran): void {
+                $writer->create($table, ['titel' => 'B']);
                 WriteContext::afterCommit(function () use (&$ran): void {
                     $ran[] = 'verworfen';
                 });
