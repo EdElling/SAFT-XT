@@ -45,9 +45,38 @@ class WorkItem extends BaseWorkItem
             ->dontLogEmptyChanges();
     }
 
+    /** Adressen nennen die Arbeit über ihren stabilen Schlüssel, nicht über die fortlaufende ID. */
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
+
     public function type(): WorkType
     {
         return app(WorkRegistry::class)->get($this->type);
+    }
+
+    /** Bezeichnung der Art (mit Herkunft bei Plugins); die Kennung, wenn die Art nicht mehr bekannt ist. */
+    public function typeLabel(): string
+    {
+        $registry = app(WorkRegistry::class);
+
+        return $registry->has($this->type) ? $registry->labelOf($this->type()) : $this->type;
+    }
+
+    public function description(): string
+    {
+        return app(WorkRegistry::class)->has($this->type) ? $this->type()->describe($this->parameterValues()) : '';
+    }
+
+    /** Ergebnisdatei, solange sie aufbewahrt wird: Name im Ordner der Arbeit, sonst null. */
+    public function resultFile(): ?string
+    {
+        $file = $this->result['file'] ?? null;
+
+        return $this->status === self::DONE && is_string($file) && $file !== '' && ($this->expires_at === null || $this->expires_at->isFuture())
+            ? basename($file)
+            : null;
     }
 
     public function isOpen(): bool

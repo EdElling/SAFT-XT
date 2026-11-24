@@ -24,6 +24,9 @@ return [
     // Begonnene Schritte ohne Abschluss in Folge (abgebrochener Prozess), danach gilt die Arbeit als fehlgeschlagen.
     'max_stalls' => (int) env('WORK_MAX_STALLS', 3),
 
+    // Das Dashboard (Kachel „Geplante Aufgaben“) meldet offene Arbeiten ohne Fortschritt seit so vielen Minuten.
+    'stuck_minutes' => (int) env('WORK_STUCK_MINUTES', 10),
+
     // Ergebnisdateien so viele Stunden aufbewahren.
     'result_hours' => (int) env('WORK_RESULT_HOURS', 24),
 ];

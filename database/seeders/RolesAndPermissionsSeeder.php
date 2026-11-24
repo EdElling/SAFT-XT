@@ -28,6 +28,7 @@ class RolesAndPermissionsSeeder extends Seeder
         'reports' => ['view', 'create', 'update', 'delete', 'assistant'],
         'report_links' => ['view', 'create', 'update', 'delete'],
         'tasks' => ['view', 'create', 'update', 'delete', 'details'],
+        'work' => ['view_any', 'cancel_any', 'details'],
         'plugins' => ['view', 'manage'],
         'apps' => ['view', 'manage', 'export', 'install'],
         'documents' => ['manage', 'generate'],

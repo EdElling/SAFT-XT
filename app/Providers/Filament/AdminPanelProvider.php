@@ -14,6 +14,8 @@ use App\Filament\Pages\Auth\ResetPassword;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\MySettingsPage;
 use App\Filament\Pages\RoleSimulationPage;
+use App\Filament\Resources\WorkItems\Pages\ListWorkItems;
+use App\Filament\Resources\WorkItems\WorkItemResource;
 use App\Filament\Support\PanelAppearance;
 use App\Help\HelpAssistant;
 use App\Http\Middleware\RequireTwoFactor;
@@ -105,6 +107,11 @@ class AdminPanelProvider extends PanelProvider
                     ->label(fn (): string => __('my_settings.title'))
                     ->icon('heroicon-o-adjustments-horizontal')
                     ->url(fn (): string => MySettingsPage::getUrl()),
+                // Eigene Arbeiten (Fundament 2, F3a); mit work.view_any dieselbe Seite im Reiter „Meine“.
+                Action::make('myWork')
+                    ->label(fn (): string => __('work.my_work'))
+                    ->icon('heroicon-o-queue-list')
+                    ->url(fn (): string => WorkItemResource::getUrl('index', ['tab' => ListWorkItems::MINE])),
                 ChangePasswordAction::make(),
                 Action::make('roleSimulation')
                     ->label(fn (): string => __('role_simulation.menu'))

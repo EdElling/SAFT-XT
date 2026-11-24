@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 class StaticAnalysisBaselineTest extends TestCase
 {
     /** Stand beim Einführen von Larastan Level 5 (23.11.2026). */
-    private const int MAX_ERRORS = 324;
+    private const int MAX_ERRORS = 323;
 
     public function test_baseline_does_not_grow(): void
     {

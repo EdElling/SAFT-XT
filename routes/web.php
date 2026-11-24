@@ -9,6 +9,7 @@ use App\Http\Controllers\DocumentationImageController;
 use App\Http\Controllers\RecordFileController;
 use App\Http\Controllers\RoleSimulationController;
 use App\Http\Controllers\ThemeController;
+use App\Http\Controllers\WorkDownloadController;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -33,6 +34,9 @@ Route::middleware(['auth'])->get('documentation/images/{lang}/{file}', Documenta
 // Hell/Dunkel/System je Benutzer speichern (Umschalter im Benutzermenü, siehe PanelAppearance::themeScript).
 // Dateien in Feldern vom Typ „Datei“: nur mit Leserecht auf Tabelle und Datensatz (B-021).
 Route::middleware(['auth'])->get('files/{file}', RecordFileController::class)->whereUuid('file')->name('files.show');
+
+// Ergebnisdatei einer Arbeit (Fundament 2, F3a).
+Route::middleware(['auth'])->get('work/{uuid}/download', WorkDownloadController::class)->whereUuid('uuid')->name('work.download');
 
 // Aktuelle App wechseln (B-107).
 Route::middleware(['auth', 'throttle:60,1'])->post('apps/{app}/switch', AppSwitchController::class)->whereNumber('app')->name('apps.switch');

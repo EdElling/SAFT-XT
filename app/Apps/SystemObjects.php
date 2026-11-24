@@ -21,7 +21,7 @@ final class SystemObjects
         $routes = ['filament.admin.pages.dashboard', MenuSeeder::DOCUMENTATION_ROUTE, MenuSeeder::REPORTS_ROUTE];
 
         foreach (MenuSeeder::ADMIN_SUBMENUS as $submenu) {
-            foreach ($submenu['children'] ?? [] as $entry) {
+            foreach ($submenu['children'] as $entry) {
                 $routes[] = (string) $entry['route'];
             }
         }

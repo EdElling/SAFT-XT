@@ -9,6 +9,7 @@ use App\Filament\Resources\ScheduledTasks\Tables\ScheduledTasksTable;
 use App\Filament\Widgets\Concerns\RequiresPermissions;
 use App\Models\ScheduledTask;
 use App\Models\TaskRun;
+use App\Models\WorkItem;
 use App\Tasks\TaskRunner;
 use App\Tasks\Types\ActivityPruneTask;
 use Filament\Tables\Columns\TextColumn;
@@ -82,6 +83,22 @@ class TasksStatusWidget extends TableWidget
 
         if ($failing->isNotEmpty()) {
             $parts[] = $line('text-danger-600 dark:text-danger-400 font-medium', '✖', __('tasks.widget.failing', ['tasks' => $failing->map->displayName()->implode(', ')]), 'failing');
+        }
+
+        // Arbeiten (Fundament 2, F3a): ohne Fortschritt seit work.stuck_minutes oder kürzlich fehlgeschlagen.
+        $minutes = (int) config('work.stuck_minutes', 10);
+        $stuck = WorkItem::query()->whereIn('status', WorkItem::OPEN)
+            ->where(fn ($query) => $query->where('heartbeat_at', '<', now()->subMinutes($minutes))
+                ->orWhere(fn ($query) => $query->whereNull('heartbeat_at')->where('created_at', '<', now()->subMinutes($minutes))))
+            ->count();
+        $failedWork = WorkItem::query()->where('status', WorkItem::FAILED)->where('finished_at', '>=', now()->subDay())->count();
+
+        if ($stuck > 0) {
+            $parts[] = $line('text-warning-600 dark:text-warning-400 font-medium', '⚠', trans_choice('work.widget.stuck', $stuck, ['count' => $stuck, 'minutes' => $minutes]), 'work-stuck');
+        }
+
+        if ($failedWork > 0) {
+            $parts[] = $line('text-danger-600 dark:text-danger-400 font-medium', '✖', trans_choice('work.widget.failed', $failedWork, ['count' => $failedWork]), 'work-failed');
         }
 
         $parts = $parts === [] ? [$line('text-success-600 dark:text-success-400', '✔', __('tasks.widget.ok'), 'ok')] : $parts;

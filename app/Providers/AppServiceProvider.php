@@ -24,6 +24,7 @@ use App\Models\Menu;
 use App\Models\Role;
 use App\Models\SocialAccount;
 use App\Models\User;
+use App\Models\WorkItem;
 use App\Plugins\PluginDependencies;
 use App\Plugins\PluginPermissions;
 use App\Plugins\PluginRegistry;
@@ -37,6 +38,7 @@ use App\Policies\MenuPolicy;
 use App\Policies\RolePolicy;
 use App\Policies\SocialAccountPolicy;
 use App\Policies\UserPolicy;
+use App\Policies\WorkItemPolicy;
 use App\Reports\Assistant\AnthropicAssistantClient;
 use App\Reports\Assistant\AssistantClient;
 use App\Support\AppLocale;
@@ -155,6 +157,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(CustomTable::class, CustomTablePolicy::class);
         Gate::policy(CustomField::class, CustomFieldPolicy::class);
         Gate::policy(DatabaseConnection::class, DatabaseConnectionPolicy::class);
+        Gate::policy(WorkItem::class, WorkItemPolicy::class);
 
         // Super-Admins erhalten alles, was nicht explizit verboten ist. "after" statt
         // "before", damit harte Policy-Verbote (z. B. Super-Admin-Rolle löschen) greifen.

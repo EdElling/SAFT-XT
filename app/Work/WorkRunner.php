@@ -38,6 +38,7 @@ final readonly class WorkRunner
     public function __construct(
         private RecordWriter $writer,
         private RoleSimulation $simulation,
+        private WorkNotifier $notifier,
     ) {}
 
     public static function lockKey(WorkItem $item): string
@@ -45,8 +46,11 @@ final readonly class WorkRunner
         return 'work:'.$item->id;
     }
 
-    /** Schritte bis zum Ende des Budgets (mindestens einen); gibt den aktuellen Stand zurück. */
-    public function advance(WorkItem $item, float $budgetSeconds): WorkItem
+    /**
+     * Schritte bis zum Ende des Budgets (mindestens einen); gibt den aktuellen Stand zurück. $interactive: Die
+     * startende Person sieht im Browser zu – dann keine Benachrichtigung am Ende.
+     */
+    public function advance(WorkItem $item, float $budgetSeconds, bool $interactive = false): WorkItem
     {
         $lock = Cache::lock(self::lockKey($item), (int) ceil($budgetSeconds) + 120);
 
@@ -64,6 +68,10 @@ final readonly class WorkRunner
             $deadline = microtime(true) + $budgetSeconds;
 
             $this->within($item, fn () => $this->steps($item, $deadline));
+
+            if (! $interactive && ! $item->isOpen()) {
+                $this->notifier->concluded($item);
+            }
 
             return $item;
         } finally {

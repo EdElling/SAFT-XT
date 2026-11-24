@@ -60,6 +60,7 @@ class MenuSeeder extends Seeder
             'icon' => 'heroicon-o-wrench-screwdriver', 'sort_order' => 40,
             'children' => [
                 ['label' => ['de' => 'Geplante Aufgaben', 'en' => 'Scheduled tasks', 'fr' => 'Tâches planifiées', 'it' => 'Attività pianificate'], 'route' => 'filament.admin.resources.scheduled-tasks.index', 'icon' => 'heroicon-o-calendar-days', 'permission_name' => 'tasks.view', 'sort_order' => 10],
+                ['label' => ['de' => 'Arbeiten', 'en' => 'Jobs', 'fr' => 'Travaux', 'it' => 'Lavori'], 'route' => 'filament.admin.resources.work-items.index', 'icon' => 'heroicon-o-queue-list', 'permission_name' => 'work.view_any', 'sort_order' => 15],
                 ['label' => ['de' => 'Änderungsprotokoll', 'en' => 'Activity log', 'fr' => 'Journal des modifications', 'it' => 'Registro modifiche'], 'route' => 'filament.admin.resources.activity-log.index', 'icon' => 'heroicon-o-clock', 'permission_name' => 'activity_log.view', 'sort_order' => 20],
                 ['label' => ['de' => 'Systemprotokoll', 'en' => 'System log', 'fr' => 'Journal système', 'it' => 'Registro di sistema'], 'route' => 'filament.admin.pages.system-log', 'icon' => 'heroicon-o-document-text', 'permission_name' => 'system_log.view', 'sort_order' => 30],
             ],
