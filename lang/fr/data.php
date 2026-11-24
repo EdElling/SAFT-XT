@@ -49,6 +49,8 @@ return [
         'file_help' => 'Excel (.xlsx) ou CSV, au plus :max Mo et :rows lignes.',
         'invalid' => 'Le fichier ne peut pas être importé ainsi – rien n’a été créé',
         'ready' => 'Le fichier est correct : 1 nouvel enregistrement sera créé.|Le fichier est correct : :count nouveaux enregistrements seront créés.',
+        'ready_unchecked' => 'Le fichier contient 1 ligne de données. Il est vérifié entièrement lors de l’importation ; en cas d’erreur, rien n’est créé.|Le fichier contient :count lignes de données. Il est vérifié entièrement lors de l’importation ; en cas d’erreur, rien n’est créé.',
+        'failed' => 'Importation échouée – rien n’a été créé',
         'columns' => 'Colonnes reconnues : :columns',
         'ignored' => 'Non attribuées et ignorées : :columns',
         'only_new' => 'Seuls de nouveaux enregistrements sont créés ; les enregistrements existants ne sont pas modifiés.',

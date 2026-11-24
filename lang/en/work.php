@@ -16,10 +16,15 @@ return [
         'recompute' => 'Recompute computed fields',
         'export' => 'Export',
         'documents' => 'Create documents',
+        'record_import' => 'Import data',
     ],
     'export' => [
         'done' => '1 row exported.|:count rows exported.',
         'table_missing' => 'The table no longer exists.',
+    ],
+    'import' => [
+        'table_missing' => 'The table no longer exists.',
+        'file_missing' => 'The uploaded file is no longer available; please start the import again.',
     ],
     'recompute' => [
         'all_tables' => 'all tables with computed fields',

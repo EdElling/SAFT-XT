@@ -7,17 +7,14 @@ namespace App\DynamicData\Import;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Validation\RecordChecker;
-use App\DynamicData\Write\RecordWriter;
-use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
-use App\Models\User;
-use App\Plugins\Api\RecordRejected;
 use App\Support\AppLocale;
 use DateTimeImmutable;
 use DateTimeInterface;
+use Generator;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Writer\XLSX\Writer;
 
@@ -26,8 +23,11 @@ use OpenSpout\Writer\XLSX\Writer;
  * vorgesehen). Spalten werden über die Überschrift zugeordnet (Bezeichnung in einer der Sprachen oder technischer
  * Name), Werte so gelesen, wie der Export sie schreibt. Geprüft wird wie beim Erfassen; alles oder nichts.
  *
- * Gespeichert wird Datensatz für Datensatz über das Modell – so greifen Vorgaben (Übernehmen aus, fortlaufend),
- * berechnete Felder und Summen in übergeordneten Datensätzen. Ins Änderungsprotokoll kommt ein Eintrag „importiert“.
+ * Hier stehen die Bausteine: columns() ordnet die Kopfzeile zu, read() liefert die Datenzeilen ab einem Cursor,
+ * convert() wandelt und prüft eine Zeile, analyze() prüft eine Datei für den Assistenten. Die Schleife über die Zeilen
+ * – prüfen, dann Datensatz für Datensatz über den Writer anlegen (so greifen Vorgaben, berechnete Felder und Summen in
+ * übergeordneten Datensätzen) – liegt in der Arbeit „Daten importieren“ (App\Work\Types\RecordImportWork, Fundament 2,
+ * F3b), die bei Fehler oder Abbruch alles zurücknimmt.
  */
 final class RecordImporter
 {
@@ -69,86 +69,43 @@ final class RecordImporter
         return $path;
     }
 
-    /** Prüft die Datei vollständig, ohne etwas zu speichern. */
-    public function analyze(CustomTable $table, string $path, string $fileName): RecordImportAnalysis
+    /**
+     * Prüft eine Datei, ohne etwas zu speichern. Bis $checkRows Datenzeilen (null = alle) werden Werte gewandelt und wie
+     * beim Erfassen geprüft; darüber werden die Zeilen nur noch gezählt (checked = false), vollständig prüft dann die
+     * Arbeit. Die Höchstzahl der Zeilen gilt immer.
+     */
+    public function analyze(CustomTable $table, string $path, string $fileName, ?int $checkRows = null): RecordImportAnalysis
     {
-        $format = ImportFormat::fromFileName($fileName)
-            ?? throw new BusinessRuleException(__('import.problems.unsupported_format', ['ext' => pathinfo($fileName, PATHINFO_EXTENSION) ?: '–']));
-        $maxBytes = (int) config('dynamic_data.import.max_file_mb') * 1024 * 1024;
-
-        if (filesize($path) > $maxBytes) {
-            throw new BusinessRuleException(__('import.problems.file_too_large', ['max' => (int) config('dynamic_data.import.max_file_mb')]));
-        }
-
-        $reader = new SpreadsheetReader($path, $format);
-        $fields = $this->fields($table);
-        $columns = null;
-        $ignored = [];
-        $rows = [];
+        [$columns, $ignored, $missing] = $this->columns($table, $path, $fileName);
         $messages = [];
         $errorCount = 0;
         $unique = [];
         $lookups = [];
+        $rows = 0;
+        $checked = true;
         $maxRows = (int) config('dynamic_data.import.max_record_rows');
 
-        $fail = function (int $line, ?CustomField $field, string $message) use (&$messages, &$errorCount): void {
-            $errorCount++;
-
-            if (count($messages) < self::MAX_MESSAGES) {
-                $messages[] = $field === null
-                    ? __('import.records.row_error', ['row' => $line, 'message' => $message])
-                    : __('import.records.cell_error', ['row' => $line, 'column' => $field->label, 'message' => $message]);
-            }
-        };
-
-        foreach ($reader->rows() as $line => $cells) {
-            if ($columns === null) {
-                [$columns, $ignored] = $this->mapHeaders($cells, $fields);
-
-                continue;
-            }
-
-            if ($this->isEmptyRow($cells)) {
-                continue;
-            }
-
-            if (count($rows) >= $maxRows) {
+        foreach ($this->read($path, $fileName) as $line => $cells) {
+            if ($maxRows > 0 && $rows >= $maxRows) {
                 throw new BusinessRuleException(__('import.records.too_many_rows', ['max' => $maxRows]));
             }
 
-            $values = [];
+            $rows++;
 
-            foreach ($columns as $index => $field) {
-                $raw = $cells[$index] ?? null;
+            if ($checkRows !== null && $rows > $checkRows) {
+                $checked = false;
 
-                if ($raw instanceof CellError) {
-                    $fail($line, $field, __('import.records.cell_error_value', ['value' => $raw->value]));
-
-                    continue;
-                }
-
-                try {
-                    $values[$field->name] = $this->value($table, $field, $raw, $lookups);
-                } catch (BusinessRuleException $e) {
-                    $fail($line, $field, $e->getMessage());
-                }
+                continue;
             }
 
-            foreach ($this->checker->check($table, $values, unique: $unique) as [$field, $message]) {
-                $fail($line, $field, $message);
+            foreach ($this->convert($table, $columns, $line, $cells, $lookups, $unique)['problems'] as $message) {
+                $errorCount++;
+
+                if (count($messages) < self::MAX_MESSAGES) {
+                    $messages[] = $message;
+                }
             }
-
-            $rows[$line] = $values;
         }
-
-        if ($columns === null) {
-            throw new BusinessRuleException(__('import.records.empty_file'));
-        }
-
-        $missing = array_values(array_map(
-            fn (CustomField $field): string => $field->label,
-            array_filter($fields, fn (CustomField $field): bool => $field->is_required && ! in_array($field, $columns, true) && ! $this->checker->hasDefault($table, $field)),
-        ));
 
         return new RecordImportAnalysis(
             columns: array_values(array_map(fn (CustomField $field): string => $field->label, $columns)),
@@ -157,45 +114,113 @@ final class RecordImporter
             rows: $rows,
             messages: $messages,
             errorCount: $errorCount,
+            checked: $checked,
         );
     }
 
     /**
-     * Legt alle Datensätze an – nur wenn die Prüfung keine Fehler fand. Gibt die Zahl der neuen Datensätze zurück.
+     * Kopfzeile der Datei → Felder: zugeordnete Spalten (Index in der Zeile => Feld), übergangene Überschriften und
+     * Pflichtfelder ohne Spalte, die SAFT nicht selbst füllt.
+     *
+     * @return array{0: array<int, CustomField>, 1: list<string>, 2: list<string>}
+     *
+     * @throws BusinessRuleException Format nicht unterstützt, Datei zu gross oder leer
      */
-    public function import(CustomTable $table, string $path, string $fileName, ?User $user): int
+    public function columns(CustomTable $table, string $path, string $fileName): array
     {
-        $analysis = $this->analyze($table, $path, $fileName);
+        $format = self::format($fileName);
+        $maxBytes = (int) config('dynamic_data.import.max_file_mb') * 1024 * 1024;
 
-        if (! $analysis->isValid()) {
-            throw new BusinessRuleException(__('import.records.invalid'));
+        if (filesize($path) > $maxBytes) {
+            throw new BusinessRuleException(__('import.problems.file_too_large', ['max' => (int) config('dynamic_data.import.max_file_mb')]));
         }
 
-        // Alles oder nichts; kein Eintrag je Datensatz: ein Eintrag „importiert“ fasst den Import zusammen (WriteOptions::import()).
-        $writer = app(RecordWriter::class);
-        $writer->batch(static function () use ($writer, $table, $analysis): void {
-            foreach ($analysis->rows as $line => $values) {
-                try {
-                    $writer->create($table, $values);
-                } catch (RecordRejected $e) {
-                    // Abgelehnt von einem Plugin (Ereignis beim Speichern): als Fehler der Zeile melden.
-                    throw new BusinessRuleException(__('import.records.row_error', ['row' => $line, 'message' => $e->getMessage()]), previous: $e);
-                }
+        $fields = $this->fields($table);
+
+        foreach ((new SpreadsheetReader($path, $format))->rows() as $cells) {
+            [$columns, $ignored] = $this->mapHeaders($cells, $fields);
+            $missing = array_values(array_map(
+                fn (CustomField $field): string => $field->label,
+                array_filter($fields, fn (CustomField $field): bool => $field->is_required && ! in_array($field, $columns, true) && ! $this->checker->hasDefault($table, $field)),
+            ));
+
+            return [$columns, $ignored, $missing];
+        }
+
+        throw new BusinessRuleException(__('import.records.empty_file'));
+    }
+
+    /**
+     * Datenzeilen der Datei mit Zeilennummer, ohne Kopfzeile und Leerzeilen, ab der Zeile nach $afterLine.
+     *
+     * @return Generator<int, list<mixed>>
+     */
+    public function read(string $path, string $fileName, int $afterLine = 0): Generator
+    {
+        $first = true;
+
+        foreach ((new SpreadsheetReader($path, self::format($fileName)))->rows() as $line => $cells) {
+            if ($first) {
+                $first = false;
+
+                continue;
             }
-        }, WriteOptions::import());
 
-        activity('data')
-            ->performedOn($table)
-            ->causedBy($user)
-            ->event('imported')
-            ->withChanges(['attributes' => [
-                'datei' => $fileName,
-                'datensaetze' => count($analysis->rows),
-                'spalten' => count($analysis->columns),
-            ]])
-            ->log('imported');
+            if ($line <= $afterLine || $this->isEmptyRow($cells)) {
+                continue;
+            }
 
-        return count($analysis->rows);
+            yield $line => $cells;
+        }
+    }
+
+    /**
+     * Eine Datenzeile → Werte je Feld, geprüft wie beim Erfassen. Probleme sind fertige Meldungen mit Zeile und Spalte.
+     *
+     * @param  array<int, CustomField>  $columns  aus columns()
+     * @param  list<mixed>  $cells
+     * @param  array<string, array<string, list<int|string>>>  $lookups  Anzeigenamen verknüpfter Datensätze (Cache je Lauf)
+     * @param  array<string, array<string, true>>  $unique  bereits gesehene Werte eindeutiger Felder derselben Datei
+     * @return array{values: array<string, mixed>, problems: list<string>}
+     */
+    public function convert(CustomTable $table, array $columns, int $line, array $cells, array &$lookups, array &$unique): array
+    {
+        $values = [];
+        $problems = [];
+        $fail = static function (?CustomField $field, string $message) use (&$problems, $line): void {
+            $problems[] = $field === null
+                ? (string) __('import.records.row_error', ['row' => $line, 'message' => $message])
+                : (string) __('import.records.cell_error', ['row' => $line, 'column' => $field->label, 'message' => $message]);
+        };
+
+        foreach ($columns as $index => $field) {
+            $raw = $cells[$index] ?? null;
+
+            if ($raw instanceof CellError) {
+                $fail($field, __('import.records.cell_error_value', ['value' => $raw->value]));
+
+                continue;
+            }
+
+            try {
+                $values[$field->name] = $this->value($table, $field, $raw, $lookups);
+            } catch (BusinessRuleException $e) {
+                $fail($field, $e->getMessage());
+            }
+        }
+
+        foreach ($this->checker->check($table, $values, unique: $unique) as [$field, $message]) {
+            $fail($field, $message);
+        }
+
+        return ['values' => $values, 'problems' => $problems];
+    }
+
+    /** Format aus dem Dateinamen; unbekannte Endungen werden abgelehnt. */
+    public static function format(string $fileName): ImportFormat
+    {
+        return ImportFormat::fromFileName($fileName)
+            ?? throw new BusinessRuleException(__('import.problems.unsupported_format', ['ext' => pathinfo($fileName, PATHINFO_EXTENSION) ?: '–']));
     }
 
     // --- intern ------------------------------------------------------------------------

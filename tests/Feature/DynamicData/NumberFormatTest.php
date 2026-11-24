@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\DynamicData;
 
-use App\DynamicData\Import\RecordImporter;
 use App\DynamicData\Ui\DynamicValueFormatter;
 use App\Filament\Pages\DynamicDataPage;
 use App\Filament\Pages\MySettingsPage;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\WorkItem;
 use App\Support\AppLocale;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 /** Zahlenformat: wie die Sprache oder Schweiz (App-Einstellung) – Anzeige, CSV-Export und Import. */
@@ -132,7 +133,8 @@ class NumberFormatTest extends DynamicDataTestCase
         $path = (string) tempnam(sys_get_temp_dir(), 'saft-test-');
         file_put_contents($path, "Betrag;Menge\n1'234.50;2'000\n12.5;3\n");
 
-        $this->assertSame(2, app(RecordImporter::class)->import($this->table, $path, 'preise.csv', auth()->user()));
+        Storage::fake('local');
+        $this->assertSame(WorkItem::DONE, $this->importRecords($this->table, $path, 'preise.csv')->status);
         $this->assertSame(['1234.50', '12.50'], DynamicRecord::forTableName('preise')->newQuery()->orderBy('id')->pluck('betrag')->map(fn ($v): string => number_format((float) $v, 2, '.', ''))->all());
         $this->assertSame([2000, 3], DynamicRecord::forTableName('preise')->newQuery()->orderBy('id')->pluck('menge')->map(fn ($v): int => (int) $v)->all());
         unlink($path);

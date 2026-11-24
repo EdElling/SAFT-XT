@@ -49,6 +49,8 @@ return [
         'file_help' => 'Excel (.xlsx) oder CSV, höchstens :max MB und :rows Zeilen.',
         'invalid' => 'Die Datei kann so nicht importiert werden – es wurde nichts angelegt',
         'ready' => 'Die Datei ist in Ordnung: 1 neuer Datensatz wird angelegt.|Die Datei ist in Ordnung: :count neue Datensätze werden angelegt.',
+        'ready_unchecked' => 'Die Datei enthält 1 Datenzeile. Sie wird beim Import vollständig geprüft; bei Fehlern wird nichts angelegt.|Die Datei enthält :count Datenzeilen. Sie wird beim Import vollständig geprüft; bei Fehlern wird nichts angelegt.',
+        'failed' => 'Import fehlgeschlagen – es wurde nichts angelegt',
         'columns' => 'Erkannte Spalten: :columns',
         'ignored' => 'Nicht zugeordnet und übergangen: :columns',
         'only_new' => 'Es werden nur neue Datensätze angelegt; vorhandene Datensätze werden nicht geändert.',

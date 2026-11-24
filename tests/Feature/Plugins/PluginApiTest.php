@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plugins;
 
-use App\DynamicData\Import\RecordImporter;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Pages\DynamicDataPage;
 use App\Filament\Pages\PluginsPage;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\WorkItem;
 use App\Plugins\Api\DataAction;
 use App\Plugins\Api\DataTable;
 use App\Plugins\Api\Events\RecordDeleting;
@@ -29,6 +29,7 @@ use Filament\Notifications\NotificationMailbox;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Livewire\Livewire;
@@ -232,17 +233,15 @@ class PluginApiTest extends DynamicDataTestCase
         $path = (string) tempnam(sys_get_temp_dir(), 'saft-test-');
         file_put_contents($path, "Nummer;Status\nA-3;offen\nA-4;erledigt\n");
 
-        try {
-            app(RecordImporter::class)->import(CustomTable::query()->with('fields')->where('name', 'auftraege')->sole(), $path, 'auftraege.csv', auth()->user());
-            $this->fail('Import trotz Ablehnung.');
-        } catch (BusinessRuleException $e) {
-            $this->assertStringContainsString('Zeile 3', $e->getMessage());
-            $this->assertStringContainsString('Erledigte Aufträge nur über die Abrechnung.', $e->getMessage());
-        } finally {
-            unlink($path);
-        }
+        Storage::fake('local');
+        $item = $this->importRecords(CustomTable::query()->with('fields')->where('name', 'auftraege')->sole(), $path, 'auftraege.csv');
+        unlink($path);
+        $this->assertSame(WorkItem::FAILED, $item->status, 'Import trotz Ablehnung.');
+        $this->assertStringContainsString('Zeile 3', (string) $item->message);
+        $this->assertStringContainsString('Erledigte Aufträge nur über die Abrechnung.', (string) $item->message);
 
-        $this->assertSame(0, DynamicRecord::forTableName('auftraege')->newQuery()->count(), 'Alles oder nichts.');
+        // Zurückgenommen, obwohl das Plugin auch das Löschen ablehnt: Aufräumen fragt Plugins nicht.
+        $this->assertSame(0, DynamicRecord::forTableName('auftraege')->newQuery()->withTrashed()->count(), 'Alles oder nichts.');
 
         $order = $this->orders()->create(['nummer' => 'A-5']);
         $this->expectException(RecordRejected::class);

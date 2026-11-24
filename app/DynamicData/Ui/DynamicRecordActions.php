@@ -35,6 +35,7 @@ use App\Models\WorkItem;
 use App\Support\AppLocale;
 use App\Work\Types\DocumentsWork;
 use App\Work\Types\ExportWork;
+use App\Work\Types\RecordImportWork;
 use App\Work\WorkService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -210,10 +211,12 @@ final class DynamicRecordActions
                                 ->required(),
                             Hidden::make('summary'),
                         ])
+                        // Bis check_rows Zeilen prüft der Assistent die Datei vollständig; grössere prüft die Arbeit.
                         ->afterValidation(function (Get $get, Set $set) use ($table): void {
                             try {
                                 $file = self::uploaded($get('file'));
-                                $analysis = app(RecordImporter::class)->analyze($table, $file->getRealPath(), $file->getClientOriginalName());
+                                $checkRows = (int) config('dynamic_data.import.check_rows');
+                                $analysis = app(RecordImporter::class)->analyze($table, $file->getRealPath(), $file->getClientOriginalName(), $checkRows > 0 ? $checkRows : null);
                             } catch (BusinessRuleException $e) {
                                 Notification::make()->danger()->title($e->getMessage())->persistent()->send();
 
@@ -232,26 +235,40 @@ final class DynamicRecordActions
                             }
 
                             $set('summary', [
-                                'rows' => count($analysis->rows),
+                                'rows' => $analysis->rows,
                                 'columns' => $analysis->columns,
                                 'ignored' => $analysis->ignored,
+                                'checked' => $analysis->checked,
                             ]);
                         }),
                     Step::make('check')
                         ->label(__('data.import.step_check'))
                         ->schema([
                             Callout::make(fn (Get $get): string => trans_choice('data.import.ready', (int) ($get('summary')['rows'] ?? 0), ['count' => Number::format((int) ($get('summary')['rows'] ?? 0), locale: AppLocale::numberLocale())]))
-                                ->success(),
+                                ->success()
+                                ->visible(fn (Get $get): bool => (bool) ($get('summary')['checked'] ?? true)),
+                            Callout::make(fn (Get $get): string => trans_choice('data.import.ready_unchecked', (int) ($get('summary')['rows'] ?? 0), ['count' => Number::format((int) ($get('summary')['rows'] ?? 0), locale: AppLocale::numberLocale())]))
+                                ->info()
+                                ->visible(fn (Get $get): bool => ! ($get('summary')['checked'] ?? true)),
                             Text::make(fn (Get $get): string => __('data.import.columns', ['columns' => implode(', ', (array) ($get('summary')['columns'] ?? []))])),
                             Text::make(fn (Get $get): string => __('data.import.ignored', ['columns' => implode(', ', (array) ($get('summary')['ignored'] ?? []))]))
                                 ->visible(fn (Get $get): bool => ($get('summary')['ignored'] ?? []) !== []),
                             Text::make(__('data.import.only_new')),
                         ]),
                 ])
+                // Als Arbeit (Fundament 2, F3b): die Datei wandert in den Ordner der Arbeit, die Aktion arbeitet kurz mit.
+                // Fertig → Meldung wie bisher; sonst zur Seite der Arbeit, die prüft, einspielt und bei Fehlern alles zurücknimmt.
                 ->action(function (array $data, mixed $livewire) use ($table): void {
                     try {
                         $file = self::uploaded($data['file'] ?? null);
-                        $count = app(RecordImporter::class)->import($table, $file->getRealPath(), $file->getClientOriginalName(), auth()->user());
+                        $name = $file->getClientOriginalName();
+                        $source = RecordImportWork::SOURCE.'.'.RecordImporter::format($name)->value;
+                        $item = app(WorkService::class)->startAndAdvance(RecordImportWork::KEY, [
+                            'table_id' => $table->id,
+                            'file' => $name,
+                            'source' => $source,
+                            'rows' => (int) ($data['summary']['rows'] ?? 0),
+                        ], auth()->user(), app(CurrentApp::class)->id(auth()->user()), files: [$source => $file->getRealPath()]);
                     } catch (BusinessRuleException $e) {
                         Notification::make()->danger()->title($e->getMessage())->persistent()->send();
 
@@ -262,6 +279,24 @@ final class DynamicRecordActions
                         }
                     }
 
+                    if ($item->isOpen()) {
+                        $livewire->redirect(WorkItemResource::getUrl('view', ['record' => $item], panel: 'admin'));
+
+                        return;
+                    }
+
+                    if ($item->status !== WorkItem::DONE) {
+                        // Erste Zeile der Meldung ist die Überschrift, danach die Fehler mit Zeile und Spalte.
+                        $lines = explode("\n", (string) $item->message);
+                        Notification::make()->danger()->persistent()
+                            ->title(__('data.import.failed'))
+                            ->body(self::problemList(count($lines) > 1 ? array_slice($lines, 1) : $lines))
+                            ->send();
+
+                        return;
+                    }
+
+                    $count = (int) (((array) $item->result)['records'] ?? 0);
                     Notification::make()->success()
                         ->title(trans_choice('data.import.done', $count, ['count' => Number::format($count, locale: AppLocale::numberLocale())]))
                         ->send();
@@ -294,19 +329,25 @@ final class DynamicRecordActions
         throw new BusinessRuleException(__('data.import.no_file'));
     }
 
-    /** Fehlerliste für die Meldung: fehlende Pflichtspalten, Fehler mit Zeile und Spalte, Anzahl weiterer. */
-    private static function problemList(RecordImportAnalysis $analysis): string
+    /**
+     * Fehlerliste für die Meldung: fehlende Pflichtspalten, Fehler mit Zeile und Spalte, Anzahl weiterer.
+     *
+     * @param  RecordImportAnalysis|list<string>  $problems
+     */
+    private static function problemList(RecordImportAnalysis|array $problems): string
     {
-        $items = [
-            ...($analysis->missingRequired === [] ? [] : [__('data.import.missing_required', ['columns' => implode(', ', $analysis->missingRequired)])]),
-            ...($analysis->rows === [] && $analysis->errorCount === 0 ? [__('data.import.no_rows')] : []),
-            ...$analysis->messages,
-        ];
-        $more = $analysis->errorCount - count($analysis->messages);
+        if ($problems instanceof RecordImportAnalysis) {
+            $more = $problems->errorCount - count($problems->messages);
+            $problems = [
+                ...($problems->missingRequired === [] ? [] : [(string) __('data.import.missing_required', ['columns' => implode(', ', $problems->missingRequired)])]),
+                ...($problems->rows === 0 && $problems->errorCount === 0 ? [(string) __('data.import.no_rows')] : []),
+                ...$problems->messages,
+                ...($more > 0 ? [(string) trans_choice('data.import.more', $more, ['count' => $more])] : []),
+            ];
+        }
 
         return '<ul style="list-style: disc; padding-inline-start: 1.25rem; max-height: 18rem; overflow-y: auto">'
-            .collect($items)->map(fn (string $m): string => '<li>'.e($m).'</li>')->implode('')
-            .($more > 0 ? '<li>'.e(trans_choice('data.import.more', $more, ['count' => $more])).'</li>' : '')
+            .collect($problems)->map(fn (string $m): string => '<li>'.e($m).'</li>')->implode('')
             .'</ul>';
     }
 

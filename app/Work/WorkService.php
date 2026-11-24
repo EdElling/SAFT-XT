@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Models\WorkItem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 /**
  * Arbeiten starten und abbrechen. Vorangetrieben werden sie vom WorkRunner – drei Arten zu starten:
@@ -26,18 +28,20 @@ final readonly class WorkService
 
     /**
      * Legt eine Arbeit an (Status „wartet“); vorbereitet wird sie im ersten Schritt. Startet die angemeldete Person
-     * unter „Ansicht als Rolle“, gelten die simulierten Rollen auch im Hintergrund.
+     * unter „Ansicht als Rolle“, gelten die simulierten Rollen auch im Hintergrund. $files (Name im Ordner der Arbeit
+     * => Pfad) werden vorher in den Ordner kopiert, z. B. eine hochgeladene Datei, die die Schritte lesen.
      *
      * @param  array<string, mixed>  $parameters
+     * @param  array<string, string>  $files
      */
-    public function start(string $type, array $parameters = [], ?User $user = null, ?int $appId = null): WorkItem
+    public function start(string $type, array $parameters = [], ?User $user = null, ?int $appId = null, array $files = []): WorkItem
     {
         $this->registry->get($type);
         $simulated = $user !== null && Auth::id() === $user->id && $this->simulation->isActive()
             ? $this->simulation->active()?->modelKeys()
             : null;
 
-        return WorkItem::query()->create([
+        $item = WorkItem::query()->create([
             'type' => $type,
             'parameters' => $parameters,
             'user_id' => $user?->id,
@@ -45,6 +49,20 @@ final readonly class WorkService
             'simulated_roles' => $simulated,
             'status' => WorkItem::QUEUED,
         ]);
+
+        foreach ($files as $name => $path) {
+            $stream = fopen($path, 'r');
+
+            if ($stream === false || ! Storage::disk('local')->put($item->directory().'/'.basename((string) $name), $stream)) {
+                throw new RuntimeException('Datei der Arbeit nicht kopiert: '.$name);
+            }
+
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
+
+        return $item;
     }
 
     /**
@@ -54,10 +72,11 @@ final readonly class WorkService
      * Scheduler übernimmt, sobald sie die Seite verlässt.
      *
      * @param  array<string, mixed>  $parameters
+     * @param  array<string, string>  $files
      */
-    public function startAndAdvance(string $type, array $parameters = [], ?User $user = null, ?int $appId = null, ?float $budget = null): WorkItem
+    public function startAndAdvance(string $type, array $parameters = [], ?User $user = null, ?int $appId = null, ?float $budget = null, array $files = []): WorkItem
     {
-        $item = $this->start($type, $parameters, $user, $appId);
+        $item = $this->start($type, $parameters, $user, $appId, $files);
 
         return $this->runner->advance($item, $this->timeLimit->budget($budget ?? (float) config('work.inline_budget', 10)), interactive: true);
     }
@@ -66,10 +85,11 @@ final readonly class WorkService
      * Starten und bis zum Ende treiben – für Konsole und Aufgaben, die auf das Ergebnis warten.
      *
      * @param  array<string, mixed>  $parameters
+     * @param  array<string, string>  $files
      */
-    public function startAndDrive(string $type, array $parameters = [], ?User $user = null, ?int $appId = null): WorkItem
+    public function startAndDrive(string $type, array $parameters = [], ?User $user = null, ?int $appId = null, array $files = []): WorkItem
     {
-        return $this->drive($this->start($type, $parameters, $user, $appId));
+        return $this->drive($this->start($type, $parameters, $user, $appId, $files));
     }
 
     /** Eine Arbeit bis zum Ende treiben; hat ein anderer Treiber die Sperre, warten statt drängeln. */

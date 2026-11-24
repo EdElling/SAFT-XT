@@ -49,6 +49,8 @@ return [
         'file_help' => 'Excel (.xlsx) o CSV, al massimo :max MB e :rows righe.',
         'invalid' => 'Il file non può essere importato così – non è stato creato nulla',
         'ready' => 'Il file è corretto: verrà creato 1 nuovo record.|Il file è corretto: verranno creati :count nuovi record.',
+        'ready_unchecked' => 'Il file contiene 1 riga di dati. Viene verificato completamente durante l’importazione; in caso di errori non viene creato nulla.|Il file contiene :count righe di dati. Viene verificato completamente durante l’importazione; in caso di errori non viene creato nulla.',
+        'failed' => 'Importazione non riuscita – non è stato creato nulla',
         'columns' => 'Colonne riconosciute: :columns',
         'ignored' => 'Non assegnate e ignorate: :columns',
         'only_new' => 'Vengono creati solo nuovi record; i record esistenti non vengono modificati.',

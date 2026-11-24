@@ -16,10 +16,15 @@ return [
         'recompute' => 'Recalculer les champs calculés',
         'export' => 'Exporter',
         'documents' => 'Créer des documents',
+        'record_import' => 'Importer des données',
     ],
     'export' => [
         'done' => '1 ligne exportée.|:count lignes exportées.',
         'table_missing' => 'La table n’existe plus.',
+    ],
+    'import' => [
+        'table_missing' => 'La table n’existe plus.',
+        'file_missing' => 'Le fichier téléversé n’est plus disponible ; veuillez relancer l’importation.',
     ],
     'recompute' => [
         'all_tables' => 'toutes les tables avec des champs calculés',

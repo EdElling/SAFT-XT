@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Work\Types\DocumentsWork;
 use App\Work\Types\ExportWork;
 use App\Work\Types\RecomputeWork;
+use App\Work\Types\RecordImportWork;
 
 /*
 | Arbeiten (Fundament 2, F3a): lange Arbeiten in wiederaufnehmbaren Schritten. Vorangetrieben vom Browser der
@@ -16,6 +17,7 @@ return [
         RecomputeWork::class,
         ExportWork::class,
         DocumentsWork::class,
+        RecordImportWork::class,
     ],
 
     // Zeitbudget je Aufruf in Sekunden: Browser (je Abfrage der Seite, unter max_execution_time) und Scheduler.

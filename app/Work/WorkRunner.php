@@ -224,7 +224,8 @@ final readonly class WorkRunner
         }
 
         try {
-            $this->within($item, fn () => $type->abort($item->parameterValues(), (array) ($item->state ?? []), $status));
+            $step = new WorkStep($item->parameterValues(), (array) ($item->state ?? []), microtime(true), $item->directory());
+            $this->within($item, fn () => $type->abort($step, $status));
         } catch (Throwable $e) {
             Log::warning('Aufräumen einer Arbeit fehlgeschlagen', ['work' => $item->uuid, 'type' => $item->type, 'error' => $e->getMessage(), 'exception' => $e]);
         }

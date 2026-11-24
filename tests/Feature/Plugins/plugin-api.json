@@ -244,7 +244,7 @@
         ],
         "App\\Work\\CleansUp": [
             "interface",
-            "abstract function abort(array $parameters, array $state, string $status): void"
+            "abstract function abort(App\\Work\\WorkStep $step, string $status): void"
         ],
         "App\\Work\\LongSteps": [
             "interface",

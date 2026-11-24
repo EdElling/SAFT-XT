@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Work;
 
 /**
- * Kennzeichnet eine Art, die hinter sich aufräumt, wenn die Arbeit fehlschlägt oder abgebrochen wird: halb kopierte
- * Datenstände entfernen, angelegte Datensätze zurücknehmen. Der Runner ruft abort() mit dem letzten gespeicherten
- * Zustand, bevor die Arbeit ihren Endstatus bekommt – als startende Person, auch beim sofortigen Abbruch einer Arbeit,
- * an der gerade kein Treiber arbeitet. Ergebnisdateien im Ordner der Arbeit löscht der Runner selbst.
+ * Kennzeichnet eine Art, die hinterlassene Spuren einer abgebrochenen oder fehlgeschlagenen Arbeit zurücknimmt (halb
+ * angelegte Datensätze, eine Zwischentabelle). Der Runner ruft abort() vor dem Abschluss als „fehlgeschlagen“ oder
+ * „abgebrochen“ als die startende Person – auch beim sofortigen Abbruch einer wartenden Arbeit, dann mit leerem Zustand.
+ * $step trägt Parameter, den letzten gespeicherten Zustand und den Ordner der Arbeit (ohne Zeitbudget); dessen Dateien
+ * löscht der Runner danach selbst.
  *
  * @api
  */
 interface CleansUp
 {
-    /**
-     * @param  array<string, mixed>  $parameters
-     * @param  array<string, mixed>  $state  letzter gespeicherter Zustand (leer, wenn noch kein Schritt lief)
-     * @param  string  $status  WorkItem::FAILED oder WorkItem::CANCELLED
-     */
-    public function abort(array $parameters, array $state, string $status): void;
+    public function abort(WorkStep $step, string $status): void;
 }

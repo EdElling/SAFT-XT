@@ -16,10 +16,15 @@ return [
         'recompute' => 'Berechnete Felder neu berechnen',
         'export' => 'Exportieren',
         'documents' => 'Dokumente erstellen',
+        'record_import' => 'Daten importieren',
     ],
     'export' => [
         'done' => '1 Zeile exportiert.|:count Zeilen exportiert.',
         'table_missing' => 'Die Tabelle gibt es nicht mehr.',
+    ],
+    'import' => [
+        'table_missing' => 'Die Tabelle gibt es nicht mehr.',
+        'file_missing' => 'Die hochgeladene Datei liegt nicht mehr vor; bitte den Import neu starten.',
     ],
     'recompute' => [
         'all_tables' => 'alle Tabellen mit berechneten Feldern',

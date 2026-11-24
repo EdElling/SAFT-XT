@@ -6,7 +6,10 @@ namespace Tests\Feature\DynamicData;
 
 use App\Models\CustomField;
 use App\Models\CustomTable;
+use App\Models\WorkItem;
 use App\Services\DynamicSchemaService;
+use App\Work\Types\RecordImportWork;
+use App\Work\WorkService;
 use Illuminate\Database\Schema\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +46,19 @@ abstract class DynamicDataTestCase extends TestCase
             ->whereHas('custom_table', fn ($q) => $q->where('name', $table))
             ->where('name', $field)
             ->value('id');
+    }
+
+    /** Datenimport in eine Tabelle als Arbeit bis zum Ende (Fundament 2, F3b), als die angemeldete Person. */
+    protected function importRecords(CustomTable $table, string $path, string $fileName): WorkItem
+    {
+        $source = RecordImportWork::SOURCE.'.'.pathinfo($fileName, PATHINFO_EXTENSION);
+
+        return app(WorkService::class)->startAndDrive(
+            RecordImportWork::KEY,
+            ['table_id' => $table->id, 'file' => $fileName, 'source' => $source],
+            auth()->user(),
+            files: [$source => $path],
+        );
     }
 
     protected function projects(): CustomTable

@@ -67,8 +67,12 @@ return [
         'max_file_mb' => (int) env('APP_DATA_IMPORT_MAX_FILE_MB', 20),
         'max_rows' => (int) env('APP_DATA_IMPORT_MAX_ROWS', 50000),
         'max_columns' => (int) env('APP_DATA_IMPORT_MAX_COLUMNS', 200),
-        // Datenimport in eine bestehende Tabelle: Datensatz für Datensatz wie beim Erfassen (Vorgaben, berechnete
-        // Felder, Summen in übergeordneten Datensätzen) – daher eine kleinere Grenze.
-        'max_record_rows' => (int) env('APP_DATA_IMPORT_MAX_RECORD_ROWS', 10000),
+        // Datenimport in eine bestehende Tabelle (Arbeit „Daten importieren“, Fundament 2): Datensatz für Datensatz
+        // wie beim Erfassen (Vorgaben, berechnete Felder, Summen in übergeordneten Datensätzen). Schutz vor Versehen,
+        // 0 = ohne Grenze; die Datei bleibt durch max_file_mb begrenzt.
+        'max_record_rows' => (int) env('APP_DATA_IMPORT_MAX_RECORD_ROWS', 100000),
+        // Bis so viele Zeilen prüft der Assistent die Datei vollständig, bevor er fragt; grössere Dateien werden erst
+        // in der Arbeit geprüft (bei Fehlern wird nichts angelegt).
+        'check_rows' => (int) env('APP_DATA_IMPORT_CHECK_ROWS', 2000),
     ],
 ];
