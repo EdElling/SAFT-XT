@@ -84,15 +84,16 @@
                     <div>
                         <x-filament::button tag="a" :href="$appUrl" icon="heroicon-m-arrow-right" :color="$pending ? 'gray' : 'primary'" data-designer-to-app>{{ __('app_designer.to_app') }}</x-filament::button>
                     </div>
-                @elseif (! $available)
-                    {{-- Ohne KI: Entwürfe und Vorschau bleiben, nur keine neuen Runden. --}}
-                    <p class="text-sm text-warning-700 dark:text-warning-400" data-designer-unavailable>{{ __('app_designer.unavailable') }}</p>
                 @elseif ($workId !== null)
-                    {{-- Eine Runde oder das Erzeugen läuft: der Fortschritt treibt die Arbeit, die Seite fragt nach. --}}
+                    {{-- Eine Runde oder das Erzeugen läuft: der Fortschritt treibt die Arbeit, die Seite fragt nach – auch
+                         ohne KI (das Erzeugen braucht sie nur zum Übersetzen). --}}
                     <div data-designer-working>
                         <p class="note" style="margin-bottom: .5rem">{{ $creating ? __('app_designer.work.creating') : __('app_designer.working') }}</p>
                         @livewire(\App\Livewire\WorkProgress::class, ['workId' => $workId], key('designer-work-'.$workId))
                     </div>
+                @elseif (! $available)
+                    {{-- Ohne KI: Entwürfe und Vorschau bleiben, nur keine neuen Runden. --}}
+                    <p class="text-sm text-warning-700 dark:text-warning-400" data-designer-unavailable>{{ __('app_designer.unavailable') }}</p>
                 @else
                     <form wire:submit="send" style="display: flex; flex-direction: column; gap: .5rem">
                         <textarea wire:model="prompt" placeholder="{{ $messages === [] ? __('app_designer.placeholder_new') : __('app_designer.placeholder_change') }}" aria-label="{{ __('app_designer.prompt') }}" data-designer-prompt></textarea>

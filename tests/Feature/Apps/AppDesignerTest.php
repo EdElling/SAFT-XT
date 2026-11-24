@@ -405,6 +405,21 @@ class AppDesignerTest extends DynamicDataTestCase
         $this->assertSame(2, Report::query()->where('app_id', $draft->app_id)->count());
     }
 
+    /** Ohne KI (Testserver, Anbieter weg) muss der Fortschritt einer laufenden Arbeit trotzdem erscheinen – er treibt sie. */
+    public function test_the_progress_of_a_running_creation_shows_even_without_ai(): void
+    {
+        $this->fake->push($this->courses());
+        $page = $this->finish(Livewire::test(AppDesignerPage::class)->set('prompt', 'Kursverwaltung')->call('send'))
+            ->mountAction('createApp')->setActionData(['reports' => []])->callMountedAction();
+
+        config(['ai.provider' => null]);
+        $this->assertFalse(AppDesigner::availableFor($this->admin));
+        Livewire::test(AppDesignerPage::class, ['draft' => AppDraft::query()->sole()->id])
+            ->assertSet('workId', $page->get('workId'))
+            ->assertSeeHtml('data-designer-working')
+            ->assertDontSeeHtml('data-designer-unavailable');
+    }
+
     public function test_proposed_reports_can_be_deselected_one_by_one(): void
     {
         $this->fake->push($this->courses());

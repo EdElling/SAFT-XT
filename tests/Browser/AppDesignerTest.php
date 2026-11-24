@@ -17,7 +17,8 @@ use Tests\DuskTestCase;
 
 /**
  * KI-App-Designer (Bereich FAP, B-107 Etappe 7a). Ohne KI im Testserver: Ein vorbereiteter Entwurf zeigt Vorschau und
- * Diagramm, „App erzeugen“ legt die App an und wechselt hinein. Das Gespräch mit der KI prüfen die Feature-Tests.
+ * Diagramm, „App erzeugen“ legt die App als Arbeit an (Fundament 2, F3b: der eingebettete Fortschritt treibt sie im
+ * Browser) und wechselt hinein. Das Gespräch mit der KI prüfen die Feature-Tests.
  */
 class AppDesignerTest extends DuskTestCase
 {
@@ -105,7 +106,9 @@ class AppDesignerTest extends DuskTestCase
     public function test_reports_after_creating_show_progress_links_and_retry(): void
     {
         $admin = User::query()->where('email', self::ADMIN)->firstOrFail();
-        $app = app(AppDesigner::class)->create($admin, $this->draft, reports: false);
+        // Wie die Arbeit „App erzeugen“, ohne Übersetzung (keine KI im Testserver).
+        $designer = app(AppDesigner::class);
+        $app = $designer->install($admin, $this->draft, $designer->prepareCreate($admin, $this->draft), reports: false);
         $report = Report::query()->create(['name' => 'Summe je Kurs', 'is_shared' => true, 'owner_id' => $admin->id, 'definition' => [
             'base' => (int) CustomTable::query()->where('name', 'kurse_kurse')->value('id'),
             'fields' => [['key' => 't', 'path' => [], 'field' => (int) CustomTable::query()->where('name', 'kurse_kurse')->sole()->fields()->where('name', 'titel')->value('id')]],
