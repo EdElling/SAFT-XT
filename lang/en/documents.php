@@ -223,7 +223,9 @@ return [
     'batch' => [
         'action' => 'Create documents',
         'heading' => '{1} Document for 1 record|[2,*] Documents for :count records',
-        'description' => 'One document per record, at most :max at a time.',
+        'description' => 'One document per record.',
+        'description_max' => 'One document per record, at most :max at a time.',
+        'more' => '{1} … and 1 more note|[2,*] … and :count more notes',
         'format' => 'Output',
         'formats' => ['pdf' => 'One PDF with all documents (for printing)', 'zip' => 'ZIP with one file per document'],
         'store' => 'Store in field “:field” for each record',

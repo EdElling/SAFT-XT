@@ -15,6 +15,7 @@ return [
     'types' => [
         'recompute' => 'Ricalcolare i campi calcolati',
         'export' => 'Esportare',
+        'documents' => 'Creare documenti',
     ],
     'export' => [
         'done' => '1 riga esportata.|:count righe esportate.',

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Work\Types\DocumentsWork;
 use App\Work\Types\ExportWork;
 use App\Work\Types\RecomputeWork;
 
@@ -14,6 +15,7 @@ return [
     'types' => [
         RecomputeWork::class,
         ExportWork::class,
+        DocumentsWork::class,
     ],
 
     // Zeitbudget je Aufruf in Sekunden: Browser (je Abfrage der Seite, unter max_execution_time) und Scheduler.

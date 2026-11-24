@@ -223,7 +223,9 @@ return [
     'batch' => [
         'action' => 'Créer des documents',
         'heading' => '{1} Document pour 1 enregistrement|[2,*] Documents pour :count enregistrements',
-        'description' => 'Un document par enregistrement, au plus :max à la fois.',
+        'description' => 'Un document par enregistrement.',
+        'description_max' => 'Un document par enregistrement, au plus :max à la fois.',
+        'more' => '{1} … et 1 autre remarque|[2,*] … et :count autres remarques',
         'format' => 'Sortie',
         'formats' => ['pdf' => 'Un PDF avec tous les documents (pour imprimer)', 'zip' => 'ZIP avec un fichier par document'],
         'store' => 'Déposer dans le champ « :field » de chaque enregistrement',

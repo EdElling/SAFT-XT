@@ -20,6 +20,10 @@ use App\Models\DynamicRecord;
 use App\Models\RecordFile;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\WorkItem;
+use App\Work\Types\DocumentsWork;
+use App\Work\WorkRunner;
+use App\Work\WorkService;
 use Database\Seeders\GitarrenshopDemoSeeder;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Support\Facades\Mail;
@@ -136,11 +140,22 @@ class DocumentMailTest extends DynamicDataTestCase
         $missing->email = null;
         $missing->save();
 
-        $result = app(DocumentBatch::class)->run($this->template, $records, $user, false, DocumentBatch::PDF, true, false);
+        $parameters = ['template_id' => $this->template->id, 'record_ids' => $records->modelKeys(), 'store' => false, 'format' => DocumentBatch::PDF, 'send' => true, 'copy' => false, 'document' => DocumentTemplate::FORMAT_PDF, 'file' => 'Rechnungen.pdf'];
+        $runner = app(WorkRunner::class);
 
-        $this->assertSame([2, 2, 1], [$result['generated'], $result['stored'], $result['sent']], 'Versendet wird abgelegt, auch ohne „ablegen“.');
-        $this->assertCount(1, $result['notes']);
-        $this->assertStringContainsString('keine E-Mail', $result['notes'][0]);
+        // Ein Dokument je Schritt (Budget 0): Die E-Mail geht nach dem Commit des Schritts, nicht erst am Ende.
+        $item = $runner->advance(app(WorkService::class)->start(DocumentsWork::KEY, $parameters, $user), 0);
+        $this->assertSame([WorkItem::RUNNING, 1], [$item->status, $item->done]);
+        Mail::assertSentCount(1);
+
+        $item = $runner->advance($item, 0);
+        Mail::assertSentCount(1);
+        $item = $runner->advance($item, 0);
+
+        $this->assertSame([WorkItem::DONE, 2, 2, 1], [$item->status, $item->result['generated'], $item->result['stored'], $item->result['sent']], 'Versendet wird abgelegt, auch ohne „ablegen“.');
+        $this->assertCount(1, $item->result['notes']);
+        $this->assertStringContainsString('keine E-Mail', $item->result['notes'][0]);
+        $this->assertSame('2 Dokumente erstellt, 2 abgelegt, 1 E-Mail gesendet', explode("\n", (string) $item->message)[0]);
         Mail::assertSentCount(1);
     }
 

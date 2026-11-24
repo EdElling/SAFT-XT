@@ -18,6 +18,9 @@ use App\Models\CustomTable;
 use App\Models\DocumentTemplate;
 use App\Models\DynamicRecord;
 use App\Models\RecordFile;
+use App\Models\WorkItem;
+use App\Work\Types\DocumentsWork;
+use App\Work\WorkService;
 use Database\Seeders\GitarrenshopDemoSeeder;
 use Filament\Actions\Testing\TestAction;
 use Illuminate\Support\Facades\Storage;
@@ -149,17 +152,20 @@ class DocxTest extends DynamicDataTestCase
         $user = $this->superAdmin();
         $records = DynamicRecord::forTableName('gitarren_belege')->newQuery()->whereNotNull('kunde_id')->orderBy('id')->limit(2)->get();
 
-        $result = app(DocumentBatch::class)->run($this->template, $records, $user, true, DocumentBatch::PDF, true, false, DocumentTemplate::FORMAT_DOCX);
+        // Word kommt immer als ZIP; abgelegt oder versendet wird nie, auch wenn beides gewünscht ist.
+        $this->actingAs($user);
+        $item = app(WorkService::class)->startAndDrive(DocumentsWork::KEY, [
+            'template_id' => $this->template->id, 'record_ids' => $records->modelKeys(), 'store' => true, 'format' => DocumentBatch::ZIP,
+            'send' => true, 'copy' => false, 'document' => DocumentTemplate::FORMAT_DOCX, 'file' => DocumentBatch::fileName($this->template, DocumentBatch::ZIP),
+        ], $user);
 
-        $this->assertSame('application/zip', $result['mime']);
-        $this->assertSame([0, 0], [$result['stored'], $result['sent']]);
-        $file = tempnam(sys_get_temp_dir(), 'zip');
-        file_put_contents($file, $result['content']);
+        $this->assertSame(WorkItem::DONE, $item->status, (string) $item->message);
+        $this->assertStringEndsWith('.zip', (string) $item->resultFile());
+        $this->assertSame([0, 0], [$item->result['stored'], $item->result['sent']]);
         $zip = new ZipArchive;
-        $zip->open($file);
+        $zip->open(Storage::disk('local')->path($item->directory().'/'.$item->resultFile()));
         $names = array_map(static fn (int $i): string => (string) $zip->getNameIndex($i), range(0, $zip->numFiles - 1));
         $zip->close();
-        unlink($file);
 
         $this->assertCount(2, $names);
         $this->assertSame(['docx', 'docx'], array_map(static fn (string $n): string => pathinfo($n, PATHINFO_EXTENSION), $names));

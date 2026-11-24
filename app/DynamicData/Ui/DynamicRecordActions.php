@@ -33,6 +33,7 @@ use App\Models\DynamicRecord;
 use App\Models\User;
 use App\Models\WorkItem;
 use App\Support\AppLocale;
+use App\Work\Types\DocumentsWork;
 use App\Work\Types\ExportWork;
 use App\Work\WorkService;
 use Filament\Actions\Action;
@@ -797,7 +798,7 @@ final class DynamicRecordActions
             ->color('gray')
             ->visible(static fn (): bool => $table->hasSingleKey() && $templates()->isNotEmpty())
             ->modalHeading(static fn (EloquentCollection|Collection|null $records): string => trans_choice('documents.batch.heading', $records?->count() ?? 0, ['count' => $records?->count() ?? 0]))
-            ->modalDescription(__('documents.batch.description', ['max' => DocumentBatch::max()]))
+            ->modalDescription(static fn (): string => DocumentBatch::max() > 0 ? __('documents.batch.description_max', ['max' => DocumentBatch::max()]) : __('documents.batch.description'))
             ->modalWidth('md')
             ->modalSubmitActionLabel(__('documents.generate.submit'))
             ->schema([
@@ -831,45 +832,67 @@ final class DynamicRecordActions
                     ->visible(static fn (Get $get): bool => (bool) $get('send') && ! $docx($get) && filled($user()?->email)),
             ])
             ->deselectRecordsAfterCompletion()
+            // Als Arbeit (Fundament 2, F3b): kurz mitarbeiten, fertig → Download wie bisher, sonst zur Seite der Arbeit.
             ->action(static function (array $data, EloquentCollection|Collection $records, mixed $livewire) use ($chosen, $canStore, $user, $format) {
                 $template = $chosen($data['template'] ?? null);
+
+                if ($template === null) {
+                    return null;
+                }
+
                 $document = $format($template, $data['document'] ?? null);
                 $pdf = $document === DocumentTemplate::FORMAT_PDF;
+                $ids = $records->reject(static fn (DynamicRecord $record): bool => $record->trashed())->values()->map(static fn (DynamicRecord $record): mixed => $record->getKey())->all();
+                $output = $pdf ? (string) ($data['format'] ?? DocumentBatch::PDF) : DocumentBatch::ZIP;
 
-                try {
-                    $result = app(DocumentBatch::class)->run(
-                        $template,
-                        $records->reject(static fn (DynamicRecord $record): bool => $record->trashed()),
-                        $user(),
-                        $pdf && (bool) ($data['store'] ?? false) && $canStore($template?->id),
-                        (string) ($data['format'] ?? DocumentBatch::PDF),
-                        $pdf && (bool) ($data['send'] ?? false),
-                        (bool) ($data['mail_copy'] ?? false),
-                        $document,
-                    );
-                } catch (BusinessRuleException $exception) {
-                    Notification::make()->danger()->title($exception->getMessage())->persistent()->send();
+                if (DocumentBatch::max() > 0 && count($ids) > DocumentBatch::max()) {
+                    Notification::make()->danger()->title(__('documents.batch.too_many', ['count' => count($ids), 'max' => DocumentBatch::max()]))->persistent()->send();
 
                     return null;
                 }
 
+                $item = app(WorkService::class)->startAndAdvance(DocumentsWork::KEY, [
+                    'template_id' => $template->id,
+                    'record_ids' => $ids,
+                    'store' => $pdf && (bool) ($data['store'] ?? false) && $canStore($template->id),
+                    'format' => $output,
+                    'send' => $pdf && (bool) ($data['send'] ?? false),
+                    'copy' => (bool) ($data['mail_copy'] ?? false),
+                    'document' => $document,
+                    'file' => DocumentBatch::fileName($template, $output),
+                ], $user(), app(CurrentApp::class)->id($user()));
+
+                if ($item->isOpen()) {
+                    $livewire->redirect(WorkItemResource::getUrl('view', ['record' => $item], panel: 'admin'));
+
+                    return null;
+                }
+
+                if ($item->status !== WorkItem::DONE || ($file = $item->resultFile()) === null) {
+                    Notification::make()->danger()->title((string) $item->message)->persistent()->send();
+
+                    return null;
+                }
+
+                $result = (array) $item->result;
+                $notes = (array) ($result['notes'] ?? []);
                 Notification::make()
-                    ->title(trans_choice('documents.batch.done', $result['generated'], ['count' => $result['generated'], 'stored' => $result['stored']])
-                        .($pdf && ($data['send'] ?? false) ? ', '.trans_choice('documents.batch.sent', $result['sent'], ['count' => $result['sent']]) : ''))
-                    ->body($result['notes'] === [] ? null : implode("\n", $result['notes']))
-                    ->{$result['notes'] === [] ? 'success' : 'warning'}()
-                    ->persistent($result['notes'] !== [])
+                    ->title(trans_choice('documents.batch.done', (int) $result['generated'], ['count' => (int) $result['generated'], 'stored' => (int) $result['stored']])
+                        .($pdf && ($data['send'] ?? false) ? ', '.trans_choice('documents.batch.sent', (int) $result['sent'], ['count' => (int) $result['sent']]) : ''))
+                    ->body($notes === [] ? null : implode("\n", $notes))
+                    ->{$notes === [] ? 'success' : 'warning'}()
+                    ->persistent($notes !== [])
                     ->send();
 
-                if ($result['stored'] > 0) {
+                if ((int) $result['stored'] > 0) {
                     $livewire->dispatch(self::REFRESH_EVENT);
                 }
 
-                $content = $result['content'];
+                $path = Storage::disk('local')->path($item->directory().'/'.$file);
 
-                return response()->streamDownload(static function () use ($content): void {
-                    echo $content;
-                }, $result['file_name'], ['Content-Type' => $result['mime']]);
+                return response()->streamDownload(static function () use ($path): void {
+                    readfile($path);
+                }, $file, ['Content-Type' => $output === DocumentBatch::ZIP ? 'application/zip' : 'application/pdf']);
             });
     }
 

@@ -7,18 +7,21 @@ namespace App\Documents;
 use App\Documents\Templates\RenderedDocument;
 use App\Documents\Templates\TemplateException;
 use App\DynamicData\Ui\RecordEntries;
+use App\DynamicData\Write\WriteContext;
 use App\Exceptions\BusinessRuleException;
 use App\Models\CustomTable;
 use App\Models\DocumentTemplate;
 use App\Models\DynamicRecord;
 use App\Models\User;
+use Closure;
 use RuntimeException;
 use ZipArchive;
 
 /**
  * Dokumente für mehrere Datensätze auf einmal (B-124, D3a): je Datensatz wie „Dokument erstellen“ (Rechte, Ablage,
- * Prüfwert, Protokoll), zusammen als ein PDF zum Drucken oder als ZIP mit den einzelnen Dateien. Läuft direkt in der
- * Anfrage – deshalb höchstens max() Datensätze je Lauf.
+ * Prüfwert, Protokoll), zusammen als ein PDF zum Drucken oder als ZIP mit den einzelnen Dateien. Die Schleife über die
+ * Datensätze liegt in der Arbeit „Dokumente erstellen“ (App\Work\Types\DocumentsWork, Fundament 2, F3b); hier stehen
+ * die Bausteine: one() für ein Dokument, assemble() für die Ergebnisdatei.
  *
  * Was nicht abgelegt werden kann (Feld voll, Recht zum Bearbeiten fehlt), wird trotzdem erzeugt und gemeldet; scheitert
  * ein Dokument (z. B. Fehler in der Vorlage), fehlt es im Ergebnis und steht in der Liste der übersprungenen.
@@ -36,96 +39,99 @@ final class DocumentBatch
         private readonly DocumentMailer $mailer,
     ) {}
 
+    /** Obergrenze je Sammellauf (documents.batch_max); 0 = ohne Grenze. */
     public static function max(): int
     {
-        return max(1, (int) config('documents.batch_max', 50));
+        return max(0, (int) config('documents.batch_max', 0));
+    }
+
+    /** Dateiname des Ergebnisses: Name der Vorlage und Datum, ohne Zeichen, die Dateisysteme nicht erlauben. */
+    public static function fileName(DocumentTemplate $template, string $format): string
+    {
+        $base = trim(str_replace(['\\', '/', ':', '*', '?', '"', '<', '>', '|'], '-', $template->name)).'-'.now()->format('Y-m-d');
+
+        return $base.($format === self::ZIP ? '.zip' : '.pdf');
     }
 
     /**
-     * @param  iterable<DynamicRecord>  $records
-     * @param  bool  $send  je Datensatz per E-Mail an die Adresse aus der Vorlage (D3b); versendete werden abgelegt, wenn möglich
-     * @param  string  $document  Format der Dokumente (D4b): pdf oder docx – Word immer als ZIP, nie abgelegt oder versendet
-     * @return array{content: string, file_name: string, mime: string, generated: int, stored: int, sent: int, notes: list<string>}
+     * Ein Dokument für einen Datensatz. Versendet wird erst nach dem Commit des laufenden Schreibvorgangs
+     * (WriteContext::afterCommit): Ein zurückgerollter Block hinterlässt keine E-Mail. $mailed erfährt je Versand null
+     * (gesendet) oder den Hinweis, warum nicht.
      *
-     * @throws BusinessRuleException wenn es zu viele Datensätze sind, keiner erzeugt werden konnte oder die Vorlage nicht erlaubt ist
+     * @param  bool  $send  je Datensatz per E-Mail an die Adresse aus der Vorlage (D3b); versendete werden abgelegt, wenn möglich
+     * @param  string  $document  Format des Dokuments (D4b): pdf oder docx – Word wird nie abgelegt oder versendet
+     * @param  list<string>  $notes  Hinweise (nicht abgelegt, kein Dokument) kommen hier dazu
+     * @param  (Closure(?string): void)|null  $mailed
+     * @return array{name: string, content: string, stored: bool}|null null, wenn kein Dokument entstanden ist
+     *
+     * @throws BusinessRuleException wenn die Vorlage für die Person nicht erlaubt ist
      */
-    public function run(DocumentTemplate $template, iterable $records, ?User $user, bool $store, string $format = self::PDF, bool $send = false, bool $copyToMe = false, string $document = DocumentTemplate::FORMAT_PDF): array
+    public function one(DocumentTemplate $template, CustomTable $table, DynamicRecord $record, ?User $user, bool $store, bool $send, bool $copyToMe, string $document, array &$notes, ?Closure $mailed = null): ?array
     {
         if ($document === DocumentTemplate::FORMAT_DOCX) {
-            [$format, $store, $send] = [self::ZIP, false, false];
+            [$store, $send] = [false, false];
         }
 
-        $records = collect($records)->values();
-        $table = $template->customTable ?? CustomTable::query()->findOrFail($template->custom_table_id);
-
-        if ($records->count() > self::max()) {
-            throw new BusinessRuleException(__('documents.batch.too_many', ['count' => $records->count(), 'max' => self::max()]), 'documents.batch_too_many');
-        }
-
-        $documents = [];
-        $notes = [];
-        $stored = 0;
-        $sent = 0;
+        $title = RecordEntries::title($table, $record);
         $send = $send && DocumentMailer::canSend($user, $template);
         $store = $store || $send;
+        $storeThis = $store && $this->generator->canStore($template, $table, $record, $user);
 
-        foreach ($records as $record) {
-            $title = RecordEntries::title($table, $record);
-            $storeThis = $store && $this->generator->canStore($template, $table, $record, $user);
+        if ($store && ! $storeThis && $this->generator->storageField($template, $table) !== null) {
+            $notes[] = (string) __('documents.batch.not_stored', ['title' => $title]);
+        }
 
-            if ($store && ! $storeThis && $this->generator->storageField($template, $table) !== null) {
-                $notes[] = __('documents.batch.not_stored', ['title' => $title]);
+        try {
+            $result = $this->generator->generate($template, $record, $user, $storeThis, $document);
+        } catch (BusinessRuleException $exception) {
+            if ($exception->errorCode !== 'documents.field_full') {
+                throw $exception;
             }
 
-            try {
-                $result = $this->generator->generate($template, $record, $user, $storeThis, $document);
-            } catch (BusinessRuleException $exception) {
-                if ($exception->errorCode !== 'documents.field_full') {
-                    throw $exception;
-                }
+            $notes[] = (string) __('documents.batch.field_full', ['title' => $title, 'message' => $exception->getMessage()]);
+            $result = $this->generator->generate($template, $record, $user, false);
+        } catch (TemplateException $exception) {
+            $notes[] = (string) __('documents.batch.failed', ['title' => $title, 'message' => $exception->getMessage()]);
 
-                $notes[] = __('documents.batch.field_full', ['title' => $title, 'message' => $exception->getMessage()]);
-                $result = $this->generator->generate($template, $record, $user, false);
-            } catch (TemplateException $exception) {
-                $notes[] = __('documents.batch.failed', ['title' => $title, 'message' => $exception->getMessage()]);
+            return null;
+        }
 
-                continue;
-            }
+        $name = $result['file']?->name ?? $result['document']->fileName;
 
-            $stored += $result['file'] !== null ? 1 : 0;
-            $name = $result['file']?->name ?? $result['document']->fileName;
-            $documents[] = ['name' => $name, 'pdf' => $result['document']->content()];
-
-            if ($send) {
+        if ($send) {
+            WriteContext::afterCommit(function () use ($template, $record, $user, $result, $name, $copyToMe, $title, $mailed): void {
                 $note = $this->mail($template, $record, $user, $result, $name, $copyToMe);
-                if ($note === null) {
-                    $sent++;
-                } else {
-                    $notes[] = __('documents.batch.not_sent', ['title' => $title, 'message' => $note]);
-                }
-            }
+                $mailed?->__invoke($note === null ? null : (string) __('documents.batch.not_sent', ['title' => $title, 'message' => $note]));
+            });
         }
 
+        return ['name' => $name, 'content' => $result['document']->content(), 'stored' => $result['file'] !== null];
+    }
+
+    /**
+     * Die Ergebnisdatei bauen: ein PDF mit allen Dokumenten oder ein ZIP mit einer Datei je Dokument.
+     *
+     * @param  list<array{name: string, path: string}>  $documents  Namen sind eindeutig (DocumentGenerator::versionedName())
+     *
+     * @throws BusinessRuleException wenn es keine Dokumente gibt
+     */
+    public function assemble(DocumentTemplate $template, string $format, array $documents, string $target, string $notes = ''): void
+    {
         if ($documents === []) {
-            throw new BusinessRuleException(__('documents.batch.nothing', ['notes' => implode(' ', $notes)]), 'documents.batch_nothing');
+            throw new BusinessRuleException(__('documents.batch.nothing', ['notes' => $notes]), 'documents.batch_nothing');
         }
 
-        // Dateiname: Name der Vorlage und Datum, ohne Zeichen, die Dateisysteme nicht erlauben.
-        $base = trim(str_replace(['\\', '/', ':', '*', '?', '"', '<', '>', '|'], '-', $template->name)).'-'.now()->format('Y-m-d');
+        if ($format === self::ZIP) {
+            $this->zip($documents, $target);
 
-        $content = $format === self::ZIP
-            ? $this->zip($documents)
-            : $this->merger->merge(array_column($documents, 'pdf'), $this->letterheads->for($template->app_id)->pdfa, $template->name);
+            return;
+        }
 
-        return [
-            'content' => $content,
-            'file_name' => $base.($format === self::ZIP ? '.zip' : '.pdf'),
-            'mime' => $format === self::ZIP ? 'application/zip' : 'application/pdf',
-            'generated' => count($documents),
-            'stored' => $stored,
-            'sent' => $sent,
-            'notes' => $notes,
-        ];
+        $contents = array_map(static fn (array $document): string => (string) file_get_contents($document['path']), $documents);
+
+        if (file_put_contents($target, $this->merger->merge($contents, $this->letterheads->for($template->app_id)->pdfa, $template->name)) === false) {
+            throw new RuntimeException('Ergebnisdatei nicht möglich.');
+        }
     }
 
     /**
@@ -154,35 +160,21 @@ final class DocumentBatch
         }
     }
 
-    /** @param  list<array{name: string, pdf: string}>  $documents */
-    private function zip(array $documents): string
+    /** @param  list<array{name: string, path: string}>  $documents */
+    private function zip(array $documents, string $target): void
     {
-        $path = tempnam(sys_get_temp_dir(), 'saft-documents-');
+        $zip = new ZipArchive;
 
-        if ($path === false) {
-            throw new RuntimeException('Temporäre Datei für das ZIP nicht möglich.');
+        if ($zip->open($target, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            throw new RuntimeException('ZIP nicht möglich.');
         }
 
-        try {
-            $zip = new ZipArchive;
+        foreach ($documents as $document) {
+            $zip->addFile($document['path'], $document['name']);
+        }
 
-            if ($zip->open($path, ZipArchive::OVERWRITE) !== true) {
-                throw new RuntimeException('ZIP nicht möglich.');
-            }
-
-            $names = [];
-
-            foreach ($documents as $document) {
-                $name = DocumentGenerator::versionedName($document['name'], $names);
-                $names[] = $name;
-                $zip->addFromString($name, $document['pdf']);
-            }
-
-            $zip->close();
-
-            return (string) file_get_contents($path);
-        } finally {
-            @unlink($path);
+        if (! $zip->close()) {
+            throw new RuntimeException('ZIP nicht möglich.');
         }
     }
 }

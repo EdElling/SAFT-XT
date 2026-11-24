@@ -223,7 +223,9 @@ return [
     'batch' => [
         'action' => 'Dokumente erstellen',
         'heading' => '{1} Dokument für 1 Datensatz|[2,*] Dokumente für :count Datensätze',
-        'description' => 'Je Datensatz ein Dokument, höchstens :max auf einmal.',
+        'description' => 'Je Datensatz ein Dokument.',
+        'description_max' => 'Je Datensatz ein Dokument, höchstens :max auf einmal.',
+        'more' => '{1} … und 1 weiterer Hinweis|[2,*] … und :count weitere Hinweise',
         'format' => 'Ausgabe',
         'formats' => ['pdf' => 'Ein PDF mit allen Dokumenten (zum Drucken)', 'zip' => 'ZIP mit einer Datei je Dokument'],
         'store' => 'Je Datensatz im Feld „:field“ ablegen',

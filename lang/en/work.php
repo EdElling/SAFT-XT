@@ -15,6 +15,7 @@ return [
     'types' => [
         'recompute' => 'Recompute computed fields',
         'export' => 'Export',
+        'documents' => 'Create documents',
     ],
     'export' => [
         'done' => '1 row exported.|:count rows exported.',

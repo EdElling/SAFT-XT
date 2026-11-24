@@ -15,6 +15,7 @@ return [
     'types' => [
         'recompute' => 'Berechnete Felder neu berechnen',
         'export' => 'Exportieren',
+        'documents' => 'Dokumente erstellen',
     ],
     'export' => [
         'done' => '1 Zeile exportiert.|:count Zeilen exportiert.',
