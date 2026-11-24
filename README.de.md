@@ -12,6 +12,7 @@ PostgreSQL, MySQL oder MariaDB.
 - [Häufige Fragen](docs/manual/FAQ.de.md)
 - [Systemadministration](docs/manual/SYSADMIN_GUIDE.de.md)
 - [Entwicklerhandbuch: Plugins](docs/manual/DEVELOPER_GUIDE.de.md)
+- [Architektur](docs/ARCHITECTURE.de.md) (Schichten, Schreibweg, Rechte, Erweiterungspunkte, Entscheidungen)
 
 ## Funktionen
 

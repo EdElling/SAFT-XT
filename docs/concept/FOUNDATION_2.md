@@ -1,6 +1,6 @@
 # Konzept: Fundament 2 (Schreibweg, Nebenläufigkeit, Hintergrundarbeit, Formelsprache, Qualitätssicherung)
 
-Stand: 24.11.2026 · Status: **F0, F1, F2, F4 (23.11.2026), F3a und F3b (24.11.2026) umgesetzt, F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
+Stand: 24.11.2026 · Status: **alle Etappen umgesetzt – F0, F1, F2, F4 (23.11.2026), F3a, F3b und F5 (24.11.2026); Release 0.6.0 folgt** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
 
 ## 1. Ziel
 
@@ -385,6 +385,9 @@ geplante Funktionen dürfen noch nicht existieren.
      `App\DynamicData\Write`.
   4. Jede Stelle, die `DynamicRecord::forTable()` lesend aufruft, steht in einer Liste mit Begründung
      (`tests/Fixtures/read-sites.json`). Das ist die Vorbereitung auf den Zeilenrechte-Scope aus `ROW_ACCESS.md` 7.
+     **Umgesetzt 24.11.2026 (F5):** 32 Dateien mit 53 Stellen; je Datei höchstens erlaubte Anzahl, Begründung und
+     `scope` (`person`: im Namen der Person, hier greift der Scope; `system`: SAFTs eigene Regeln, `withoutRowAccess()`;
+     `none`: keine Abfrage). Zu Hause sind `DynamicRecord` selbst und die Demo-Seeder.
 - `declare(strict_types=1);` in den Base-Models über die Pint-Regel `declare_strict_types` (`pint.json`), weil Reliese
   1.x keine eigene Vorlage erlaubt; Pint nach jedem `code:models` laufen lassen (Entscheid 23.11.2026).
 
@@ -414,6 +417,10 @@ Schnittstellen); Erweiterungspunkte (Plugins, Aufgabenarten, Arbeiten, Formelfun
 die Entscheidungen aus Abschnitt 3 als nummerierte Liste mit Datum und Begründung (ADR-Stil). `AGENTS.md` verweist
 darauf statt auf Laravel-Boost-Boilerplate; `CLAUDE.md` wird auf PHP 8.4 und den Schreibweg nachgeführt.
 
+**Umgesetzt 24.11.2026:** beide Fassungen mit zehn Kapiteln und 24 Entscheidungen (auch die älteren: Trennung der
+Verbindungen, Base-Model-Muster, Apps, Plugin-API); `ManualStructureTest` prüft Sprungmarken und gleiche Gliederung
+der beiden Fassungen mit; Verweise in `README.md`, `README.de.md` und der Handbuch-Übersicht.
+
 ## 9. Zusammenspiel mit den folgenden Konzepten
 
 | Konzept | Nutzt aus Fundament 2 |
@@ -436,7 +443,7 @@ darauf statt auf Laravel-Boost-Boilerplate; `CLAUDE.md` wird auf PHP 8.4 und den
 | **F3a Arbeiten** | **Umgesetzt 24.11.2026:** `work_items`, `WorkType` (Plugin-API 1.10 mit `SaftPlugin::workTypes()` und `Saft::startWork()`), `WorkRunner` mit Treibern Browser (`WorkProgress`) und Scheduler (`work:run`), Seite „Arbeiten“ bzw. „Meine Arbeiten“, Download, Benachrichtigung, Aufräumen (`work_prune`, stündlich), Dashboard; Pilot `computed:recompute` als Arbeit. Entscheide in §6.5 | mittel |
 | **F3b Umstellung** | **Umgesetzt 24.11.2026** (Planung in §6.6, acht Teilschritte): Export, Datenimport, Dokumente, Datenstände, Recompute, KI-App-Designer und seine Auswertungen als Arbeiten (`startAndAdvance`/`startAndDrive`, `CleansUp`, `LongSteps`, `DescribesProgress`, `afterCommit`); Treiber Queue (`AdvanceWork`, `WORK_DRIVER=queue`); Grenzen 500'000/100'000/ohne/1'000'000; Migration 100; Handbücher in vier Sprachen, FAQ, Sysadmin-`.env`-Tabelle und „Mit Queue-Worker“. Browser-Tests der betroffenen Batches folgen mit dem Release | gross |
 | **F4 Formelsprache** | **Umgesetzt 23.11.2026:** `FORMULA_SPEC.md`, 75 Konformitätsfälle, `FormulaConformanceTest` auf drei Datenbanken (keine Abweichung gefunden), `FormulaSpecTest` gegen Drift | mittel |
-| **F5 Architektur** | `ARCHITECTURE.de.md`/`.md`, Lesestellen-Liste (Test 4), `AGENTS.md`, `CLAUDE.md` | klein |
+| **F5 Architektur** | **Umgesetzt 24.11.2026:** `docs/ARCHITECTURE.de.md` und `.md` (Grundsätze, Schichten, zwei Verbindungen, Schreibweg, Rechte, Erweiterungspunkte, Hintergrundarbeit, Qualitätssicherung, 24 nummerierte Entscheidungen im ADR-Stil), Lesestellen-Liste `tests/Fixtures/read-sites.json` mit `scope` person/system/none und Architekturtest 4, `ManualStructureTest` prüft auch die Gliederung der beiden Fassungen, `AGENTS.md` ohne Boost-Vorlage, `CLAUDE.md` nachgeführt | klein |
 
 Reihenfolge: F0 → F1 → F2 → F4 → F3a → F3b → F5. F4 vor F3, weil B-142 und B-020 auf die Spezifikation warten, die
 Arbeiten dagegen erst mit Läufen und REST dringend werden. Release 0.6.0 nach F5. Jede Etappe für sich auslieferbar;

@@ -17,6 +17,9 @@ use PHPUnit\Framework\TestCase;
  *    Optionen (Herkunft, Protokoll, Ereignisse, Version) sichtbar sind. Geprüft wird heuristisch: Aufrufketten auf
  *    DynamicRecord::forTable…() und Schreibmethoden auf Variablen, die Datensätze halten, in Dateien, die DynamicRecord
  *    verwenden.
+ * 4. Jede Stelle, die Datensätze über DynamicRecord::forTable()/forTableName() liest, steht in tests/Fixtures/read-sites.json
+ *    mit Begründung und Einordnung („person“: im Namen der Person, „system“: SAFTs eigene Regeln, „none“: keine Abfrage).
+ *    Das ist die Inventur für den Zeilenrechte-Scope (ROW_ACCESS.md §7): eine vergessene Stelle wäre ein Datenleck.
  *
  * Eine neue Ausnahme braucht einen Grund in der Liste unten; der Zähler je Datei verhindert, dass
  * eine erlaubte Datei unbemerkt weitere Stellen bekommt.
@@ -58,6 +61,13 @@ class ArchitectureTest extends TestCase
     /** @var array<string, array{0: int, 1: string}> */
     private const array RECORD_WRITE_EXCEPTIONS = [];
 
+    private const string READ_SITE_PATTERN = '/(?:DynamicRecord|self|static)::forTable(?:Name)?\(/';
+
+    /** Das Model selbst (forTableName, Morph) und die Demo-Seeder, die ihre Daten mit festen Tabellen anlegen. */
+    private const array READ_SITE_HOMES = ['app/Models/DynamicRecord.php', 'database/seeders/'];
+
+    private const string READ_SITES = __DIR__.'/../Fixtures/read-sites.json';
+
     public function test_raw_sql_only_in_dialects_and_listed_exceptions(): void
     {
         $this->assertRule(self::RAW_SQL_PATTERN, self::RAW_SQL_HOMES, self::RAW_SQL_EXCEPTIONS,
@@ -75,6 +85,26 @@ class ArchitectureTest extends TestCase
         $this->assertRule(self::RECORD_WRITE_PATTERN, self::RECORD_WRITE_HOMES, self::RECORD_WRITE_EXCEPTIONS,
             'Datensatz direkt geschrieben: RecordWriter (create/update/save/delete/restore/batch) mit WriteOptions nutzen',
             static fn (string $file, string $source): bool => str_contains($source, 'DynamicRecord'));
+    }
+
+    public function test_every_read_site_is_listed_with_a_reason(): void
+    {
+        $sites = json_decode((string) file_get_contents(self::READ_SITES), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertIsArray($sites);
+        unset($sites['_comment']);
+        $exceptions = [];
+
+        foreach ($sites as $file => $site) {
+            $this->assertIsString($file);
+            $this->assertIsArray($site, $file);
+            $this->assertContains($site['scope'] ?? null, ['person', 'system', 'none'], "{$file}: scope muss person, system oder none sein");
+            $this->assertIsInt($site['count'] ?? null, "{$file}: count fehlt");
+            $this->assertNotSame('', trim((string) ($site['reason'] ?? '')), "{$file}: Begründung fehlt");
+            $exceptions[$file] = [$site['count'], $site['reason']];
+        }
+
+        $this->assertRule(self::READ_SITE_PATTERN, self::READ_SITE_HOMES, $exceptions,
+            'Lesestelle ohne Eintrag in tests/Fixtures/read-sites.json (Fundament 2, F5): mit Begründung und scope eintragen');
     }
 
     /**

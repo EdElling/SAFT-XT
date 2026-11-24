@@ -12,6 +12,7 @@ administrator guide also in French and Italian. The online help shows a manual i
 | [Administrator guide](ADMIN_GUIDE.md) | administration within SAFT: users, roles, menus, table designer, table connector, reports … | yes, for people with a permission in the Administration area |
 | [System administration](SYSADMIN_GUIDE.md) | operation, command reference (`php artisan`), AI provider, screenshots | no |
 | [Developer guide: plugins](DEVELOPER_GUIDE.md) | programming own pages and functions as plugins | no |
+| [Architecture](../ARCHITECTURE.md) | development of the core: layers, connections, write path, permissions, extension points, decisions | no |
 | [Appendix B – Installation on a development machine](INSTALL_DEVELOPMENT.md) | development | no |
 | [Appendix C – Installation on a production server](INSTALL_PRODUCTION.md) | operation | no |
 | [Appendix D – Single sign-on with Microsoft Entra ID](SSO_ENTRA.md) | operation, Microsoft tenant | no |

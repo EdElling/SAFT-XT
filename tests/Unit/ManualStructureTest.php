@@ -8,26 +8,34 @@ use App\Documentation\Documentation;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Handbücher in docs/manual: Sprungmarken führen zu vorhandenen Überschriften (gleiche Regel wie die Online-Hilfe),
- * und alle Sprachfassungen eines Handbuchs haben dieselbe Gliederung (Ebenen, Kapitelnummern, Anhänge).
+ * Handbücher in docs/manual und die Architekturbeschreibung docs/ARCHITECTURE.*.md: Sprungmarken führen zu vorhandenen
+ * Überschriften (gleiche Regel wie die Online-Hilfe), und alle Sprachfassungen eines Dokuments haben dieselbe Gliederung
+ * (Ebenen, Kapitelnummern, Anhänge).
  */
 class ManualStructureTest extends TestCase
 {
     private const string DIR = __DIR__.'/../../docs/manual/';
 
+    private const string DOCS = __DIR__.'/../../docs/';
+
     /** @return list<array{level: int, title: string}> */
     private function headings(string $file): array
     {
-        $text = (string) preg_replace('/^```.*?^```/ms', '', (string) file_get_contents(self::DIR.$file));
+        $text = (string) preg_replace('/^```.*?^```/ms', '', $this->contents($file));
         preg_match_all('/^(#{1,6}) (.+)$/m', $text, $matches, PREG_SET_ORDER);
 
         return array_map(fn (array $m): array => ['level' => strlen($m[1]), 'title' => trim($m[2])], $matches);
     }
 
-    /** @return list<string> */
+    private function contents(string $file): string
+    {
+        return (string) file_get_contents(str_starts_with($file, 'ARCHITECTURE') ? self::DOCS.$file : self::DIR.$file);
+    }
+
+    /** @return list<string> Handbücher und ARCHITECTURE.*.md, als Dateinamen */
     private function files(): array
     {
-        return array_map('basename', glob(self::DIR.'*.md') ?: []);
+        return array_map('basename', [...glob(self::DIR.'*.md') ?: [], ...glob(self::DOCS.'ARCHITECTURE*.md') ?: []]);
     }
 
     public function test_every_anchor_link_points_to_an_existing_heading(): void
@@ -41,7 +49,7 @@ class ManualStructureTest extends TestCase
         $broken = [];
 
         foreach ($this->files() as $file) {
-            preg_match_all('/\]\(([A-Z_]+(?:\.[a-z]{2})?\.md)?#([^)\s]+)\)/', (string) file_get_contents(self::DIR.$file), $links, PREG_SET_ORDER);
+            preg_match_all('/\]\(([A-Z_]+(?:\.[a-z]{2})?\.md)?#([^)\s]+)\)/', $this->contents($file), $links, PREG_SET_ORDER);
 
             foreach ($links as $link) {
                 $target = $link[1] !== '' ? $link[1] : $file;
@@ -79,11 +87,12 @@ class ManualStructureTest extends TestCase
         }
 
         $this->assertArrayHasKey('USER_GUIDE', $groups);
+        $this->assertCount(2, $groups['ARCHITECTURE'] ?? [], 'ARCHITECTURE.de.md und ARCHITECTURE.md');
     }
 
     public function test_each_manual_numbers_its_own_chapters_from_one(): void
     {
-        foreach (['USER_GUIDE', 'ADMIN_GUIDE', 'SYSADMIN_GUIDE'] as $name) {
+        foreach (['USER_GUIDE', 'ADMIN_GUIDE', 'SYSADMIN_GUIDE', 'ARCHITECTURE'] as $name) {
             $numbers = array_values(array_filter(array_map(
                 fn (array $h): ?int => $h['level'] === 2 && preg_match('/^(\d+)\. /', $h['title'], $m) === 1 ? (int) $m[1] : null,
                 $this->headings($name.'.md'),
