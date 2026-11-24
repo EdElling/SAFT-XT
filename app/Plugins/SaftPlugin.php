@@ -11,6 +11,7 @@ use App\Plugins\Api\FormulaFunction;
 use App\Plugins\Api\Manual;
 use App\Plugins\Api\RecordListener;
 use App\Tasks\TaskType;
+use App\Work\WorkType;
 use Composer\InstalledVersions;
 use Composer\Semver\Semver;
 use Filament\Contracts\Plugin;
@@ -68,6 +69,12 @@ abstract class SaftPlugin implements Plugin
 
     /** @return list<class-string<TaskType>> zusätzliche Arten geplanter Aufgaben */
     public function taskTypes(): array
+    {
+        return [];
+    }
+
+    /** @return list<class-string<WorkType>> zusätzliche Arten von Arbeiten (lange Arbeiten in Schritten, seit API 1.10) */
+    public function workTypes(): array
     {
         return [];
     }

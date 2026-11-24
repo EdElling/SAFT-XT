@@ -135,6 +135,9 @@ final class Recalculator
         }
     }
 
+    /** Datensätze je Block (eine Transaktion je Block). */
+    public const int BLOCK = 500;
+
     /**
      * Alle Datensätze einer Tabelle neu berechnen (auch gelöschte), danach die Tabellen, die über sie
      * summieren. Ohne Protokoll und ohne neuen Änderungszeitpunkt: Auslöser ist die Formel, nicht eine
@@ -145,37 +148,77 @@ final class Recalculator
      */
     public function recomputeTable(CustomTable $table, array &$done = []): int
     {
-        if (isset($done[$table->name])) {
-            return 0;
-        }
-
-        $done[$table->name] = true;
-        DynamicRecord::forget();
-        $model = DynamicRecord::forTable($table->loadMissing('fields'));
         $changed = 0;
 
-        $writer = app(RecordWriter::class);
+        foreach ($this->recomputeOrder([$table], $done) as $next) {
+            $after = 0;
 
-        $model->newQuery()->withTrashed()->orderBy('id')->chunkById(500, function ($records) use ($writer, &$changed): void {
-            // Ein Block je Transaktion; der Writer schreibt ohne Phasen, Protokoll und Zeitstempel.
-            $writer->batch(function () use ($records, $writer, &$changed): void {
-                foreach ($records as $record) {
-                    /** @var DynamicRecord $record */
-                    $record->recalculate();
-
-                    if ($record->isDirty()) {
-                        $writer->persist($record);
-                        $changed++;
-                    }
-                }
-            }, WriteOptions::defaults()->withOrigin(WriteOptions::RECOMPUTE));
-        });
-
-        foreach (self::parentsOf($table->name) as $parent) {
-            $changed += $this->recomputeTable($parent, $done);
+            do {
+                $block = $this->recomputeBlock($next, $after);
+                $changed += $block['changed'];
+                $after = $block['last_id'];
+            } while ($block['count'] === self::BLOCK);
         }
 
         return $changed;
+    }
+
+    /**
+     * Reihenfolge für recomputeTable(): jede Tabelle, gefolgt von den Tabellen, die über sie summieren (rekursiv),
+     * jede nur einmal.
+     *
+     * @param  iterable<CustomTable>  $tables
+     * @param  array<string, true>  $done  bereits berechnete bzw. eingereihte Tabellen
+     * @return list<CustomTable>
+     */
+    public function recomputeOrder(iterable $tables, array &$done = []): array
+    {
+        $order = [];
+
+        foreach ($tables as $table) {
+            if (isset($done[$table->name])) {
+                continue;
+            }
+
+            $done[$table->name] = true;
+            $order[] = $table;
+            array_push($order, ...$this->recomputeOrder(self::parentsOf($table->name), $done));
+        }
+
+        return $order;
+    }
+
+    /**
+     * Einen Block Datensätze (nach ID, ab $afterId) neu berechnen, in einer Transaktion. Grundlage für
+     * recomputeTable() und die Arbeit „Berechnete Felder neu berechnen“ (Fundament 2, F3a).
+     *
+     * @return array{count: int, changed: int, last_id: int}
+     */
+    public function recomputeBlock(CustomTable $table, int $afterId, int $limit = self::BLOCK): array
+    {
+        if ($afterId === 0) {
+            DynamicRecord::forget();
+        }
+
+        $model = DynamicRecord::forTable($table->loadMissing('fields'));
+        $records = $model->newQuery()->withTrashed()->where($model->getKeyName(), '>', $afterId)->orderBy($model->getKeyName())->limit($limit)->get();
+        $writer = app(RecordWriter::class);
+        $changed = 0;
+
+        // Ein Block je Transaktion; der Writer schreibt ohne Phasen, Protokoll und Zeitstempel.
+        $writer->batch(function () use ($records, $writer, &$changed): void {
+            foreach ($records as $record) {
+                /** @var DynamicRecord $record */
+                $record->recalculate();
+
+                if ($record->isDirty()) {
+                    $writer->persist($record);
+                    $changed++;
+                }
+            }
+        }, WriteOptions::defaults()->withOrigin(WriteOptions::RECOMPUTE));
+
+        return ['count' => $records->count(), 'changed' => $changed, 'last_id' => (int) ($records->last()?->getKey() ?? $afterId)];
     }
 
     /**

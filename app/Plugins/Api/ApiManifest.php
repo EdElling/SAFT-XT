@@ -15,6 +15,11 @@ use App\Plugins\Testing\PluginTestCase;
 use App\Tasks\TaskResult;
 use App\Tasks\TaskSkipped;
 use App\Tasks\TaskType;
+use App\Work\StepOutcome;
+use App\Work\WorkPlan;
+use App\Work\WorkStep;
+use App\Work\WorkType;
+use App\Work\WritesRecords;
 
 /**
  * Was zur Programmierschnittstelle für Plugins gehört (intern, für Tests und Dokumentation). Die öffentlichen Methoden,
@@ -54,6 +59,12 @@ final class ApiManifest
         TaskSkipped::class,
         // Dateien aus Dateifeldern (DataTable::files(), attachFile(), detachFile()), seit API 1.8.
         StoredFile::class,
+        // Arten von Arbeiten (SaftPlugin::workTypes()), seit API 1.10.
+        WorkType::class,
+        WorkPlan::class,
+        WorkStep::class,
+        StepOutcome::class,
+        WritesRecords::class,
     ];
 
     /** @var list<class-string> */

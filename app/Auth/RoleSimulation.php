@@ -62,17 +62,42 @@ final class RoleSimulation
             return;
         }
 
-        $roles = Role::query()->with('permissions')->whereKey((array) $ids)->orderBy('name')->get();
+        if (! $this->applyRoles($user, array_map('intval', (array) $ids))) {
+            session()->forget(self::SESSION_KEY);
+        }
+    }
+
+    /**
+     * Die Rollen ohne Sitzung anwenden, z. B. für eine Arbeit, die unter „Ansicht als Rolle“ gestartet wurde und im
+     * Hintergrund weiterläuft (Fundament 2, F3a). Ungültige Wahl → false, nichts angewendet.
+     *
+     * @param  list<int>  $roleIds
+     */
+    public function applyRoles(User $user, array $roleIds): bool
+    {
+        $roles = Role::query()->with('permissions')->whereKey($roleIds)->orderBy('name')->get();
 
         if ($roles->isEmpty() || $roles->contains('name', User::ROLE_SUPER_ADMIN) || ! $this->canSimulate($user)) {
-            session()->forget(self::SESSION_KEY);
-
-            return;
+            return false;
         }
 
         $user->setRelation('roles', $roles);
         $user->setRelation('permissions', new Collection);
         $this->active = $roles;
+
+        return true;
+    }
+
+    /**
+     * Den Stand vor applyRoles() wiederherstellen (Arbeiten im Scheduler: die nächste Arbeit läuft ohne Simulation).
+     *
+     * @param  Collection<int, Role>|null  $active  der frühere Wert von active()
+     *
+     * @internal
+     */
+    public function restore(?Collection $active): void
+    {
+        $this->active = $active;
     }
 
     /** @return Collection<int, Role>|null die simulierten Rollen oder null */

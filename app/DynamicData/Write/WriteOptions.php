@@ -29,6 +29,9 @@ final readonly class WriteOptions
 
     public const string SEED = 'seed';
 
+    /** Schritt einer Arbeit (WritesRecords), sofern die Art keine eigenen Optionen mitgibt. */
+    public const string WORK = 'work';
+
     /** Aufruf ohne ausdrückliche Optionen, z. B. $record->save() in eigenem Code. */
     public const string DIRECT = 'direct';
 

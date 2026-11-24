@@ -222,4 +222,10 @@ final class PluginRegistry
     {
         return array_merge([], ...array_values(array_map(static fn (SaftPlugin $p): array => $p->taskTypes(), $this->all())));
     }
+
+    /** @return list<string> Klassen der Arten von Arbeiten aller Plugins */
+    public function workTypes(): array
+    {
+        return array_merge([], ...array_values(array_map(static fn (SaftPlugin $p): array => $p->workTypes(), $this->all())));
+    }
 }

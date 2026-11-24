@@ -208,7 +208,8 @@
             "function register(Filament\\Panel $panel): void",
             "function requiredTables(): array",
             "function taskTypes(): array",
-            "function version(): string"
+            "function version(): string",
+            "function workTypes(): array"
         ],
         "App\\Plugins\\Testing\\PluginTestCase": [
             "abstract class extends Tests\\TestCase",
@@ -238,6 +239,41 @@
             "abstract function label(): string",
             "abstract function parameterFields(): array",
             "abstract function run(array $parameters): App\\Tasks\\TaskResult"
+        ],
+        "App\\Work\\StepOutcome": [
+            "class",
+            "property ?string $message",
+            "property array $result",
+            "property array $state",
+            "property bool $finished",
+            "property int $done",
+            "static function continue(array $state, int $done = 0): App\\Work\\StepOutcome",
+            "static function finished(string $message, array $result = [], int $done = 0): App\\Work\\StepOutcome"
+        ],
+        "App\\Work\\WorkPlan": [
+            "class",
+            "function __construct(array $state = [], ?int $total = null)",
+            "property ?int $total",
+            "property array $state"
+        ],
+        "App\\Work\\WorkStep": [
+            "class",
+            "function __construct(array $parameters, array $state, float $deadline, string $directory)",
+            "function path(string $file): string",
+            "function remaining(): float",
+            "property array $parameters",
+            "property array $state"
+        ],
+        "App\\Work\\WorkType": [
+            "interface",
+            "abstract function describe(array $parameters): string",
+            "abstract function key(): string",
+            "abstract function label(): string",
+            "abstract function prepare(array $parameters): App\\Work\\WorkPlan",
+            "abstract function step(App\\Work\\WorkStep $step): App\\Work\\StepOutcome"
+        ],
+        "App\\Work\\WritesRecords": [
+            "interface"
         ]
     }
 }

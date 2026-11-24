@@ -204,6 +204,37 @@ Seite **„Arbeiten“** unter Administration (eigene Arbeiten für alle, alle f
 Fortschritt, Dauer, Ergebnis, Abbrechen. Aufräumen: System-Aufgabe „Arbeiten aufräumen“ löscht Ergebnisse nach
 `expires_at` (Vorgabe 24 h) und Einträge nach 30 Tagen. Dashboard-Kachel „Aufgaben“ zeigt hängende Arbeiten.
 
+### 6.5 Entscheide zur Umsetzung von F3a (24.11.2026)
+
+- **Zusätzliche Spalten:** `parameters` (Eingaben beim Start, getrennt vom Cursor `state`), `message`,
+  `cancel_requested_at` (Abbrechen setzt nur die Marke, der Runner beendet zwischen zwei Schritten – kein Wettlauf mit
+  einem laufenden Schritt), `stalls` (Übernahmen ohne Fortschritt; ab 3 gilt die Arbeit als fehlgeschlagen, damit ein
+  Schritt, der PHP jedes Mal abbricht, nicht endlos wiederholt wird), `simulated_roles` (siehe unten).
+- **`prepare()` läuft im ersten Schritt**, nicht beim Start: schon das Zählen kann lange dauern. Starten legt nur
+  `queued` an.
+- **Kein `maxBudget()`** in `WorkType`: Das Budget gehört dem Treiber; der Schritt sieht es über
+  `WorkStep::remaining()` und bemisst seinen Block danach. Arten mit unteilbar langen Schritten (KI-Anfragen) bekommen
+  in F3b bei Bedarf eine eigene Kennzeichnung.
+- **Kein eigener Status „hängt“:** eine Arbeit `running` ohne frischen Heartbeat und ohne Sperre übernimmt der nächste
+  Treiber; der Cursor macht das gefahrlos.
+- **Schreibende Arten** (Schnittstelle `WritesRecords`): Der Runner führt den Schritt in `RecordWriter::batch()` aus
+  und speichert den Cursor in derselben Transaktion der Hauptverbindung – Daten und Fortschritt sind eine Einheit
+  (Restrisiko wie F1: Daten committet, Commit der Hauptverbindung scheitert → der Block läuft noch einmal).
+  Lesende Arten laufen ohne Transaktion.
+- **Kontext im Hintergrund:** Jeder Schritt läuft als die startende Person (`Auth`) in der App der Arbeit. Wurde
+  unter „Ansicht als Rolle“ gestartet, speichert die Arbeit die simulierten Rollen und wendet sie in jedem Schritt an
+  – im Hintergrund gelten dieselben Rechte wie im Browser.
+- **Pilot-Art schon in F3a:** „Berechnete Felder neu berechnen“ (`computed:recompute`). Sie schreibt (prüft den
+  Vertrag oben) und hat keine Oberfläche. Der Befehl startet eine Arbeit und treibt sie in der Konsole selbst voran,
+  mit `--background` überlässt er sie `work:run`. Die Nachberechnung nach Formeländerungen im Table-Designer bleibt
+  bis F3b synchron.
+- **Plugins** steuern Arten über `SaftPlugin::workTypes()` bei (Plugin-API 1.10, noch unveröffentlicht).
+- **Zugang:** „Meine Arbeiten“ im Benutzermenü für alle, „Betrieb › Arbeiten“ für `work.view_any`; dieselbe Seite.
+  Rechte `work.view_any`, `work.cancel_any`, `work.details`. Eigene Arbeiten sehen und abbrechen darf jede Person.
+- **Benachrichtigung** (Datenbank-Benachrichtigung des Panels), wenn eine Arbeit nicht im Browser zu Ende ging.
+- **Aufräumen** als System-Aufgabe `work_prune`, ab Werk aktiv und stündlich (die 24 h für Ergebnisse sollen auch
+  eingehalten werden). Der Treiber Queue folgt mit F3b.
+
 ## 7. F4 – Formelsprache: Spezifikation und Konformität
 
 - **`docs/concept/FORMULA_SPEC.md`**: Typen (Zahl, Text, Wahrheitswert, Datum, leer), Leer-Regeln je Operator und
