@@ -224,7 +224,7 @@ class DataEntryTest extends DuskTestCase
         });
     }
 
-    /** EIN-18: Gleichzeitiges Bearbeiten (Fundament 2, F2) – Meldung „Inzwischen geändert“ mit „Trotzdem speichern“ und „Neu laden“. */
+    /** EIN-21: Gleichzeitiges Bearbeiten (Fundament 2, F2) – Meldung „Inzwischen geändert“ mit „Trotzdem speichern“ und „Neu laden“. */
     public function test_concurrent_edit_warns_and_offers_overwrite_or_reload(): void
     {
         $record = DynamicRecord::forTable($this->daten)->create(['titel' => 'Original']);

@@ -272,7 +272,7 @@ class DetailsPopupTest extends DuskTestCase
         });
     }
 
-    /** POP-10 */
+    /** POP-10: Seit Fundament 2 (F2) meldet die zweite Person „Inzwischen geändert“ und überschreibt bewusst mit „Trotzdem speichern“. */
     public function test_parallel_edits_do_not_fail_and_both_are_logged(): void
     {
         $this->superAdmin();
@@ -286,7 +286,11 @@ class DetailsPopupTest extends DuskTestCase
             $this->updateTitle($second, 'Zweite Fassung');
 
             $this->clickVisibleButton($first, 'Speichern')->waitForText('Gespeichert', 15);
-            $this->clickVisibleButton($second, 'Speichern')->waitForText('Gespeichert', 15)->assertDontSee('Unerwarteter Fehler');
+            $this->clickVisibleButton($second, 'Speichern')->waitForText('Inzwischen geändert', 15)
+                ->assertDontSee('Unerwarteter Fehler')->assertVisible(self::TITLE_INPUT);
+            $this->assertSame('Erste Fassung', $this->stored()->getAttribute('titel'));
+
+            $this->clickVisibleButton($second, 'Trotzdem speichern')->waitForText('Gespeichert', 15)->assertDontSee('Unerwarteter Fehler');
         });
 
         $this->assertSame('Zweite Fassung', $this->stored()->getAttribute('titel'));

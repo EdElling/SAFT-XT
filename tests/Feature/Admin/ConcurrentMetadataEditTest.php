@@ -56,4 +56,21 @@ class ConcurrentMetadataEditTest extends TestCase
             ->assertNotNotified(__('errors.titles.stale_record'));
         $this->assertSame('lektorat', $role->fresh()->name);
     }
+
+    /** Zweimal speichern ohne Neuladen: die eigene Änderung ist keine fremde (Browser-Suite 24.11.2026, MEN-04 und BEN-02). */
+    public function test_saving_twice_without_reloading_is_not_a_concurrent_edit(): void
+    {
+        $role = Role::findOrCreate('lektorat', 'web');
+        Role::query()->whereKey($role->getKey())->update(['updated_at' => now()->subMinute()]);
+
+        $page = Livewire::test(EditRole::class, ['record' => $role->getRouteKey()])
+            ->fillForm(['name' => 'lektorat-neu'])->call('save')
+            ->assertNotNotified(__('errors.titles.stale_record'));
+        $this->assertSame('lektorat-neu', $role->fresh()->name);
+
+        $page->fillForm(['name' => 'lektorat-neuer'])->call('save')
+            ->assertNotNotified(__('errors.titles.stale_record'))
+            ->assertHasNoFormErrors();
+        $this->assertSame('lektorat-neuer', $role->fresh()->name);
+    }
 }

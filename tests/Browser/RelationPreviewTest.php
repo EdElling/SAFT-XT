@@ -120,7 +120,8 @@ class RelationPreviewTest extends DuskTestCase
     public function test_deleted_target_depends_on_the_delete_right(): void
     {
         $this->superAdmin();
-        $this->mutter->deleteQuietly();
+        // Direkt in der Tabelle, am Writer und damit an der Löschsperre vorbei (Fundament 2, F1).
+        DynamicRecord::forTable($this->artikel)->newQuery()->whereKey($this->mutter->id)->toBase()->update(['deleted_at' => now()]);
         $this->reader([DataPermissions::name('positionen', 'view'), DataPermissions::name('artikel', 'view')]);
 
         $this->browse(function (Browser $admin, Browser $reader): void {

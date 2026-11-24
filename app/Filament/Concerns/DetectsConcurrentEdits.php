@@ -16,6 +16,10 @@ use Livewire\Attributes\On;
  * des Formulars und prüft vor dem Speichern, ob der Datensatz inzwischen geändert wurde. Dann bleibt die Seite mit der
  * Meldung „inzwischen geändert“ stehen – „Neu laden“ holt den aktuellen Stand ins Formular, „Trotzdem speichern“
  * speichert die eigenen Eingaben darüber. Wer geändert hat, steht im Änderungsprotokoll.
+ *
+ * Nach dem Speichern gilt der eigene Stand als gelesen, sonst meldete die Seite beim zweiten Speichern ohne Neuladen die
+ * eigene Änderung als fremde. Dafür hängt sich der Trait an rememberData() von Filament, das nach dem Füllen und nach
+ * jedem erfolgreichen Speichern läuft (nicht nach Halt) – afterSave() ist in mehreren Seiten und Traits schon belegt.
  */
 trait DetectsConcurrentEdits
 {
@@ -23,6 +27,13 @@ trait DetectsConcurrentEdits
 
     protected function afterFill(): void
     {
+        $this->loadedVersion = $this->currentVersion();
+    }
+
+    /** Filament merkt sich hier den „sauberen“ Formularstand (nach dem Füllen und nach dem Speichern): derselbe Moment für die Version. */
+    protected function rememberData(): void
+    {
+        parent::rememberData();
         $this->loadedVersion = $this->currentVersion();
     }
 
