@@ -222,7 +222,7 @@ abstract class DuskTestCase extends BaseTestCase
     {
         $xpath = "//li[contains(@class, 'fi-sidebar-item')][.//span[contains(@class, 'saft-submenu-label')][normalize-space(.)='{$submenu}']]"
             ."//ul[contains(@class, 'fi-sidebar-sub-group-items')]//a[normalize-space(.)='{$entry}']";
-        $visible = static fn (): bool => ($el = $browser->driver->findElements(\Facebook\WebDriver\WebDriverBy::xpath($xpath))) !== [] && $el[0]->isDisplayed();
+        $visible = static fn (): bool => ($el = $browser->driver->findElements(WebDriverBy::xpath($xpath))) !== [] && $el[0]->isDisplayed();
 
         if (! $visible()) {
             $browser->clickLink($submenu);
@@ -393,7 +393,7 @@ abstract class DuskTestCase extends BaseTestCase
     /** Wählt einen Eintrag in einem JavaScript-Auswahlfeld, bezogen auf die ID seines Buttons. */
     protected function pickOption(Browser $browser, string $buttonId, string $text): Browser
     {
-        $option = "//button[@id='{$buttonId}']/ancestor::*[contains(@class, 'fi-select-input-ctn')][1]//*[contains(@class, 'fi-select-input-option')][contains(., '{$text}')]";
+        $option = "//button[@id='{$buttonId}']/ancestor::*[contains(@class, 'fi-select-input-ctn')][1]//*[contains(@class, 'fi-select-input-option')][contains(., ".self::xpathLiteral($text).')]';
 
         // Benachrichtigungen oben rechts können das Feld verdecken.
         $browser->driver->executeScript('document.querySelectorAll(".fi-no-notification").forEach((n) => n.remove());');
@@ -404,6 +404,16 @@ abstract class DuskTestCase extends BaseTestCase
         );
 
         return $browser->clickAtXPath($option)->pause(400);
+    }
+
+    /** Text als XPath-Literal – auch mit Apostroph (Faker-Namen wie „O'Conner“ brachen den Ausdruck sonst). */
+    protected static function xpathLiteral(string $text): string
+    {
+        if (! str_contains($text, "'")) {
+            return "'{$text}'";
+        }
+
+        return "concat('".implode("', \"'\", '", explode("'", $text))."')";
     }
 
     /**

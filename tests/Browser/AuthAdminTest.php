@@ -240,7 +240,10 @@ class AuthAdminTest extends DuskTestCase
             $browser->pause(400);
             $this->clickVisibleButton($browser, 'Speichern')->waitForText('darf nur einmal vorkommen', 15);
 
-            $browser->clickAtXPath("(//*[contains(@class, 'fi-fo-repeater')]//button[contains(@title, 'öschen')])[2]")->pause(900);
+            // Zweite Zuordnung entfernen – per Skript, damit kein Tooltip oder Scrollen den Klick verschluckt
+            // (Browser-Suite 24.11.2026: beide Zeilen blieben stehen), und warten, bis nur noch eine Zeile da ist.
+            $browser->script("[...document.querySelectorAll('.fi-fo-repeater button[title]')].filter(b => b.title.includes('öschen'))[1]?.click();");
+            $browser->waitUsing(15, 200, static fn (): bool => count($browser->elements('input[id$=".external_value"]')) === 1);
             $this->clickVisibleButton($browser, 'Speichern')->waitForText('Gespeichert', 15);
 
             $this->assertSame(1, $provider->fresh()->roleMappings()->count());
