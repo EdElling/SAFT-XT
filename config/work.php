@@ -13,7 +13,8 @@ use App\Work\Types\SnapshotRefreshWork;
 
 /*
 | Arbeiten (Fundament 2, F3a): lange Arbeiten in wiederaufnehmbaren Schritten. Vorangetrieben vom Browser der
-| startenden Person und vom Scheduler (Cron: * * * * * php artisan schedule:run, startet jede Minute „work:run“).
+| startenden Person und vom Scheduler (Cron: * * * * * php artisan schedule:run, startet jede Minute „work:run“) –
+| oder mit WORK_DRIVER=queue von einem Queue-Worker (F3b); der Scheduler bleibt dann Rückfallebene.
 | Neue Arten: Klasse mit App\Work\WorkType anlegen und hier eintragen; Plugins über SaftPlugin::workTypes().
 */
 return [
@@ -28,9 +29,16 @@ return [
         AppDesignerReportsWork::class,
     ],
 
-    // Zeitbudget je Aufruf in Sekunden: Browser (je Abfrage der Seite, unter max_execution_time) und Scheduler.
+    // Treiber: auto = Browser der startenden Person und Scheduler; queue = ein Queue-Worker (php artisan queue:work)
+    // treibt jede Arbeit gleich nach dem Start voran (App\Jobs\AdvanceWork), der Browser zeigt nur noch an. Auf der
+    // Queue-Verbindung „sync“ nie – sonst liefe die ganze Arbeit im Request.
+    'driver' => env('WORK_DRIVER', 'auto'),
+
+    // Zeitbudget je Aufruf in Sekunden: Browser (je Abfrage der Seite, unter max_execution_time), Scheduler und Queue-Job
+    // (der sich danach wieder einreiht, solange die Arbeit offen ist).
     'browser_budget' => (int) env('WORK_BROWSER_BUDGET', 15),
     'scheduler_budget' => (int) env('WORK_SCHEDULER_BUDGET', 50),
+    'queue_budget' => (int) env('WORK_QUEUE_BUDGET', 50),
 
     // So lange arbeitet eine Aktion (Export, Dokumente, Datenstand …) direkt im Request an der eben gestarteten Arbeit
     // mit, bevor sie auf die Seite der Arbeit weiterleitet; unter max_execution_time.

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Work;
 
 use App\Auth\RoleSimulation;
+use App\Jobs\AdvanceWork;
 use App\Models\User;
 use App\Models\WorkItem;
 use Illuminate\Support\Facades\Auth;
@@ -14,8 +15,9 @@ use RuntimeException;
 
 /**
  * Arbeiten starten und abbrechen. Vorangetrieben werden sie vom WorkRunner – drei Arten zu starten:
- * start() legt nur an (Browser oder Scheduler treiben), startAndAdvance() arbeitet kurz im laufenden Request mit
- * (das Ergebnis kleiner Arbeiten kommt ohne Umweg), startAndDrive() treibt bis zum Ende (Konsole, Aufgaben).
+ * start() legt nur an (Browser oder Scheduler treiben; mit WORK_DRIVER=queue ein Queue-Worker über App\Jobs\AdvanceWork),
+ * startAndAdvance() arbeitet kurz im laufenden Request mit (das Ergebnis kleiner Arbeiten kommt ohne Umweg),
+ * startAndDrive() treibt bis zum Ende (Konsole, Aufgaben – ohne Job, der Aufrufer wartet ja selbst).
  */
 final readonly class WorkService
 {
@@ -35,6 +37,31 @@ final readonly class WorkService
      * @param  array<string, string>  $files
      */
     public function start(string $type, array $parameters = [], ?User $user = null, ?int $appId = null, array $files = []): WorkItem
+    {
+        $item = $this->create($type, $parameters, $user, $appId, $files);
+
+        if (self::queueDriver()) {
+            AdvanceWork::dispatch($item->id);
+        }
+
+        return $item;
+    }
+
+    /** Treibt ein Queue-Worker die Arbeiten (work.driver = queue, Queue-Verbindung nicht „sync“)? */
+    public static function queueDriver(): bool
+    {
+        $connection = (string) config('queue.default', 'sync');
+
+        return config('work.driver') === 'queue' && config("queue.connections.{$connection}.driver") !== 'sync';
+    }
+
+    /**
+     * Anlegen ohne Treiber.
+     *
+     * @param  array<string, mixed>  $parameters
+     * @param  array<string, string>  $files
+     */
+    private function create(string $type, array $parameters, ?User $user, ?int $appId, array $files): WorkItem
     {
         $this->registry->get($type);
         $simulated = $user !== null && Auth::id() === $user->id && $this->simulation->isActive()
@@ -93,7 +120,7 @@ final readonly class WorkService
      */
     public function startAndDrive(string $type, array $parameters = [], ?User $user = null, ?int $appId = null, array $files = []): WorkItem
     {
-        return $this->drive($this->start($type, $parameters, $user, $appId, $files));
+        return $this->drive($this->create($type, $parameters, $user, $appId, $files));
     }
 
     /** Eine Arbeit bis zum Ende treiben; hat ein anderer Treiber die Sperre, warten statt drängeln. */

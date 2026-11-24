@@ -18,7 +18,7 @@ use Livewire\Component;
  * Fortschritt einer Arbeit (Fundament 2, F3a) – der Treiber „Browser“: Solange die Arbeit offen ist, fragt die Seite
  * alle 2 s nach. Ist es die startende Person, treibt jede Abfrage die Arbeit ein Zeitbudget lang voran
  * (work.browser_budget, unter max_execution_time); alle anderen sehen nur den Stand. Verlässt die Person die Seite,
- * übernimmt der Scheduler (work:run).
+ * übernimmt der Scheduler (work:run). Mit WORK_DRIVER=queue (F3b) treibt der Queue-Worker, hier wird nur angezeigt.
  */
 class WorkProgress extends Component
 {
@@ -35,9 +35,15 @@ class WorkProgress extends Component
     {
         $item = $this->item();
 
-        if ($item->isOpen() && $item->user_id !== null && $item->user_id === Auth::id()) {
+        if (self::drives($item)) {
             $runner->advance($item, self::budget(), interactive: true);
         }
+    }
+
+    /** Treibt diese Seite die Arbeit: die startende Person sieht zu, und kein Queue-Worker ist dafür zuständig. */
+    private static function drives(WorkItem $item): bool
+    {
+        return $item->isOpen() && $item->user_id !== null && $item->user_id === Auth::id() && ! WorkService::queueDriver();
     }
 
     public function cancel(WorkService $work): void
@@ -67,7 +73,7 @@ class WorkProgress extends Component
             'color' => WorkItemsTable::color($item->status),
             'progress' => WorkItemsTable::progress($item),
             'canCancel' => Auth::user()?->can('cancel', $item) ?? false,
-            'drives' => $item->isOpen() && $item->user_id !== null && $item->user_id === Auth::id(),
+            'drives' => self::drives($item),
         ]);
     }
 }
