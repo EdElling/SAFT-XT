@@ -434,7 +434,10 @@ domain to `…/saft/public`, activate the certificate and switch on **force SSL*
 
 **Test or training system with the examples:** for the warehouse demo and the example plugins, install the dependencies
 **with** the development packages (`php composer.phar install --optimize-autoloader`, without `--no-dev`) and then run
-`php artisan db:seed --class=LagerDemoSeeder --force`. `APP_ENV=production` must stay – only then is the test sign-in
+`php artisan db:seed --class=LagerDemoSeeder --force` (further demos: `GitarrenshopDemoSeeder`,
+`MusikschuleDemoSeeder`, `VertriebDemoSeeder`). The example plugins are installed with that, no `composer require` is
+needed; switch one on with `php artisan saft:plugins --enable=<id>` (e.g. `musikschule-planung`), then
+`php artisan optimize`. `APP_ENV=production` must stay – only then is the test sign-in
 of the development packages switched off. For a production system `--no-dev` remains right.
 
 **Scheduled tasks and backup:** in the customer portal create a cron job that runs this command every minute (or at
@@ -450,6 +453,22 @@ This also runs the daily backup and the clean-up of backups. For coarser interva
 **Reset a public demo every night:** `DEMO_RESET=true` in `.env`, then `php artisan optimize`, and switch on the task
 **Reset app data** under *Administration › Operations › Scheduled tasks*. At 04:00 it reloads the data of the chosen demo apps;
 visitors' changes to the demo data are gone afterwards, everything else stays.
+
+**Setting up afresh** (e.g. bringing the demo to a version that requires a new database): do **not** use
+`migrate:fresh` – it drops the second database as a whole, and the Strato user may not create it again. Empty both
+databases table by table instead; destructive commands are blocked in `APP_ENV=production`, so override the environment
+for that one call only:
+
+```bash
+php artisan down && php artisan db:backup
+APP_ENV=local php artisan db:wipe --force      # main database
+php artisan tinker --execute='$c = DB::connection("app_data"); $db = config("dynamic_data.namespace"); echo "Database: $db\n"; $c->statement("SET FOREIGN_KEY_CHECKS=0"); foreach ($c->table("information_schema.tables")->where("table_schema", $db)->pluck("table_name") as $t) { $c->statement("DROP TABLE IF EXISTS `$db`.`$t`"); echo "$t\n"; } $c->statement("SET FOREIGN_KEY_CHECKS=1");'
+php artisan migrate --force && php artisan db:seed --force
+php artisan optimize && php artisan filament:optimize && php artisan up
+```
+
+The second command empties the database from `APP_DATA_SCHEMA` and names it in its first line – check the name.
+Alternatively empty or recreate both databases in the customer portal and update the credentials in `.env`.
 
 **Updates** (procedure as in [section 9](#9-installing-updates), with the command-line PHP):
 

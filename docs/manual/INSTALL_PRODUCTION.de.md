@@ -438,7 +438,10 @@ Dann weiter mit Schritt 5 (`migrate`, `db:seed`, `optimize`). Im Kundenportal da
 
 **Test- oder Schulungssystem mit den Beispielen:** Für die Lager-Demo und die Beispiel-Plugins installieren Sie die
 Abhängigkeiten **mit** den Entwicklungspaketen (`php composer.phar install --optimize-autoloader`, ohne `--no-dev`) und
-spielen danach `php artisan db:seed --class=LagerDemoSeeder --force` ein. `APP_ENV=production` muss dabei bleiben –
+spielen danach `php artisan db:seed --class=LagerDemoSeeder --force` ein (weitere Demos: `GitarrenshopDemoSeeder`,
+`MusikschuleDemoSeeder`, `VertriebDemoSeeder`). Die Beispiel-Plugins sind damit schon installiert, ein
+`composer require` ist nicht nötig; einschalten mit `php artisan saft:plugins --enable=<kennung>` (z. B.
+`musikschule-planung`), danach `php artisan optimize`. `APP_ENV=production` muss dabei bleiben –
 nur so ist die Test-Anmeldung der Entwicklungspakete abgeschaltet. Für ein Produktivsystem bleibt `--no-dev` richtig.
 
 **Geplante Aufgaben und Sicherung:** Im Kundenportal einen Cronjob anlegen, der jede Minute (oder im kürzesten
@@ -454,6 +457,22 @@ Damit laufen auch die tägliche Sicherung und das Aufräumen der Sicherungen. Be
 **Öffentliche Demo jede Nacht zurücksetzen:** `DEMO_RESET=true` in `.env`, dann `php artisan optimize`, und unter
 *Administration › Betrieb › Geplante Aufgaben* die Aufgabe **App-Daten zurücksetzen** einschalten. Sie lädt um 04:00 die Daten
 der gewählten Demo-Apps neu; Änderungen der Besucher an den Demo-Daten sind danach weg, alles andere bleibt.
+
+**Neu aufsetzen** (z. B. Demo auf einen Stand bringen, der eine neue Datenbank verlangt): **Nicht** `migrate:fresh`
+verwenden – es löscht die zweite Datenbank als Ganzes, und der Strato-Benutzer darf sie nicht wieder anlegen. Beide
+Datenbanken stattdessen tabellenweise leeren; zerstörende Befehle sind in `APP_ENV=production` gesperrt, darum die
+Umgebung nur für den einen Aufruf übersteuern:
+
+```bash
+php artisan down && php artisan db:backup
+APP_ENV=local php artisan db:wipe --force      # Hauptdatenbank
+php artisan tinker --execute='$c = DB::connection("app_data"); $db = config("dynamic_data.namespace"); echo "Datenbank: $db\n"; $c->statement("SET FOREIGN_KEY_CHECKS=0"); foreach ($c->table("information_schema.tables")->where("table_schema", $db)->pluck("table_name") as $t) { $c->statement("DROP TABLE IF EXISTS `$db`.`$t`"); echo "$t\n"; } $c->statement("SET FOREIGN_KEY_CHECKS=1");'
+php artisan migrate --force && php artisan db:seed --force
+php artisan optimize && php artisan filament:optimize && php artisan up
+```
+
+Der zweite Befehl leert die Datenbank aus `APP_DATA_SCHEMA` und nennt sie in der ersten Zeile – prüfen Sie den Namen.
+Alternativ beide Datenbanken im Kundenportal leeren oder neu anlegen und die Zugangsdaten in `.env` nachtragen.
 
 **Updates** (Ablauf wie in [Abschnitt 9](#9-updates-einspielen), mit dem Kommandozeilen-PHP):
 
