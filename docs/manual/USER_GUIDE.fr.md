@@ -115,12 +115,15 @@ déconnecté du compte de l’entreprise.
   facteurs est obligatoire pour votre compte, SAFT vous mène directement à la configuration après la connexion. Elle ne
   s’applique pas à la connexion par authentification unique – votre entreprise en est responsable. Téléphone et codes
   perdus : l’administration réinitialise le second facteur.
-- **Mes travaux :** SAFT effectue les travaux longs – comme le recalcul de nombreux enregistrements – par étapes. Dans
-  le menu utilisateur, **Mes travaux** affiche ce que vous avez démarré, avec le statut et la progression. En ouvrant un
-  travail, vous voyez une barre de progression ; tant que la page est ouverte, SAFT avance à pleine vitesse. Vous pouvez
-  aussi fermer la page : le travail se poursuit en arrière-plan, et la cloche vous indique quand il est terminé ou a
-  échoué. **Annuler** l’arrête après l’étape en cours. Si un travail produit un fichier, téléchargez-le avec
-  **Télécharger le résultat** – il reste disponible 24 heures.
+- **Mes travaux :** SAFT effectue les travaux longs – export, import, documents pour de nombreux enregistrements, états
+  des données, concepteur d’app IA – par étapes. Les petites quantités sont terminées avant que vous ne le remarquiez :
+  le fichier arrive comme d’habitude en téléchargement. Si cela dure plus longtemps, SAFT vous conduit à la page du
+  travail. Dans le menu utilisateur, **Mes travaux** affiche ce que vous avez démarré, avec le statut et la progression.
+  En ouvrant un travail, vous voyez une barre de progression ; tant que la page est ouverte, SAFT avance à pleine
+  vitesse. Vous pouvez aussi fermer la page : le travail se poursuit en arrière-plan, et la cloche vous indique quand il
+  est terminé ou a échoué. **Annuler** l’arrête après l’étape en cours. Si un travail produit un fichier,
+  téléchargez-le avec **Télécharger le résultat** – il reste disponible 24 heures, même si vous l’avez déjà téléchargé
+  directement.
 
 - **À gauche** se trouve le **menu**. Il n’affiche que les domaines pour lesquels vous avez des droits. Sous
   **Données** se trouvent les tables, sous **Administration** les fonctions de gestion. Les entrées
@@ -404,9 +407,13 @@ Le fichier contient ce que la liste affiche à ce moment :
 | **Excel** | Les nombres et les dates sont de vraies valeurs avec lesquelles vous pouvez calculer. Une cellule Excel contient au plus 32 767 caractères ; les textes plus longs y sont tronqués. Les nombres de plus de 15 chiffres sont enregistrés comme texte pour qu’aucun chiffre ne se perde. |
 | **CSV** | Dans la notation de la langue choisie : en français et en italien séparé par des points-virgules (`1234,50`, `01/02/2026`), en allemand par des points-virgules (`1234,50`, `01.02.2026`), en anglais par des virgules (`1234.50`, `01/02/2026`). Ainsi, Excel dans la même langue ouvre directement le fichier en colonnes. Les textes commençant par `=`, `+`, `-` ou `@` reçoivent un `'` initial pour se protéger contre l’injection de formules. |
 
-Par défaut, un export comprend au plus 50 000 enregistrements. S’il y a plus de résultats, un avertissement s’affiche
-et aucun fichier n’est créé ; restreignez alors la sélection avec un filtre ou la recherche. Les gros exports prennent
-un peu de temps : pour 50 000 enregistrements, environ une demi-minute.
+L’export s’exécute comme **travail** (voir [Mes travaux](#3-interface-et-tableau-de-bord)) : les petites listes
+arrivent tout de suite en téléchargement, comme d’habitude. Si cela dure plus de quelques secondes, SAFT vous conduit à
+la page du travail avec une barre de progression ; à la fin, le fichier y est prêt sous **Télécharger le résultat** et
+reste disponible 24 heures – aussi sous **Mes travaux** si vous avez quitté la page entre-temps. À titre indicatif, SAFT
+traite quelques centaines de lignes par seconde. Par défaut, un export comprend au plus 500 000 enregistrements
+(l’administration peut modifier ou lever la limite) ; s’il y a plus de résultats, un avertissement s’affiche et aucun
+fichier n’est créé – restreignez alors la sélection avec un filtre ou la recherche.
 
 > **Protection des données :** chaque export est consigné dans le journal des modifications. Le fichier exporté
 > n’est cependant plus soumis à aucun contrôle des droits. Manipulez-le donc avec soin.
@@ -420,13 +427,22 @@ un modèle vide, le remplir en dehors de SAFT et le réimporter. Le bouton appar
 
 - **Télécharger le modèle :** un fichier Excel vide avec tous les champs que l’on peut remplir ; les champs obligatoires
   sont marqués d’un `*`. Un export de la table convient aussi comme modèle.
-- **Importer un fichier … :** Excel (.xlsx) ou CSV, au plus 20 Mo et 10 000 lignes. La première ligne contient les
+- **Importer un fichier … :** Excel (.xlsx) ou CSV, au plus 20 Mo et 100 000 lignes. La première ligne contient les
   en-têtes de colonnes – le libellé du champ dans l’une des quatre langues ou son nom technique. Les colonnes sans champ
   correspondant, p. ex. des champs calculés issus d’un export, sont ignorées et indiquées.
-- **Contrôle :** SAFT contrôle tout le fichier comme lors d’une saisie manuelle : champs obligatoires, longueur, plage
-  de valeurs, e-mail/URL, valeurs uniques (aussi à l’intérieur du fichier) et règles de la table. Si quelque chose ne va
-  pas, une liste avec ligne, colonne et raison s’affiche et **rien** n’est créé. Sinon, la deuxième étape indique le
-  nombre de nouveaux enregistrements ; seul **Importer** les crée.
+- **Contrôle :** SAFT contrôle le fichier comme lors d’une saisie manuelle : champs obligatoires, longueur, plage de
+  valeurs, e-mail/URL, valeurs uniques (aussi à l’intérieur du fichier) et règles de la table. Jusqu’à 2 000 lignes,
+  cela se fait tout de suite dans la boîte de dialogue : si quelque chose ne va pas, une liste avec ligne, colonne et
+  raison s’affiche et **rien** n’est créé ; sinon, la deuxième étape indique le nombre de nouveaux enregistrements. Les
+  fichiers plus grands ne sont contrôlés entièrement que lors de l’import ; la deuxième étape le dit. Seul **Importer**
+  crée les enregistrements.
+- **Comme travail :** l’import s’exécute comme [travail](#3-interface-et-tableau-de-bord) en deux phases – d’abord
+  **vérification**, puis **importation** –, la progression nomme les deux. Les petits fichiers sont terminés tout de
+  suite, et le message indique le nombre d’enregistrements. Pour les gros, SAFT vous conduit à la page du travail ;
+  comptez quelques minutes par dizaine de milliers de lignes, car chaque enregistrement est créé comme à la main. Si le
+  contrôle trouve des erreurs, le travail se termine en échec avec la liste des erreurs, et rien n’est créé. **Annuler**
+  ou une erreur pendant l’importation retire aussi tous les enregistrements créés jusque-là – c’est toujours tout ou
+  rien.
 - **Les valeurs** peuvent être écrites comme le fournit l’export : listes de sélection avec libellé ou valeur
   enregistrée, oui/non (aussi Ja/Nein, Yes/No, Sì/No, 1/0), liaisons avec le nom affiché (p. ex. « ACME AG ») ou le
   numéro, dates sous la forme 31.12.2026, 31/12/2026 ou 2026-12-31, nombres sous la forme 1234,50, 1234.50 ou
@@ -603,13 +619,16 @@ signale.
    **ZIP avec un fichier par document**.
 3. **« Déposer dans le champ … de chaque enregistrement »** (présélectionné) dépose chaque document auprès de son
    enregistrement, comme ci-dessus.
-4. **Créer** télécharge le fichier (p. ex. `Rechnung-2026-11-22.pdf`).
+4. **Créer** télécharge le fichier (p. ex. `Rechnung-2026-11-22.pdf`). Avec de nombreux enregistrements, cela
+   s’exécute comme [travail](#3-interface-et-tableau-de-bord) : SAFT vous conduit à sa page, la progression compte les
+   documents, et à la fin le fichier y est prêt pendant 24 heures sous **Télécharger le résultat**. **Annuler** arrête le
+   passage ; les documents déjà déposés restent auprès de leurs enregistrements.
 
 Le message qui suit indique combien de documents ont été créés et déposés et, par enregistrement, ce qui n’a pas pu
-être déposé (p. ex. champ plein) – ces documents figurent tout de même dans le fichier. Au plus **50 enregistrements**
-à la fois (l’administration peut modifier ce nombre) ; au-delà, un message apparaît et rien n’est créé. Les cases à
-cocher n’existent que dans les tables avec modèle de document ; les enregistrements supprimés ne peuvent pas être
-sélectionnés.
+être déposé (p. ex. champ plein) – ces documents figurent tout de même dans le fichier. Il n’y a de limite que si
+l’administration en fixe une ; avec de très nombreux documents, le ZIP est la meilleure sortie, car un PDF unique
+fusionne toutes les pages d’un coup. Les cases à cocher n’existent que dans les tables avec modèle de document ; les
+enregistrements supprimés ne peuvent pas être sélectionnés.
 
 **Envoyer par e-mail :** Si le modèle prévoit un e-mail et que votre rôle a le droit *Documents : envoyer*, le dialogue
 affiche l’interrupteur **« Envoyer par e-mail »**. **À**, **objet** et **texte** sont préremplis à partir du modèle
@@ -617,8 +636,8 @@ affiche l’interrupteur **« Envoyer par e-mail »**. **À**, **objet** et **te
 **Copie à moi** vous envoie une copie cachée. Le PDF est joint ; les documents envoyés sont déposés avec
 l’enregistrement si possible. L’**historique** indique « document envoyé » avec destinataire et objet. Dans l’action
 groupée, **« Envoyer par e-mail pour chaque enregistrement »** envoie à chaque enregistrement son e-mail avec l’objet
-et le texte du modèle ; le message qui suit indique combien d’e-mails ont été envoyés et quels enregistrements n’ont
-pas d’adresse valable.
+et le texte du modèle – chacun dès que les documents d’une étape sont déposés ; le message qui suit indique combien
+d’e-mails ont été envoyés et quels enregistrements n’ont pas d’adresse valable.
 
 **QR-facture :** Si le modèle ajoute une QR-facture, la **section paiement avec récépissé** figure en bas de la
 dernière page ou sur une page propre – avec montant, référence et votre client comme débiteur. Les clients la paient avec

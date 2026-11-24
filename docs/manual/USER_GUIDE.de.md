@@ -112,12 +112,14 @@ Firmen-Login abgemeldet.
   für Ihr Konto vorgeschrieben, führt SAFT Sie nach der Anmeldung direkt zur Einrichtung. Bei der Anmeldung per Single
   Sign-On entfällt sie – dort ist Ihre Firma zuständig. Handy und Codes verloren: Die Administration setzt den zweiten
   Faktor zurück.
-- **Meine Arbeiten:** Lange Arbeiten – etwa das Neuberechnen vieler Datensätze – erledigt SAFT in Schritten. Im
-  Benutzermenü zeigt **Meine Arbeiten**, was Sie gestartet haben, mit Status und Fortschritt. Öffnen Sie eine Arbeit,
-  sehen Sie einen Fortschrittsbalken; solange die Seite offen ist, arbeitet SAFT zügig weiter. Sie dürfen die Seite
-  auch schliessen: Die Arbeit läuft im Hintergrund weiter, und die Glocke meldet, wenn sie fertig oder fehlgeschlagen
-  ist. **Abbrechen** beendet sie nach dem laufenden Schritt. Liefert eine Arbeit eine Datei, laden Sie sie mit
-  **Ergebnis herunterladen** – sie bleibt 24 Stunden verfügbar.
+- **Meine Arbeiten:** Lange Arbeiten – Export, Import, Dokumente für viele Datensätze, Datenstände, der
+  KI-App-Designer – erledigt SAFT in Schritten. Kleine Mengen sind fertig, bevor Sie es merken: Die Datei kommt wie
+  gewohnt als Download. Dauert es länger, führt SAFT Sie auf die Seite der Arbeit. Im Benutzermenü zeigt **Meine
+  Arbeiten**, was Sie gestartet haben, mit Status und Fortschritt. Öffnen Sie eine Arbeit, sehen Sie einen
+  Fortschrittsbalken; solange die Seite offen ist, arbeitet SAFT zügig weiter. Sie dürfen die Seite auch schliessen:
+  Die Arbeit läuft im Hintergrund weiter, und die Glocke meldet, wenn sie fertig oder fehlgeschlagen ist.
+  **Abbrechen** beendet sie nach dem laufenden Schritt. Liefert eine Arbeit eine Datei, laden Sie sie mit **Ergebnis
+  herunterladen** – sie bleibt 24 Stunden verfügbar, auch wenn Sie sie schon direkt heruntergeladen haben.
 
 - **Links** befindet sich das **Menü**. Es zeigt nur die Bereiche, für die Sie Rechte haben. Unter **Daten**
   finden Sie die Tabellen, unter **Administration** die Verwaltungsfunktionen. Einträge mit einem Pfeil **›** rechts sind
@@ -393,9 +395,13 @@ Die Datei enthält, was die Liste gerade zeigt:
 | **Excel** | Zahlen und Datumswerte sind echte Werte, mit denen Sie rechnen können. Eine Excel-Zelle fasst höchstens 32.767 Zeichen, längere Texte werden dort abgeschnitten. Zahlen mit mehr als 15 Stellen stehen als Text in der Zelle, damit keine Stelle verloren geht. |
 | **CSV** | In der Schreibweise der gewählten Sprache: auf Deutsch mit Semikolon getrennt (`1234,50`, `01.02.2026`), auf Englisch mit Komma (`1234.50`, `01/02/2026`), auf Französisch und Italienisch mit Semikolon (`1234,50`, `01/02/2026`). So öffnet ein Excel in derselben Sprache die Datei direkt in Spalten. Texte, die mit `=`, `+`, `-` oder `@` beginnen, erhalten zum Schutz vor eingeschleusten Formeln ein vorangestelltes `'`. |
 
-Pro Export sind standardmässig höchstens 50.000 Datensätze möglich. Bei mehr Treffern erscheint ein Hinweis, und es
-wird keine Datei erstellt; schränken Sie die Auswahl dann mit Filter oder Suche ein. Grosse Exporte brauchen etwas
-Zeit: Bei 50.000 Datensätzen sind es rund eine halbe Minute.
+Der Export läuft als **Arbeit** (siehe [Meine Arbeiten](#3-oberfläche-und-dashboard)): Kleine Listen kommen wie
+gewohnt sofort als Download. Dauert es länger als einige Sekunden, führt SAFT Sie auf die Seite der Arbeit mit
+Fortschrittsbalken; am Ende steht die Datei dort unter **Ergebnis herunterladen** bereit und bleibt 24 Stunden
+verfügbar – auch unter **Meine Arbeiten**, wenn Sie die Seite zwischenzeitlich verlassen. Als Richtwert schafft SAFT
+einige hundert Zeilen pro Sekunde. Pro Export sind standardmässig höchstens 500'000 Datensätze möglich (die
+Administration kann die Grenze ändern oder aufheben); bei mehr Treffern erscheint ein Hinweis, und es wird keine Datei
+erstellt – schränken Sie die Auswahl dann mit Filter oder Suche ein.
 
 > **Datenschutz:** Jeder Export wird im Änderungsprotokoll festgehalten. Die exportierte Datei selbst unterliegt
 > danach aber keiner Rechteprüfung mehr. Gehen Sie entsprechend sorgfältig mit ihr um.
@@ -409,13 +415,20 @@ Rolle die Rechte **Anlegen** und **Importieren** hat.
 
 - **Vorlage herunterladen:** eine leere Excel-Datei mit allen Feldern, die sich befüllen lassen; Pflichtfelder sind mit
   `*` markiert. Auch ein Export der Tabelle eignet sich als Vorlage.
-- **Datei importieren …:** Excel (.xlsx) oder CSV, höchstens 20 MB und 10'000 Zeilen. In der ersten Zeile stehen die
+- **Datei importieren …:** Excel (.xlsx) oder CSV, höchstens 20 MB und 100'000 Zeilen. In der ersten Zeile stehen die
   Spaltenüberschriften – die Bezeichnung des Felds in einer der vier Sprachen oder sein technischer Name. Spalten ohne
   passendes Feld, z. B. berechnete Felder aus einem Export, werden übergangen und genannt.
-- **Prüfung:** SAFT prüft die ganze Datei wie beim Erfassen von Hand: Pflichtfelder, Länge, Wertebereich, E-Mail/URL,
-  eindeutige Werte (auch innerhalb der Datei) und die Regeln der Tabelle. Ist etwas nicht in Ordnung, erscheint eine
-  Liste mit Zeile, Spalte und Grund, und es wird **nichts** angelegt. Sonst nennt der zweite Schritt die Zahl der neuen
-  Datensätze; erst **Importieren** legt sie an.
+- **Prüfung:** SAFT prüft die Datei wie beim Erfassen von Hand: Pflichtfelder, Länge, Wertebereich, E-Mail/URL,
+  eindeutige Werte (auch innerhalb der Datei) und die Regeln der Tabelle. Bis 2'000 Zeilen geschieht das sofort im
+  Dialog: Ist etwas nicht in Ordnung, erscheint eine Liste mit Zeile, Spalte und Grund, und es wird **nichts**
+  angelegt; sonst nennt der zweite Schritt die Zahl der neuen Datensätze. Grössere Dateien prüft SAFT erst beim
+  Import vollständig; der zweite Schritt sagt das. Erst **Importieren** legt die Datensätze an.
+- **Als Arbeit:** Der Import läuft als [Arbeit](#3-oberfläche-und-dashboard) in zwei Phasen – erst **Prüfen**, dann
+  **Einspielen** –, der Fortschritt nennt beide. Kleine Dateien sind sofort fertig, und die Meldung nennt die Zahl der
+  Datensätze. Bei grossen führt SAFT Sie auf die Seite der Arbeit; rechnen Sie mit einigen Minuten je zehntausend
+  Zeilen, weil jeder Datensatz wie von Hand erfasst wird. Findet die Prüfung Fehler, endet die Arbeit als
+  fehlgeschlagen mit der Fehlerliste, und es ist nichts angelegt. Auch **Abbrechen** oder ein Fehler beim Einspielen
+  nehmen alle bis dahin angelegten Datensätze wieder zurück – es gilt immer alles oder nichts.
 - **Werte** dürfen so geschrieben sein, wie der Export sie liefert: Auswahllisten mit Bezeichnung oder gespeichertem
   Wert, Ja/Nein (auch Yes/No, Oui/Non, Sì/No, 1/0), Verknüpfungen mit dem angezeigten Namen (z. B. „ACME AG“) oder der
   Nummer, Datum als 31.12.2026, 31/12/2026 oder 2026-12-31, Zahlen als 1234,50, 1234.50 oder 1'234.50.
@@ -579,20 +592,25 @@ Ist das Dateifeld voll (Höchstzahl Dateien), wird das Dokument nur heruntergela
    Dokumenten** (zum Drucken; jedes beginnt auf einer neuen ersten Seite des Briefpapiers) oder **ZIP mit einer Datei
    je Dokument**.
 3. **„Je Datensatz im Feld … ablegen“** (vorgewählt) legt jedes Dokument bei seinem Datensatz ab, wie oben.
-4. **Erstellen** lädt die Datei herunter (z. B. `Rechnung-2026-11-22.pdf`).
+4. **Erstellen** lädt die Datei herunter (z. B. `Rechnung-2026-11-22.pdf`). Bei vielen Datensätzen läuft das als
+   [Arbeit](#3-oberfläche-und-dashboard): SAFT führt Sie auf ihre Seite, der Fortschritt zählt die Dokumente, und am
+   Ende steht die Datei dort 24 Stunden unter **Ergebnis herunterladen** bereit. **Abbrechen** beendet den Lauf; schon
+   abgelegte Dokumente bleiben bei ihren Datensätzen.
 
 Die Meldung danach nennt, wie viele Dokumente erstellt und abgelegt wurden, und je Datensatz, was nicht abgelegt werden
-konnte (z. B. Feld voll) – diese Dokumente sind trotzdem in der Datei. Höchstens **50 Datensätze** auf einmal (die
-Administration kann die Zahl ändern); bei mehr erscheint eine Meldung, und nichts wird erstellt. Die Häkchen gibt es nur
-in Tabellen mit Dokumentvorlage; gelöschte Datensätze lassen sich nicht wählen.
+konnte (z. B. Feld voll) – diese Dokumente sind trotzdem in der Datei. Eine Obergrenze gibt es nur, wenn die
+Administration eine setzt; bei sehr vielen Dokumenten ist ZIP die bessere Ausgabe, weil ein einziges PDF alle Seiten
+auf einmal zusammenführt. Die Häkchen gibt es nur in Tabellen mit Dokumentvorlage; gelöschte Datensätze lassen sich
+nicht wählen.
 
 **Per E-Mail senden:** Sieht die Vorlage eine E-Mail vor und hat Ihre Rolle das Recht *Dokumente: versenden*, steht
 im Dialog der Schalter **„Per E-Mail senden“**. **An**, **Betreff** und **Text** sind aus der Vorlage vorausgefüllt
 (z. B. die Adresse des Kunden) und lassen sich vor dem Senden ändern; mehrere Adressen trennen Sie mit Komma. **Kopie an
 mich** schickt Ihnen eine Blindkopie. Das PDF geht als Anhang mit; versendete Dokumente werden beim Datensatz abgelegt,
 wenn das möglich ist. Im **Verlauf** steht „Dokument versendet“ mit Empfänger und Betreff. In der Sammelaktion sendet
-**„Je Datensatz per E-Mail senden“** jedem Datensatz seine E-Mail mit Betreff und Text der Vorlage; die Meldung danach
-nennt, wie viele E-Mails gesendet wurden und welche Datensätze keine gültige Adresse haben.
+**„Je Datensatz per E-Mail senden“** jedem Datensatz seine E-Mail mit Betreff und Text der Vorlage – jeweils, sobald
+die Dokumente eines Schritts abgelegt sind; die Meldung danach nennt, wie viele E-Mails gesendet wurden und welche
+Datensätze keine gültige Adresse haben.
 
 **QR-Rechnung:** Hängt die Vorlage eine QR-Rechnung an, steht unten auf der letzten Seite oder auf einer eigenen Seite
 der **Zahlteil mit Empfangsschein** – mit Betrag, Referenz und Ihrem Kunden als Zahlungspflichtigem. Kunden bezahlen

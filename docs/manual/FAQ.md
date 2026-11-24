@@ -30,6 +30,8 @@
    - [A document could not be sent by email.](#a-document-could-not-be-sent-by-email)
    - [The QR bill is missing or the banking app cannot read it.](#the-qr-bill-is-missing-or-the-banking-app-cannot-read-it)
    - [The Word file looks different from the PDF.](#the-word-file-looks-different-from-the-pdf)
+   - [Instead of the file, a page “Job” with a progress bar appears.](#instead-of-the-file-a-page-job-with-a-progress-bar-appears)
+   - [Importing a large file takes long.](#importing-a-large-file-takes-long)
 
 ---
 ## Frequently asked questions
@@ -143,3 +145,17 @@ guide, section 4.10). Deleted records in the recycle bin cannot be selected.
 The Word version is meant for editing, not as a replacement for the PDF: a letterhead as PDF background, an SVG logo and
 the QR bill are only in the PDF; Word instead shows the logo (PNG/JPEG) and sender as text in the header and uses the
 Arial font. For sending and storing, SAFT always uses the PDF.
+
+### Instead of the file, a page “Job” with a progress bar appears.
+
+Export, import, “Create documents” for many records and snapshots run as a **job** in steps. Small amounts are done
+before you notice, and the file comes as usual. If it takes longer, SAFT shows the job's page: leaving it open is
+fastest; but you may also close it – the job continues in the background, the bell reports the end, and the file is
+ready for download for 24 hours under **My jobs** (user menu).
+
+### Importing a large file takes long.
+
+Every record is created as if entered by hand – with defaults, computed fields, sums in parent records and the rules of
+the plugins. That costs a few milliseconds per record; with tens of thousands of rows this adds up to minutes. The
+progress shows **checking** first, then **importing**. You may leave the page; on errors or cancel nothing is created,
+or everything created is removed again.

@@ -30,6 +30,8 @@
    - [Non è stato possibile inviare un documento per e-mail.](#non-è-stato-possibile-inviare-un-documento-per-e-mail)
    - [Manca la fattura QR o l’app bancaria non la legge.](#manca-la-fattura-qr-o-lapp-bancaria-non-la-legge)
    - [Il file Word appare diverso dal PDF.](#il-file-word-appare-diverso-dal-pdf)
+   - [Al posto del file compare una pagina «Lavoro» con barra di avanzamento.](#al-posto-del-file-compare-una-pagina-lavoro-con-barra-di-avanzamento)
+   - [L’importazione di un file grande richiede molto tempo.](#limportazione-di-un-file-grande-richiede-molto-tempo)
 
 ---
 ## Domande frequenti
@@ -148,3 +150,18 @@ generare* (manuale utente, sezione 4.10). I record eliminati nel cestino non si 
 La versione Word serve per la rielaborazione, non sostituisce il PDF: una carta intestata come sfondo PDF, un logo SVG
 e la fattura QR esistono solo nel PDF; Word mostra invece il logo (PNG/JPEG) e il mittente come testo nell’intestazione
 e usa il carattere Arial. Per l’invio e il deposito SAFT usa sempre il PDF.
+
+### Al posto del file compare una pagina «Lavoro» con barra di avanzamento.
+
+Esportazione, importazione, «Crea documenti» per molti record e stati dei dati vengono eseguiti come **lavoro** a
+passi. Le piccole quantità sono pronte prima che ve ne accorgiate e il file arriva come sempre. Se dura di più, SAFT
+mostra la pagina del lavoro: lasciarla aperta è il modo più rapido; potete però anche chiuderla – il lavoro continua in
+background, la campanella segnala la fine e il file resta scaricabile per 24 ore sotto **I miei lavori** (menu
+utente).
+
+### L’importazione di un file grande richiede molto tempo.
+
+Ogni record viene creato come a mano – con valori predefiniti, campi calcolati, somme nei record superiori e regole dei
+plugin. Ciò costa qualche millisecondo per record; con decine di migliaia di righe diventano minuti. L’avanzamento
+mostra prima **verifica**, poi **importazione**. Potete lasciare la pagina; in caso di errori o annullamento non viene
+creato nulla oppure tutto ciò che è stato creato viene rimosso.

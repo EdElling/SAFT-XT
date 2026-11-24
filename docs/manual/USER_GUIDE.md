@@ -109,11 +109,13 @@ company login.
   is required for your account, SAFT takes you straight to the setup after signing in. It does not apply to sign-in via
   single sign-on – your organisation is responsible there. Lost phone and codes: the administration resets the second
   factor.
-- **My jobs:** SAFT does long jobs – such as recomputing many records – in steps. In the user menu, **My jobs** shows
-  what you have started, with status and progress. If you open a job, you see a progress bar; as long as the page is
-  open, SAFT keeps working at full speed. You may also close the page: the job continues in the background, and the
-  bell tells you when it is done or has failed. **Cancel** ends it after the current step. If a job produces a file,
-  download it with **Download result** – it stays available for 24 hours.
+- **My jobs:** SAFT does long jobs – export, import, documents for many records, snapshots, the AI app designer – in
+  steps. Small amounts are done before you notice: the file comes as a download as usual. If it takes longer, SAFT
+  takes you to the job's page. In the user menu, **My jobs** shows what you have started, with status and progress. If
+  you open a job, you see a progress bar; as long as the page is open, SAFT keeps working at full speed. You may also
+  close the page: the job continues in the background, and the bell tells you when it is done or has failed.
+  **Cancel** ends it after the current step. If a job produces a file, download it with **Download result** – it stays
+  available for 24 hours, even if you already downloaded it directly.
 
 - The **menu** is on the **left**. It only shows the areas you have permissions for. Under **Data** you find the
   tables, under **Administration** the management functions. Entries with an arrow **›** on the right are submenus
@@ -372,8 +374,12 @@ The file contains what the list currently shows:
 | **Excel** | Numbers and dates are real values you can calculate with. An Excel cell holds at most 32,767 characters; longer texts are cut off there. Numbers with more than 15 digits are stored as text so that no digit is lost. |
 | **CSV** | In the notation of the chosen language: in English separated by commas (`1234.50`, `01/02/2026`), in German by semicolons (`1234,50`, `01.02.2026`), in French and Italian by semicolons (`1234,50`, `01/02/2026`). This way Excel in the same language opens the file directly in columns. Texts starting with `=`, `+`, `-` or `@` get a leading `'` to protect against injected formulas. |
 
-By default at most 50,000 records can be exported at once. With more hits a notice appears and no file is created;
-narrow the selection with filters or search. Large exports take some time: about half a minute for 50,000 records.
+The export runs as a **job** (see [My jobs](#3-interface-and-dashboard)): small lists come at once as a download, as
+usual. If it takes longer than a few seconds, SAFT takes you to the job's page with a progress bar; at the end the file
+is ready there under **Download result** and stays available for 24 hours – also under **My jobs** if you left the page
+in the meantime. As a guide, SAFT manages a few hundred rows per second. By default at most 500,000 records can be
+exported at once (the administration can change or lift the limit); with more hits a notice appears and no file is
+created – narrow the selection with filters or search.
 
 > **Data protection:** Every export is recorded in the activity log. The exported file itself, however, is no longer
 > subject to any permission check. Handle it with care.
@@ -387,13 +393,20 @@ in outside SAFT and read it back in. The button appears if import is allowed for
 
 - **Download template:** an empty Excel file with all fields that can be filled in; required fields are marked with `*`.
   An export of the table is also suitable as a template.
-- **Import file …:** Excel (.xlsx) or CSV, at most 20 MB and 10,000 rows. The first row contains the column headings –
+- **Import file …:** Excel (.xlsx) or CSV, at most 20 MB and 100,000 rows. The first row contains the column headings –
   the label of the field in one of the four languages or its technical name. Columns without a matching field, e.g.
   computed fields from an export, are skipped and listed.
-- **Check:** SAFT checks the whole file as when entering data by hand: required fields, length, range, email/URL, unique
-  values (also within the file) and the rules of the table. If something is wrong, a list with row, column and reason
-  appears and **nothing** is created. Otherwise the second step shows the number of new records; only **Import**
-  creates them.
+- **Check:** SAFT checks the file as when entering data by hand: required fields, length, range, email/URL, unique
+  values (also within the file) and the rules of the table. Up to 2,000 rows this happens at once in the dialog: if
+  something is wrong, a list with row, column and reason appears and **nothing** is created; otherwise the second step
+  shows the number of new records. Larger files are checked completely only during the import; the second step says so.
+  Only **Import** creates the records.
+- **As a job:** The import runs as a [job](#3-interface-and-dashboard) in two phases – first **checking**, then
+  **importing** –, and the progress names both. Small files are done at once, and the message gives the number of
+  records. For large ones SAFT takes you to the job's page; expect a few minutes per ten thousand rows, because every
+  record is created as if entered by hand. If the check finds errors, the job ends as failed with the list of errors,
+  and nothing is created. **Cancel** or an error while importing also removes all records created so far – it is always
+  all or nothing.
 - **Values** may be written as the export delivers them: selection lists with label or stored value, yes/no (also
   Ja/Nein, Oui/Non, Sì/No, 1/0), relations with the displayed name (e.g. "ACME AG") or the number, dates as 31.12.2026,
   31/12/2026 or 2026-12-31, numbers as 1234.50, 1234,50 or 1'234.50.
@@ -548,20 +561,23 @@ If the file field is full (maximum number of files), the document is only downlo
 2. Click **“Create documents”** in the table header, choose the template and the **output**: **one PDF with all
    documents** (for printing; each starts on a new first page of the letterhead) or **ZIP with one file per document**.
 3. **“Store in field … for each record”** (preselected) stores each document with its record, as above.
-4. **Create** downloads the file (e.g. `Rechnung-2026-11-22.pdf`).
+4. **Create** downloads the file (e.g. `Rechnung-2026-11-22.pdf`). With many records this runs as a
+   [job](#3-interface-and-dashboard): SAFT takes you to its page, the progress counts the documents, and at the end the
+   file is ready there for 24 hours under **Download result**. **Cancel** ends the run; documents already stored stay
+   with their records.
 
 The message afterwards says how many documents were created and stored and, per record, what could not be stored
-(e.g. field full) – these documents are in the file anyway. At most **50 records** at a time (the administration can
-change the number); with more, a message appears and nothing is created. The checkboxes only exist in tables with a
-document template; deleted records cannot be selected.
+(e.g. field full) – these documents are in the file anyway. There is a limit only if the administration sets one; with
+very many documents, ZIP is the better output, because a single PDF merges all pages at once. The checkboxes only exist
+in tables with a document template; deleted records cannot be selected.
 
 **Send by email:** If the template provides an email and your role has the permission *Documents: send*, the dialog
 shows the switch **“Send by email”**. **To**, **subject** and **text** are prefilled from the template (e.g. the
 customer’s address) and can be changed before sending; separate several addresses with commas. **Copy to me** sends
 you a blind copy. The PDF is attached; sent documents are stored with the record where possible. The **history** shows
 “document sent” with recipient and subject. In the bulk action, **“Send by email for each record”** sends each record
-its email with the template’s subject and text; the message afterwards says how many emails were sent and which
-records have no valid address.
+its email with the template’s subject and text – each as soon as the documents of a step are stored; the message
+afterwards says how many emails were sent and which records have no valid address.
 
 **QR bill:** If the template appends a QR bill, the **payment part with receipt** appears at the bottom of the last
 page or on a page of its own – with amount, reference and your customer as debtor. Customers pay it with their banking

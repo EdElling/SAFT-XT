@@ -41,11 +41,12 @@ und [Anhang C](INSTALL_PRODUCTION.de.md) (Produktionsserver, z. B. ein Managed S
 | Datenbank wählen: PostgreSQL, MySQL oder MariaDB, mit den Zugangsdaten `PGSQL_*`, `MYSQL_*` bzw. `MARIADB_*` | `DB_CONNECTION=pgsql`, `mysql` bzw. `mariadb` in der `.env` |
 | Datenbank sichern (nach `storage/backups`; MySQL/MariaDB: Hauptdatenbank und `…_app_data` in einer `.sql`-Datei, bei eigenen Zugangsdaten für `app_data` (`DB_APP_DATA_*`) in zwei Teilen; ohne passendes `mysqldump` mit `DB_BACKUP_METHOD=php` bzw. `--php` in PHP; Pfad zum Programm bei Bedarf in `PGSQL_DUMP_BINARY`, `MYSQL_DUMP_BINARY` bzw. `MARIADB_DUMP_BINARY`; die Dateien aus Dateifeldern und das Briefpapier daneben als `<gleicher Name>_files.zip`, ohne sie mit `--without-files`) | `php artisan db:backup` |
 | Berechnete Felder neu berechnen (nach Änderungen an SAFT vorbei; optional Tabellennamen) | `php artisan computed:recompute` |
-| Höchstzahl der Datensätze je Export ändern (Vorgabe 50.000) | `APP_DATA_EXPORT_MAX_ROWS=50000` in der `.env` |
-| Höchstzahl der Zeilen je Datenimport in eine bestehende Tabelle ändern (Vorgabe 10'000) | `APP_DATA_IMPORT_MAX_RECORD_ROWS=10000` in der `.env` |
+| Höchstzahl der Datensätze je Export ändern (Vorgabe 500'000, `0` = ohne Grenze; der Export läuft als Arbeit in Blöcken von `APP_DATA_EXPORT_CHUNK` Zeilen, Vorgabe 1000) | `APP_DATA_EXPORT_MAX_ROWS=500000` in der `.env` |
+| Höchstzahl der Zeilen je Datenimport in eine bestehende Tabelle ändern (Vorgabe 100'000, `0` = ohne Grenze); bis `APP_DATA_IMPORT_CHECK_ROWS` Zeilen (Vorgabe 2000) prüft der Assistent die Datei schon im Dialog, darüber erst die Arbeit | `APP_DATA_IMPORT_MAX_RECORD_ROWS=100000` in der `.env` |
 | Höchstzahl der Datensätze je Kopie samt mitkopierten Kind-Datensätzen ändern (Vorgabe 1000) | `APP_DATA_COPY_MAX_RECORDS=1000` in der `.env` |
 | Mailserver für alle E-Mails (Passwort zurücksetzen, Dokumente): in den globalen Einstellungen („E-Mail-Versand“, Passwort verschlüsselt, „Verbindung prüfen“) oder in der `.env`; ein Server in den Einstellungen geht vor `MAIL_MAILER`. Die Absenderadresse muss zum Server passen (Konto-Adresse bzw. SPF/DKIM der Domain) | Administratorhandbuch, Kapitel 7, bzw. `MAIL_*` in der `.env` |
-| Höchstzahl der Datensätze je Sammellauf „Dokumente erstellen“ ändern (Vorgabe 50). Der Lauf geschieht direkt in der Anfrage, ohne Queue-Worker: mehr Datensätze brauchen mehr Zeit und Speicher (`max_execution_time`, `memory_limit` von PHP) | `DOCUMENTS_BATCH_MAX=50` in der `.env` |
+| Obergrenze je Sammellauf „Dokumente erstellen“ setzen (Vorgabe `0` = ohne Grenze; der Lauf ist eine Arbeit in Schritten). Ein einziges PDF mit allen Dokumenten fasst am Ende alle Seiten im Speicher zusammen (`memory_limit`), ZIP nicht | `DOCUMENTS_BATCH_MAX=0` in der `.env` |
+| Höchstzahl der Zeilen je Datenstand einer angebundenen Tabelle ändern (Vorgabe 1'000'000, `0` = ohne Grenze; gezogen wird als Arbeit in Blöcken von `REPORTS_SNAPSHOT_CHUNK` Zeilen, Vorgabe 1000) | `REPORTS_SNAPSHOT_MAX_ROWS=1000000` in der `.env` |
 | Speicher für Dateifelder: `local` (Vorgabe, `storage/app/private/files`) oder `s3` (S3-kompatibler Speicher, z. B. AWS, Infomaniak, Exoscale; Zugangsdaten in `AWS_*`, bei anderen Anbietern als AWS auch `AWS_ENDPOINT` und `AWS_USE_PATH_STYLE_ENDPOINT=true`; vorher `composer require league/flysystem-aws-s3-v3`). Nicht wechseln, solange Dateien gespeichert sind – vorhandene Dateien werden nicht verschoben | `APP_DATA_FILES_DISK=local` in der `.env` |
 | Zeitzone der Anwendung (Vorgabe `Europe/Zurich`) | `APP_TIMEZONE` in der `.env` |
 | Dem Load Balancer des Hosters vertrauen, wenn HTTPS vor dem Server endet (Adressen des Proxys, kommagetrennt) | `TRUSTED_PROXIES` in der `.env` |
@@ -220,10 +221,39 @@ jede Minute höchstens 50 Sekunden und übernimmt Arbeiten, deren startende Pers
 Cron-Intervallen geht eine verlassene Arbeit entsprechend später weiter; ohne Cron nur bei offener Seite. Im Browser
 arbeitet SAFT je Abfrage höchstens 15 Sekunden, immer unter `max_execution_time` von PHP. Ergebnisdateien liegen in
 `storage/app/private/work/<uuid>/` und werden von der System-Aufgabe *Arbeiten aufräumen* (stündlich) gelöscht.
-Fehlschläge stehen unter ihrer Referenz in `storage/logs/laravel.log` (Eintrag `Arbeit fehlgeschlagen`). Optionale
-Einstellungen in der `.env`: `WORK_BROWSER_BUDGET` (15), `WORK_SCHEDULER_BUDGET` (50), `WORK_TAKEOVER_SECONDS` (30),
-`WORK_MAX_STALLS` (Abbrüche desselben Schritts bis zum Fehlschlag, 3), `WORK_RESULT_HOURS` (24),
-`WORK_STUCK_MINUTES` (ab wann das Dashboard warnt, 10). Ein Queue-Worker ist nicht nötig.
+Fehlschläge stehen unter ihrer Referenz in `storage/logs/laravel.log` (Eintrag `Arbeit fehlgeschlagen`). Aktionen wie
+Export, Import, Dokumente oder Datenstand starten eine Arbeit und arbeiten bis zu `WORK_INLINE_BUDGET` Sekunden
+(Vorgabe 10) direkt in der Anfrage mit; kleine Mengen sind damit sofort fertig. Optionale Einstellungen in der
+`.env`: `WORK_INLINE_BUDGET` (10), `WORK_BROWSER_BUDGET` (15), `WORK_SCHEDULER_BUDGET` (50), `WORK_TAKEOVER_SECONDS`
+(30), `WORK_MAX_STALLS` (Abbrüche desselben Schritts bis zum Fehlschlag, 3), `WORK_RESULT_HOURS` (24),
+`WORK_STUCK_MINUTES` (ab wann das Dashboard warnt, 10). Alle Budgets bleiben unter `max_execution_time` von PHP. Lange,
+unteilbare Schritte (KI-Anfragen des App-Designers, `AI_DESIGNER_TIMEOUT`) heben das Zeitlimit für sich an; geht das
+im Browser nicht, führt sie der Scheduler aus. Ein Queue-Worker ist nicht nötig.
+
+**Mit Queue-Worker:** Auf einem eigenen Server kann ein Worker die Arbeiten übernehmen – sie starten dann ohne
+Verzögerung, unabhängig von Browser und Cron-Intervall, und der Browser zeigt nur noch an. Dazu `QUEUE_CONNECTION=database`
+(Vorgabe, Tabelle `jobs` ist vorhanden) und `WORK_DRIVER=queue` in der `.env`; nach Änderungen `php artisan
+optimize:clear` und `php artisan queue:restart`. Der Worker läuft dauerhaft als Dienst, z. B. unter systemd:
+
+```ini
+[Unit]
+Description=SAFT Queue-Worker
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/var/www/saft
+ExecStart=/usr/bin/php artisan queue:work --max-time=3600 --tries=1
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+oder unter Supervisor mit demselben Befehl. `--max-time=3600` lässt den Worker stündlich neu starten, damit er
+geänderten Code und Konfiguration lädt. Je Arbeit arbeitet ein Job `WORK_QUEUE_BUDGET` Sekunden (Vorgabe 50) und reiht
+sich wieder ein, bis sie fertig ist; auf der Queue-Verbindung `sync` wird nie ein Job gestartet. Fällt der Worker aus,
+übernimmt der Scheduler nach `WORK_TAKEOVER_SECONDS` wie ohne Worker.
 
 **System-Aufgaben für Sicherungen und Demos:** *Datenbank sichern* (02:30, mit den Dateien aus Dateifeldern),
 *Sicherungen aufräumen* (02:45, 14 Tage, mindestens 3; Sicherung und ZIP zählen als eine) und *Dateien aufräumen*
@@ -322,7 +352,7 @@ beim nächsten Lauf und lädt alle ihre Daten neu; bei den anderen Demos ihre Da
 | `php artisan optimize:clear` | Zwischenspeicher leeren, z. B. nach Änderungen an der `.env` |
 | `php artisan key:generate` | einmalig bei der Installation (Schlüssel `APP_KEY`) |
 | `php artisan storage:link` | einmalig bei der Installation (öffentlicher Speicher für hochgeladene Logos) |
-| `php artisan queue:work` | nur wenn `QUEUE_CONNECTION` nicht `sync` ist (z. B. für den Mailversand) |
+| `php artisan queue:work` | nur wenn `QUEUE_CONNECTION` nicht `sync` ist (z. B. für den Mailversand) oder mit `WORK_DRIVER=queue` für die [Arbeiten](#4-geplante-aufgaben-und-cron) |
 | `php artisan schedule:run` (minütlich per Cron) | führt die [geplanten Aufgaben](#4-geplante-aufgaben-und-cron) aus; ohne Cron-Eintrag laufen sie nicht |
 | `php artisan down` / `php artisan up` | Wartungsmodus während eines Updates |
 

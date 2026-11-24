@@ -242,8 +242,10 @@ permission in their role.
 **Allow import:** This switch allows data import – new records from an Excel or CSV file, e.g. from a downloaded
 template (see [User guide 4.8](USER_GUIDE.md#48-importing-data)). It is initially off. Then "Import" appears in the
 list for roles with the permissions **Create** and **Import**. The import never changes existing records; it checks as
-when entering data by hand, and it is all or nothing. At most 10,000 rows per file
-(`APP_DATA_IMPORT_MAX_RECORD_ROWS`). Linked tables of the table connector cannot be imported into.
+when entering data by hand, and it is all or nothing – even on cancel or error in the middle of importing, created
+records are removed again. The import runs as a [job](#jobs) in two phases (check, import); the wizard checks up to
+2,000 rows in the dialog already (`APP_DATA_IMPORT_CHECK_ROWS`). At most 100,000 rows per file
+(`APP_DATA_IMPORT_MAX_RECORD_ROWS`, `0` = no limit). Linked tables of the table connector cannot be imported into.
 
 **Editing fields** (area *Fields*, (2)): for every field you set:
 
@@ -840,9 +842,13 @@ upper and lower case (like MySQL); this then also applies to unique values.
 
 The **Data snapshots** tab of a connected table manages the copies that [reports](USER_GUIDE.md#49-reports) work with:
 
-- **Refresh now** reads the whole external table and creates a new snapshot. If that fails (connection lost, table too
-  large – limit `REPORTS_SNAPSHOT_MAX_ROWS`, default 200,000 rows), the previous snapshot stays valid; the failed
-  attempt is listed with its message until the next snapshot succeeds.
+- **Refresh now** reads the whole external table and creates a new snapshot – as a [job](#jobs) in blocks. Small
+  tables are done at once; for large ones a notice with a link to the job appears, the snapshot is listed as
+  **running** (clickable: progress, cancel) and becomes complete when the job ends; the list refreshes meanwhile. While
+  a snapshot is running, a second "Refresh now" is refused ("is being refreshed"). If the job fails or is cancelled
+  (connection lost, table too large – limit `REPORTS_SNAPSHOT_MAX_ROWS`, default 1,000,000 rows, `0` = none), SAFT
+  discards the half snapshot and the previous one stays valid; the failed attempt is listed with its message until the
+  next snapshot succeeds.
 - **Retention:** how many snapshots are kept (default 5) and optionally for at most how many days. The newest snapshot
   is always kept. The limit in days is also enforced by the daily system task "Clean up snapshots".
 - **Schedule:** above the tab you see which [scheduled tasks](#12-scheduled-tasks) refresh the table – on its own or
@@ -913,7 +919,7 @@ foreign key). For large connected tables the source field should have an index i
 |---|---|---|
 | Refresh snapshot | connected table | new [data snapshot](#data-snapshots-for-reports) of this table |
 | Refresh snapshots of a connection | database connection; "Only tables that already have a snapshot" (on by default) | new snapshots of all (or the already used) connected tables of the connection, one after another. If a table fails, the others continue; the run then counts as failed and names the tables |
-| Clean up snapshots (system) | – | enforces the retention of all snapshots, also without a new refresh, and cleans up aborted runs; default daily 03:15 |
+| Clean up snapshots (system) | – | enforces the retention of all snapshots, also without a new refresh, and cleans up "running" snapshots whose job no longer exists; default daily 03:15 |
 | Clean up run log (system) | keep runs (days, default 90) | deletes older entries in the run log; default daily 03:30 |
 | Trim activity log (system) | keep activity log (days, default 365); keep sign-ins (days, default 90) | permanently deletes older entries in the activity log (chapter 8); shipped switched off, the dashboard points out older entries; default daily 03:45 |
 | Clean up jobs (system) | keep jobs (days, default 30) | deletes result files of [jobs](#jobs) after 24 hours and finished jobs after the set number of days; default hourly at minute 20 |
@@ -972,8 +978,16 @@ app. System tasks belong to no app.
 ### Jobs
 
 SAFT does long jobs in short steps with a saved intermediate state, so that they do not fail at a time limit of the
-web server. Today there is the type **Recompute computed fields** (`php artisan computed:recompute`, see
-[System administration](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)); plugins can bring their own types.
+web server. Types: **Export** (list as Excel or CSV), **Import data** (check, then import; on error or cancel everything
+is rolled back), **Create documents** (bulk action, emails after each saved step), **Take snapshot** (table connector),
+**Recompute computed fields** (after a formula change in the table designer or `php artisan computed:recompute`, see
+[System administration](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)) as well as **Design app**, **Create app** and
+**Create the app's reports** (AI app designer). Plugins can bring their own types.
+
+**Start and help briefly:** An action such as "Export" starts the job and works along for a few seconds within the
+request. If the job is done by then – the normal case for small amounts –, the person gets the result as usual
+(download, message). Otherwise SAFT takes them to the job's page. Limits such as 500,000 rows per export now only
+protect against mistakes, not against time limits.
 
 **Administration › Operations › Jobs** (permission *Jobs: see all*) lists the jobs of all people, the tab **Mine** only
 your own. Without this permission, everyone sees their own jobs via **My jobs** in the user menu. Columns: type with
@@ -981,7 +995,11 @@ description, started by (*System* for jobs from the console), app, status (queue
 progress, started, duration and message. While something is running, the list refreshes itself.
 
 **How a job runs:** As long as the person who started it has the job's page open, their browser drives it forward. If
-they close the page, the scheduler takes over after 30 seconds, and the bell reports "done" or "failed" at the end. If a
+they close the page, the scheduler takes over after 30 seconds, and the bell reports "done" or "failed" at the end.
+With a queue worker (`WORK_DRIVER=queue`, see [System administration](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)) the
+worker drives every job right after it starts, and the page only displays ("Running in the background."). Long,
+indivisible steps such as an AI request are run by the browser only if PHP's time limit can be raised; otherwise the
+scheduler takes over. If a
 step is aborted (for example at the server's time limit), the next one continues from the saved state; if the same step
 is aborted three times, the job counts as failed. In the background a job runs with the permissions of the person who
 started it – under *View as role* with the chosen roles – and in the app in which it was started. Without the
@@ -989,7 +1007,8 @@ scheduler (cron), jobs only continue while the page is open.
 
 **Cancel:** your own jobs always, other people's with the permission *Jobs: cancel other people's*. A queued job ends
 at once, a running one after the current step. What a writing job has changed until then stays: each step is saved
-completely or not at all.
+completely or not at all. Two types clean up after a cancel or failure: the **data import** deletes all created records
+(all or nothing), the **snapshot** discards the half copy.
 
 **Results:** If a job produces a file, it is available for 24 hours under **Download result** – for the person who
 started it and with *Jobs: see all*. The system task **Clean up jobs** then deletes the file and, after 30 days, the job
@@ -1319,7 +1338,9 @@ assistant switched on (see [chapter 7](#7-global-settings)).
   diagram and per table the fields with type, relation (`→ table`), formula (`= …`) or choices. **Nothing is created in
   the database.**
 - **Adjust:** Write further wishes into the conversation, e.g. "suppliers as a table of their own", and click **Adjust**
-  – as often as you like. If the AI asks back, the question appears in the conversation.
+  – as often as you like. If the AI asks back, the question appears in the conversation. Each round runs as a
+  [job](#jobs): instead of the input, the page shows the progress with **Cancel** but stays usable; you may reload or
+  leave it, the round continues and appears in the conversation the next time you open the draft.
 - **Checked:** Every proposal is checked completely before it is shown, as when installing – names (also against
   existing tables), relations (within the draft or to shared tables of other apps), formulas and rules. SAFT returns
   errors to the AI for correction; if that fails, the message appears below the input.
@@ -1329,13 +1350,14 @@ assistant switched on (see [chapter 7](#7-global-settings)).
   translates the labels into the other languages (about half a minute to a minute; if that fails, the app is created
   anyway and a note gives the reason) and creates the app: tables, detail tables (below each table the tables that point to it), menu with data model and
   a **role** with all permissions on the new tables and viewing reports. Unlike installing, the app is **active**
-  afterwards and you switch into it. The draft remains, marked "created".
+  afterwards and you switch into it. The draft remains, marked "created". Creating also runs as a job (translate, then
+  create) with progress on the page.
 - **Reports:** The AI proposes 2–6 reports for the app – first those your description names, then obvious ones; the
   preview lists them under "Reports (created after the app)", and you change them in the conversation. In the dialog
   "Create app" each proposed report has a preselected tick; deselected ones are not created. If at least one is
-  selected, the page stays after creating and shows the progress: the report
-  assistant creates one report after another against the new tables (about 20–40 seconds each) – *being created*,
-  *waiting*, created (with link) or *not possible* with the reason and **Try again**. The reports are shared and
+  selected, the page stays after creating and shows the progress: a job creates the reports one after another against
+  the new tables (about 20–40 seconds each) – *being created*, *waiting*, created (with link) or *not possible* with the
+  reason and **Try again**, which starts a new job. The reports are shared and
   appear in the app in the submenu "Reports"; then **"To the new app"** leads into it. Without a selected report you go
   straight into the app.
 - **Afterwards** you change the app like any other – by hand in the table designer or per table with **"Adjust with
@@ -1480,7 +1502,8 @@ SAFT generates documents such as invoices and letters as PDF. Design and content
 Documents are created in a record's row with the icon **“Create document”** – by persons with the permission
 *Documents: generate* in the app (see [user guide, section 4.10](USER_GUIDE.md#410-creating-documents)).
 For several records at once they select the rows with checkboxes and **“Create documents”** in the table header – one
-PDF with all documents or a ZIP, at most 50 per run (`DOCUMENTS_BATCH_MAX`, see system administration).
+PDF with all documents or a ZIP. This runs as a [job](#jobs) without a limit; the system administration can set one with
+`DOCUMENTS_BATCH_MAX`.
 
 ### Letterhead
 

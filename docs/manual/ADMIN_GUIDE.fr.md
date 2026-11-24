@@ -259,8 +259,11 @@ dans leur rôle.
 fichier Excel ou CSV, p. ex. d’un modèle téléchargé (voir [Guide utilisateur 4.8](USER_GUIDE.fr.md#48-importer-des-données)).
 Il est d’abord désactivé. « Importer » apparaît alors dans la liste pour les rôles ayant les droits **Créer** et
 **Importer**. L’import ne modifie jamais les enregistrements existants ; il contrôle comme lors d’une saisie manuelle,
-et c’est tout ou rien. Au plus 10 000 lignes par fichier (`APP_DATA_IMPORT_MAX_RECORD_ROWS`). Les tables liées du
-Connecteur de tables ne peuvent pas être importées.
+et c’est tout ou rien – même en cas d’annulation ou d’erreur en pleine importation, les enregistrements créés sont
+retirés. L’import s’exécute comme [travail](#travaux) en deux phases (vérifier, importer) ; l’assistant vérifie jusqu’à
+2 000 lignes déjà dans la boîte de dialogue (`APP_DATA_IMPORT_CHECK_ROWS`). Au plus 100 000 lignes par fichier
+(`APP_DATA_IMPORT_MAX_RECORD_ROWS`, `0` = sans limite). Les tables liées du Connecteur de tables ne peuvent pas être
+importées.
 
 **Modifier les champs** (zone *Champs*, (2)) : pour chaque champ, vous définissez :
 
@@ -903,9 +906,14 @@ aussi pour les valeurs uniques.
 L’onglet **États des données** d’une table liée gère les copies (instantanés) avec lesquelles calculent les
 [rapports](USER_GUIDE.fr.md#49-rapports) :
 
-- **Actualiser maintenant** lit entièrement la table externe et crée un nouvel état. En cas d’échec (connexion
-  perdue, table trop grande – limite `REPORTS_SNAPSHOT_MAX_ROWS`, 200 000 lignes par défaut), l’état précédent reste
-  valable ; l’échec figure avec son message dans la liste jusqu’à ce que l’état suivant réussisse.
+- **Actualiser maintenant** lit entièrement la table externe et crée un nouvel état – comme [travail](#travaux) par
+  blocs. Les petites tables sont terminées tout de suite ; pour les grandes, une remarque avec lien vers le travail
+  s’affiche, l’état figure comme **en cours** dans la liste (cliquable : progression, annuler) et devient complet quand
+  le travail se termine ; la liste se met à jour entre-temps. Tant qu’un état est en cours, un second « Actualiser
+  maintenant » est refusé (« en cours d’actualisation »). Si le travail échoue ou est annulé (connexion perdue, table
+  trop grande – limite `REPORTS_SNAPSHOT_MAX_ROWS`, 1 000 000 lignes par défaut, `0` = sans limite), SAFT rejette
+  l’état à moitié copié et l’état précédent reste valable ; l’échec figure avec son message dans la liste jusqu’à ce que
+  l’état suivant réussisse.
 - **Conservation :** combien d’états sont conservés (5 par défaut) et facultativement pendant combien de jours au
   plus. L’état le plus récent est toujours conservé. Le délai en jours est en outre appliqué par la tâche système
   quotidienne « Nettoyer les états des données ».
@@ -985,7 +993,7 @@ devant le libellé.
 |---|---|---|
 | Actualiser l’état des données | table liée | nouvel [état des données](#états-des-données-pour-les-rapports) de cette table |
 | Actualiser les états d’une connexion | connexion à une base de données ; « Uniquement les tables qui ont déjà un état » (activé par défaut) | nouveaux états de toutes les tables liées de la connexion (ou de celles déjà utilisées), l’une après l’autre. Si une table échoue, les autres continuent ; l’exécution est alors considérée comme échouée et nomme les tables |
-| Nettoyer les états des données (système) | – | applique la conservation de tous les états des données, même sans nouvelle actualisation, et nettoie les exécutions interrompues ; par défaut tous les jours à 03:15 |
+| Nettoyer les états des données (système) | – | applique la conservation de tous les états des données, même sans nouvelle actualisation, et nettoie les états « en cours » dont le travail n’existe plus ; par défaut tous les jours à 03:15 |
 | Nettoyer le journal des exécutions (système) | conserver les exécutions (jours, 90 par défaut) | supprime les entrées plus anciennes du journal des exécutions ; par défaut tous les jours à 03:30 |
 | Raccourcir le journal des modifications (système) | conserver le journal des modifications (jours, 365 par défaut) ; conserver les connexions (jours, 90 par défaut) | supprime définitivement les entrées plus anciennes du journal des modifications (chapitre 8) ; désactivée à la livraison, le tableau de bord signale les entrées plus anciennes ; par défaut tous les jours à 03:45 |
 | Nettoyer les travaux (système) | conserver les travaux (jours, 30 par défaut) | supprime les fichiers de résultat des [travaux](#travaux) après 24 heures et les travaux terminés après le nombre de jours réglé ; par défaut toutes les heures à la minute 20 |
@@ -1050,9 +1058,17 @@ tâches, vous choisissez l’app. Les tâches système n’appartiennent à aucu
 ### Travaux
 
 SAFT effectue les travaux longs en courtes étapes avec un état intermédiaire enregistré, afin qu’ils n’échouent pas sur
-une limite de temps du serveur web. Il existe aujourd’hui le type **Recalculer les champs calculés**
-(`php artisan computed:recompute`, voir [Administration système](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)) ; les
-plugins peuvent apporter leurs propres types.
+une limite de temps du serveur web. Types : **Exporter** (liste en Excel ou CSV), **Importer des données** (vérifier,
+puis importer ; en cas d’erreur ou d’annulation, tout est retiré), **Créer des documents** (action groupée, e-mails après
+chaque étape enregistrée), **Prendre un état des données** (Connecteur de tables), **Recalculer les champs calculés**
+(après une modification de formule dans le concepteur de tables ou `php artisan computed:recompute`, voir
+[Administration système](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)) ainsi que **Concevoir une app**, **Créer une
+app** et **Créer les rapports de l’app** (concepteur d’app IA). Les plugins peuvent apporter leurs propres types.
+
+**Démarrer et aider brièvement :** une action comme « Exporter » démarre le travail et y participe quelques secondes
+dans la requête. S’il est alors terminé – le cas normal pour de petites quantités –, la personne obtient le résultat
+comme d’habitude (téléchargement, message). Sinon, SAFT la conduit à la page du travail. Les limites comme 500 000
+lignes par export ne protègent plus que contre les erreurs de manipulation, pas contre les limites de temps.
 
 **Administration › Exploitation › Travaux** (droit *Travaux : voir tous*) liste les travaux de toutes les personnes,
 l’onglet **Les miens** uniquement les vôtres. Sans ce droit, chacun voit ses propres travaux via **Mes travaux** dans le
@@ -1062,14 +1078,20 @@ chose est en cours, la liste se met à jour d’elle-même.
 
 **Déroulement :** tant que la personne qui a démarré le travail garde sa page ouverte, son navigateur le fait avancer.
 Si elle ferme la page, le planificateur prend le relais après 30 secondes, et la cloche annonce « terminé » ou
-« échoué » à la fin. Si une étape est interrompue (p. ex. par la limite de temps du serveur), la suivante reprend à
+« échoué » à la fin. Avec un worker de file d’attente (`WORK_DRIVER=queue`, voir
+[Administration système](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)), celui-ci fait avancer chaque travail dès son
+démarrage, et la page ne fait plus qu’afficher (« S’exécute en arrière-plan. »). Les étapes longues et indivisibles
+comme une requête IA ne sont exécutées par le navigateur que si la limite de temps de PHP peut être relevée ; sinon, le
+planificateur prend le relais. Si une étape est interrompue (p. ex. par la limite de temps du serveur), la suivante reprend à
 l’état enregistré ; si la même étape est interrompue trois fois, le travail est considéré comme échoué. En arrière-plan,
 un travail s’exécute avec les droits de la personne qui l’a démarré – sous *Afficher en tant que rôle* avec les rôles
 choisis – et dans l’app où il a été démarré. Sans planificateur (cron), les travaux ne progressent que page ouverte.
 
 **Annuler :** vos propres travaux toujours, ceux des autres avec le droit *Travaux : annuler ceux des autres*. Un
 travail en attente s’arrête immédiatement, un travail en cours après l’étape actuelle. Ce qu’un travail d’écriture a
-modifié jusque-là reste : chaque étape est enregistrée entièrement ou pas du tout.
+modifié jusque-là reste : chaque étape est enregistrée entièrement ou pas du tout. Deux types nettoient après une
+annulation ou un échec : l’**import de données** supprime tous les enregistrements créés (tout ou rien), l’**état des
+données** rejette la copie à moitié faite.
 
 **Résultats :** si un travail produit un fichier, celui-ci est disponible pendant 24 heures sous **Télécharger le
 résultat** – pour la personne qui l’a démarré et avec *Travaux : voir tous*. La tâche système **Nettoyer les travaux**
@@ -1420,7 +1442,10 @@ Il nécessite un fournisseur d’IA configuré et l’assistant IA activé (voir
   données en diagramme et, par table, les champs avec type, liaison (`→ table`), formule (`= …`) ou valeurs. **Rien
   n’est créé dans la base de données.**
 - **Adapter :** écrivez d’autres souhaits dans la conversation, p. ex. « les fournisseurs dans une table à part », puis
-  **Adapter** – aussi souvent que nécessaire. Si l’IA pose une question, elle apparaît dans la conversation.
+  **Adapter** – aussi souvent que nécessaire. Si l’IA pose une question, elle apparaît dans la conversation. Chaque
+  tour s’exécute comme [travail](#travaux) : à la place de la saisie, la page montre la progression avec **Annuler**,
+  mais reste utilisable ; vous pouvez la recharger ou la quitter, le tour continue et figure dans la conversation à la
+  prochaine ouverture du brouillon.
 - **Vérifié :** chaque proposition est entièrement vérifiée avant l’affichage, comme à l’installation – noms (aussi par
   rapport aux tables existantes), liaisons (dans le brouillon ou vers des tables partagées d’autres apps), formules et
   règles. SAFT renvoie les erreurs à l’IA pour correction ; si elle échoue, le message apparaît sous la saisie.
@@ -1430,13 +1455,14 @@ Il nécessite un fournisseur d’IA configuré et l’assistant IA activé (voir
   traduit les libellés dans les autres langues (environ une demi-minute à une minute ; en cas d’échec, l’app est tout
   de même créée et une remarque en donne la raison), puis crée l’app : tables, tables de détail (sous chaque table les tables qui la référencent), menu avec modèle de données
   et un **rôle** avec tous les droits sur les nouvelles tables et la consultation des rapports. Contrairement à
-  l’installation, l’app est ensuite **active** et vous y passez. Le brouillon reste, marqué « créée ».
+  l’installation, l’app est ensuite **active** et vous y passez. Le brouillon reste, marqué « créée ». La création
+  s’exécute aussi comme travail (traduire, puis créer) avec progression sur la page.
 - **Rapports :** l’IA propose 2 à 6 rapports pour l’app – d’abord ceux que cite votre description, puis des rapports
   évidents ; l’aperçu les montre sous « Rapports (créés après l’app) », et vous les modifiez dans la conversation. Dans le
   dialogue « Créer l’app », chaque rapport proposé a une case cochée d’avance ; les rapports décochés ne sont pas
-  créés. Si au moins un est coché, la page reste affichée après la création et montre la progression : l’assistant de rapports crée les rapports l’un après l’autre sur les nouvelles tables (environ 20 à 40
-  secondes chacun) – *en cours de création*, *en attente*, créé (avec lien) ou *impossible* avec la raison et
-  **Réessayer**. Les rapports sont partagés et figurent dans l’app sous le sous-menu « Rapports » ; ensuite **« Vers la
+  créés. Si au moins un est coché, la page reste affichée après la création et montre la progression : un travail crée
+  les rapports l’un après l’autre sur les nouvelles tables (environ 20 à 40 secondes chacun) – *en cours de création*,
+  *en attente*, créé (avec lien) ou *impossible* avec la raison et **Réessayer**, qui démarre un nouveau travail. Les rapports sont partagés et figurent dans l’app sous le sous-menu « Rapports » ; ensuite **« Vers la
   nouvelle app »** y mène. Sans rapport coché, vous passez directement dans l’app.
 - **Ensuite**, vous modifiez l’app comme toute autre – à la main dans le concepteur de tables ou par table avec
   **« Adapter avec l’IA »**, les rapports dans le concepteur de rapports. Qui n’est pas super-admin reçoit le rôle de
@@ -1591,7 +1617,8 @@ SAFT génère des documents tels que factures et lettres en PDF. Mise en forme e
 Les documents se créent dans la ligne d’un enregistrement avec l’icône **« Créer un document »** – par les personnes
 ayant le droit *Documents: générer* dans l’app (voir [manuel de l’utilisateur, section 4.10](USER_GUIDE.fr.md#410-créer-des-documents)).
 Pour plusieurs enregistrements à la fois, elles cochent les lignes et choisissent **« Créer des documents »** dans
-l’en-tête du tableau – un PDF avec tous les documents ou un ZIP, au plus 50 par passage (`DOCUMENTS_BATCH_MAX`).
+l’en-tête du tableau – un PDF avec tous les documents ou un ZIP. Cela s’exécute comme [travail](#travaux) sans
+limite ; l’administration système peut en fixer une avec `DOCUMENTS_BATCH_MAX`.
 
 ### Papier à lettres
 

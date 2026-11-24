@@ -251,9 +251,11 @@ salvati valgono per tutte le lingue.
 **Consenti importazione:** questo interruttore abilita l’importazione dei dati – nuovi record da un file Excel o CSV,
 ad es. da un modello scaricato (vedere [Guida utente 4.8](USER_GUIDE.it.md#48-importare-i-dati)). All’inizio è
 disattivato. «Importa» compare poi nell’elenco per i ruoli con i diritti **Creare** e **Importare**. L’importazione non
-modifica mai i record esistenti; controlla come nell’inserimento manuale e vale tutto o niente. Al massimo 10’000
-righe per file (`APP_DATA_IMPORT_MAX_RECORD_ROWS`). Per le tabelle collegate del Connettore di tabelle l’importazione
-non esiste.
+modifica mai i record esistenti; controlla come nell’inserimento manuale e vale tutto o niente – anche in caso di
+annullamento o errore a metà importazione i record creati vengono rimossi. L’importazione viene eseguita come
+[lavoro](#lavori) in due fasi (verificare, importare); l’assistente verifica fino a 2’000 righe già nella finestra
+(`APP_DATA_IMPORT_CHECK_ROWS`). Al massimo 100’000 righe per file (`APP_DATA_IMPORT_MAX_RECORD_ROWS`, `0` = senza
+limite). Per le tabelle collegate del Connettore di tabelle l’importazione non esiste.
 
 **Modificare i campi** (area *Campi*, (2)): per ogni campo stabilite:
 
@@ -879,9 +881,13 @@ per i valori univoci.
 La scheda **Stati dei dati** di una tabella collegata gestisce le copie (istantanee) con cui calcolano i
 [report](USER_GUIDE.it.md#49-report):
 
-- **Aggiorna ora** legge per intero la tabella esterna e crea un nuovo stato. Se non riesce (connessione persa,
-  tabella troppo grande – limite `REPORTS_SNAPSHOT_MAX_ROWS`, predefinito 200’000 righe), lo stato precedente resta
-  valido; il tentativo fallito figura con il messaggio nell’elenco finché lo stato successivo riesce.
+- **Aggiorna ora** legge per intero la tabella esterna e crea un nuovo stato – come [lavoro](#lavori) a blocchi. Le
+  tabelle piccole sono pronte subito; per quelle grandi compare un avviso con link al lavoro, lo stato figura come **in
+  corso** nell’elenco (cliccabile: avanzamento, annullare) e diventa completo quando il lavoro termina; l’elenco si
+  aggiorna nel frattempo. Finché uno stato è in corso, un secondo «Aggiorna ora» viene rifiutato («in fase di
+  aggiornamento»). Se il lavoro fallisce o viene annullato (connessione persa, tabella troppo grande – limite
+  `REPORTS_SNAPSHOT_MAX_ROWS`, predefinito 1’000’000 righe, `0` = senza limite), SAFT scarta lo stato a metà e quello
+  precedente resta valido; il tentativo fallito figura con il messaggio nell’elenco finché lo stato successivo riesce.
 - **Conservazione:** quanti stati restano (predefinito 5) e facoltativamente per quanti giorni al massimo. Lo stato
   più recente resta sempre. Il termine in giorni viene inoltre applicato dall’attività di sistema giornaliera «Pulire
   gli stati dei dati».
@@ -961,7 +967,7 @@ ha un **tipo**, i relativi **parametri** e una **pianificazione**:
 |---|---|---|
 | Aggiornare lo stato dei dati | tabella collegata | nuovo [stato dei dati](#stati-dei-dati-per-i-report) di questa tabella |
 | Aggiornare gli stati di una connessione | connessione al database; «Solo tabelle che hanno già uno stato» (predefinito: attivo) | nuovi stati di tutte le tabelle collegate della connessione (o di quelle già usate), una dopo l’altra. Se una tabella fallisce, le altre continuano; l’esecuzione vale allora come fallita e nomina le tabelle |
-| Pulire gli stati dei dati (sistema) | – | applica la conservazione di tutti gli stati dei dati, anche senza nuovo aggiornamento, e ripulisce le esecuzioni interrotte; predefinito ogni giorno alle 03:15 |
+| Pulire gli stati dei dati (sistema) | – | applica la conservazione di tutti gli stati dei dati, anche senza nuovo aggiornamento, e ripulisce gli stati «in corso» il cui lavoro non esiste più; predefinito ogni giorno alle 03:15 |
 | Pulire il registro delle esecuzioni (sistema) | conservare le esecuzioni (giorni, predefinito 90) | elimina le voci più vecchie del registro delle esecuzioni; predefinito ogni giorno alle 03:30 |
 | Accorciare il registro modifiche (sistema) | conservare il registro modifiche (giorni, predefinito 365); conservare gli accessi (giorni, predefinito 90) | elimina definitivamente le voci più vecchie del registro modifiche (capitolo 8); disattivata alla consegna, la dashboard segnala le voci più vecchie; predefinito ogni giorno alle 03:45 |
 | Pulire i lavori (sistema) | conservare i lavori (giorni, predefinito 30) | elimina i file di risultato dei [lavori](#lavori) dopo 24 ore e i lavori terminati dopo il numero di giorni impostato; predefinito ogni ora al minuto 20 |
@@ -1024,8 +1030,17 @@ per le altre attività scegliete l’app. Le attività di sistema non appartengo
 ### Lavori
 
 SAFT esegue i lavori lunghi in brevi passi con uno stato intermedio salvato, affinché non falliscano per un limite di
-tempo del server web. Oggi esiste il tipo **Ricalcolare i campi calcolati** (`php artisan computed:recompute`, vedi
-[Amministrazione di sistema](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)); i plugin possono portare tipi propri.
+tempo del server web. Tipi: **Esportare** (elenco come Excel o CSV), **Importare dati** (verificare, poi importare; in
+caso di errore o annullamento tutto viene rimosso), **Creare documenti** (azione di gruppo, e-mail dopo ogni passo
+salvato), **Acquisire stato dei dati** (Connettore di tabelle), **Ricalcolare i campi calcolati** (dopo una modifica di
+formula nel progettista di tabelle o `php artisan computed:recompute`, vedi
+[Amministrazione di sistema](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)) nonché **Progettare app**, **Creare app** e
+**Creare i report dell’app** (progettista di app IA). I plugin possono portare tipi propri.
+
+**Avviare e collaborare brevemente:** un’azione come «Esporta» avvia il lavoro e vi collabora per qualche secondo
+nella richiesta. Se a quel punto è terminato – il caso normale per quantità piccole –, la persona ottiene il risultato
+come sempre (download, messaggio). Altrimenti SAFT la porta alla pagina del lavoro. Limiti come 500’000 righe per
+esportazione proteggono ormai solo da sviste, non da limiti di tempo.
 
 **Amministrazione › Esercizio › Lavori** (diritto *Lavori: vedere tutti*) elenca i lavori di tutte le persone, la
 scheda **I miei** solo i vostri. Senza questo diritto, ognuno vede i propri lavori tramite **I miei lavori** nel menu
@@ -1035,14 +1050,20 @@ aggiorna da solo.
 
 **Come procede un lavoro:** finché la persona che l’ha avviato tiene aperta la pagina del lavoro, il suo browser lo fa
 avanzare. Se chiude la pagina, dopo 30 secondi subentra lo scheduler, e alla fine la campanella segnala «terminato» o
-«fallito». Se un passo si interrompe (ad es. per il limite di tempo del server), il successivo riprende dallo stato
+«fallito». Con un worker della coda (`WORK_DRIVER=queue`, vedi
+[Amministrazione di sistema](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron)) è questo a far avanzare ogni lavoro subito
+dopo l’avvio, e la pagina si limita a mostrare («In esecuzione in background.»). I passi lunghi e indivisibili come una
+richiesta all’IA vengono eseguiti dal browser solo se il limite di tempo di PHP può essere alzato; altrimenti subentra
+lo scheduler. Se un passo si interrompe (ad es. per il limite di tempo del server), il successivo riprende dallo stato
 salvato; se lo stesso passo si interrompe tre volte, il lavoro è considerato fallito. In background un lavoro viene
 eseguito con i diritti della persona che l’ha avviato – con *Visualizza come ruolo* con i ruoli scelti – e nell’app in
 cui è stato avviato. Senza scheduler (cron) i lavori proseguono solo con la pagina aperta.
 
 **Annullare:** i propri lavori sempre, quelli altrui con il diritto *Lavori: annullare quelli altrui*. Un lavoro in
 attesa termina subito, uno in corso dopo il passo attuale. Ciò che un lavoro di scrittura ha modificato fino ad allora
-rimane: ogni passo viene salvato interamente o per niente.
+rimane: ogni passo viene salvato interamente o per niente. Due tipi fanno pulizia dopo un annullamento o un
+fallimento: l’**importazione di dati** elimina tutti i record creati (tutto o niente), lo **stato dei dati** scarta la
+copia a metà.
 
 **Risultati:** se un lavoro produce un file, questo è disponibile per 24 ore con **Scarica il risultato** – per la
 persona che l’ha avviato e con *Lavori: vedere tutti*. L’attività di sistema **Pulire i lavori** elimina poi il file e,
@@ -1384,7 +1405,9 @@ fornitore IA configurato e l’assistente IA attivato (vedi [capitolo 7](#7-impo
   come diagramma e, per tabella, i campi con tipo, collegamento (`→ tabella`), formula (`= …`) o valori. **Nella banca
   dati non viene creato nulla.**
 - **Adattare:** scriva altri desideri nella conversazione, ad es. «fornitori in una tabella propria», e clicchi
-  **Adatta** – quante volte vuole. Se l’IA fa una domanda, compare nella conversazione.
+  **Adatta** – quante volte vuole. Se l’IA fa una domanda, compare nella conversazione. Ogni turno viene eseguito come
+  [lavoro](#lavori): al posto dell’inserimento la pagina mostra l’avanzamento con **Annulla**, ma resta utilizzabile;
+  può ricaricarla o lasciarla, il turno continua e compare nella conversazione alla prossima apertura della bozza.
 - **Verificato:** ogni proposta viene verificata completamente prima di essere mostrata, come all’installazione – nomi
   (anche rispetto alle tabelle esistenti), collegamenti (nella bozza o verso tabelle condivise di altre app), formule e
   regole. SAFT rimanda gli errori all’IA per la correzione; se non riesce, il messaggio compare sotto l’inserimento.
@@ -1394,13 +1417,14 @@ fornitore IA configurato e l’assistente IA attivato (vedi [capitolo 7](#7-impo
   etichette nelle altre lingue (da mezzo minuto a un minuto circa; se non riesce, l’app viene creata comunque e un avviso
   ne indica il motivo) e crea l’app: tabelle, tabelle di dettaglio (sotto ogni tabella quelle che la referenziano), menu con modello dei dati e un
   **ruolo** con tutti i diritti sulle nuove tabelle e la visualizzazione dei report. A differenza dell’installazione,
-  l’app è poi **attiva** e vi si passa. La bozza resta, contrassegnata «creata».
+  l’app è poi **attiva** e vi si passa. La bozza resta, contrassegnata «creata». Anche la creazione viene eseguita come
+  lavoro (tradurre, poi creare) con avanzamento sulla pagina.
 - **Report:** l’IA propone 2–6 report per l’app – prima quelli citati dalla sua descrizione, poi quelli ovvi;
   l’anteprima li mostra sotto «Report (creati dopo l’app)» e si modificano nella conversazione. Nella finestra
   «Crea app» ogni report proposto ha una spunta preselezionata; quelli deselezionati non vengono creati. Se almeno uno
-  è selezionato, la pagina resta aperta dopo la creazione e mostra l’avanzamento:
-  l’assistente per i report crea un report dopo l’altro sulle nuove tabelle (circa 20–40 secondi ciascuno) – *in
-  creazione*, *in attesa*, creato (con link) o *non possibile* con il motivo e **Riprova**. I report sono condivisi e
+  è selezionato, la pagina resta aperta dopo la creazione e mostra l’avanzamento: un lavoro crea i report uno dopo
+  l’altro sulle nuove tabelle (circa 20–40 secondi ciascuno) – *in creazione*, *in attesa*, creato (con link) o *non
+  possibile* con il motivo e **Riprova**, che avvia un nuovo lavoro. I report sono condivisi e
   compaiono nell’app nel sottomenu «Report»; poi **«Alla nuova app»** vi conduce. Senza report selezionati si
   passa subito nell’app.
 - **In seguito** modifica l’app come qualsiasi altra – a mano nel designer di tabelle o per tabella con **«Adatta con
@@ -1548,7 +1572,8 @@ SAFT genera documenti come fatture e lettere in PDF. Impaginazione e contenuto s
 I documenti si creano nella riga di un record con l’icona **«Crea documento»** – dalle persone con il diritto
 *Documenti: generare* nell’app (vedi [manuale utente, sezione 4.10](USER_GUIDE.it.md#410-creare-documenti)).
 Per più record alla volta spuntano le righe e scelgono **«Crea documenti»** nell’intestazione della tabella – un PDF
-con tutti i documenti o uno ZIP, al massimo 50 per passaggio (`DOCUMENTS_BATCH_MAX`).
+con tutti i documenti o uno ZIP. Ciò avviene come [lavoro](#lavori) senza limite; l’amministrazione di sistema può
+fissarne uno con `DOCUMENTS_BATCH_MAX`.
 
 ### Carta intestata
 

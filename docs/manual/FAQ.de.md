@@ -30,6 +30,8 @@
    - [Ein Dokument liess sich nicht per E-Mail senden.](#ein-dokument-liess-sich-nicht-per-e-mail-senden)
    - [Die QR-Rechnung fehlt oder die Banking-App liest sie nicht.](#die-qr-rechnung-fehlt-oder-die-banking-app-liest-sie-nicht)
    - [Die Word-Datei sieht anders aus als das PDF.](#die-word-datei-sieht-anders-aus-als-das-pdf)
+   - [Statt der Datei erscheint eine Seite „Arbeit“ mit Fortschrittsbalken.](#statt-der-datei-erscheint-eine-seite-arbeit-mit-fortschrittsbalken)
+   - [Der Import einer grossen Datei dauert lange.](#der-import-einer-grossen-datei-dauert-lange)
 
 ---
 ## Häufige Fragen
@@ -148,3 +150,18 @@ erzeugen* (Anwenderhandbuch, Abschnitt 4.10). Gelöschte Datensätze im Papierko
 Die Word-Fassung ist zum Nachbearbeiten gedacht, nicht als Ersatz für das PDF: Ein Briefpapier als PDF-Hintergrund, ein
 Logo als SVG und die QR-Rechnung gibt es nur im PDF; Word zeigt stattdessen Logo (PNG/JPEG) und Absender als Text im
 Kopf und verwendet die Schrift Arial. Für den Versand und die Ablage nimmt SAFT immer das PDF.
+
+### Statt der Datei erscheint eine Seite „Arbeit“ mit Fortschrittsbalken.
+
+Export, Import, „Dokumente erstellen“ für viele Datensätze und Datenstände laufen als **Arbeit** in Schritten. Kleine
+Mengen sind fertig, bevor Sie es merken, und die Datei kommt wie gewohnt. Dauert es länger, zeigt SAFT die Seite der
+Arbeit: Lassen Sie sie offen, geht es am schnellsten; Sie dürfen sie aber auch schliessen – die Arbeit läuft im
+Hintergrund weiter, die Glocke meldet das Ende, und die Datei steht 24 Stunden unter **Meine Arbeiten** (Benutzermenü)
+zum Herunterladen bereit.
+
+### Der Import einer grossen Datei dauert lange.
+
+Jeder Datensatz wird wie von Hand erfasst – mit Vorgaben, berechneten Feldern, Summen in übergeordneten Datensätzen und
+den Regeln der Plugins. Das kostet je Datensatz einige Millisekunden; bei zehntausenden Zeilen sind das Minuten. Der
+Fortschritt zeigt erst **Prüfen**, dann **Einspielen**. Sie können die Seite verlassen; bei Fehlern oder Abbruch wird
+nichts angelegt bzw. alles Angelegte wieder entfernt.

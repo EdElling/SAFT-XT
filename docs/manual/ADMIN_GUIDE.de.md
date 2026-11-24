@@ -249,8 +249,10 @@ alle anderen brauchen zusätzlich das Recht **Exportieren** in ihrer Rolle.
 aus einer heruntergeladenen Vorlage (siehe [Anwenderhandbuch 4.8](USER_GUIDE.de.md#48-daten-importieren)). Er ist
 zunächst aus. Dann erscheint „Importieren“ in der Liste für Rollen mit den Rechten **Anlegen** und **Importieren**.
 Vorhandene Datensätze ändert der Import nie; die Prüfung entspricht dem Erfassen von Hand, und es gilt alles oder
-nichts. Höchstens 10'000 Zeilen je Datei (`APP_DATA_IMPORT_MAX_RECORD_ROWS`). Für angebundene Tabellen des
-Table-Connectors gibt es den Import nicht.
+nichts – auch bei Abbruch oder Fehler mitten im Einspielen werden angelegte Datensätze zurückgenommen. Der Import läuft
+als [Arbeit](#arbeiten) in zwei Phasen (prüfen, einspielen); der Assistent prüft bis 2'000 Zeilen schon im Dialog
+(`APP_DATA_IMPORT_CHECK_ROWS`). Höchstens 100'000 Zeilen je Datei (`APP_DATA_IMPORT_MAX_RECORD_ROWS`, `0` = ohne
+Grenze). Für angebundene Tabellen des Table-Connectors gibt es den Import nicht.
 
 **Felder bearbeiten** (Bereich *Felder*, (2)): Für jedes Feld legen Sie fest:
 
@@ -864,9 +866,13 @@ für eindeutige Werte.
 Der Reiter **Datenstände** einer angebundenen Tabelle verwaltet die Kopien, mit denen
 [Auswertungen](USER_GUIDE.de.md#49-auswertungen) rechnen:
 
-- **Jetzt aktualisieren** liest die externe Tabelle vollständig und legt einen neuen Stand an. Scheitert das (Verbindung
-  weg, Tabelle zu gross – Grenze `REPORTS_SNAPSHOT_MAX_ROWS`, Vorgabe 200 000 Zeilen), bleibt der vorherige Stand gültig;
-  der Fehlversuch steht mit Meldung in der Liste, bis der nächste Stand gelingt.
+- **Jetzt aktualisieren** liest die externe Tabelle vollständig und legt einen neuen Stand an – als [Arbeit](#arbeiten)
+  in Blöcken. Kleine Tabellen sind sofort fertig; bei grossen erscheint ein Hinweis mit Link auf die Arbeit, der Stand
+  steht als **läuft** in der Liste (anklickbar: Fortschritt, Abbrechen) und wird vollständig, sobald die Arbeit endet;
+  die Liste fragt derweil nach. Solange ein Stand läuft, ist ein zweites „Jetzt aktualisieren“ gesperrt („wird gerade
+  aktualisiert“). Scheitert oder bricht die Arbeit ab (Verbindung weg, Tabelle zu gross – Grenze
+  `REPORTS_SNAPSHOT_MAX_ROWS`, Vorgabe 1 000 000 Zeilen, `0` = ohne), verwirft SAFT den halben Stand, und der vorherige
+  bleibt gültig; der Fehlversuch steht mit Meldung in der Liste, bis der nächste Stand gelingt.
 - **Aufbewahrung:** wie viele Stände bleiben (Vorgabe 5) und optional höchstens wie viele Tage. Der neueste Stand
   bleibt immer. Die Frist in Tagen setzt zusätzlich die tägliche System-Aufgabe „Datenstände bereinigen“ durch.
 - **Zeitplan:** Über dem Reiter steht, welche [geplanten Aufgaben](#12-geplante-aufgaben) die Tabelle aktualisieren –
@@ -942,7 +948,7 @@ deren **Parameter** und einen **Zeitplan**:
 |---|---|---|
 | Datenstand aktualisieren | angebundene Tabelle | neuer [Datenstand](#datenstände-für-auswertungen) dieser Tabelle |
 | Datenstände einer Verbindung aktualisieren | Datenbankverbindung; „Nur Tabellen, die schon einen Datenstand haben“ (Vorgabe an) | neue Stände aller (bzw. der schon genutzten) angebundenen Tabellen der Verbindung, nacheinander. Scheitert eine Tabelle, laufen die übrigen weiter; der Lauf gilt dann als fehlgeschlagen und nennt die Tabellen |
-| Datenstände bereinigen (System) | – | setzt die Aufbewahrung aller Datenstände durch, auch ohne neue Aktualisierung, und räumt abgebrochene Läufe auf; Vorgabe täglich 03:15 |
+| Datenstände bereinigen (System) | – | setzt die Aufbewahrung aller Datenstände durch, auch ohne neue Aktualisierung, und räumt Stände „läuft“ auf, deren Arbeit es nicht mehr gibt; Vorgabe täglich 03:15 |
 | Laufprotokoll bereinigen (System) | Läufe aufbewahren (Tage, Vorgabe 90) | löscht ältere Einträge im Laufprotokoll; Vorgabe täglich 03:30 |
 | Änderungsprotokoll kürzen (System) | Protokoll aufbewahren (Tage, Vorgabe 365); Anmeldungen aufbewahren (Tage, Vorgabe 90) | löscht ältere Einträge im Änderungsprotokoll endgültig (Kapitel 8); ausgeliefert ausgeschaltet, das Dashboard weist auf ältere Einträge hin; Vorgabe täglich 03:45 |
 | Arbeiten aufräumen (System) | Arbeiten aufbewahren (Tage, Vorgabe 30) | löscht Ergebnisdateien der [Arbeiten](#arbeiten) nach 24 Stunden und beendete Arbeiten nach der eingestellten Zahl von Tagen; Vorgabe stündlich zur Minute 20 |
@@ -1004,9 +1010,17 @@ Sie die App. System-Aufgaben gehören zu keiner App.
 ### Arbeiten
 
 Lange Arbeiten erledigt SAFT in kurzen Schritten mit gespeichertem Zwischenstand, damit sie an keinem Zeitlimit des
-Webservers scheitern. Heute gibt es die Art **Berechnete Felder neu berechnen** (`php artisan computed:recompute`,
-siehe [Systemadministration](SYSADMIN_GUIDE.de.md#4-geplante-aufgaben-und-cron)); Plugins können eigene Arten
-mitbringen.
+Webservers scheitern. Arten: **Exportieren** (Liste als Excel oder CSV), **Daten importieren** (prüfen, dann
+einspielen; bei Fehler oder Abbruch alles zurück), **Dokumente erstellen** (Sammelaktion, E-Mails nach jedem
+gespeicherten Schritt), **Datenstand ziehen** (Table-Connector), **Berechnete Felder neu berechnen** (nach einer
+Formeländerung im Table-Designer oder `php artisan computed:recompute`, siehe
+[Systemadministration](SYSADMIN_GUIDE.de.md#4-geplante-aufgaben-und-cron)) sowie **App entwerfen**, **App erzeugen**
+und **Auswertungen der App anlegen** (KI-App-Designer). Plugins können eigene Arten mitbringen.
+
+**Starten und kurz mitarbeiten:** Eine Aktion wie „Exportieren“ startet die Arbeit und arbeitet einige Sekunden im
+Hintergrund der Anfrage mit. Ist sie dann fertig – der Normalfall bei kleinen Mengen –, bekommt die Person das Ergebnis
+wie gewohnt (Download, Meldung). Sonst führt SAFT sie auf die Seite der Arbeit. Grenzen wie 500'000 Zeilen je Export
+schützen nur noch vor Versehen, nicht vor Zeitlimits.
 
 **Administration › Betrieb › Arbeiten** (Recht *Arbeiten: alle sehen*) listet die Arbeiten aller Personen, im Reiter
 **Meine** nur die eigenen. Ohne dieses Recht sieht jede Person ihre eigenen Arbeiten über **Meine Arbeiten** im
@@ -1016,14 +1030,18 @@ aktualisiert sich die Liste selbst.
 
 **Wie eine Arbeit läuft:** Solange die startende Person die Seite der Arbeit offen hat, treibt ihr Browser sie voran.
 Schliesst sie die Seite, übernimmt der Scheduler nach 30 Sekunden, und die Glocke meldet am Ende „fertig“ oder
-„fehlgeschlagen“. Bricht ein Schritt ab (etwa am Zeitlimit des Servers), setzt der nächste beim gespeicherten Stand
+„fehlgeschlagen“. Mit einem Queue-Worker (`WORK_DRIVER=queue`, siehe
+[Systemadministration](SYSADMIN_GUIDE.de.md#4-geplante-aufgaben-und-cron)) treibt dieser jede Arbeit gleich nach dem
+Start, und die Seite zeigt nur noch an („Läuft im Hintergrund.“). Lange, unteilbare Schritte wie eine KI-Anfrage
+führt der Browser nur aus, wenn sich das Zeitlimit von PHP anheben lässt; sonst übernimmt der Scheduler. Bricht ein Schritt ab (etwa am Zeitlimit des Servers), setzt der nächste beim gespeicherten Stand
 fort; bricht derselbe Schritt dreimal ab, gilt die Arbeit als fehlgeschlagen. Im Hintergrund läuft eine Arbeit mit den
 Rechten der startenden Person – unter *Ansicht als Rolle* mit den gewählten Rollen – und in der App, in der sie
 gestartet wurde. Ohne Scheduler (Cron) laufen Arbeiten nur bei offener Seite weiter.
 
 **Abbrechen:** eigene Arbeiten immer, fremde mit dem Recht *Arbeiten: fremde abbrechen*. Eine wartende Arbeit endet
 sofort, eine laufende nach dem aktuellen Schritt. Was eine schreibende Arbeit bis dahin geändert hat, bleibt: Jeder
-Schritt wird ganz oder gar nicht gespeichert.
+Schritt wird ganz oder gar nicht gespeichert. Zwei Arten räumen beim Abbruch oder Fehlschlag hinter sich auf: Der
+**Datenimport** löscht alle angelegten Datensätze (alles oder nichts), der **Datenstand** verwirft die halbe Kopie.
 
 **Ergebnisse:** Liefert eine Arbeit eine Datei, steht sie 24 Stunden unter **Ergebnis herunterladen** bereit – für die
 startende Person und mit *Arbeiten: alle sehen*. Die System-Aufgabe **Arbeiten aufräumen** löscht danach die Datei und
@@ -1360,7 +1378,9 @@ KI-Anbieter und den eingeschalteten KI-Assistenten (siehe [Kapitel 7](#7-globale
   als Diagramm und je Tabelle die Felder mit Typ, Verknüpfung (`→ tabelle`), Formel (`= …`) oder Auswahlwerten.
   **In der Datenbank entsteht dabei nichts.**
 - **Anpassen:** Weitere Wünsche schreiben Sie ins Gespräch, z. B. „Lieferanten als eigene Tabelle“, und klicken
-  **Anpassen** – beliebig oft. Fragt die KI zurück, steht die Frage im Gespräch.
+  **Anpassen** – beliebig oft. Fragt die KI zurück, steht die Frage im Gespräch. Jede Runde läuft als
+  [Arbeit](#arbeiten): Statt der Eingabe zeigt die Seite den Fortschritt mit **Abbrechen**, bleibt aber bedienbar; Sie
+  dürfen sie neu laden oder verlassen, die Runde läuft weiter und steht beim nächsten Öffnen des Entwurfs im Gespräch.
 - **Geprüft:** Jeder Vorschlag wird vor der Anzeige vollständig geprüft wie beim Installieren – Namen (auch gegen
   vorhandene Tabellen), Verknüpfungen (innerhalb des Entwurfs oder auf freigegebene Tabellen anderer Apps), Formeln und
   Regeln. Fehler gibt SAFT der KI zur Korrektur zurück; gelingt sie nicht, erscheint die Meldung unter der Eingabe.
@@ -1371,14 +1391,14 @@ KI-Anbieter und den eingeschalteten KI-Assistenten (siehe [Kapitel 7](#7-globale
   trotzdem, und ein Hinweis nennt den Grund) und legt die App an: Tabellen, Detailtabellen (unter jeder Tabelle die Tabellen, die auf sie verweisen), Menü mit
   Datenmodell und eine **Fachrolle** mit allen Rechten auf die neuen Tabellen und dem Ansehen von Auswertungen. Anders
   als beim Installieren ist die App danach **aktiv**, und Sie wechseln hinein. Der Entwurf bleibt mit dem Vermerk
-  „erzeugt“ stehen.
+  „erzeugt“ stehen. Auch das Erzeugen läuft als Arbeit (übersetzen, dann anlegen) mit Fortschritt auf der Seite.
 - **Auswertungen:** Zur App schlägt die KI 2–6 Auswertungen vor – zuerst die, die Ihre Beschreibung nennt, dann
   naheliegende –; die Vorschau zeigt sie unter „Auswertungen (werden nach dem Erzeugen angelegt)“, ändern lassen sie sich
   im Gespräch. Im Dialog „App erzeugen“ steht jede vorgeschlagene Auswertung mit einem vorgewählten Häkchen;
   abgewählte werden nicht angelegt. Ist mindestens eine gewählt, bleibt die Seite nach dem Erzeugen stehen und zeigt
-  den Fortschritt: Der Auswertungs-Assistent legt eine Auswertung nach der anderen gegen die neuen Tabellen an
-  (je etwa 20–40 Sekunden) – *wird erstellt*, *wartet*, erstellt (mit Link) oder *nicht möglich* mit Grund und
-  **Erneut versuchen**. Die Auswertungen sind geteilt und stehen in der App im Untermenü „Auswertungen“; danach führt
+  den Fortschritt: Eine Arbeit legt die Auswertungen nacheinander gegen die neuen Tabellen an (je etwa 20–40
+  Sekunden) – *wird erstellt*, *wartet*, erstellt (mit Link) oder *nicht möglich* mit Grund und **Erneut versuchen**,
+  das eine neue Arbeit startet. Die Auswertungen sind geteilt und stehen in der App im Untermenü „Auswertungen“; danach führt
   **„Zur neuen App“** hinein. Ohne gewählte Auswertung geht es gleich in die App.
 - **Danach** ändern Sie die App wie jede andere – im Table-Designer von Hand oder je Tabelle mit **„Mit KI anpassen“**,
   Auswertungen im Auswertungs-Designer. Wer kein Super-Admin ist, erhält beim Erzeugen die Fachrolle der App.
@@ -1528,7 +1548,8 @@ SAFT erzeugt Dokumente wie Rechnungen und Briefe als PDF. Gestaltung und Inhalt 
 Erstellt werden Dokumente in der Zeile eines Datensatzes mit dem Symbol **„Dokument erstellen“** – von Personen mit dem
 Recht *Dokumente: erzeugen* in der App (siehe [Anwenderhandbuch, Abschnitt 4.10](USER_GUIDE.de.md#410-dokumente-erstellen)).
 Für mehrere Datensätze auf einmal wählen sie die Zeilen mit Häkchen und **„Dokumente erstellen“** im Tabellenkopf –
-ein PDF mit allen Dokumenten oder ein ZIP, höchstens 50 je Lauf (`DOCUMENTS_BATCH_MAX`, siehe Systemadministration).
+ein PDF mit allen Dokumenten oder ein ZIP. Das läuft als [Arbeit](#arbeiten) ohne Obergrenze; die Systemadministration
+kann mit `DOCUMENTS_BATCH_MAX` eine setzen.
 
 ### Briefpapier
 

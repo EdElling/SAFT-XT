@@ -41,11 +41,12 @@ Installing SAFT step by step is described in [Appendix B](INSTALL_DEVELOPMENT.md
 | Choose the database: PostgreSQL, MySQL or MariaDB, with the credentials `PGSQL_*`, `MYSQL_*` or `MARIADB_*` | `DB_CONNECTION=pgsql`, `mysql` or `mariadb` in `.env` |
 | Back up the database (to `storage/backups`; MySQL/MariaDB: main database and `…_app_data` in one `.sql` file, in two parts if `app_data` has its own credentials (`DB_APP_DATA_*`); without a suitable `mysqldump` in PHP with `DB_BACKUP_METHOD=php` or `--php`; path to the program if needed in `PGSQL_DUMP_BINARY`, `MYSQL_DUMP_BINARY` or `MARIADB_DUMP_BINARY`; the files from file fields and the letterhead alongside as `<same name>_files.zip`, without them with `--without-files`) | `php artisan db:backup` |
 | Recalculate computed fields (after changes outside SAFT; optionally table names) | `php artisan computed:recompute` |
-| Change the maximum number of records per export (default 50,000) | `APP_DATA_EXPORT_MAX_ROWS=50000` in `.env` |
-| Change the maximum number of rows per data import into an existing table (default 10,000) | `APP_DATA_IMPORT_MAX_RECORD_ROWS=10000` in `.env` |
+| Change the maximum number of records per export (default 500,000, `0` = no limit; the export runs as a job in blocks of `APP_DATA_EXPORT_CHUNK` rows, default 1000) | `APP_DATA_EXPORT_MAX_ROWS=500000` in `.env` |
+| Change the maximum number of rows per data import into an existing table (default 100,000, `0` = no limit); up to `APP_DATA_IMPORT_CHECK_ROWS` rows (default 2000) the wizard checks the file in the dialog already, above that the job does | `APP_DATA_IMPORT_MAX_RECORD_ROWS=100000` in `.env` |
 | Change the maximum number of records per copy including child records copied along (default 1000) | `APP_DATA_COPY_MAX_RECORDS=1000` in `.env` |
 | Mail server for all emails (password reset, documents): in the global settings (“Email sending”, password encrypted, “Check connection”) or in `.env`; a server in the settings takes precedence over `MAIL_MAILER`. The sender address must suit the server (account address or SPF/DKIM of the domain) | Administrator guide, chapter 7, or `MAIL_*` in `.env` |
-| Change the maximum number of records per batch “Create documents” (default 50). The batch runs directly in the request, without a queue worker: more records need more time and memory (PHP `max_execution_time`, `memory_limit`) | `DOCUMENTS_BATCH_MAX=50` in `.env` |
+| Set a limit per batch “Create documents” (default `0` = no limit; the batch is a job in steps). A single PDF with all documents merges all pages in memory at the end (`memory_limit`), a ZIP does not | `DOCUMENTS_BATCH_MAX=0` in `.env` |
+| Change the maximum number of rows per snapshot of a linked table (default 1,000,000, `0` = no limit; taken as a job in blocks of `REPORTS_SNAPSHOT_CHUNK` rows, default 1000) | `REPORTS_SNAPSHOT_MAX_ROWS=1000000` in `.env` |
 | Storage for file fields: `local` (default, `storage/app/private/files`) or `s3` (S3-compatible storage, e.g. AWS, Infomaniak, Exoscale; credentials in `AWS_*`, for providers other than AWS also `AWS_ENDPOINT` and `AWS_USE_PATH_STYLE_ENDPOINT=true`; first run `composer require league/flysystem-aws-s3-v3`). Do not switch while files are stored: existing files are not moved | `APP_DATA_FILES_DISK=local` in `.env` |
 | Time zone of the application (default `Europe/Zurich`) | `APP_TIMEZONE` in `.env` |
 | Trust the provider's load balancer when HTTPS ends before the server (proxy addresses, comma-separated) | `TRUSTED_PROXIES` in `.env` |
@@ -214,10 +215,39 @@ at most 50 seconds and takes over jobs whose starting person has left the page. 
 abandoned job continues correspondingly later; without cron only while the page is open. In the browser SAFT works at
 most 15 seconds per request, always below PHP's `max_execution_time`. Result files are stored in
 `storage/app/private/work/<uuid>/` and deleted by the system task *Clean up jobs* (hourly). Failures are logged under
-their reference in `storage/logs/laravel.log` (entry `Arbeit fehlgeschlagen`). Optional settings in `.env`:
+their reference in `storage/logs/laravel.log` (entry `Arbeit fehlgeschlagen`). Actions such as export, import,
+documents or snapshot start a job and work along for up to `WORK_INLINE_BUDGET` seconds (default 10) within the
+request; small amounts are done at once this way. Optional settings in `.env`: `WORK_INLINE_BUDGET` (10),
 `WORK_BROWSER_BUDGET` (15), `WORK_SCHEDULER_BUDGET` (50), `WORK_TAKEOVER_SECONDS` (30), `WORK_MAX_STALLS` (aborts of the
-same step until failure, 3), `WORK_RESULT_HOURS` (24), `WORK_STUCK_MINUTES` (when the dashboard warns, 10). A queue
-worker is not needed.
+same step until failure, 3), `WORK_RESULT_HOURS` (24), `WORK_STUCK_MINUTES` (when the dashboard warns, 10). All budgets
+stay below PHP's `max_execution_time`. Long, indivisible steps (AI requests of the app designer, `AI_DESIGNER_TIMEOUT`)
+raise the time limit for themselves; if that is not possible in the browser, the scheduler runs them. A queue worker is
+not needed.
+
+**With a queue worker:** On a server of your own, a worker can take over the jobs – they then start without delay,
+independent of browser and cron interval, and the browser only displays. For this set `QUEUE_CONNECTION=database`
+(default, the `jobs` table exists) and `WORK_DRIVER=queue` in `.env`; after changes run `php artisan optimize:clear` and
+`php artisan queue:restart`. The worker runs permanently as a service, e.g. under systemd:
+
+```ini
+[Unit]
+Description=SAFT queue worker
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/var/www/saft
+ExecStart=/usr/bin/php artisan queue:work --max-time=3600 --tries=1
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+or under Supervisor with the same command. `--max-time=3600` restarts the worker every hour so that it loads changed
+code and configuration. Per job a worker run works `WORK_QUEUE_BUDGET` seconds (default 50) and queues itself again
+until the job is done; on the queue connection `sync` no job is ever started. If the worker fails, the scheduler takes
+over after `WORK_TAKEOVER_SECONDS` as without a worker.
 
 **System tasks for backups and demos:** *Back up database* (02:30, with the files from file fields), *Clean up
 backups* (02:45, 14 days, at least 3; a backup and its ZIP count as one) and *Clean up files* (03:00) run from
@@ -316,7 +346,7 @@ and reloads all its data; for the other demos, reload their data with the task "
 | `php artisan optimize:clear` | clear the caches, e.g. after changes to `.env` |
 | `php artisan key:generate` | once during installation (key `APP_KEY`) |
 | `php artisan storage:link` | once during installation (public storage for uploaded logos) |
-| `php artisan queue:work` | only if `QUEUE_CONNECTION` is not `sync` (e.g. for sending mail) |
+| `php artisan queue:work` | only if `QUEUE_CONNECTION` is not `sync` (e.g. for sending mail) or with `WORK_DRIVER=queue` for the [jobs](#4-scheduled-tasks-and-cron) |
 | `php artisan schedule:run` (every minute via cron) | runs the [scheduled tasks](#4-scheduled-tasks-and-cron); without a cron entry they do not run |
 | `php artisan down` / `php artisan up` | maintenance mode during an update |
 

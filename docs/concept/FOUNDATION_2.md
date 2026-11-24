@@ -1,6 +1,6 @@
 # Konzept: Fundament 2 (Schreibweg, Nebenläufigkeit, Hintergrundarbeit, Formelsprache, Qualitätssicherung)
 
-Stand: 23.11.2026 · Status: **F0, F1, F2, F4 (23.11.2026) und F3a (24.11.2026) umgesetzt, F3b geplant (§6.6, 24.11.2026), F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
+Stand: 24.11.2026 · Status: **F0, F1, F2, F4 (23.11.2026), F3a und F3b (24.11.2026) umgesetzt, F5 offen** · Backlog: B-143 · Herkunft: [Architektur-Review vom 23.11.2026](../REVIEW_ARCHITEKTUR_2026-11-23.md)
 
 ## 1. Ziel
 
@@ -184,19 +184,25 @@ und am Ende umgehängt; zu entscheiden, Abschnitt 11).
 |---|---|---|
 | **Browser** | die startende Person sieht die Seite | Livewire-Komponente `WorkProgress` pollt alle 2 s `advance()`: nimmt die Sperre der Arbeit, führt Schritte bis zu einem Zeitbudget (Vorgabe 15 s, unter `max_execution_time`) aus, zeigt Fortschritt, Abbrechen, Ergebnis-Download. So fühlt sich eine Arbeit wie heute „direkt“ an, ohne an einem Timeout zu scheitern. |
 | **Scheduler** | immer (vorhandener Cron jede Minute) | neuer Befehl `work:run` im `schedule:run`: nimmt offene Arbeiten ohne frischen Heartbeat, Zeitbudget 50 s je Aufruf, `withoutOverlapping`. Übernimmt, wenn die Person die Seite verlässt. |
-| **Queue-Worker** | wenn `queue:work` läuft (eigener Server) | Job `AdvanceWork` je Schritt, der sich selbst erneut einreiht; auf Webspace nie gestartet. Erkennung: Einstellung `WORK_DRIVER=queue` oder Heartbeat des Workers. |
+| **Queue-Worker** | `WORK_DRIVER=queue` und eine Queue-Verbindung ausser `sync` (eigener Server) | Job `App\Jobs\AdvanceWork` je Arbeit (eindeutig bis zur Verarbeitung): `start()` dispatcht ihn, er treibt `WORK_QUEUE_BUDGET` Sekunden (50) und reiht sich mit 2 s Pause wieder ein, bis die Arbeit fertig ist; `timeout` aus Budget bzw. `stepSeconds()`. Der Browser zeigt dann nur noch an, der Scheduler bleibt Rückfallebene. Keine Erkennung eines Workers (Entscheidung 6 in §6.6). **Umgesetzt 24.11.2026** |
 
 Alle drei greifen über dieselbe Sperre (`Cache::lock('work:'.$id)`) auf dieselbe Arbeit zu; wer die Sperre hat, macht
 den nächsten Schritt. Deshalb stören sie sich nicht, und auf Webspace reichen Browser plus Cron.
 
 ### 6.3 Umgestellte Arbeiten (Etappe F3b)
 
-Export (schreibt die Datei blockweise statt im Speicher; die Grenze 50'000 Zeilen fällt auf ein grosszügiges
-Maximum, Download aus `work/<uuid>/`), Datenimport in bestehende Tabellen, Dokumente für mehrere Datensätze
-(Grenze 50 fällt), Datenstände, `computed:recompute`, KI-App-Designer (jede KI-Anfrage ein Schritt, der Gesprächsstand
-im `state`; damit entfällt `set_time_limit(2 × 900)`), Auswertungen des App-Designers (heute Browser-Schleife),
-Sicherung je App (B-141). **Nicht** umgestellt: Tabellen-Import aus Datei (legt Schema an, bleibt synchron mit
-Grenze), geplante Aufgaben (bleiben `TaskRunner`; eine Aufgabenart kann aber eine Arbeit starten und auf sie warten).
+**Umgesetzt 24.11.2026** (Teilschritte 1–7 in §6.6, Commits cd85d3f bis 70fd15e): Export (`ExportWork`, blockweise in
+den Ordner der Arbeit, Grenze 500'000), Datenimport (`RecordImportWork`, prüfen und einspielen mit Rücknahme, Grenze
+100'000), Dokumente für mehrere Datensätze (`DocumentsWork`, ohne Grenze, Mails nach dem Commit), Datenstände
+(`SnapshotRefreshWork`, Keyset-Cursor, Grenze 1'000'000), `recompute` auch aus dem Table-Designer, KI-App-Designer
+(`AppDesignerTurnWork`, `AppDesignerCreateWork`, `AppDesignerReportsWork` mit langen Schritten – `set_time_limit` ist
+aus dem Designer verschwunden), Treiber Queue. Alle Aktionen starten die Arbeit und arbeiten `WORK_INLINE_BUDGET`
+Sekunden im Request mit (`startAndAdvance`), Konsole und Aufgaben treiben bis zum Ende (`startAndDrive`). Sicherung je
+App (B-141) folgt mit ihrem eigenen Konzept. **Nicht** umgestellt (mit Grund in §6.6): Tabellen-Import aus Datei
+(DDL), Massenverknüpfung, geplante Aufgaben (bleiben `TaskRunner`; eine Aufgabenart startet eine Arbeit und wartet),
+App entfernen, Datensatz kopieren, Konfigurations- und App-Export, Export von Auswertungen. Nachträge aus dem Test mit
+Demodaten: Fortschrittstext über `DescribesProgress` (Import), Download der Ergebnisdatei als SPA-Ausnahme, Backlog
+B-144 (Import beschleunigen).
 
 ### 6.4 Oberfläche
 
@@ -428,7 +434,7 @@ darauf statt auf Laravel-Boost-Boilerplate; `CLAUDE.md` wird auf PHP 8.4 und den
 | **F1 Schreibweg** | **Umgesetzt 23.11.2026:** `RecordWriter`, `WriteOptions`, `WriteContext`, `WritePhases`; zwei Transaktionen je Vorgang; Umstellung von Datenansicht, Import, Kopieren, Dokumenten, Nachführung, Demo-Reset und Plugin-API; Architekturtest 3; Plugin-API 1.10; Entwickler- und Admin-Handbuch | gross |
 | **F2 Nebenläufigkeit** | **Umgesetzt 23.11.2026:** `RecordVersion`, `StaleRecordException`, Prüfung mit `lockForUpdate()` im Writer, Meldung mit „Neu laden / Trotzdem speichern“ in Datenansicht und Detailtabelle, elf Edit-Seiten der Verwaltung, Plugin-API, Browser-Test EIN-18, Handbücher | mittel |
 | **F3a Arbeiten** | **Umgesetzt 24.11.2026:** `work_items`, `WorkType` (Plugin-API 1.10 mit `SaftPlugin::workTypes()` und `Saft::startWork()`), `WorkRunner` mit Treibern Browser (`WorkProgress`) und Scheduler (`work:run`), Seite „Arbeiten“ bzw. „Meine Arbeiten“, Download, Benachrichtigung, Aufräumen (`work_prune`, stündlich), Dashboard; Pilot `computed:recompute` als Arbeit. Entscheide in §6.5 | mittel |
-| **F3b Umstellung** | Export, Datenimport, Dokumente, Datenstände, Recompute, KI-App-Designer und seine Auswertungen auf Arbeiten; Treiber Queue; Grenzen anheben; Handbücher. **Planung in §6.6 (24.11.2026)**, acht Teilschritte | gross |
+| **F3b Umstellung** | **Umgesetzt 24.11.2026** (Planung in §6.6, acht Teilschritte): Export, Datenimport, Dokumente, Datenstände, Recompute, KI-App-Designer und seine Auswertungen als Arbeiten (`startAndAdvance`/`startAndDrive`, `CleansUp`, `LongSteps`, `DescribesProgress`, `afterCommit`); Treiber Queue (`AdvanceWork`, `WORK_DRIVER=queue`); Grenzen 500'000/100'000/ohne/1'000'000; Migration 100; Handbücher in vier Sprachen, FAQ, Sysadmin-`.env`-Tabelle und „Mit Queue-Worker“. Browser-Tests der betroffenen Batches folgen mit dem Release | gross |
 | **F4 Formelsprache** | **Umgesetzt 23.11.2026:** `FORMULA_SPEC.md`, 75 Konformitätsfälle, `FormulaConformanceTest` auf drei Datenbanken (keine Abweichung gefunden), `FormulaSpecTest` gegen Drift | mittel |
 | **F5 Architektur** | `ARCHITECTURE.de.md`/`.md`, Lesestellen-Liste (Test 4), `AGENTS.md`, `CLAUDE.md` | klein |
 
@@ -446,7 +452,12 @@ die Browser-Suite läuft wie üblich vor dem Release auf drei Datenbanken.
 - **`afterCommit` auf Webspace:** Wenn der Request nach dem Commit abbricht (Timeout), fehlt der Protokolleintrag.
   Hinnehmbar und dokumentiert; Alternative wäre das Protokoll in `app_data` zu führen (Abschnitt Fragen).
 - **Arbeiten ohne Worker:** Der Browser-Treiber hängt an der offenen Seite, der Scheduler an einem Cron jede Minute.
-  Bei groben Cron-Intervallen (Strato: 5 Minuten) läuft eine verlassene Arbeit entsprechend verzögert weiter.
+  Bei groben Cron-Intervallen (Strato: 5 Minuten) läuft eine verlassene Arbeit entsprechend verzögert weiter. Seit F3b
+  mildert `startAndAdvance` das: Kleine Mengen sind im Request fertig, und wer einen eigenen Server hat, setzt
+  `WORK_DRIVER=queue`.
+- **Kosten je Datensatz beim Import:** Jeder Datensatz läuft durch den vollen Schreibweg (berechnete Felder, Summen in
+  Eltern, Plugin-Regeln) – auf einem Testrechner rund 15 ms, 30'000 Zeilen etwa 8 Minuten (Messung 24.11.2026).
+  Hinnehmbar, weil die Arbeit das trägt; Beschleunigung in B-144.
 
 **Fragen**
 
@@ -457,15 +468,17 @@ die Browser-Suite läuft wie üblich vor dem Release auf drei Datenbanken.
    steht im Protokoll (`overwrote`).
 3. **Import grösser als ein Block:** eine Transaktion über alle Blöcke (kann auf MySQL lange Sperren halten) oder
    Staging-Tabelle mit Umhängen am Ende (mehr Aufwand, saubere Transaktion)? Vorschlag: eine Transaktion bis zur
-   heutigen Grenze von 10'000 Datensätzen, darüber Staging erst bei Bedarf. **Vorschlag F3b (§6.6):** weder noch – Blöcke
-   mit eigener Transaktion, angelegte IDs merken und bei Fehler oder Abbruch zurücknehmen.
+   heutigen Grenze von 10'000 Datensätzen, darüber Staging erst bei Bedarf. **Entschieden 24.11.2026 (F3b, §6.6):**
+   weder noch – Blöcke mit eigener Transaktion, angelegte IDs in `created.ids`, Rücknahme über `CleansUp::abort()` bei
+   Fehler oder Abbruch.
 4. **Plugin-API Major-Version** nutzen, um `DynamicRecord` ganz aus der API zu nehmen (nur noch `DataTable` und ein
    schlankes `Record`-Objekt)? Jetzt wäre es billig; später nie mehr. Vorschlag: nein, der Typ ist nützlich für
    Eloquent-Abfragen; nur `save()` sperren.
 5. **Migrationen zusammenfassen** statt umbenennen (ein Satz `create_*`-Migrationen für 0.6.0)? Schneller bei Tests,
    aber drei Datenbanken und Daten-Migrationen (Menüs, Rechte) bergen Risiko. Vorschlag: nur umbenennen.
 6. **Export-Grenze** nach F3b ganz aufheben oder bei z. B. 500'000 Zeilen belassen (Speicherplatz unter `work/`)?
-   **Vorschlag F3b (§6.6):** 500'000 als Vorgabe, `0` = ohne Grenze.
+   **Entschieden 24.11.2026 (F3b):** 500'000 als Vorgabe, `0` = ohne Grenze; ebenso Import 100'000, Dokumente ohne,
+   Datenstände 1'000'000.
 7. **Löschkonzept** (Aufbewahrung je Tabelle, Papierkorb-Frist, Anonymisierung): eigenes Backlog-Thema mit Konzept,
    oder als F6 anhängen? Vorschlag: eigenes Thema, weil fachliche Entscheidungen je App nötig sind.
 8. **Larastan-Level** 5 oder gleich 6 zum Start? Level 6 verlangt Array-Typen in allen PHPDocs; bei 67'000 Zeilen eine

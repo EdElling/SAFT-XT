@@ -30,6 +30,8 @@
    - [Un document n’a pas pu être envoyé par e-mail.](#un-document-na-pas-pu-être-envoyé-par-e-mail)
    - [La QR-facture manque ou l’app bancaire ne la lit pas.](#la-qr-facture-manque-ou-lapp-bancaire-ne-la-lit-pas)
    - [Le fichier Word n’a pas le même aspect que le PDF.](#le-fichier-word-na-pas-le-même-aspect-que-le-pdf)
+   - [À la place du fichier, une page « Travail » avec barre de progression s’affiche.](#à-la-place-du-fichier-une-page--travail--avec-barre-de-progression-saffiche)
+   - [L’import d’un gros fichier prend du temps.](#limport-dun-gros-fichier-prend-du-temps)
 
 ---
 ## Questions fréquentes
@@ -151,3 +153,18 @@ corbeille ne peuvent pas être sélectionnés.
 La version Word est destinée à être retravaillée, elle ne remplace pas le PDF : un papier à lettres en arrière-plan PDF,
 un logo SVG et la QR-facture n’existent que dans le PDF ; Word affiche à la place le logo (PNG/JPEG) et l’expéditeur en
 texte dans l’en-tête et utilise la police Arial. Pour l’envoi et le dépôt, SAFT utilise toujours le PDF.
+
+### À la place du fichier, une page « Travail » avec barre de progression s’affiche.
+
+L’export, l’import, « Créer des documents » pour de nombreux enregistrements et les états des données s’exécutent comme
+**travail** par étapes. Les petites quantités sont terminées avant que vous ne le remarquiez, et le fichier arrive comme
+d’habitude. Si cela dure plus longtemps, SAFT affiche la page du travail : la laisser ouverte est le plus rapide ; mais
+vous pouvez aussi la fermer – le travail se poursuit en arrière-plan, la cloche annonce la fin, et le fichier reste
+téléchargeable 24 heures sous **Mes travaux** (menu utilisateur).
+
+### L’import d’un gros fichier prend du temps.
+
+Chaque enregistrement est créé comme à la main – avec valeurs par défaut, champs calculés, sommes dans les
+enregistrements parents et règles des plugins. Cela coûte quelques millisecondes par enregistrement ; avec des dizaines
+de milliers de lignes, cela fait des minutes. La progression montre d’abord **vérification**, puis **importation**. Vous
+pouvez quitter la page ; en cas d’erreur ou d’annulation, rien n’est créé ou tout ce qui a été créé est retiré.

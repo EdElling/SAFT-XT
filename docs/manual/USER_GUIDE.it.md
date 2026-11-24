@@ -112,11 +112,14 @@ dall’account aziendale.
   vale una sola volta. Se l’autenticazione a due fattori è obbligatoria per il vostro account, SAFT vi porta
   direttamente alla configurazione dopo l’accesso. Non vale per l’accesso tramite single sign-on – lì è responsabile la
   vostra azienda. Telefono e codici persi: l’amministrazione reimposta il secondo fattore.
-- **I miei lavori:** SAFT esegue i lavori lunghi – come il ricalcolo di molti record – a passi. Nel menu utente,
-  **I miei lavori** mostra ciò che avete avviato, con stato e avanzamento. Aprendo un lavoro vedete una barra di
-  avanzamento; finché la pagina è aperta, SAFT procede a piena velocità. Potete anche chiudere la pagina: il lavoro
-  continua in background e la campanella vi avvisa quando è terminato o non è riuscito. **Annulla** lo termina dopo il
-  passo in corso. Se un lavoro produce un file, scaricatelo con **Scarica il risultato** – resta disponibile 24 ore.
+- **I miei lavori:** SAFT esegue i lavori lunghi – esportazione, importazione, documenti per molti record, stati dei
+  dati, progettista di app IA – a passi. Le piccole quantità sono pronte prima che ve ne accorgiate: il file arriva come
+  sempre in download. Se dura di più, SAFT vi porta alla pagina del lavoro. Nel menu utente, **I miei lavori** mostra
+  ciò che avete avviato, con stato e avanzamento. Aprendo un lavoro vedete una barra di avanzamento; finché la pagina è
+  aperta, SAFT procede a piena velocità. Potete anche chiudere la pagina: il lavoro continua in background e la
+  campanella vi avvisa quando è terminato o non è riuscito. **Annulla** lo termina dopo il passo in corso. Se un lavoro
+  produce un file, scaricatelo con **Scarica il risultato** – resta disponibile 24 ore, anche se l’avete già scaricato
+  direttamente.
 
 - **A sinistra** si trova il **menu**. Mostra solo le aree per le quali avete diritti. Sotto **Dati** trovate le
   tabelle, sotto **Amministrazione** le funzioni di gestione. Le voci con una freccia
@@ -389,9 +392,13 @@ Il file contiene ciò che l’elenco mostra in quel momento:
 | **Excel** | Numeri e date sono valori veri e propri con cui potete calcolare. Una cella Excel contiene al massimo 32’767 caratteri; i testi più lunghi vengono troncati. I numeri con più di 15 cifre vengono salvati come testo, così nessuna cifra va persa. |
 | **CSV** | Nella notazione della lingua scelta: in italiano e francese separati da punto e virgola (`1234,50`, `01/02/2026`), in tedesco da punto e virgola (`1234,50`, `01.02.2026`), in inglese da virgola (`1234.50`, `01/02/2026`). Così Excel nella stessa lingua apre il file direttamente in colonne. I testi che iniziano con `=`, `+`, `-` o `@` ricevono un `'` iniziale come protezione contro formule inserite di nascosto. |
 
-Per ogni esportazione sono possibili di norma al massimo 50’000 record. Con più risultati compare un avviso e non
-viene creato alcun file; restringete allora la selezione con filtro o ricerca. Le esportazioni grandi richiedono un
-po’ di tempo: con 50’000 record circa mezzo minuto.
+L’esportazione viene eseguita come **lavoro** (vedere [I miei lavori](#3-interfaccia-e-dashboard)): gli elenchi
+piccoli arrivano subito in download, come sempre. Se dura più di qualche secondo, SAFT vi porta alla pagina del lavoro
+con la barra di avanzamento; alla fine il file è pronto lì sotto **Scarica il risultato** e resta disponibile 24 ore –
+anche sotto **I miei lavori**, se nel frattempo avete lasciato la pagina. Come riferimento, SAFT elabora qualche
+centinaio di righe al secondo. Per ogni esportazione sono possibili di norma al massimo 500’000 record
+(l’amministrazione può modificare o togliere il limite); con più risultati compare un avviso e non viene creato alcun
+file – restringete allora la selezione con filtro o ricerca.
 
 > **Protezione dei dati:** ogni esportazione viene registrata nel registro modifiche. Il file esportato però non è
 > più soggetto ad alcun controllo dei diritti. Trattatelo quindi con cura.
@@ -405,13 +412,20 @@ compilarlo al di fuori di SAFT e reimportarlo. Il pulsante compare se l’import
 
 - **Scarica modello:** un file Excel vuoto con tutti i campi compilabili; i campi obbligatori sono contrassegnati con
   `*`. Anche un’esportazione della tabella è adatta come modello.
-- **Importa file …:** Excel (.xlsx) o CSV, al massimo 20 MB e 10’000 righe. La prima riga contiene le intestazioni delle
-  colonne – l’etichetta del campo in una delle quattro lingue o il suo nome tecnico. Le colonne senza campo
+- **Importa file …:** Excel (.xlsx) o CSV, al massimo 20 MB e 100’000 righe. La prima riga contiene le intestazioni
+  delle colonne – l’etichetta del campo in una delle quattro lingue o il suo nome tecnico. Le colonne senza campo
   corrispondente, ad es. campi calcolati di un’esportazione, vengono ignorate e indicate.
-- **Controllo:** SAFT controlla l’intero file come nell’inserimento manuale: campi obbligatori, lunghezza, intervallo di
-  valori, e-mail/URL, valori univoci (anche all’interno del file) e regole della tabella. Se qualcosa non va, compare un
-  elenco con riga, colonna e motivo e **non** viene creato nulla. Altrimenti il secondo passaggio indica il numero di
-  nuovi record; solo **Importa** li crea.
+- **Controllo:** SAFT controlla il file come nell’inserimento manuale: campi obbligatori, lunghezza, intervallo di
+  valori, e-mail/URL, valori univoci (anche all’interno del file) e regole della tabella. Fino a 2’000 righe avviene
+  subito nella finestra: se qualcosa non va, compare un elenco con riga, colonna e motivo e **non** viene creato nulla;
+  altrimenti il secondo passaggio indica il numero di nuovi record. I file più grandi vengono controllati
+  completamente solo durante l’importazione; il secondo passaggio lo dice. Solo **Importa** crea i record.
+- **Come lavoro:** l’importazione viene eseguita come [lavoro](#3-interfaccia-e-dashboard) in due fasi – prima
+  **verifica**, poi **importazione** –, l’avanzamento le nomina entrambe. I file piccoli sono pronti subito e il
+  messaggio indica il numero di record. Per quelli grandi SAFT vi porta alla pagina del lavoro; contate qualche minuto
+  per diecimila righe, perché ogni record viene creato come a mano. Se il controllo trova errori, il lavoro termina
+  come fallito con l’elenco degli errori e non viene creato nulla. Anche **Annulla** o un errore durante
+  l’importazione rimuovono tutti i record creati fino a quel momento – vale sempre tutto o niente.
 - **I valori** possono essere scritti come li fornisce l’esportazione: elenchi di selezione con etichetta o valore
   salvato, sì/no (anche Ja/Nein, Yes/No, Oui/Non, 1/0), collegamenti con il nome visualizzato (ad es. «ACME AG») o il
   numero, date come 31.12.2026, 31/12/2026 o 2026-12-31, numeri come 1234,50, 1234.50 o 1'234.50.
@@ -578,20 +592,25 @@ Se il campo file è pieno (numero massimo di file), il documento viene solo scar
    file per documento**.
 3. **«Depositare nel campo … di ogni record»** (preselezionato) deposita ogni documento presso il suo record, come
    sopra.
-4. **Crea** scarica il file (p. es. `Rechnung-2026-11-22.pdf`).
+4. **Crea** scarica il file (p. es. `Rechnung-2026-11-22.pdf`). Con molti record ciò avviene come
+   [lavoro](#3-interfaccia-e-dashboard): SAFT vi porta alla sua pagina, l’avanzamento conta i documenti e alla fine il
+   file è pronto lì per 24 ore sotto **Scarica il risultato**. **Annulla** termina il passaggio; i documenti già
+   depositati restano presso i loro record.
 
 Il messaggio successivo indica quanti documenti sono stati creati e depositati e, per record, cosa non si è potuto
-depositare (p. es. campo pieno) – questi documenti sono comunque nel file. Al massimo **50 record** alla volta
-(l’amministrazione può modificare il numero); oltre, appare un messaggio e non viene creato nulla. Le caselle di spunta
-esistono solo nelle tabelle con modello di documento; i record eliminati non si possono selezionare.
+depositare (p. es. campo pieno) – questi documenti sono comunque nel file. Un limite esiste solo se l’amministrazione ne
+fissa uno; con moltissimi documenti lo ZIP è l’uscita migliore, perché un unico PDF unisce tutte le pagine in una volta.
+Le caselle di spunta esistono solo nelle tabelle con modello di documento; i record eliminati non si possono
+selezionare.
 
 **Inviare per e-mail:** Se il modello prevede un’e-mail e il vostro ruolo ha il diritto *Documenti: inviare*, il
 dialogo mostra l’interruttore **«Inviare per e-mail»**. **A**, **oggetto** e **testo** sono precompilati dal modello
 (p. es. l’indirizzo del cliente) e si possono modificare prima dell’invio; separate più indirizzi con virgole. **Copia
 a me** vi invia una copia nascosta. Il PDF viene allegato; i documenti inviati vengono depositati presso il record se
 possibile. La **cronologia** mostra «documento inviato» con destinatario e oggetto. Nell’azione di gruppo, **«Inviare
-per e-mail per ogni record»** invia a ogni record la sua e-mail con oggetto e testo del modello; il messaggio successivo
-indica quante e-mail sono state inviate e quali record non hanno un indirizzo valido.
+per e-mail per ogni record»** invia a ogni record la sua e-mail con oggetto e testo del modello – ciascuna appena i
+documenti di un passo sono depositati; il messaggio successivo indica quante e-mail sono state inviate e quali record
+non hanno un indirizzo valido.
 
 **Fattura QR:** Se il modello aggiunge una fattura QR, la **sezione pagamento con ricevuta** compare in fondo
 all’ultima pagina o su una pagina propria – con importo, riferimento e il vostro cliente come debitore. I clienti la
