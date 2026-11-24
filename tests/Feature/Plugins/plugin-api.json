@@ -246,6 +246,10 @@
             "interface",
             "abstract function abort(App\\Work\\WorkStep $step, string $status, string $message): void"
         ],
+        "App\\Work\\DescribesProgress": [
+            "interface",
+            "abstract function progress(array $state, int $done, ?int $total): ?string"
+        ],
         "App\\Work\\LongSteps": [
             "interface",
             "abstract function stepSeconds(): int"

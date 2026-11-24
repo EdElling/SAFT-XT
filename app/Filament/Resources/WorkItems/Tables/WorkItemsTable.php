@@ -6,6 +6,8 @@ namespace App\Filament\Resources\WorkItems\Tables;
 
 use App\Filament\Support\RowIcons;
 use App\Models\WorkItem;
+use App\Work\DescribesProgress;
+use App\Work\WorkRegistry;
 use App\Work\WorkService;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
@@ -86,14 +88,26 @@ class WorkItemsTable
         };
     }
 
-    /** „1'240 / 5'000 (24 %)“, ohne bekannte Menge nur die erledigte. */
+    /**
+     * „1'240 / 5'000 (24 %)“, ohne bekannte Menge nur die erledigte; eine offene Arbeit einer Art mit DescribesProgress
+     * nennt ihren Stand in eigenen Worten (der Prozentwert bleibt).
+     */
     public static function progress(WorkItem $record): string
     {
         $number = static fn (int $value): string => number_format($value, 0, '.', "'");
+        $percent = $record->total === null ? '' : ' ('.($record->percent() ?? 0).' %)';
 
-        return $record->total === null
-            ? $number($record->done)
-            : $number($record->done).' / '.$number($record->total).' ('.($record->percent() ?? 0).' %)';
+        if ($record->isOpen()) {
+            $registry = app(WorkRegistry::class);
+            $type = $registry->has($record->type) ? $registry->get($record->type) : null;
+            $text = $type instanceof DescribesProgress ? $type->progress((array) ($record->state ?? []), $record->done, $record->total) : null;
+
+            if ($text !== null) {
+                return $text.$percent;
+            }
+        }
+
+        return $record->total === null ? $number($record->done) : $number($record->done).' / '.$number($record->total).$percent;
     }
 
     public static function duration(?int $seconds): string

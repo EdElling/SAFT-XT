@@ -1981,7 +1981,8 @@ split and takes longer than a few seconds (a request to the AI), the kind implem
 duration in `stepSeconds()`: SAFT raises PHP's time limit for it, runs exactly one such step per call and leaves it to the
 scheduler when the time limit cannot be raised in the browser. Whatever a step does outwardly (e-mail, call to a
 service) belongs in `Saft::afterCommit(fn () => …)`: in a writing kind (`WritesRecords`) it runs only once the block has
-been saved – a rolled-back block sends nothing.
+been saved – a rolled-back block sends nothing. If "done / total" alone would mislead (two phases over the same rows), the
+kind implements `DescribesProgress` and returns the text shown as progress while the job is open.
 
 ### A.9 Shipping a manual
 

@@ -27,6 +27,10 @@ return [
         'table_missing' => 'Die Tabelle gibt es nicht mehr.',
     ],
     'import' => [
+        'checking' => 'Prüfen: :done Zeilen',
+        'checking_of' => 'Prüfen: :done von :total Zeilen',
+        'importing' => 'Einspielen: :done Datensätze',
+        'importing_of' => 'Einspielen: :done von :total Datensätzen',
         'table_missing' => 'Die Tabelle gibt es nicht mehr.',
         'file_missing' => 'Die hochgeladene Datei liegt nicht mehr vor; bitte den Import neu starten.',
     ],

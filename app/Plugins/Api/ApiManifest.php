@@ -16,6 +16,7 @@ use App\Tasks\TaskResult;
 use App\Tasks\TaskSkipped;
 use App\Tasks\TaskType;
 use App\Work\CleansUp;
+use App\Work\DescribesProgress;
 use App\Work\LongSteps;
 use App\Work\StepOutcome;
 use App\Work\WorkPlan;
@@ -68,6 +69,7 @@ final class ApiManifest
         StepOutcome::class,
         WritesRecords::class,
         CleansUp::class,
+        DescribesProgress::class,
         LongSteps::class,
     ];
 

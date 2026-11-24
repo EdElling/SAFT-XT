@@ -27,6 +27,10 @@ return [
         'table_missing' => 'La table n’existe plus.',
     ],
     'import' => [
+        'checking' => 'Vérification : :done lignes',
+        'checking_of' => 'Vérification : :done sur :total lignes',
+        'importing' => 'Importation : :done enregistrements',
+        'importing_of' => 'Importation : :done sur :total enregistrements',
         'table_missing' => 'La table n’existe plus.',
         'file_missing' => 'Le fichier téléversé n’est plus disponible ; veuillez relancer l’importation.',
     ],

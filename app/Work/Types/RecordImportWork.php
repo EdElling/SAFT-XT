@@ -13,6 +13,7 @@ use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Plugins\Api\RecordRejected;
 use App\Work\CleansUp;
+use App\Work\DescribesProgress;
 use App\Work\StepOutcome;
 use App\Work\TimeLimit;
 use App\Work\WorkPlan;
@@ -35,9 +36,10 @@ use Illuminate\Support\Facades\Auth;
  *   wird abgebrochen, löscht abort() die bereits angelegten Datensätze endgültig. Am Ende ein Protokolleintrag „importiert“.
  *
  * Parameter: table_id, file (Name der hochgeladenen Datei), source (Name der Kopie im Ordner), rows (Datenzeilen laut
- * Assistent, für den Fortschritt).
+ * Assistent, für den Fortschritt). Menge und „erledigt“ zählen nur die eingespielten Datensätze; die Prüfphase nennt
+ * ihren Stand in Worten (DescribesProgress), damit die Zahl nie doppelt erscheint.
  */
-final readonly class RecordImportWork implements CleansUp, WorkType, WritesRecords
+final readonly class RecordImportWork implements CleansUp, DescribesProgress, WorkType, WritesRecords
 {
     public const string KEY = 'record_import';
 
@@ -84,10 +86,22 @@ final readonly class RecordImportWork implements CleansUp, WorkType, WritesRecor
     {
         $rows = isset($parameters['rows']) ? (int) $parameters['rows'] : null;
 
-        return new WorkPlan(
-            ['phase' => self::CHECK, 'line' => 0, 'rows' => 0, 'errors' => 0, 'messages' => [], 'created' => 0],
-            $rows === null ? null : $rows * 2,
-        );
+        return new WorkPlan(['phase' => self::CHECK, 'line' => 0, 'rows' => 0, 'errors' => 0, 'messages' => [], 'created' => 0], $rows);
+    }
+
+    public function progress(array $state, int $done, ?int $total): string
+    {
+        $number = static fn (int $value): string => number_format($value, 0, '.', "'");
+
+        if (($state['phase'] ?? self::CHECK) === self::CHECK) {
+            return $total === null
+                ? __('work.import.checking', ['done' => $number((int) ($state['rows'] ?? 0))])
+                : __('work.import.checking_of', ['done' => $number((int) ($state['rows'] ?? 0)), 'total' => $number($total)]);
+        }
+
+        return $total === null
+            ? __('work.import.importing', ['done' => $number($done)])
+            : __('work.import.importing_of', ['done' => $number($done), 'total' => $number($total)]);
     }
 
     public function step(WorkStep $step): StepOutcome
@@ -191,7 +205,7 @@ final readonly class RecordImportWork implements CleansUp, WorkType, WritesRecor
         if (! $complete) {
             file_put_contents($step->path(self::UNIQUE), json_encode(['line' => $line, 'values' => $unique], JSON_THROW_ON_ERROR), LOCK_EX);
 
-            return StepOutcome::continue([...$state, 'line' => $line, 'rows' => $rows, 'errors' => $errors, 'messages' => $messages], $count);
+            return StepOutcome::continue([...$state, 'line' => $line, 'rows' => $rows, 'errors' => $errors, 'messages' => $messages]);
         }
 
         $problems = [
@@ -207,7 +221,7 @@ final readonly class RecordImportWork implements CleansUp, WorkType, WritesRecor
 
         @unlink($step->path(self::UNIQUE));
 
-        return StepOutcome::continue([...$state, 'phase' => self::IMPORT, 'line' => 0, 'rows' => $rows, 'errors' => 0, 'messages' => []], $count);
+        return StepOutcome::continue([...$state, 'phase' => self::IMPORT, 'line' => 0, 'rows' => $rows, 'errors' => 0, 'messages' => []]);
     }
 
     /**

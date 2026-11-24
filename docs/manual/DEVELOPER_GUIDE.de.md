@@ -2010,7 +2010,8 @@ Lässt sich ein Schritt nicht teilen und dauert er länger als einige Sekunden (
 genau einen solchen Schritt aus und überlässt ihn dem Scheduler, wenn sich das Zeitlimit im Browser nicht anheben lässt.
 Was ein Schritt nach aussen wirkt (E-Mail, Aufruf eines Dienstes), gehört in `Saft::afterCommit(fn () => …)`: Bei einer
 schreibenden Art (`WritesRecords`) läuft es erst, wenn der Block gespeichert ist – ein zurückgerollter Block verschickt
-nichts.
+nichts. Würde „erledigt / Menge“ allein in die Irre führen (zwei Phasen über dieselben Zeilen), setzt die Art
+`DescribesProgress` um und liefert den Text, der als Fortschritt erscheint, solange die Arbeit offen ist.
 
 ### A.9 Handbuch mitliefern
 

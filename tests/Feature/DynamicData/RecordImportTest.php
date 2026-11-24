@@ -7,6 +7,7 @@ namespace Tests\Feature\DynamicData;
 use App\DynamicData\DataAccess;
 use App\DynamicData\DataPermissions;
 use App\DynamicData\Import\RecordImporter;
+use App\Filament\Resources\WorkItems\Tables\WorkItemsTable;
 use App\Filament\Resources\WorkItems\WorkItemResource;
 use App\Filament\Pages\DynamicDataPage;
 use App\Models\CustomTable;
@@ -132,7 +133,7 @@ class RecordImportTest extends DynamicDataTestCase
         $before = Activity::query()->where('log_name', 'data')->count();
         $item = $this->import($path, 'bestellungen.xlsx');
         $this->assertSame([WorkItem::DONE, '2 Datensätze importiert.', 2], [$item->status, $item->message, (int) $item->result['records']]);
-        $this->assertSame(['Bestellungen · bestellungen.xlsx', 4, null], [$item->description(), $item->done, $item->total], 'Prüfen und Einspielen zählen je Zeile; die Menge kennt nur der Assistent.');
+        $this->assertSame(['Bestellungen · bestellungen.xlsx', 2, null], [$item->description(), $item->done, $item->total], 'Erledigt zählt die eingespielten Datensätze; die Menge kennt nur der Assistent.');
 
         $first = DynamicRecord::forTableName('bestellungen')->newQuery()->where('nummer', 'B-1')->sole();
         $acme = DynamicRecord::forTableName('kunden')->newQuery()->where('name', 'ACME AG')->value('id');
@@ -247,7 +248,8 @@ class RecordImportTest extends DynamicDataTestCase
         $component->assertRedirect(WorkItemResource::getUrl('view', ['record' => $item], panel: 'admin'));
 
         // Budget 0: der erste Schritt hat nur geprüft (mindestens ein Block), die Datei liegt im Ordner der Arbeit.
-        $this->assertSame([WorkItem::RUNNING, RecordImportWork::IMPORT, 6, 3], [$item->status, $item->state['phase'], $item->total, $item->done]);
+        $this->assertSame([WorkItem::RUNNING, RecordImportWork::IMPORT, 3, 0], [$item->status, $item->state['phase'], $item->total, $item->done]);
+        $this->assertSame('Einspielen: 0 von 3 Datensätzen (0 %)', WorkItemsTable::progress($item));
         $this->assertTrue(Storage::disk('local')->exists($item->directory().'/source.csv'));
         $this->assertSame(0, $this->orders()->count(), 'Noch nichts eingespielt.');
 
@@ -255,7 +257,8 @@ class RecordImportTest extends DynamicDataTestCase
         $this->travel(1)->minutes();
         $this->artisan('work:run')->assertSuccessful();
         $item->refresh();
-        $this->assertSame([WorkItem::DONE, 6, 3], [$item->status, $item->done, (int) $item->result['records']]);
+        $this->assertSame([WorkItem::DONE, 3, 3], [$item->status, $item->done, (int) $item->result['records']]);
+        $this->assertSame("3 / 3 (100 %)", WorkItemsTable::progress($item), 'Fertig: die Zahlen wie üblich.');
         $this->assertSame(['B-30', 'B-31', 'B-32'], $this->orders()->orderBy('nummer')->pluck('nummer')->all());
 
         // Fehler, die erst die Arbeit findet: fehlgeschlagen mit der Liste, nichts angelegt; der Dialog zeigt sie.
@@ -286,11 +289,14 @@ class RecordImportTest extends DynamicDataTestCase
 
         $lines[] = 'S-3;ACME AG;0'; // Doppelt zu Zeile 4 – in einem anderen Block
         $path = $this->csv(implode("\n", $lines)."\n");
-        $start = fn (): WorkItem => $service->start(RecordImportWork::KEY, ['table_id' => $this->orders->id, 'file' => 'serie.csv', 'source' => 'source.csv', 'rows' => count($lines) - 1], auth()->user(), files: ['source.csv' => $path]);
+        $start = function () use ($service, &$lines, $path): WorkItem {
+            return $service->start(RecordImportWork::KEY, ['table_id' => $this->orders->id, 'file' => 'serie.csv', 'source' => 'source.csv', 'rows' => count($lines) - 1], auth()->user(), files: ['source.csv' => $path]);
+        };
 
         // Budget 0: je Aufruf ein Prüfblock (CHUNK Zeilen), die Werte eindeutiger Felder wandern über unique.json.
         $item = $runner->advance($start(), 0);
-        $this->assertSame([RecordImportWork::CHECK, RecordImportWork::CHUNK, RecordImportWork::CHUNK], [$item->state['phase'], $item->state['line'] - 1, $item->done]);
+        $this->assertSame([RecordImportWork::CHECK, RecordImportWork::CHUNK, 0], [$item->state['phase'], $item->state['line'] - 1, $item->done], 'Prüfen zählt nicht als erledigt.');
+        $this->assertSame('Prüfen: 200 von 206 Zeilen (0 %)', WorkItemsTable::progress($item));
         $this->assertTrue(Storage::disk('local')->exists($item->directory().'/unique.json'));
         $item = $runner->advance($item, 0);
         $this->assertSame(WorkItem::FAILED, $item->status, 'Das Duplikat im zweiten Block wird am Ende der Prüfung gemeldet.');
@@ -303,9 +309,10 @@ class RecordImportTest extends DynamicDataTestCase
         file_put_contents($path, implode("\n", $lines)."\n");
         $item = $runner->advance($start(), 0);
         $item = $runner->advance($item, 0);
-        $this->assertSame([RecordImportWork::IMPORT, 0, RecordImportWork::CHUNK + 5], [$item->state['phase'], $item->state['line'], $item->done]);
+        $this->assertSame([RecordImportWork::IMPORT, 0, 0], [$item->state['phase'], $item->state['line'], $item->done]);
         $item = $runner->advance($item, 0);
-        $this->assertSame([WorkItem::RUNNING, 1, 2], [$item->status, $item->state['created'], $item->state['line']]);
+        $this->assertSame([WorkItem::RUNNING, 1, 2, 1], [$item->status, $item->state['created'], $item->state['line'], $item->done]);
+        $this->assertSame('Einspielen: 1 von 205 Datensätzen (0 %)', WorkItemsTable::progress($item));
         $item = $runner->advance($item, 0);
         $this->assertSame(2, $this->orders()->count(), 'Je Schritt ein Datensatz, committet.');
         $this->assertSame(

@@ -27,6 +27,10 @@ return [
         'table_missing' => 'La tabella non esiste più.',
     ],
     'import' => [
+        'checking' => 'Verifica: :done righe',
+        'checking_of' => 'Verifica: :done di :total righe',
+        'importing' => 'Importazione: :done record',
+        'importing_of' => 'Importazione: :done di :total record',
         'table_missing' => 'La tabella non esiste più.',
         'file_missing' => 'Il file caricato non è più disponibile; riavviare l’importazione.',
     ],

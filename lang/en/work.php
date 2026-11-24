@@ -27,6 +27,10 @@ return [
         'table_missing' => 'The table no longer exists.',
     ],
     'import' => [
+        'checking' => 'Checking: :done rows',
+        'checking_of' => 'Checking: :done of :total rows',
+        'importing' => 'Importing: :done records',
+        'importing_of' => 'Importing: :done of :total records',
         'table_missing' => 'The table no longer exists.',
         'file_missing' => 'The uploaded file is no longer available; please start the import again.',
     ],
