@@ -106,7 +106,7 @@ final class RecordWriter
     }
 
     /**
-     * Nur für Recalculator::recomputeTable(): berechnete Werte schreiben – ohne Phasen, Ereignisse, Protokoll und
+     * Nur für Recalculator::recomputeBlock(): berechnete Werte schreiben – ohne Phasen, Ereignisse, Protokoll und
      * Zeitstempel, denn Auslöser ist die Formel, nicht eine Änderung am Datensatz.
      *
      * @internal

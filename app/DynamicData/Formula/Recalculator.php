@@ -139,9 +139,9 @@ final class Recalculator
     public const int BLOCK = 500;
 
     /**
-     * Alle Datensätze einer Tabelle neu berechnen (auch gelöschte), danach die Tabellen, die über sie
-     * summieren. Ohne Protokoll und ohne neuen Änderungszeitpunkt: Auslöser ist die Formel, nicht eine
-     * Änderung am Datensatz.
+     * Alle Datensätze einer Tabelle neu berechnen (auch gelöschte), danach die Tabellen, die über sie summieren –
+     * synchron, für Seeder und Konsole. Der Table-Designer startet stattdessen die Arbeit „Berechnete Felder neu
+     * berechnen“ (Fundament 2, F3b), die dieselben Blöcke über recomputeBlock() abarbeitet.
      *
      * @param  array<string, true>  $done  bereits berechnete Tabellen
      * @return int Zahl der geänderten Datensätze
@@ -164,8 +164,8 @@ final class Recalculator
     }
 
     /**
-     * Reihenfolge für recomputeTable(): jede Tabelle, gefolgt von den Tabellen, die über sie summieren (rekursiv),
-     * jede nur einmal.
+     * Reihenfolge der Nachberechnung: jede Tabelle, gefolgt von den Tabellen, die über sie summieren (rekursiv), jede
+     * nur einmal.
      *
      * @param  iterable<CustomTable>  $tables
      * @param  array<string, true>  $done  bereits berechnete bzw. eingereihte Tabellen
@@ -189,8 +189,9 @@ final class Recalculator
     }
 
     /**
-     * Einen Block Datensätze (nach ID, ab $afterId) neu berechnen, in einer Transaktion. Grundlage für
-     * recomputeTable() und die Arbeit „Berechnete Felder neu berechnen“ (Fundament 2, F3a).
+     * Einen Block Datensätze (nach ID, ab $afterId) neu berechnen, in einer Transaktion – ohne Protokoll und ohne neuen
+     * Änderungszeitpunkt, denn Auslöser ist die Formel, nicht eine Änderung am Datensatz. Grundlage von
+     * recomputeTable() und der Arbeit „Berechnete Felder neu berechnen“ (Fundament 2, F3a).
      *
      * @return array{count: int, changed: int, last_id: int}
      */

@@ -4,18 +4,28 @@ declare(strict_types=1);
 
 namespace Tests\Feature\DynamicData;
 
+use AnourValar\EloquentSerialize\Facades\EloquentSerializeFacade;
 use App\DynamicData\DataMenu;
 use App\DynamicData\DataPermissions;
+use App\DynamicData\Ui\DynamicTableBuilder;
 use App\Filament\Pages\DynamicDataPage;
 use App\Filament\Resources\CustomTables\Pages\EditCustomTable;
 use App\Filament\Resources\Roles\Pages\EditRole;
+use App\Filament\Resources\WorkItems\WorkItemResource;
 use App\Livewire\DynamicDetailTable;
 use App\Models\Activity;
+use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\Menu;
 use App\Models\Role;
+use App\Models\WorkItem;
+use App\Work\TimeLimit;
+use App\Work\Types\ExportWork;
+use App\Work\WorkRunner;
+use App\Work\WorkService;
 use Filament\Actions\Testing\TestAction;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use OpenSpout\Common\Entity\Cell;
@@ -34,6 +44,7 @@ class TableExportTest extends DynamicDataTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Storage::fake('local');
 
         $this->kunden = $this->service()->createTable(['name' => 'kunden', 'label' => 'Kunden'], [
             ['name' => 'firma', 'label' => 'Firma', 'type' => 'string', 'is_required' => true],
@@ -388,5 +399,113 @@ class TableExportTest extends DynamicDataTestCase
         $this->assertSame('Geheimer', $changes['suche']);
         $this->assertArrayHasKey('status', $changes['filter']);
         $this->assertStringNotContainsString('Geheimer Inhalt', json_encode($changes));
+    }
+
+    /**
+     * Die Arbeit „Exportieren“ (Fundament 2, F3b) direkt: Blöcke von zwei Zeilen, ein Block je Aufruf (Budget 0), die
+     * serialisierte Abfrage mit Filter und Sortierung über die Schritte hinweg, am Ende Datei und Protokoll.
+     */
+    public function test_export_work_writes_blocks_across_steps_and_keeps_filter_order_and_formats(): void
+    {
+        config(['dynamic_data.export_chunk' => 2]);
+        $kunde = DynamicRecord::forTable($this->kunden)->create(['firma' => 'Schmidt AG']);
+
+        foreach (range(1, 5) as $i) {
+            $this->record(['titel' => 'P'.$i, 'status' => 'offen', 'budget' => $i.'.50', 'menge' => $i, 'start' => '2026-02-0'.$i, 'kunde_id' => $kunde->id]);
+        }
+        $this->record(['titel' => 'Anders', 'status' => 'fertig']);
+
+        $user = $this->userWithPermissions(self::ALL_RIGHTS);
+        $this->actingAs($user);
+        $query = app(DynamicTableBuilder::class)->query($this->projekte)->where('status', 'offen')->orderBy('titel', 'desc');
+        $fields = array_map(static fn (CustomField $field): string => $field->name, app(DynamicTableBuilder::class)->tableFields($this->projekte, null));
+        $parameters = ['table_id' => $this->projekte->id, 'fields' => $fields, 'title' => 'Projekte', 'query' => EloquentSerializeFacade::serialize($query), 'rows' => 5, 'filter' => ['status' => ['values' => ['offen']]], 'search' => ''];
+        $runner = app(WorkRunner::class);
+
+        $item = app(WorkService::class)->start(ExportWork::KEY, [...$parameters, 'format' => 'csv', 'file' => 'projekte.csv'], $user);
+        $item = $runner->advance($item, 0);
+        $this->assertSame([WorkItem::RUNNING, 2, 5, ['offset' => 2, 'row' => 4]], [$item->status, $item->done, $item->total, $item->state]);
+        $item = $runner->advance(WorkItem::query()->findOrFail($item->id), 0);
+        $this->assertSame(['offset' => 4, 'row' => 6], $item->state);
+        $item = $runner->advance($item, 0);
+        $this->assertSame([WorkItem::DONE, 5, 'projekte.csv', 5], [$item->status, $item->done, $item->result['file'], $item->result['rows']]);
+
+        $content = Storage::disk('local')->get($item->directory().'/projekte.csv');
+        $this->assertStringStartsWith("\xEF\xBB\xBF", (string) $content);
+        $rows = array_values(array_map(static fn (string $line): array => str_getcsv($line, ';', '"', ''), array_filter(explode("\n", substr((string) $content, 3)), filled(...))));
+        $this->assertSame(['Titel', 'Status', 'Budget', 'Menge', 'Aktiv', 'Start', 'Kunde'], $rows[0]);
+        $this->assertSame(['P5', 'Noch offen', '5,50', '5', '', '05.02.2026', 'Schmidt AG'], $rows[1]);
+        $this->assertSame(['P5', 'P4', 'P3', 'P2', 'P1'], array_column(array_slice($rows, 1), 0));
+        Storage::disk('local')->assertMissing($item->directory().'/export.part');
+
+        $entry = Activity::query()->where('event', 'exported')->sole();
+        $this->assertSame([$user->id, 5, 'csv'], [(int) $entry->causer_id, $entry->attribute_changes->get('attributes')['zeilen'], $entry->attribute_changes->get('attributes')['format']]);
+
+        // Excel über dieselben Schritte: echte Typen, Datum als Datum, die Teildateien sind weg.
+        $item = app(WorkService::class)->start(ExportWork::KEY, [...$parameters, 'format' => 'xlsx', 'file' => 'projekte.xlsx'], $user);
+        do {
+            $item = $runner->advance($item, 0);
+        } while ($item->isOpen());
+        $this->assertSame(WorkItem::DONE, $item->status);
+
+        $reader = new Reader;
+        $reader->open(Storage::disk('local')->path($item->directory().'/projekte.xlsx'));
+        $cells = [];
+        foreach ($reader->getSheetIterator() as $sheet) {
+            $this->assertSame('Projekte', $sheet->getName());
+            foreach ($sheet->getRowIterator() as $row) {
+                $cells[] = $row->getCells();
+            }
+        }
+        $reader->close();
+        $this->assertCount(6, $cells);
+        $this->assertSame('Titel', $cells[0][0]->getValue());
+        $this->assertSame('P5', $cells[1][0]->getValue());
+        $this->assertInstanceOf(Cell\NumericCell::class, $cells[1][2]);
+        $this->assertSame(5.5, (float) $cells[1][2]->getValue());
+        $this->assertSame(5, (int) $cells[1][3]->getValue());
+        $this->assertInstanceOf(Cell\DateTimeCell::class, $cells[1][5]);
+        $this->assertSame('2026-02-05', $cells[1][5]->getValue()->format('Y-m-d'));
+        $this->assertSame('Schmidt AG', $cells[1][6]->getValue());
+        $this->assertSame('P1', $cells[5][0]->getValue());
+        Storage::disk('local')->assertMissing($item->directory().'/sheet.part');
+        Storage::disk('local')->assertMissing($item->directory().'/sheet.part.xml');
+    }
+
+    /** Reicht das Budget im Request nicht, geht es auf die Seite der Arbeit; der Scheduler beendet sie, die Datei bleibt. */
+    public function test_export_that_is_not_finished_in_the_request_continues_as_work(): void
+    {
+        app()->instance(TimeLimit::class, new class extends TimeLimit
+        {
+            public function budget(float $wanted, int $margin = 5): float
+            {
+                return 0.0;
+            }
+        });
+        config(['dynamic_data.export_chunk' => 1]);
+        $this->record(['titel' => 'A']);
+        $this->record(['titel' => 'B']);
+        $this->record(['titel' => 'C']);
+        $user = $this->userWithPermissions(self::ALL_RIGHTS);
+        $this->actingAs($user);
+
+        $component = $this->page()->sortTable('titel', 'asc')->callAction($this->action('csv'));
+        $item = WorkItem::query()->where('type', ExportWork::KEY)->latest('id')->firstOrFail();
+
+        $this->assertArrayNotHasKey('download', $component->effects);
+        $component->assertRedirect(WorkItemResource::getUrl('view', ['record' => $item], panel: 'admin'));
+        $this->assertSame([WorkItem::RUNNING, 1, 3, $user->id], [$item->status, $item->done, $item->total, $item->user_id]);
+        $this->assertSame(0, Activity::query()->where('event', 'exported')->count(), 'Protokolliert wird erst die fertige Datei');
+
+        $this->travel(1)->minutes();
+        $this->artisan('work:run')->assertSuccessful();
+        $item->refresh();
+        $this->assertSame([WorkItem::DONE, 3], [$item->status, $item->done]);
+        $this->assertMatchesRegularExpression('/^projekte_\d{4}-\d{2}-\d{2}_\d{4}\.csv$/', (string) $item->resultFile());
+        $this->assertSame(1, Activity::query()->where('event', 'exported')->count());
+
+        $content = $this->get(route('work.download', $item->uuid))->assertOk()->streamedContent();
+        $this->assertSame(['Titel', 'Status', 'Budget', 'Menge', 'Aktiv', 'Start', 'Kunde'], str_getcsv(explode("\n", substr($content, 3))[0], ';', '"', ''));
+        $this->assertStringContainsString("\nC;", $content);
     }
 }

@@ -14,6 +14,11 @@ return [
     ],
     'types' => [
         'recompute' => 'Recompute computed fields',
+        'export' => 'Export',
+    ],
+    'export' => [
+        'done' => '1 row exported.|:count rows exported.',
+        'table_missing' => 'The table no longer exists.',
     ],
     'recompute' => [
         'all_tables' => 'all tables with computed fields',

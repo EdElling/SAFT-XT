@@ -14,6 +14,11 @@ return [
     ],
     'types' => [
         'recompute' => 'Ricalcolare i campi calcolati',
+        'export' => 'Esportare',
+    ],
+    'export' => [
+        'done' => '1 riga esportata.|:count righe esportate.',
+        'table_missing' => 'La tabella non esiste più.',
     ],
     'recompute' => [
         'all_tables' => 'tutte le tabelle con campi calcolati',

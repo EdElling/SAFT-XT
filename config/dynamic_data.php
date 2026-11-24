@@ -31,10 +31,12 @@ return [
     ],
 
     /*
-    | Größter Export in Zeilen. Der Download läuft über Livewire, das die Datei vollständig im
-    | Speicher hält. Größere Exporte werden abgelehnt, nicht gekürzt.
+    | Grösster Export in Zeilen (0 = ohne Grenze). Der Export läuft als Arbeit blockweise in eine Datei (Fundament 2,
+    | F3b); die Grenze schützt den Speicherplatz unter storage/app/private/work. Grössere Exporte werden abgelehnt,
+    | nicht gekürzt. export_chunk: Zeilen je Block.
     */
-    'export_max_rows' => (int) env('APP_DATA_EXPORT_MAX_ROWS', 50000),
+    'export_max_rows' => (int) env('APP_DATA_EXPORT_MAX_ROWS', 500000),
+    'export_chunk' => (int) env('APP_DATA_EXPORT_CHUNK', 1000),
 
     /*
     | Grenzen des Tabellen-Imports aus CSV/Excel. Der Import läuft synchron im Request; größere

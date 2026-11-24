@@ -277,6 +277,7 @@ return [
         'picker_plugins' => 'Funktionen aus Plugins',
         'recompute_none' => 'Keine Tabellen mit berechneten Feldern gefunden.',
         'recompute_changed' => '1 Datensatz geändert|:count Datensätze geändert',
+        'recompute_background' => 'Die berechneten Felder werden im Hintergrund neu berechnet; die Werte erscheinen nach und nach.',
         'errors' => [
             'at' => 'Zeichen :position: :message',
             'empty' => 'Bitte eine Formel eingeben.',

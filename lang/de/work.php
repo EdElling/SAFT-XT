@@ -14,6 +14,11 @@ return [
     ],
     'types' => [
         'recompute' => 'Berechnete Felder neu berechnen',
+        'export' => 'Exportieren',
+    ],
+    'export' => [
+        'done' => '1 Zeile exportiert.|:count Zeilen exportiert.',
+        'table_missing' => 'Die Tabelle gibt es nicht mehr.',
     ],
     'recompute' => [
         'all_tables' => 'alle Tabellen mit berechneten Feldern',

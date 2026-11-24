@@ -277,6 +277,7 @@ return [
         'picker_plugins' => 'Funzioni dei plugin',
         'recompute_none' => 'Nessuna tabella con campi calcolati.',
         'recompute_changed' => '1 record modificato|:count record modificati',
+        'recompute_background' => 'I campi calcolati vengono ricalcolati in background; i valori compaiono progressivamente.',
         'errors' => [
             'at' => 'Carattere :position: :message',
             'empty' => 'Inserire una formula.',

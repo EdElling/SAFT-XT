@@ -12,192 +12,217 @@ use App\Models\DynamicRecord;
 use App\Support\AppLocale;
 use App\Support\Translations;
 use DateTimeInterface;
-use Illuminate\Database\Eloquent\Builder;
-use OpenSpout\Common\Entity\Cell;
-use OpenSpout\Common\Entity\Row;
-use OpenSpout\Common\Entity\Style\Style;
-use OpenSpout\Writer\CSV\Options as CsvOptions;
-use OpenSpout\Writer\CSV\Writer as CsvWriter;
-use OpenSpout\Writer\XLSX\Options as XlsxOptions;
-use OpenSpout\Writer\XLSX\Writer as XlsxWriter;
-use Throwable;
+use RuntimeException;
 
 /**
- * Schreibt eine gefilterte und sortierte Abfrage in eine temporäre Datei.
- * Die Werte entsprechen der Liste: Bezeichnungen statt gespeicherter Auswahlwerte,
- * Anzeigewerte bei Verknüpfungen, aber ungekürzte Texte.
+ * Schreibt Datensätze als CSV oder Excel in den Ordner einer Arbeit (Fundament 2, F3b) – blockweise und über mehrere
+ * Prozesse hinweg: Jeder Schritt der Arbeit öffnet den Exporter, hängt seine Zeilen an die Teildatei an und schliesst
+ * ihn; der letzte Schritt macht mit close() die fertige Datei daraus. Die Werte entsprechen der Liste: Bezeichnungen
+ * statt gespeicherter Auswahlwerte, Anzeigewerte bei Verknüpfungen, aber ungekürzte Texte.
  */
 final class TableExporter
 {
-    private const int CHUNK = 1000;
-
-    /** Mehr Zeichen fasst eine Excel-Zelle nicht. */
-    private const int XLSX_MAX_CELL_LENGTH = 32767;
-
     /** Mehr Stellen speichert Excel nicht exakt; längere Zahlen bleiben daher Text. */
     private const int XLSX_MAX_NUMBER_DIGITS = 15;
 
-    /** Der übliche Grenzwert von 30 Sekunden reicht für große Exporte nicht. */
-    private const int TIME_LIMIT_SECONDS = 300;
+    private const string CSV_PART = 'export.part';
 
-    /** @var array<string, Style> Ein Style je Zahlenformat: Pro Zelle neu wäre deutlich langsamer. */
-    private array $styles = [];
+    private const string XLSX_PART = 'sheet.part';
 
-    /**
-     * @param  Builder<DynamicRecord>  $query
-     * @param  list<CustomField>  $fields
-     * @return string Pfad der temporären Datei; Aufräumen liegt beim Aufrufer
-     */
-    public function write(Builder $query, array $fields, ExportFormat $format, string $title): string
-    {
-        set_time_limit(self::TIME_LIMIT_SECONDS);
+    /** @var resource|null */
+    private $csv = null;
 
-        $path = (string) tempnam(sys_get_temp_dir(), 'saft-export-');
+    private ?XlsxStreamWriter $xlsx = null;
 
-        try {
-            match ($format) {
-                ExportFormat::Xlsx => $this->writeXlsx($query, $fields, $title, $path),
-                ExportFormat::Csv => $this->writeCsv($query, $fields, $path),
-            };
-        } catch (Throwable $e) {
-            @unlink($path);
-
-            throw $e;
-        }
-
-        return $path;
-    }
+    /** @var list<string> Zahlen- und Datumsformate der Excel-Datei, Stil-Index = Position + 2 */
+    private array $formats = [];
 
     /**
-     * @param  Builder<DynamicRecord>  $query
      * @param  list<CustomField>  $fields
      */
-    private function writeXlsx(Builder $query, array $fields, string $title, string $path): void
-    {
-        $writer = new XlsxWriter(new XlsxOptions);
-        $writer->openToFile($path);
-
-        try {
-            $writer->getCurrentSheet()->setName($this->sheetName($title));
-
-            if ($fields !== []) {
-                // Ohne Breite zeigt Excel Datumswerte als „#####“.
-                $writer->getCurrentSheet()->setColumnWidthForRange(20, 1, count($fields));
-            }
-
-            $writer->addRow(new Row(
-                array_map(fn (CustomField $field): Cell => $this->xlsxText($field->label), $fields),
-                (new Style)->setFontBold(),
-            ));
-
-            foreach ($this->records($query) as $record) {
-                $writer->addRow(new Row(array_map(fn (CustomField $field): Cell => $this->xlsxCell($field, $record), $fields)));
-            }
-        } finally {
-            $writer->close();
-        }
-    }
+    private function __construct(
+        private readonly ExportFormat $format,
+        private readonly string $directory,
+        private readonly array $fields,
+        private readonly string $title,
+    ) {}
 
     /**
-     * @param  Builder<DynamicRecord>  $query
-     * @param  list<CustomField>  $fields
-     */
-    private function writeCsv(Builder $query, array $fields, string $path): void
-    {
-        // Trennzeichen je Sprache und BOM: So öffnet Excel die Datei direkt in Spalten.
-        $options = new CsvOptions;
-        $options->FIELD_DELIMITER = AppLocale::setting('csv_delimiter');
-        $options->SHOULD_ADD_BOM = true;
-
-        $writer = new CsvWriter($options);
-        $writer->openToFile($path);
-
-        try {
-            $writer->addRow(new Row(array_map(fn (CustomField $field): Cell => $this->csvText($field->label), $fields)));
-
-            foreach ($this->records($query) as $record) {
-                $writer->addRow(new Row(array_map(fn (CustomField $field): Cell => $this->csvCell($field, $record), $fields)));
-            }
-        } finally {
-            $writer->close();
-        }
-    }
-
-    /**
-     * Seitenweise statt Cursor: pdo_pgsql lädt sonst das gesamte Ergebnis in den Speicher.
-     * Die ID als letztes Sortierkriterium hält die Reihenfolge über die Seiten hinweg stabil.
+     * Zum Anhängen öffnen; der Ordner muss existieren.
      *
-     * @param  Builder<DynamicRecord>  $query
-     * @return iterable<DynamicRecord>
+     * @param  list<CustomField>  $fields
      */
-    private function records(Builder $query): iterable
+    public static function open(ExportFormat $format, string $directory, array $fields, string $title): self
     {
-        $model = $query->getModel();
+        $exporter = new self($format, $directory, $fields, $title);
 
-        // Ohne eindeutigen Schlüssel (Views, Tabellen ohne Primärschlüssel) wären Blöcke per Versatz
-        // nicht stabil; dann in einem Durchgang lesen.
-        if ($model instanceof DynamicRecord && ! $model->hasUniqueKey()) {
-            return (clone $query)->cursor();
+        if ($format === ExportFormat::Csv) {
+            $handle = fopen($directory.'/'.self::CSV_PART, 'a');
+
+            if ($handle === false) {
+                throw new RuntimeException('Teildatei des Exports nicht beschreibbar.');
+            }
+
+            $exporter->csv = $handle;
+        } else {
+            $exporter->formats = self::formats($fields);
+            $exporter->xlsx = new XlsxStreamWriter($directory.'/'.self::XLSX_PART, $exporter->formats);
         }
 
-        return (clone $query)->orderBy($model->qualifyColumn($model->getKeyName()))->lazy(self::CHUNK);
+        return $exporter;
     }
 
-    private function xlsxCell(CustomField $field, DynamicRecord $record): Cell
+    /** Überschriften (Zeile 1); CSV mit BOM, damit Excel die Datei direkt in Spalten öffnet. */
+    public function header(): void
+    {
+        if ($this->csv !== null) {
+            fwrite($this->csv, "\xEF\xBB\xBF");
+            $this->csvLine(array_map(fn (CustomField $field): string => $this->csvText($field->label) ?? '', $this->fields));
+
+            return;
+        }
+
+        $this->xlsx?->appendRow(1, array_map(fn (CustomField $field): XlsxCell => XlsxCell::text((string) $field->label, bold: true), $this->fields));
+    }
+
+    /**
+     * Datensätze anhängen.
+     *
+     * @param  iterable<DynamicRecord>  $records
+     * @param  int  $row  Zeilennummer des ersten Datensatzes in der Datei (Überschrift ist 1)
+     * @return int Zahl der geschriebenen Datensätze
+     */
+    public function rows(iterable $records, int $row): int
+    {
+        $count = 0;
+
+        foreach ($records as $record) {
+            if ($this->csv !== null) {
+                $this->csvLine(array_map(fn (CustomField $field): string => $this->csvCell($field, $record), $this->fields));
+            } else {
+                $this->xlsx?->appendRow($row + $count, array_map(fn (CustomField $field): ?XlsxCell => $this->xlsxCell($field, $record), $this->fields));
+            }
+
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /** Schritt beenden; die Teildatei bleibt für den nächsten. */
+    public function release(): void
+    {
+        if ($this->csv !== null) {
+            fclose($this->csv);
+            $this->csv = null;
+        }
+    }
+
+    /** Aus der Teildatei die fertige Datei $file im Ordner machen; liefert ihren Pfad. */
+    public function close(string $file): string
+    {
+        $this->release();
+        $target = $this->directory.'/'.basename($file);
+
+        if ($this->format === ExportFormat::Csv) {
+            if (! rename($this->directory.'/'.self::CSV_PART, $target)) {
+                throw new RuntimeException('Exportdatei nicht möglich.');
+            }
+        } else {
+            $this->xlsx?->pack($target, $this->sheetName($this->title), count($this->fields));
+        }
+
+        return $target;
+    }
+
+    /**
+     * Zahlen- und Datumsformate der Felder, jedes einmal.
+     *
+     * @param  list<CustomField>  $fields
+     * @return list<string>
+     */
+    public static function formats(array $fields): array
+    {
+        $formats = [];
+
+        foreach ($fields as $field) {
+            $format = match (true) {
+                $field->type === FieldType::Integer => '0',
+                $field->valueType() === FieldType::Decimal => self::decimalFormat($field),
+                $field->type === FieldType::Date => (string) AppLocale::setting('xlsx_date'),
+                $field->type === FieldType::DateTime => (string) AppLocale::setting('xlsx_datetime'),
+                default => null,
+            };
+
+            if ($format !== null && ! in_array($format, $formats, true)) {
+                $formats[] = $format;
+            }
+        }
+
+        return $formats;
+    }
+
+    /** @param  list<string>  $values */
+    private function csvLine(array $values): void
+    {
+        if ($this->csv === null || fputcsv($this->csv, $values, (string) AppLocale::setting('csv_delimiter'), '"', '') === false) {
+            throw new RuntimeException('Teildatei des Exports nicht beschreibbar.');
+        }
+    }
+
+    private function xlsxCell(CustomField $field, DynamicRecord $record): ?XlsxCell
     {
         $state = $record->getAttribute($field->name);
 
         return match (true) {
             $field->type === FieldType::Integer && $state !== null => $this->xlsxNumber((string) $state, '0'),
-            $field->valueType() === FieldType::Decimal && $state !== null => $this->xlsxNumber((string) $state, $this->decimalFormat($field)),
-            $field->type === FieldType::Date && $state instanceof DateTimeInterface => new Cell\DateTimeCell($state, $this->format(AppLocale::setting('xlsx_date'))),
-            $field->type === FieldType::DateTime && $state instanceof DateTimeInterface => new Cell\DateTimeCell($state, $this->format(AppLocale::setting('xlsx_datetime'))),
+            $field->valueType() === FieldType::Decimal && $state !== null => $this->xlsxNumber((string) $state, self::decimalFormat($field)),
+            $field->type === FieldType::Date && $state instanceof DateTimeInterface => XlsxCell::date($state, $this->style((string) AppLocale::setting('xlsx_date'))),
+            $field->type === FieldType::DateTime && $state instanceof DateTimeInterface => XlsxCell::date($state, $this->style((string) AppLocale::setting('xlsx_datetime'))),
             default => $this->xlsxText($this->text($field, $record)),
         };
     }
 
-    private function xlsxNumber(string $number, string $format): Cell
+    private function xlsxNumber(string $number, string $format): XlsxCell
     {
         return strlen(preg_replace('/\D/', '', $number) ?? '') > self::XLSX_MAX_NUMBER_DIGITS
-            ? $this->xlsxText($number)
-            : new Cell\NumericCell(str_contains($number, '.') ? (float) $number : (int) $number, $this->format($format));
+            ? XlsxCell::text($number)
+            : XlsxCell::number($number, $this->style($format));
     }
 
-    private function format(string $format): Style
+    private function style(string $format): int
     {
-        return $this->styles[$format] ??= (new Style)->setFormat($format);
+        return XlsxStreamWriter::styleFor($this->formats, $format);
     }
 
-    /** StringCell statt Cell::fromValue(): Dort würde ein Text mit „=“ am Anfang zur Formel. */
-    private function xlsxText(?string $value): Cell
+    /** Text als „inlineStr“: Ein Text mit „=“ am Anfang wird so nie zur Formel. */
+    private function xlsxText(?string $value): ?XlsxCell
     {
-        return $value === null || $value === ''
-            ? new Cell\EmptyCell(null, null)
-            : new Cell\StringCell(mb_substr($value, 0, self::XLSX_MAX_CELL_LENGTH), null);
+        return $value === null || $value === '' ? null : XlsxCell::text($value);
     }
 
-    private function csvCell(CustomField $field, DynamicRecord $record): Cell
+    private function csvCell(CustomField $field, DynamicRecord $record): string
     {
         $state = $record->getAttribute($field->name);
 
         return match (true) {
-            $state === null && in_array($field->valueType(), [FieldType::Integer, FieldType::Decimal, FieldType::Date, FieldType::DateTime], true) => new Cell\EmptyCell(null, null),
-            $field->type === FieldType::Integer => new Cell\StringCell((string) $state, null),
-            $field->valueType() === FieldType::Decimal => new Cell\StringCell(str_replace('.', AppLocale::setting('csv_decimal'), (string) $state), null),
-            $field->type === FieldType::Date && $state instanceof DateTimeInterface => new Cell\StringCell((string) AppLocale::date($state), null),
-            $field->type === FieldType::DateTime && $state instanceof DateTimeInterface => new Cell\StringCell((string) AppLocale::dateTime($state), null),
-            default => $this->csvText($this->text($field, $record)),
+            $state === null && in_array($field->valueType(), [FieldType::Integer, FieldType::Decimal, FieldType::Date, FieldType::DateTime], true) => '',
+            $field->type === FieldType::Integer => (string) $state,
+            $field->valueType() === FieldType::Decimal => str_replace('.', (string) AppLocale::setting('csv_decimal'), (string) $state),
+            $field->type === FieldType::Date && $state instanceof DateTimeInterface => (string) AppLocale::date($state),
+            $field->type === FieldType::DateTime && $state instanceof DateTimeInterface => (string) AppLocale::dateTime($state),
+            default => $this->csvText($this->text($field, $record)) ?? '',
         };
     }
 
     /** Excel führt CSV-Werte mit diesen Anfangszeichen als Formel aus, daher entschärfen. */
-    private function csvText(?string $value): Cell
+    private function csvText(?string $value): ?string
     {
         if ($value === null || $value === '') {
-            return new Cell\EmptyCell(null, null);
+            return null;
         }
 
-        return new Cell\StringCell(preg_match('/^[=+\-@\t\r\n]/', $value) === 1 ? "'".$value : $value, null);
+        return preg_match('/^[=+\-@\t\r\n]/', $value) === 1 ? "'".$value : $value;
     }
 
     private function text(CustomField $field, DynamicRecord $record): ?string
@@ -216,7 +241,7 @@ final class TableExporter
         return $text === null ? null : (string) $text;
     }
 
-    private function decimalFormat(CustomField $field): string
+    private static function decimalFormat(CustomField $field): string
     {
         $scale = (int) ($field->optionsArray()['scale'] ?? 2);
 

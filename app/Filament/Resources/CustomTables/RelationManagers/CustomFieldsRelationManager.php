@@ -10,10 +10,12 @@ use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Ui\DynamicRecordActions;
 use App\Filament\Resources\CustomTables\Schemas\FieldForm;
+use App\Filament\Resources\WorkItems\WorkItemResource;
 use App\Filament\Support\RowIcons;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\WorkItem;
 use App\Services\DynamicSchemaService;
 use App\Support\Translations;
 use Filament\Actions\Action;
@@ -94,8 +96,13 @@ class CustomFieldsRelationManager extends RelationManager
                 CreateAction::make()
                     ->label(__('tables.fields.add'))
                     ->modalWidth(Width::SevenExtraLarge)
-                    ->using(fn (array $data): CustomField => app(DynamicSchemaService::class)
-                        ->addField($this->ownerTable(), FieldForm::toServiceData($data))),
+                    ->using(function (array $data): CustomField {
+                        $service = app(DynamicSchemaService::class);
+                        $field = $service->addField($this->ownerTable(), FieldForm::toServiceData($data));
+                        self::reportRecompute($service->lastRecompute());
+
+                        return $field;
+                    }),
             ])
             ->recordActions(RowIcons::of([
                 // Breiter als die Vorgabe (4xl): Feldformular mit Optionen, Regeln und Verknüpfung.
@@ -104,8 +111,10 @@ class CustomFieldsRelationManager extends RelationManager
                     ->mutateRecordDataUsing(fn (CustomField $record): array => FieldForm::fillData($record))
                     ->using(function (CustomField $record, array $data): CustomField {
                         $previousOptions = (array) ($record->optionsArray()['options'] ?? []);
-                        $field = app(DynamicSchemaService::class)->updateField($record, FieldForm::toServiceData($data));
+                        $service = app(DynamicSchemaService::class);
+                        $field = $service->updateField($record, FieldForm::toServiceData($data));
                         self::warnAboutRemovedOptionsInUse($field, $previousOptions);
+                        self::reportRecompute($service->lastRecompute());
 
                         return $field;
                     }),
@@ -124,7 +133,11 @@ class CustomFieldsRelationManager extends RelationManager
                     ->modalDescription(fn (CustomField $record): ?string => $record->is_active
                         ? __('tables.fields.deactivate_help')
                         : null)
-                    ->action(fn (CustomField $record) => app(DynamicSchemaService::class)->updateField($record, ['is_active' => ! $record->is_active])),
+                    ->action(function (CustomField $record): void {
+                        $service = app(DynamicSchemaService::class);
+                        $service->updateField($record, ['is_active' => ! $record->is_active]);
+                        self::reportRecompute($service->lastRecompute());
+                    }),
                 Action::make('dropField')
                     ->label(__('common.delete_permanently'))
                     ->icon('heroicon-o-trash')
@@ -151,6 +164,27 @@ class CustomFieldsRelationManager extends RelationManager
                         Notification::make()->title(__('tables.fields.dropped', ['name' => $record->name]))->success()->send();
                     }),
             ]));
+    }
+
+    /**
+     * Nachberechnung nach einer Formeländerung (Fundament 2, F3b): Ist sie nach dem kurzen Mitarbeiten im Request noch
+     * offen, läuft sie im Hintergrund weiter – Hinweis mit Link auf die Arbeit; ist sie gescheitert, die Meldung.
+     */
+    private static function reportRecompute(?WorkItem $item): void
+    {
+        if ($item === null || $item->status === WorkItem::DONE) {
+            return;
+        }
+
+        $notification = Notification::make()->actions([
+            Action::make('open')->label(__('work.notifications.open'))->url(WorkItemResource::getUrl('view', ['record' => $item])),
+        ]);
+
+        if ($item->isOpen()) {
+            $notification->info()->title(__('tables.formula.recompute_background'))->send();
+        } else {
+            $notification->danger()->title((string) $item->message)->persistent()->send();
+        }
     }
 
     private function ownerTable(): CustomTable

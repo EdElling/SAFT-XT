@@ -226,6 +226,30 @@ class WorkRunnerTest extends DynamicDataTestCase
         $this->assertSame(2, $record->fresh()->doppelt);
     }
 
+    public function test_the_table_designer_recomputes_through_the_work_after_a_formula_change(): void
+    {
+        $service = $this->service();
+        $lines = $service->createTable(['name' => 'zeilen', 'label' => 'Zeilen'], [
+            ['name' => 'menge', 'label' => 'Menge', 'type' => 'integer'],
+            ['name' => 'doppelt', 'label' => 'Doppelt', 'type' => 'computed', 'options' => ['result' => 'integer', 'formula' => 'menge * 2']],
+        ]);
+        $record = DynamicRecord::forTable($lines->fresh('fields'))->create(['menge' => 2]);
+        $this->assertSame(4, $record->fresh()->doppelt);
+
+        $field = $lines->fields()->where('name', 'doppelt')->firstOrFail();
+        $service->updateField($field, ['options' => ['result' => 'integer', 'formula' => 'menge * 3']]);
+
+        $work = $service->lastRecompute();
+        $this->assertNotNull($work);
+        $this->assertSame([WorkItem::DONE, 'recompute', ['tables' => ['zeilen']]], [$work->status, $work->type, $work->parameterValues()]);
+        $this->assertSame(6, $record->fresh()->doppelt);
+
+        // Ein neues berechnetes Feld rechnet ebenfalls nach; ohne Formeländerung keine Arbeit.
+        $service->addField($lines, ['name' => 'dreifach', 'label' => 'Dreifach', 'type' => 'computed', 'options' => ['result' => 'integer', 'formula' => 'menge * 3']]);
+        $this->assertSame(6, $record->fresh()->dreifach);
+        $this->assertSame(2, WorkItem::query()->where('type', 'recompute')->count());
+    }
+
     public function test_long_steps_raise_the_time_limit_and_run_one_per_call(): void
     {
         $item = app(WorkService::class)->start(LongWork::KEY);

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Ui;
 
+use AnourValar\EloquentSerialize\Facades\EloquentSerializeFacade;
+use App\Apps\CurrentApp;
 use App\Documents\DocumentBatch;
 use App\Documents\DocumentGenerator;
 use App\Documents\DocumentMailer;
@@ -12,7 +14,6 @@ use App\Documents\Templates\TemplateException;
 use App\Documents\Templates\TemplateRenderer;
 use App\DynamicData\DataAccess;
 use App\DynamicData\Export\ExportFormat;
-use App\DynamicData\Export\TableExporter;
 use App\DynamicData\Import\RecordImportAnalysis;
 use App\DynamicData\Import\RecordImporter;
 use App\DynamicData\RecordCopier;
@@ -22,6 +23,7 @@ use App\DynamicData\Write\RecordWriter;
 use App\DynamicData\Write\StaleRecordException;
 use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
+use App\Filament\Resources\WorkItems\WorkItemResource;
 use App\Filament\Support\ActivityChanges;
 use App\Models\Activity;
 use App\Models\CustomField;
@@ -29,7 +31,10 @@ use App\Models\CustomTable;
 use App\Models\DocumentTemplate;
 use App\Models\DynamicRecord;
 use App\Models\User;
+use App\Models\WorkItem;
 use App\Support\AppLocale;
+use App\Work\Types\ExportWork;
+use App\Work\WorkService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
@@ -63,6 +68,7 @@ use Filament\Tables\Contracts\HasTable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -304,6 +310,10 @@ final class DynamicRecordActions
     }
 
     /**
+     * Export als Arbeit (Fundament 2, F3b): Die Aktion startet sie und arbeitet kurz mit (work.inline_budget). Ist die
+     * Datei dann fertig – der Normalfall –, kommt sie wie bisher direkt als Download; sonst geht es auf die Seite der
+     * Arbeit, wo der Browser weiterarbeitet und die Datei danach 24 Stunden bereitsteht.
+     *
      * @param  list<string>|null  $visible
      * @param  list<string>  $except
      */
@@ -317,7 +327,7 @@ final class DynamicRecordActions
                 $rows = (clone $query)->reorder()->count();
                 $limit = (int) config('dynamic_data.export_max_rows');
 
-                if ($rows > $limit) {
+                if ($limit > 0 && $rows > $limit) {
                     Notification::make()
                         ->title(__('data.export.too_large'))
                         ->body(__('data.export.too_large_body', ['rows' => Number::format($rows, locale: AppLocale::numberLocale()), 'limit' => Number::format($limit, locale: AppLocale::numberLocale())]))
@@ -328,28 +338,36 @@ final class DynamicRecordActions
                 }
 
                 $table->loadMissing('fields');
-                $fields = self::exportFields($livewire, $table, $visible, $except);
-                $path = app(TableExporter::class)->write($query, $fields, $format, $table->label);
+                $user = auth()->user() instanceof User ? auth()->user() : null;
+                $item = app(WorkService::class)->startAndAdvance(ExportWork::KEY, [
+                    'table_id' => $table->id,
+                    'fields' => array_map(static fn (CustomField $field): string => $field->name, self::exportFields($livewire, $table, $visible, $except)),
+                    'format' => $format->value,
+                    'title' => (string) $table->label,
+                    'query' => EloquentSerializeFacade::serialize($query),
+                    'rows' => $rows,
+                    'file' => $table->name.'_'.now()->format('Y-m-d_Hi').'.'.$format->value,
+                    'filter' => array_filter((array) $livewire->tableFilters, self::hasFilterValue(...)),
+                    'search' => (string) $livewire->getTableSearch(),
+                ], $user, app(CurrentApp::class)->id($user));
 
-                activity('data')
-                    ->performedOn($table)
-                    ->event('exported')
-                    ->withChanges(['attributes' => [
-                        'format' => $format->value,
-                        'zeilen' => $rows,
-                        'filter' => array_filter((array) $livewire->tableFilters, self::hasFilterValue(...)),
-                        'suche' => (string) $livewire->getTableSearch(),
-                    ]])
-                    ->log('exported');
+                if ($item->status === WorkItem::DONE && ($file = $item->resultFile()) !== null) {
+                    $path = Storage::disk('local')->path($item->directory().'/'.$file);
 
-                return response()->streamDownload(
-                    static function () use ($path): void {
+                    return response()->streamDownload(static function () use ($path): void {
                         readfile($path);
-                        unlink($path);
-                    },
-                    $table->name.'_'.now()->format('Y-m-d_Hi').'.'.$format->value,
-                    ['Content-Type' => $format->contentType()],
-                );
+                    }, $file, ['Content-Type' => $format->contentType()]);
+                }
+
+                if ($item->isOpen()) {
+                    $livewire->redirect(WorkItemResource::getUrl('view', ['record' => $item], panel: 'admin'));
+
+                    return null;
+                }
+
+                Notification::make()->danger()->title((string) $item->message)->persistent()->send();
+
+                return null;
             });
     }
 

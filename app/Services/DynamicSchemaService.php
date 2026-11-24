@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Apps\AppInterfaces;
+use App\Apps\CurrentApp;
 use App\DynamicData\DataMenu;
 use App\DynamicData\DataPermissions;
 use App\DynamicData\DetailRelations;
@@ -12,7 +13,6 @@ use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Formula\Printer;
-use App\DynamicData\Formula\Recalculator;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Rules\CopySource;
 use App\DynamicData\Rules\Operand;
@@ -31,8 +31,12 @@ use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\RecordFile;
+use App\Models\User;
+use App\Models\WorkItem;
 use App\Plugins\PluginDependencies;
 use App\Support\Translations;
+use App\Work\Types\RecomputeWork;
+use App\Work\WorkService;
 use Closure;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
@@ -216,7 +220,7 @@ final class DynamicSchemaService
         });
 
         if ($field->type === FieldType::Computed) {
-            app(Recalculator::class)->recomputeTable($table->fresh('fields') ?? $table);
+            $this->recompute($table);
         }
 
         return $field;
@@ -358,10 +362,32 @@ final class DynamicSchemaService
 
         // Formel, Ergebnisart oder Aktivierung eines berechneten Felds geändert: alle Werte neu berechnen.
         if ($updated->type === FieldType::Computed && [$updated->type, $updated->optionsArray(), $updated->is_active] != $before) {
-            app(Recalculator::class)->recomputeTable($table->fresh('fields') ?? $table);
+            $this->recompute($table);
         }
 
         return $updated;
+    }
+
+    /** So lange rechnet die Nachberechnung direkt im Request mit, bevor sie dem Hintergrund überlassen wird. */
+    private const float RECOMPUTE_BUDGET = 5.0;
+
+    private ?WorkItem $lastRecompute = null;
+
+    /**
+     * Nachberechnung aller Werte als Arbeit „Berechnete Felder neu berechnen“ (Fundament 2, F3b): kleine Tabellen sind
+     * fertig, bevor der Aufruf zurückkehrt; grosse rechnet der Browser oder der Scheduler weiter – lastRecompute() sagt,
+     * ob die Arbeit noch offen ist. Läuft als die angemeldete Person in ihrer App.
+     */
+    private function recompute(CustomTable $table): void
+    {
+        $user = auth()->user() instanceof User ? auth()->user() : null;
+        $this->lastRecompute = app(WorkService::class)->startAndAdvance(RecomputeWork::KEY, ['tables' => [$table->name]], $user, app(CurrentApp::class)->id($user), self::RECOMPUTE_BUDGET);
+    }
+
+    /** Die Nachberechnung, die addField() oder updateField() zuletzt gestartet hat; null, wenn keine nötig war. */
+    public function lastRecompute(): ?WorkItem
+    {
+        return $this->lastRecompute;
     }
 
     /**

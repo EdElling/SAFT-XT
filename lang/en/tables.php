@@ -277,6 +277,7 @@ return [
         'picker_plugins' => 'Functions from plugins',
         'recompute_none' => 'No tables with computed fields found.',
         'recompute_changed' => '1 record changed|:count records changed',
+        'recompute_background' => 'The computed fields are being recomputed in the background; the values appear step by step.',
         'errors' => [
             'at' => 'Character :position: :message',
             'empty' => 'Please enter a formula.',

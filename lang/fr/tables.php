@@ -277,6 +277,7 @@ return [
         'picker_plugins' => 'Fonctions issues de plugins',
         'recompute_none' => 'Aucune table avec des champs calculés.',
         'recompute_changed' => '1 enregistrement modifié|:count enregistrements modifiés',
+        'recompute_background' => 'Les champs calculés sont recalculés en arrière-plan ; les valeurs apparaissent progressivement.',
         'errors' => [
             'at' => 'Caractère :position : :message',
             'empty' => 'Veuillez saisir une formule.',
