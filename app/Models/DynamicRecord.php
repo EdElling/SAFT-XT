@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\DynamicData\CustomTableLookup;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Eloquent\OptionalSoftDeletingScope;
 use App\DynamicData\Formula\Recalculator;
@@ -279,12 +280,14 @@ class DynamicRecord extends Model
         } else {
             unset(self::$definitions[$name]);
         }
+
+        app(CustomTableLookup::class)->forget($name);
     }
 
     /** Tabelle des Table-Designers zu diesem Datensatz (für Dateifelder; null bei unbekannter Tabelle). */
     public function customTable(): ?CustomTable
     {
-        return $this->definitionName === null ? null : CustomTable::query()->with('fields')->where('name', $this->definitionName)->first();
+        return $this->definitionName === null ? null : app(CustomTableLookup::class)->byName($this->definitionName);
     }
 
     public function definitionName(): string

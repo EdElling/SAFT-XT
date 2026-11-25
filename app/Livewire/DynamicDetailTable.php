@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\DynamicData\CustomTableLookup;
 use App\DynamicData\DataAccess;
 use App\DynamicData\DetailRelations;
 use App\DynamicData\DetailSource;
@@ -12,7 +13,6 @@ use App\DynamicData\Ui\DynamicTableBuilder;
 use App\DynamicData\Ui\KeylessRow;
 use App\Filament\Concerns\HandlesStaleRecords;
 use App\Filament\Concerns\RemembersTableColumns;
-use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Plugins\Api\DataAction;
 use App\Plugins\PluginRegistry;
@@ -176,7 +176,7 @@ class DynamicDetailTable extends Component implements HasActions, HasSchemas, Ha
     private function authorizeAccess(): void
     {
         $field = $this->relationField();
-        $parent = CustomTable::query()->where('name', $this->parentTable)->firstOrFail();
+        $parent = app(CustomTableLookup::class)->byName($this->parentTable) ?? abort(404);
 
         abort_unless(DataAccess::current($parent, 'view') && DataAccess::current($field->child, 'view'), 403);
     }
@@ -202,9 +202,13 @@ class DynamicDetailTable extends Component implements HasActions, HasSchemas, Ha
 
     private function relationField(): DetailSource
     {
-        $parent = CustomTable::query()->where('name', $this->parentTable)->first();
+        if ($this->relationField !== null) {
+            return $this->relationField;
+        }
 
-        return $this->relationField ??= ($parent === null ? null : DetailRelations::configuredFor($parent)->firstWhere('id', $this->relationFieldId))
+        $parent = app(CustomTableLookup::class)->byName($this->parentTable);
+
+        return $this->relationField = ($parent === null ? null : DetailRelations::configuredFor($parent)->firstWhere('id', $this->relationFieldId))
             ?? abort(404);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\DynamicData\CustomTableLookup;
 use App\DynamicData\Rules\TableRule;
 use App\Models\Base\CustomTable as BaseCustomTable;
 use App\Models\Concerns\BelongsToApp;
@@ -29,6 +30,16 @@ class CustomTable extends BaseCustomTable
 
     /** Je Sprache (JSON); fehlt eine, gilt die Vorgabesprache. */
     public array $translatable = ['label', 'description'];
+
+    protected static function booted(): void
+    {
+        // Je Request geladene Tabellen (CustomTableLookup) verwerfen, sobald sich eine ändert.
+        $forget = static function (): void {
+            app(CustomTableLookup::class)->forget();
+        };
+        static::saved($forget);
+        static::deleted($forget);
+    }
 
     public const string SOURCE_DESIGNER = 'designer';
 

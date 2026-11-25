@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\DynamicData\CustomTableLookup;
 use App\DynamicData\DataAccess;
 use App\DynamicData\DataMenu;
 use App\DynamicData\Ui\KeylessRow;
@@ -69,7 +70,7 @@ final class RecordLink
 
     private static function forDynamicRecord(DynamicRecord $record): ?string
     {
-        $table = CustomTable::query()->where('name', $record->definitionName())->first();
+        $table = app(CustomTableLookup::class)->byName($record->definitionName());
 
         if ($table === null || ! $table->is_active || ! DataAccess::current($table, 'view')) {
             return null;
@@ -96,7 +97,7 @@ final class RecordLink
 
         try {
             $model = DynamicRecord::forMorphType((string) $activity->subject_type);
-            $table = $model === null ? null : CustomTable::query()->with('fields')->where('name', $model->definitionName())->first();
+            $table = $model === null ? null : app(CustomTableLookup::class)->byName($model->definitionName());
 
             if ($model === null || $table === null) {
                 return null;

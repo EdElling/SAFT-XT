@@ -13,6 +13,7 @@ use App\Auth\Sso\IdentityProviderType;
 use App\Auth\Sso\PendingSsoLogout;
 use App\Auth\Sso\SsoDriverRegistry;
 use App\Database\Migrations\NumberedMigrationCreator;
+use App\DynamicData\CustomTableLookup;
 use App\Filament\Pages\DataModelPage;
 use App\Http\Responses\LogoutResponse;
 use App\Models\Activity as AppActivity;
@@ -91,6 +92,7 @@ class AppServiceProvider extends ServiceProvider
         // Hilfe-Assistent: heute Claude; ein lokal betriebenes Modell bekäme hier eine eigene Umsetzung.
         $this->app->bind(ChatClient::class, AnthropicChatClient::class);
         $this->app->scoped(RoleSimulation::class);
+        $this->app->scoped(CustomTableLookup::class);
         // Plugins melden sich in ihren ServiceProvidern an (die vor diesem laufen, daher singletonIf).
         $this->app->singletonIf(PluginRegistry::class);
         $this->app->singleton(PluginDependencies::class);

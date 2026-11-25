@@ -17,6 +17,8 @@ use App\Models\DynamicRecord;
 use Filament\Actions\CreateAction;
 use Filament\Actions\Testing\TestAction;
 use Filament\Notifications\Notification;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 
@@ -181,6 +183,30 @@ class CascadeTest extends DynamicDataTestCase
         Livewire::test(DynamicDataPage::class, ['table' => 'kunden'])
             ->call('selectRecord', $this->kunde->id)
             ->assertSee('role="tab"', escape: false);
+    }
+
+    /** Je Klick wurde dieselbe Tabelle je Zeile und Zelle neu geladen (Lager-Demo: 462 Abfragen je Klick, 25.11.2026). */
+    public function test_row_click_loads_each_custom_table_once(): void
+    {
+        $this->actingAs($this->superAdmin());
+        $this->service()->updateTable($this->kunden->fresh(), ['detail_field_ids' => [
+            $this->fieldId('bestellungen', 'kunde_id'),
+            $this->fieldId('bestellungen', 'rechnung_an_id'),
+        ]]);
+        for ($i = 0; $i < 5; $i++) {
+            DynamicRecord::forTable($this->bestellungen)->create(['nummer' => "B-$i", 'kunde_id' => $this->kunde->id, 'rechnung_an_id' => $this->kunde->id]);
+        }
+        $page = Livewire::test(DynamicDataPage::class, ['table' => 'kunden'])->call('selectRecord', $this->kunde->id);
+
+        $byName = 0;
+        DB::listen(function (QueryExecuted $query) use (&$byName): void {
+            if (str_contains($query->sql, 'custom_tables') && str_contains($query->sql, '"name" = ?')) {
+                $byName++;
+            }
+        });
+        $page->call('selectRecord', $this->kunde->id);
+
+        $this->assertLessThanOrEqual(3, $byName, 'Tabellen des Table-Designers je Klick höchstens einmal je Name laden (CustomTableLookup).');
     }
 
     // --- Rechte -----------------------------------------------------------------------
