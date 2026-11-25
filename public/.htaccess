@@ -23,3 +23,9 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Antworten komprimieren, wenn der Webserver es nicht selbst tut (z. B. Webspace bei Strato):
+# HTML, JSON (Livewire), CSS, JavaScript und SVG sind zu 90 % kleiner. Ohne mod_deflate ohne Wirkung.
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>

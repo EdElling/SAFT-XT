@@ -394,6 +394,9 @@ Tried with a Strato webspace (MariaDB 11.8, PHP 8.4). Names in the customer port
 | `mysqldump` 5.6 is too old, `mariadb-dump` is missing | `DB_BACKUP_METHOD=php` (step 8) |
 | no `which` | `command -v <program>` |
 | HTTPS | activate the certificate for the (sub)domain and switch on **force SSL** under *Security* |
+| pages load slowly, the first request after a pause takes several seconds | switch on **PHP-Boost** (OPcache) in the customer portal. In addition create a `php.ini` in the domain's target directory (`saft/public`): `cp /opt/RZphp84/etc/php.ini ~/saft/public/php.ini` and append at the end: `opcache.revalidate_freq=60`, `opcache.max_accelerated_files=20000`, `opcache.interned_strings_buffer=32`, `opcache.file_cache=<SAFT folder>/storage/framework/opcache` (create the directory first with `mkdir -p`; `<SAFT folder>` is the absolute path as the web server sees it, at Strato `/home/strato/http/…/htdocs/saft`). A custom `php.ini` **replaces** Strato's template completely, hence the copy. It only takes effect once Strato restarts the PHP processes, i.e. after a few minutes without requests |
+| responses arrive uncompressed (a click in the master-detail view transfers about 900 kB instead of 60 kB) | `printf 'zlib.output_compression=On\n' > ~/saft/public/.user.ini` – effective without restart within five minutes. Static files are compressed by the `mod_deflate` block in `public/.htaccess` |
+| `curl` from the webspace to its own domain shows wrong, slow timings | requests from the server to itself bypass PHP-Boost. Measure response times from another machine only, e.g. `curl -s -o /dev/null -w '%{time_starttransfer}\n' https://saft.example.ch/admin/login` |
 
 **Procedure** (via SSH; at Strato the home directory already is `htdocs`):
 
@@ -477,7 +480,7 @@ alias php='/opt/RZphp84/bin/php-cli'   # if not in ~/.bashrc
 cd ~/saft
 php artisan down
 php artisan db:backup
-git pull
+git fetch --tags && git checkout v<new-version>    # the server is on a release tag, `git pull` does not work there
 php composer.phar install --optimize-autoloader   # demo with example plugins: without --no-dev
 php artisan migrate --force
 php artisan optimize && php artisan filament:optimize

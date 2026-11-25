@@ -398,6 +398,9 @@ Erprobt mit einem Strato-Webspace (MariaDB 11.8, PHP 8.4). Bezeichnungen im Kund
 | `mysqldump` 5.6 ist zu alt, `mariadb-dump` fehlt | `DB_BACKUP_METHOD=php` (Schritt 8) |
 | kein `which` | `command -v <programm>` |
 | HTTPS | Zertifikat für die (Sub-)Domain aktivieren und unter *Sicherheit* **SSL erzwingen** einschalten |
+| Seiten laden langsam, der erste Aufruf nach einer Pause dauert mehrere Sekunden | **PHP-Boost** (OPcache) im Kundenportal einschalten. Dazu eine `php.ini` im Zielverzeichnis der Domain (`saft/public`) anlegen: `cp /opt/RZphp84/etc/php.ini ~/saft/public/php.ini` und am Ende anhängen: `opcache.revalidate_freq=60`, `opcache.max_accelerated_files=20000`, `opcache.interned_strings_buffer=32`, `opcache.file_cache=<SAFT-Ordner>/storage/framework/opcache` (Verzeichnis vorher mit `mkdir -p` anlegen; `<SAFT-Ordner>` ist der absolute Pfad, wie ihn der Webserver sieht, bei Strato `/home/strato/http/…/htdocs/saft`). Eine eigene `php.ini` **ersetzt** die Vorlage von Strato vollständig, darum die Kopie. Sie gilt erst, wenn Strato die PHP-Prozesse neu startet, also nach einigen Minuten ohne Aufrufe |
+| Antworten kommen unkomprimiert an (ein Klick in der Master-Detail-Ansicht überträgt rund 900 kB statt 60 kB) | `printf 'zlib.output_compression=On\n' > ~/saft/public/.user.ini` – gilt ohne Neustart nach höchstens fünf Minuten. Statische Dateien komprimiert der `mod_deflate`-Block in `public/.htaccess` |
+| `curl` vom Webspace an die eigene Domain zeigt falsche, langsame Zeiten | Anfragen vom Server an sich selbst umgehen PHP-Boost. Antwortzeiten nur von einem anderen Rechner aus messen, z. B. `curl -s -o /dev/null -w '%{time_starttransfer}\n' https://saft.example.ch/admin/login` |
 
 **Ablauf** (per SSH; das Home-Verzeichnis ist bei Strato bereits `htdocs`):
 
@@ -481,7 +484,7 @@ alias php='/opt/RZphp84/bin/php-cli'   # falls nicht in ~/.bashrc
 cd ~/saft
 php artisan down
 php artisan db:backup
-git pull
+git fetch --tags && git checkout v<neue-version>   # der Server steht auf einem Release-Tag, `git pull` geht dort nicht
 php composer.phar install --optimize-autoloader   # Demo mit Beispiel-Plugins: ohne --no-dev
 php artisan migrate --force
 php artisan optimize && php artisan filament:optimize
