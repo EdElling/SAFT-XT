@@ -5,8 +5,9 @@ declare(strict_types=1);
 /*
  * Hilfsprozess für NumberSequenceConcurrencyTest (B-135): legt in einer Tabelle mit Nummernkreis-Feld Datensätze an,
  * gleichzeitig mit anderen Prozessen. Startet erst zum gemeinsamen Zeitpunkt, damit sich die Prozesse überlappen.
- * Aufruf: php create-numbered-records.php <tabelle> <anzahl> <start-unix-zeit-mit-bruchteil> [create|update]
+ * Aufruf: php create-numbered-records.php <tabelle> <anzahl> <start-unix-zeit-mit-bruchteil> [create|update|group]
  * „update“ (N3): erst ohne erfüllte Bedingung anlegen, dann „fertig“ setzen – die Nummer entsteht beim Ändern.
+ * „group“ (N4): abwechselnd Gruppe A und B (ungerade bzw. gerade laufende Nummer des Prozesses).
  * Die Umgebung (Testdatenbank) erbt der Prozess vom Test.
  */
 
@@ -39,6 +40,8 @@ try {
         if ($mode === 'update') {
             $record = $writer->create($table, ['titel' => getmypid().'-'.$i, 'fertig' => false], WriteOptions::seed());
             $writer->update($record, ['fertig' => true], WriteOptions::seed());
+        } elseif ($mode === 'group') {
+            $writer->create($table, ['titel' => getmypid().'-'.$i, 'art' => $i % 2 === 1 ? 'A' : 'B'], WriteOptions::seed());
         } else {
             $writer->create($table, ['titel' => getmypid().'-'.$i], WriteOptions::seed());
         }

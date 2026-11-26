@@ -21,7 +21,7 @@ final class NumberSequences
 {
     public const string TABLE = 'saft_number_sequences';
 
-    /** Gruppe ohne Gruppenfeld (N4: Wert des Gruppenfelds). */
+    /** Gruppe ohne Gruppenfeld (N4: sonst das Kurzzeichen der Wahl im Gruppenfeld). */
     public const string NO_GROUP = '';
 
     /** So oft wird höchstens weitergezählt, wenn die Nummer in der Tabelle schon vorkommt. */
@@ -78,7 +78,7 @@ final class NumberSequences
 
         do {
             $last++;
-            $number = $pattern->format($last, $period['year'], $period['month']);
+            $number = $pattern->format($last, $period['year'], $period['month'], $group);
 
             if (++$skips > self::MAX_SKIPS) {
                 throw new LogicException("Nummernkreis {$fieldId}: über ".self::MAX_SKIPS.' vergebene Nummern in Folge.');
@@ -125,6 +125,22 @@ final class NumberSequences
 
         return $this->query()->where(['field_id' => $fieldId, 'grp' => $group])->orderBy('period')
             ->pluck('last_value', 'period')->map(static fn (mixed $value): int => (int) $value)->all();
+    }
+
+    /**
+     * Alle Zählerstände eines Felds je Gruppe und Periode (N4), nach Gruppe und Periode sortiert.
+     *
+     * @return list<array{group: string, period: string, value: int}>
+     */
+    public function counters(int $fieldId): array
+    {
+        if (! $this->exists()) {
+            return [];
+        }
+
+        return $this->query()->where('field_id', $fieldId)->orderBy('grp')->orderBy('period')->get(['grp', 'period', 'last_value'])
+            ->map(static fn (object $row): array => ['group' => (string) $row->grp, 'period' => (string) $row->period, 'value' => (int) $row->last_value])
+            ->values()->all();
     }
 
     /**

@@ -83,7 +83,8 @@ final readonly class NumberConversion
                 }
             } else {
                 $matching++;
-                $highest[$parsed['key']] = max($highest[$parsed['key']] ?? 0, $parsed['number']);
+                $key = NumberAnalysis::key($parsed['key'], $parsed['group']);
+                $highest[$key] = max($highest[$key] ?? 0, $parsed['number']);
             }
 
             if ($row->deleted_at === null) {
@@ -101,8 +102,8 @@ final readonly class NumberConversion
     }
 
     /**
-     * Nach dem Typwechsel (Spalte ist schon Text): Ganzzahlen formatieren und die Zähler je Periode auf den höchsten
-     * passenden Wert anheben. Läuft im Lock des DynamicSchemaService.
+     * Nach dem Typwechsel (Spalte ist schon Text): Ganzzahlen formatieren und die Zähler je Periode (und Gruppe, N4)
+     * auf den höchsten passenden Wert anheben. Läuft im Lock des DynamicSchemaService.
      */
     public function apply(CustomTable $table, CustomField $field, FieldType $from): NumberAnalysis
     {
@@ -124,8 +125,9 @@ final readonly class NumberConversion
         $analysis = $this->analyze($table, $column, $pattern, FieldType::Number);
         $this->sequences->ensureTable();
 
-        foreach ($analysis->highest as $period => $number) {
-            $this->sequences->raise((int) $field->id, (string) $period, $number, $pattern->start);
+        foreach ($analysis->highest as $key => $number) {
+            ['group' => $group, 'period' => $period] = NumberAnalysis::split((string) $key);
+            $this->sequences->raise((int) $field->id, $period, $number, $pattern->start, $group);
         }
 
         return $analysis;

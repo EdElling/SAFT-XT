@@ -152,6 +152,26 @@ class AppInstallerTest extends DynamicDataTestCase
         $this->assertSame('B-'.now()->format('Y').'-100', DynamicRecord::forTable($installed)->create(['nummer' => 'y'])->beleg, 'Zähler reisen nicht mit: beginnt beim Startwert.');
     }
 
+    public function test_grouped_number_sequence_installs_after_its_select_field(): void
+    {
+        $orders = CustomTable::query()->where('name', 'vk_bestellungen')->sole();
+        $this->service()->addField($orders, ['name' => 'art', 'label' => 'Art', 'type' => 'select', 'is_required' => true, 'options' => ['options' => [['value' => 'Auftrag'], ['value' => 'Gutschrift']]]]);
+        $this->service()->addField($orders->fresh(), ['name' => 'beleg', 'label' => 'Beleg', 'type' => 'number', 'options' => [
+            'pattern' => '{GROUP}{#}', 'group_field' => 'art', 'group_codes' => ['Auftrag' => 'A', 'Gutschrift' => 'G'],
+        ]]);
+
+        // Im Paket steht der Nummernkreis vor seinem Gruppenfeld.
+        $definition = $this->definition();
+        $i = array_search('vk_bestellungen', array_column($definition['tables'], 'name'), true);
+        usort($definition['tables'][$i]['fields'], static fn (array $a, array $b): int => ($b['name'] === 'beleg') <=> ($a['name'] === 'beleg'));
+        $this->wipe();
+        $this->installer()->install($definition, null, $this->admin);
+
+        $installed = CustomTable::query()->where('name', 'vk_bestellungen')->sole();
+        $this->assertEquals(['Auftrag' => 'A', 'Gutschrift' => 'G'], $installed->fields->firstWhere('name', 'beleg')->optionsArray()['group_codes']);
+        $this->assertSame('G1', DynamicRecord::forTable($installed)->create(['nummer' => 'x', 'art' => 'Gutschrift'])->beleg);
+    }
+
     public function test_installs_a_copy_with_renamed_tables_and_new_keys(): void
     {
         $definition = $this->definition();

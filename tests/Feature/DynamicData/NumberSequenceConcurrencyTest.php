@@ -70,8 +70,26 @@ class NumberSequenceConcurrencyTest extends TestCase
         ]);
     }
 
-    /** @param  list<array<string, mixed>>  $fields */
-    private function runParallel(string $mode, array $fields): void
+    /** N4: zwei Gruppen mit eigenem Zähler, gleichzeitig in mehreren Prozessen. */
+    public function test_parallel_creation_in_two_groups(): void
+    {
+        $odd = (int) ceil(self::RECORDS / 2) * self::PROCESSES;
+        $even = (int) floor(self::RECORDS / 2) * self::PROCESSES;
+
+        $this->runParallel('group', [
+            ['name' => 'art', 'label' => 'Art', 'type' => 'select', 'is_required' => true, 'options' => ['options' => [['value' => 'A'], ['value' => 'B']]]],
+            ['name' => 'nummer', 'label' => 'Nummer', 'type' => 'number', 'options' => [NumberPattern::PATTERN => '{GROUP}-{0000}', NumberPattern::GROUP_FIELD => 'art']],
+        ], [
+            ...array_map(static fn (int $n): string => sprintf('A-%04d', $n), range(1, $odd)),
+            ...array_map(static fn (int $n): string => sprintf('B-%04d', $n), range(1, $even)),
+        ]);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $fields
+     * @param  list<string>|null  $expected  sortierte Nummern; null = P-0001 … ohne Lücke
+     */
+    private function runParallel(string $mode, array $fields, ?array $expected = null): void
     {
         $this->testApp = App::query()->create(['name' => ['de' => 'Parallel'], 'prefix' => null, 'sort_order' => 99]);
         $this->table = app(DynamicSchemaService::class)->createTable(['name' => 'nk_parallel', 'label' => 'Parallel', 'app_id' => $this->testApp->id], [
@@ -97,7 +115,7 @@ class NumberSequenceConcurrencyTest extends TestCase
         }
 
         $numbers = DynamicRecord::forTable($this->table)->newQuery()->pluck('nummer')->sort()->values()->all();
-        $expected = array_map(static fn (int $n): string => sprintf('P-%04d', $n), range(1, self::PROCESSES * self::RECORDS));
+        $expected ??= array_map(static fn (int $n): string => sprintf('P-%04d', $n), range(1, self::PROCESSES * self::RECORDS));
 
         $this->assertSame($expected, $numbers, 'Jede Nummer genau einmal, ohne Lücke.');
     }

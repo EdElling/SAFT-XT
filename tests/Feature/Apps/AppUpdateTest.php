@@ -196,6 +196,38 @@ class AppUpdateTest extends DynamicDataTestCase
         $this->assertSame([], array_map(static fn (ChangeStep $s): string => $s->id, $this->plan($package)->steps));
     }
 
+    public function test_grouped_number_sequence_is_created_after_its_select_and_changed_codes_are_risky(): void
+    {
+        $art = ['key' => (string) Str::uuid(), 'name' => 'art', 'label' => ['de' => 'Art'], 'type' => 'select', 'is_required' => true, 'sort_order' => 9,
+            'options' => ['options' => [['value' => 'Auftrag', 'label' => ['de' => 'Auftrag']], ['value' => 'Gutschrift', 'label' => ['de' => 'Gutschrift']]]]];
+        $beleg = ['key' => (string) Str::uuid(), 'name' => 'beleg', 'label' => ['de' => 'Beleg'], 'type' => 'number', 'sort_order' => 8,
+            'options' => ['pattern' => '{GROUP}-{#}', 'reset' => 'never', 'group_field' => 'art', 'group_codes' => ['Auftrag' => 'A', 'Gutschrift' => 'G'], 'start' => 1, 'length' => 60]];
+        $package = $this->package(static function (array $d) use ($art, $beleg): array {
+            $orders = array_search('vk_bestellungen', array_column($d['tables'], 'name'), true);
+            // Der Nummernkreis steht vor seinem Gruppenfeld.
+            $d['tables'][$orders]['fields'] = [...$d['tables'][$orders]['fields'], $beleg, $art];
+
+            return $d;
+        });
+
+        app(ChangeExecutor::class)->apply($this->sales, $plan = $this->plan($package), $plan->preselected(), false, $this->admin);
+        $this->assertSame('G-1', DynamicRecord::forTableName('vk_bestellungen')->create(['nummer' => 'B-3', 'art' => 'Gutschrift'])->beleg);
+
+        // 3.0: Kurzzeichen geändert, neue Wahl mit eigenem Kurzzeichen – heikel; Nummernkreis vor dem Auswahlfeld geändert.
+        $next = self::field($this->definition(), 'vk_bestellungen', 'beleg', static fn (array $f): array => [...$f, 'options' => [...$f['options'], 'group_codes' => ['Auftrag' => 'AU', 'Gutschrift' => 'G', 'Rückgabe' => 'R']]]);
+        $next = self::field($next, 'vk_bestellungen', 'art', static fn (array $f): array => [...$f, 'options' => ['options' => [...$f['options']['options'], ['value' => 'Rückgabe', 'label' => ['de' => 'Rückgabe']]]]]);
+        $next['app']['version'] = '3.0';
+        $plan = $this->plan($next);
+        $step = $plan->step('field:'.$this->key('vk_bestellungen', 'beleg'));
+
+        $this->assertSame(ChangeStep::RISKY, $step->level);
+        $this->assertContains(__('apps.update.notes.number_group', ['field' => 'art']), $step->notes);
+
+        app(ChangeExecutor::class)->apply($this->sales, $plan, $plan->preselected(), false, $this->admin);
+        $this->assertSame('R-1', DynamicRecord::forTableName('vk_bestellungen')->create(['nummer' => 'B-4', 'art' => 'Rückgabe'])->beleg);
+        $this->assertSame('AU-1', DynamicRecord::forTableName('vk_bestellungen')->create(['nummer' => 'B-5', 'art' => 'Auftrag'])->beleg);
+    }
+
     public function test_destructive_steps_need_confirmation_and_impossible_type_changes_are_blocked(): void
     {
         $nummer = $this->key('vk_bestellungen', 'nummer');

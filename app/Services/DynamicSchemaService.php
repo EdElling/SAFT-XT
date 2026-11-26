@@ -302,6 +302,14 @@ final class DynamicSchemaService
                 $this->assertNotNumberDate($table, $field->name);
             }
 
+            // Gruppe eines Nummernkreises (N4): bleibt ein aktives Pflichtfeld vom Typ Auswahl; neue Wahlen brauchen ein
+            // Kurzzeichen (ihr Wert oder ein Eintrag im Nummernkreis).
+            if ($new['type'] !== FieldType::Select || ! $new['is_required'] || ! $new['is_active']) {
+                $this->assertNotNumberGroup($table, $field->name);
+            } else {
+                $this->assertNumberGroupChoices($table, $field->name, $new['options']);
+            }
+
             // „Vergeben, wenn“ eines Nummernkreises (N3): das Feld bleibt aktiv und vergleichbar (keine Datei).
             if (! $new['is_active'] || $new['type'] === FieldType::File) {
                 $this->assertNotNumberCondition($table, $field->name);
@@ -357,6 +365,7 @@ final class DynamicSchemaService
                 $this->renameRuleReferences($table, $field->name, $new['name']);
                 $this->updateSuggestScopes($table, $field->name, $new['name']);
                 $this->renameNumberDateReferences($table, $field->name, $new['name']);
+                $this->renameNumberGroupReferences($table, $field->name, $new['name']);
                 $this->renameNumberConditionReferences($table, $field->name, $new['name']);
                 $this->renameCopyReferences($table, $field->name, $new['name']);
                 $this->renameFormulaReferences($table, $field->name, $new['name']);
@@ -376,6 +385,10 @@ final class DynamicSchemaService
             }
 
             $field->fill($new)->save();
+
+            if ($field->type === FieldType::Select) {
+                $this->syncNumberGroupCodes($table, $field);
+            }
 
             // Umgestellt: Ganzzahlen formatieren, Zähler je Periode auf den höchsten passenden Wert (vor dem Index).
             if ($numberChange && $field->type === FieldType::Number) {
@@ -505,6 +518,63 @@ final class DynamicSchemaService
         if ($number !== null) {
             $this->fail(__('numbering.errors.date_field_in_use', ['name' => $field, 'field' => $number->name]));
         }
+    }
+
+    /** Nummernkreise der Tabelle, deren Gruppe dieses Feld ist (N4). */
+    private function assertNotNumberGroup(CustomTable $table, string $field): void
+    {
+        if (($number = $this->numbersGroupedBy($table, $field)->first()) !== null) {
+            $this->fail(__('numbering.errors.group_field_in_use', ['name' => $field, 'field' => $number->name]));
+        }
+    }
+
+    /**
+     * Neue Wahlen eines Gruppenfelds (N4): Ohne Eintrag im Nummernkreis ist ihr Wert das Kurzzeichen und muss gültig
+     * sein – sonst scheiterte später die Vergabe.
+     *
+     * @param  array<string, mixed>  $options  normalisierte Optionen des Auswahlfelds
+     */
+    private function assertNumberGroupChoices(CustomTable $table, string $field, array $options): void
+    {
+        foreach ($this->numbersGroupedBy($table, $field) as $number) {
+            $codes = (array) ($number->optionsArray()[NumberPattern::GROUP_CODES] ?? []);
+
+            foreach ((array) ($options['options'] ?? []) as $choice) {
+                $value = (string) (is_array($choice) ? ($choice['value'] ?? '') : $choice);
+
+                if (! isset($codes[$value]) && ! NumberPattern::validCode($value)) {
+                    $this->fail(__('numbering.errors.group_choice_in_use', ['value' => $value, 'name' => $field, 'field' => $number->name, 'max' => NumberPattern::MAX_CODE]));
+                }
+            }
+        }
+    }
+
+    /** Neue Wahlen eines Gruppenfelds bekommen im Nummernkreis ihren Wert als Kurzzeichen; entfernte behalten ihres. */
+    private function syncNumberGroupCodes(CustomTable $table, CustomField $select): void
+    {
+        foreach ($this->numbersGroupedBy($table, $select->name) as $number) {
+            $options = $number->optionsArray();
+            $codes = (array) ($options[NumberPattern::GROUP_CODES] ?? []);
+            $missing = array_diff(FieldDefinitionNormalizer::choiceValues($select), array_map(strval(...), array_keys($codes)));
+
+            if ($missing !== []) {
+                $number->forceFill(['options' => [...$options, NumberPattern::GROUP_CODES => $codes + array_combine($missing, $missing)]])->save();
+            }
+        }
+    }
+
+    private function renameNumberGroupReferences(CustomTable $table, string $from, string $to): void
+    {
+        foreach ($this->numbersGroupedBy($table, $from) as $number) {
+            $number->forceFill(['options' => [...$number->optionsArray(), NumberPattern::GROUP_FIELD => $to]])->save();
+        }
+    }
+
+    /** @return Collection<int, CustomField> */
+    private function numbersGroupedBy(CustomTable $table, string $field): Collection
+    {
+        return $table->fields()->where('type', FieldType::Number->value)->get()
+            ->filter(static fn (CustomField $f): bool => ($f->optionsArray()[NumberPattern::GROUP_FIELD] ?? null) === $field)->values();
     }
 
     /** Nummernkreise der Tabelle, deren „Vergeben, wenn“ dieses Feld liest (N3). */
@@ -776,6 +846,7 @@ final class DynamicSchemaService
             }
 
             $this->assertNotNumberDate($table, $field->name);
+            $this->assertNotNumberGroup($table, $field->name);
             $this->assertNotNumberCondition($table, $field->name);
 
             $usedAsDisplay = $this->relationsDisplaying($table, $field->name)->isNotEmpty();

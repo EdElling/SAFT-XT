@@ -134,7 +134,37 @@ final class NumberAssigner
             $pattern,
             $period,
             static fn (string $candidate): bool => $record->newQueryWithoutScopes()->where($field, $candidate)->exists(),
+            $this->group($record, $field, $number['options']),
         ));
+    }
+
+    /**
+     * Kurzzeichen der Gruppe (N4) aus dem Gruppenfeld des Datensatzes zum Zeitpunkt der Vergabe; ohne Gruppenfeld
+     * NO_GROUP. Eine spätere Änderung der Gruppe lässt die vergebene Nummer stehen.
+     *
+     * @param  array<string, mixed>  $options
+     */
+    private function group(DynamicRecord $record, string $field, array $options): string
+    {
+        $groupField = trim((string) ($options[NumberPattern::GROUP_FIELD] ?? ''));
+
+        if ($groupField === '') {
+            return NumberSequences::NO_GROUP;
+        }
+
+        $value = $record->getAttribute($groupField);
+
+        if ($value === null || $value === '') {
+            throw new BusinessRuleException(__('numbering.errors.group_missing', ['field' => $field, 'group' => $groupField]), 'dynamic.number_group_missing');
+        }
+
+        $code = (string) (((array) ($options[NumberPattern::GROUP_CODES] ?? []))[(string) $value] ?? $value);
+
+        if (! NumberPattern::validCode($code)) {
+            throw new BusinessRuleException(__('numbering.errors.group_value', ['field' => $field, 'value' => $value, 'max' => NumberPattern::MAX_CODE]), 'dynamic.number_group_invalid');
+        }
+
+        return $code;
     }
 
     /**
@@ -168,7 +198,8 @@ final class NumberAssigner
         $parsed = $pattern->parse($value);
 
         if ($parsed !== null) {
-            $this->sequences->raise($number['id'], $parsed['key'], $parsed['number'], $pattern->start);
+            // Mit Gruppe (N4) der Zähler des Kurzzeichens in der Nummer, nicht der Gruppe des Datensatzes.
+            $this->sequences->raise($number['id'], $parsed['key'], $parsed['number'], $pattern->start, $parsed['group']);
         }
     }
 

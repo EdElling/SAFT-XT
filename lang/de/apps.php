@@ -299,6 +299,7 @@ return [
             'relation_target' => 'Verknüpfung zeigt neu auf „:table“.',
             'formula' => 'Formel geändert – Werte werden neu berechnet.',
             'number_pattern' => 'Muster des Nummernkreises geändert (:pattern) – vorhandene Nummern bleiben, neue folgen dem neuen Muster.',
+            'number_group' => 'Gruppe des Nummernkreises bzw. Kurzzeichen geändert (:field) – vorhandene Nummern bleiben, neue zählen je Kurzzeichen.',
             'number_conversion' => 'Umstellen auf Nummernkreis: :summary',
             'choices_removed' => 'Auswahlwerte entfallen: :values.',
             'rules' => 'Regeln geändert – bestehende Datensätze werden beim nächsten Bearbeiten geprüft.',

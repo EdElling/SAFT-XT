@@ -14,7 +14,7 @@ final readonly class NumberAnalysis
      * @param  int  $values  Werte (nicht leer), auch im Papierkorb
      * @param  int  $matching  davon passend zum Muster
      * @param  int  $empty  nicht gelöschte Datensätze ohne Wert (können nachnummeriert werden)
-     * @param  array<string, int>  $highest  Periode => höchste passende laufende Nummer
+     * @param  array<string, int>  $highest  Schlüssel aus Gruppe und Periode (key()) => höchste passende laufende Nummer
      * @param  list<string>  $mismatches  die ersten nicht passenden Werte
      * @param  list<string>  $duplicates  die ersten doppelten Werte unter den nicht gelöschten Datensätzen
      */
@@ -26,6 +26,27 @@ final readonly class NumberAnalysis
         public array $mismatches,
         public array $duplicates,
     ) {}
+
+    /**
+     * Schlüssel für Gruppe und Periode, z. B. „2026“ ohne Gruppe, „V 2026“ mit Kurzzeichen V (N4). Kurzzeichen und
+     * Perioden enthalten keine Leerzeichen.
+     */
+    public static function key(string $period, string $group = NumberSequences::NO_GROUP): string
+    {
+        return $group === NumberSequences::NO_GROUP ? $period : $group.' '.$period;
+    }
+
+    /**
+     * Gegenstück zu key().
+     *
+     * @return array{group: string, period: string}
+     */
+    public static function split(string $key): array
+    {
+        $parts = explode(' ', $key, 2);
+
+        return count($parts) === 2 ? ['group' => $parts[0], 'period' => $parts[1]] : ['group' => NumberSequences::NO_GROUP, 'period' => $key];
+    }
 
     public function hasDuplicates(): bool
     {
@@ -43,7 +64,7 @@ final readonly class NumberAnalysis
 
         if ($this->highest !== []) {
             $parts[] = __('numbering.conversion.highest', ['list' => implode(', ', array_map(
-                static fn (string $period, int $number): string => ($period === NumberPattern::NO_PERIOD ? '' : $period.': ').$number,
+                static fn (string $key, int $number): string => (($key = trim(str_replace(NumberPattern::NO_PERIOD, '', $key))) === '' ? '' : $key.': ').$number,
                 array_keys($this->highest),
                 $this->highest,
             ))]);

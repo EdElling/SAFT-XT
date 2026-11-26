@@ -239,7 +239,8 @@ final class FieldDefinitionNormalizer
         $reset = (string) ($options[NumberPattern::RESET] ?? 'never');
         $fiscal = $reset === 'yearly' ? $this->int($options[NumberPattern::FISCAL_START] ?? 1, 1, 12, __('numbering.fields.fiscal_start')) : 1;
         $start = $this->int($options[NumberPattern::START] ?? 1, 1, 1_000_000_000, __('numbering.fields.start'));
-        $pattern = NumberPattern::make((string) ($options[NumberPattern::PATTERN] ?? ''), $reset, $fiscal, $start);
+        [$groupField, $codes] = $this->numberGroup($options, $owner);
+        $pattern = NumberPattern::make((string) ($options[NumberPattern::PATTERN] ?? ''), $reset, $fiscal, $start, $groupField === '' ? null : array_values($codes));
         $dateField = trim((string) ($options[NumberPattern::DATE_FIELD] ?? ''));
 
         if ($dateField !== '') {
@@ -267,10 +268,81 @@ final class FieldDefinitionNormalizer
             ...($dateField === '' ? [] : [NumberPattern::DATE_FIELD => $dateField]),
             ...($reset === 'yearly' && $fiscal !== 1 ? [NumberPattern::FISCAL_START => $fiscal] : []),
             NumberPattern::START => $start,
+            ...($groupField === '' ? [] : [NumberPattern::GROUP_FIELD => $groupField, NumberPattern::GROUP_CODES => $codes]),
             ...$condition,
             // Spaltenlänge wie bei Textfeldern (Anzeige, Index, Typwechsel).
             'length' => NumberPattern::COLUMN_LENGTH,
         ];
+    }
+
+    /**
+     * Gruppe eines Nummernkreises (N4): ein aktives Pflichtfeld vom Typ Auswahl derselben Tabelle und je Wahl ein
+     * Kurzzeichen für {GROUP}. Fehlt eines, gilt der Wert der Wahl, wenn er ein gültiges Kurzzeichen ist. Einträge für
+     * Werte, die (noch) keine Wahl sind, bleiben: entfernte Wahlen (alte Nummern zurücklesen) und künftige.
+     *
+     * @param  array<string, mixed>  $options
+     * @return array{0: string, 1: array<string, string>} Gruppenfeld ('' = ohne) und Wert => Kurzzeichen
+     */
+    private function numberGroup(array $options, ?CustomTable $owner): array
+    {
+        $groupField = trim((string) ($options[NumberPattern::GROUP_FIELD] ?? ''));
+
+        if ($groupField === '') {
+            return ['', []];
+        }
+
+        $select = $owner?->fields()->where('name', $groupField)->first();
+
+        if (! $select instanceof CustomField || $select->type !== FieldType::Select) {
+            $this->fail(__('numbering.errors.group_field', ['field' => $groupField]));
+        }
+
+        if (! $select->is_required || ! $select->is_active) {
+            $this->fail(__('numbering.errors.group_field_required', ['field' => $groupField]));
+        }
+
+        $codes = [];
+
+        foreach ((array) ($options[NumberPattern::GROUP_CODES] ?? []) as $value => $code) {
+            $code = trim((string) $code);
+
+            if ($code === '') {
+                continue;
+            }
+
+            if (! NumberPattern::validCode($code)) {
+                $this->fail(__('numbering.errors.group_code', ['code' => $code, 'max' => NumberPattern::MAX_CODE]));
+            }
+
+            $codes[(string) $value] = $code;
+        }
+
+        foreach (self::choiceValues($select) as $value) {
+            if (isset($codes[$value])) {
+                continue;
+            }
+
+            if (! NumberPattern::validCode($value)) {
+                $this->fail(__('numbering.errors.group_choice', ['value' => $value, 'max' => NumberPattern::MAX_CODE]));
+            }
+
+            $codes[$value] = $value;
+        }
+
+        return [$groupField, $codes];
+    }
+
+    /**
+     * Gespeicherte Werte eines Auswahlfelds.
+     *
+     * @return list<string>
+     */
+    public static function choiceValues(CustomField $select): array
+    {
+        return array_values(array_map(
+            static fn (mixed $c): string => (string) (is_array($c) ? ($c['value'] ?? '') : $c),
+            (array) ($select->optionsArray()['options'] ?? []),
+        ));
     }
 
     /**

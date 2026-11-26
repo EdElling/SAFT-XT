@@ -299,6 +299,7 @@ return [
             'relation_target' => 'Il collegamento ora punta a «:table».',
             'formula' => 'Formula modificata – i valori vengono ricalcolati.',
             'number_pattern' => 'Modello dell’intervallo di numerazione modificato (:pattern) – i numeri esistenti restano, i nuovi seguono il nuovo modello.',
+            'number_group' => 'Gruppo o codici dell’intervallo di numerazione modificati (:field) – i numeri esistenti restano, i nuovi contano per codice.',
             'number_conversion' => 'Passaggio a intervallo di numerazione: :summary',
             'choices_removed' => 'Valori di scelta eliminati: :values.',
             'rules' => 'Regole modificate – i record esistenti vengono controllati alla prossima modifica.',

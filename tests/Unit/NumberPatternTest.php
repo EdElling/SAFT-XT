@@ -42,13 +42,52 @@ class NumberPatternTest extends TestCase
     {
         $pattern = NumberPattern::make('R-{YYYY}-{0000}', 'yearly');
 
-        $this->assertSame(['key' => '2025', 'number' => 17], $pattern->parse('R-2025-0017'));
-        $this->assertSame(['key' => '2025', 'number' => 12345], $pattern->parse('R-2025-12345'));
+        $this->assertSame(['key' => '2025', 'group' => '', 'number' => 17], $pattern->parse('R-2025-0017'));
+        $this->assertSame(['key' => '2025', 'group' => '', 'number' => 12345], $pattern->parse('R-2025-12345'));
         $this->assertNull($pattern->parse('R-2025-017'), 'Andere Auffüllung passt nicht.');
         $this->assertNull($pattern->parse('R-2025-00017'));
         $this->assertNull($pattern->parse('RE-2025-0017'));
-        $this->assertSame(['key' => '2026-02', 'number' => 3], NumberPattern::make('{YY}{MM}-{#}', 'monthly')->parse('2602-3'));
-        $this->assertSame(['key' => NumberPattern::NO_PERIOD, 'number' => 99], NumberPattern::make('K{#}')->parse('K99'));
+        $this->assertSame(['key' => '2026-02', 'group' => '', 'number' => 3], NumberPattern::make('{YY}{MM}-{#}', 'monthly')->parse('2602-3'));
+        $this->assertSame(['key' => NumberPattern::NO_PERIOD, 'group' => '', 'number' => 99], NumberPattern::make('K{#}')->parse('K99'));
+    }
+
+    public function test_group_placeholder_formats_and_reads_back_the_code(): void
+    {
+        $pattern = NumberPattern::make('{GROUP}-{YYYY}-{000}', 'yearly', groups: ['V', 'E', 'A-B']);
+
+        $this->assertSame('V-2026-007', $pattern->format(7, 2026, 11, 'V'));
+        $this->assertSame(['key' => '2026', 'group' => 'E', 'number' => 12], $pattern->parse('E-2026-012'));
+        $this->assertSame(['key' => '2026', 'group' => 'A-B', 'number' => 1], $pattern->parse('A-B-2026-001'), 'Kurzzeichen mit Bindestrich bleiben eindeutig.');
+        $this->assertNull($pattern->parse('X-2026-001'), 'Nur bekannte Kurzzeichen.');
+        $this->assertSame(['A-B', 'E', 'V'], $pattern->groups, 'Längste zuerst.');
+        $this->assertSame(12, $pattern->maxLength(), 'Das längste Kurzzeichen zählt.');
+        $this->assertTrue($pattern->differs(NumberPattern::make('{GROUP}-{YYYY}-{000}', 'yearly', groups: ['V', 'E'])));
+        $this->assertFalse($pattern->differs(NumberPattern::make('{GROUP}-{YYYY}-{000}', 'yearly', groups: ['E', 'A-B', 'V'])));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: list<string>|null}>
+     */
+    public static function invalidGroupPatterns(): array
+    {
+        return [
+            'Gruppe ohne {GROUP}' => ['R-{0000}', ['V']],
+            'zweimal {GROUP}' => ['{GROUP}{GROUP}-{0000}', ['V']],
+            '{GROUP} ohne Gruppe' => ['{GROUP}-{0000}', null],
+            'Kurzzeichen mit Umlaut' => ['{GROUP}-{0000}', ['Ü']],
+            'Kurzzeichen mit Leerzeichen' => ['{GROUP}-{0000}', ['A B']],
+            'Kurzzeichen zu lang' => ['{GROUP}-{0000}', ['ABCDEFGHIJK']],
+            'zu lang mit Kurzzeichen' => [str_repeat('X', 40).'{GROUP}{0000}', ['ABCDEFGH']],
+        ];
+    }
+
+    /** @param  list<string>|null  $groups */
+    #[DataProvider('invalidGroupPatterns')]
+    public function test_invalid_group_patterns_are_rejected(string $pattern, ?array $groups): void
+    {
+        $this->expectException(BusinessRuleException::class);
+
+        NumberPattern::make($pattern, groups: $groups);
     }
 
     /**

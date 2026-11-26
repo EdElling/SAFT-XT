@@ -137,8 +137,13 @@ final class ChangeExecutor
         // 3. Neue Felder in bestehenden Tabellen: einfache, Verknüpfungen, Übernahmen und „Zählen je“, berechnete.
         $this->createFields($of('field', ChangeStep::CREATE));
 
-        // 4. Felder ändern (Paket- und gewählte Konfliktänderungen zusammen).
-        foreach ($this->merged($of('field', ChangeStep::UPDATE)) as $step) {
+        // 4. Felder ändern (Paket- und gewählte Konfliktänderungen zusammen). Nummernkreise zuerst: Kurzzeichen für neue
+        // Wahlen ihres Gruppenfelds (N4) müssen stehen, bevor das Auswahlfeld die Wahlen bekommt.
+        $updates = $this->merged($of('field', ChangeStep::UPDATE));
+        $isNumber = static fn (ChangeStep $s): bool => ($s->target['type'] ?? null) === FieldType::Number->value;
+        $updates = [...array_filter($updates, $isNumber), ...array_filter($updates, static fn (ChangeStep $s): bool => ! $isNumber($s))];
+
+        foreach ($updates as $step) {
             $this->service->updateField($this->field($step->key), array_diff_key(self::values($step->changes), ['options' => true]) + self::options($step->changes));
             $this->done[] = $step->label;
         }
@@ -564,8 +569,9 @@ final class ChangeExecutor
     private function createFields(array $steps): void
     {
         $order = static fn (ChangeStep $s): int => match (true) {
-            // Nummernkreis mit Bezugsdatum (B-135): nach dem Datumsfeld, vor den Verknüpfungen (die ihn anzeigen dürfen).
-            ($s->target['type'] ?? null) === FieldType::Number->value && ! empty($s->target['options'][NumberPattern::DATE_FIELD]) => 1,
+            // Nummernkreis mit Bezugsdatum bzw. Gruppe (B-135): nach dem Datums- bzw. Auswahlfeld, vor den Verknüpfungen
+            // (die ihn anzeigen dürfen).
+            ($s->target['type'] ?? null) === FieldType::Number->value && (! empty($s->target['options'][NumberPattern::DATE_FIELD]) || ! empty($s->target['options'][NumberPattern::GROUP_FIELD])) => 1,
             ($s->target['type'] ?? null) === FieldType::Relation->value => 2,
             ($s->target['type'] ?? null) === FieldType::Computed->value => self::COMPUTED_RANK,
             // Bezieht sich auf eine Verknüpfung: Übernehmen aus, fortlaufend je …
