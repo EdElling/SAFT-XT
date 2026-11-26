@@ -24,6 +24,9 @@ return [
         'assigned_on_save' => 'wird beim Speichern vergeben',
         'assigned_when' => 'wird vergeben, wenn :condition',
         'assign_when_help' => 'Leer: beim Anlegen. Sonst eine Bedingung als Formel, z. B. status <> \'entwurf\'. Die Nummer wird beim ersten Speichern vergeben, bei dem die Bedingung zutrifft, und bleibt danach fest.',
+        'assign_when_ok' => 'Bedingung in Ordnung – hängt ab von: :fields. Die Nummer wird beim ersten Speichern vergeben, bei dem sie zutrifft.',
+        'assign_when_help_toggle' => 'Hilfe zur Bedingung',
+        'assign_when_help_text' => 'Die Bedingung vergleicht Felder dieses Datensatzes mit = <> < <= > >=, verknüpft mit and/or und Klammern. Text steht in einfachen Anführungszeichen; bei Auswahlfeldern zählt der gespeicherte Wert (siehe Tooltip des Felds), z. B. status <> \'entwurf\'. Ein Ja/Nein-Feld allein ist schon eine Bedingung, z. B. definitiv. Ist eine Seite eines Vergleichs leer, ist er nicht erfüllt. Text unscharf vergleichen (ohne Gross-/Kleinschreibung): contains(feld, \'teil\'), startswith(…), endswith(…); dazu coalesce, if, round, abs, min und max. Nicht möglich sind berechnete Felder und Summen über andere Tabellen, weil die Bedingung vor den Formeln geprüft wird. Die Nummer wird beim ersten Speichern vergeben, bei dem die Bedingung zutrifft – auch beim Ändern – und bleibt danach fest.',
     ],
     'resets' => [
         'never' => 'nie',

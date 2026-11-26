@@ -8,6 +8,7 @@ use App\Apps\AppInterfaces;
 use App\DynamicData\Files\FileKinds;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Numbering\NumberAnalysis;
+use App\DynamicData\Numbering\NumberCondition;
 use App\DynamicData\Numbering\NumberConversion;
 use App\DynamicData\Numbering\NumberCounter;
 use App\DynamicData\Numbering\NumberPattern;
@@ -436,7 +437,7 @@ final class FieldForm
      *
      * @return array<string, mixed>
      */
-    private static function formulaPicker(?CustomTable $owner, Get $get, string $self): array
+    private static function formulaPicker(?CustomTable $owner, Get $get, string $self, bool $condition = false): array
     {
         $item = static fn (string $name, string $label, ?string $insert = null, ?string $title = null): array => array_filter([
             'label' => $label === '' || $label === $name ? $name : $label.' ('.$name.')',
@@ -444,7 +445,9 @@ final class FieldForm
             'title' => $title,
         ], static fn (?string $v): bool => $v !== null);
         // Zum Rechnen Zahlen; Text, Auswahl, Datum und Ja/Nein für Vergleiche (if, contains …).
-        $usable = static fn (CustomField $f): bool => in_array($f->valueType(), [FieldType::Integer, FieldType::Decimal, ...self::COMPARABLE], true);
+        // „Vergeben, wenn“ (N3): keine berechneten Felder, weil die Bedingung vor den Formeln geprüft wird.
+        $usable = static fn (CustomField $f): bool => in_array($f->valueType(), [FieldType::Integer, FieldType::Decimal, ...self::COMPARABLE], true)
+            && ! ($condition && $f->type === FieldType::Computed);
         // Tooltip: Datentyp, bei Auswahlfeldern die gespeicherten Werte (Vergleiche brauchen sie, nicht die Bezeichnung).
         $title = static fn (CustomField $f, string $insert): string => $insert.' – '.self::typeTitle($f->type, $f->type === FieldType::Computed ? $f->valueType() : null,
             $f->type === FieldType::Select ? collect((array) ($f->optionsArray()['options'] ?? []))->map(static fn (mixed $o): string => is_array($o) ? (string) ($o['value'] ?? '') : (string) $o)->all() : []);
@@ -478,7 +481,8 @@ final class FieldForm
 
         $groups = [['label' => __('tables.formula.picker_fields'), 'items' => $own]];
 
-        foreach ($owner === null ? [] : FormulaAnalyzer::children($owner->name) as $childName => $child) {
+        // Summen über Kind-Tabellen nur in berechneten Feldern, nicht in Bedingungen.
+        foreach ($owner === null || $condition ? [] : FormulaAnalyzer::children($owner->name) as $childName => $child) {
             $fields = $child['table']->fields
                 ->filter(fn (CustomField $f): bool => $f->is_active && $usable($f))
                 ->map(fn (CustomField $f): array => $item($childName.'.'.$f->name, (string) $f->label === '' ? '' : $f->label, $childName.'.'.$f->name, $title($f, $childName.'.'.$f->name)))
@@ -497,7 +501,9 @@ final class FieldForm
             // Tooltip je Knopf: Syntax und Beispiel (tables.formula.tips).
             'buttons' => [
                 ...array_map(fn (string $s): array => ['label' => $s, 'insert' => $s === ',' ? ', ' : ' '.$s.' ', 'title' => __('tables.formula.tips.'.self::TIP_KEYS[$s])], ['+', '-', '*', '/', '(', ')', ',', '=', '<>', '<', '>', 'and', 'or']),
-                ...array_map(fn (string $f): array => ['label' => $f, 'insert' => $f.'(', 'title' => __('tables.formula.tips.'.$f)], ['round', 'abs', 'min', 'max', 'coalesce', 'if', 'contains', 'startswith', 'endswith', 'sum', 'avg', 'count']),
+                ...array_map(fn (string $f): array => ['label' => $f, 'insert' => $f.'(', 'title' => __('tables.formula.tips.'.$f)], $condition
+                    ? ['round', 'abs', 'min', 'max', 'coalesce', 'if', 'contains', 'startswith', 'endswith']
+                    : ['round', 'abs', 'min', 'max', 'coalesce', 'if', 'contains', 'startswith', 'endswith', 'sum', 'avg', 'count']),
             ],
             'empty' => __('tables.formula.picker_empty'),
         ];
@@ -538,6 +544,32 @@ final class FieldForm
         $label = $type->label().($result !== null ? ' ('.$result->label().')' : '');
 
         return $values === [] ? $label : $label.' – '.__('tables.formula.picker_values', ['values' => implode(', ', array_map(static fn (string $v): string => "'".$v."'", $values))]);
+    }
+
+    /** Name des Felds im Formular (beim Anlegen einer Tabelle ist $record die Tabelle, nicht das Feld). */
+    private static function selfName(Get $get, mixed $record): string
+    {
+        return (string) ($get('name') ?: ($record instanceof CustomField ? $record->name : ''));
+    }
+
+    /** Ergebnis der Prüfung unter „Vergeben, wenn“ (N3): Erklärung, Fehler oder die Felder, von denen sie abhängt. */
+    private static function conditionHelp(?CustomTable $owner, string $condition, string $self): string
+    {
+        if ($owner === null) {
+            return __('tables.fields.suggest_scope_later');
+        }
+
+        if (trim($condition) === '') {
+            return __('numbering.form.assign_when_help');
+        }
+
+        try {
+            $options = NumberCondition::compile($condition, $owner->fields()->get()->keyBy('name')->all(), $self, $owner->name);
+
+            return __('numbering.form.assign_when_ok', ['fields' => implode(', ', NumberCondition::fields($options)) ?: '—']);
+        } catch (BusinessRuleException $e) {
+            return $e->getMessage();
+        }
     }
 
     /** Ergebnis der Prüfung unter dem Formelfeld: Fehler oder die Felder, von denen das Ergebnis abhängt. */
@@ -639,6 +671,45 @@ final class FieldForm
                     ->helperText(__('numbering.form.start_help'))
                     ->integer()->minValue(1)->default(1)
                     ->live(onBlur: true),
+                // „Vergeben, wenn“ (N3): Bedingung in der Formelsprache, mit denselben Hilfen wie die Formel eines
+                // berechneten Felds (Prüfung beim Tippen, Bausteine, Hilfe); dieselbe Prüfung wie im Normalizer.
+                Textarea::make('options.'.NumberCondition::OPTION)
+                    ->label(__('numbering.fields.assign_when'))
+                    ->rows(2)
+                    ->disabled($owner === null)
+                    ->maxLength(500)
+                    ->live(debounce: 600)
+                    ->afterStateUpdated(static function (Textarea $component): void {
+                        $component->getLivewire()->resetErrorBag($component->getStatePath());
+                        $component->getLivewire()->validateOnly($component->getStatePath());
+                    })
+                    ->extraInputAttributes(['data-formula-input' => true, 'spellcheck' => 'false', 'style' => 'font-family: ui-monospace, monospace'])
+                    ->rule(static fn (Get $get, mixed $record): Closure => static function (string $attribute, mixed $value, Closure $fail) use ($get, $owner, $record): void {
+                        if ($owner === null || trim((string) $value) === '') {
+                            return;
+                        }
+
+                        try {
+                            NumberCondition::compile((string) $value, $owner->fields()->get()->keyBy('name')->all(), self::selfName($get, $record), $owner->name);
+                        } catch (BusinessRuleException $e) {
+                            $fail($e->getMessage());
+                        }
+                    })
+                    ->helperText(static fn (Get $get, mixed $record): string => self::conditionHelp($owner, (string) $get('options.'.NumberCondition::OPTION), self::selfName($get, $record)))
+                    ->columnSpanFull(),
+                // Klickbare Felder (ohne berechnete) und Zeichen bzw. Funktionen, die eine Bedingung braucht.
+                View::make('filament.components.formula-picker')
+                    ->viewData(static fn (Get $get, mixed $record): array => self::formulaPicker($owner, $get, self::selfName($get, $record), condition: true))
+                    ->visible($owner !== null)
+                    ->columnSpanFull(),
+                View::make('filament.components.formula-help')
+                    ->viewData(['summary' => __('numbering.form.assign_when_help_toggle'), 'text' => __('numbering.form.assign_when_help_text')])
+                    ->visible($owner !== null)
+                    ->columnSpanFull(),
+                View::make('filament.components.formula-picker')
+                    ->viewData(fn (): array => ['groups' => self::pluginFunctionGroups($owner), 'buttons' => [], 'empty' => ''])
+                    ->visible($owner !== null && self::pluginFunctionGroups($owner) !== [])
+                    ->columnSpanFull(),
                 Text::make(static fn (Get $get, mixed $record): string => self::nextNumberPreview($get, $record))
                     ->columnSpanFull(),
                 // Umstellen eines Felds mit Werten (N2): was mit den vorhandenen Werten geschieht.
@@ -802,9 +873,22 @@ final class FieldForm
         }
 
         $period = $pattern->period(now());
-        $last = $record instanceof CustomField && $record->exists && $record->type === FieldType::Number
-            ? app(NumberSequences::class)->current((int) $record->id, $period['key'])
-            : null;
+        $saved = $record instanceof CustomField && $record->exists && $record->type === FieldType::Number;
+        $last = $saved ? app(NumberSequences::class)->current((int) $record->id, $period['key']) : null;
+
+        // Muster im Formular geändert (noch nicht gespeichert): Beim Speichern heben vorhandene Nummern, die zum neuen
+        // Muster passen, den Zähler an (DynamicSchemaService) – die Vorschau rechnet schon damit.
+        if ($saved && NumberPattern::fromOptions($record->optionsArray())->differs($pattern)) {
+            $key = 'saft.number_preview.'.$record->id.'|'.$pattern->pattern.'|'.$pattern->reset.'|'.$pattern->fiscalStart;
+            $analysis = request()->attributes->get($key);
+
+            if (! $analysis instanceof NumberAnalysis) {
+                $analysis = app(NumberConversion::class)->analyze($record->customTable, $record->name, $pattern, FieldType::Number);
+                request()->attributes->set($key, $analysis);
+            }
+
+            $last = max($last ?? 0, $analysis->highest[$period['key']] ?? 0) ?: null;
+        }
 
         return __('numbering.form.next', ['number' => $pattern->format(($last ?? $pattern->start - 1) + 1, $period['year'], $period['month'])]);
     }

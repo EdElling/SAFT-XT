@@ -24,6 +24,9 @@ return [
         'assigned_on_save' => 'assigned when saving',
         'assigned_when' => 'assigned when :condition',
         'assign_when_help' => 'Empty: on creation. Otherwise a condition as a formula, e.g. status <> \'draft\'. The number is assigned on the first save on which the condition is true and stays fixed afterwards.',
+        'assign_when_ok' => 'Condition OK – depends on: :fields. The number is assigned on the first save on which it is true.',
+        'assign_when_help_toggle' => 'Help on the condition',
+        'assign_when_help_text' => 'The condition compares fields of this record with = <> < <= > >=, combined with and/or and brackets. Text is written in single quotes; for choice fields the stored value counts (see the field\'s tooltip), e.g. status <> \'draft\'. A yes/no field on its own is already a condition, e.g. final. If one side of a comparison is empty, it is not met. Compare text loosely (ignoring case): contains(field, \'part\'), startswith(…), endswith(…); also coalesce, if, round, abs, min and max. Computed fields and sums over other tables are not possible because the condition is checked before the formulas. The number is assigned on the first save on which the condition is true – also when editing – and stays fixed afterwards.',
     ],
     'resets' => [
         'never' => 'never',

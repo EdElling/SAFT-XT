@@ -7,9 +7,13 @@ namespace Tests\Feature\DynamicData;
 use App\DynamicData\Numbering\NumberCondition;
 use App\DynamicData\Numbering\NumberPattern;
 use App\DynamicData\RecordCopier;
+use App\DynamicData\Ui\DynamicFormBuilder;
 use App\DynamicData\Write\RecordWriter;
 use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
+use App\Filament\Pages\DynamicDataPage;
+use App\Filament\Resources\CustomTables\Pages\EditCustomTable;
+use App\Filament\Resources\CustomTables\RelationManagers\CustomFieldsRelationManager;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -18,9 +22,13 @@ use App\Plugins\Api\Events\RecordSaving;
 use App\Work\Types\NumberBackfillWork;
 use App\Work\WorkService;
 use Closure;
+use Filament\Actions\CreateAction;
+use Filament\Actions\Testing\TestAction;
+use Filament\Forms\Components\Textarea;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 
 /** Nummernkreise (B-135, N3): „Vergeben, wenn“ – Vergabe beim ersten Speichern, bei dem die Bedingung zutrifft. */
 class NumberConditionTest extends DynamicDataTestCase
@@ -257,5 +265,66 @@ class NumberConditionTest extends DynamicDataTestCase
             DynamicRecord::forTable($table)->newQuery()->whereNotNull('nummer')->orderBy('datum')->pluck('nummer', 'betreff')->all(),
         );
         $this->assertSame($drafts, DynamicRecord::forTable($table)->newQuery()->whereNull('nummer')->count(), 'Entwürfe bleiben ohne Nummer.');
+    }
+
+    public function test_record_form_shows_the_condition_and_assigns_once_it_holds(): void
+    {
+        $this->actingAs($this->superAdmin());
+        $table = $this->invoices();
+
+        $number = collect(app(DynamicFormBuilder::class)->components($table->fresh('fields')))->first(fn ($c): bool => $c->getName() === 'nummer');
+        $this->assertSame(__('numbering.form.assigned_when', ['condition' => "status <> 'entwurf'"]), $number->getPlaceholder());
+
+        Livewire::test(DynamicDataPage::class, ['table' => 'rechnungen'])
+            ->mountAction(TestAction::make(CreateAction::class)->table())
+            ->setActionData(['datum' => '2026-11-20', 'betreff' => 'Kurs', 'status' => 'entwurf'])
+            ->callMountedAction()
+            ->assertHasNoActionErrors();
+
+        $record = DynamicRecord::forTable($table)->newQuery()->where('betreff', 'Kurs')->sole();
+        $this->assertNull($record->nummer);
+
+        $this->assertSame('R-2026-0001', $this->update($record, ['status' => 'versendet'])->nummer);
+    }
+
+    public function test_field_editor_sets_and_checks_the_condition(): void
+    {
+        $this->actingAs($this->superAdmin());
+        $table = $this->invoices([], '');
+        $manager = fn () => Livewire::test(CustomFieldsRelationManager::class, ['ownerRecord' => $table->fresh(), 'pageClass' => EditCustomTable::class]);
+        $data = ['label' => ['de' => 'Mahnnummer'], 'name' => 'mahnnummer', 'type' => 'number',
+            'options' => [NumberPattern::PATTERN => 'M-{0000}', NumberPattern::RESET => 'never', NumberPattern::START => 1]];
+
+        $manager()
+            ->callAction(TestAction::make(CreateAction::class)->table(), ['options' => [...$data['options'], NumberCondition::OPTION => 'brutto > 0'], ...array_diff_key($data, ['options' => 0])])
+            ->assertHasFormErrors(['options.'.NumberCondition::OPTION]);
+        $this->assertFalse(CustomField::query()->where('name', 'mahnnummer')->exists(), 'Berechnetes Feld in der Bedingung: abgelehnt.');
+
+        $manager()
+            ->callAction(TestAction::make(CreateAction::class)->table(), ['options' => [...$data['options'], NumberCondition::OPTION => "status = 'versendet'"], ...array_diff_key($data, ['options' => 0])])
+            ->assertHasNoFormErrors();
+
+        $field = CustomField::query()->where('name', 'mahnnummer')->sole();
+        $this->assertSame("status = 'versendet'", $field->optionsArray()[NumberCondition::OPTION]);
+        $this->assertNull($this->create($table->fresh())->mahnnummer);
+        $this->assertSame('M-0001', $this->create($table->fresh(), ['status' => 'versendet'])->mahnnummer);
+    }
+
+    public function test_field_editor_checks_the_condition_while_typing(): void
+    {
+        $this->actingAs($this->superAdmin());
+        $table = $this->invoices();
+        $field = $table->fields->firstWhere('name', 'nummer');
+
+        Livewire::test(CustomFieldsRelationManager::class, ['ownerRecord' => $table, 'pageClass' => EditCustomTable::class])
+            ->mountAction(TestAction::make('edit')->table($field))
+            ->fillForm(['options.'.NumberCondition::OPTION => "status <> 'entwurf'4eorif j3q984uz"])
+            ->assertHasFormErrors(['options.'.NumberCondition::OPTION])
+            ->fillForm(['options.'.NumberCondition::OPTION => "status = 'versendet'"])
+            ->assertHasNoFormErrors(['options.'.NumberCondition::OPTION])
+            // Wie beim berechneten Feld: das Ergebnis der Prüfung steht unter dem Feld.
+            ->assertFormFieldExists('options.'.NumberCondition::OPTION, fn (Textarea $f): bool => str_contains((string) $f->getChildSchema(Textarea::BELOW_CONTENT_SCHEMA_KEY)?->toHtml(), e(__('numbering.form.assign_when_ok', ['fields' => 'status']))))
+            ->fillForm(['options.'.NumberCondition::OPTION => 'brutto > 0'])
+            ->assertFormFieldExists('options.'.NumberCondition::OPTION, fn (Textarea $f): bool => str_contains((string) $f->getChildSchema(Textarea::BELOW_CONTENT_SCHEMA_KEY)?->toHtml(), e(__('numbering.errors.condition_computed', ['field' => 'brutto']))));
     }
 }

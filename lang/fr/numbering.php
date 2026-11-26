@@ -24,6 +24,9 @@ return [
         'assigned_on_save' => 'attribué à l’enregistrement',
         'assigned_when' => 'attribué si :condition',
         'assign_when_help' => 'Vide : à la création. Sinon une condition sous forme de formule, p. ex. status <> \'brouillon\'. Le numéro est attribué au premier enregistrement où la condition est vraie et reste ensuite fixe.',
+        'assign_when_ok' => 'Condition correcte – dépend de : :fields. Le numéro est attribué au premier enregistrement où elle est vraie.',
+        'assign_when_help_toggle' => 'Aide sur la condition',
+        'assign_when_help_text' => 'La condition compare des champs de cet enregistrement avec = <> < <= > >=, combinés avec and/or et des parenthèses. Le texte s’écrit entre apostrophes ; pour les champs de choix, c’est la valeur enregistrée qui compte (voir l’info-bulle du champ), p. ex. status <> \'brouillon\'. Un champ oui/non seul est déjà une condition, p. ex. definitif. Si un côté d’une comparaison est vide, elle n’est pas remplie. Comparer du texte de manière approximative (sans tenir compte de la casse) : contains(champ, \'partie\'), startswith(…), endswith(…) ; en outre coalesce, if, round, abs, min et max. Les champs calculés et les sommes sur d’autres tables ne sont pas possibles, car la condition est vérifiée avant les formules. Le numéro est attribué au premier enregistrement où la condition est vraie – aussi lors d’une modification – et reste ensuite fixe.',
     ],
     'resets' => [
         'never' => 'jamais',

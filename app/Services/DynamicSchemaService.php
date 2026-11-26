@@ -294,6 +294,7 @@ final class DynamicSchemaService
             }
 
             $fromType = $field->type;
+            $numberBefore = $field->optionsArray();
             $numberChange = $this->assertNumberChange($table, $field, $new);
 
             // Bezugsdatum eines Nummernkreises: bleibt ein aktives Pflichtfeld vom Typ Datum bzw. Datum/Zeit.
@@ -380,6 +381,10 @@ final class DynamicSchemaService
             if ($numberChange && $field->type === FieldType::Number) {
                 $this->ensureNumberSequences([$field]);
                 app(NumberConversion::class)->apply($table, $field, $fromType);
+            } elseif ($fromType === FieldType::Number && $field->type === FieldType::Number && NumberPattern::fromOptions($numberBefore)->differs(NumberPattern::fromOptions($field->optionsArray()))) {
+                // Muster oder Neubeginn geändert: Vorhandene Nummern, die zum neuen Muster passen, heben ihren Zähler an –
+                // sonst zöge die nächste Vergabe eine schon vorhandene Nummer und müsste weiterzählen.
+                app(NumberConversion::class)->apply($table, $field, FieldType::Number);
             }
 
             if ($structural) {

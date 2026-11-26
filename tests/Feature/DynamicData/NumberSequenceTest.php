@@ -271,6 +271,30 @@ class NumberSequenceTest extends DynamicDataTestCase
         $this->assertRejected('dynamic.schema', fn () => $this->service()->updateField($table->fields->firstWhere('name', 'nummer'), ['type' => 'integer', 'options' => []]));
     }
 
+    public function test_changing_the_pattern_raises_the_counter_to_matching_numbers(): void
+    {
+        $table = $this->invoices();
+        $options = static fn (string $pattern): array => [NumberPattern::PATTERN => $pattern, NumberPattern::RESET => 'yearly', NumberPattern::DATE_FIELD => 'datum'];
+        $counter = fn (): ?int => app(NumberSequences::class)->current($this->fieldId('rechnungen', 'nummer'), '2026');
+
+        foreach (['R-2026-001', 'R-2026-002', 'R-2026-003'] as $number) {
+            $this->create($table, ['nummer' => $number], WriteOptions::seed());
+        }
+
+        // Vier Stellen: Die vorhandenen (alten) Nummern passen nicht, die Vergabe beginnt bei 1.
+        $this->assertSame('R-2026-0001', $this->create($table->fresh())->nummer);
+        $this->assertSame(1, $counter());
+
+        // Zurück auf drei Stellen: Der Zähler folgt den vorhandenen Nummern, die zum neuen Muster passen.
+        $this->service()->updateField(CustomField::query()->findOrFail($this->fieldId('rechnungen', 'nummer')), ['options' => $options('R-{YYYY}-{000}')]);
+        $this->assertSame(3, $counter(), 'Vorschau und Vergabe setzen nach der höchsten passenden Nummer fort.');
+        $this->assertSame('R-2026-004', $this->create($table->fresh())->nummer);
+
+        // Nur der Startwert geändert: Zähler bleibt.
+        $this->service()->updateField(CustomField::query()->findOrFail($this->fieldId('rechnungen', 'nummer')), ['options' => [...$options('R-{YYYY}-{000}'), NumberPattern::START => 5]]);
+        $this->assertSame(4, $counter());
+    }
+
     public function test_dropping_the_field_forgets_its_counters(): void
     {
         $table = $this->invoices();

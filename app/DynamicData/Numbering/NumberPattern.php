@@ -111,6 +111,12 @@ final readonly class NumberPattern
         );
     }
 
+    /** Andere Nummern oder Perioden (Muster, Neubeginn, Geschäftsjahr) – der Startwert zählt nicht. */
+    public function differs(self $other): bool
+    {
+        return [$this->pattern, $this->reset, $this->fiscalStart] !== [$other->pattern, $other->reset, $other->fiscalStart];
+    }
+
     /**
      * Periode des Zählers zum Bezugsdatum und die Jahres- bzw. Monatszahl, die das Muster zeigt. Bei jährlichem
      * Neubeginn mit Geschäftsjahr ist das Jahr das, in dem das Geschäftsjahr beginnt.

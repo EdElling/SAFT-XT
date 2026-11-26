@@ -24,6 +24,9 @@ return [
         'assigned_on_save' => 'assegnato al salvataggio',
         'assigned_when' => 'assegnato se :condition',
         'assign_when_help' => 'Vuoto: alla creazione. Altrimenti una condizione come formula, p. es. status <> \'bozza\'. Il numero viene assegnato al primo salvataggio in cui la condizione è vera e poi resta fisso.',
+        'assign_when_ok' => 'Condizione corretta – dipende da: :fields. Il numero viene assegnato al primo salvataggio in cui è vera.',
+        'assign_when_help_toggle' => 'Aiuto sulla condizione',
+        'assign_when_help_text' => 'La condizione confronta campi di questo record con = <> < <= > >=, combinati con and/or e parentesi. Il testo va tra apici singoli; per i campi di scelta conta il valore salvato (vedi il tooltip del campo), p. es. status <> \'bozza\'. Un campo sì/no da solo è già una condizione, p. es. definitivo. Se un lato di un confronto è vuoto, non è soddisfatto. Confrontare testo in modo approssimativo (senza maiuscole/minuscole): contains(campo, \'parte\'), startswith(…), endswith(…); inoltre coalesce, if, round, abs, min e max. Non sono possibili campi calcolati e somme su altre tabelle, perché la condizione viene verificata prima delle formule. Il numero viene assegnato al primo salvataggio in cui la condizione è vera – anche in modifica – e poi resta fisso.',
     ],
     'resets' => [
         'never' => 'mai',

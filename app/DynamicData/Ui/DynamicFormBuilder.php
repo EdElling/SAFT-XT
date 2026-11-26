@@ -8,6 +8,7 @@ use App\DynamicData\DataAccess;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Files\FileKinds;
 use App\DynamicData\Files\RecordFiles;
+use App\DynamicData\Numbering\NumberCondition;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Rules\CopySource;
 use App\DynamicData\Rules\NowDefault;
@@ -154,11 +155,14 @@ final class DynamicFormBuilder
                     ->dehydrated(false)
                     ->placeholder(__('data.computed_placeholder'))
                     ->helperText('= '.($options['formula'] ?? '')),
-                // Nummernkreis (B-135): vergibt der Schreibweg beim Anlegen; nie aus dem Formular übernehmen.
+                // Nummernkreis (B-135): vergibt der Schreibweg beim Anlegen bzw. sobald „Vergeben, wenn“ zutrifft (N3);
+                // nie aus dem Formular übernehmen.
                 FieldType::Number => TextInput::make($field->name)
                     ->disabled()
                     ->dehydrated(false)
-                    ->placeholder(__('numbering.form.assigned_on_save')),
+                    ->placeholder(filled($options[NumberCondition::OPTION] ?? null)
+                        ? __('numbering.form.assigned_when', ['condition' => $options[NumberCondition::OPTION]])
+                        : __('numbering.form.assigned_on_save')),
                 FieldType::String => TextInput::make($field->name)
                     ->maxLength((int) $options['length'])
                     ->when($rules['email'] ?? false, fn (TextInput $c) => $c->email())
