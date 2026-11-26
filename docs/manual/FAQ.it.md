@@ -181,3 +181,10 @@ numerazione**. Prima SAFT mostra quanti valori sono conformi al modello e da dov
 conformi restano invariati. I valori vuoti si possono riempire subito o più tardi con **Numerare ora**, e con
 **Impostare il contatore** l’anno successivo inizia p. es. da 1000. Vedere
 [Manuale dell’amministratore, Convertire campi esistenti](ADMIN_GUIDE.it.md#convertire-campi-esistenti).
+
+### Come riceve una fattura il suo numero solo all’invio?
+
+Inserite una condizione in **Assegna se** per l’intervallo di numerazione, p. es. `status <> 'bozza'`. Il numero resta
+allora vuoto per le bozze e viene assegnato al primo salvataggio in cui la condizione è vera; in seguito è fisso. Le
+bozze scartate non lasciano così lacune. Vedere
+[Manuale di amministrazione, Assegnare solo se una condizione è vera](ADMIN_GUIDE.it.md#assegnare-solo-se-una-condizione-è-vera).

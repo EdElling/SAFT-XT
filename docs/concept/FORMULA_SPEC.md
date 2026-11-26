@@ -12,7 +12,7 @@ SAFT hat **eine** Formelsprache mit **einem** Parser (`App\DynamicData\Formula\P
 | **Auswertung** | berechnete Werte und Spalten in Auswertungen | SQL, die Datenbank rechnet je Zeile bzw. Gruppe | `Reports\ReportExpression` mit `Reports\Dialects` |
 | **Regel** (geplant, B-142) | Bedingungen und Werte von Regeln | PHP wie Feld, plus Datums- und Benutzerfunktionen | – |
 | **Zeilenrecht** (geplant, B-020) | Einschränkung je Rolle | SQL über den Query Builder (`RowFilterCompiler`) | – |
-| **Nummernkreis** (B-135) | Bausteine einer Nummer: keine Formel, sondern ein Muster mit Platzhaltern (`NUMBERING.md` Abschnitt 5); die Bedingung „Vergeben, wenn“ (N3) wird eine Formel wie Feld | PHP | `Numbering\NumberPattern` |
+| **Nummernkreis** (B-135) | Bausteine einer Nummer: keine Formel, sondern ein Muster mit Platzhaltern (`NUMBERING.md` Abschnitt 5). Die Bedingung „Vergeben, wenn“ (N3) ist eine Formel wie Feld, ausgewertet als wahr/falsch (ungleich 0), **ohne berechnete Felder und Aggregate**, weil sie vor den Formeln läuft | PHP wie Feld | `Numbering\NumberPattern`, `Numbering\NumberCondition` |
 
 Wer dieselbe Formel als Feld und als Auswertungsspalte sieht, erwartet dasselbe Ergebnis. Diese Spezifikation legt die Bedeutung fest; die **PHP-Auswertung ist die Referenz**. Wo SQL abweicht, wird das SQL angepasst oder die Funktion für den Kontext gesperrt (Abschnitt 2). **Neue Funktionen und Operatoren werden zuerst hier eingetragen** – mit Kontext, Leer-Regel und Fällen in der Konformitätstabelle – und erst dann gebaut.
 

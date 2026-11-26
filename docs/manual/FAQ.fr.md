@@ -184,3 +184,10 @@ numéros**. Auparavant, SAFT indique combien de valeurs sont conformes au modèl
 valeurs non conformes restent inchangées. Les valeurs vides peuvent être remplies tout de suite ou plus tard avec
 **Numéroter maintenant**, et avec **Définir le compteur** l’année suivante commence p. ex. à 1000. Voir
 [Manuel d’administration, Convertir des champs existants](ADMIN_GUIDE.fr.md#convertir-des-champs-existants).
+
+### Comment une facture reçoit-elle son numéro seulement à l’envoi ?
+
+Saisissez une condition sous **Attribuer si** pour la plage de numéros, p. ex. `status <> 'brouillon'`. Le numéro reste
+alors vide pour les brouillons et est attribué au premier enregistrement où la condition est vraie ; ensuite il est fixe.
+Les brouillons abandonnés ne laissent ainsi pas de trous. Voir
+[Manuel d’administration, Attribuer seulement si une condition est remplie](ADMIN_GUIDE.fr.md#attribuer-seulement-si-une-condition-est-remplie).

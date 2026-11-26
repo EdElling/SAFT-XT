@@ -181,3 +181,10 @@ zeigt SAFT, wie viele Werte zum Muster passen und wo die Nummern weiterzählen; 
 unverändert. Leere Werte lassen sich gleich oder später mit **Jetzt nummerieren** füllen, und mit **Zählerstand
 setzen** beginnt z. B. das nächste Jahr bei 1000. Siehe
 [Administratorhandbuch, Bestehende Felder umstellen](ADMIN_GUIDE.de.md#bestehende-felder-umstellen).
+
+### Wie bekommt eine Rechnung erst beim Versand eine Nummer?
+
+Tragen Sie beim Nummernkreis unter **Vergeben, wenn** eine Bedingung ein, z. B. `status <> 'entwurf'`. Dann bleibt die
+Nummer bei Entwürfen leer und wird beim ersten Speichern vergeben, bei dem die Bedingung zutrifft; danach ist sie fest.
+Verworfene Entwürfe hinterlassen so keine Lücken. Siehe
+[Administratorhandbuch, Vergabe erst bei einer Bedingung](ADMIN_GUIDE.de.md#vergabe-erst-bei-einer-bedingung).

@@ -516,7 +516,7 @@ Schnittstelle oder eine geplante Aufgabe – löst SAFT Ereignisse aus (`App\Plu
 
 | Ereignis | Wann | Typische Verwendung |
 |---|---|---|
-| `RecordSaving` | vor dem Speichern, nach den Vorgaben (fortlaufend, Übernehmen aus, Nummernkreise) und **vor** den berechneten Feldern | Werte ergänzen oder korrigieren, Änderung ablehnen |
+| `RecordSaving` | vor dem Speichern, nach den Vorgaben (fortlaufend, Übernehmen aus, Nummernkreise ohne Bedingung) und **vor** den berechneten Feldern und Nummernkreisen mit „Vergeben, wenn“ | Werte ergänzen oder korrigieren, Änderung ablehnen |
 | `RecordSaved` | nach dem Speichern | Folgebuchungen in anderen Tabellen, Benachrichtigungen |
 | `RecordDeleting` | vor dem Löschen (auch in den Papierkorb) | Löschen ablehnen |
 | `RecordDeleted` | nach dem Löschen | Folgebuchungen zurücknehmen |
@@ -545,7 +545,10 @@ angelegt oder geändert).
   vergebenen (`dynamic.number_immutable`); lassen Sie das Feld einfach weg. Nur der Datenimport und Seeder dürfen
   Nummern mitbringen. Leere Nummern bestehender Datensätze füllt allein die Arbeit „Leere Nummern vergeben“
   (`number_backfill`, Herkunft `WriteOptions::NUMBERING` ohne Plugin-Ereignisse); ihre Protokolleinträge tragen die
-  Laufkennung `run`.
+  Laufkennung `run`. Hat das Feld eine Bedingung **„Vergeben, wenn“** (Option `assign_when`), vergibt SAFT die Nummer
+  erst **nach** `RecordSaving` beim ersten Speichern, bei dem die Bedingung zutrifft – auch bei `update()`. Die
+  Bedingung sieht also Werte, die Ihr Listener setzt (z. B. einen Status); die Nummer selbst sieht der Listener erst in
+  `RecordSaved`.
 - **Ablehnen** in `RecordSaving` oder `RecordDeleting`: `throw new RecordRejected('Meldung für die Anzeige');`. SAFT
   speichert nichts und zeigt „Aktion nicht möglich“ mit Ihrer Meldung an; beim Import erscheint sie als Fehler der
   Zeile, und der ganze Import wird nicht ausgeführt.

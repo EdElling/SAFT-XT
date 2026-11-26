@@ -450,11 +450,36 @@ weder im Formular noch über Import, Plugins oder Schnittstellen.
 
 Ein Nummernkreis ist immer eindeutig und nie Pflicht. Im Formular steht vor dem ersten Speichern „wird beim Speichern
 vergeben“. Abgebrochenes Speichern hinterlässt keine Lücke; ein endgültig gelöschter Datensatz schon (sie ist im
-Änderungsprotokoll nachvollziehbar). Eine **Kopie** bekommt eine neue Nummer. Beim **Import** werden fehlende Nummern
+Änderungsprotokoll nachvollziehbar). Eine **Kopie** bekommt eine neue Nummer (mit „Vergeben, wenn“ erst, wenn die Bedingung für die Kopie zutrifft). Beim **Import** werden fehlende Nummern
 vergeben; mitgebrachte (z. B. aus einem Altsystem) werden übernommen, wenn sie eindeutig sind, und passen sie zum Muster,
 zählt SAFT danach weiter. Die [App-Definition](#15-apps-fachanwendungen) enthält die Einstellungen, nicht die
 Zählerstände: Eine neue Installation beginnt beim Startwert; ein geändertes Muster beim Aktualisieren gilt als heikel.
-„App-Daten zurücksetzen“ setzt auch die Zähler zurück.
+„App-Daten zurücksetzen“ setzt auch die Zähler zurück. Ändern Sie Muster, Neubeginn oder Geschäftsjahr, setzt SAFT
+den Zähler je Zeitraum mindestens auf die höchste vorhandene Nummer, die zum neuen Muster passt; die Vorschau rechnet
+schon vor dem Speichern damit.
+
+#### Vergabe erst bei einer Bedingung
+
+Unter **Vergeben, wenn** steht eine Bedingung in der Formelsprache, z. B. `status <> 'entwurf'` oder `definitiv` (ein
+Ja/Nein-Feld). Dann bleibt das Feld beim Anlegen leer, und SAFT vergibt die Nummer beim **ersten Speichern, bei dem die
+Bedingung zutrifft** – auch beim Ändern eines bestehenden Datensatzes. Danach ist die Nummer fest, auch wenn die
+Bedingung später nicht mehr zutrifft. So bekommen Entwürfe keine Nummer, und verworfene Entwürfe hinterlassen keine
+Lücken. Leer heisst: beim Anlegen vergeben.
+
+- **Bausteine und Prüfung** wie bei einem berechneten Feld: Ein Klick fügt ein Feld (bei Auswahlfeldern stehen die
+  gespeicherten Werte im Tooltip), ein Zeichen oder eine Funktion ein; Fehler erscheinen beim Tippen, sonst „Bedingung
+  in Ordnung – hängt ab von: …“. Die **Hilfe zur Bedingung** fasst die Regeln zusammen.
+- Die Bedingung liest nur Felder desselben Datensatzes, **keine berechneten Felder** und **keine Summen** über andere
+  Tabellen: Sie wird vor den Formeln geprüft. Werte, die ein Plugin beim Speichern setzt, sieht sie schon.
+- **Bezugsdatum** ist der Zeitpunkt der Vergabe bzw. das gewählte Datumsfeld in diesem Moment.
+- Im Formular steht bis dahin „wird vergeben, wenn …“ mit der Bedingung.
+- **Jetzt nummerieren** vergibt nur Nummern, wo die Bedingung zutrifft; die übrigen bleiben leer und werden im Ergebnis
+  gezählt.
+- Beim **Import** werden mitgebrachte Nummern übernommen, ohne die Bedingung zu prüfen; fehlende werden nur vergeben, wo
+  sie zutrifft. Eine **Kopie** prüft die Bedingung mit ihren eigenen Werten – kopierter Status *Versendet* heisst also
+  sofort eine Nummer.
+- Felder, die die Bedingung verwendet, bleiben aktiv und lassen sich nicht in ein Dateifeld ändern; Umbenennen wird
+  nachgeführt.
 
 #### Bestehende Felder umstellen
 
@@ -494,6 +519,20 @@ vergebene laufende Nummer und die höchste vorhandene. Mit **Zählerstand setzen
   Bestätigung.
 
 Jede Änderung steht im Verlauf des Felds (Uhr-Symbol in der Feldliste).
+
+#### Nummern migrieren
+
+Beim Wechsel aus einem anderen System gibt es drei Wege:
+
+| Alte Nummern | Weg | Ergebnis |
+|---|---|---|
+| passen zum Muster | direkt ins Nummernkreis-Feld importieren | Nummern bleiben, SAFT zählt nach der höchsten weiter |
+| haben ein anderes Format | ebenfalls direkt importieren | alte Nummern bleiben, neue folgen dem Muster; für bereits versandte Belege meist richtig, denn die Nummer auf dem Papier muss die in SAFT sein |
+| taugen nicht oder sind nicht eindeutig | alte Nummer als Referenz in ein eigenes Textfeld, Nummernkreis-Feld leer lassen | neue Nummern für alle Datensätze – bei versandten Belegen heikel |
+
+Beim dritten Weg vergibt der Import die Nummern sofort in der Reihenfolge der Datei. Soll die Reihenfolge dem Datum
+folgen, sortieren Sie die Datei vorher nach Datum oder importieren in ein Textfeld und stellen es danach auf
+„Nummernkreis“ um, mit **Leere Werte jetzt nummerieren** (siehe [Bestehende Felder umstellen](#bestehende-felder-umstellen)).
 
 ### Verwendet in
 

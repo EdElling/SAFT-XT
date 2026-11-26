@@ -437,10 +437,32 @@ import, plugins or interfaces.
 
 A number sequence is always unique and never required. Before the first save the form shows "assigned when saving".
 A cancelled save leaves no gap; a permanently deleted record does (it can be traced in the change log). A **copy**
-gets a new number. On **import** missing numbers are assigned; numbers brought along (e.g. from a legacy system) are
+gets a new number (with "Assign when" only once the condition is true for the copy). On **import** missing numbers are assigned; numbers brought along (e.g. from a legacy system) are
 kept if unique, and if they match the pattern SAFT continues after them. The [app definition](#15-apps-business-applications)
 contains the settings, not the counters: a new installation starts at the start value; a changed pattern on update is
-considered risky. "Reset app data" also resets the counters.
+considered risky. "Reset app data" also resets the counters. If you change the pattern, restart or fiscal year, SAFT raises the
+counter of each period at least to the highest existing number that matches the new pattern; the preview already takes
+this into account before saving.
+
+#### Assigning only when a condition holds
+
+**Assign when** takes a condition in the formula language, e.g. `status <> 'draft'` or `final` (a yes/no field). The
+field then stays empty on creation, and SAFT assigns the number on the **first save on which the condition is true** –
+also when editing an existing record. After that the number is fixed, even if the condition is no longer true later.
+This way drafts get no number, and discarded drafts leave no gaps. Empty means: assign on creation.
+
+- **Building blocks and checking** as for a computed field: a click inserts a field (for choice fields the stored values
+  appear in the tooltip), an operator or a function; errors appear while typing, otherwise "Condition OK – depends on:
+  …". **Help on the condition** sums up the rules.
+- The condition only reads fields of the same record, **no computed fields** and **no sums** over other tables: it is
+  checked before the formulas. It already sees values a plugin sets when saving.
+- The **reference date** is the time of assignment or the chosen date field at that moment.
+- Until then the form shows "assigned when …" with the condition.
+- **Number now** only assigns numbers where the condition is true; the others stay empty and are counted in the result.
+- On **import**, numbers brought along are kept without checking the condition; missing ones are only assigned where it
+  is true. A **copy** checks the condition with its own values – a copied status *Sent* therefore means a number right
+  away.
+- Fields used by the condition stay active and cannot be changed into a file field; renaming is followed.
 
 #### Converting existing fields
 
@@ -479,6 +501,20 @@ number and the highest existing one. With **Set counter** you enter the last ass
   with confirmation.
 
 Each change appears in the field's history (clock icon in the field list).
+
+#### Migrating numbers
+
+When moving from another system there are three ways:
+
+| Old numbers | Way | Result |
+|---|---|---|
+| match the pattern | import directly into the number sequence field | numbers stay, SAFT continues after the highest |
+| have a different format | also import directly | old numbers stay, new ones follow the pattern; usually right for documents already sent, since the number on paper must be the one in SAFT |
+| are unusable or not unique | old number as a reference in a separate text field, leave the number sequence field empty | new numbers for all records – risky for documents already sent |
+
+With the third way the import assigns the numbers immediately in the order of the file. If the order should follow the
+date, sort the file by date beforehand, or import into a text field and convert it to "Number sequence" afterwards with
+**Number empty values now** (see [Converting existing fields](#converting-existing-fields)).
 
 ### Used in
 

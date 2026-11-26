@@ -469,12 +469,36 @@ modifié ensuite – ni dans le formulaire, ni par import, plugins ou interfaces
 
 Une plage de numéros est toujours unique et jamais obligatoire. Avant le premier enregistrement, le formulaire affiche
 « attribué à l’enregistrement ». Un enregistrement interrompu ne laisse pas de trou ; un enregistrement supprimé
-définitivement, si (il reste traçable dans le journal des modifications). Une **copie** reçoit un nouveau numéro. À
+définitivement, si (il reste traçable dans le journal des modifications). Une **copie** reçoit un nouveau numéro (avec « Attribuer si », seulement quand la condition est vraie pour la copie). À
 l’**import**, les numéros manquants sont attribués ; les numéros fournis (p. ex. d’un ancien système) sont repris s’ils
 sont uniques, et s’ils suivent le modèle, SAFT continue à partir d’eux. La [définition d’app](#15-apps-applications-métier)
 contient les réglages, pas les compteurs : une nouvelle installation commence à la valeur de départ ; un modèle modifié
 lors d’une mise à jour est considéré comme délicat. « Réinitialiser les données d’app » remet aussi les compteurs à
-zéro.
+zéro. Si vous modifiez le modèle, le redémarrage ou l’exercice, SAFT relève le compteur de chaque période au moins au
+numéro existant le plus élevé qui suit le nouveau modèle ; l’aperçu en tient déjà compte avant l’enregistrement.
+
+#### Attribuer seulement si une condition est remplie
+
+**Attribuer si** reçoit une condition dans le langage des formules, p. ex. `status <> 'brouillon'` ou `definitif` (un
+champ oui/non). Le champ reste alors vide à la création, et SAFT attribue le numéro au **premier enregistrement où la
+condition est vraie** – aussi en modifiant un enregistrement existant. Ensuite le numéro est fixe, même si la condition
+n’est plus vraie plus tard. Ainsi les brouillons ne reçoivent pas de numéro, et les brouillons abandonnés ne laissent
+pas de trous. Vide signifie : attribuer à la création.
+
+- **Éléments et vérification** comme pour un champ calculé : un clic insère un champ (pour les champs de choix, les
+  valeurs enregistrées figurent dans l’info-bulle), un opérateur ou une fonction ; les erreurs apparaissent pendant la
+  saisie, sinon « Condition correcte – dépend de : … ». L’**aide sur la condition** résume les règles.
+- La condition ne lit que les champs du même enregistrement, **pas de champs calculés** ni de **sommes** sur d’autres
+  tables : elle est vérifiée avant les formules. Elle voit déjà les valeurs qu’un plugin définit à l’enregistrement.
+- La **date de référence** est le moment de l’attribution ou le champ date choisi à ce moment.
+- Jusque-là, le formulaire affiche « attribué si … » avec la condition.
+- **Numéroter maintenant** n’attribue des numéros que là où la condition est vraie ; les autres restent vides et sont
+  comptés dans le résultat.
+- À l’**import**, les numéros fournis sont repris sans vérifier la condition ; les manquants ne sont attribués que là où
+  elle est vraie. Une **copie** vérifie la condition avec ses propres valeurs – un statut *Envoyée* copié signifie donc
+  tout de suite un numéro.
+- Les champs utilisés par la condition restent actifs et ne peuvent pas devenir un champ fichier ; un renommage est
+  suivi.
 
 #### Convertir des champs existants
 
@@ -516,6 +540,20 @@ mensuel `2027-01`, sans redémarrage `-`) le dernier numéro attribué ; le suiv
   seulement avec confirmation.
 
 Chaque modification figure dans l’historique du champ (icône horloge dans la liste des champs).
+
+#### Migrer des numéros
+
+En venant d’un autre système, il y a trois voies :
+
+| Anciens numéros | Voie | Résultat |
+|---|---|---|
+| suivent le modèle | importer directement dans le champ plage de numéros | les numéros restent, SAFT continue après le plus élevé |
+| ont un autre format | importer aussi directement | les anciens numéros restent, les nouveaux suivent le modèle ; en général juste pour des pièces déjà envoyées, car le numéro sur papier doit être celui dans SAFT |
+| inutilisables ou pas uniques | ancien numéro comme référence dans un champ texte séparé, laisser vide le champ plage de numéros | nouveaux numéros pour tous les enregistrements – délicat pour des pièces déjà envoyées |
+
+Avec la troisième voie, l’import attribue les numéros tout de suite dans l’ordre du fichier. Si l’ordre doit suivre la
+date, triez d’abord le fichier par date, ou importez dans un champ texte et convertissez-le ensuite en « Plage de
+numéros » avec **Numéroter maintenant les valeurs vides** (voir [Convertir des champs existants](#convertir-des-champs-existants)).
 
 ### Utilisée dans
 

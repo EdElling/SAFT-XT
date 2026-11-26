@@ -1,6 +1,6 @@
 # Konzept: Nummernkreise in SAFT XT
 
-Stand: 26.11.2026 · Status: **abgestimmt**, auf Fundament 2 nachgeführt; **Etappen N1 und N2 umgesetzt** (Abschnitt 12) ·
+Stand: 26.11.2026 · Status: **abgestimmt**, auf Fundament 2 nachgeführt; **Etappen N1, N2 und N3 umgesetzt** (Abschnitt 12) ·
 Backlog: B-135
 
 ## 1. Ziel
@@ -150,8 +150,13 @@ rechtlich geprüft**. SAFT sorgt für Eindeutigkeit und Nachvollziehbarkeit, nic
 ### 6.4 Vergabe bei einer Bedingung (Etappe N3)
 
 Ist „Vergeben, wenn“ gesetzt, bleibt das Feld beim Anlegen leer. SAFT vergibt die Nummer beim ersten Speichern, bei
-dem die Formel wahr ist, z. B. `status = 'definitiv'`. Danach gilt die Nummer für immer, auch wenn der Status später
-zurückgeht. Als Bezugsdatum gilt dann der Zeitpunkt der Vergabe bzw. das gewählte Datumsfeld zu diesem Zeitpunkt.
+dem die Formel wahr ist, z. B. `status = 'definitiv'`, auch beim Ändern. Danach gilt die Nummer für immer, auch wenn
+der Status später zurückgeht. Als Bezugsdatum gilt dann der Zeitpunkt der Vergabe bzw. das gewählte Datumsfeld zu
+diesem Zeitpunkt (beim Nachnummerieren wie in N2 das Anlegedatum).
+
+Ausgewertet wird die Bedingung **nach** `RecordSaving` und vor den berechneten Feldern: Sie sieht Werte, die Plugins
+setzen, und Formeln sehen die Nummer. Deshalb darf sie keine berechneten Felder und keine Summen über Kind-Tabellen
+verwenden; Plugins sehen eine so vergebene Nummer erst in `RecordSaved`.
 
 Die Bedingung nutzt die Formelsprache (wie Tabellenformeln und Regeln) und hängt **nicht** von der Regel-Engine ab.
 Die Regel-Engine braucht daher keine eigene Aktion „Nummer ziehen“. Eine Sammeländerung des Status (B-133) löst die
@@ -161,12 +166,12 @@ Vergabe je Datensatz aus, in Schlüsselreihenfolge.
 
 | Bereich | Verhalten |
 |---|---|
-| **Formular** | Nur Anzeige; vor dem ersten Speichern „wird beim Speichern vergeben“ |
+| **Formular** | Nur Anzeige; vor dem ersten Speichern „wird beim Speichern vergeben“, mit Bedingung „wird vergeben, wenn …“ |
 | **Datenansicht** | Text: Sortieren, Suchen und Filtern wie bei Text |
 | **Schreibweg** | `WritePhases` lehnt ab: einen mitgegebenen Wert beim Anlegen, ausser bei Herkunft `import` und `seed`; jede Änderung einer vergebenen Nummer. Meldung als `BusinessRuleException` mit Code. |
 | **Plugin-API** (`DataTable::create`, `update`) | vergibt automatisch; mitgegebene Werte werden wie oben abgelehnt. Ein Listener auf `RecordSaving` darf eine Nummer weder setzen noch ändern (Prüfung nach dem Ereignis). Keine neue API-Version: Die Klassen im `ApiManifest` ändern sich nicht, das Verhalten steht im Entwicklerhandbuch. |
 | **Import** | **Ohne** Wert: Nummer wird vergeben. **Mit** Wert (z. B. Altdaten): wird übernommen, wenn eindeutig. Passt er zum Muster, wird der Zähler seiner Periode auf mindestens diesen Wert angehoben, sodass spätere Nummern nicht kollidieren. Werte, die nicht zum Muster passen, werden übernommen. Sie im Ergebnis des Imports zu melden, ist zurückgestellt (B-154): Der Import kennt heute nur Fehler, keine Hinweise. |
-| **Datensatz kopieren** (`RecordCopier`) | Die Kopie bekommt eine neue Nummer (eindeutige Felder werden schon heute nicht kopiert), ausser bei Vergabe bei Bedingung. |
+| **Datensatz kopieren** (`RecordCopier`) | Die Kopie bekommt eine neue Nummer (eindeutige Felder werden schon heute nicht kopiert); mit Bedingung erst, wenn sie für die Werte der Kopie zutrifft (N3). |
 | **Formeln, Auswertungen, Regeln** | Wert vom Typ Text (`valueType` = String) |
 | **Dokumentvorlagen** | Platzhalter wie jedes Feld (`{{rechnungsnummer}}`) |
 | **Änderungsprotokoll** | Die Vergabe erscheint als Teil der Anlage durch die auslösende Person. |
@@ -332,3 +337,30 @@ Strato-Demo.
   gibt keine Nummern mehr vor; Aktualisierung 1.4 → 1.5 übernimmt vorhandene Nummern.
 - **Tests:** `NumberConversionTest` (15 Fälle, Spaltenänderung auch auf MySQL und MariaDB), `DemoSeedersTest`
   (1.4 → 1.5). `CustomField::$type` als `FieldType` beschrieben: Larastan-Baseline 319 → 277.
+
+### 12.4 Plan N3 (26.11.2026)
+
+Entschieden 26.11.2026: (A) Auswertung nach `RecordSaving`, ohne berechnete Felder und Summen; (B) das Nachnummerieren
+beachtet die Bedingung; (C) mitgebrachte Nummern beim Import werden ohne Prüfung der Bedingung übernommen, dazu ein
+Abschnitt „Nummern migrieren“ im Administratorhandbuch; eine Import-Option „Nummern nicht vergeben“ ist als Randfall
+zurückgestellt (B-156); (D) Musikschule 1.6 mit `status <> 'entwurf'`, einem Entwurf im Seeder, „offen“ und den
+Rechnungsauswertungen nur für versendete Rechnungen.
+
+### 12.5 Umsetzung N3 (26.11.2026)
+
+- **Kern:** `NumberCondition` (prüfen mit `FormulaAnalyzer`, Option `assign_when` mit Baum `assign_when_ast`,
+  auswerten mit `Evaluator`), geprüft im `FieldDefinitionNormalizer` und damit auch in App-Definition und KI (die KI
+  schlägt keine Bedingung vor: Das Feld `formula` des Vorschlags trägt schon das Muster).
+- **Schreibweg:** `NumberAssigner::applyConditional` in `WritePhases::beforeSave` nach `RecordSaving`, vor den Formeln;
+  gleiche Sperre und Transaktion. Import mit Nummer: übernommen ohne Prüfung der Bedingung.
+- **Schema:** Umbenennen führt die Bedingung nach; verwendete Felder bleiben aktiv und werden kein Dateifeld.
+  Behoben aus N1/N2: Ein geändertes Muster (Neubeginn, Geschäftsjahr) hebt die Zähler auf die höchste vorhandene
+  passende Nummer; die Vorschau rechnet beim ungespeicherten Muster damit.
+- **Nachnummerieren:** nur wo die Bedingung zutrifft; die übrigen werden gezählt, der nächste Block beginnt um ihre
+  Anzahl versetzt (statt Keyset-Cursor: Reihenfolge über Datum, Anlegedatum und Schlüssel ist eindeutig, und
+  `created_at` kann leer sein).
+- **Oberfläche:** Formelfeld „Vergeben, wenn“ mit Prüfung beim Tippen, Bausteinen und Hilfe wie beim berechneten Feld;
+  Hinweis im Datenformular; Bestätigung „Jetzt nummerieren“ mit Bedingung.
+- **Musikschule 1.6:** wie in 12.4 (D); Aktualisierung 1.5 → 1.6 lässt vergebene Nummern stehen.
+- **Tests:** `NumberConditionTest` (15 Fälle), Gleichzeitigkeit beim Ändern auf drei Datenbanken,
+  `DemoSeedersTest` (1.5 → 1.6), Browser-Fall TDE-39.

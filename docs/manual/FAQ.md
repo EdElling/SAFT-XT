@@ -174,3 +174,10 @@ Change the existing field (text, integer or choice) to the type **Number sequenc
 SAFT shows how many values match the pattern and where the numbers continue; values that do not match stay unchanged.
 Empty values can be filled right away or later with **Number now**, and with **Set counter** e.g. the next year starts
 at 1000. See [Administrator guide, Converting existing fields](ADMIN_GUIDE.md#converting-existing-fields).
+
+### How does an invoice get its number only when it is sent?
+
+Enter a condition under **Assign when** for the number sequence, e.g. `status <> 'draft'`. The number then stays empty
+for drafts and is assigned on the first save on which the condition is true; after that it is fixed. Discarded drafts
+therefore leave no gaps. See
+[Administrator guide, Assigning only when a condition holds](ADMIN_GUIDE.md#assigning-only-when-a-condition-holds).

@@ -507,7 +507,7 @@ scheduled task – SAFT fires events (`App\Plugins\Api\Events`):
 
 | Event | When | Typical use |
 |---|---|---|
-| `RecordSaving` | before saving, after the defaults (sequence, copy from, number sequences) and **before** computed fields | complete or correct values, reject the change |
+| `RecordSaving` | before saving, after the defaults (sequence, copy from, number sequences without condition) and **before** computed fields and number sequences with "Assign when" | complete or correct values, reject the change |
 | `RecordSaved` | after saving | follow-up bookings in other tables, notifications |
 | `RecordDeleting` | before deleting (also to the recycle bin) | reject deletion |
 | `RecordDeleted` | after deleting | reverse follow-up bookings |
@@ -535,7 +535,10 @@ or changed).
   rejects a given number (code `dynamic.number_given`) and `update()` a change of an assigned one
   (`dynamic.number_immutable`); simply leave the field out. Only the data import and seeders may bring numbers.
   Empty numbers of existing records are filled only by the job "Assign empty numbers" (`number_backfill`, origin
-  `WriteOptions::NUMBERING` without plugin events); its change log entries carry the run identifier `run`.
+  `WriteOptions::NUMBERING` without plugin events); its change log entries carry the run identifier `run`. If the field
+  has an **"Assign when"** condition (option `assign_when`), SAFT assigns the number only **after** `RecordSaving` on
+  the first save on which the condition is true – also on `update()`. The condition therefore sees values your listener
+  sets (e.g. a status); the listener itself sees the number only in `RecordSaved`.
 - **Reject** in `RecordSaving` or `RecordDeleting`: `throw new RecordRejected('Message for display');`. SAFT saves
   nothing and shows “Action not possible” with your message; in an import it appears as an error of the row and the
   whole import is not carried out.

@@ -669,7 +669,7 @@ un ZIP.
 | Liaison | Client d’une commande | table cible et champ affiché ; base des détails et de l’aperçu |
 | Fichier | Contrat, photo de produit | images, PDF, documents Office, texte/CSV ou fichiers quelconques ; taille maximale et nombre par champ ; aperçu dans la liste et les détails. Pas dans l’import ; l’export ne contient que les noms de fichiers (voir [4.2](#42-consulter-créer-modifier-et-supprimer-des-enregistrements)) |
 | Calculé | Montant = quantité × prix unitaire | résultat en nombre entier ou décimal, formule ; calculé à l’enregistrement, non saisi (voir [Champs calculés](ADMIN_GUIDE.fr.md#champs-calculés)) |
-| Plage de numéros | Numéro de facture R-2026-0042 | modèle avec année, mois et numéro courant ; attribué à la création, unique et non modifiable ensuite (voir [Plages de numéros](ADMIN_GUIDE.fr.md#plages-de-numéros)) |
+| Plage de numéros | Numéro de facture R-2026-0042 | modèle avec année, mois et numéro courant ; attribué à la création (ou seulement quand une condition est vraie, p. ex. statut *Envoyée* ; jusque-là le formulaire affiche « attribué si … »), unique et non modifiable ensuite (voir [Plages de numéros](ADMIN_GUIDE.fr.md#plages-de-numéros)) |
 
 ---
 

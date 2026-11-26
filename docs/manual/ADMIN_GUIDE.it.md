@@ -456,11 +456,34 @@ essere modificato – né nel modulo né tramite importazione, plugin o interfac
 
 Un intervallo di numerazione è sempre univoco e mai obbligatorio. Prima del primo salvataggio il modulo mostra
 «assegnato al salvataggio». Un salvataggio interrotto non lascia lacune; un record eliminato definitivamente sì (resta
-tracciabile nel registro delle modifiche). Una **copia** riceve un nuovo numero. All’**importazione** i numeri mancanti
+tracciabile nel registro delle modifiche). Una **copia** riceve un nuovo numero (con «Assegna se», solo quando la condizione è vera per la copia). All’**importazione** i numeri mancanti
 vengono assegnati; quelli forniti (p. es. da un sistema precedente) vengono ripresi se univoci e, se seguono il
 modello, SAFT prosegue da lì. La [definizione dell’app](#15-app-applicazioni-specialistiche) contiene le impostazioni,
 non i contatori: una nuova installazione parte dal valore iniziale; un modello modificato durante un aggiornamento è
-considerato delicato. «Reimposta i dati dell’app» azzera anche i contatori.
+considerato delicato. «Reimposta i dati dell’app» azzera anche i contatori. Se modificate il modello, la ripartenza o l’esercizio, SAFT alza il
+contatore di ogni periodo almeno al numero esistente più alto che segue il nuovo modello; l’anteprima ne tiene già
+conto prima del salvataggio.
+
+#### Assegnare solo se una condizione è vera
+
+**Assegna se** accetta una condizione nel linguaggio delle formule, p. es. `status <> 'bozza'` o `definitivo` (un campo
+sì/no). Il campo resta allora vuoto alla creazione, e SAFT assegna il numero al **primo salvataggio in cui la condizione
+è vera** – anche modificando un record esistente. In seguito il numero è fisso, anche se più tardi la condizione non è
+più vera. Così le bozze non ricevono un numero, e le bozze scartate non lasciano lacune. Vuoto significa: assegnare alla
+creazione.
+
+- **Elementi e verifica** come per un campo calcolato: un clic inserisce un campo (per i campi di scelta i valori salvati
+  sono nel tooltip), un operatore o una funzione; gli errori compaiono durante la digitazione, altrimenti «Condizione
+  corretta – dipende da: …». L’**aiuto sulla condizione** riassume le regole.
+- La condizione legge solo campi dello stesso record, **nessun campo calcolato** e **nessuna somma** su altre tabelle:
+  viene verificata prima delle formule. Vede già i valori che un plugin imposta al salvataggio.
+- La **data di riferimento** è il momento dell’assegnazione o il campo data scelto in quel momento.
+- Fino ad allora il modulo mostra «assegnato se …» con la condizione.
+- **Numerare ora** assegna numeri solo dove la condizione è vera; gli altri restano vuoti e vengono contati nel risultato.
+- All’**importazione** i numeri forniti vengono ripresi senza verificare la condizione; quelli mancanti vengono assegnati
+  solo dove è vera. Una **copia** verifica la condizione con i propri valori – uno stato *Inviata* copiato significa
+  quindi subito un numero.
+- I campi usati dalla condizione restano attivi e non possono diventare un campo file; una ridenominazione viene seguita.
 
 #### Convertire campi esistenti
 
@@ -501,6 +524,20 @@ numero progressivo assegnato e il più alto esistente. Con **Impostare il contat
   conferma.
 
 Ogni modifica figura nella cronologia del campo (icona orologio nell’elenco dei campi).
+
+#### Migrare i numeri
+
+Passando da un altro sistema ci sono tre vie:
+
+| Numeri vecchi | Via | Risultato |
+|---|---|---|
+| seguono il modello | importare direttamente nel campo intervallo di numerazione | i numeri restano, SAFT prosegue dopo il più alto |
+| hanno un altro formato | importare anch’essi direttamente | i numeri vecchi restano, i nuovi seguono il modello; di solito giusto per documenti già inviati, perché il numero sulla carta deve essere quello in SAFT |
+| inutilizzabili o non univoci | numero vecchio come riferimento in un campo testo separato, lasciare vuoto il campo intervallo di numerazione | numeri nuovi per tutti i record – delicato per documenti già inviati |
+
+Con la terza via l’importazione assegna i numeri subito nell’ordine del file. Se l’ordine deve seguire la data,
+ordinate prima il file per data, oppure importate in un campo testo e convertitelo poi in «Intervallo di numerazione»
+con **Numerare ora i valori vuoti** (vedi [Convertire campi esistenti](#convertire-campi-esistenti)).
 
 ### Usata in
 

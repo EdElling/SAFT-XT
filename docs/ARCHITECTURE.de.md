@@ -367,3 +367,7 @@ durch Nr. n“ markiert.
     `SELECT … FOR UPDATE`: dessen Lückensperre führte auf MySQL bei gleichzeitigem Anlegen zu Deadlocks.
     *Folge:* kein Fremdschlüssel auf `custom_fields`, `DynamicSchemaService` und das Zurücksetzen der Demo-Daten
     löschen Zähler selbst; `NumberSequenceConcurrencyTest` prüft parallele Prozesse auf allen drei Datenbanken.
+    *Nachtrag N3 (26.11.2026):* Mit „Vergeben, wenn“ (`assign_when`, eine Formel ohne berechnete Felder und Summen)
+    vergibt dieselbe Vorher-Phase die Nummer erst **nach** `RecordSaving` und vor den Formeln, beim ersten Speichern
+    mit erfüllter Bedingung, auch beim Ändern – gleiche Sperre, gleiche Transaktion. Ein geändertes Muster hebt die
+    Zähler auf die höchste vorhandene passende Nummer.

@@ -360,3 +360,7 @@ no. n".
     row is created by an upsert instead of after a `SELECT … FOR UPDATE`, whose gap lock caused deadlocks on MySQL
     with concurrent creation. *Consequence:* no foreign key to `custom_fields`; `DynamicSchemaService` and the demo data
     reset delete counters themselves; `NumberSequenceConcurrencyTest` checks parallel processes on all three databases.
+    *Addendum N3 (26 November 2026):* with "Assign when" (`assign_when`, a formula without computed fields and sums)
+    the same before phase assigns the number only **after** `RecordSaving` and before the formulas, on the first save
+    with the condition true, also on update – same lock, same transaction. A changed pattern raises the counters to the
+    highest existing matching number.
