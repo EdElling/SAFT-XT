@@ -15,6 +15,8 @@ use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\WorkItem;
 use App\Plugins\Api\Events\RecordSaving;
+use App\Work\Types\NumberBackfillWork;
+use App\Work\WorkService;
 use Closure;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
@@ -224,5 +226,36 @@ class NumberConditionTest extends DynamicDataTestCase
 
         $record = $this->writer()->create($table->fresh(), ['datum' => '2026-11-20', 'zustand' => 'versendet'], WriteOptions::ui());
         $this->assertSame('R-2026-0001', $record->nummer);
+    }
+
+    public function test_backfill_numbers_only_where_the_condition_holds(): void
+    {
+        $this->actingAs($admin = $this->superAdmin());
+        $table = $this->invoices();
+        $field = $table->fields->firstWhere('name', 'nummer');
+        $this->service()->updateField($field, ['is_active' => false]);
+
+        // Mehr Entwürfe als ein Block, alle vor den versendeten: Der zweite Block muss um sie versetzt beginnen.
+        $drafts = NumberBackfillWork::BLOCK + 10;
+
+        for ($i = 0; $i < $drafts; $i++) {
+            $this->create($table->fresh(), ['datum' => '2026-01-01', 'betreff' => 'Entwurf'], WriteOptions::seed());
+        }
+
+        foreach (['2026-03-01', '2026-02-01', '2025-12-01'] as $date) {
+            $this->create($table->fresh(), ['datum' => $date, 'betreff' => $date, 'status' => 'versendet'], WriteOptions::seed());
+        }
+
+        $field = $this->service()->updateField($field->fresh(), ['is_active' => true]);
+        $work = app(WorkService::class)->startAndDrive(NumberBackfillWork::KEY, ['field' => $field->id], $admin);
+
+        $this->assertSame(WorkItem::DONE, $work->status, (string) $work->message);
+        $this->assertSame(['assigned' => 3, 'waiting' => $drafts], array_intersect_key($work->result, ['assigned' => 0, 'waiting' => 0]));
+        $this->assertStringContainsString("status <> 'entwurf'", (string) $work->message);
+        $this->assertSame(
+            ['2025-12-01' => 'R-2025-0001', '2026-02-01' => 'R-2026-0001', '2026-03-01' => 'R-2026-0002'],
+            DynamicRecord::forTable($table)->newQuery()->whereNotNull('nummer')->orderBy('datum')->pluck('nummer', 'betreff')->all(),
+        );
+        $this->assertSame($drafts, DynamicRecord::forTable($table)->newQuery()->whereNull('nummer')->count(), 'Entwürfe bleiben ohne Nummer.');
     }
 }

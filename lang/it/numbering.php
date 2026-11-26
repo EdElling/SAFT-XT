@@ -82,7 +82,7 @@ return [
         'duplicates' => 'doppioni: :list',
         'preview' => 'Valori esistenti: :summary',
         'backfill' => 'Numerare ora i valori vuoti',
-        'backfill_help' => 'Assegna i numeri nell’ordine della data di riferimento, poi della data di creazione. Prosegue in background se dura più a lungo.',
+        'backfill_help' => 'Assegna i numeri nell’ordine della data di riferimento, poi della data di creazione. Prosegue in background se dura più a lungo. Con «Assegna se», solo i record per cui la condizione è vera.',
     ],
     'counter' => [
         'section' => 'Contatori',
@@ -107,6 +107,7 @@ return [
         'log_attribute' => 'Contatore :period',
         'backfill' => 'Numerare ora',
         'backfill_confirm' => '{1} 1 record senza numero ne riceve uno ora, secondo la data di riferimento.|[2,*] :count record senza numero ne ricevono uno ora, nell’ordine della data di riferimento.',
+        'backfill_confirm_condition' => '{1} 1 record non ha un numero. Ne riceve uno ora se «:condition» è vera.|[2,*] :count record non hanno un numero. Quelli per cui «:condition» è vera ne ricevono uno ora, nell’ordine della data di riferimento.',
         'backfill_started' => 'Assegnazione dei numeri in corso',
     ],
 ];

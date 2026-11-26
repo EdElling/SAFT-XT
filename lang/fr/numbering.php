@@ -82,7 +82,7 @@ return [
         'duplicates' => 'en double : :list',
         'preview' => 'Valeurs existantes : :summary',
         'backfill' => 'Numéroter maintenant les valeurs vides',
-        'backfill_help' => 'Attribue les numéros dans l’ordre de la date de référence, puis de la date de création. Se poursuit en arrière-plan si cela dure plus longtemps.',
+        'backfill_help' => 'Attribue les numéros dans l’ordre de la date de référence, puis de la date de création. Se poursuit en arrière-plan si cela dure plus longtemps. Avec « Attribuer si », seulement les enregistrements pour lesquels la condition est vraie.',
     ],
     'counter' => [
         'section' => 'Compteurs',
@@ -107,6 +107,7 @@ return [
         'log_attribute' => 'Compteur :period',
         'backfill' => 'Numéroter maintenant',
         'backfill_confirm' => '{1} 1 enregistrement sans numéro en reçoit un maintenant, selon la date de référence.|[2,*] :count enregistrements sans numéro en reçoivent un maintenant, dans l’ordre de la date de référence.',
+        'backfill_confirm_condition' => '{1} 1 enregistrement n’a pas de numéro. Il en reçoit un maintenant si « :condition » est vrai.|[2,*] :count enregistrements n’ont pas de numéro. Ceux pour lesquels « :condition » est vrai en reçoivent un maintenant, dans l’ordre de la date de référence.',
         'backfill_started' => 'Attribution des numéros en cours',
     ],
 ];

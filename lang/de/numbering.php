@@ -82,7 +82,7 @@ return [
         'duplicates' => 'mehrfach vorhanden: :list',
         'preview' => 'Vorhandene Werte: :summary',
         'backfill' => 'Leere Werte jetzt nummerieren',
-        'backfill_help' => 'Vergibt Nummern in der Reihenfolge des Bezugsdatums, dann des Anlegedatums. Läuft im Hintergrund weiter, wenn es länger dauert.',
+        'backfill_help' => 'Vergibt Nummern in der Reihenfolge des Bezugsdatums, dann des Anlegedatums. Läuft im Hintergrund weiter, wenn es länger dauert. Mit „Vergeben, wenn“ nur Datensätze, bei denen die Bedingung zutrifft.',
     ],
     'counter' => [
         'section' => 'Zählerstände',
@@ -107,6 +107,7 @@ return [
         'log_attribute' => 'Zählerstand :period',
         'backfill' => 'Jetzt nummerieren',
         'backfill_confirm' => '{1} 1 Datensatz ohne Nummer bekommt jetzt eine, nach dem Bezugsdatum.|[2,*] :count Datensätze ohne Nummer bekommen jetzt eine, in der Reihenfolge des Bezugsdatums.',
+        'backfill_confirm_condition' => '{1} 1 Datensatz hat keine Nummer. Er bekommt jetzt eine, wenn „:condition“ zutrifft.|[2,*] :count Datensätze haben keine Nummer. Die, bei denen „:condition“ zutrifft, bekommen jetzt eine, in der Reihenfolge des Bezugsdatums.',
         'backfill_started' => 'Nummern werden vergeben',
     ],
 ];

@@ -7,6 +7,7 @@ namespace App\Filament\Resources\CustomTables\RelationManagers;
 use App\Apps\AppInterfaces;
 use App\Apps\CurrentApp;
 use App\DynamicData\Files\RecordFiles;
+use App\DynamicData\Numbering\NumberCondition;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Ui\DynamicRecordActions;
@@ -134,7 +135,10 @@ class CustomFieldsRelationManager extends RelationManager
                     ->visible(fn (CustomField $record): bool => NumberBackfillWork::pending($record) > 0)
                     ->authorize(fn (CustomField $record): bool => auth()->user()?->can('update', $record) ?? false)
                     ->requiresConfirmation()
-                    ->modalDescription(fn (CustomField $record): string => trans_choice('numbering.counter.backfill_confirm', $count = NumberBackfillWork::pending($record), ['count' => $count]))
+                    // Mit „Vergeben, wenn“ (N3): nur die, bei denen die Bedingung zutrifft.
+                    ->modalDescription(fn (CustomField $record): string => ($condition = (string) ($record->optionsArray()[NumberCondition::OPTION] ?? '')) === ''
+                        ? trans_choice('numbering.counter.backfill_confirm', $count = NumberBackfillWork::pending($record), ['count' => $count])
+                        : trans_choice('numbering.counter.backfill_confirm_condition', $count = NumberBackfillWork::pending($record), ['count' => $count, 'condition' => $condition]))
                     ->action(fn (CustomField $record) => self::startBackfill($record)),
                 // Verlauf des Felds (B-113): wer wann was geändert hat.
                 DynamicRecordActions::modelHistory(),

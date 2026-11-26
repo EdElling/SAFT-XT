@@ -37,6 +37,7 @@ return [
     ],
     'number_backfill' => [
         'done' => '{0} Nessun numero assegnato.|{1} 1 numero assegnato.|[2,*] :count numeri assegnati.',
+        'waiting' => '{1} 1 record è rimasto vuoto perché «:condition» non è vera.|[2,*] :count record sono rimasti vuoti perché «:condition» non è vera.',
         'without_date' => '{1} 1 record senza data di riferimento è rimasto vuoto.|[2,*] :count record senza data di riferimento sono rimasti vuoti.',
         'skipped' => '{1} 1 record saltato: :errors|[2,*] :count record saltati: :errors',
         'too_many_errors' => 'Interrotto: non è stato possibile numerare :count record (:errors).',

@@ -37,6 +37,7 @@ return [
     ],
     'number_backfill' => [
         'done' => '{0} Keine Nummer vergeben.|{1} 1 Nummer vergeben.|[2,*] :count Nummern vergeben.',
+        'waiting' => '{1} 1 Datensatz blieb leer, weil „:condition“ nicht zutrifft.|[2,*] :count Datensätze blieben leer, weil „:condition“ nicht zutrifft.',
         'without_date' => '{1} 1 Datensatz ohne Bezugsdatum blieb leer.|[2,*] :count Datensätze ohne Bezugsdatum blieben leer.',
         'skipped' => '{1} 1 Datensatz übersprungen: :errors|[2,*] :count Datensätze übersprungen: :errors',
         'too_many_errors' => 'Abgebrochen: :count Datensätze liessen sich nicht nummerieren (:errors).',

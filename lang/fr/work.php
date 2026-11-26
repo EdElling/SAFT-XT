@@ -37,6 +37,7 @@ return [
     ],
     'number_backfill' => [
         'done' => '{0} Aucun numéro attribué.|{1} 1 numéro attribué.|[2,*] :count numéros attribués.',
+        'waiting' => '{1} 1 enregistrement est resté vide, car « :condition » n’est pas vrai.|[2,*] :count enregistrements sont restés vides, car « :condition » n’est pas vrai.',
         'without_date' => '{1} 1 enregistrement sans date de référence est resté vide.|[2,*] :count enregistrements sans date de référence sont restés vides.',
         'skipped' => '{1} 1 enregistrement ignoré : :errors|[2,*] :count enregistrements ignorés : :errors',
         'too_many_errors' => 'Interrompu : :count enregistrements n’ont pas pu être numérotés (:errors).',

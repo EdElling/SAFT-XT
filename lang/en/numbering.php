@@ -82,7 +82,7 @@ return [
         'duplicates' => 'duplicates: :list',
         'preview' => 'Existing values: :summary',
         'backfill' => 'Number empty values now',
-        'backfill_help' => 'Assigns numbers in the order of the reference date, then the creation date. Continues in the background if it takes longer.',
+        'backfill_help' => 'Assigns numbers in the order of the reference date, then the creation date. Continues in the background if it takes longer. With "Assign when", only records for which the condition is true.',
     ],
     'counter' => [
         'section' => 'Counters',
@@ -107,6 +107,7 @@ return [
         'log_attribute' => 'Counter :period',
         'backfill' => 'Number now',
         'backfill_confirm' => '{1} 1 record without a number gets one now, by reference date.|[2,*] :count records without a number get one now, in the order of the reference date.',
+        'backfill_confirm_condition' => '{1} 1 record has no number. It gets one now if ":condition" is true.|[2,*] :count records have no number. Those for which ":condition" is true get one now, in the order of the reference date.',
         'backfill_started' => 'Numbers are being assigned',
     ],
 ];

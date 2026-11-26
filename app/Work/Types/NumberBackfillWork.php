@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Work\Types;
 
+use App\DynamicData\Numbering\NumberCondition;
 use App\DynamicData\Numbering\NumberConversion;
 use App\DynamicData\Numbering\NumberPattern;
 use App\DynamicData\Schema\FieldType;
@@ -26,6 +27,10 @@ use Illuminate\Support\Str;
  * Herkunft „numbering“, die als einzige eine leere Nummer eines bestehenden Datensatzes füllen darf.
  *
  * - Jeder Block nimmt die ersten leeren Datensätze; nummerierte fallen heraus, so setzt ein neuer Versuch richtig fort.
+ * - Mit „Vergeben, wenn“ (N3) bekommen nur Datensätze eine Nummer, bei denen die Bedingung zutrifft; die übrigen
+ *   warten, bleiben leer und werden gezählt. Weil sie in der Menge bleiben, beginnt der nächste Block um ihre Anzahl
+ *   versetzt (Reihenfolge eindeutig dank Schlüssel). Wird einer von ihnen während des Laufs anderswo nummeriert,
+ *   rückt ein leerer Datensatz unbearbeitet vor die Grenze – er bleibt leer, ein zweiter Lauf nimmt ihn.
  * - Protokoll je Datensatz mit der Laufkennung „run“ (wie später die Sammeländerung, BULK_EDIT.md); keine
  *   Plugin-Ereignisse – Nachnummerieren soll nichts nach aussen auslösen.
  * - Papierkorb ausgenommen. Datensätze ohne Bezugsdatum bleiben leer und werden gezählt; scheitert ein Datensatz an
@@ -67,7 +72,7 @@ final readonly class NumberBackfillWork implements WorkType, WritesRecords
         $field = self::field($parameters);
 
         return new WorkPlan(
-            ['run' => self::KEY.':'.Str::uuid(), 'assigned' => 0, 'skipped' => [], 'errors' => []],
+            ['run' => self::KEY.':'.Str::uuid(), 'assigned' => 0, 'waiting' => 0, 'skipped' => [], 'errors' => []],
             $field === null ? 0 : self::empties($field)->count(),
         );
     }
@@ -79,14 +84,24 @@ final readonly class NumberBackfillWork implements WorkType, WritesRecords
         $skipped = array_map('intval', (array) ($state['skipped'] ?? []));
         $errors = (array) ($state['errors'] ?? []);
         $assigned = (int) ($state['assigned'] ?? 0);
+        $waiting = (int) ($state['waiting'] ?? 0);
+        $fieldOptions = $field?->optionsArray() ?? [];
         $records = $field === null ? collect() : self::empties($field)
             ->when($skipped !== [], static fn (Builder $query) => $query->whereKeyNot($skipped))
+            ->when($waiting > 0, static fn (Builder $query) => $query->offset($waiting))
             ->limit(self::BLOCK)
             ->get();
 
         $options = new WriteOptions(origin: WriteOptions::NUMBERING, pluginEvents: false, run: (string) $state['run']);
 
         foreach ($records as $record) {
+            // „Vergeben, wenn“: ohne erfüllte Bedingung bleibt die Nummer leer (gezählt, nicht gespeichert).
+            if (! NumberCondition::holds($record, $fieldOptions)) {
+                $waiting++;
+
+                continue;
+            }
+
             try {
                 // Eigener Sicherungspunkt je Datensatz: Scheitert er, rollt auch sein gezogener Zählerstand zurück.
                 $record->getConnection()->transaction(fn () => $this->writer->save($record, $options));
@@ -104,7 +119,7 @@ final readonly class NumberBackfillWork implements WorkType, WritesRecords
             }
         }
 
-        $state = [...$state, 'assigned' => $assigned, 'skipped' => $skipped, 'errors' => $errors];
+        $state = [...$state, 'assigned' => $assigned, 'waiting' => $waiting, 'skipped' => $skipped, 'errors' => $errors];
 
         if ($field !== null && $records->count() === self::BLOCK) {
             return StepOutcome::continue($state, $records->count());
@@ -112,6 +127,10 @@ final readonly class NumberBackfillWork implements WorkType, WritesRecords
 
         $withoutDate = $field === null ? 0 : self::withoutDate($field);
         $message = trans_choice('work.number_backfill.done', $assigned, ['count' => $assigned]);
+
+        if ($waiting > 0) {
+            $message .= ' '.trans_choice('work.number_backfill.waiting', $waiting, ['count' => $waiting, 'condition' => (string) ($fieldOptions[NumberCondition::OPTION] ?? '')]);
+        }
 
         if ($withoutDate > 0) {
             $message .= ' '.trans_choice('work.number_backfill.without_date', $withoutDate, ['count' => $withoutDate]);
@@ -121,7 +140,7 @@ final readonly class NumberBackfillWork implements WorkType, WritesRecords
             $message .= ' '.trans_choice('work.number_backfill.skipped', count($skipped), ['count' => count($skipped), 'errors' => implode(' · ', $errors)]);
         }
 
-        return StepOutcome::finished($message, ['assigned' => $assigned, 'skipped' => count($skipped), 'without_date' => $withoutDate, 'run' => $state['run']], $records->count());
+        return StepOutcome::finished($message, ['assigned' => $assigned, 'waiting' => $waiting, 'skipped' => count($skipped), 'without_date' => $withoutDate, 'run' => $state['run']], $records->count());
     }
 
     /**

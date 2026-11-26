@@ -37,6 +37,7 @@ return [
     ],
     'number_backfill' => [
         'done' => '{0} No number assigned.|{1} 1 number assigned.|[2,*] :count numbers assigned.',
+        'waiting' => '{1} 1 record stayed empty because ":condition" is not true.|[2,*] :count records stayed empty because ":condition" is not true.',
         'without_date' => '{1} 1 record without a reference date stayed empty.|[2,*] :count records without a reference date stayed empty.',
         'skipped' => '{1} 1 record skipped: :errors|[2,*] :count records skipped: :errors',
         'too_many_errors' => 'Cancelled: :count records could not be numbered (:errors).',
