@@ -7,7 +7,9 @@ namespace App\DynamicData\Schema;
 use App\Apps\AppInterfaces;
 use App\DynamicData\Files\FileKinds;
 use App\DynamicData\Formula\FormulaAnalyzer;
+use App\DynamicData\Formula\FormulaException;
 use App\DynamicData\Formula\Printer;
+use App\DynamicData\Numbering\NumberCondition;
 use App\DynamicData\Numbering\NumberPattern;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Rules\CopySource;
@@ -68,7 +70,7 @@ final class FieldDefinitionNormalizer
             'type' => $type,
             'options' => $type === FieldType::Computed
                 ? $this->computedOptions((array) ($data['options'] ?? []), $owner, $name)
-                : $this->options($type, (array) ($data['options'] ?? []), $owner),
+                : $this->options($type, (array) ($data['options'] ?? []), $owner, $name),
             'validation_rules' => $this->rules($type, (array) ($data['validation_rules'] ?? [])),
             // Berechnete Felder und Nummernkreise füllt SAFT: keine Pflicht. Nummern sind immer eindeutig.
             'is_required' => (bool) ($data['is_required'] ?? false) && ! $type->isGenerated(),
@@ -86,7 +88,7 @@ final class FieldDefinitionNormalizer
      * @param  array<string, mixed>  $options
      * @return array<string, mixed>
      */
-    private function options(FieldType $type, array $options, ?CustomTable $owner): array
+    private function options(FieldType $type, array $options, ?CustomTable $owner, string $name = ''): array
     {
         $typed = match ($type) {
             FieldType::String => ['length' => $this->int($options['length'] ?? 255, 1, self::MAX_STRING_LENGTH, __('tables.fields.length'))],
@@ -98,7 +100,7 @@ final class FieldDefinitionNormalizer
             // Mit heute bzw. jetzt vorbelegen (nur gespeichert, wenn gewählt).
             FieldType::Date, FieldType::DateTime => filter_var($options[NowDefault::OPTION] ?? false, FILTER_VALIDATE_BOOLEAN) ? [NowDefault::OPTION => true] : [],
             FieldType::File => $this->fileOptions($options),
-            FieldType::Number => $this->numberOptions($options, $owner),
+            FieldType::Number => $this->numberOptions($options, $owner, $name),
             default => [],
         };
 
@@ -232,7 +234,7 @@ final class FieldDefinitionNormalizer
      * @param  array<string, mixed>  $options
      * @return array<string, mixed>
      */
-    private function numberOptions(array $options, ?CustomTable $owner): array
+    private function numberOptions(array $options, ?CustomTable $owner, string $name): array
     {
         $reset = (string) ($options[NumberPattern::RESET] ?? 'never');
         $fiscal = $reset === 'yearly' ? $this->int($options[NumberPattern::FISCAL_START] ?? 1, 1, 12, __('numbering.fields.fiscal_start')) : 1;
@@ -252,12 +254,20 @@ final class FieldDefinitionNormalizer
             }
         }
 
+        // „Vergeben, wenn“ (N3): Bedingung in der Formelsprache, nur gespeicherte Felder desselben Datensatzes.
+        try {
+            $condition = NumberCondition::compile((string) ($options[NumberCondition::OPTION] ?? ''), $owner?->fields()->get()->keyBy('name')->all() ?? [], $name, $owner?->name);
+        } catch (FormulaException $e) {
+            $this->fail(__('numbering.errors.condition', ['message' => $e->getMessage()]));
+        }
+
         return [
             NumberPattern::PATTERN => $pattern->pattern,
             NumberPattern::RESET => $reset,
             ...($dateField === '' ? [] : [NumberPattern::DATE_FIELD => $dateField]),
             ...($reset === 'yearly' && $fiscal !== 1 ? [NumberPattern::FISCAL_START => $fiscal] : []),
             NumberPattern::START => $start,
+            ...$condition,
             // Spaltenlänge wie bei Textfeldern (Anzeige, Index, Typwechsel).
             'length' => NumberPattern::COLUMN_LENGTH,
         ];

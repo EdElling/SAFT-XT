@@ -13,6 +13,7 @@ use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Formula\Printer;
+use App\DynamicData\Numbering\NumberCondition;
 use App\DynamicData\Numbering\NumberConversion;
 use App\DynamicData\Numbering\NumberPattern;
 use App\DynamicData\Numbering\NumberSequences;
@@ -300,6 +301,11 @@ final class DynamicSchemaService
                 $this->assertNotNumberDate($table, $field->name);
             }
 
+            // „Vergeben, wenn“ eines Nummernkreises (N3): das Feld bleibt aktiv und vergleichbar (keine Datei).
+            if (! $new['is_active'] || $new['type'] === FieldType::File) {
+                $this->assertNotNumberCondition($table, $field->name);
+            }
+
             // Vor jeder DDL prüfen: MySQL könnte die bereits ausgeführten Schritte nicht zurückrollen.
             if ($new['is_unique'] && ! $field->is_unique && $this->hasActiveDuplicates($table, $field->name)) {
                 $this->fail(__('tables.errors.not_unique', ['name' => $field->name]));
@@ -350,6 +356,7 @@ final class DynamicSchemaService
                 $this->renameRuleReferences($table, $field->name, $new['name']);
                 $this->updateSuggestScopes($table, $field->name, $new['name']);
                 $this->renameNumberDateReferences($table, $field->name, $new['name']);
+                $this->renameNumberConditionReferences($table, $field->name, $new['name']);
                 $this->renameCopyReferences($table, $field->name, $new['name']);
                 $this->renameFormulaReferences($table, $field->name, $new['name']);
                 $this->renameAggregateReferences($table->name, $field->name, $new['name']);
@@ -492,6 +499,32 @@ final class DynamicSchemaService
 
         if ($number !== null) {
             $this->fail(__('numbering.errors.date_field_in_use', ['name' => $field, 'field' => $number->name]));
+        }
+    }
+
+    /** Nummernkreise der Tabelle, deren „Vergeben, wenn“ dieses Feld liest (N3). */
+    private function assertNotNumberCondition(CustomTable $table, string $field): void
+    {
+        $number = $table->fields()->where('type', FieldType::Number->value)->get()
+            ->first(static fn (CustomField $f): bool => $f->name !== $field && in_array($field, NumberCondition::fields($f->optionsArray()), true));
+
+        if ($number !== null) {
+            $this->fail(__('numbering.errors.condition_field_in_use', ['name' => $field, 'field' => $number->name]));
+        }
+    }
+
+    /** Die Bedingung speichert Felder per Name und folgt deshalb der Umbenennung (wie Formeln). */
+    private function renameNumberConditionReferences(CustomTable $table, string $from, string $to): void
+    {
+        foreach ($table->fields()->where('type', FieldType::Number->value)->get() as $number) {
+            $options = $number->optionsArray();
+
+            if (! in_array($from, NumberCondition::fields($options), true)) {
+                continue;
+            }
+
+            $ast = Printer::map((array) $options[NumberCondition::AST], static fn (array $node): array => ($node['field'] ?? null) === $from ? [...$node, 'field' => $to] : $node);
+            $number->forceFill(['options' => [...$options, NumberCondition::AST => $ast, NumberCondition::OPTION => Printer::print($ast)]])->save();
         }
     }
 
@@ -738,6 +771,7 @@ final class DynamicSchemaService
             }
 
             $this->assertNotNumberDate($table, $field->name);
+            $this->assertNotNumberCondition($table, $field->name);
 
             $usedAsDisplay = $this->relationsDisplaying($table, $field->name)->isNotEmpty();
 

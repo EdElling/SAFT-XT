@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\DynamicData;
 
+use App\DynamicData\Numbering\NumberCondition;
 use App\DynamicData\Numbering\NumberPattern;
 use App\Models\Activity;
 use App\Models\App;
@@ -57,10 +58,25 @@ class NumberSequenceConcurrencyTest extends TestCase
 
     public function test_parallel_creation_assigns_each_number_exactly_once(): void
     {
+        $this->runParallel('create', [['name' => 'nummer', 'label' => 'Nummer', 'type' => 'number', 'options' => [NumberPattern::PATTERN => 'P-{0000}']]]);
+    }
+
+    /** N3: Die Nummer entsteht beim Ändern („Vergeben, wenn“), gleichzeitig in mehreren Prozessen. */
+    public function test_parallel_conditional_assignment_on_update(): void
+    {
+        $this->runParallel('update', [
+            ['name' => 'fertig', 'label' => 'Fertig', 'type' => 'boolean'],
+            ['name' => 'nummer', 'label' => 'Nummer', 'type' => 'number', 'options' => [NumberPattern::PATTERN => 'P-{0000}', NumberCondition::OPTION => 'fertig']],
+        ]);
+    }
+
+    /** @param  list<array<string, mixed>>  $fields */
+    private function runParallel(string $mode, array $fields): void
+    {
         $this->testApp = App::query()->create(['name' => ['de' => 'Parallel'], 'prefix' => null, 'sort_order' => 99]);
         $this->table = app(DynamicSchemaService::class)->createTable(['name' => 'nk_parallel', 'label' => 'Parallel', 'app_id' => $this->testApp->id], [
             ['name' => 'titel', 'label' => 'Titel', 'type' => 'string'],
-            ['name' => 'nummer', 'label' => 'Nummer', 'type' => 'number', 'options' => [NumberPattern::PATTERN => 'P-{0000}']],
+            ...$fields,
         ]);
 
         $script = base_path('tests/Support/scripts/create-numbered-records.php');
@@ -68,7 +84,7 @@ class NumberSequenceConcurrencyTest extends TestCase
         $processes = [];
 
         for ($i = 0; $i < self::PROCESSES; $i++) {
-            $process = proc_open([PHP_BINARY, $script, 'nk_parallel', (string) self::RECORDS, $startAt], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, base_path());
+            $process = proc_open([PHP_BINARY, $script, 'nk_parallel', (string) self::RECORDS, $startAt, $mode], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, base_path());
             $this->assertIsResource($process);
             $processes[] = [$process, $pipes];
         }

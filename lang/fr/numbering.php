@@ -10,6 +10,7 @@ return [
         'date_field' => 'Date de référence',
         'fiscal_start' => 'L’exercice commence en',
         'start' => 'Valeur de départ',
+        'assign_when' => 'Attribuer si',
     ],
     'form' => [
         'section' => 'Plage de numéros',
@@ -21,6 +22,8 @@ return [
         'start_help' => 'Premier numéro par période.',
         'next' => 'Prochain numéro : :number',
         'assigned_on_save' => 'attribué à l’enregistrement',
+        'assigned_when' => 'attribué si :condition',
+        'assign_when_help' => 'Vide : à la création. Sinon une condition sous forme de formule, p. ex. status <> \'brouillon\'. Le numéro est attribué au premier enregistrement où la condition est vraie et reste ensuite fixe.',
     ],
     'resets' => [
         'never' => 'jamais',
@@ -61,6 +64,10 @@ return [
         'date_field' => 'La date de référence « :field » n’est pas un champ date ou date et heure de cette table.',
         'date_field_required' => 'La date de référence « :field » doit être un champ obligatoire, afin que chaque numéro ait une date.',
         'date_field_in_use' => 'Le champ « :name » est la date de référence de la plage de numéros « :field » et reste donc un champ date actif et obligatoire.',
+        'condition' => '« Attribuer si » : :message',
+        'condition_aggregate' => 'La condition ne peut pas utiliser de sommes ou de comptages sur d’autres tables.',
+        'condition_computed' => 'La condition ne peut pas utiliser le champ calculé « :field », car elle est vérifiée avant les formules.',
+        'condition_field_in_use' => 'Le champ « :name » est utilisé dans « Attribuer si » de la plage de numéros « :field » et reste donc actif (et pas un champ fichier).',
         'date_missing' => 'La date de référence « :date » manque pour le numéro « :field ».',
         'given' => 'SAFT attribue le numéro « :field » à l’enregistrement ; il ne peut pas être imposé.',
         'immutable' => 'Le numéro « :field » est attribué et ne peut plus être modifié.',

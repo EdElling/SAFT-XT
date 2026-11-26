@@ -25,8 +25,8 @@ use LogicException;
  * Vertrags mit Plugins und Formeln und bleibt deshalb genau so:
  *
  * Vorher (Speichern): nur lesbar? → geschützte Dokumente → Vorgaben der Datenbank bzw. „Übernehmen aus“ und
- * fortlaufende Nummern → Nummernkreise (vergeben bzw. schützen) → RecordSaving (Plugins setzen Werte) → berechnete
- * Felder → created_by/updated_by.
+ * fortlaufende Nummern → Nummernkreise (vergeben bzw. schützen) → RecordSaving (Plugins setzen Werte) → Nummernkreise
+ * mit „Vergeben, wenn“ (N3; Plugins sehen diese Nummer erst in RecordSaved) → berechnete Felder → created_by/updated_by.
  * Nachher (Speichern): Summen in Master-Datensätzen → Dateien abgleichen → RecordSaved.
  * Vorher (Löschen): nur lesbar? → Löschsperre → RecordDeleting. Nachher: Summen → RecordDeleted → Dateien (endgültig).
  * Später kommen hier Regeln (B-142) und Zeilenrechte (B-020) hinzu.
@@ -99,6 +99,11 @@ final class WritePhases
         // Plugins vor den Formeln: Werte, die ein Listener setzt, fliessen in berechnete Felder ein.
         $this->event(RecordSaving::class, $record, $creating, $options);
         $this->numbers->assertKept($record, $numbers);
+
+        // „Vergeben, wenn“ (N3): nach den Plugins, damit die Bedingung ihre Werte sieht; vor den Formeln.
+        if (($definition->numbers ?? []) !== []) {
+            $this->numbers->applyConditional($record, $definition->numbers, $creating, $options);
+        }
 
         $record->recalculate();
 

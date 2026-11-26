@@ -10,6 +10,7 @@ return [
         'date_field' => 'Data di riferimento',
         'fiscal_start' => 'L’esercizio inizia a',
         'start' => 'Valore iniziale',
+        'assign_when' => 'Assegna se',
     ],
     'form' => [
         'section' => 'Intervallo di numerazione',
@@ -21,6 +22,8 @@ return [
         'start_help' => 'Primo numero per periodo.',
         'next' => 'Prossimo numero: :number',
         'assigned_on_save' => 'assegnato al salvataggio',
+        'assigned_when' => 'assegnato se :condition',
+        'assign_when_help' => 'Vuoto: alla creazione. Altrimenti una condizione come formula, p. es. status <> \'bozza\'. Il numero viene assegnato al primo salvataggio in cui la condizione è vera e poi resta fisso.',
     ],
     'resets' => [
         'never' => 'mai',
@@ -61,6 +64,10 @@ return [
         'date_field' => 'La data di riferimento «:field» non è un campo data o data e ora di questa tabella.',
         'date_field_required' => 'La data di riferimento «:field» deve essere un campo obbligatorio, affinché ogni numero abbia una data.',
         'date_field_in_use' => 'Il campo «:name» è la data di riferimento dell’intervallo di numerazione «:field» e resta quindi un campo data attivo e obbligatorio.',
+        'condition' => '«Assegna se»: :message',
+        'condition_aggregate' => 'La condizione non può usare somme o conteggi su altre tabelle.',
+        'condition_computed' => 'La condizione non può usare il campo calcolato «:field», perché viene verificata prima delle formule.',
+        'condition_field_in_use' => 'Il campo «:name» è usato in «Assegna se» dell’intervallo di numerazione «:field» e resta quindi attivo (e non un campo file).',
         'date_missing' => 'Manca la data di riferimento «:date» per il numero «:field».',
         'given' => 'SAFT assegna il numero «:field» al salvataggio; non può essere impostato.',
         'immutable' => 'Il numero «:field» è assegnato e non può essere modificato.',

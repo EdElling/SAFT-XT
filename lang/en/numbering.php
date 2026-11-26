@@ -10,6 +10,7 @@ return [
         'date_field' => 'Reference date',
         'fiscal_start' => 'Financial year starts in',
         'start' => 'Start value',
+        'assign_when' => 'Assign when',
     ],
     'form' => [
         'section' => 'Number sequence',
@@ -21,6 +22,8 @@ return [
         'start_help' => 'First number per period.',
         'next' => 'Next number: :number',
         'assigned_on_save' => 'assigned when saving',
+        'assigned_when' => 'assigned when :condition',
+        'assign_when_help' => 'Empty: on creation. Otherwise a condition as a formula, e.g. status <> \'draft\'. The number is assigned on the first save on which the condition is true and stays fixed afterwards.',
     ],
     'resets' => [
         'never' => 'never',
@@ -61,6 +64,10 @@ return [
         'date_field' => 'The reference date ":field" is not a date or date and time field of this table.',
         'date_field_required' => 'The reference date ":field" must be a required field so that every number has a date.',
         'date_field_in_use' => 'The field ":name" is the reference date of the number sequence ":field" and therefore stays an active, required date field.',
+        'condition' => '"Assign when": :message',
+        'condition_aggregate' => 'The condition cannot use sums or counts over other tables.',
+        'condition_computed' => 'The condition cannot use the computed field ":field" because it is checked before the formulas.',
+        'condition_field_in_use' => 'The field ":name" is used in "Assign when" of the number sequence ":field" and therefore stays active (and not a file field).',
         'date_missing' => 'The reference date ":date" for the number ":field" is missing.',
         'given' => 'SAFT assigns the number ":field" when saving; it cannot be specified.',
         'immutable' => 'The number ":field" has been assigned and cannot be changed.',

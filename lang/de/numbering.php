@@ -10,6 +10,7 @@ return [
         'date_field' => 'Bezugsdatum',
         'fiscal_start' => 'Geschäftsjahr beginnt im',
         'start' => 'Startwert',
+        'assign_when' => 'Vergeben, wenn',
     ],
     'form' => [
         'section' => 'Nummernkreis',
@@ -21,6 +22,8 @@ return [
         'start_help' => 'Erste Nummer je Zeitraum.',
         'next' => 'Nächste Nummer: :number',
         'assigned_on_save' => 'wird beim Speichern vergeben',
+        'assigned_when' => 'wird vergeben, wenn :condition',
+        'assign_when_help' => 'Leer: beim Anlegen. Sonst eine Bedingung als Formel, z. B. status <> \'entwurf\'. Die Nummer wird beim ersten Speichern vergeben, bei dem die Bedingung zutrifft, und bleibt danach fest.',
     ],
     'resets' => [
         'never' => 'nie',
@@ -61,6 +64,10 @@ return [
         'date_field' => 'Das Bezugsdatum „:field“ ist kein Feld vom Typ Datum bzw. Datum und Uhrzeit dieser Tabelle.',
         'date_field_required' => 'Das Bezugsdatum „:field“ muss ein Pflichtfeld sein, damit jede Nummer ein Datum hat.',
         'date_field_in_use' => 'Das Feld „:name“ ist das Bezugsdatum des Nummernkreises „:field“ und bleibt deshalb ein aktives Pflichtfeld vom Typ Datum.',
+        'condition' => '„Vergeben, wenn“: :message',
+        'condition_aggregate' => 'Die Bedingung kann keine Summen oder Zählungen über andere Tabellen verwenden.',
+        'condition_computed' => 'Die Bedingung kann das berechnete Feld „:field“ nicht verwenden, weil sie vor den Formeln geprüft wird.',
+        'condition_field_in_use' => 'Das Feld „:name“ wird in „Vergeben, wenn“ des Nummernkreises „:field“ verwendet und bleibt deshalb aktiv (und kein Dateifeld).',
         'date_missing' => 'Für die Nummer „:field“ fehlt das Bezugsdatum „:date“.',
         'given' => 'Die Nummer „:field“ vergibt SAFT beim Speichern; sie kann nicht vorgegeben werden.',
         'immutable' => 'Die Nummer „:field“ ist vergeben und kann nicht geändert werden.',

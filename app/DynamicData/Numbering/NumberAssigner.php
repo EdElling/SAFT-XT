@@ -13,7 +13,7 @@ use Carbon\CarbonInterface;
 /**
  * Nummernkreise im Schreibweg (B-135, Teil von WritePhases::beforeSave): beim Anlegen leere Nummern vergeben,
  * mitgebrachte nur bei Import und Seed übernehmen (Zähler anheben), leere bestehender Datensätze beim Nachnummerieren
- * (Herkunft „numbering“, N2) füllen, vergebene Nummern nie ändern – gleich, ob die
+ * (Herkunft „numbering“, N2) füllen, mit „Vergeben, wenn“ (N3) erst bei erfüllter Bedingung vergeben, vergebene Nummern nie ändern – gleich, ob die
  * Änderung aus der Oberfläche, einem Plugin, einer Regel oder sonstwoher kommt.
  */
 final class NumberAssigner
@@ -34,6 +34,30 @@ final class NumberAssigner
         $this->assign($record, $numbers, $creating, $options);
 
         return array_map(static fn (string $field): mixed => $record->getAttribute($field), array_combine(array_keys($numbers), array_keys($numbers)));
+    }
+
+    /**
+     * „Vergeben, wenn“ (N3): leere Nummern mit Bedingung vergeben, sobald sie zutrifft – beim Anlegen und beim Ändern.
+     * Läuft nach RecordSaving (die Bedingung sieht Werte, die ein Plugin setzt) und vor den berechneten Feldern.
+     * Bezugsdatum ist der Zeitpunkt der Vergabe bzw. das Datumsfeld in diesem Moment; nur beim Nachnummerieren das
+     * Anlegedatum des Datensatzes (wie ohne Bedingung).
+     *
+     * @param  array<string, array{id: int, options: array<string, mixed>}>  $numbers
+     */
+    public function applyConditional(DynamicRecord $record, array $numbers, bool $creating, WriteOptions $options): void
+    {
+        foreach ($numbers as $field => $number) {
+            $value = $record->getAttribute($field);
+
+            if (! NumberCondition::has($number['options']) || ! ($number['options']['active'] ?? true) || ($value !== null && $value !== '')) {
+                continue;
+            }
+
+            if (NumberCondition::holds($record, $number['options'])) {
+                $numbering = ! $creating && $options->origin === WriteOptions::NUMBERING;
+                $this->assignNext($record, $field, $number, $numbering ? $record->getAttribute('created_at') : null);
+            }
+        }
     }
 
     /**
@@ -62,7 +86,7 @@ final class NumberAssigner
             if (! $creating) {
                 if ($record->isDirty($field)) {
                     $this->assertChangeAllowed($record, $field, $given, $number, $options);
-                } elseif (! $given && $options->origin === WriteOptions::NUMBERING) {
+                } elseif (! $given && $options->origin === WriteOptions::NUMBERING && ! NumberCondition::has($number['options'])) {
                     // Nachnummerieren (N2): leere Nummer eines bestehenden Datensatzes; ohne Datumsfeld zählt sein
                     // Anlegedatum, sonst bekämen alte Datensätze Nummern des laufenden Jahrs.
                     $this->assignNext($record, $field, $number, $record->getAttribute('created_at'));
@@ -85,7 +109,8 @@ final class NumberAssigner
                 $record->setAttribute($field, null);
             }
 
-            if (! ($number['options']['active'] ?? true)) {
+            // Inaktiv, oder mit Bedingung: die vergibt applyConditional() nach RecordSaving.
+            if (! ($number['options']['active'] ?? true) || NumberCondition::has($number['options'])) {
                 continue;
             }
 
@@ -114,7 +139,7 @@ final class NumberAssigner
 
     /**
      * Eine vergebene Nummer ist fest. Eine leere darf nur ein Import bzw. Seed füllen (Altdaten); vergeben wird sonst
-     * nur beim Anlegen (N3: bei einer Bedingung).
+     * beim Anlegen bzw. – mit Bedingung (N3) – in applyConditional().
      *
      * @param  array{id: int, options: array<string, mixed>}  $number
      */

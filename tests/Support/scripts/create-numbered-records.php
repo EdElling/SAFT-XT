@@ -5,7 +5,8 @@ declare(strict_types=1);
 /*
  * Hilfsprozess für NumberSequenceConcurrencyTest (B-135): legt in einer Tabelle mit Nummernkreis-Feld Datensätze an,
  * gleichzeitig mit anderen Prozessen. Startet erst zum gemeinsamen Zeitpunkt, damit sich die Prozesse überlappen.
- * Aufruf: php create-numbered-records.php <tabelle> <anzahl> <start-unix-zeit-mit-bruchteil>
+ * Aufruf: php create-numbered-records.php <tabelle> <anzahl> <start-unix-zeit-mit-bruchteil> [create|update]
+ * „update“ (N3): erst ohne erfüllte Bedingung anlegen, dann „fertig“ setzen – die Nummer entsteht beim Ändern.
  * Die Umgebung (Testdatenbank) erbt der Prozess vom Test.
  */
 
@@ -24,6 +25,7 @@ $app->make(Kernel::class)->bootstrap();
 TestDatabaseGuard::check();
 
 [, $table, $count, $startAt] = $argv;
+$mode = $argv[4] ?? 'create';
 
 while (microtime(true) < (float) $startAt) {
     usleep(1000);
@@ -34,7 +36,12 @@ $writer = app(RecordWriter::class);
 try {
     for ($i = 1; $i <= (int) $count; $i++) {
         // Ohne Protokoll und Plugin-Ereignisse: nur die Vergabe zählt.
-        $writer->create($table, ['titel' => getmypid().'-'.$i], WriteOptions::seed());
+        if ($mode === 'update') {
+            $record = $writer->create($table, ['titel' => getmypid().'-'.$i, 'fertig' => false], WriteOptions::seed());
+            $writer->update($record, ['fertig' => true], WriteOptions::seed());
+        } else {
+            $writer->create($table, ['titel' => getmypid().'-'.$i], WriteOptions::seed());
+        }
     }
 } catch (Throwable $e) {
     fwrite(STDERR, $e::class.': '.$e->getMessage());
