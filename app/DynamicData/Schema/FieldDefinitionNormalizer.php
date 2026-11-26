@@ -8,6 +8,7 @@ use App\Apps\AppInterfaces;
 use App\DynamicData\Files\FileKinds;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Formula\Printer;
+use App\DynamicData\Numbering\NumberPattern;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Rules\CopySource;
 use App\DynamicData\Rules\NowDefault;
@@ -69,10 +70,10 @@ final class FieldDefinitionNormalizer
                 ? $this->computedOptions((array) ($data['options'] ?? []), $owner, $name)
                 : $this->options($type, (array) ($data['options'] ?? []), $owner),
             'validation_rules' => $this->rules($type, (array) ($data['validation_rules'] ?? [])),
-            // Berechnete Felder füllt SAFT; Pflicht und Eindeutigkeit gibt es dort nicht.
-            'is_required' => (bool) ($data['is_required'] ?? false) && $type !== FieldType::Computed,
-            'is_unique' => (bool) ($data['is_unique'] ?? false) && ! in_array($type, [FieldType::Text, FieldType::Boolean, FieldType::Computed, FieldType::File], true),
-            'is_searchable' => (bool) ($data['is_searchable'] ?? false) && in_array($type, [FieldType::String, FieldType::Text, FieldType::Select], true),
+            // Berechnete Felder und Nummernkreise füllt SAFT: keine Pflicht. Nummern sind immer eindeutig.
+            'is_required' => (bool) ($data['is_required'] ?? false) && ! $type->isGenerated(),
+            'is_unique' => $type === FieldType::Number || ((bool) ($data['is_unique'] ?? false) && ! in_array($type, [FieldType::Text, FieldType::Boolean, FieldType::Computed, FieldType::File], true)),
+            'is_searchable' => (bool) ($data['is_searchable'] ?? false) && in_array($type, [FieldType::String, FieldType::Text, FieldType::Select, FieldType::Number], true),
             'is_sortable' => (bool) ($data['is_sortable'] ?? false) && ! in_array($type, [FieldType::Text, FieldType::File], true),
             'show_in_table' => (bool) ($data['show_in_table'] ?? true),
             'show_in_form' => (bool) ($data['show_in_form'] ?? true),
@@ -97,11 +98,12 @@ final class FieldDefinitionNormalizer
             // Mit heute bzw. jetzt vorbelegen (nur gespeichert, wenn gewählt).
             FieldType::Date, FieldType::DateTime => filter_var($options[NowDefault::OPTION] ?? false, FILTER_VALIDATE_BOOLEAN) ? [NowDefault::OPTION => true] : [],
             FieldType::File => $this->fileOptions($options),
+            FieldType::Number => $this->numberOptions($options, $owner),
             default => [],
         };
 
-        // Dateien übernehmen keine Werte aus dem Master-Datensatz.
-        if ($type === FieldType::File) {
+        // Dateien und Nummernkreise übernehmen keine Werte aus dem Master-Datensatz.
+        if ($type === FieldType::File || $type === FieldType::Number) {
             return $typed;
         }
 
@@ -224,9 +226,43 @@ final class FieldDefinitionNormalizer
     }
 
     /**
+     * Nummernkreis (B-135): Muster, Neubeginn, Bezugsdatum (leer = Anlegedatum, sonst ein Pflichtfeld vom Typ Datum
+     * bzw. Datum/Zeit derselben Tabelle), Beginn des Geschäftsjahrs (nur jährlich) und Startwert.
+     *
      * @param  array<string, mixed>  $options
-     * @return array{precision: int, scale: int}
+     * @return array<string, mixed>
      */
+    private function numberOptions(array $options, ?CustomTable $owner): array
+    {
+        $reset = (string) ($options[NumberPattern::RESET] ?? 'never');
+        $fiscal = $reset === 'yearly' ? $this->int($options[NumberPattern::FISCAL_START] ?? 1, 1, 12, __('numbering.fields.fiscal_start')) : 1;
+        $start = $this->int($options[NumberPattern::START] ?? 1, 1, 1_000_000_000, __('numbering.fields.start'));
+        $pattern = NumberPattern::make((string) ($options[NumberPattern::PATTERN] ?? ''), $reset, $fiscal, $start);
+        $dateField = trim((string) ($options[NumberPattern::DATE_FIELD] ?? ''));
+
+        if ($dateField !== '') {
+            $date = $owner?->fields()->where('name', $dateField)->first();
+
+            if (! $date instanceof CustomField || ! in_array($date->type, [FieldType::Date, FieldType::DateTime], true)) {
+                $this->fail(__('numbering.errors.date_field', ['field' => $dateField]));
+            }
+
+            if (! $date->is_required) {
+                $this->fail(__('numbering.errors.date_field_required', ['field' => $dateField]));
+            }
+        }
+
+        return [
+            NumberPattern::PATTERN => $pattern->pattern,
+            NumberPattern::RESET => $reset,
+            ...($dateField === '' ? [] : [NumberPattern::DATE_FIELD => $dateField]),
+            ...($reset === 'yearly' && $fiscal !== 1 ? [NumberPattern::FISCAL_START => $fiscal] : []),
+            NumberPattern::START => $start,
+            // Spaltenlänge wie bei Textfeldern (Anzeige, Index, Typwechsel).
+            'length' => NumberPattern::COLUMN_LENGTH,
+        ];
+    }
+
     /**
      * Dateifeld: erlaubte Arten, Höchstgrösse je Datei (MB) und Anzahl Dateien (1 = eine Datei).
      *

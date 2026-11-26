@@ -185,6 +185,8 @@ final class DynamicTableBuilder
                         ->query(fn (Builder $query, array $data): Builder => $query
                             ->when($data['from'] ?? null, fn (Builder $q, string $d): Builder => $q->whereDate($field->name, '>=', $d))
                             ->when($data['until'] ?? null, fn (Builder $q, string $d): Builder => $q->whereDate($field->name, '<=', $d))),
+                    // valueType(): berechnete Felder sind Zahlen, Nummernkreise Text – hier nie selbst.
+                    FieldType::Computed, FieldType::Number => null,
                 };
 
             if ($filter !== null) {

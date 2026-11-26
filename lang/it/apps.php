@@ -298,6 +298,7 @@ return [
             'deactivate' => 'Viene nascosto (i dati restano).',
             'relation_target' => 'Il collegamento ora punta a «:table».',
             'formula' => 'Formula modificata – i valori vengono ricalcolati.',
+            'number_pattern' => 'Modello dell’intervallo di numerazione modificato (:pattern) – i numeri esistenti restano, i nuovi seguono il nuovo modello.',
             'choices_removed' => 'Valori di scelta eliminati: :values.',
             'rules' => 'Regole modificate – i record esistenti vengono controllati alla prossima modifica.',
             'interface_version' => 'Condivisione ritirata – la versione dell’interfaccia aumenta.',

@@ -354,6 +354,7 @@ class AppDesignerPage extends Page
                     'detail' => match ($type) {
                         FieldType::Relation => '→ '.(string) ($options['table'] ?? ''),
                         FieldType::Computed => '= '.(string) ($options['formula'] ?? ''),
+                        FieldType::Number => (string) ($options['pattern'] ?? ''),
                         FieldType::Select => implode(', ', array_map(static fn (mixed $o): string => (string) (is_array($o) ? ($o['value'] ?? '') : $o), (array) ($options['options'] ?? []))),
                         default => '',
                     },

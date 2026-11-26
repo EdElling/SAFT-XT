@@ -158,7 +158,12 @@ class TableDesignerTest extends DuskTestCase
                     ->waitForText('hängt ab von: ganzzahl', 15);
             });
 
-            $this->assertSame(11, $table->fields()->count());
+            // Nummernkreis (B-135): Vorgaben genügen (R-{YYYY}-{0000}, jährlich, Anlegedatum).
+            $this->addField($browser, 'Beleg-Nr', FieldType::Number->value, function (Browser $b): void {
+                $b->waitForText('Nächste Nummer: R-'.now()->format('Y').'-0001', 15);
+            });
+
+            $this->assertSame(12, $table->fields()->count());
             $this->assertEqualsCanonicalizing(
                 array_map(static fn (FieldType $type): string => $type->value, FieldType::cases()),
                 $table->fields()->get()->map(static fn (CustomField $f): string => $f->type->value)->unique()->values()->all(),
@@ -171,6 +176,7 @@ class TableDesignerTest extends DuskTestCase
 
             DynamicRecord::forget('alle_typen');
             $this->assertSame(1, DynamicRecord::forTableName('alle_typen')->newQuery()->count());
+            $this->assertSame('R-'.now()->format('Y').'-0001', DynamicRecord::forTableName('alle_typen')->newQuery()->value('beleg_nr'));
             $this->assertSame('14.00', DynamicRecord::forTableName('alle_typen')->newQuery()->value('doppelt'));
         });
     }
@@ -448,6 +454,37 @@ class TableDesignerTest extends DuskTestCase
 
         DynamicRecord::forget('kunden');
         $this->assertSame('Berlin', DynamicRecord::forTableName('kunden')->newQuery()->findOrFail($this->acme->id)->getAttribute('ort'));
+    }
+
+    /** TDE-37: Nummernkreis mit Baustein und Vorschau anlegen; neue Datensätze bekommen die Nummer, sie ist nicht änderbar. */
+    public function test_number_sequence_field_assigns_numbers_on_create(): void
+    {
+        $this->browse(function (Browser $browser): void {
+            $this->openDesigner($browser, $this->kunden);
+            $this->addField($browser, 'Kundennummer', FieldType::Number->value, function (Browser $browser): void {
+                $pattern = $this->input('options.pattern');
+                $browser->waitFor($pattern, 15)->clear($pattern)->type($pattern, 'K-')
+                    ->select($this->input('number_block'), '{0000}')
+                    ->waitUsing(15, 100, fn (): bool => $browser->value($pattern) === 'K-{0000}')
+                    ->select($this->input('options.reset'), 'never')
+                    ->waitForText('Nächste Nummer: K-0001', 15)
+                    ->assertMissing($this->input('is_required'));
+            });
+
+            $field = $this->field($this->kunden, 'kundennummer');
+            $this->assertSame([FieldType::Number, true, 'K-{0000}'], [$field->type, $field->is_unique, $field->optionsArray()['pattern']]);
+
+            $browser->visit('/admin/data/kunden')->waitForText('Neuer Datensatz', 15);
+            $this->clickVisibleButton($browser, 'Neuer Datensatz')->waitFor($this->input('firma'), 15)
+                ->assertAttribute($this->input('kundennummer'), 'placeholder', 'wird beim Speichern vergeben')
+                ->assertDisabled($this->input('kundennummer'))
+                ->type($this->input('firma'), 'Muster AG');
+            $this->clickVisibleButton($browser, 'Erstellen')->waitForText('K-0001', 15);
+        });
+
+        DynamicRecord::forget('kunden');
+        $this->assertSame('K-0001', DynamicRecord::forTableName('kunden')->newQuery()->where('firma', 'Muster AG')->value('kundennummer'));
+        $this->assertNull(DynamicRecord::forTableName('kunden')->newQuery()->findOrFail($this->acme->id)->getAttribute('kundennummer'), 'Vorhandene Datensätze bleiben ohne Nummer.');
     }
 
     /** TDE-15 */

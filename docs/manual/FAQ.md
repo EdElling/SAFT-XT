@@ -32,6 +32,7 @@
    - [The Word file looks different from the PDF.](#the-word-file-looks-different-from-the-pdf)
    - [Instead of the file, a page “Job” with a progress bar appears.](#instead-of-the-file-a-page-job-with-a-progress-bar-appears)
    - [Importing a large file takes long.](#importing-a-large-file-takes-long)
+   - [How do invoices get a consecutive number?](#how-do-invoices-get-a-consecutive-number)
 
 ---
 ## Frequently asked questions
@@ -159,3 +160,10 @@ Every record is created as if entered by hand – with defaults, computed fields
 the plugins. That costs a few milliseconds per record; with tens of thousands of rows this adds up to minutes. The
 progress shows **checking** first, then **importing**. You may leave the page; on errors or cancel nothing is created,
 or everything created is removed again.
+
+### How do invoices get a consecutive number?
+
+With a field of type **Number sequence**, e.g. with the pattern `R-{YYYY}-{0000}` and a yearly restart. SAFT assigns
+the number on create, never twice and not again after deletion; afterwards it cannot be changed. That is why the form
+only shows "assigned when saving". Set it up in the table designer, see
+[Administrator guide, Number sequences](ADMIN_GUIDE.md#number-sequences).

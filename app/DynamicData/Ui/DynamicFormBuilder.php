@@ -154,6 +154,11 @@ final class DynamicFormBuilder
                     ->dehydrated(false)
                     ->placeholder(__('data.computed_placeholder'))
                     ->helperText('= '.($options['formula'] ?? '')),
+                // Nummernkreis (B-135): vergibt der Schreibweg beim Anlegen; nie aus dem Formular übernehmen.
+                FieldType::Number => TextInput::make($field->name)
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->placeholder(__('numbering.form.assigned_on_save')),
                 FieldType::String => TextInput::make($field->name)
                     ->maxLength((int) $options['length'])
                     ->when($rules['email'] ?? false, fn (TextInput $c) => $c->email())
@@ -197,7 +202,7 @@ final class DynamicFormBuilder
             });
         }
 
-        if ($field->is_unique) {
+        if ($field->is_unique && ! in_array($field->type, [FieldType::Computed, FieldType::Number], true)) {
             $component->rule(fn (?Model $record): Unique => Rule::unique($this->ruleTable($table->name), $field->name)
                 ->ignore($record?->getKey(), $record?->getKeyName() ?? 'id')
                 ->when(! $table->isExternal(), fn (Unique $rule): Unique => $rule->whereNull('deleted_at')));

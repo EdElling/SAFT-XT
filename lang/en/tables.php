@@ -17,6 +17,7 @@ return [
         'select' => 'Selection list',
         'relation' => 'Relation',
         'computed' => 'Computed',
+        'number' => 'Number sequence',
     ],
     'form' => [
         'table' => 'Table',

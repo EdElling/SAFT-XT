@@ -413,6 +413,7 @@ crea anche una voce aggiuntiva se la tabella deve comparire in un secondo punto 
 |---|---|
 | Rinominare un campo | in qualsiasi momento, i dati restano |
 | Cambiare il tipo | senza perdita di dati in qualsiasi momento (ad es. numero intero → numero decimale, testo → testo su più righe, data → data e ora); testo su più righe → su una riga se tutti i valori stanno nella lunghezza; altrimenti solo se la colonna è vuota |
+| Cambiare il tipo verso o da intervallo di numerazione | solo se nessun record ha un valore nel campo (cestino compreso); vedere [Intervalli di numerazione](#intervalli-di-numerazione) |
 | Lunghezza del testo | aumentare in qualsiasi momento, ridurre solo se tutti i valori esistenti stanno nella nuova lunghezza (altrimenti il messaggio indica quanti sono troppo lunghi) |
 | Attivare «Univoco» | solo se i dati esistenti non contengono duplicati |
 | Rimuovere un valore da un elenco di selezione | in qualsiasi momento; se il valore è in uso, compare un avviso con il numero di record. Questi mantengono il loro valore, ma alla modifica successiva occorre sceglierne uno valido. |
@@ -431,6 +432,40 @@ crea anche una voce aggiuntiva se la tabella deve comparire in un secondo punto 
 
 Sotto **Tabella fisica** vedete il luogo di archiviazione, il numero di record ed eventuali differenze tra le
 impostazioni e il database.
+
+### Intervalli di numerazione
+
+Un campo di tipo **Intervallo di numerazione** riceve il numero da SAFT, p. es. numeri di fattura, d’ordine o di
+contratto come `R-2026-0042`. Il numero viene assegnato alla creazione di un record, non compare mai due volte (anche
+se più persone creano record contemporaneamente), non viene riassegnato dopo l’eliminazione e in seguito non può più
+essere modificato – né nel modulo né tramite importazione, plugin o interfacce.
+
+- **Modello:** testo fisso (lettere, cifre, spazi e `- / . _`) e segnaposto: `{YYYY}` o `{YY}` per l’anno, `{MM}` per
+  il mese ed esattamente un numero progressivo, `{0000}` con tante cifre quanti zeri o `{#}` senza zeri iniziali.
+  **Inserisci elemento** ne aggiunge uno in fondo. Se il numero progressivo supera le sue cifre, non viene troncato
+  (`R-2026-10000`). Al massimo 50 caratteri.
+- **Ripartenza:** mai, annuale o mensile. Quella annuale richiede un anno nel modello, quella mensile anno e mese –
+  altrimenti i numeri si ripeterebbero.
+- **L’esercizio inizia a** (solo annuale): p. es. luglio; marzo 2027 appartiene allora ancora all’esercizio 2026, e
+  `{YYYY}` mostra 2026.
+- **Data di riferimento:** determina anno e mese del numero e la ripartenza. Vuota vale la data di creazione; si
+  possono scegliere i campi data attivi e obbligatori, p. es. la data della fattura. Un tale campo resta poi un campo
+  data obbligatorio; una ridenominazione viene seguita.
+- **Valore iniziale:** primo numero per periodo (predefinito 1), p. es. 1000.
+- Sotto le impostazioni compare il **prossimo numero**, oppure il motivo per cui il modello non è valido.
+
+Un intervallo di numerazione è sempre univoco e mai obbligatorio. Prima del primo salvataggio il modulo mostra
+«assegnato al salvataggio». Un salvataggio interrotto non lascia lacune; un record eliminato definitivamente sì (resta
+tracciabile nel registro delle modifiche). Una **copia** riceve un nuovo numero. All’**importazione** i numeri mancanti
+vengono assegnati; quelli forniti (p. es. da un sistema precedente) vengono ripresi se univoci e, se seguono il
+modello, SAFT prosegue da lì. La [definizione dell’app](#15-app-applicazioni-specialistiche) contiene le impostazioni,
+non i contatori: una nuova installazione parte dal valore iniziale; un modello modificato durante un aggiornamento è
+considerato delicato. «Reimposta i dati dell’app» azzera anche i contatori.
+
+Un campo esistente può passare a «Intervallo di numerazione» e tornare indietro finché nessun record ha un valore in
+questo campo (cestino compreso). Riprendere numeri esistenti in un intervallo di numerazione non è ancora possibile. Per
+numeri di posizione che devono restare modificabili resta disponibile **Proponi il numero successivo** per i numeri
+interi.
 
 ### Usata in
 

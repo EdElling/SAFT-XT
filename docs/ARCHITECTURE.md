@@ -80,7 +80,7 @@ SAFT always works with at least two database connections, even when both point t
 | Connection | Contents | Configuration |
 |---|---|---|
 | **Main connection** (`DB_CONNECTION`) | system tables: users, roles, permissions, menus, table designer metadata (`custom_tables`, `custom_fields`), reports, apps, document templates, tasks, work items, activity log (`activity_log`), notifications, plugin system tables | Laravel default |
-| **`app_data`** | the physical tables of the table designer and the snapshot copies; PostgreSQL: schema `app_data`, MySQL/MariaDB: separate database `<name>_app_data` | `config/dynamic_data.php`; own user, host and password possible (`DB_APP_DATA_*`), recommended for production |
+| **`app_data`** | the physical tables of the table designer, the snapshot copies (`ds_…`) and the counters of the number sequences (`saft_number_sequences`); PostgreSQL: schema `app_data`, MySQL/MariaDB: separate database `<name>_app_data` | `config/dynamic_data.php`; own user, host and password possible (`DB_APP_DATA_*`), recommended for production |
 | **`ext_<id>`** | connected external tables (table connector), configured at runtime per connection, credentials encrypted, "read only" enforced at database level | table `database_connections`, `ConnectionRegistry` |
 
 `DynamicDataNamespace` is the entry to the namespace: connection, DDL dialect and qualification of table names. Table
@@ -120,7 +120,8 @@ Records are written exclusively through `App\DynamicData\Write\RecordWriter` (`c
    original values read for connected tables without timestamps) with `lockForUpdate()` and throws
    `StaleRecordException` if someone saved in the meantime;
 3. runs the **before phase** (`WritePhases`): read-only? → protected documents → database defaults or "copy from"
-   and sequential numbers → plugin event `RecordSaving` → computed fields → `created_by`/`updated_by`;
+   and sequential numbers → assign or protect number sequences → plugin event `RecordSaving` (numbers must not differ
+   afterwards) → computed fields → `created_by`/`updated_by`;
 4. writes the record;
 5. runs the **after phase**: sums in master records → reconcile files → `RecordSaved`; on delete the delete guard
    before, sums and `RecordDeleted` after;
@@ -348,3 +349,14 @@ no. n".
     same metadata again for each detail table (B-150: click 58 → 32, page 101 → 47 queries). *Consequence:* whoever
     writes metadata bypassing the model (query builder) must call `CustomTableLookup::forget()`; records are
     deliberately not cached.
+26. **Number sequence counters next to the data** (26 November 2026, B-135). Field type "number sequence": the before
+    phase of the `RecordWriter` assigns the number on create from the table `saft_number_sequences` (field, period,
+    group, last value; primary key over the three columns) in the `app_data` namespace, locked in the same transaction
+    as the record; no write path changes an assigned number (origins `import` and `seed` may bring numbers and raise the
+    counter). `NumberSequences::ensureTable()` creates the table with the first field of this type; the prefix `saft_`
+    is reserved for designer tables and skipped by `app-data:verify`. *Why:* on the main connection a failure between
+    the two commits (no. 10) could leave a record with a number but without a raised counter; every further assignment
+    would then fail on uniqueness. A migration would be lost with the namespace on `migrate:fresh`. A missing counter
+    row is created by an upsert instead of after a `SELECT … FOR UPDATE`, whose gap lock caused deadlocks on MySQL
+    with concurrent creation. *Consequence:* no foreign key to `custom_fields`; `DynamicSchemaService` and the demo data
+    reset delete counters themselves; `NumberSequenceConcurrencyTest` checks parallel processes on all three databases.

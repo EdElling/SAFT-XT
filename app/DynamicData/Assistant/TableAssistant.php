@@ -68,7 +68,15 @@ final class TableAssistant
         sum(if(positionen.art = 'Zoll', positionen.betrag, 0)) or sum(positionen.menge > 2) to count lines. Calculating
         only works with number fields (integer, decimal, computed); text, select, date and yes/no fields only in
         comparisons and contains(…). A new computed field may use fields listed before it. When creating a new table
-        there are no child tables yet: only formulas within the same record. Leave "formula" "" for all other types.
+        there are no child tables yet: only formulas within the same record.
+
+        number (number sequence, B-135): a formatted number SAFT assigns once when a record is created and never
+        changes, for invoice, order, contract or reminder numbers – prefer it over string or integer for such document
+        numbers. Put the pattern into "formula": fixed text (letters, digits, - / . _ and spaces) and placeholders
+        {YYYY} or {YY} (year), {MM} (month) and exactly one running number {0000} (zero-padded, as many digits as zeros)
+        or {#} (not padded), e.g. "R-{YYYY}-{0000}" for invoices. With a year the counter restarts every year, with year
+        and month every month, without a year never. Number fields are always unique and never required; at most 50
+        characters. Leave "formula" "" for all other types.
 
         Field rules (only when the user asks for limits or formats) go into "rules" as short text, separated by ";":
         min=<number> and max=<number> (integer, decimal), min_length=<n> and max_length=<n> (string, text), email and url

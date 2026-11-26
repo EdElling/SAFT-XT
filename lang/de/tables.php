@@ -17,6 +17,7 @@ return [
         'select' => 'Auswahlliste',
         'relation' => 'Verknüpfung',
         'computed' => 'Berechnet',
+        'number' => 'Nummernkreis',
     ],
     'form' => [
         'table' => 'Tabelle',

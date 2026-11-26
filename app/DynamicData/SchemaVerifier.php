@@ -55,8 +55,9 @@ final class SchemaVerifier
             }
         }
 
-        // Kopien der Datenstände (ds_…) gehören zu angebundenen Tabellen, nicht zum Table-Designer.
-        $physical = array_filter($physical, fn (string $name): bool => ! str_starts_with($name, SnapshotService::PREFIX));
+        // Kopien der Datenstände (ds_…) gehören zu angebundenen Tabellen, saft_… sind Systemtabellen (Zähler der
+        // Nummernkreise), beide nicht zum Table-Designer.
+        $physical = array_filter($physical, fn (string $name): bool => ! str_starts_with($name, SnapshotService::PREFIX) && ! str_starts_with($name, 'saft_'));
 
         foreach (array_diff($physical, $tables->pluck('name')->all()) as $orphan) {
             $issues[] = __('tables.verify.orphan_table', ['table' => $orphan]);

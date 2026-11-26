@@ -608,6 +608,7 @@ Several records as Word come as a ZIP.
 | Relation | Customer of an order | related table and displayed field; basis for details and preview |
 | File | Contract, product photo | images, PDF, Office documents, text/CSV or any files; maximum size and number per field; preview in list and details. Not in the import; the export contains only the file names (see [4.2](#42-viewing-creating-editing-and-deleting-records)) |
 | Computed | Amount = quantity × unit price | result as integer or decimal, formula; calculated when saving, not entered (see [Computed fields](ADMIN_GUIDE.md#computed-fields)) |
+| Number sequence | Invoice number R-2026-0042 | pattern with year, month and running number; assigned on create, unique and not changeable afterwards (see [Number sequences](ADMIN_GUIDE.md#number-sequences)) |
 
 ---
 

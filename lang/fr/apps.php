@@ -298,6 +298,7 @@ return [
             'deactivate' => 'Est masqué (les données restent).',
             'relation_target' => 'La liaison renvoie désormais à « :table ».',
             'formula' => 'Formule modifiée – les valeurs sont recalculées.',
+            'number_pattern' => 'Modèle de la plage de numéros modifié (:pattern) – les numéros existants restent, les nouveaux suivent le nouveau modèle.',
             'choices_removed' => 'Valeurs de choix supprimées : :values.',
             'rules' => 'Règles modifiées – les enregistrements existants sont vérifiés à la prochaine modification.',
             'interface_version' => 'Partage retiré – la version de l’interface augmente.',

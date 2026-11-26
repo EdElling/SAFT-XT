@@ -7,6 +7,8 @@ namespace App\Filament\Resources\CustomTables\Schemas;
 use App\Apps\AppInterfaces;
 use App\DynamicData\Files\FileKinds;
 use App\DynamicData\Formula\FormulaAnalyzer;
+use App\DynamicData\Numbering\NumberPattern;
+use App\DynamicData\Numbering\NumberSequences;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Rules\CopySource;
 use App\DynamicData\Rules\NowDefault;
@@ -103,19 +105,21 @@ final class FieldForm
                     ->columnSpanFull(),
             ]),
             self::typeOptions($owner),
+            self::numbering($owner),
             self::validation($owner),
             self::suggestion($owner),
             Fieldset::make(__('tables.fields.behaviour'))
                 ->columns(3)
                 ->schema([
                     Toggle::make('is_required')->label(__('tables.fields.required'))
-                        ->visible(fn (Get $get): bool => $get('type') !== FieldType::Computed->value),
+                        ->visible(fn (Get $get): bool => ! in_array($get('type'), [FieldType::Computed->value, FieldType::Number->value], true)),
+                    // Nummernkreise sind immer eindeutig (B-135).
                     Toggle::make('is_unique')
                         ->label(__('tables.fields.unique'))
-                        ->visible(fn (Get $get): bool => ! in_array($get('type'), [FieldType::Text->value, FieldType::Boolean->value, FieldType::Computed->value, FieldType::File->value], true)),
+                        ->visible(fn (Get $get): bool => ! in_array($get('type'), [FieldType::Text->value, FieldType::Boolean->value, FieldType::Computed->value, FieldType::File->value, FieldType::Number->value], true)),
                     Toggle::make('is_searchable')
                         ->label(__('tables.fields.searchable'))
-                        ->visible(fn (Get $get): bool => in_array($get('type'), [FieldType::String->value, FieldType::Text->value, FieldType::Select->value], true)),
+                        ->visible(fn (Get $get): bool => in_array($get('type'), [FieldType::String->value, FieldType::Text->value, FieldType::Select->value, FieldType::Number->value], true)),
                     Toggle::make('is_sortable')
                         ->label(__('tables.fields.index'))
                         ->helperText(__('tables.fields.index_help'))
@@ -549,6 +553,107 @@ final class FieldForm
     }
 
     /**
+     * Nummernkreis (B-135): Muster mit Bausteinen, Neubeginn, Bezugsdatum, Geschäftsjahr, Startwert und die Vorschau
+     * der nächsten Nummer. Geprüft wird im FieldDefinitionNormalizer (NumberPattern).
+     */
+    private static function numbering(?CustomTable $owner): Fieldset
+    {
+        $pattern = 'options.'.NumberPattern::PATTERN;
+        $reset = 'options.'.NumberPattern::RESET;
+        // Bezugsdatum: Pflichtfelder vom Typ Datum bzw. Datum/Zeit der Tabelle (erst nach dem Anlegen wählbar).
+        $dates = $owner === null ? [] : $owner->fields()->get()
+            ->filter(fn (CustomField $f): bool => in_array($f->type, [FieldType::Date, FieldType::DateTime], true) && $f->is_required && $f->is_active)
+            ->mapWithKeys(fn (CustomField $f): array => [$f->name => $f->label.' ('.$f->name.')'])
+            ->all();
+
+        return Fieldset::make(__('numbering.form.section'))
+            ->columns(2)
+            ->visible(fn (Get $get): bool => $get('type') === FieldType::Number->value)
+            ->schema([
+                TextInput::make($pattern)
+                    ->label(__('numbering.fields.pattern'))
+                    ->default('R-{YYYY}-{0000}')
+                    ->required(fn (Get $get): bool => $get('type') === FieldType::Number->value)
+                    ->maxLength(100)
+                    ->live(onBlur: true)
+                    ->helperText(__('numbering.form.pattern_help')),
+                // Baustein einfügen: hängt den Platzhalter an das Muster an und leert sich wieder.
+                Select::make('number_block')
+                    ->label(__('numbering.form.insert'))
+                    ->placeholder(__('numbering.form.insert_placeholder'))
+                    ->options(self::numberBlocks())
+                    ->dehydrated(false)
+                    ->live()
+                    ->afterStateUpdated(static function (Get $get, Set $set, ?string $state) use ($pattern): void {
+                        if (filled($state)) {
+                            $set($pattern, (string) $get($pattern).$state);
+                            $set('number_block', null);
+                        }
+                    }),
+                Select::make($reset)
+                    ->label(__('numbering.fields.reset'))
+                    ->options(collect(NumberPattern::RESETS)->mapWithKeys(static fn (string $r): array => [$r => __("numbering.resets.{$r}")])->all())
+                    ->default('yearly')
+                    ->selectablePlaceholder(false)
+                    ->live(),
+                Select::make('options.'.NumberPattern::FISCAL_START)
+                    ->label(__('numbering.fields.fiscal_start'))
+                    ->options(collect(range(1, 12))->mapWithKeys(static fn (int $m): array => [$m => __("numbering.months.{$m}")])->all())
+                    ->default(1)
+                    ->selectablePlaceholder(false)
+                    ->live()
+                    ->visible(fn (Get $get): bool => $get($reset) === 'yearly'),
+                Select::make('options.'.NumberPattern::DATE_FIELD)
+                    ->label(__('numbering.fields.date_field'))
+                    ->placeholder(__('numbering.form.date_created'))
+                    ->helperText($owner === null ? __('tables.fields.suggest_scope_later') : __('numbering.form.date_field_help'))
+                    ->options($dates)
+                    ->disabled($owner === null),
+                TextInput::make('options.'.NumberPattern::START)
+                    ->label(__('numbering.fields.start'))
+                    ->helperText(__('numbering.form.start_help'))
+                    ->integer()->minValue(1)->default(1)
+                    ->live(onBlur: true),
+                Text::make(static fn (Get $get, mixed $record): string => self::nextNumberPreview($get, $record))
+                    ->columnSpanFull(),
+            ]);
+    }
+
+    /** @return array<string, string> Platzhalter => Beschriftung */
+    private static function numberBlocks(): array
+    {
+        return [
+            '{YYYY}' => '{YYYY} – '.__('numbering.blocks.year4'),
+            '{YY}' => '{YY} – '.__('numbering.blocks.year2'),
+            '{MM}' => '{MM} – '.__('numbering.blocks.month'),
+            '{0000}' => '{0000} – '.__('numbering.blocks.counter'),
+            '{#}' => '{#} – '.__('numbering.blocks.counter_plain'),
+        ];
+    }
+
+    /** „Nächste Nummer: R-2026-0043“ bzw. die Meldung, warum das Muster nicht geht. */
+    private static function nextNumberPreview(Get $get, mixed $record): string
+    {
+        try {
+            $pattern = NumberPattern::make(
+                (string) $get('options.'.NumberPattern::PATTERN),
+                (string) ($get('options.'.NumberPattern::RESET) ?: 'yearly'),
+                (string) $get('options.'.NumberPattern::RESET) === 'yearly' ? max(1, (int) $get('options.'.NumberPattern::FISCAL_START)) : 1,
+                max(1, (int) ($get('options.'.NumberPattern::START) ?: 1)),
+            );
+        } catch (BusinessRuleException $e) {
+            return $e->getMessage();
+        }
+
+        $period = $pattern->period(now());
+        $last = $record instanceof CustomField && $record->exists && $record->type === FieldType::Number
+            ? app(NumberSequences::class)->current((int) $record->id, $period['key'])
+            : null;
+
+        return __('numbering.form.next', ['number' => $pattern->format(($last ?? $pattern->start - 1) + 1, $period['year'], $period['month'])]);
+    }
+
+    /**
      * Vorgabe beim Anlegen: fortlaufend (höchster Wert + 1, nur Ganzzahl), optional je Verknüpfung,
      * oder Übernahme aus dem Master-Datensatz (Verknüpfung → Feld).
      */
@@ -561,7 +666,7 @@ final class FieldForm
 
         return Fieldset::make(__('tables.fields.suggestion'))
             ->columns(2)
-            ->visible(fn (Get $get): bool => FieldType::tryFrom((string) $get('type')) !== null && ! in_array($get('type'), [FieldType::Relation->value, FieldType::Computed->value], true))
+            ->visible(fn (Get $get): bool => FieldType::tryFrom((string) $get('type')) !== null && ! in_array($get('type'), [FieldType::Relation->value, FieldType::Computed->value, FieldType::Number->value], true))
             ->schema([
                 Select::make('options.'.CopySource::OPTION)
                     ->label(__('tables.fields.copy_from'))

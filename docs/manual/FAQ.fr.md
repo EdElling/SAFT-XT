@@ -32,6 +32,7 @@
    - [Le fichier Word n’a pas le même aspect que le PDF.](#le-fichier-word-na-pas-le-même-aspect-que-le-pdf)
    - [À la place du fichier, une page « Travail » avec barre de progression s’affiche.](#à-la-place-du-fichier-une-page--travail--avec-barre-de-progression-saffiche)
    - [L’import d’un gros fichier prend du temps.](#limport-dun-gros-fichier-prend-du-temps)
+   - [Comment les factures reçoivent-elles un numéro continu ?](#comment-les-factures-reçoivent-elles-un-numéro-continu-)
 
 ---
 ## Questions fréquentes
@@ -168,3 +169,10 @@ Chaque enregistrement est créé comme à la main – avec valeurs par défaut, 
 enregistrements parents et règles des plugins. Cela coûte quelques millisecondes par enregistrement ; avec des dizaines
 de milliers de lignes, cela fait des minutes. La progression montre d’abord **vérification**, puis **importation**. Vous
 pouvez quitter la page ; en cas d’erreur ou d’annulation, rien n’est créé ou tout ce qui a été créé est retiré.
+
+### Comment les factures reçoivent-elles un numéro continu ?
+
+Avec un champ de type **Plage de numéros**, p. ex. avec le modèle `R-{YYYY}-{0000}` et un redémarrage annuel. SAFT
+attribue le numéro à la création, jamais deux fois et pas de nouveau après une suppression ; ensuite, il ne peut plus
+être modifié. C’est pourquoi le formulaire affiche seulement « attribué à l’enregistrement ». Configuration dans le
+concepteur de tables, voir [Manuel d’administration, Plages de numéros](ADMIN_GUIDE.fr.md#plages-de-numéros).

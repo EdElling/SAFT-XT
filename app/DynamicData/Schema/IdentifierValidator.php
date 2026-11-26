@@ -53,8 +53,9 @@ final class IdentifierValidator
     {
         $this->assertIdentifier($name, __('tables.list.name'));
 
-        // ds_: Kopien der Datenstände angebundener Tabellen im selben Namensraum.
-        if (str_starts_with($name, 'pg_') || str_starts_with($name, 'sql_') || str_starts_with($name, 'ds_')) {
+        // ds_: Kopien der Datenstände angebundener Tabellen im selben Namensraum; saft_: Systemtabellen dort
+        // (Zähler der Nummernkreise).
+        if (str_starts_with($name, 'pg_') || str_starts_with($name, 'sql_') || str_starts_with($name, 'ds_') || str_starts_with($name, 'saft_')) {
             $this->fail(__('tables.errors.reserved_table', ['name' => $name]));
         }
     }

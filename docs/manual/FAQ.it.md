@@ -32,6 +32,7 @@
    - [Il file Word appare diverso dal PDF.](#il-file-word-appare-diverso-dal-pdf)
    - [Al posto del file compare una pagina «Lavoro» con barra di avanzamento.](#al-posto-del-file-compare-una-pagina-lavoro-con-barra-di-avanzamento)
    - [L’importazione di un file grande richiede molto tempo.](#limportazione-di-un-file-grande-richiede-molto-tempo)
+   - [Come ricevono le fatture un numero progressivo?](#come-ricevono-le-fatture-un-numero-progressivo)
 
 ---
 ## Domande frequenti
@@ -165,3 +166,10 @@ Ogni record viene creato come a mano – con valori predefiniti, campi calcolati
 plugin. Ciò costa qualche millisecondo per record; con decine di migliaia di righe diventano minuti. L’avanzamento
 mostra prima **verifica**, poi **importazione**. Potete lasciare la pagina; in caso di errori o annullamento non viene
 creato nulla oppure tutto ciò che è stato creato viene rimosso.
+
+### Come ricevono le fatture un numero progressivo?
+
+Con un campo di tipo **Intervallo di numerazione**, p. es. con il modello `R-{YYYY}-{0000}` e ripartenza annuale. SAFT
+assegna il numero alla creazione, mai due volte e non di nuovo dopo l’eliminazione; in seguito non può essere
+modificato. Per questo il modulo mostra solo «assegnato al salvataggio». Si configura nel designer di tabelle, vedere
+[Manuale dell’amministratore, Intervalli di numerazione](ADMIN_GUIDE.it.md#intervalli-di-numerazione).

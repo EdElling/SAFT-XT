@@ -10,7 +10,9 @@ use App\DynamicData\DataMenu;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Formula\Recalculator;
+use App\DynamicData\Numbering\NumberSequences;
 use App\DynamicData\Schema\FieldDefinitionNormalizer;
+use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Write\RecordWriter;
 use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
@@ -142,6 +144,11 @@ trait SeedsDemoTables
             }
 
             (clone $query)->delete();
+
+            // Nummernkreise beginnen mit den Daten von vorn (B-135).
+            foreach ($tables[$name]->fields()->where('type', FieldType::Number->value)->pluck('id') as $id) {
+                app(NumberSequences::class)->forget((int) $id);
+            }
         }
     }
 

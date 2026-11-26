@@ -516,7 +516,7 @@ Schnittstelle oder eine geplante Aufgabe – löst SAFT Ereignisse aus (`App\Plu
 
 | Ereignis | Wann | Typische Verwendung |
 |---|---|---|
-| `RecordSaving` | vor dem Speichern, nach den Vorgaben (fortlaufend, Übernehmen aus) und **vor** den berechneten Feldern | Werte ergänzen oder korrigieren, Änderung ablehnen |
+| `RecordSaving` | vor dem Speichern, nach den Vorgaben (fortlaufend, Übernehmen aus, Nummernkreise) und **vor** den berechneten Feldern | Werte ergänzen oder korrigieren, Änderung ablehnen |
 | `RecordSaved` | nach dem Speichern | Folgebuchungen in anderen Tabellen, Benachrichtigungen |
 | `RecordDeleting` | vor dem Löschen (auch in den Papierkorb) | Löschen ablehnen |
 | `RecordDeleted` | nach dem Löschen | Folgebuchungen zurücknehmen |
@@ -539,6 +539,11 @@ angelegt oder geändert).
 
 - **Werte setzen** in `RecordSaving`: `$event->record->setAttribute('menge', -abs($menge))`. Berechnete Felder sehen den
   neuen Wert.
+- **Nummernkreise** (Feldtyp „Nummernkreis“): SAFT vergibt die Nummer beim Anlegen vor `RecordSaving`; der Listener
+  sieht sie also schon, darf sie aber weder setzen noch ändern – sonst wird das Speichern abgelehnt. Ebenso lehnt
+  `DataTable::create()` eine mitgegebene Nummer ab (Code `dynamic.number_given`) und `update()` die Änderung einer
+  vergebenen (`dynamic.number_immutable`); lassen Sie das Feld einfach weg. Nur der Datenimport und Seeder dürfen
+  Nummern mitbringen.
 - **Ablehnen** in `RecordSaving` oder `RecordDeleting`: `throw new RecordRejected('Meldung für die Anzeige');`. SAFT
   speichert nichts und zeigt „Aktion nicht möglich“ mit Ihrer Meldung an; beim Import erscheint sie als Fehler der
   Zeile, und der ganze Import wird nicht ausgeführt.

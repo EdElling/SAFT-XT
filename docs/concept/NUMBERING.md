@@ -1,6 +1,7 @@
 # Konzept: Nummernkreise in SAFT XT
 
-Stand: 23.11.2026 · Status: **erster Vorschlag zur Diskussion** · Backlog: B-135
+Stand: 26.11.2026 · Status: **abgestimmt**, auf Fundament 2 nachgeführt; **Etappe N1 umgesetzt** (Abschnitt 12) ·
+Backlog: B-135
 
 ## 1. Ziel
 
@@ -24,42 +25,50 @@ Nummernkreise in angebundenen (externen) Tabellen. Diese sind nur lesbar.
 
 | Baustein | Verhalten | Grenze |
 |---|---|---|
-| „Fortlaufend vorschlagen“ (`SequenceSuggester`) | Für Ganzzahlfelder: höchster Wert + 1, optional je Wert einer Verknüpfung (`suggest_scope`); als Vorschlag im Formular, beim Anlegen ohne Wert gesetzt | Kein Muster, kein Neubeginn. Die gelöschte höchste Nummer wird wieder vergeben. Gleichzeitiges Anlegen kann dieselbe Nummer ergeben; das verhindert nur ein eindeutiger Index, und dann scheitert das Speichern. Der Wert bleibt änderbar. |
+| „Fortlaufend vorschlagen“ (`SequenceSuggester`) | Für Ganzzahlfelder: höchster Wert + 1, optional je Wert einer Verknüpfung (`suggest_scope`); als Vorschlag im Formular, beim Anlegen ohne Wert gesetzt (`WritePhases::beforeSave`) | Kein Muster, kein Neubeginn. Die gelöschte höchste Nummer wird wieder vergeben. Gleichzeitiges Anlegen kann dieselbe Nummer ergeben; das verhindert nur ein eindeutiger Index, und dann scheitert das Speichern. Der Wert bleibt änderbar. |
 | Eindeutig (`is_unique`) | Eindeutiger Index in der Datenbank | Verhindert Doppel, vergibt aber nichts |
+| Schreibweg (Fundament 2) | `RecordWriter` öffnet für jeden Schreibvorgang eine Transaktion auf der Datenverbindung und auf der Hauptverbindung; Vorher-Phase in `WritePhases::beforeSave`; `batch()` für mehrere Vorgänge | – (Grundlage für die Vergabe, Abschnitt 6.2) |
+| QR-Rechnung (B-124 D4a) | Die QR-Referenz nimmt nur die Ziffern des Felds (`QrBillFactory`), die RF-Referenz die Buchstaben und Ziffern | – (passt schon zu formatierten Nummern, Abschnitt 9) |
 | Musikschule-Demo | `rechnungsnummer` als Textfeld, vom Seeder als `R-2026-001` befüllt | Neue Rechnungen bekommen keine Nummer |
 
 „Fortlaufend vorschlagen“ **bleibt** für den einfachen Fall: Die Nummer ist nur ein Vorschlag und bleibt änderbar,
 z. B. die Positionsnummer in einer Rechnung oder die Reihenfolge von Lektionen.
 
-## 3. Entscheidungen (Vorschlag)
+## 3. Entscheidungen
 
-| Frage | Vorschlag |
+| Frage | Entscheidung |
 |---|---|
-| Form | **Eigener Feldtyp „Nummernkreis“** (`FieldType::Number`, Wert `number`) statt einer Eigenschaft an Text- oder Zahlfeldern. Wie bei „Berechnet“ erzeugt SAFT den Wert; das Feld ist immer schreibgeschützt, eindeutig und hat eigene Einstellungen. |
-| Gespeicherter Wert | Die **formatierte Nummer als Text** (`string`, Länge aus dem Muster, mindestens 30). Die laufende Nummer wird mit Nullen aufgefüllt; so sortieren die Nummern innerhalb eines Musters richtig. |
-| Zähler | In einer eigenen Tabelle **`number_sequences`** (Feld, Periode, Gruppe, letzter Wert), nicht als höchster Wert der Tabelle. Damit werden gelöschte Nummern nie wieder vergeben. |
-| Gleichzeitigkeit | Zähler **gesperrt lesen** (`lockForUpdate()` im Query Builder) und erhöhen, in **derselben Transaktion** wie das Anlegen des Datensatzes. Scheitert das Speichern, rollt auch der Zähler zurück, und es entsteht keine Lücke. |
-| Eindeutigkeit | Zusätzlich ein **eindeutiger Index** auf der Spalte, als letzte Sicherung, z. B. falls ein Import eine Nummer mitbringt. |
+| Form | **Eigener Feldtyp „Nummernkreis“** (`FieldType::Number`, Wert `number`) statt einer Eigenschaft an Text- oder Zahlfeldern. Wie bei „Berechnet“ erzeugt SAFT den Wert; das Feld ist immer schreibgeschützt, eindeutig und hat eigene Einstellungen. Name in den anderen Sprachen: *Number sequence*, *Plage de numéros*, *Intervallo di numerazione*. |
+| Gespeicherter Wert | Die **formatierte Nummer als Text** (`string`, Länge aus dem Muster, mindestens 30). `valueType()` ist Text: Anzeige, Suche, Filter, Sortierung, Export, Formeln und Auswertungen behandeln das Feld wie ein Textfeld. Die laufende Nummer wird mit Nullen aufgefüllt; so sortieren die Nummern innerhalb eines Musters richtig. |
+| Zähler | In einer eigenen Tabelle **`saft_number_sequences`** (Feld, Periode, Gruppe, letzter Wert), nicht als höchster Wert der Tabelle. Damit werden gelöschte Nummern nie wieder vergeben. |
+| Ort des Zählers | Im **Namensraum `app_data`** auf der Datenverbindung, also in derselben Datenbank wie der Datensatz (Abschnitt 6.2). Die Tabelle entsteht bei Bedarf, wenn das erste Nummernkreis-Feld angelegt wird, wie die Kopien der Datenstände (`ds_…`). Das Präfix `saft_` ist für Tabellen des Table-Designers gesperrt. |
+| Gleichzeitigkeit | Zähler **gesperrt lesen** (`lockForUpdate()` im Query Builder) und erhöhen, in der Vorher-Phase des `RecordWriter`, also in **derselben Transaktion** wie das Anlegen des Datensatzes. Scheitert das Speichern, rollt auch der Zähler zurück, und es entsteht keine Lücke. |
+| Eindeutigkeit | Zusätzlich ein **eindeutiger Index** auf der Spalte, als letzte Sicherung. Die Vergabe überspringt eine Nummer, die es in der Tabelle schon gibt (auch im Papierkorb), z. B. aus einem Import oder nach einer Änderung des Musters. |
 | Vergabe | **Beim Anlegen** (Etappe N1). **Erst bei einer Bedingung**, z. B. Status = *definitiv*, ab Etappe N3. |
-| Änderbar | **Nie**, sobald vergeben. Die Oberfläche zeigt die Nummer nur an; Plugin-API, Import und Regeln können sie nicht überschreiben. |
+| Änderbar | **Nie**, sobald vergeben. Durchgesetzt im Schreibweg (`WritePhases`), nicht nur in der Oberfläche: Plugin-API, Regeln und alle anderen Schreibstellen können sie nicht überschreiben. |
 | Platzhalter im Muster | **Sprachneutral** (`{YYYY}`, `{MM}`, `{0000}`), weil SAFT vier Sprachen hat. Im Formular stehen sie als Bausteine mit übersetzter Beschriftung. Die Schreibweise aus dem Backlog (`{JJJJ}`) wird als Alias angenommen. |
+| Gemeinsamer Kreis für mehrere Tabellen | **Vorerst nicht** (Abschnitt 11). Die Zählertabelle hängt am Feld; eine spätere Spalte für einen Kreis ist ohne Umbau möglich. |
+| Zählerstand senken (N2) | **Nur ohne Konflikt**: wenn keine vorhandene Nummer der Periode höher ist, mit Bestätigung. |
+| Import mit Nummern | **Übernehmen**, wenn eindeutig; der Zähler wird angehoben (Abschnitt 7). Kein eigener Schalter. |
+| Gruppe aus einer Verknüpfung (N4) | **Erst bei Bedarf**; N4 beginnt mit Auswahlfeldern. |
 
 ## 4. Einstellungen des Felds
 
-| Einstellung | Bedeutung | Beispiel |
-|---|---|---|
-| **Muster** | Fester Text und Platzhalter (Abschnitt 5) | `R-{YYYY}-{0000}` |
-| **Neubeginn** | nie, jährlich, monatlich | jährlich |
-| **Bezugsdatum** | Anlegedatum (Vorgabe) oder ein Datumsfeld der Tabelle; bestimmt Jahr und Monat im Muster und die Periode | Feld `datum` (Rechnungsdatum) |
-| **Geschäftsjahr beginnt im** | Monat 1–12 (Vorgabe Januar); nur bei jährlichem Neubeginn | Juli: `{YYYY}` = Jahr, in dem das Geschäftsjahr beginnt |
-| **Startwert** | erste Nummer je Periode (Vorgabe 1) | 1 |
-| **Gruppe** (Etappe N4) | eigener Zähler je Wert eines Auswahlfelds | je Belegart |
-| **Vergeben, wenn** (Etappe N3) | Bedingung als Formel; leer = beim Anlegen | `status = 'definitiv'` |
+| Einstellung | Option | Bedeutung | Beispiel |
+|---|---|---|---|
+| **Muster** | `pattern` | Fester Text und Platzhalter (Abschnitt 5) | `R-{YYYY}-{0000}` |
+| **Neubeginn** | `reset` | `never`, `yearly`, `monthly` | jährlich |
+| **Bezugsdatum** | `date_field` | leer = Anlegedatum (Vorgabe) oder ein Feld vom Typ Datum bzw. Datum/Zeit der Tabelle; bestimmt Jahr und Monat im Muster und die Periode | Feld `datum` (Rechnungsdatum) |
+| **Geschäftsjahr beginnt im** | `fiscal_start` | Monat 1–12 (Vorgabe Januar); nur bei jährlichem Neubeginn | Juli: `{YYYY}` = Jahr, in dem das Geschäftsjahr beginnt |
+| **Startwert** | `start` | erste Nummer je Periode (Vorgabe 1); gilt für Perioden, die noch keinen Zähler haben | 1 |
+| **Gruppe** (Etappe N4) | `group_field` | eigener Zähler je Wert eines Auswahlfelds | je Belegart |
+| **Vergeben, wenn** (Etappe N3) | `assign_when` | Bedingung als Formel; leer = beim Anlegen | `status = 'definitiv'` |
 
 Im Formular steht unter dem Muster eine **Vorschau** mit der nächsten Nummer, z. B. „Nächste Nummer: R-2026-0043“.
 
-Ist ein **Datumsfeld** das Bezugsdatum, muss es beim Vergeben gefüllt sein. Der Table-Designer macht es deshalb zum
-Pflichtfeld bzw. verlangt das.
+Ist ein **Datumsfeld** das Bezugsdatum, muss es ein Pflichtfeld sein; der Table-Designer lehnt die Einstellung sonst
+mit einer Meldung ab. Ist es beim Anlegen trotzdem leer (z. B. über die Plugin-API), scheitert das Speichern mit einer
+fachlichen Meldung (`BusinessRuleException`).
 
 ## 5. Muster
 
@@ -73,42 +82,59 @@ Pflichtfeld bzw. verlangt das.
 | `{GROUP}` (N4) | AN | Wert bzw. Kurzzeichen der Gruppe |
 | übriger Text | `R-`, `/` | wörtlich |
 
-**Prüfung des Musters** (gleiche Prüfung im Table-Designer, in der App-Definition und für Vorschläge der KI):
+**Prüfung des Musters** (eine Klasse `NumberPattern`, dieselbe Prüfung im Table-Designer, in der App-Definition und
+für Vorschläge der KI):
 
 - genau **ein** Platzhalter für die laufende Nummer
 - bei jährlichem Neubeginn ein Jahr (`{YYYY}` oder `{YY}`), bei monatlichem Jahr und Monat, mit Gruppe `{GROUP}`.
   Sonst ergäbe der Neubeginn doppelte Nummern.
 - höchstens 50 Zeichen Ergebnis
-- erlaubte Zeichen: Buchstaben, Ziffern, `- / . _` und Leerzeichen. Für die QR-Rechnung zählen nur die Ziffern
+- erlaubte Zeichen: Buchstaben, Ziffern, `- / . _` und Leerzeichen. Für die QR-Referenz zählen nur die Ziffern
   (Abschnitt 9).
+
+`NumberPattern` kann eine Nummer auch **zurücklesen** (Periode und laufende Nummer aus `R-2026-0042`). Das brauchen der
+Import (Zähler anheben) und das Umstellen bestehender Felder (N2).
 
 ## 6. Vergabe
 
 ### 6.1 Ablauf
 
-Beim Anlegen eines Datensatzes (`creating`) mit einem Feld vom Typ Nummernkreis, dessen Wert leer ist:
+In `WritePhases::beforeSave` beim Anlegen, nach den Vorgaben, „Übernehmen aus“ und den fortlaufenden Vorschlägen und
+**vor** dem Plugin-Ereignis `RecordSaving` und den berechneten Feldern. Für jedes Feld vom Typ Nummernkreis, dessen
+Wert leer ist:
 
 1. Periode bestimmen: `2026` bzw. `2026-11` aus dem Bezugsdatum, `-` ohne Neubeginn.
-2. Zeile in `number_sequences` für Feld, Periode und Gruppe gesperrt lesen. Gibt es noch keine, wird sie mit dem
-   Startwert − 1 angelegt. Legen zwei Vorgänge gleichzeitig die erste Zeile an, scheitert einer am eindeutigen
-   Schlüssel; dieser liest dann erneut.
-3. Wert + 1 schreiben, Nummer nach dem Muster formatieren und im Datensatz setzen.
+2. Zeile in `saft_number_sequences` für Feld, Periode und Gruppe gesperrt lesen. Gibt es noch keine, wird sie mit dem
+   Startwert − 1 per Upsert angelegt und dann gesperrt gelesen. Nicht vorher gesperrt lesen: Ein `SELECT … FOR UPDATE`
+   auf eine fehlende Zeile nimmt in MySQL/MariaDB eine Lückensperre, und zwei Vorgänge, die danach beide einfügen,
+   blockieren sich (Deadlock, im Test mit vier Prozessen nachgewiesen). Der Upsert nimmt gleich die exklusive Sperre;
+   gleichzeitige Vorgänge warten der Reihe nach.
+3. Wert + 1, Nummer nach dem Muster formatieren; gibt es sie in der Tabelle schon, weiterzählen. Zählerstand
+   schreiben und die Nummer im Datensatz setzen.
 
-Das geschieht vor den Formeln und vor den Ereignissen für Plugins und Regeln. Diese sehen die Nummer also schon.
+Plugins, Formeln und später Regeln sehen die Nummer also schon. Die Phase ist Teil des Vertrags mit Plugins
+(Kommentar in `WritePhases`, Abschnitt 5 der Architektur).
 
 ### 6.2 Transaktion
 
-Zähler und Datensatz müssen in **einer Transaktion auf derselben Verbindung** liegen. Darum liegt `number_sequences`
-in der **Verbindung der Datentabellen** (`dynamic_data.connection`) und nicht in der Verwaltungsdatenbank. Die
-Migration legt die Tabelle dort an, wie die anderen Tabellen der Datenschicht.
+Zähler und Datensatz liegen in **einer Transaktion auf derselben Verbindung**. Der `RecordWriter` öffnet sie für jeden
+Schreibvorgang, auch für das Formular der Datenansicht, den Import (eine Transaktion je Block) und `batch()`. Ein
+eigener Baustein „Transaktion beim Speichern“ ist damit nicht mehr nötig.
 
-Nicht jeder Speicherweg öffnet heute eine Transaktion, z. B. das Formular der Datenansicht. Für Tabellen mit
-Nummernkreis-Feld schliesst SAFT das Anlegen deshalb selbst in eine Transaktion ein (`DynamicRecord`). Die Regel-Engine
-braucht denselben Baustein (Konzept Regel-Engine, Abschnitt 7.1); er wird **einmal** gebaut.
+Warum der Zähler auf der Datenverbindung liegt und nicht in der Verwaltungsdatenbank: Zwischen den beiden
+Verbindungen gibt es keine verteilte Transaktion; der Writer committet die Daten zuerst und dann die
+Hauptverbindung (Architektur, Abschnitt 3). Läge der Zähler auf der Hauptverbindung, bliebe bei einem Fehler zwischen
+den beiden Commits ein Datensatz mit Nummer, aber ohne erhöhten Zähler zurück, und jede weitere Vergabe würde an der
+Eindeutigkeit scheitern. Auf der Datenverbindung ist das ausgeschlossen. Einen Fremdschlüssel auf `custom_fields`
+gibt es deshalb nicht; `DynamicSchemaService` löscht die Zähler mit dem Feld.
 
-Die Sperre gilt nur für die eine Zeile des Zählers und nur bis zum Ende der Transaktion. Bei einem Import mit vielen
-Datensätzen hält eine einzige Transaktion die Sperre über den ganzen Import. Das ist gewollt: Gleichzeitige
-Anlagen warten, bis der Import fertig ist.
+Die Tabelle legt nicht eine Migration an, sondern `NumberSequences::ensureTable()` über den Schema Builder der
+Datenverbindung, sobald das erste Nummernkreis-Feld entsteht. Eine Migration ginge verloren, weil
+`migrate:fresh` den Namensraum nach den Migrationen neu anlegt (`ResetAppDataNamespace`). `app-data:verify` meldet
+`saft_…`-Tabellen nicht als verwaist.
+
+Die Sperre gilt nur für die eine Zeile des Zählers und nur bis zum Ende der Transaktion. Beim Import hält jede
+Block-Transaktion die Sperre bis zu ihrem Commit; gleichzeitige Anlagen warten so lange. Das ist gewollt.
 
 ### 6.3 Lücken
 
@@ -128,23 +154,27 @@ dem die Formel wahr ist, z. B. `status = 'definitiv'`. Danach gilt die Nummer f�
 zurückgeht. Als Bezugsdatum gilt dann der Zeitpunkt der Vergabe bzw. das gewählte Datumsfeld zu diesem Zeitpunkt.
 
 Die Bedingung nutzt die Formelsprache (wie Tabellenformeln und Regeln) und hängt **nicht** von der Regel-Engine ab.
-Die Regel-Engine braucht daher keine eigene Aktion „Nummer ziehen“.
+Die Regel-Engine braucht daher keine eigene Aktion „Nummer ziehen“. Eine Sammeländerung des Status (B-133) löst die
+Vergabe je Datensatz aus, in Schlüsselreihenfolge.
 
 ## 7. Zusammenspiel
 
 | Bereich | Verhalten |
 |---|---|
-| **Formular** | Nur Anzeige; vor dem Speichern „wird beim Speichern vergeben“ |
+| **Formular** | Nur Anzeige; vor dem ersten Speichern „wird beim Speichern vergeben“ |
 | **Datenansicht** | Text: Sortieren, Suchen und Filtern wie bei Text |
-| **Plugin-API** (`DataTable::create`) | vergibt automatisch. Ein mitgegebener Wert wird abgelehnt, ausser beim Import (unten). `update` lehnt eine Änderung ab. |
-| **Import** | **Ohne** Wert: Nummer wird vergeben. **Mit** Wert (z. B. Altdaten): wird übernommen, wenn eindeutig. Passt er zum Muster, wird der Zähler seiner Periode auf mindestens diesen Wert angehoben, sodass spätere Nummern nicht kollidieren. Werte, die nicht zum Muster passen, werden übernommen und im Ergebnis des Imports gemeldet. |
-| **Datensatz kopieren** (`RecordCopier`) | Die Kopie bekommt eine neue Nummer, ausser bei Vergabe bei Bedingung. |
+| **Schreibweg** | `WritePhases` lehnt ab: einen mitgegebenen Wert beim Anlegen, ausser bei Herkunft `import` und `seed`; jede Änderung einer vergebenen Nummer. Meldung als `BusinessRuleException` mit Code. |
+| **Plugin-API** (`DataTable::create`, `update`) | vergibt automatisch; mitgegebene Werte werden wie oben abgelehnt. Ein Listener auf `RecordSaving` darf eine Nummer weder setzen noch ändern (Prüfung nach dem Ereignis). Keine neue API-Version: Die Klassen im `ApiManifest` ändern sich nicht, das Verhalten steht im Entwicklerhandbuch. |
+| **Import** | **Ohne** Wert: Nummer wird vergeben. **Mit** Wert (z. B. Altdaten): wird übernommen, wenn eindeutig. Passt er zum Muster, wird der Zähler seiner Periode auf mindestens diesen Wert angehoben, sodass spätere Nummern nicht kollidieren. Werte, die nicht zum Muster passen, werden übernommen. Sie im Ergebnis des Imports zu melden, ist zurückgestellt (B-154): Der Import kennt heute nur Fehler, keine Hinweise. |
+| **Datensatz kopieren** (`RecordCopier`) | Die Kopie bekommt eine neue Nummer (eindeutige Felder werden schon heute nicht kopiert), ausser bei Vergabe bei Bedingung. |
 | **Formeln, Auswertungen, Regeln** | Wert vom Typ Text (`valueType` = String) |
 | **Dokumentvorlagen** | Platzhalter wie jedes Feld (`{{rechnungsnummer}}`) |
-| **Änderungsprotokoll** | Die Vergabe erscheint als normale Änderung des Felds durch die auslösende Person. |
-| **App-Definition** | Exportiert werden die Einstellungen (Muster, Neubeginn, Bezugsdatum über den stabilen Schlüssel), **nicht** die Zählerstände. Eine Installation (auch als Kopie) beginnt beim Startwert. Ein Aktualisieren, das das Muster ändert, gilt als **heikel**: Vorhandene Nummern bleiben, neue erscheinen im neuen Format, und die Prüfung der Eindeutigkeit läuft mit. |
+| **Änderungsprotokoll** | Die Vergabe erscheint als Teil der Anlage durch die auslösende Person. |
+| **App-Definition** | Exportiert werden die Einstellungen (Muster, Neubeginn, Bezugsdatum über den Feldnamen wie `suggest_scope`), **nicht** die Zählerstände. Eine Installation (auch als Kopie) beginnt beim Startwert. Ein Aktualisieren, das das Muster ändert, gilt als **heikel**: Vorhandene Nummern bleiben, neue erscheinen im neuen Format, und die Prüfung der Eindeutigkeit läuft mit. |
 | **Demo-Reset, „App-Daten zurücksetzen“** | Die Zähler der betroffenen Felder werden mit den Daten zurückgesetzt. |
-| **KI** (Tabellen-Assistent, App-Designer) | kennen den Typ mit Muster und Neubeginn und schlagen ihn für Beleg-Nummern vor. Der `DraftCompiler` prüft das Muster. |
+| **Wiederherstellen einer App** (B-141) | Zähler gehen nie zurück (Konzept Wiederherstellen). |
+| **Sammeländerung** (B-133) | Nummernkreis-Felder sind nicht änderbar und erscheinen nicht im Dialog. |
+| **KI** (Tabellen-Assistent, App-Designer) | kennen den Typ und schlagen ihn für Belegnummern vor. Das Muster steht im vorhandenen Feld `formula` des Vorschlags (das JSON-Schema liegt an der Grössengrenze der Anthropic-Grammatik); den Neubeginn leitet SAFT aus dem Muster ab: mit Monat monatlich, mit Jahr jährlich, sonst nie. Das Bezugsdatum bleibt das Anlegedatum. Der `DraftCompiler` prüft das Muster über den Normalizer mit `NumberPattern`. |
 
 ## 8. Bestehende Felder umstellen (Etappe N2)
 
@@ -163,7 +193,10 @@ Table-Designer erlaubt deshalb den **Typwechsel nach „Nummernkreis“** von Te
   `{0000}` bzw. `{#}` besteht, sonst unverändert übernommen.
 
 Der **Rückweg** Nummernkreis → Text ist immer möglich. Die Werte bleiben, die Zähler werden gelöscht. Beides nutzt die
-Schutzlogik des Table-Designers für Typwechsel (`SAFE_CONVERSIONS`, `fieldChangeProblem`).
+Schutzlogik des Table-Designers für Typwechsel (`SAFE_CONVERSIONS`, `fieldChangeProblem`). In N1 sind Typwechsel von
+und zu „Nummernkreis“ nur möglich, solange das Feld in keinem Datensatz einen Wert hat, auch nicht im Papierkorb
+(Rückmeldung 26.11.2026: bei leeren Tabellen kein Grund zu sperren); zurück zu einem anderen Typ entfallen die
+Zähler.
 
 **Zählerstand ansehen und setzen:** Im Feldformular steht je Periode (und Gruppe) der letzte Wert. Ihn zu **erhöhen**
 ist jederzeit möglich, z. B. „Rechnungen 2026 beginnen bei 1000“. Ihn zu **senken** ist nur möglich, wenn keine
@@ -171,15 +204,16 @@ vorhandene Nummer der Periode höher ist, und erfordert eine Bestätigung. Jede 
 
 ## 9. QR-Rechnung
 
-Die QR-Rechnung (B-124 D4a) bildet eine RF- bzw. QR-Referenz aus einem Feld. Bei einer Nummer wie `R-2026-0042`
-zählen dafür nur die Ziffern (`20260042`), und die QR-Referenz ergänzt die Prüfziffer. Zu prüfen ist, ob D4a das
-heute schon so macht; sonst wird es mit N1 angepasst.
+Die QR-Rechnung (B-124 D4a) bildet die QR-Referenz aus den **Ziffern** des gewählten Felds (`QrBillFactory`), bei
+`R-2026-0042` also aus `20260042`, und ergänzt die Prüfziffer; die RF-Referenz nimmt Buchstaben und Ziffern. Das passt
+schon zu formatierten Nummern; N1 ändert daran nichts. Zu beachten bleibt: Ein Muster ohne Jahr ergibt über mehrere
+Jahre dieselben Ziffern nur dann, wenn es ohne Neubeginn läuft, also nie doppelt.
 
 ## 10. Etappen
 
 | Etappe | Inhalt | Umfang |
 |---|---|---|
-| **N1 Feldtyp** | `FieldType::Number`, Einstellungen (Muster, Neubeginn jährlich oder monatlich, Bezugsdatum, Geschäftsjahr, Startwert), Prüfung des Musters, Vorschau „nächste Nummer“, Tabelle `number_sequences` in der Datenverbindung, Vergabe beim Anlegen mit Sperre in einer Transaktion, eindeutiger Index, Schreibschutz (Oberfläche, Plugin-API), Import mit und ohne Wert, Kopieren, App-Definition, Demo-Reset bzw. App-Daten zurücksetzen, KI-Assistenten, Handbücher in vier Sprachen. Test der Gleichzeitigkeit auf allen drei Datenbanken | mittel |
+| **N1 Feldtyp** | `FieldType::Number`, Einstellungen (Muster, Neubeginn jährlich oder monatlich, Bezugsdatum, Geschäftsjahr, Startwert), `NumberPattern`, Vorschau „nächste Nummer“, Tabelle `saft_number_sequences` auf der Datenverbindung, Vergabe in `WritePhases` mit Sperre, eindeutiger Index, Schreibschutz im Schreibweg, Import mit und ohne Wert, Kopieren, App-Definition, Demo-Reset bzw. App-Daten zurücksetzen, KI-Assistenten, Handbücher in vier Sprachen. Test der Gleichzeitigkeit auf allen drei Datenbanken | mittel |
 | **N2 Umstellen** | Typwechsel von Text, Ganzzahl und Auswahl mit Vorschau, „jetzt nummerieren“, Rückweg zu Text; Zählerstand ansehen und setzen; Musikschule-Demo: `rechnungsnummer` als Nummernkreis `R-{YYYY}-{000}` | mittel |
 | **N3 Vergabe bei Bedingung** | „Vergeben, wenn“ als Formel; Vergabe beim ersten Speichern, bei dem sie wahr ist | klein |
 | **N4 Gruppen** | eigener Zähler je Wert eines Auswahlfelds, Platzhalter `{GROUP}` | klein |
@@ -187,16 +221,55 @@ heute schon so macht; sonst wird es mit N1 angepasst.
 Am meisten Nutzen bringen N1 und N2 zusammen. Mit beiden ist die Musikschule-Rechnung vollständig, und der
 Rechnungslauf der Regel-Engine hat seine Voraussetzung.
 
-## 11. Offene Fragen zur Diskussion
+## 11. Entschiedene Fragen (26.11.2026)
 
-1. **Name des Feldtyps:** „Nummernkreis“ (Fachbegriff aus dem ERP-Umfeld) oder „Belegnummer“ bzw. „Laufnummer“?
-   In den anderen Sprachen: *Number sequence*, *Plage de numéros*, *Intervallo di numerazione*.
-2. **Gemeinsamer Kreis für mehrere Tabellen,** z. B. Rechnungen und Gutschriften mit einer Nummernfolge: Vorschlag:
-   vorerst nicht. Später ginge es als eigenes Objekt „Nummernkreis“ (Administration der App), auf das mehrere Felder
-   verweisen. Die Tabelle `number_sequences` würde dafür statt am Feld an einem Kreis hängen; mit einem Fremdschlüssel
-   auf den Kreis wäre die Umstellung später machbar.
-3. **Zählerstand senken:** zulassen wie vorgeschlagen (nur ohne Konflikt) oder nie?
-4. **Import mit Nummern** in eine Tabelle mit Nummernkreis: immer übernehmen (Vorschlag) oder nur mit einem
-   ausdrücklichen Schalter „Nummern aus der Datei übernehmen“?
-5. **Gruppe aus einer Verknüpfung** (z. B. Kürzel der Filiale aus der verknüpften Filiale) zusätzlich zum Auswahlfeld?
-   Vorschlag: erst bei Bedarf.
+1. **Name des Feldtyps:** „Nummernkreis“; *Number sequence*, *Plage de numéros*, *Intervallo di numerazione*.
+2. **Gemeinsamer Kreis für mehrere Tabellen** (z. B. Rechnungen und Gutschriften): vorerst nicht. Später als eigenes
+   Objekt „Nummernkreis“ (Administration der App), auf das mehrere Felder verweisen; die Zählertabelle bekommt dann
+   eine Spalte für den Kreis statt des Felds.
+3. **Zählerstand senken:** nur ohne Konflikt, mit Bestätigung (N2).
+4. **Import mit Nummern:** immer übernehmen, wenn eindeutig, und den Zähler anheben; kein eigener Schalter.
+5. **Gruppe aus einer Verknüpfung:** erst bei Bedarf.
+
+Neu beim Nachführen auf Fundament 2 entschieden: Zähler auf der Datenverbindung in `saft_number_sequences`, bei Bedarf
+angelegt (Abschnitt 6.2), Präfix `saft_` gesperrt, Schreibschutz im Schreibweg statt in der Oberfläche, Vergabe
+überspringt vorhandene Nummern. Das ist Entscheidung 26 in `docs/ARCHITECTURE.de.md`/`.md`.
+
+## 12. Umsetzungsplan N1
+
+Geplant 26.11.2026. Reihenfolge der Teilschritte, je mit eigenen Tests:
+
+1. **Kern:** `FieldType::Number` (Spalte `string` mit Länge aus dem Muster, `valueType()` = String),
+   `NumberPattern` (prüfen, formatieren, Periode, zurücklesen), `NumberSequences` (Tabelle anlegen, gesperrt ziehen,
+   anheben, löschen), Präfix `saft_` im `IdentifierValidator`, `SchemaVerifier` ohne `saft_…`.
+2. **Schreibweg:** `TableDefinition::numbers`, Vergabe und Schreibschutz in `WritePhases::beforeSave`, Anheben beim
+   Import mit Wert; Test der Gleichzeitigkeit mit mehreren Prozessen auf drei Datenbanken.
+3. **Table-Designer:** `FieldDefinitionNormalizer` (immer eindeutig, nie Pflicht, Optionen), `DynamicSchemaService`
+   (Tabelle anlegen, Zähler beim Entfernen löschen, Typwechsel sperren), `FieldForm` mit Mustern als Bausteinen,
+   Vorschau und Bezugsdatum, Feldliste.
+4. **Oberfläche und Datenwege:** `DynamicFormBuilder` (Anzeige), `RecordChecker`, `RecordImporter` (Meldung bei
+   fremden Werten), `RecordCopier`, Demo-Reset bzw. App-Daten zurücksetzen.
+5. **App-Definition und KI:** Export/Import und Prüfung der Optionen (`DefinitionParts`, `AppDefinitionValidator`,
+   `ChangePlanner` mit „heikel“ bei geändertem Muster), `TableProposalSchema`, `TableAssistant`, `DraftCompiler`,
+   `SchemaMarkdown`/`SchemaImporter` für den Plugin-Kontext.
+6. **Dokumentation:** Anwender-, Admin- und FAQ-Handbuch in vier Sprachen, Entwicklerhandbuch DE/EN (Schreibschutz in
+   der Plugin-API), Entscheidung 26 in der Architektur, `FORMULA_SPEC.md`, Konzept und Backlog nachführen.
+
+### 12.1 Umsetzung N1 (26.11.2026)
+
+- **Kern:** `App\DynamicData\Numbering\NumberPattern` (prüfen, Periode, formatieren, zurücklesen),
+  `NumberSequences` (Tabelle `saft_number_sequences` mit Primärschlüssel Feld/Periode/Gruppe, Upsert statt gesperrtem
+  Lesen einer fehlenden Zeile), `NumberAssigner` (Vergabe, Übernahme bei `import`/`seed`, Schutz vor und nach
+  `RecordSaving`). Optionen am Feld: `pattern`, `reset`, `date_field`, `fiscal_start`, `start`, dazu `length` = 60
+  für die Spalte. Ohne Angabe gilt im Normalizer „nie“, im Formular ist „jährlich“ vorgewählt.
+- **Table-Designer:** Abschnitt „Nummernkreis“ im Feldformular mit Bausteinen zum Einfügen, Vorschau der nächsten
+  Nummer (mit dem gespeicherten Zählerstand); Bezugsdatum nur aus aktiven Pflichtfeldern vom Typ Datum; das
+  Bezugsdatum bleibt ein solches Feld, Umbenennen führt den Verweis nach; Typwechsel von und zu „Nummernkreis“ nur
+  bei leerer Spalte (auch Papierkorb); Zähler gehen mit Feld, Tabelle und Typwechsel.
+- **Datenwege:** Formular zeigt „wird beim Speichern vergeben“; Import mit und ohne Nummern; Kopie bekommt eine neue
+  Nummer; Demo-Reset setzt die Zähler zurück; App-Definition trägt die Einstellungen, nicht die Zähler; geändertes
+  Muster beim Aktualisieren gilt als heikel; Plugin-Kontext (`SchemaMarkdown`, `SchemaImporter`).
+- **Tests:** `NumberPatternTest` (Unit), `NumberSequenceTest` (25 Fälle), `NumberSequenceConcurrencyTest` (vier
+  Prozesse je 15 Datensätze ohne Test-Transaktion, lokal auch mit acht Prozessen auf PostgreSQL, MySQL und MariaDB),
+  `AppInstallerTest`. Larastan-Baseline um vier Meldungen kleiner (319).
+- **Zurückgestellt:** Meldung fremder Nummern im Importergebnis (B-154).

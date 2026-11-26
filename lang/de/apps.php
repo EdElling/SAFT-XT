@@ -298,6 +298,7 @@ return [
             'deactivate' => 'Wird ausgeblendet (Daten bleiben).',
             'relation_target' => 'Verknüpfung zeigt neu auf „:table“.',
             'formula' => 'Formel geändert – Werte werden neu berechnet.',
+            'number_pattern' => 'Muster des Nummernkreises geändert (:pattern) – vorhandene Nummern bleiben, neue folgen dem neuen Muster.',
             'choices_removed' => 'Auswahlwerte entfallen: :values.',
             'rules' => 'Regeln geändert – bestehende Datensätze werden beim nächsten Bearbeiten geprüft.',
             'interface_version' => 'Freigabe zurückgenommen – die Version der Schnittstelle steigt.',

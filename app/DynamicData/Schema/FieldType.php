@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Schema;
 
+use App\DynamicData\Numbering\NumberPattern;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
 
@@ -26,6 +27,8 @@ enum FieldType: string
     case Computed = 'computed';
     // Dateien (B-021): im Datensatz je Datei Kennung und Name (JSON), Datei und Angaben in record_files.
     case File = 'file';
+    // Nummernkreis (B-135): formatierte Nummer als Text, von SAFT beim Anlegen vergeben, nie änderbar.
+    case Number = 'number';
 
     public const int SELECT_LENGTH = 255;
 
@@ -39,10 +42,6 @@ enum FieldType: string
      */
     public function addColumn(Blueprint $table, string $column, array $options): ColumnDefinition
     {
-        if ($this === self::Computed) {
-            return $this->valueType($options)->addColumn($table, $column, $options);
-        }
-
         $definition = match ($this) {
             self::String => $table->string($column, (int) $options['length']),
             self::Text => $table->text($column),
@@ -54,7 +53,9 @@ enum FieldType: string
             self::Select => $table->string($column, self::SELECT_LENGTH),
             self::Relation => $table->unsignedBigInteger($column),
             self::File => $table->json($column),
-            self::Computed => throw new \LogicException('Berechnete Felder speichern als Ganz- oder Dezimalzahl.'),
+            self::Number => $table->string($column, NumberPattern::COLUMN_LENGTH),
+            // Berechnete Felder speichern als Ganz- oder Dezimalzahl (Option „result“).
+            self::Computed => $this->valueType($options)->addColumn($table, $column, $options),
         };
 
         return $definition->nullable();
@@ -80,16 +81,24 @@ enum FieldType: string
     }
 
     /**
-     * Typ des gespeicherten Werts: berechnete Felder sind Ganz- oder Dezimalzahlen (Option „result“),
-     * alle anderen sind sie selbst. Anzeige, Filter, Export und Regeln richten sich danach.
+     * Typ des gespeicherten Werts: berechnete Felder sind Ganz- oder Dezimalzahlen (Option „result“), Nummernkreise
+     * Text, alle anderen sind sie selbst. Anzeige, Filter, Export und Regeln richten sich danach.
      *
      * @param  array<string, mixed>  $options
      */
     public function valueType(array $options): self
     {
-        return $this === self::Computed
-            ? (($options['result'] ?? 'decimal') === 'integer' ? self::Integer : self::Decimal)
-            : $this;
+        return match ($this) {
+            self::Computed => ($options['result'] ?? 'decimal') === 'integer' ? self::Integer : self::Decimal,
+            self::Number => self::String,
+            default => $this,
+        };
+    }
+
+    /** Werte, die SAFT selbst erzeugt: nie aus Formular, Import-Zuordnung oder Sammeländerung. */
+    public function isGenerated(): bool
+    {
+        return $this === self::Computed || $this === self::Number;
     }
 
     /**

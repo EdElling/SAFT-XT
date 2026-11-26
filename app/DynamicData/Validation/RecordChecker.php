@@ -80,7 +80,8 @@ final class RecordChecker
             $options = $field->optionsArray();
             $length = mb_strlen((string) $value);
 
-            if ($field->type === FieldType::String && $length > (int) ($options['length'] ?? 255)) {
+            // Auch Nummernkreise (Text, Länge NumberPattern::COLUMN_LENGTH), z. B. beim Import von Altdaten.
+            if ($field->valueType() === FieldType::String && $field->type !== FieldType::Select && $length > (int) ($options['length'] ?? 255)) {
                 $problems[] = [$field, __('import.records.too_long', ['max' => (int) ($options['length'] ?? 255)])];
             }
 

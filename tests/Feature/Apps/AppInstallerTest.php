@@ -12,6 +12,7 @@ use App\Models\AppBaseline;
 use App\Models\AppManual;
 use App\Models\CustomField;
 use App\Models\CustomTable;
+use App\Models\DynamicRecord;
 use App\Models\Menu;
 use App\Models\Report;
 use App\Models\ReportLink;
@@ -133,6 +134,22 @@ class AppInstallerTest extends DynamicDataTestCase
         $blockers = $this->installer()->analyze($definition)->blockers;
         $this->assertContains(__('apps.install.errors.installed', ['app' => 'Verkauf']), $blockers);
         $this->assertContains(__('apps.install.errors.table_exists', ['table' => 'vk_kunden', 'app' => 'Verkauf']), $blockers);
+    }
+
+    public function test_number_sequence_settings_travel_without_counters(): void
+    {
+        $orders = CustomTable::query()->where('name', 'vk_bestellungen')->sole();
+        $this->service()->addField($orders, ['name' => 'beleg', 'label' => 'Beleg', 'type' => 'number', 'options' => ['pattern' => 'B-{YYYY}-{000}', 'reset' => 'yearly', 'start' => 100]]);
+        DynamicRecord::forTable($orders->fresh())->create(['nummer' => 'x']);
+
+        $definition = $this->definition();
+        $this->wipe();
+        $this->installer()->install($definition, null, $this->admin);
+
+        $installed = CustomTable::query()->where('name', 'vk_bestellungen')->sole();
+        $beleg = $installed->fields->firstWhere('name', 'beleg');
+        $this->assertSame(['B-{YYYY}-{000}', 'yearly', 100, true], [$beleg->optionsArray()['pattern'], $beleg->optionsArray()['reset'], $beleg->optionsArray()['start'], $beleg->is_unique]);
+        $this->assertSame('B-'.now()->format('Y').'-100', DynamicRecord::forTable($installed)->create(['nummer' => 'y'])->beleg, 'Zähler reisen nicht mit: beginnt beim Startwert.');
     }
 
     public function test_installs_a_copy_with_renamed_tables_and_new_keys(): void

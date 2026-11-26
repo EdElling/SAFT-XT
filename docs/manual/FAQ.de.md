@@ -32,6 +32,7 @@
    - [Die Word-Datei sieht anders aus als das PDF.](#die-word-datei-sieht-anders-aus-als-das-pdf)
    - [Statt der Datei erscheint eine Seite „Arbeit“ mit Fortschrittsbalken.](#statt-der-datei-erscheint-eine-seite-arbeit-mit-fortschrittsbalken)
    - [Der Import einer grossen Datei dauert lange.](#der-import-einer-grossen-datei-dauert-lange)
+   - [Wie bekommen Rechnungen eine fortlaufende Nummer?](#wie-bekommen-rechnungen-eine-fortlaufende-nummer)
 
 ---
 ## Häufige Fragen
@@ -165,3 +166,10 @@ Jeder Datensatz wird wie von Hand erfasst – mit Vorgaben, berechneten Feldern,
 den Regeln der Plugins. Das kostet je Datensatz einige Millisekunden; bei zehntausenden Zeilen sind das Minuten. Der
 Fortschritt zeigt erst **Prüfen**, dann **Einspielen**. Sie können die Seite verlassen; bei Fehlern oder Abbruch wird
 nichts angelegt bzw. alles Angelegte wieder entfernt.
+
+### Wie bekommen Rechnungen eine fortlaufende Nummer?
+
+Mit einem Feld vom Typ **Nummernkreis**, z. B. mit dem Muster `R-{YYYY}-{0000}` und jährlichem Neubeginn. SAFT vergibt
+die Nummer beim Anlegen, nie doppelt und nach dem Löschen nicht wieder; danach lässt sie sich nicht ändern. Das Feld
+zeigt deshalb im Formular nur „wird beim Speichern vergeben“. Einrichten im Table-Designer, siehe
+[Administratorhandbuch, Nummernkreise](ADMIN_GUIDE.de.md#nummernkreise).

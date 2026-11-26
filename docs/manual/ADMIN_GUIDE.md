@@ -394,6 +394,7 @@ further entry if the table should appear in a second place in the menu.
 |---|---|
 | Rename a field | at any time, data is kept |
 | Change the type | at any time if lossless (e.g. integer → decimal, text → multi-line text, date → date and time); multi-line → single-line text if all values fit the length; otherwise only if the column is empty |
+| Change the type to or from number sequence | only if no record has a value in the field (including the recycle bin); see [Number sequences](#number-sequences) |
 | Text length | increase at any time, reduce only if all existing values fit the new length (otherwise the message says how many are too long) |
 | Switch on "Unique" | only if the existing data contains no duplicates |
 | Remove a value from a selection list | at any time; if the value is in use, a warning shows the number of records. They keep their value, but a valid one must be chosen when they are next edited. |
@@ -412,6 +413,38 @@ further entry if the table should appear in a second place in the menu.
 
 Under **Physical table** you see the storage location, the number of records and any mismatch between the settings
 and the database.
+
+### Number sequences
+
+A field of type **Number sequence** gets its number from SAFT, e.g. invoice, order or contract numbers such as
+`R-2026-0042`. The number is assigned when a record is created, never occurs twice (even when several people create
+records at the same time), is not reused after deletion and cannot be changed afterwards – neither in the form nor via
+import, plugins or interfaces.
+
+- **Pattern:** fixed text (letters, digits, spaces and `- / . _`) and placeholders: `{YYYY}` or `{YY}` for the year,
+  `{MM}` for the month and exactly one running number, `{0000}` with as many digits as zeros or `{#}` without leading
+  zeros. **Insert placeholder** appends one. If the running number outgrows its digits, it is not cut off
+  (`R-2026-10000`). At most 50 characters.
+- **Restart:** never, yearly or monthly. Yearly needs a year in the pattern, monthly year and month – otherwise numbers
+  would repeat.
+- **Financial year starts in** (yearly only): e.g. July; March 2027 then still belongs to financial year 2026, and
+  `{YYYY}` shows 2026.
+- **Reference date:** determines year and month in the number and the restart. Empty means the creation date; active
+  required date fields can be chosen, e.g. the invoice date. Such a field then stays a required date field; renaming
+  is followed.
+- **Start value:** first number per period (default 1), e.g. 1000.
+- Below the settings the **next number** is shown, or why the pattern is invalid.
+
+A number sequence is always unique and never required. Before the first save the form shows "assigned when saving".
+A cancelled save leaves no gap; a permanently deleted record does (it can be traced in the change log). A **copy**
+gets a new number. On **import** missing numbers are assigned; numbers brought along (e.g. from a legacy system) are
+kept if unique, and if they match the pattern SAFT continues after them. The [app definition](#15-apps-business-applications)
+contains the settings, not the counters: a new installation starts at the start value; a changed pattern on update is
+considered risky. "Reset app data" also resets the counters.
+
+An existing field can be changed to "Number sequence" and back as long as no record has a value in it (including the
+recycle bin). Taking over existing numbers into a number sequence is not possible yet. For item numbers that should
+stay editable, **Suggest next number** for integers remains available.
 
 ### Used in
 

@@ -81,7 +81,7 @@ SAFT arbeitet immer mit mindestens zwei Datenbankverbindungen, auch wenn beide a
 | Verbindung | Inhalt | Konfiguration |
 |---|---|---|
 | **Hauptverbindung** (`DB_CONNECTION`) | Systemtabellen: Benutzer, Rollen, Rechte, Menüs, Metadaten des Table-Designers (`custom_tables`, `custom_fields`), Auswertungen, Apps, Dokumentvorlagen, Aufgaben, Arbeiten, Änderungsprotokoll (`activity_log`), Benachrichtigungen, Systemtabellen der Plugins | Laravel-Standard |
-| **`app_data`** | die physischen Tabellen des Table-Designers und die Kopien der Datenstände; PostgreSQL: Schema `app_data`, MySQL/MariaDB: eigene Datenbank `<name>_app_data` | `config/dynamic_data.php`; eigener Benutzer, Host und Passwort möglich (`DB_APP_DATA_*`), empfohlen für Produktion |
+| **`app_data`** | die physischen Tabellen des Table-Designers, die Kopien der Datenstände (`ds_…`) und die Zähler der Nummernkreise (`saft_number_sequences`); PostgreSQL: Schema `app_data`, MySQL/MariaDB: eigene Datenbank `<name>_app_data` | `config/dynamic_data.php`; eigener Benutzer, Host und Passwort möglich (`DB_APP_DATA_*`), empfohlen für Produktion |
 | **`ext_<id>`** | angebundene externe Tabellen (Table-Connector), je Verbindung zur Laufzeit konfiguriert, Zugangsdaten verschlüsselt, „nur lesen“ auf Datenbankebene erzwungen | Tabelle `database_connections`, `ConnectionRegistry` |
 
 `DynamicDataNamespace` ist der Zugang zum Namensraum: Verbindung, DDL-Dialekt und Qualifizierung von Tabellennamen.
@@ -121,8 +121,8 @@ Datensätze werden ausschliesslich über `App\DynamicData\Write\RecordWriter` ge
    gelesenen Originalwerten bei angebundenen Tabellen ohne Zeitstempel) mit `lockForUpdate()` und wirft
    `StaleRecordException`, wenn jemand inzwischen gespeichert hat;
 3. durchläuft die **Vorher-Phase** (`WritePhases`): nur lesbar? → geschützte Dokumente → Vorgaben der Datenbank bzw.
-   „Übernehmen aus“ und fortlaufende Nummern → Plugin-Ereignis `RecordSaving` → berechnete Felder →
-   `created_by`/`updated_by`;
+   „Übernehmen aus“ und fortlaufende Nummern → Nummernkreise vergeben bzw. schützen → Plugin-Ereignis `RecordSaving`
+   (danach dürfen Nummern nicht anders sein) → berechnete Felder → `created_by`/`updated_by`;
 4. schreibt den Datensatz;
 5. durchläuft die **Nachher-Phase**: Summen in Master-Datensätzen → Dateien abgleichen → `RecordSaved`; beim Löschen
    Löschsperre vorher, Summen und `RecordDeleted` nachher;
@@ -355,3 +355,15 @@ durch Nr. n“ markiert.
     Metadaten je Detailtabelle neu ab (B-150: Klick 58 → 32, Seite 101 → 47 Abfragen). *Folge:* wer Metadaten am
     Model vorbei schreibt (Query Builder), muss `CustomTableLookup::forget()` aufrufen; Datensätze werden bewusst
     nicht zwischengespeichert.
+26. **Zähler der Nummernkreise neben den Daten** (26.11.2026, B-135). Feldtyp „Nummernkreis“: die Nummer vergibt die
+    Vorher-Phase des `RecordWriter` beim Anlegen aus der Tabelle `saft_number_sequences` (Feld, Periode, Gruppe,
+    letzter Wert; Primärschlüssel über die drei Spalten) im Namensraum `app_data`, gesperrt in derselben Transaktion
+    wie der Datensatz; eine vergebene Nummer ändert kein Schreibweg mehr (Herkunft `import` und `seed` dürfen Nummern
+    mitbringen und heben den Zähler an). Die Tabelle legt `NumberSequences::ensureTable()` mit dem ersten Feld dieses
+    Typs an; das Präfix `saft_` ist für Designer-Tabellen gesperrt, `app-data:verify` übergeht es. *Warum:* auf der
+    Hauptverbindung könnte ein Fehler zwischen den beiden Commits (Nr. 10) einen Datensatz mit Nummer, aber ohne
+    erhöhten Zähler hinterlassen; danach scheiterte jede Vergabe an der Eindeutigkeit. Eine Migration ginge bei
+    `migrate:fresh` mit dem Namensraum verloren. Eine fehlende Zählerzeile wird per Upsert angelegt statt nach einem
+    `SELECT … FOR UPDATE`: dessen Lückensperre führte auf MySQL bei gleichzeitigem Anlegen zu Deadlocks.
+    *Folge:* kein Fremdschlüssel auf `custom_fields`, `DynamicSchemaService` und das Zurücksetzen der Demo-Daten
+    löschen Zähler selbst; `NumberSequenceConcurrencyTest` prüft parallele Prozesse auf allen drei Datenbanken.

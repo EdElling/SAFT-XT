@@ -426,6 +426,7 @@ le groupe et crée aussi une entrée supplémentaire si la table doit apparaîtr
 |---|---|
 | Renommer un champ | à tout moment, les données sont conservées |
 | Changer le type | sans perte à tout moment (p. ex. nombre entier → nombre décimal, texte → texte sur plusieurs lignes, date → date et heure) ; texte sur plusieurs lignes → sur une ligne si toutes les valeurs tiennent dans la longueur ; sinon uniquement si la colonne est vide |
+| Changer le type vers ou depuis une plage de numéros | uniquement si aucun enregistrement n’a de valeur dans le champ (corbeille comprise) ; voir [Plages de numéros](#plages-de-numéros) |
 | Longueur du texte | augmenter à tout moment, réduire uniquement si toutes les valeurs existantes tiennent dans la nouvelle longueur (sinon le message indique combien sont trop longues) |
 | Activer « Unique » | uniquement si les données existantes ne contiennent pas de doublons |
 | Retirer une valeur d’une liste de sélection | à tout moment ; si la valeur est utilisée, un avertissement indique le nombre d’enregistrements. Ils conservent leur valeur, mais une valeur valide doit être choisie à la prochaine modification. |
@@ -444,6 +445,41 @@ le groupe et crée aussi une entrée supplémentaire si la table doit apparaîtr
 
 Sous **Table physique**, vous voyez l’emplacement de stockage, le nombre d’enregistrements et d’éventuels écarts
 entre les réglages et la base de données.
+
+### Plages de numéros
+
+Un champ de type **Plage de numéros** reçoit son numéro de SAFT, p. ex. des numéros de facture, de commande ou de
+contrat comme `R-2026-0042`. Le numéro est attribué à la création d’un enregistrement, n’apparaît jamais deux fois
+(même si plusieurs personnes créent en même temps), n’est pas réattribué après une suppression et ne peut plus être
+modifié ensuite – ni dans le formulaire, ni par import, plugins ou interfaces.
+
+- **Modèle :** texte fixe (lettres, chiffres, espaces et `- / . _`) et espaces réservés : `{YYYY}` ou `{YY}` pour
+  l’année, `{MM}` pour le mois et exactement un numéro courant, `{0000}` avec autant de chiffres que de zéros ou `{#}`
+  sans zéros en tête. **Insérer un élément** en ajoute un à la fin. Si le numéro courant dépasse ses chiffres, il n’est
+  pas tronqué (`R-2026-10000`). 50 caractères au plus.
+- **Redémarrage :** jamais, annuel ou mensuel. L’annuel exige une année dans le modèle, le mensuel l’année et le mois –
+  sinon des numéros se répéteraient.
+- **L’exercice commence en** (annuel uniquement) : p. ex. juillet ; mars 2027 appartient alors encore à l’exercice
+  2026, et `{YYYY}` affiche 2026.
+- **Date de référence :** détermine l’année et le mois du numéro ainsi que le redémarrage. Vide, c’est la date de
+  création ; les champs date actifs et obligatoires peuvent être choisis, p. ex. la date de facture. Un tel champ reste
+  alors un champ date obligatoire ; un renommage est suivi.
+- **Valeur de départ :** premier numéro par période (par défaut 1), p. ex. 1000.
+- Sous les réglages figure le **prochain numéro**, ou la raison pour laquelle le modèle n’est pas valable.
+
+Une plage de numéros est toujours unique et jamais obligatoire. Avant le premier enregistrement, le formulaire affiche
+« attribué à l’enregistrement ». Un enregistrement interrompu ne laisse pas de trou ; un enregistrement supprimé
+définitivement, si (il reste traçable dans le journal des modifications). Une **copie** reçoit un nouveau numéro. À
+l’**import**, les numéros manquants sont attribués ; les numéros fournis (p. ex. d’un ancien système) sont repris s’ils
+sont uniques, et s’ils suivent le modèle, SAFT continue à partir d’eux. La [définition d’app](#15-apps-applications-métier)
+contient les réglages, pas les compteurs : une nouvelle installation commence à la valeur de départ ; un modèle modifié
+lors d’une mise à jour est considéré comme délicat. « Réinitialiser les données d’app » remet aussi les compteurs à
+zéro.
+
+Un champ existant peut passer à « Plage de numéros » et revenir en arrière tant qu’aucun enregistrement n’a de valeur
+dans ce champ (corbeille comprise). Reprendre des numéros existants dans une plage de numéros n’est pas encore
+possible. Pour des numéros de position qui doivent rester modifiables, **Proposer le numéro suivant** reste disponible
+pour les nombres entiers.
 
 ### Utilisée dans
 

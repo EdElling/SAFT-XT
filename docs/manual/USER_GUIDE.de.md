@@ -641,6 +641,7 @@ E-Mail versendet wird immer das PDF. Mehrere Datensätze als Word kommen als ZIP
 | Verknüpfung | Kunde einer Bestellung | Zieltabelle und angezeigtes Feld; Grundlage für Details und Vorschau |
 | Datei | Vertrag, Produktfoto | Bilder, PDF, Office-Dokumente, Text/CSV oder beliebige Dateien; Höchstgrösse und Anzahl je Feld; Vorschau in Liste und Details. Nicht im Import, im Export nur die Dateinamen (siehe [4.2](#42-datensätze-ansehen-anlegen-bearbeiten-löschen)) |
 | Berechnet | Betrag = Menge × Einzelpreis | Ergebnis als Ganz- oder Dezimalzahl, Formel; wird beim Speichern berechnet, nicht eingegeben (siehe [Berechnete Felder](ADMIN_GUIDE.de.md#berechnete-felder)) |
+| Nummernkreis | Rechnungsnummer R-2026-0042 | Muster mit Jahr, Monat und laufender Nummer; wird beim Anlegen vergeben, ist eindeutig und danach nicht änderbar (siehe [Nummernkreise](ADMIN_GUIDE.de.md#nummernkreise)) |
 
 ---
 

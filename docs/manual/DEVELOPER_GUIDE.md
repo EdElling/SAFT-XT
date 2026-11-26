@@ -507,7 +507,7 @@ scheduled task – SAFT fires events (`App\Plugins\Api\Events`):
 
 | Event | When | Typical use |
 |---|---|---|
-| `RecordSaving` | before saving, after the defaults (sequence, copy from) and **before** computed fields | complete or correct values, reject the change |
+| `RecordSaving` | before saving, after the defaults (sequence, copy from, number sequences) and **before** computed fields | complete or correct values, reject the change |
 | `RecordSaved` | after saving | follow-up bookings in other tables, notifications |
 | `RecordDeleting` | before deleting (also to the recycle bin) | reject deletion |
 | `RecordDeleted` | after deleting | reverse follow-up bookings |
@@ -530,6 +530,10 @@ or changed).
 
 - **Set values** in `RecordSaving`: `$event->record->setAttribute('menge', -abs($quantity))`. Computed fields see the new
   value.
+- **Number sequences** (field type "number sequence"): SAFT assigns the number on create before `RecordSaving`; the
+  listener already sees it but may neither set nor change it – otherwise saving is rejected. Likewise `DataTable::create()`
+  rejects a given number (code `dynamic.number_given`) and `update()` a change of an assigned one
+  (`dynamic.number_immutable`); simply leave the field out. Only the data import and seeders may bring numbers.
 - **Reject** in `RecordSaving` or `RecordDeleting`: `throw new RecordRejected('Message for display');`. SAFT saves
   nothing and shows “Action not possible” with your message; in an import it appears as an error of the row and the
   whole import is not carried out.

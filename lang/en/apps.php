@@ -298,6 +298,7 @@ return [
             'deactivate' => 'Is hidden (data kept).',
             'relation_target' => 'Relation now points to “:table”.',
             'formula' => 'Formula changed – values are recalculated.',
+            'number_pattern' => 'Number sequence pattern changed (:pattern) – existing numbers stay, new ones follow the new pattern.',
             'choices_removed' => 'Choices dropped: :values.',
             'rules' => 'Rules changed – existing records are checked on the next edit.',
             'interface_version' => 'Sharing withdrawn – the version of the interface increases.',

@@ -17,6 +17,7 @@ return [
         'select' => 'Elenco di scelta',
         'relation' => 'Collegamento',
         'computed' => 'Calcolato',
+        'number' => 'Intervallo di numerazione',
     ],
     'form' => [
         'table' => 'Tabella',

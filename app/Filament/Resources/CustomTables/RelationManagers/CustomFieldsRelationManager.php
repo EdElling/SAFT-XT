@@ -245,6 +245,7 @@ class CustomFieldsRelationManager extends RelationManager
             FieldType::Select => __('tables.fields.details_options', ['count' => count((array) ($o['options'] ?? []))]),
             FieldType::Relation => RelationDisplay::describe($o),
             FieldType::Computed => '= '.($o['formula'] ?? ''),
+            FieldType::Number => (string) ($o['pattern'] ?? ''),
             default => null,
         };
     }

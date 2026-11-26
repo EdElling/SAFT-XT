@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DynamicData\Assistant;
 
 use App\DynamicData\Files\FileKinds;
+use App\DynamicData\Numbering\NumberPattern;
 
 /**
  * JSON-Schemas der Antworten des Tabellen-Assistenten (neue Tabelle bzw. Änderungen an einer bestehenden) und die
@@ -12,8 +13,8 @@ use App\DynamicData\Files\FileKinds;
  */
 final class TableProposalSchema
 {
-    /** Feldtypen, die der Assistent vorschlagen darf; berechnete Felder mit Formel (B-122). */
-    public const array TYPES = ['string', 'text', 'integer', 'decimal', 'boolean', 'date', 'datetime', 'select', 'relation', 'file', 'computed'];
+    /** Feldtypen, die der Assistent vorschlagen darf; berechnete Felder mit Formel (B-122), Nummernkreise (B-135). */
+    public const array TYPES = ['string', 'text', 'integer', 'decimal', 'boolean', 'date', 'datetime', 'select', 'relation', 'file', 'computed', 'number'];
 
     /** @return list<string> */
     public static function locales(): array
@@ -95,6 +96,8 @@ final class TableProposalSchema
                 : ['result' => 'decimal', ...(is_int($field['precision'] ?? null) && $field['precision'] > 0
                     ? ['precision' => $field['precision'], 'scale' => is_int($field['scale'] ?? null) ? $field['scale'] : 2]
                     : ['precision' => 12, 'scale' => 2])])],
+            // Nummernkreis (B-135): Muster in „formula“ (kein eigenes Feld – Grammatik-Grenze), Neubeginn aus dem Muster.
+            'number' => self::numberOptions(trim((string) ($field['formula'] ?? ''))),
             default => [],
         };
 
@@ -105,12 +108,28 @@ final class TableProposalSchema
             'options' => $options,
             'validation_rules' => self::fieldRules($field['rules'] ?? null),
             'is_required' => (bool) ($field['required'] ?? false),
-            // Dateifelder sind weder eindeutig noch durchsuchbar noch sortierbar.
-            'is_unique' => $type !== 'file' && (bool) ($field['unique'] ?? false),
+            // Dateifelder sind weder eindeutig noch durchsuchbar noch sortierbar; Nummernkreise immer eindeutig.
+            'is_unique' => $type === 'number' || ($type !== 'file' && (bool) ($field['unique'] ?? false)),
             'is_searchable' => $type !== 'file' && (bool) ($field['searchable'] ?? false),
             'is_sortable' => $type !== 'file' && (bool) ($field['sortable'] ?? false),
             'show_in_table' => true,
             'show_in_form' => true,
+        ];
+    }
+
+    /**
+     * Nummernkreis aus dem Muster des Assistenten: mit Monat monatlich, mit Jahr jährlich, sonst ohne Neubeginn.
+     *
+     * @return array<string, mixed>
+     */
+    private static function numberOptions(string $pattern): array
+    {
+        $pattern = $pattern === '' ? '{YYYY}-{0000}' : $pattern;
+        $year = str_contains($pattern, '{YYYY}') || str_contains($pattern, '{YY}') || str_contains($pattern, '{JJ');
+
+        return [
+            NumberPattern::PATTERN => $pattern,
+            NumberPattern::RESET => $year && str_contains($pattern, '{MM}') ? 'monthly' : ($year ? 'yearly' : 'never'),
         ];
     }
 
@@ -157,7 +176,7 @@ final class TableProposalSchema
             'max_files' => ['type' => 'integer'],
             // Feldregeln als kurzer Text (RuleText), z. B. „min=1; max=3“; leer = keine.
             'rules' => ['type' => 'string'],
-            // Formel eines berechneten Felds (B-122); "" bei anderen Typen.
+            // Formel eines berechneten Felds (B-122) bzw. Muster eines Nummernkreises (B-135); "" bei anderen Typen.
             'formula' => ['type' => 'string'],
         ]);
     }

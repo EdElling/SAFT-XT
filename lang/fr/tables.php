@@ -17,6 +17,7 @@ return [
         'select' => 'Liste de choix',
         'relation' => 'Liaison',
         'computed' => 'Calculé',
+        'number' => 'Plage de numéros',
     ],
     'form' => [
         'table' => 'Table',

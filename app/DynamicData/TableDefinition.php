@@ -34,6 +34,7 @@ final readonly class TableDefinition
      * @param  list<array{table: string, via: string}>  $dependents  Master-Tabellen, die über diese Tabelle summieren
      * @param  bool  $uuidKey  SAFT vergibt den UUID-Schlüssel beim Anlegen (MySQL meldet DEFAULT (uuid()) nicht zurück)
      * @param  list<string>  $files  Felder vom Typ „Datei“ (nach dem Speichern abgleichen, beim Löschen mitlöschen)
+     * @param  array<string, array{id: int, options: array<string, mixed>}>  $numbers  Nummernkreise (B-135): Feld => Kennung und Optionen
      */
     public function __construct(
         public string $name,
@@ -55,6 +56,7 @@ final readonly class TableDefinition
         public array $dependents = [],
         public bool $uuidKey = false,
         public array $files = [],
+        public array $numbers = [],
     ) {}
 
     public static function fromCustomTable(CustomTable $table, string $qualifiedTable): self
@@ -74,6 +76,10 @@ final readonly class TableDefinition
             computed: self::computed($fields),
             dependents: Recalculator::dependentsOf($table->name),
             files: $fields->filter(fn (CustomField $f): bool => $f->type === FieldType::File)->pluck('name')->values()->all(),
+            // Auch inaktive: eine vergebene Nummer bleibt geschützt; vergeben wird nur in aktiven Feldern.
+            numbers: $fields->filter(fn (CustomField $f): bool => $f->type === FieldType::Number)
+                ->mapWithKeys(fn (CustomField $f): array => [$f->name => ['id' => (int) $f->id, 'options' => [...$f->optionsArray(), 'active' => (bool) $f->is_active]]])
+                ->all(),
         );
     }
 

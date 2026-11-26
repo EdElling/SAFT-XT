@@ -7,6 +7,7 @@ namespace App\DynamicData\Write;
 use App\DynamicData\DeleteGuard;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Formula\Recalculator;
+use App\DynamicData\Numbering\NumberAssigner;
 use App\DynamicData\Rules\CopySource;
 use App\DynamicData\Rules\SequenceSuggester;
 use App\Models\DynamicRecord;
@@ -24,10 +25,11 @@ use LogicException;
  * Vertrags mit Plugins und Formeln und bleibt deshalb genau so:
  *
  * Vorher (Speichern): nur lesbar? → geschützte Dokumente → Vorgaben der Datenbank bzw. „Übernehmen aus“ und
- * fortlaufende Nummern → RecordSaving (Plugins setzen Werte) → berechnete Felder → created_by/updated_by.
+ * fortlaufende Nummern → Nummernkreise (vergeben bzw. schützen) → RecordSaving (Plugins setzen Werte) → berechnete
+ * Felder → created_by/updated_by.
  * Nachher (Speichern): Summen in Master-Datensätzen → Dateien abgleichen → RecordSaved.
  * Vorher (Löschen): nur lesbar? → Löschsperre → RecordDeleting. Nachher: Summen → RecordDeleted → Dateien (endgültig).
- * Später kommen hier Regeln (B-142), Zeilenrechte (B-020) und Nummernkreise (B-135) hinzu.
+ * Später kommen hier Regeln (B-142) und Zeilenrechte (B-020) hinzu.
  */
 final class WritePhases
 {
@@ -35,6 +37,7 @@ final class WritePhases
         private readonly Recalculator $recalculator,
         private readonly RecordFiles $files,
         private readonly DeleteGuard $deleteGuard,
+        private readonly NumberAssigner $numbers,
     ) {}
 
     public function beforeSave(DynamicRecord $record, bool $creating, WriteOptions $options): void
@@ -90,8 +93,12 @@ final class WritePhases
             }
         }
 
+        // Nummernkreise (B-135): Plugins und Formeln sehen die Nummer schon; eine vergebene bleibt fest.
+        $numbers = ($definition->numbers ?? []) === [] ? [] : $this->numbers->apply($record, $definition->numbers, $creating, $options);
+
         // Plugins vor den Formeln: Werte, die ein Listener setzt, fliessen in berechnete Felder ein.
         $this->event(RecordSaving::class, $record, $creating, $options);
+        $this->numbers->assertKept($record, $numbers);
 
         $record->recalculate();
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Context;
 
+use App\DynamicData\Numbering\NumberPattern;
 use App\DynamicData\Rules\CopySource;
 use App\DynamicData\Rules\SequenceSuggester;
 use App\Exceptions\BusinessRuleException;
@@ -107,7 +108,8 @@ final readonly class SchemaImporter
                 ($field['type'] ?? null) === 'relation' => 'relation',
                 ($field['type'] ?? null) === 'computed' => 'computed',
                 // „Übernehmen aus“ und „Zählen je“ (Vorschlag der nächsten Nummer je Verknüpfung) brauchen die Verknüpfung.
-                ! empty($field['options'][CopySource::OPTION]), ! empty($field['options'][SequenceSuggester::SCOPE]) => 'copy',
+                // Ebenso ein Nummernkreis mit Bezugsdatum (B-135) das Datumsfeld.
+                ! empty($field['options'][CopySource::OPTION]), ! empty($field['options'][SequenceSuggester::SCOPE]), ! empty($field['options'][NumberPattern::DATE_FIELD]) => 'copy',
                 default => null,
             };
 

@@ -383,6 +383,11 @@ final class ChangePlanner
             return __('apps.update.notes.formula');
         }
 
+        // Nummernkreis (B-135): vorhandene Nummern bleiben, neue erscheinen nach dem neuen Muster.
+        if ($type === FieldType::Number->value && [$from['pattern'] ?? null, $from['reset'] ?? null] !== [$to['pattern'] ?? null, $to['reset'] ?? null]) {
+            return __('apps.update.notes.number_pattern', ['pattern' => (string) ($to['pattern'] ?? '–')]);
+        }
+
         $values = static fn (array $o): array => array_map(static fn (mixed $c): string => (string) (is_array($c) ? ($c['value'] ?? '') : $c), (array) ($o['options'] ?? []));
         $removed = array_diff($values($from), $values($to));
 

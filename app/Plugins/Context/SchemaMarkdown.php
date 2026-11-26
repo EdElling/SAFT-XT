@@ -111,6 +111,7 @@ final class SchemaMarkdown
             'select' => 'values: '.implode(', ', array_map(static fn (array $o): string => '`'.$o['value'].'`', array_filter((array) ($options['options'] ?? []), 'is_array'))),
             'relation' => '→ `'.($options['table'] ?? '?').'` (shows '.implode(', ', (array) ($options['display_fields'] ?? [$options['display_field'] ?? 'id'])).')',
             'computed' => 'formula `'.($options['formula'] ?? '').'` → '.($options['result'] ?? 'decimal').', calculated on save, read-only',
+            'number' => 'number sequence `'.($options['pattern'] ?? '').'`, restart '.($options['reset'] ?? 'never').', assigned by SAFT on create, unique, read-only',
             default => '',
         };
 

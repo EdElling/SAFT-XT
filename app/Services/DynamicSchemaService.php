@@ -13,6 +13,8 @@ use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Formula\Printer;
+use App\DynamicData\Numbering\NumberPattern;
+use App\DynamicData\Numbering\NumberSequences;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Rules\CopySource;
 use App\DynamicData\Rules\Operand;
@@ -126,6 +128,8 @@ final class DynamicSchemaService
                 $created[$attributes['name']] = $table->fields()->create($attributes);
             }
 
+            $this->ensureNumberSequences($created);
+
             $this->schema()->create($this->namespace->qualify($name), function (Blueprint $blueprint) use ($table, $created): void {
                 $blueprint->id();
 
@@ -209,6 +213,7 @@ final class DynamicSchemaService
             $this->assertIndexable($attributes);
 
             $field = $table->fields()->create($attributes);
+            $this->ensureNumberSequences([$field]);
 
             $this->schema()->table($this->namespace->qualify($table->name), function (Blueprint $blueprint) use ($field): void {
                 $field->type->addColumn($blueprint, $field->name, $field->optionsArray());
@@ -285,6 +290,19 @@ final class DynamicSchemaService
                 $this->assertNotUsedByOtherApps($table, $field->name);
             }
 
+            // Nummernkreise (B-135): Typwechsel von und zu „Nummernkreis“, solange die Spalte leer ist (auch im
+            // Papierkorb); vorhandene Werte übernehmen kommt mit dem Umstellen (N2).
+            $numberChange = $new['type'] !== $field->type && in_array(FieldType::Number, [$new['type'], $field->type], true);
+
+            if ($numberChange && ! $this->columnIsEmpty($table, $field->name)) {
+                $this->fail(__('numbering.errors.type_change', ['name' => $field->name]));
+            }
+
+            // Bezugsdatum eines Nummernkreises: bleibt ein aktives Pflichtfeld vom Typ Datum bzw. Datum/Zeit.
+            if (! in_array($new['type'], [FieldType::Date, FieldType::DateTime], true) || ! $new['is_required'] || ! $new['is_active']) {
+                $this->assertNotNumberDate($table, $field->name);
+            }
+
             // Vor jeder DDL prüfen: MySQL könnte die bereits ausgeführten Schritte nicht zurückrollen.
             if ($new['is_unique'] && ! $field->is_unique && $this->hasActiveDuplicates($table, $field->name)) {
                 $this->fail(__('tables.errors.not_unique', ['name' => $field->name]));
@@ -334,6 +352,7 @@ final class DynamicSchemaService
                 $this->renameDisplayFieldReferences($table, $field->name, $new['name']);
                 $this->renameRuleReferences($table, $field->name, $new['name']);
                 $this->updateSuggestScopes($table, $field->name, $new['name']);
+                $this->renameNumberDateReferences($table, $field->name, $new['name']);
                 $this->renameCopyReferences($table, $field->name, $new['name']);
                 $this->renameFormulaReferences($table, $field->name, $new['name']);
                 $this->renameAggregateReferences($table->name, $field->name, $new['name']);
@@ -353,12 +372,21 @@ final class DynamicSchemaService
 
             $field->fill($new)->save();
 
+            if ($numberChange && $field->type === FieldType::Number) {
+                $this->ensureNumberSequences([$field]);
+            }
+
             if ($structural) {
                 $this->createConstraints($table, $field);
             }
 
             return $field;
         });
+
+        // Kein Nummernkreis mehr: seine Zähler entfallen.
+        if ($before[0] === FieldType::Number && $updated->type !== FieldType::Number) {
+            app(NumberSequences::class)->forget((int) $updated->id);
+        }
 
         // Formel, Ergebnisart oder Aktivierung eines berechneten Felds geändert: alle Werte neu berechnen.
         if ($updated->type === FieldType::Computed && [$updated->type, $updated->optionsArray(), $updated->is_active] != $before) {
@@ -407,6 +435,44 @@ final class DynamicSchemaService
      * Fortlaufende Vorschläge „je Verknüpfung“ folgen der Umbenennung; null: Zählbereich entfällt
      * (Verknüpfung gelöscht oder keine Verknüpfung mehr), es wird über die ganze Tabelle gezählt.
      */
+    /**
+     * Zählertabelle der Nummernkreise anlegen, sobald das erste Feld dieses Typs entsteht (B-135).
+     *
+     * @param  iterable<CustomField>  $fields
+     */
+    private function ensureNumberSequences(iterable $fields): void
+    {
+        foreach ($fields as $field) {
+            if ($field->type === FieldType::Number) {
+                app(NumberSequences::class)->ensureTable();
+
+                return;
+            }
+        }
+    }
+
+    /** Nummernkreise der Tabelle, deren Bezugsdatum dieses Feld ist. */
+    private function assertNotNumberDate(CustomTable $table, string $field): void
+    {
+        $number = $table->fields()->where('type', FieldType::Number->value)->get()
+            ->first(static fn (CustomField $f): bool => ($f->optionsArray()[NumberPattern::DATE_FIELD] ?? null) === $field);
+
+        if ($number !== null) {
+            $this->fail(__('numbering.errors.date_field_in_use', ['name' => $field, 'field' => $number->name]));
+        }
+    }
+
+    private function renameNumberDateReferences(CustomTable $table, string $from, string $to): void
+    {
+        foreach ($table->fields()->where('type', FieldType::Number->value)->get() as $number) {
+            $options = $number->optionsArray();
+
+            if (($options[NumberPattern::DATE_FIELD] ?? null) === $from) {
+                $number->forceFill(['options' => [...$options, NumberPattern::DATE_FIELD => $to]])->save();
+            }
+        }
+    }
+
     private function updateSuggestScopes(CustomTable $table, string $from, ?string $to): void
     {
         foreach ($table->fields()->get() as $other) {
@@ -638,6 +704,8 @@ final class DynamicSchemaService
                 $this->fail(__('tables.errors.used_as_copy_source', ['name' => $field->name, 'field' => $copy->custom_table->name.'.'.$copy->name]));
             }
 
+            $this->assertNotNumberDate($table, $field->name);
+
             $usedAsDisplay = $this->relationsDisplaying($table, $field->name)->isNotEmpty();
 
             if ($usedAsDisplay) {
@@ -655,6 +723,11 @@ final class DynamicSchemaService
         if ($field->type === FieldType::File) {
             app(RecordFiles::class)->deleteForField($table, $field->name);
         }
+
+        // Zähler eines Nummernkreises gehen mit dem Feld (B-135).
+        if ($field->type === FieldType::Number) {
+            app(NumberSequences::class)->forget((int) $field->id);
+        }
     }
 
     /** Physisches Löschen: Tabelle muss deaktiviert sein, Bestätigung durch Tabellennamen. */
@@ -663,6 +736,7 @@ final class DynamicSchemaService
         $this->assertDesigner($table);
         // Die Einträge entfernt die Datenbank mit der Tabelle; die Dateien danach (nur bei Erfolg).
         $files = RecordFile::query()->where('custom_table_id', $table->id)->get();
+        $numbers = $table->fields()->where('type', FieldType::Number->value)->pluck('id')->all();
 
         $this->mutate($table->name, function () use ($table, $confirmation): void {
             $this->assertDestructionConfirmed($table->is_active, $table->name, $confirmation, __('tables.what.table'));
@@ -692,6 +766,10 @@ final class DynamicSchemaService
         });
 
         app(RecordFiles::class)->removeStored($files);
+
+        foreach ($numbers as $id) {
+            app(NumberSequences::class)->forget((int) $id);
+        }
     }
 
     /**
@@ -775,6 +853,7 @@ final class DynamicSchemaService
         // 2. Tabellen mit Metadaten, Rechten, Menüeinträgen und Dateien.
         foreach ($tables as $table) {
             $files = RecordFile::query()->where('custom_table_id', $table->id)->get();
+            $numbers = $table->fields()->where('type', FieldType::Number->value)->pluck('id')->all();
 
             $this->mutate($table->name, function () use ($table): void {
                 $this->schema()->dropIfExists($this->namespace->qualify($table->name));
@@ -785,6 +864,10 @@ final class DynamicSchemaService
             });
 
             app(RecordFiles::class)->removeStored($files);
+
+            foreach ($numbers as $id) {
+                app(NumberSequences::class)->forget((int) $id);
+            }
         }
     }
 

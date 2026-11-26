@@ -407,6 +407,7 @@ Gruppe und legt auch einen weiteren Eintrag an, wenn die Tabelle an einer zweite
 |---|---|
 | Feld umbenennen | jederzeit, Daten bleiben erhalten |
 | Typ ändern | verlustfrei jederzeit (z. B. Ganzzahl → Dezimalzahl, Text → mehrzeiliger Text, Datum → Datum und Uhrzeit); mehrzeiliger → einzeiliger Text, wenn alle Werte in die Länge passen; sonst nur, wenn die Spalte leer ist |
+| Typ ändern zu oder von Nummernkreis | nur, wenn das Feld in keinem Datensatz einen Wert hat (auch nicht im Papierkorb); siehe [Nummernkreise](#nummernkreise) |
 | Textlänge | vergrössern jederzeit, verkleinern nur, wenn alle vorhandenen Werte in die neue Länge passen (sonst nennt die Meldung, wie viele zu lang sind) |
 | „Eindeutig“ einschalten | nur, wenn die vorhandenen Daten keine Duplikate enthalten |
 | Wert aus einer Auswahlliste entfernen | jederzeit; ist der Wert in Gebrauch, erscheint eine Warnung mit der Anzahl der Datensätze. Sie behalten ihren Wert, beim nächsten Bearbeiten muss aber ein gültiger gewählt werden. |
@@ -425,6 +426,39 @@ Gruppe und legt auch einen weiteren Eintrag an, wenn die Tabelle an einer zweite
 
 Unter **Physische Tabelle** sehen Sie den Speicherort, die Anzahl Datensätze und eventuelle Abweichungen
 zwischen Einstellungen und Datenbank.
+
+### Nummernkreise
+
+Ein Feld vom Typ **Nummernkreis** bekommt seine Nummer von SAFT, z. B. Rechnungs-, Bestell- oder Vertragsnummern wie
+`R-2026-0042`. Die Nummer wird beim Anlegen eines Datensatzes vergeben, kommt nie doppelt vor (auch wenn mehrere
+Personen gleichzeitig anlegen), wird nach dem Löschen nicht wieder vergeben und lässt sich danach nicht mehr ändern –
+weder im Formular noch über Import, Plugins oder Schnittstellen.
+
+- **Muster:** fester Text (Buchstaben, Ziffern, Leerzeichen und `- / . _`) und Platzhalter: `{YYYY}` bzw. `{YY}` für
+  das Jahr, `{MM}` für den Monat und genau eine laufende Nummer, `{0000}` mit so vielen Stellen wie Nullen oder `{#}`
+  ohne führende Nullen. Mit **Baustein einfügen** hängen Sie einen Platzhalter an. Wird die laufende Nummer länger als
+  ihre Stellen, wird sie nicht abgeschnitten (`R-2026-10000`). Höchstens 50 Zeichen.
+- **Neubeginn:** nie, jährlich oder monatlich. Jährlich braucht ein Jahr im Muster, monatlich Jahr und Monat – sonst
+  entstünden doppelte Nummern.
+- **Geschäftsjahr beginnt im** (nur jährlich): z. B. Juli; dann gehört der März 2027 noch zum Geschäftsjahr 2026, und
+  `{YYYY}` zeigt 2026.
+- **Bezugsdatum:** bestimmt Jahr und Monat in der Nummer und den Neubeginn. Leer gilt das Anlegedatum; wählbar sind
+  aktive Pflichtfelder vom Typ Datum, z. B. das Rechnungsdatum. Ein solches Feld bleibt dann ein Pflichtfeld vom Typ
+  Datum; Umbenennen wird nachgeführt.
+- **Startwert:** erste Nummer je Zeitraum (Vorgabe 1), z. B. 1000.
+- Unter den Einstellungen steht die **nächste Nummer**, bei einem ungültigen Muster der Grund.
+
+Ein Nummernkreis ist immer eindeutig und nie Pflicht. Im Formular steht vor dem ersten Speichern „wird beim Speichern
+vergeben“. Abgebrochenes Speichern hinterlässt keine Lücke; ein endgültig gelöschter Datensatz schon (sie ist im
+Änderungsprotokoll nachvollziehbar). Eine **Kopie** bekommt eine neue Nummer. Beim **Import** werden fehlende Nummern
+vergeben; mitgebrachte (z. B. aus einem Altsystem) werden übernommen, wenn sie eindeutig sind, und passen sie zum Muster,
+zählt SAFT danach weiter. Die [App-Definition](#15-apps-fachanwendungen) enthält die Einstellungen, nicht die
+Zählerstände: Eine neue Installation beginnt beim Startwert; ein geändertes Muster beim Aktualisieren gilt als heikel.
+„App-Daten zurücksetzen“ setzt auch die Zähler zurück.
+
+Ein bestehendes Feld lässt sich auf „Nummernkreis“ umstellen und zurück, solange es in keinem Datensatz einen Wert hat
+(auch nicht im Papierkorb). Vorhandene Nummern in einen Nummernkreis zu übernehmen, ist noch nicht möglich. Für
+Positionsnummern, die änderbar bleiben sollen, gibt es weiterhin **Fortlaufend vorschlagen** bei Ganzzahlen.
 
 ### Verwendet in
 
