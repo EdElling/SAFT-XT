@@ -82,6 +82,24 @@ class ServerTimingTest extends TestCase
         $this->assertMatchesRegularExpression('/(^|, )q3;dur=[\d.]+;desc="[^"]+"/', $header);
         $this->assertStringNotContainsString('q4;', $header);
         $this->assertStringNotContainsString('geheim', $header, 'Keine Werte aus dem SQL.');
+        $this->assertDoesNotMatchRegularExpression('/select\b.*\bfrom\b/i', $header, 'Kein SQL-Text: Filter beim Hoster entfernen solche Header.');
+
         $this->assertLessThanOrEqual(1, substr_count($header, '(erste)'), 'Nur die erste Abfrage der Verbindung ist markiert.');
+    }
+
+    public function test_slow_query_shows_tables_and_kind_instead_of_sql(): void
+    {
+        config(['saft.server_timing' => true]);
+        $this->app['router']->get('/_server-timing-label', function () {
+            DB::table('users')->join('sessions', 'sessions.user_id', '=', 'users.id')->where('users.name', 'geheim')->exists();
+
+            return 'ok';
+        });
+
+        $header = (string) $this->get('/_server-timing-label')->assertOk()->headers->get('Server-Timing');
+
+        $this->assertStringContainsString(': users, sessions [select]"', $header);
+        $this->assertDoesNotMatchRegularExpression('/select\b.*\bfrom\b/i', $header);
+        $this->assertStringNotContainsString('geheim', $header);
     }
 }

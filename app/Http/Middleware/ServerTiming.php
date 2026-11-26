@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
  * die übrige Zeit der Anwendung, `total` gesamt. Nur mit SERVER_TIMING=true; gedacht zum Messen auf Hosting ohne
  * Server-Logs, danach wieder ausschalten. Steht als erste globale Middleware, damit Session und Rechte mitzählen.
  *
- * Dazu die drei langsamsten Abfragen (`q1` bis `q3`): Dauer, Verbindung und gekürztes SQL ohne Werte; „erste“ markiert
+ * Dazu die drei langsamsten Abfragen (`q1` bis `q3`): Dauer, Verbindung, Tabellen und Art; „erste“ markiert
  * die erste Abfrage einer Verbindung im Request, deren Dauer den Verbindungsaufbau enthält (Laravel verbindet erst
  * bei der ersten Abfrage). So lässt sich auf entfernten Datenbankrechnern Verbindungsaufbau von langsamen Abfragen
  * unterscheiden (Strato, 26.11.2026).
@@ -109,14 +109,23 @@ final class ServerTiming
         self::$slowest = array_slice(self::$slowest, 0, self::SLOWEST);
     }
 
-    /** Verbindung und SQL ohne Werte, gekürzt, nur druckbares ASCII (Header). */
+    /**
+     * Verbindung, Tabellen und Art der Abfrage, z. B. „mysql (erste): lager_orte, lager_artikel [select]“. Bewusst kein
+     * SQL-Text: Filter beim Hoster (Strato) entfernen Antwort-Header, die wie SQL aussehen.
+     */
     private static function label(QueryExecuted $query, bool $first): string
     {
-        $sql = (string) preg_replace("/'(?:[^']|'')*'/", '?', $query->sql);
-        $sql = (string) preg_replace('/[^\x20-\x7E]|["\\`]/', '', $sql);
-        $sql = (string) preg_replace('/\s+/', ' ', trim($sql));
+        // Ohne Zeichenketten und Anführungszeichen der Bezeichner ("app_data"."x", `x`).
+        $sql = str_replace(['"', '`'], '', (string) preg_replace("/'(?:[^']|'')*'/", '', $query->sql));
+        preg_match_all('/\b(?:from|into|update|join)\s+([A-Za-z0-9_.]+)/i', $sql, $matches);
+        $tables = array_slice(array_values(array_unique(array_map(
+            static fn (string $table): string => (string) preg_replace('/^.*\./', '', $table),
+            $matches[1],
+        ))), 0, 3);
+        $verb = strtolower((string) strtok(ltrim($sql, " (\n\t"), " (\n\t"));
 
-        return $query->connectionName.($first ? ' (erste)' : '').': '.(strlen($sql) > 80 ? substr($sql, 0, 79).'~' : $sql);
+        return $query->connectionName.($first ? ' (erste)' : '').': '
+            .($tables === [] ? '-' : implode(', ', $tables)).' ['.(preg_match('/^[a-z]+$/', $verb) === 1 ? $verb : '?').']';
     }
 
     private function listen(): void
