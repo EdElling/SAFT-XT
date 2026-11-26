@@ -421,7 +421,7 @@ class MusikschuleDemoSeeder extends Seeder
 
         foreach ($bills as $bill) {
             $number++;
-            // Rechnungsnummer vergibt SAFT (Nummernkreis R-{YYYY}-{000} ab 1.5) – in dieser Reihenfolge R-2026-001 …
+            // Rechnungsnummer vergibt SAFT (Nummernkreis R-{YYYY}-{000} ab 1.5, ab 1.6 erst ausser im Entwurf) – in dieser Reihenfolge R-2026-001 …
             $id = $insert('rechnungen', ['datum' => '2026-09-01', 'faellig_am' => '2026-09-30',
                 'status' => $number === 7 ? 'storniert' : 'versendet', 'semester' => $hs, ...$bill['payer']]);
 
@@ -465,9 +465,13 @@ class MusikschuleDemoSeeder extends Seeder
         }
 
         // Ein begonnenes zweites Semester: zwei Kurse mit ersten Anmeldungen.
-        $insert('anmeldungen', ['schueler' => $students['Jan Baumann']['id'], 'datum' => '2026-12-01', 'status' => 'aktiv',
-            'kurs' => $insert('kurse', ['bezeichnung' => 'Klavier Jan', 'fach' => $subjects['Klavier'], 'kursart' => $kinds['Einzel 30']['id'], 'lehrperson' => $teachers['Moretti'],
-                'raum' => $rooms['Raum 1'], 'semester' => $fs, 'wochentag' => 'mo', 'uhrzeit' => '17:30', 'max_teilnehmer' => 1])]);
+        $janCourse = $insert('kurse', ['bezeichnung' => 'Klavier Jan', 'fach' => $subjects['Klavier'], 'kursart' => $kinds['Einzel 30']['id'], 'lehrperson' => $teachers['Moretti'],
+            'raum' => $rooms['Raum 1'], 'semester' => $fs, 'wochentag' => 'mo', 'uhrzeit' => '17:30', 'max_teilnehmer' => 1]);
+        $insert('anmeldungen', ['schueler' => $students['Jan Baumann']['id'], 'datum' => '2026-12-01', 'status' => 'aktiv', 'kurs' => $janCourse]);
+
+        // Rechnung fürs zweite Semester als Entwurf (1.6): ohne Nummer, nicht offen – die Nummer kommt mit „Versendet“.
+        $draft = $insert('rechnungen', ['datum' => '2026-12-01', 'faellig_am' => '2027-02-28', 'status' => 'entwurf', 'semester' => $fs, ...$students['Jan Baumann']['payer']]);
+        $insert('rechnungspositionen', ['rechnung' => $draft, 'art' => 'kurs', 'text' => 'Klavier Jan (Jan Baumann)', 'menge' => '1', 'kurs' => $janCourse]);
         $insert('kurse', ['bezeichnung' => 'Workshop Songwriting', 'fach' => $subjects['Gesang'], 'kursart' => $kinds['Workshop']['id'], 'lehrperson' => $teachers['Keller'],
             'raum' => $rooms['Bandraum'], 'semester' => $fs, 'wochentag' => 'sa', 'uhrzeit' => '13:00', 'max_teilnehmer' => 8]);
     }

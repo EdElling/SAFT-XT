@@ -43,16 +43,20 @@ giorni – e registrate le presenze di una lezione su una sola pagina.
 ### Fattura semestrale
 
 1. In **Finanze & strumenti › Fatture** creare una fattura alla persona di contatto (per i minorenni) o all'allievo
-   adulto, con data fattura, semestre e scadenza. SAFT assegna il **numero fattura** al salvataggio (intervallo di
-   numerazione `R-2026-001`, che riparte ogni anno secondo la data fattura); in seguito non è più modificabile.
+   adulto, con data fattura, semestre e scadenza, dapprima con stato *Bozza*. Una bozza non ha ancora un numero e non
+   conta né come aperta né come entrata. SAFT assegna il **numero fattura** al primo salvataggio con stato *Inviata* o
+   *Annullata* (intervallo di numerazione `R-2026-001`, che riparte ogni anno secondo la data fattura); in seguito non è
+   più modificabile, anche se lo stato torna indietro. Le bozze scartate non lasciano così lacune.
 2. Sotto, una **posizione fattura** di tipo *corso* per ogni corso – SAFT riprende il **prezzo unitario** dalla tariffa
    del corso e deduce lo sconto. Gli strumenti a noleggio sono una posizione di tipo *noleggio* con il numero di mesi.
 3. Registrare i **pagamenti**; **pagato** e **aperto** mostrano lo stato. Una fattura annullata non ha più nulla di
    aperto.
 
-Copiando una fattura (p. es. per il semestre successivo) vengono riprese le posizioni, non i pagamenti.
+Copiando una fattura (p. es. per il semestre successivo) vengono riprese le posizioni, non i pagamenti. Impostare lo
+stato su *Bozza* nel dialogo di copia – altrimenti la copia riceve subito un numero.
 
-Create la fattura come PDF sulla carta intestata nella riga della fattura con **«Crea documento»** (modello
+Prima del documento impostare la fattura su *Inviata*: solo allora ha un numero e un importo aperto per la
+QR-fattura. Create la fattura come PDF sulla carta intestata nella riga della fattura con **«Crea documento»** (modello
 «Semesterrechnung») – indirizzata alla persona di contatto, altrimenti all’allievo.
 **«Depositare nel campo ‹Documenti›»** è preselezionato: il PDF viene aggiunto, protetto da scrittura, al campo
 **Documenti** della fattura (ogni creazione come nuova versione). Depositare richiede il diritto di modificare le

@@ -43,15 +43,20 @@ ces jours – et saisissez les présences d'une leçon sur une seule page.
 ### Facture semestrielle
 
 1. Sous **Finances & instruments › Factures**, créer une facture à la personne de contact (pour les mineurs) ou à
-   l'élève adulte, avec date de facture, semestre et échéance. SAFT attribue le **numéro de facture** à l'enregistrement
-   (plage de numéros `R-2026-001`, recommençant chaque année selon la date de facture) ; il n'est plus modifiable ensuite.
+   l'élève adulte, avec date de facture, semestre et échéance, d'abord avec le statut *Brouillon*. Un brouillon n'a pas
+   encore de numéro et ne compte ni comme ouvert ni comme recette. SAFT attribue le **numéro de facture** au premier
+   enregistrement avec le statut *Envoyée* ou *Annulée* (plage de numéros `R-2026-001`, recommençant chaque année selon
+   la date de facture) ; il n'est plus modifiable ensuite, même si le statut revient en arrière. Les brouillons
+   abandonnés ne laissent ainsi pas de trous.
 2. En dessous, une **position de facture** de type *cours* par cours – SAFT reprend le **prix unitaire** du tarif du cours
    et déduit le rabais. Les instruments en location sont une position de type *location* avec le nombre de mois.
 3. Saisir les **paiements** ; **payé** et **ouvert** montrent l'état. Une facture annulée n'a plus rien d'ouvert.
 
-En copiant une facture (p. ex. pour le semestre suivant), ses positions sont reprises, pas les paiements.
+En copiant une facture (p. ex. pour le semestre suivant), ses positions sont reprises, pas les paiements. Mettre le
+statut sur *Brouillon* dans le dialogue de copie – sinon la copie reçoit tout de suite un numéro.
 
-Créez la facture en PDF sur le papier à lettres dans la ligne de la facture avec **« Créer un document »** (modèle
+Avant le document, passer la facture à *Envoyée* : ce n'est qu'alors qu'elle a un numéro et un montant ouvert pour la
+QR-facture. Créez la facture en PDF sur le papier à lettres dans la ligne de la facture avec **« Créer un document »** (modèle
 « Semesterrechnung ») – adressée à la personne de contact, sinon à l’élève.
 **« Déposer dans le champ ‹ Documents › »** est présélectionné : le PDF est ajouté, protégé en écriture, au champ
 **Documents** de la facture (chaque création comme nouvelle version). Déposer requiert le droit de modifier les

@@ -43,17 +43,21 @@ Tage – und erfassen die Präsenzen einer Lektion auf einer Seite.
 ### Semesterrechnung
 
 1. Unter **Finanzen & Instrumente › Rechnungen** eine Rechnung an die Kontaktperson (bei Minderjährigen) oder an die
-   erwachsene Schülerin bzw. den Schüler anlegen, mit Rechnungsdatum, Semester und Fälligkeit. Die **Rechnungsnummer**
-   vergibt SAFT beim Speichern (Nummernkreis `R-2026-001`, jedes Jahr neu nach dem Rechnungsdatum); sie ist danach
-   nicht mehr änderbar.
+   erwachsene Schülerin bzw. den Schüler anlegen, mit Rechnungsdatum, Semester und Fälligkeit, zuerst mit Status
+   *Entwurf*. Ein Entwurf hat noch keine Nummer und zählt weder als offen noch als Einnahme. Die **Rechnungsnummer**
+   vergibt SAFT beim ersten Speichern mit Status *Versendet* bzw. *Storniert* (Nummernkreis `R-2026-001`, jedes Jahr neu
+   nach dem Rechnungsdatum); sie ist danach nicht mehr änderbar, auch wenn der Status zurückgeht. Verworfene Entwürfe
+   hinterlassen so keine Lücken.
 2. Darunter je Kurs eine **Rechnungsposition** der Art *Kurs* – den **Einzelpreis** übernimmt SAFT aus dem Tarif des
    Kurses, ein Rabatt wird abgezogen. Mietinstrumente als Position der Art *Miete* mit der Anzahl Monate.
 3. Eingänge unter **Zahlungen** erfassen; **bezahlt** und **offen** zeigen den Stand. Eine stornierte Rechnung hat
    nichts mehr offen.
 
-Kopiert man eine Rechnung (z. B. fürs nächste Semester), kommen ihre Positionen mit, die Zahlungen nicht.
+Kopiert man eine Rechnung (z. B. fürs nächste Semester), kommen ihre Positionen mit, die Zahlungen nicht. Den Status
+im Kopierdialog auf *Entwurf* stellen – sonst bekommt die Kopie sofort eine Nummer.
 
-Die Rechnung als PDF auf dem Briefpapier erstellen Sie in der Zeile der Rechnung mit **„Dokument erstellen“** (Vorlage
+Vor dem Dokument die Rechnung auf *Versendet* stellen: Erst dann hat sie eine Nummer und einen offenen Betrag für
+die QR-Rechnung. Die Rechnung als PDF auf dem Briefpapier erstellen Sie in der Zeile der Rechnung mit **„Dokument erstellen“** (Vorlage
 „Semesterrechnung“) – adressiert an die Kontaktperson, sonst an die Schülerin bzw. den Schüler.
 Vorgewählt ist **„Im Feld ‚Dokumente‘ ablegen“**: Das PDF kommt schreibgeschützt ins Feld **Dokumente** der Rechnung
 (jede Erstellung als neue Fassung). Ablegen braucht das Recht, Rechnungen zu bearbeiten; die Rolle *Musikschule* hat es. **„Per E-Mail senden“** schickt

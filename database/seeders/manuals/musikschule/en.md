@@ -42,15 +42,19 @@ and record the attendance of a lesson on one page.
 ### Semester invoice
 
 1. Under **Finance & instruments › Invoices**, create an invoice to the contact person (for minors) or to the adult
-   student, with invoice date, semester and due date. SAFT assigns the **invoice number** when saving (number sequence
-   `R-2026-001`, restarting each year by invoice date); it cannot be changed afterwards.
+   student, with invoice date, semester and due date, first with status *Draft*. A draft has no number yet and counts
+   neither as open nor as revenue. SAFT assigns the **invoice number** on the first save with status *Sent* or
+   *Cancelled* (number sequence `R-2026-001`, restarting each year by invoice date); it cannot be changed afterwards,
+   even if the status goes back. Discarded drafts therefore leave no gaps.
 2. Below it, add an **invoice item** of type *course* for each course – SAFT takes the **unit price** from the course
    fee and deducts any discount. Rental instruments are a line of type *rental* with the number of months.
 3. Record incoming **payments**; **paid** and **open** show the status. A cancelled invoice has nothing open.
 
-Copying an invoice (e.g. for the next semester) copies its items, not its payments.
+Copying an invoice (e.g. for the next semester) copies its items, not its payments. Set the status to *Draft* in the
+copy dialog – otherwise the copy gets a number right away.
 
-Create the invoice as PDF on the letterhead in the invoice's row with **“Create document”** (template
+Set the invoice to *Sent* before creating the document: only then does it have a number and an open amount for the
+QR-bill. Create the invoice as PDF on the letterhead in the invoice's row with **“Create document”** (template
 “Semesterrechnung”) – addressed to the contact person, otherwise to the student.
 **“Store in field ‘Documents’”** is preselected: the PDF is added write-protected to the invoice's **Documents** field
 (each creation as a new version). Storing needs the permission to edit invoices; the role *Musikschule* has it. **“Send by email”** sends the invoice to

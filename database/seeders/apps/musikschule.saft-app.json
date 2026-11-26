@@ -23,7 +23,7 @@
         },
         "icon": "heroicon-o-musical-note",
         "prefix": "musikschule",
-        "version": "1.5",
+        "version": "1.6",
         "interface_version": 1,
         "manual": []
     },
@@ -2718,6 +2718,16 @@
                         "reset": "yearly",
                         "date_field": "datum",
                         "start": 1,
+                        "assign_when": "status <> 'entwurf'",
+                        "assign_when_ast": {
+                            "op": "<>",
+                            "left": {
+                                "field": "status"
+                            },
+                            "right": {
+                                "str": "entwurf"
+                            }
+                        },
                         "length": 60
                     },
                     "validation_rules": null,
@@ -3010,12 +3020,12 @@
                         "ast": {
                             "args": [
                                 {
-                                    "op": "=",
+                                    "op": "<>",
                                     "left": {
                                         "field": "status"
                                     },
                                     "right": {
-                                        "str": "storniert"
+                                        "str": "versendet"
                                     }
                                 },
                                 {
@@ -3051,7 +3061,7 @@
                         },
                         "scale": 2,
                         "result": "decimal",
-                        "formula": "if(status = 'storniert', 0, coalesce(summe, 0) - coalesce(bezahlt, 0))",
+                        "formula": "if(status <> 'versendet', 0, coalesce(summe, 0) - coalesce(bezahlt, 0))",
                         "precision": 12
                     },
                     "validation_rules": null,
@@ -4546,7 +4556,7 @@
         {
             "key": "aa987568-5d98-4b77-9ec1-6acf7c6145ec",
             "name": "Einnahmen je Fach und Semester",
-            "description": "Rechnungspositionen der Art Kurs von nicht stornierten Rechnungen, gruppiert nach Fach und Semester des Kurses: Summe von betrag; als gestapeltes Balkendiagramm je Semester.",
+            "description": "Rechnungspositionen der Art Kurs von versendeten Rechnungen (ohne Entwürfe und stornierte), gruppiert nach Fach und Semester des Kurses: Summe von betrag; als gestapeltes Balkendiagramm je Semester.",
             "is_shared": true,
             "definition": {
                 "base": "musikschule_rechnungspositionen",
@@ -4617,9 +4627,9 @@
                         "value": "kurs"
                     },
                     {
-                        "op": "neq",
+                        "op": "eq",
                         "field": "f5",
-                        "value": "storniert"
+                        "value": "versendet"
                     }
                 ],
                 "version": 1,
@@ -4636,7 +4646,7 @@
         {
             "key": "4485a3c6-49c8-4ce2-bc60-722342437616",
             "name": "Offene Rechnungen je Kontaktperson",
-            "description": "Rechnungen mit offen > 0 und Status nicht storniert, gruppiert nach Kontaktperson (bzw. Schüler): Anzahl Rechnungen, Summe von summe, bezahlt und offen, absteigend nach offenem Betrag sortiert; als Tabelle.",
+            "description": "Rechnungen mit offen > 0 und Status versendet, gruppiert nach Kontaktperson (bzw. Schüler): Anzahl Rechnungen, Summe von summe, bezahlt und offen, absteigend nach offenem Betrag sortiert; als Tabelle.",
             "is_shared": true,
             "definition": {
                 "base": "musikschule_rechnungen",
@@ -4707,9 +4717,9 @@
                         "value": "0"
                     },
                     {
-                        "op": "neq",
+                        "op": "eq",
                         "field": "f6",
-                        "value": "storniert"
+                        "value": "versendet"
                     }
                 ],
                 "version": 1,
