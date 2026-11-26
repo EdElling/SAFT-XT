@@ -45,9 +45,12 @@ class ErrorHandlingServiceProvider extends ServiceProvider
 
             $error = $this->app->make(ErrorPresenter::class)->present($e);
 
+            // Bei APP_DEBUG die technische Meldung dazu – nur, wenn sie etwas anderes sagt (bei fachlichen Meldungen ist
+            // sie meist derselbe Text).
+            $detail = trim((string) ($error->debug['message'] ?? ''));
             $notification = Notification::make()
                 ->title($error->title)
-                ->body($error->body().($error->debug !== null ? "\n\n".($error->debug['message'] ?? '') : ''))
+                ->body($error->body().($detail !== '' && $detail !== trim($error->message) ? "\n\n".$detail : ''))
                 ->persistent();
 
             ($error->status === 409 ? $notification->warning() : $notification->danger())->send();

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\ErrorHandling;
 
 use App\Exceptions\BusinessRuleException;
+use App\Exceptions\Database\DatabaseErrorClassifier;
+use App\Exceptions\ErrorPresenter;
 use App\Models\Menu;
 use App\Models\Role;
 use App\Models\User;
@@ -59,6 +61,17 @@ class LivewireErrorHandlingTest extends TestCase
         Livewire::test(FailingComponent::class)->call('businessRule')->assertOk();
 
         Notification::assertNotified(__('errors.titles.business_rule'));
+    }
+
+    public function test_debug_detail_is_not_repeated_when_identical(): void
+    {
+        $this->app->instance(ErrorPresenter::class, new ErrorPresenter(app(DatabaseErrorClassifier::class), debug: true));
+
+        Livewire::test(FailingComponent::class)->call('businessRule')->assertOk();
+        $this->assertSame('Regel verletzt.', (string) $this->lastNotification()->getBody(), 'Fachliche Meldung nur einmal, auch mit APP_DEBUG.');
+
+        Livewire::test(FailingComponent::class)->call('foreignKeyViolation')->assertOk();
+        $this->assertStringContainsString("\n\n", (string) $this->lastNotification()->getBody(), 'Abweichende technische Meldung bleibt.');
     }
 
     public function test_unexpected_errors_are_not_swallowed(): void
