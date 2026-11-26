@@ -273,3 +273,36 @@ Geplant 26.11.2026. Reihenfolge der Teilschritte, je mit eigenen Tests:
   Prozesse je 15 Datensätze ohne Test-Transaktion, lokal auch mit acht Prozessen auf PostgreSQL, MySQL und MariaDB),
   `AppInstallerTest`. Larastan-Baseline um vier Meldungen kleiner (319).
 - **Zurückgestellt:** Meldung fremder Nummern im Importergebnis (B-154).
+
+### 12.2 Plan N2 (26.11.2026)
+
+Ziel: vorhandene Nummernfelder ohne Datenverlust umstellen, Zählerstände pflegen, Musikschule-Rechnungen mit
+Nummernkreis. Reihenfolge der Teilschritte:
+
+1. **Umstellen im Kern** (`DynamicSchemaService::updateField`): Typwechsel Text, Ganzzahl, Auswahl → Nummernkreis
+   auch mit Werten, wenn die nicht gelöschten Werte eindeutig sind (wie der eindeutige Index). Spalte wird Text (60);
+   Ganzzahlen werden nach dem Muster formatiert, wenn es nur aus `{0000}` bzw. `{#}` besteht, sonst als Text
+   übernommen. Danach je Periode der höchste passende Wert als Zählerstand (`NumberPattern::parse`,
+   `NumberSequences::raise`); Werte, die nicht passen, bleiben. Rückweg Nummernkreis → Text immer, Zähler entfallen.
+   Neue Klasse `NumberConversion` (Analyse und Ausführung), seitenweise über die Spalte, ohne Raw-SQL.
+2. **Vorschau im Feldformular:** Wird der Typ eines gefüllten Felds auf „Nummernkreis“ gestellt, zeigt der Abschnitt
+   „Nummernkreis“: Anzahl Werte, davon passend, höchster Wert je Periode, die ersten zehn nicht passenden, Anzahl leerer
+   Werte; Doppel sperren „Speichern“ mit Meldung. Dieselbe Analyse liefert die Notiz im Änderungsplan beim
+   Aktualisieren einer App (`ChangePlanner`, heikel).
+3. **Jetzt nummerieren:** Schalter „Leere Werte jetzt nummerieren“ beim Umstellen und als Aktion am Feld. Läuft als
+   Arbeit `number_backfill` (`App\Work\WorkType`, `WritesRecords`): Reihenfolge Bezugsdatum, dann `created_at`, dann
+   `id` (Keyset-Cursor), je Block über den `RecordWriter` mit eigener Herkunft `numbering`, die eine leere Nummer füllen
+   darf (`NumberAssigner`), mit Protokoll je Datensatz.
+4. **Zählerstand ansehen und setzen:** Im Abschnitt „Nummernkreis“ eines bestehenden Felds die Zählerstände je Periode
+   (`NumberSequences::periods()`), Aktion „Zählerstand setzen“ (Periode, Wert): erhöhen jederzeit, senken nur, wenn
+   keine vorhandene Nummer der Periode höher ist, mit Bestätigung; Eintrag im Änderungsprotokoll des Felds.
+5. **App-Aktualisierung:** `ChangeExecutor::createFields` legt einen Nummernkreis mit Bezugsdatum nach dem Datumsfeld
+   an (wie „Übernehmen aus“); Typwechsel zu Nummernkreis im Änderungsplan mit der Analyse aus Schritt 2.
+6. **Musikschule 1.5:** `rechnungsnummer` als Nummernkreis `R-{YYYY}-{000}`, jährlich, Bezugsdatum `datum`; Seeder
+   gibt keine Nummern mehr vor, SAFT vergibt sie (Reihenfolge der Rechnungen wie bisher, also dieselben Nummern);
+   Aktualisierung 1.4 → 1.5 stellt vorhandene Installationen (Strato-Demo) mit Schritt 1 um.
+7. **Tests, Handbücher, Testliste:** Feature-Tests je Schritt (auch MySQL/MariaDB lokal für die Spaltenänderung),
+   Browser-Fall TDE-38 (Umstellen mit Vorschau, Zählerstand setzen), Handbücher in allen Sprachen, Konzept und Backlog.
+
+Entschieden 26.11.2026: N2 in einer eigenen Sitzung; danach **Release 0.7.0** mit N1 und N2 und Aktualisierung der
+Strato-Demo.
