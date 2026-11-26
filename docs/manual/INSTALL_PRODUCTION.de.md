@@ -90,13 +90,13 @@ Datenbank und Benutzer wie in [Anhang B, Schritt 3](INSTALL_DEVELOPMENT.de.md#3-
 
 ## 3. SAFT auf den Server bringen
 
-Melden Sie sich per SSH an und holen Sie die gewünschte Version (hier v0.7.0) in Ihr Benutzerverzeichnis:
+Melden Sie sich per SSH an und holen Sie die gewünschte Version (hier v0.7.1) in Ihr Benutzerverzeichnis:
 
 ```bash
 cd ~
 git clone https://github.com/EdElling/SAFT-XT.git saft
 cd saft
-git checkout v0.7.0                                   # feste Version statt des Entwicklungsstands
+git checkout v0.7.1                                   # feste Version statt des Entwicklungsstands
 composer install --no-dev --optimize-autoloader      # ohne Entwicklungspakete – wichtig für die Sicherheit
 ```
 
