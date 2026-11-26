@@ -8,9 +8,12 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-1. **B-107** Etappe 7 (KI-App-Designer) umgesetzt: 7a Entwurf im Gespräch, Vorschau, Erzeugen; 7c Auswertungen (einzeln abwählbar). 7b Editor zurückgestellt (Entscheid 2026-11-21: Table-Designer nach dem Erzeugen genügt). Nächste Schritte offen.
-2. **B-124** Dokumente aus Vorlagen: D1–D4 umgesetzt (QR-Rechnung, Word); offen D2b, D5 (Konzept docs/concept/DOCUMENTS.md)
-3. **B-143** Fundament 2: Schreibweg mit Transaktion, Schutz vor verlorenen Änderungen, Hintergrundarbeit ohne Worker, Formel-Spezifikation, Larastan und Architekturtests, Migrationen umbenennen, Protokoll kürzen, ARCHITECTURE.md – **vor** B-142, B-020, B-133, B-135, B-060 (Konzept docs/concept/FOUNDATION_2.md, Release 0.6.0) **F0, F1, F2 und F4 umgesetzt (23.11.2026), F3a Arbeiten umgesetzt (24.11.2026), F3b geplant (Konzept §6.6), F3b abgeschlossen (24.11.2026, Handbücher in vier Sprachen nachgeführt), F5 abgeschlossen (24.11.2026: `docs/ARCHITECTURE.de.md`/`.md`, Lesestellen-Liste mit Architekturtest 4, `AGENTS.md`, `CLAUDE.md`); Release v0.6.0 am 24.11.2026 (B-145).**
+Stand 26.11.2026 (Nummernkreise N1–N3 released mit v0.7.1). Je Punkt eine eigene Sitzung.
+
+1. **B-135 N4** Nummernkreise: eigener Zähler je Wert eines Auswahlfelds, Platzhalter `{GROUP}` (Konzept docs/concept/NUMBERING.md) – schliesst B-135 ab.
+2. **B-142** Regel-Engine: Ereignisregeln über mehrere Tabellen, z. B. „Dokument versendet → Status versendet“, Rechnungs- und Mahnläufe; Voraussetzungen Fundament 2 (B-143) und Nummernkreise erfüllt (Konzept docs/concept/RULES.md).
+3. **B-133** Sammeländerung: Teil 1 (Auswahl per Häkchen) umgesetzt, offen die Sammeländerung selbst (Konzept docs/concept/BULK_EDIT.md, Entwurf).
+4. **B-158/B-159** Datenansicht: Filter „leer/gefüllt“ und Systemspalten Anlege-/Änderungsdatum (Anstoss Strato-Demo).
 
 ## Apps (Fachanwendungen)
 
