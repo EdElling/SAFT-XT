@@ -11,6 +11,7 @@ use App\Models\DynamicRecord;
 use App\Models\Menu;
 use App\Models\UserTableColumn;
 use App\Services\DynamicSchemaService;
+use Facebook\WebDriver\Exception\TimeoutException;
 use Facebook\WebDriver\WebDriverBy;
 use Laravel\Dusk\Browser;
 use Spatie\Permission\PermissionRegistrar;
@@ -452,12 +453,25 @@ class ListTest extends DuskTestCase
             $this->login($browser, self::ADMIN)->visit('/admin/data/kunden')->waitForText('Müller KG', 15)
                 ->assertInputValue('.fi-ta-search-field input', 'müller')
                 ->assertDontSee('Alpha AG')
-                // Erst klicken, wenn Livewire bereit ist; auf langsamen Rechnern ging der Klick sonst verloren.
-                ->waitForText('Ansicht zurücksetzen', 15)
-                ->pause(1000)
-                ->press('Ansicht zurücksetzen')
-                ->waitForText('Alpha AG', 20)
-                ->assertInputValue('.fi-ta-search-field input', '')
+                ->waitForText('Ansicht zurücksetzen', 15);
+
+            // Auf langsamen Runnern geht der erste Klick gelegentlich verloren, solange Livewire noch nicht bereit ist
+            // (GitHub, PostgreSQL, 26.11.2026 trotz Pause): Klick wiederholen, bis die Liste zurückgesetzt ist.
+            for ($attempt = 1; $attempt <= 3; $attempt++) {
+                $browser->pause(1000)->press('Ansicht zurücksetzen');
+
+                try {
+                    $browser->waitForText('Alpha AG', 10);
+
+                    break;
+                } catch (TimeoutException $e) {
+                    if ($attempt === 3) {
+                        throw $e;
+                    }
+                }
+            }
+
+            $browser->assertInputValue('.fi-ta-search-field input', '')
                 ->waitUntilMissingText('Ansicht zurücksetzen', 15);
         });
     }
