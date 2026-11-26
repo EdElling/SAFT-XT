@@ -487,6 +487,48 @@ class TableDesignerTest extends DuskTestCase
         $this->assertNull(DynamicRecord::forTableName('kunden')->newQuery()->findOrFail($this->acme->id)->getAttribute('kundennummer'), 'Vorhandene Datensätze bleiben ohne Nummer.');
     }
 
+    /**
+     * TDE-38: Textfeld mit Rechnungsnummern auf „Nummernkreis“ umstellen – Vorschau, leere Werte nummerieren, Zählerstand
+     * setzen (B-135, N2).
+     */
+    public function test_number_sequence_conversion_with_preview_backfill_and_counter(): void
+    {
+        $bills = $this->service()->createTable(['name' => 'rechnungen', 'label' => 'Rechnungen'], [
+            ['name' => 'datum', 'label' => 'Datum', 'type' => 'date', 'is_required' => true],
+            ['name' => 'nummer', 'label' => 'Nummer', 'type' => 'string'],
+        ]);
+
+        foreach ([['2026-01-10', 'R-2026-001'], ['2026-02-01', 'R-2026-004'], ['2026-03-01', null]] as [$date, $number]) {
+            DynamicRecord::forTable($bills)->create(['datum' => $date, 'nummer' => $number]);
+        }
+
+        $this->browse(function (Browser $browser) use ($bills): void {
+            $this->openDesigner($browser, $bills);
+            $this->rowAction($browser, 'nummer', 'Bearbeiten')->waitFor($this->input('type'), 15);
+            $pattern = $this->input('options.pattern');
+            $browser->select($this->input('type'), FieldType::Number->value)
+                ->waitUsing(15, 100, fn (): bool => $browser->value($pattern) === 'R-{YYYY}-{0000}')
+                ->clear($pattern)->type($pattern, 'R-{YYYY}-{000}')->keys($pattern, '{tab}')
+                ->select($this->input('options.date_field'), 'datum')
+                ->waitForText('2 Werte, davon 2 passend zum Muster · 1 Datensatz ohne Wert · höchste laufende Nummer: 2026: 4', 15)
+                ->check($this->input('number_backfill'));
+            $this->clickVisibleButton($browser, 'Speichern')->waitForText('1 Nummer vergeben.', 15);
+
+            // Zählerstand: 2027 beginnt bei 1000.
+            $this->rowAction($browser, 'nummer', 'Bearbeiten')
+                ->waitForText('2026: zuletzt vergeben 5, höchste vorhandene Nummer 5', 15);
+            $this->clickVisibleButton($browser, 'Zählerstand setzen')->waitFor('[id="mountedActionSchema1.period"]', 15)
+                ->clear('[id="mountedActionSchema1.period"]')->type('[id="mountedActionSchema1.period"]', '2027')
+                ->clear('[id="mountedActionSchema1.value"]')->type('[id="mountedActionSchema1.value"]', '999');
+            $this->clickVisibleButton($browser, 'Absenden')->waitForText('Zählerstand gesetzt', 15)
+                ->waitForText('2027: zuletzt vergeben 999', 15);
+        });
+
+        DynamicRecord::forget('rechnungen');
+        $this->assertSame(['R-2026-001', 'R-2026-004', 'R-2026-005'], DynamicRecord::forTableName('rechnungen')->newQuery()->orderBy('id')->pluck('nummer')->all());
+        $this->assertSame('R-2027-1000', DynamicRecord::forTableName('rechnungen')->newQuery()->create(['datum' => '2027-01-05'])->nummer);
+    }
+
     /** TDE-15 */
     public function test_physical_table_box_counts_deleted_records_and_shows_no_drift(): void
     {
