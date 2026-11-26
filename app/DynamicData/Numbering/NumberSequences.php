@@ -112,6 +112,35 @@ final class NumberSequences
         return $value === null ? null : (int) $value;
     }
 
+    /**
+     * Zählerstände eines Felds je Periode (Feldformular, N2), nach Periode sortiert.
+     *
+     * @return array<string, int> Periode => letzter Wert
+     */
+    public function periods(int $fieldId, string $group = self::NO_GROUP): array
+    {
+        if (! $this->exists()) {
+            return [];
+        }
+
+        return $this->query()->where(['field_id' => $fieldId, 'grp' => $group])->orderBy('period')
+            ->pluck('last_value', 'period')->map(static fn (mixed $value): int => (int) $value)->all();
+    }
+
+    /**
+     * Zählerstand setzen (N2: „Zählerstand setzen“). Ob ein Senken erlaubt ist, prüft der Aufrufer (NumberCounter);
+     * hier wird nur gesperrt und geschrieben. Gibt den bisherigen Stand zurück (null: Periode ohne Zähler).
+     */
+    public function set(int $fieldId, string $period, int $value, string $group = self::NO_GROUP): ?int
+    {
+        $this->ensureTable();
+        $before = $this->current($fieldId, $period, $group);
+        $this->locked($fieldId, $period, $group, $value);
+        $this->write($fieldId, $period, $group, $value);
+
+        return $before;
+    }
+
     /** Alle Zähler eines Felds löschen (Feld entfernt, App-Daten zurückgesetzt). */
     public function forget(int $fieldId): void
     {

@@ -176,3 +176,11 @@ Avec un champ de type **Plage de numéros**, p. ex. avec le modèle `R-{YYYY}-{0
 attribue le numéro à la création, jamais deux fois et pas de nouveau après une suppression ; ensuite, il ne peut plus
 être modifié. C’est pourquoi le formulaire affiche seulement « attribué à l’enregistrement ». Configuration dans le
 concepteur de tables, voir [Manuel d’administration, Plages de numéros](ADMIN_GUIDE.fr.md#plages-de-numéros).
+
+### Comment reprendre des numéros de facture existants dans une plage de numéros ?
+
+Dans le concepteur de tables, faites passer le champ existant (texte, nombre entier ou choix) au type **Plage de
+numéros**. Auparavant, SAFT indique combien de valeurs sont conformes au modèle et où les numéros se poursuivent ; les
+valeurs non conformes restent inchangées. Les valeurs vides peuvent être remplies tout de suite ou plus tard avec
+**Numéroter maintenant**, et avec **Définir le compteur** l’année suivante commence p. ex. à 1000. Voir
+[Manuel d’administration, Convertir des champs existants](ADMIN_GUIDE.fr.md#convertir-des-champs-existants).

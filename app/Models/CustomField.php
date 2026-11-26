@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Metadaten einer Spalte einer Designer-Tabelle.
  * Schreibende Änderungen ausschließlich über App\Services\DynamicSchemaService.
+ *
+ * @property FieldType $type Typ des Felds (Cast; das Base-Model kennt nur die Spalte als Text)
  */
 class CustomField extends BaseCustomField
 {

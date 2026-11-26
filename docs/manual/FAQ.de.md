@@ -173,3 +173,11 @@ Mit einem Feld vom Typ **Nummernkreis**, z. B. mit dem Muster `R-{YYYY}-{0000}` 
 die Nummer beim Anlegen, nie doppelt und nach dem Löschen nicht wieder; danach lässt sie sich nicht ändern. Das Feld
 zeigt deshalb im Formular nur „wird beim Speichern vergeben“. Einrichten im Table-Designer, siehe
 [Administratorhandbuch, Nummernkreise](ADMIN_GUIDE.de.md#nummernkreise).
+
+### Wie übernehme ich vorhandene Rechnungsnummern in einen Nummernkreis?
+
+Stellen Sie das bisherige Feld (Text, Ganzzahl oder Auswahl) im Table-Designer auf den Typ **Nummernkreis** um. Vorher
+zeigt SAFT, wie viele Werte zum Muster passen und wo die Nummern weiterzählen; Werte, die nicht passen, bleiben
+unverändert. Leere Werte lassen sich gleich oder später mit **Jetzt nummerieren** füllen, und mit **Zählerstand
+setzen** beginnt z. B. das nächste Jahr bei 1000. Siehe
+[Administratorhandbuch, Bestehende Felder umstellen](ADMIN_GUIDE.de.md#bestehende-felder-umstellen).

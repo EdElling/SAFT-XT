@@ -12,6 +12,7 @@ namespace App\DynamicData\Write;
  * - log: Einträge im Änderungsprotokoll je Datensatz (der Import schreibt stattdessen einen Sammeleintrag)
  * - expectedVersion: Stand (RecordVersion), den das Formular gelesen hat; weicht der aktuelle ab → StaleRecordException
  * - overwriting: bewusstes Überschreiben nach einer Meldung („Trotzdem speichern“), kommt ins Protokoll
+ * - run: Kennung zusammengehöriger Änderungen (z. B. „work:42“ für einen Lauf), kommt als „run“ ins Protokoll
  */
 final readonly class WriteOptions
 {
@@ -29,6 +30,9 @@ final readonly class WriteOptions
 
     public const string SEED = 'seed';
 
+    /** Nachnummerieren (B-135, N2): darf eine leere Nummer eines bestehenden Datensatzes füllen. */
+    public const string NUMBERING = 'numbering';
+
     /** Schritt einer Arbeit (WritesRecords), sofern die Art keine eigenen Optionen mitgibt. */
     public const string WORK = 'work';
 
@@ -41,6 +45,7 @@ final readonly class WriteOptions
         public bool $log = true,
         public ?string $expectedVersion = null,
         public bool $overwriting = false,
+        public ?string $run = null,
     ) {}
 
     public static function defaults(): self
@@ -72,22 +77,28 @@ final readonly class WriteOptions
 
     public function withOrigin(string $origin): self
     {
-        return new self($origin, $this->pluginEvents, $this->log, $this->expectedVersion, $this->overwriting);
+        return new self($origin, $this->pluginEvents, $this->log, $this->expectedVersion, $this->overwriting, $this->run);
     }
 
     public function withoutLog(): self
     {
-        return new self($this->origin, $this->pluginEvents, false, $this->expectedVersion, $this->overwriting);
+        return new self($this->origin, $this->pluginEvents, false, $this->expectedVersion, $this->overwriting, $this->run);
     }
 
     public function withoutPluginEvents(): self
     {
-        return new self($this->origin, false, $this->log, $this->expectedVersion, $this->overwriting);
+        return new self($this->origin, false, $this->log, $this->expectedVersion, $this->overwriting, $this->run);
     }
 
     /** @param  bool  $overwriting  die Version ist die nach einer Meldung „inzwischen geändert“ neu gelesene */
     public function expecting(?string $version, bool $overwriting = false): self
     {
-        return new self($this->origin, $this->pluginEvents, $this->log, $version, $overwriting);
+        return new self($this->origin, $this->pluginEvents, $this->log, $version, $overwriting, $this->run);
+    }
+
+    /** Kennung zusammengehöriger Änderungen im Protokoll, z. B. „work:42“ (Sammeländerung später „bulk:<uuid>“). */
+    public function withRun(string $run): self
+    {
+        return new self($this->origin, $this->pluginEvents, $this->log, $this->expectedVersion, $this->overwriting, $run);
     }
 }

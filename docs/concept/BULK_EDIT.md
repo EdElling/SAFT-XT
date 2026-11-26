@@ -2,6 +2,14 @@
 
 Stand: 23.11.2026 · Status: **erster Vorschlag zur Diskussion** · Backlog: B-133 (ersetzt B-024)
 
+> **Nachtrag 26.11.2026 (Nummernkreise N2):** Den Baustein „Transaktion beim Speichern“ gibt es seit Fundament 2 als
+> `RecordWriter` (Transaktion auf beiden Verbindungen, `batch()`); die Abschnitte unten nennen noch den alten Namen und
+> werden in der Sitzung zu S1 überarbeitet. Die Kennung zusammengehöriger Änderungen steht als `run` in den
+> Eigenschaften des Protokolleintrags (`WriteOptions::withRun()`); das Nachnummerieren nutzt `number_backfill:<uuid>`,
+> die Sammeländerung soll denselben Schlüssel mit `bulk:<uuid>` nutzen statt eines eigenen `bulk`. Das Nachnummerieren
+> ist bewusst keine Sammeländerung (Wert erzeugt statt gewählt, beliebig viele Datensätze, nicht rücknehmbar,
+> Übersprungene statt „alles oder nichts“, siehe NUMBERING.md 12.3).
+
 ## 1. Ziel
 
 In jeder Datentabelle mehrere Datensätze auswählen und **gemeinsam ändern**, ohne jeden einzeln zu öffnen. Beispiele

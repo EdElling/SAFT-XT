@@ -30,6 +30,7 @@
     "app/Services/DynamicSchemaService.php": {"count": 1, "scope": "system", "reason": "Tabellenregel gegen vorhandene Werte prüfen, bevor sie gespeichert wird."},
     "app/Work/Types/DocumentsWork.php": {"count": 1, "scope": "person", "reason": "Dokumente für die gewählten Datensätze; der Schritt läuft als die startende Person."},
     "app/Work/Types/ExportWork.php": {"count": 1, "scope": "person", "reason": "Export mit der Abfrage der Datenansicht; der Schritt läuft als die startende Person."},
+    "app/Work/Types/NumberBackfillWork.php": {"count": 2, "scope": "system", "reason": "Nachnummerieren (B-135, N2): alle Datensätze ohne Nummer, sonst entstünden Lücken in der Reihenfolge des Bezugsdatums."},
     "app/Work/Types/RecomputeWork.php": {"count": 1, "scope": "system", "reason": "Zählt alle Datensätze für den Fortschritt der Nachberechnung."},
     "app/Work/Types/RecordImportWork.php": {"count": 1, "scope": "system", "reason": "Rücknahme der eigenen angelegten Datensätze bei Fehler oder Abbruch."}
 }

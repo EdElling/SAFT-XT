@@ -12,7 +12,8 @@ use Carbon\CarbonInterface;
 
 /**
  * Nummernkreise im Schreibweg (B-135, Teil von WritePhases::beforeSave): beim Anlegen leere Nummern vergeben,
- * mitgebrachte nur bei Import und Seed übernehmen (Zähler anheben), vergebene Nummern nie ändern – gleich, ob die
+ * mitgebrachte nur bei Import und Seed übernehmen (Zähler anheben), leere bestehender Datensätze beim Nachnummerieren
+ * (Herkunft „numbering“, N2) füllen, vergebene Nummern nie ändern – gleich, ob die
  * Änderung aus der Oberfläche, einem Plugin, einer Regel oder sonstwoher kommt.
  */
 final class NumberAssigner
@@ -61,6 +62,10 @@ final class NumberAssigner
             if (! $creating) {
                 if ($record->isDirty($field)) {
                     $this->assertChangeAllowed($record, $field, $given, $number, $options);
+                } elseif (! $given && $options->origin === WriteOptions::NUMBERING) {
+                    // Nachnummerieren (N2): leere Nummer eines bestehenden Datensatzes; ohne Datumsfeld zählt sein
+                    // Anlegedatum, sonst bekämen alte Datensätze Nummern des laufenden Jahrs.
+                    $this->assignNext($record, $field, $number, $record->getAttribute('created_at'));
                 }
 
                 continue;
@@ -84,16 +89,27 @@ final class NumberAssigner
                 continue;
             }
 
-            $pattern = $this->pattern($number);
-            $period = $pattern->period($this->referenceDate($record, $field, $number['options']));
-
-            $record->setAttribute($field, $this->sequences->next(
-                $number['id'],
-                $pattern,
-                $period,
-                static fn (string $candidate): bool => $record->newQueryWithoutScopes()->where($field, $candidate)->exists(),
-            ));
+            $this->assignNext($record, $field, $number, null);
         }
+    }
+
+    /**
+     * Nächste Nummer ziehen und setzen.
+     *
+     * @param  array{id: int, options: array<string, mixed>}  $number
+     * @param  mixed  $created  Anlegedatum des Datensatzes (Nachnummerieren); null = jetzt
+     */
+    private function assignNext(DynamicRecord $record, string $field, array $number, mixed $created): void
+    {
+        $pattern = $this->pattern($number);
+        $period = $pattern->period($this->referenceDate($record, $field, $number['options'], $created));
+
+        $record->setAttribute($field, $this->sequences->next(
+            $number['id'],
+            $pattern,
+            $period,
+            static fn (string $candidate): bool => $record->newQueryWithoutScopes()->where($field, $candidate)->exists(),
+        ));
     }
 
     /**
@@ -134,12 +150,16 @@ final class NumberAssigner
     /**
      * @param  array<string, mixed>  $options
      */
-    private function referenceDate(DynamicRecord $record, string $field, array $options): CarbonInterface
+    private function referenceDate(DynamicRecord $record, string $field, array $options, mixed $created = null): CarbonInterface
     {
         $dateField = (string) ($options[NumberPattern::DATE_FIELD] ?? '');
 
         if ($dateField === '') {
-            return CarbonImmutable::now();
+            return match (true) {
+                $created instanceof CarbonInterface => $created,
+                $created !== null && $created !== '' => CarbonImmutable::parse((string) $created),
+                default => CarbonImmutable::now(),
+            };
         }
 
         $date = $record->getAttribute($dateField);

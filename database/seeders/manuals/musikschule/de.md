@@ -43,7 +43,9 @@ Tage – und erfassen die Präsenzen einer Lektion auf einer Seite.
 ### Semesterrechnung
 
 1. Unter **Finanzen & Instrumente › Rechnungen** eine Rechnung an die Kontaktperson (bei Minderjährigen) oder an die
-   erwachsene Schülerin bzw. den Schüler anlegen, mit Semester und Fälligkeit.
+   erwachsene Schülerin bzw. den Schüler anlegen, mit Rechnungsdatum, Semester und Fälligkeit. Die **Rechnungsnummer**
+   vergibt SAFT beim Speichern (Nummernkreis `R-2026-001`, jedes Jahr neu nach dem Rechnungsdatum); sie ist danach
+   nicht mehr änderbar.
 2. Darunter je Kurs eine **Rechnungsposition** der Art *Kurs* – den **Einzelpreis** übernimmt SAFT aus dem Tarif des
    Kurses, ein Rabatt wird abgezogen. Mietinstrumente als Position der Art *Miete* mit der Anzahl Monate.
 3. Eingänge unter **Zahlungen** erfassen; **bezahlt** und **offen** zeigen den Stand. Eine stornierte Rechnung hat

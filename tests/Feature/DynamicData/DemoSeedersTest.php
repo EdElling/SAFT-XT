@@ -8,6 +8,10 @@ use App\Apps\Definition\AppInstaller;
 use App\Documents\Templates\TemplateChecker;
 use App\Documents\Templates\TemplateRenderer;
 use App\DynamicData\DataMenu;
+use App\DynamicData\Numbering\NumberSequences;
+use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteOptions;
 use App\Filament\Pages\DataModelPage;
 use App\Filament\Resources\Reports\ReportResource;
 use App\Models\CustomField;
@@ -295,7 +299,8 @@ class DemoSeedersTest extends DynamicDataTestCase
         $this->assertSame([1, 0], [(int) $mia->anzahl_anmeldungen, (int) $mia->freie_plaetze]);
 
         // Rechnungen: eine storniert (nichts offen), einige offen; sonst bezahlt + offen = Summe.
-        $bills = DynamicRecord::forTableName('musikschule_rechnungen')->newQuery()->get();
+        $bills = DynamicRecord::forTableName('musikschule_rechnungen')->newQuery()->orderBy('id')->get();
+        $this->assertSame(['R-2026-001', 'R-2026-002'], $bills->take(2)->pluck('rechnungsnummer')->all(), 'Nummernkreis (1.5) vergibt in der Reihenfolge der Anlage.');
         $this->assertSame(1, $bills->where('status', 'storniert')->count());
         $this->assertGreaterThan(0, $bills->where('status', 'versendet')->filter(static fn ($b): bool => (float) $b->offen > 0)->count());
         $this->assertSame('0.00', (string) $bills->firstWhere('status', 'storniert')->offen);
@@ -355,7 +360,7 @@ class DemoSeedersTest extends DynamicDataTestCase
 
         $this->seed(MusikschuleDemoSeeder::class);
 
-        $this->assertSame('1.4', $app->fresh()->version);
+        $this->assertSame('1.5', $app->fresh()->version);
         $this->assertNotNull(CustomField::query()->where('custom_table_id', $table->id)->where('name', 'dokumente')->first());
         $this->assertSame(['dokumente'], DocumentTemplate::query()->where('app_id', $app->id)->pluck('file_field')->all(), 'Nicht doppelt, mit Ablage.');
         $this->assertNotNull(DocumentTemplate::query()->where('app_id', $app->id)->value('email_to'), 'Mit E-Mail (1.3).');
@@ -391,10 +396,49 @@ class DemoSeedersTest extends DynamicDataTestCase
         $this->seed(MusikschuleDemoSeeder::class);
 
         $app = MusikschuleDemoSeeder::installedApp();
-        $this->assertSame(['1.4', 21], [$app->version, CustomTable::query()->where('app_id', $app->id)->count()]);
+        $this->assertSame(['1.5', 21], [$app->version, CustomTable::query()->where('app_id', $app->id)->count()]);
         $this->assertTrue(Menu::query()->where('app_id', $app->id)->where('label->de', 'Ferien')->exists());
         $this->assertTrue(Role::query()->where('app_id', $app->id)->sole()->hasPermissionTo('data.musikschule_ferien.update'));
         $this->assertCounts(['musikschule_ferien' => 8, 'musikschule_faecher' => 1]);
+        File::deleteDirectory($storage);
+    }
+
+    public function test_musikschule_demo_update_to_1_5_turns_invoice_numbers_into_a_number_sequence(): void
+    {
+        $storage = sys_get_temp_dir().'/saft-musikschule-'.uniqid();
+        $this->app->useStoragePath($storage);
+        Process::fake(static function (PendingProcess $process) {
+            foreach ((array) $process->command as $argument) {
+                if (str_starts_with($argument, '--file=')) {
+                    File::put(substr($argument, 7), 'dump');
+                }
+            }
+
+            return Process::result(output: "-- dump\n");
+        });
+
+        // Stand 1.4: Rechnungsnummer als Pflicht-Textfeld mit Nummern aus dem Seeder.
+        $admin = $this->superAdmin();
+        $old = app(MusikschuleDemoSeeder::class)->appDefinition();
+        $old['app']['version'] = '1.4';
+        $old['tables'] = array_map(static fn (array $t): array => $t['name'] !== 'musikschule_rechnungen' ? $t : [...$t, 'fields' => array_map(
+            static fn (array $f): array => $f['name'] === 'rechnungsnummer' ? [...$f, 'type' => 'string', 'options' => ['length' => 50], 'is_required' => true] : $f,
+            $t['fields'],
+        )], $old['tables']);
+        app(AppInstaller::class)->install($old, null, $admin)->forceFill(['is_active' => true])->save();
+        DynamicRecord::forTableName('musikschule_faecher')->create(['bezeichnung' => 'Harfe']);
+
+        foreach (['R-2026-001', 'R-2026-005', 'Alt 17'] as $number) {
+            app(RecordWriter::class)->create('musikschule_rechnungen', ['rechnungsnummer' => $number, 'datum' => '2026-09-01', 'status' => 'versendet']);
+        }
+
+        $this->seed(MusikschuleDemoSeeder::class);
+
+        $field = CustomField::query()->where('name', 'rechnungsnummer')->whereHas('custom_table', fn ($q) => $q->where('name', 'musikschule_rechnungen'))->sole();
+        $this->assertSame(['1.5', FieldType::Number], [MusikschuleDemoSeeder::installedApp()->version, $field->type]);
+        $this->assertSame(['R-2026-001', 'R-2026-005', 'Alt 17'], DynamicRecord::forTableName('musikschule_rechnungen')->newQuery()->orderBy('id')->pluck('rechnungsnummer')->all());
+        $this->assertSame(['2026' => 5], app(NumberSequences::class)->periods($field->id));
+        $this->assertSame('R-2026-006', app(RecordWriter::class)->create('musikschule_rechnungen', ['datum' => '2026-11-26', 'status' => 'entwurf'], WriteOptions::ui())->rechnungsnummer);
         File::deleteDirectory($storage);
     }
 

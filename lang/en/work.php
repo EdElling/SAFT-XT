@@ -21,6 +21,7 @@ return [
         'app_designer_turn' => 'Design app',
         'app_designer_create' => 'Create app',
         'app_designer_reports' => 'Create the app’s reports',
+        'number_backfill' => 'Assign empty numbers',
     ],
     'export' => [
         'done' => '1 row exported.|:count rows exported.',
@@ -33,6 +34,12 @@ return [
         'importing_of' => 'Importing: :done of :total records',
         'table_missing' => 'The table no longer exists.',
         'file_missing' => 'The uploaded file is no longer available; please start the import again.',
+    ],
+    'number_backfill' => [
+        'done' => '{0} No number assigned.|{1} 1 number assigned.|[2,*] :count numbers assigned.',
+        'without_date' => '{1} 1 record without a reference date stayed empty.|[2,*] :count records without a reference date stayed empty.',
+        'skipped' => '{1} 1 record skipped: :errors|[2,*] :count records skipped: :errors',
+        'too_many_errors' => 'Cancelled: :count records could not be numbered (:errors).',
     ],
     'recompute' => [
         'all_tables' => 'all tables with computed fields',

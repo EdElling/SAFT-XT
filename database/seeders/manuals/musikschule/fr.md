@@ -43,7 +43,8 @@ ces jours – et saisissez les présences d'une leçon sur une seule page.
 ### Facture semestrielle
 
 1. Sous **Finances & instruments › Factures**, créer une facture à la personne de contact (pour les mineurs) ou à
-   l'élève adulte, avec semestre et échéance.
+   l'élève adulte, avec date de facture, semestre et échéance. SAFT attribue le **numéro de facture** à l'enregistrement
+   (plage de numéros `R-2026-001`, recommençant chaque année selon la date de facture) ; il n'est plus modifiable ensuite.
 2. En dessous, une **position de facture** de type *cours* par cours – SAFT reprend le **prix unitaire** du tarif du cours
    et déduit le rabais. Les instruments en location sont une position de type *location* avec le nombre de mois.
 3. Saisir les **paiements** ; **payé** et **ouvert** montrent l'état. Une facture annulée n'a plus rien d'ouvert.

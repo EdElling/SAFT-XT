@@ -407,7 +407,7 @@ Gruppe und legt auch einen weiteren Eintrag an, wenn die Tabelle an einer zweite
 |---|---|
 | Feld umbenennen | jederzeit, Daten bleiben erhalten |
 | Typ ändern | verlustfrei jederzeit (z. B. Ganzzahl → Dezimalzahl, Text → mehrzeiliger Text, Datum → Datum und Uhrzeit); mehrzeiliger → einzeiliger Text, wenn alle Werte in die Länge passen; sonst nur, wenn die Spalte leer ist |
-| Typ ändern zu oder von Nummernkreis | nur, wenn das Feld in keinem Datensatz einen Wert hat (auch nicht im Papierkorb); siehe [Nummernkreise](#nummernkreise) |
+| Typ ändern zu oder von Nummernkreis | von Text, mehrzeiligem Text, Ganzzahl und Auswahl auch mit Werten, wenn sie eindeutig sind; zurück zu Text immer; sonst nur, wenn das Feld in keinem Datensatz einen Wert hat (auch nicht im Papierkorb); siehe [Nummernkreise](#nummernkreise) |
 | Textlänge | vergrössern jederzeit, verkleinern nur, wenn alle vorhandenen Werte in die neue Länge passen (sonst nennt die Meldung, wie viele zu lang sind) |
 | „Eindeutig“ einschalten | nur, wenn die vorhandenen Daten keine Duplikate enthalten |
 | Wert aus einer Auswahlliste entfernen | jederzeit; ist der Wert in Gebrauch, erscheint eine Warnung mit der Anzahl der Datensätze. Sie behalten ihren Wert, beim nächsten Bearbeiten muss aber ein gültiger gewählt werden. |
@@ -456,9 +456,44 @@ zählt SAFT danach weiter. Die [App-Definition](#15-apps-fachanwendungen) enthä
 Zählerstände: Eine neue Installation beginnt beim Startwert; ein geändertes Muster beim Aktualisieren gilt als heikel.
 „App-Daten zurücksetzen“ setzt auch die Zähler zurück.
 
-Ein bestehendes Feld lässt sich auf „Nummernkreis“ umstellen und zurück, solange es in keinem Datensatz einen Wert hat
-(auch nicht im Papierkorb). Vorhandene Nummern in einen Nummernkreis zu übernehmen, ist noch nicht möglich. Für
+#### Bestehende Felder umstellen
+
+Ein Feld vom Typ Text, mehrzeiliger Text, Ganzzahl oder Auswahl lässt sich auch mit Werten auf „Nummernkreis“
+umstellen, z. B. eine Rechnungsnummer, die bisher von Hand erfasst wurde. Wählen Sie beim Bearbeiten des Felds den Typ
+**Nummernkreis** und das Muster. Unter der nächsten Nummer zeigt SAFT, was mit den vorhandenen Werten geschieht:
+
+- wie viele Werte es gibt und wie viele zum Muster passen,
+- die höchste laufende Nummer je Zeitraum: Neue Nummern schliessen daran an,
+- die ersten Werte, die nicht passen: Sie bleiben unverändert, z. B. eine alte Nummer mit drei Stellen bei einem Muster
+  mit vier. Passen Sie die Stellen im Muster an, wenn die alten Nummern dazugehören sollen,
+- wie viele Datensätze keinen Wert haben.
+
+Die vorhandenen Werte müssen eindeutig sein (Datensätze im Papierkorb zählen nicht); sonst nennt das Muster die
+doppelten Werte, und Speichern geht nicht. Ganzzahlen werden nach dem Muster aufgefüllt, wenn es nur aus der laufenden
+Nummer besteht (`42` wird bei `{0000}` zu `0042`); sonst bleiben sie, wie sie sind. Werte mit mehr als 60 Zeichen
+lassen kein Umstellen zu.
+
+Datensätze ohne Wert behalten ihn, bis Sie **Leere Werte jetzt nummerieren** einschalten oder später in der Feldliste
+**Jetzt nummerieren** (Symbol #) wählen. SAFT vergibt die Nummern dann in der Reihenfolge des Bezugsdatums, dann des
+Anlegedatums; ohne Bezugsdatum gilt das Anlegedatum des Datensatzes auch für Jahr und Monat. Datensätze im Papierkorb
+und solche ohne Bezugsdatum bleiben leer. Bei vielen Datensätzen läuft das als Arbeit im Hintergrund weiter (siehe
+[Arbeiten](#arbeiten)). Jede Vergabe steht im Änderungsprotokoll des Datensatzes, mit einer gemeinsamen Kennung für den
+ganzen Lauf.
+
+Zurück zu Text (ein- oder mehrzeilig) geht immer: Die Nummern bleiben als Text, die Zählerstände entfallen. Für
 Positionsnummern, die änderbar bleiben sollen, gibt es weiterhin **Fortlaufend vorschlagen** bei Ganzzahlen.
+
+#### Zählerstand ansehen und setzen
+
+Beim Bearbeiten eines Nummernkreises stehen unter der nächsten Nummer die **Zählerstände** je Zeitraum: die zuletzt
+vergebene laufende Nummer und die höchste vorhandene. Mit **Zählerstand setzen** geben Sie für einen Zeitraum (z. B.
+`2027`, monatlich `2027-01`, ohne Neubeginn `-`) die letzte vergebene Nummer an; die nächste ist um eins höher.
+
+- **Erhöhen** geht jederzeit, z. B. „Rechnungen 2027 beginnen bei 1000“: Zählerstand 999.
+- **Senken** geht nur, wenn keine vorhandene Nummer des Zeitraums höher ist (auch im Papierkorb), und nur mit
+  Bestätigung.
+
+Jede Änderung steht im Verlauf des Felds (Uhr-Symbol in der Feldliste).
 
 ### Verwendet in
 

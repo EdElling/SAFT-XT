@@ -42,7 +42,8 @@ and record the attendance of a lesson on one page.
 ### Semester invoice
 
 1. Under **Finance & instruments › Invoices**, create an invoice to the contact person (for minors) or to the adult
-   student, with semester and due date.
+   student, with invoice date, semester and due date. SAFT assigns the **invoice number** when saving (number sequence
+   `R-2026-001`, restarting each year by invoice date); it cannot be changed afterwards.
 2. Below it, add an **invoice item** of type *course* for each course – SAFT takes the **unit price** from the course
    fee and deducts any discount. Rental instruments are a line of type *rental* with the number of months.
 3. Record incoming **payments**; **paid** and **open** show the status. A cancelled invoice has nothing open.

@@ -426,7 +426,7 @@ le groupe et crée aussi une entrée supplémentaire si la table doit apparaîtr
 |---|---|
 | Renommer un champ | à tout moment, les données sont conservées |
 | Changer le type | sans perte à tout moment (p. ex. nombre entier → nombre décimal, texte → texte sur plusieurs lignes, date → date et heure) ; texte sur plusieurs lignes → sur une ligne si toutes les valeurs tiennent dans la longueur ; sinon uniquement si la colonne est vide |
-| Changer le type vers ou depuis une plage de numéros | uniquement si aucun enregistrement n’a de valeur dans le champ (corbeille comprise) ; voir [Plages de numéros](#plages-de-numéros) |
+| Changer le type vers ou depuis une plage de numéros | depuis texte, texte multiligne, nombre entier et choix même avec des valeurs, si elles sont uniques ; retour au texte toujours ; sinon uniquement si aucun enregistrement n’a de valeur dans le champ (corbeille comprise) ; voir [Plages de numéros](#plages-de-numéros) |
 | Longueur du texte | augmenter à tout moment, réduire uniquement si toutes les valeurs existantes tiennent dans la nouvelle longueur (sinon le message indique combien sont trop longues) |
 | Activer « Unique » | uniquement si les données existantes ne contiennent pas de doublons |
 | Retirer une valeur d’une liste de sélection | à tout moment ; si la valeur est utilisée, un avertissement indique le nombre d’enregistrements. Ils conservent leur valeur, mais une valeur valide doit être choisie à la prochaine modification. |
@@ -476,10 +476,46 @@ contient les réglages, pas les compteurs : une nouvelle installation commence �
 lors d’une mise à jour est considéré comme délicat. « Réinitialiser les données d’app » remet aussi les compteurs à
 zéro.
 
-Un champ existant peut passer à « Plage de numéros » et revenir en arrière tant qu’aucun enregistrement n’a de valeur
-dans ce champ (corbeille comprise). Reprendre des numéros existants dans une plage de numéros n’est pas encore
-possible. Pour des numéros de position qui doivent rester modifiables, **Proposer le numéro suivant** reste disponible
+#### Convertir des champs existants
+
+Un champ de type texte, texte multiligne, nombre entier ou choix peut passer à « Plage de numéros » même s’il contient
+des valeurs, p. ex. un numéro de facture saisi jusqu’ici à la main. En modifiant le champ, choisissez le type **Plage de
+numéros** et le modèle. Sous le numéro suivant, SAFT indique ce qu’il advient des valeurs existantes :
+
+- combien de valeurs il y a et combien sont conformes au modèle,
+- le numéro courant le plus élevé par période : les nouveaux numéros font suite,
+- les premières valeurs non conformes : elles restent inchangées, p. ex. un ancien numéro à trois chiffres pour un
+  modèle à quatre. Adaptez les chiffres du modèle si les anciens numéros doivent en faire partie,
+- combien d’enregistrements n’ont pas de valeur.
+
+Les valeurs existantes doivent être uniques (les enregistrements de la corbeille ne comptent pas) ; sinon le modèle
+nomme les doublons et l’enregistrement est impossible. Les nombres entiers sont complétés selon le modèle s’il ne
+contient que le numéro courant (`42` devient `0042` avec `{0000}`) ; sinon ils restent tels quels. Des valeurs de plus
+de 60 caractères empêchent le changement.
+
+Les enregistrements sans valeur restent vides jusqu’à ce que vous activiez **Numéroter maintenant les valeurs vides** ou
+choisissiez plus tard **Numéroter maintenant** (icône #) dans la liste des champs. SAFT attribue alors les numéros dans
+l’ordre de la date de référence, puis de la date de création ; sans date de référence, la date de création de
+l’enregistrement détermine aussi l’année et le mois. Les enregistrements de la corbeille et ceux sans date de référence
+restent vides. Avec beaucoup d’enregistrements, cela se poursuit en arrière-plan comme travail (voir
+[Travaux](#travaux)). Chaque attribution figure dans le journal des modifications de l’enregistrement, avec un
+identifiant commun pour toute l’exécution.
+
+Le retour au texte (simple ou multiligne) est toujours possible : les numéros restent du texte, les compteurs sont
+supprimés. Pour des numéros de position qui doivent rester modifiables, **Proposer le numéro suivant** reste disponible
 pour les nombres entiers.
+
+#### Consulter et définir le compteur
+
+En modifiant une plage de numéros, les **compteurs** par période apparaissent sous le numéro suivant : le dernier numéro
+courant attribué et le plus élevé existant. Avec **Définir le compteur**, vous indiquez pour une période (p. ex. `2027`,
+mensuel `2027-01`, sans redémarrage `-`) le dernier numéro attribué ; le suivant est supérieur d’un.
+
+- **Augmenter** est toujours possible, p. ex. « les factures 2027 commencent à 1000 » : compteur 999.
+- **Baisser** n’est possible que si aucun numéro existant de la période n’est plus élevé (corbeille comprise), et
+  seulement avec confirmation.
+
+Chaque modification figure dans l’historique du champ (icône horloge dans la liste des champs).
 
 ### Utilisée dans
 

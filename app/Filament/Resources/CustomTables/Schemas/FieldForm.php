@@ -7,6 +7,9 @@ namespace App\Filament\Resources\CustomTables\Schemas;
 use App\Apps\AppInterfaces;
 use App\DynamicData\Files\FileKinds;
 use App\DynamicData\Formula\FormulaAnalyzer;
+use App\DynamicData\Numbering\NumberAnalysis;
+use App\DynamicData\Numbering\NumberConversion;
+use App\DynamicData\Numbering\NumberCounter;
 use App\DynamicData\Numbering\NumberPattern;
 use App\DynamicData\Numbering\NumberSequences;
 use App\DynamicData\RelationDisplay;
@@ -26,6 +29,8 @@ use App\Plugins\PluginDependencies;
 use App\Plugins\PluginRegistry;
 use App\Support\Translations;
 use Closure;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Repeater;
@@ -33,6 +38,8 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
@@ -40,6 +47,8 @@ use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 /**
@@ -99,6 +108,14 @@ final class FieldForm
                     ->default(FieldType::String->value)
                     ->required()
                     ->live()
+                    // Umstellen eines bestehenden Felds auf „Nummernkreis“ (N2): dieselben Vorgaben wie beim Anlegen.
+                    ->afterStateUpdated(static function (Get $get, Set $set, ?string $state): void {
+                        if ($state === FieldType::Number->value && blank($get('options.'.NumberPattern::PATTERN))) {
+                            $set('options.'.NumberPattern::PATTERN, 'R-{YYYY}-{0000}');
+                            $set('options.'.NumberPattern::RESET, 'yearly');
+                            $set('options.'.NumberPattern::START, 1);
+                        }
+                    })
                     ->disabled(fn (mixed $record): bool => self::pluginHint($record) !== null)
                     ->dehydrated()
                     ->helperText(fn (mixed $record): string => self::pluginHint($record) ?? __('tables.fields.type_help'))
@@ -576,7 +593,15 @@ final class FieldForm
                     ->required(fn (Get $get): bool => $get('type') === FieldType::Number->value)
                     ->maxLength(100)
                     ->live(onBlur: true)
-                    ->helperText(__('numbering.form.pattern_help')),
+                    ->helperText(__('numbering.form.pattern_help'))
+                    // Umstellen mit Werten (N2): doppelte Werte sperren das Speichern (DynamicSchemaService prüft zusätzlich).
+                    ->rule(static fn (Get $get, mixed $record): Closure => static function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
+                        $analysis = self::conversionAnalysis($get, $record);
+
+                        if ($analysis !== null && $analysis->hasDuplicates()) {
+                            $fail(__('numbering.errors.duplicates', ['name' => $record->name, 'list' => implode(', ', $analysis->duplicates)]));
+                        }
+                    }),
                 // Baustein einfügen: hängt den Platzhalter an das Muster an und leert sich wieder.
                 Select::make('number_block')
                     ->label(__('numbering.form.insert'))
@@ -616,7 +641,138 @@ final class FieldForm
                     ->live(onBlur: true),
                 Text::make(static fn (Get $get, mixed $record): string => self::nextNumberPreview($get, $record))
                     ->columnSpanFull(),
+                // Umstellen eines Felds mit Werten (N2): was mit den vorhandenen Werten geschieht.
+                Text::make(static fn (Get $get, mixed $record): string => __('numbering.conversion.preview', ['summary' => self::conversionAnalysis($get, $record)?->summary() ?? '']))
+                    ->visible(static fn (Get $get, mixed $record): bool => self::conversionAnalysis($get, $record) !== null)
+                    ->columnSpanFull(),
+                Toggle::make('number_backfill')
+                    ->label(__('numbering.conversion.backfill'))
+                    ->helperText(__('numbering.conversion.backfill_help'))
+                    ->visible(static fn (Get $get, mixed $record): bool => (self::conversionAnalysis($get, $record)->empty ?? 0) > 0)
+                    ->columnSpanFull(),
+                // Bestehender Nummernkreis: Zählerstände je Zeitraum und „Zählerstand setzen“.
+                Text::make(static fn (mixed $record): Htmlable => self::counterOverview($record))
+                    ->visible(static fn (Get $get, mixed $record): bool => self::isNumberField($record) && $get('type') === FieldType::Number->value)
+                    ->columnSpanFull(),
+                Actions::make([self::setCounterAction()])
+                    ->visible(static fn (Get $get, mixed $record): bool => self::isNumberField($record) && $get('type') === FieldType::Number->value)
+                    ->columnSpanFull(),
             ]);
+    }
+
+    private static function isNumberField(mixed $record): bool
+    {
+        return $record instanceof CustomField && $record->exists && $record->type === FieldType::Number;
+    }
+
+    /**
+     * Analyse der vorhandenen Werte, wenn ein bestehendes Feld mit Werten auf „Nummernkreis“ gestellt wird; sonst null
+     * (neues Feld, schon Nummernkreis, leere Spalte, Typ ohne Umstellen oder ungültiges Muster).
+     */
+    private static function conversionAnalysis(Get $get, mixed $record): ?NumberAnalysis
+    {
+        if (! $record instanceof CustomField || ! $record->exists || $record->type === FieldType::Number
+            || $get('type') !== FieldType::Number->value || ! in_array($record->type, NumberConversion::sources(), true)) {
+            return null;
+        }
+
+        try {
+            $pattern = NumberPattern::make(
+                (string) $get('options.'.NumberPattern::PATTERN),
+                (string) ($get('options.'.NumberPattern::RESET) ?: 'yearly'),
+                1,
+                max(1, (int) ($get('options.'.NumberPattern::START) ?: 1)),
+            );
+        } catch (BusinessRuleException) {
+            return null;
+        }
+
+        // Je Request einmal: Vorschau, Schalter und Prüfung des Musters fragen dieselbe Analyse.
+        $key = 'saft.number_conversion.'.$record->id.'|'.$pattern->pattern.'|'.$pattern->reset;
+        $analysis = request()->attributes->get($key);
+
+        if (! $analysis instanceof NumberAnalysis) {
+            $analysis = app(NumberConversion::class)->analyze($record->customTable, $record->name, $pattern, $record->type);
+            request()->attributes->set($key, $analysis);
+        }
+
+        return $analysis->values + $analysis->empty === 0 ? null : $analysis;
+    }
+
+    /** Zählerstände je Zeitraum mit der höchsten vorhandenen Nummer. */
+    private static function counterOverview(mixed $record): Htmlable
+    {
+        if (! self::isNumberField($record)) {
+            return new HtmlString('');
+        }
+
+        $rows = app(NumberCounter::class)->overview($record);
+        $lines = [e(__('numbering.counter.section')).':'];
+
+        foreach ($rows as $period => $row) {
+            $lines[] = e(__('numbering.counter.row', [
+                'period' => $period === NumberPattern::NO_PERIOD ? __('numbering.counter.no_period') : $period,
+                'counter' => $row['counter'] ?? '–',
+                'highest' => $row['highest'] ?? '–',
+            ]));
+        }
+
+        if ($rows === []) {
+            $lines[] = e(__('numbering.counter.none'));
+        }
+
+        return new HtmlString(implode('<br>', $lines));
+    }
+
+    /** „Zählerstand setzen“: erhöhen jederzeit, senken nur ohne Konflikt und mit Bestätigung (NumberCounter). */
+    private static function setCounterAction(): Action
+    {
+        $reset = static fn (CustomField $record): string => (string) ($record->optionsArray()[NumberPattern::RESET] ?? 'never');
+        $current = static fn (CustomField $record, Get $get): ?int => app(NumberSequences::class)->current((int) $record->id, trim((string) $get('period')));
+
+        return Action::make('setNumberCounter')
+            ->label(__('numbering.counter.set'))
+            ->icon('heroicon-o-adjustments-horizontal')
+            ->color('gray')
+            ->authorize(static fn (CustomField $record): bool => auth()->user()?->can('update', $record) ?? false)
+            ->modalHeading(__('numbering.counter.set'))
+            ->fillForm(static function (CustomField $record): array {
+                $pattern = NumberPattern::fromOptions($record->optionsArray());
+                $period = $pattern->period(now())['key'];
+
+                return ['period' => $period, 'value' => app(NumberSequences::class)->current((int) $record->id, $period) ?? $pattern->start - 1];
+            })
+            ->schema([
+                TextInput::make('period')
+                    ->label(__('numbering.counter.period'))
+                    ->helperText(static fn (CustomField $record): ?string => match ($reset($record)) {
+                        'yearly' => __('numbering.counter.period_help_yearly'),
+                        'monthly' => __('numbering.counter.period_help_monthly'),
+                        default => null,
+                    })
+                    ->disabled(static fn (CustomField $record): bool => $reset($record) === 'never')
+                    ->dehydrated()
+                    ->required()
+                    ->live(onBlur: true),
+                TextInput::make('value')
+                    ->label(__('numbering.counter.value'))
+                    ->helperText(__('numbering.counter.value_help'))
+                    ->integer()->minValue(0)->required()
+                    ->live(onBlur: true),
+                Checkbox::make('confirmed')
+                    ->label(__('numbering.counter.confirm'))
+                    ->visible(static fn (CustomField $record, Get $get): bool => ($now = $current($record, $get)) !== null && (int) $get('value') < $now),
+            ])
+            ->action(static function (CustomField $record, array $data, Action $action): void {
+                try {
+                    app(NumberCounter::class)->set($record, (string) $data['period'], (int) $data['value'], (bool) ($data['confirmed'] ?? false));
+                } catch (BusinessRuleException $e) {
+                    Notification::make()->danger()->title($e->getMessage())->send();
+                    $action->halt();
+                }
+
+                Notification::make()->success()->title(__('numbering.counter.saved'))->send();
+            });
     }
 
     /** @return array<string, string> Platzhalter => Beschriftung */

@@ -394,7 +394,7 @@ further entry if the table should appear in a second place in the menu.
 |---|---|
 | Rename a field | at any time, data is kept |
 | Change the type | at any time if lossless (e.g. integer → decimal, text → multi-line text, date → date and time); multi-line → single-line text if all values fit the length; otherwise only if the column is empty |
-| Change the type to or from number sequence | only if no record has a value in the field (including the recycle bin); see [Number sequences](#number-sequences) |
+| Change the type to or from number sequence | from text, multi-line text, integer and choice also with values, if they are unique; back to text always; otherwise only if no record has a value in the field (including the recycle bin); see [Number sequences](#number-sequences) |
 | Text length | increase at any time, reduce only if all existing values fit the new length (otherwise the message says how many are too long) |
 | Switch on "Unique" | only if the existing data contains no duplicates |
 | Remove a value from a selection list | at any time; if the value is in use, a warning shows the number of records. They keep their value, but a valid one must be chosen when they are next edited. |
@@ -442,9 +442,43 @@ kept if unique, and if they match the pattern SAFT continues after them. The [ap
 contains the settings, not the counters: a new installation starts at the start value; a changed pattern on update is
 considered risky. "Reset app data" also resets the counters.
 
-An existing field can be changed to "Number sequence" and back as long as no record has a value in it (including the
-recycle bin). Taking over existing numbers into a number sequence is not possible yet. For item numbers that should
-stay editable, **Suggest next number** for integers remains available.
+#### Converting existing fields
+
+A field of type text, multi-line text, integer or choice can be changed to "Number sequence" even when it has values,
+e.g. an invoice number that was entered by hand so far. When editing the field, choose the type **Number sequence** and
+the pattern. Below the next number, SAFT shows what happens to the existing values:
+
+- how many values there are and how many match the pattern,
+- the highest running number per period: new numbers continue from it,
+- the first values that do not match: they stay unchanged, e.g. an old number with three digits for a pattern with
+  four. Adjust the digits in the pattern if the old numbers should belong to it,
+- how many records have no value.
+
+The existing values must be unique (records in the recycle bin do not count); otherwise the pattern names the
+duplicates and saving is not possible. Integers are padded according to the pattern if it consists only of the running
+number (`42` becomes `0042` with `{0000}`); otherwise they stay as they are. Values longer than 60 characters prevent
+the change.
+
+Records without a value keep it empty until you switch on **Number empty values now** or later choose **Number now**
+(# icon) in the field list. SAFT then assigns the numbers in the order of the reference date, then the creation date;
+without a reference date, the record's creation date also determines year and month. Records in the recycle bin and
+records without a reference date stay empty. With many records, this continues in the background as a job (see
+[Jobs](#jobs)). Each assignment appears in the record's change log, with a common identifier for the whole run.
+
+Back to text (single or multi-line) is always possible: the numbers stay as text, the counters are dropped. For item
+numbers that should stay editable, **Suggest next number** for integers remains available.
+
+#### Viewing and setting the counter
+
+When editing a number sequence, the **counters** per period appear below the next number: the last assigned running
+number and the highest existing one. With **Set counter** you enter the last assigned number for a period (e.g.
+`2027`, monthly `2027-01`, without restart `-`); the next one is one higher.
+
+- **Raising** is always possible, e.g. "invoices 2027 start at 1000": counter 999.
+- **Lowering** is only possible if no existing number of the period is higher (including the recycle bin), and only
+  with confirmation.
+
+Each change appears in the field's history (clock icon in the field list).
 
 ### Used in
 

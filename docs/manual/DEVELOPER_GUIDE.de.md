@@ -543,7 +543,9 @@ angelegt oder geändert).
   sieht sie also schon, darf sie aber weder setzen noch ändern – sonst wird das Speichern abgelehnt. Ebenso lehnt
   `DataTable::create()` eine mitgegebene Nummer ab (Code `dynamic.number_given`) und `update()` die Änderung einer
   vergebenen (`dynamic.number_immutable`); lassen Sie das Feld einfach weg. Nur der Datenimport und Seeder dürfen
-  Nummern mitbringen.
+  Nummern mitbringen. Leere Nummern bestehender Datensätze füllt allein die Arbeit „Leere Nummern vergeben“
+  (`number_backfill`, Herkunft `WriteOptions::NUMBERING` ohne Plugin-Ereignisse); ihre Protokolleinträge tragen die
+  Laufkennung `run`.
 - **Ablehnen** in `RecordSaving` oder `RecordDeleting`: `throw new RecordRejected('Meldung für die Anzeige');`. SAFT
   speichert nichts und zeigt „Aktion nicht möglich“ mit Ihrer Meldung an; beim Import erscheint sie als Fehler der
   Zeile, und der ganze Import wird nicht ausgeführt.

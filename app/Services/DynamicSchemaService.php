@@ -13,6 +13,7 @@ use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Formula\Printer;
+use App\DynamicData\Numbering\NumberConversion;
 use App\DynamicData\Numbering\NumberPattern;
 use App\DynamicData\Numbering\NumberSequences;
 use App\DynamicData\RelationDisplay;
@@ -249,6 +250,7 @@ final class DynamicSchemaService
             $table = $field->customTable;
             $new = $this->normalizer->normalize([...$this->fieldState($field), ...$data], $table);
             $this->assertIndexable($new);
+            $this->assertNumberChange($table, $field, $new);
             $this->columnChangeStrategy($table, $field, $new);
 
             return null;
@@ -290,13 +292,8 @@ final class DynamicSchemaService
                 $this->assertNotUsedByOtherApps($table, $field->name);
             }
 
-            // Nummernkreise (B-135): Typwechsel von und zu „Nummernkreis“, solange die Spalte leer ist (auch im
-            // Papierkorb); vorhandene Werte übernehmen kommt mit dem Umstellen (N2).
-            $numberChange = $new['type'] !== $field->type && in_array(FieldType::Number, [$new['type'], $field->type], true);
-
-            if ($numberChange && ! $this->columnIsEmpty($table, $field->name)) {
-                $this->fail(__('numbering.errors.type_change', ['name' => $field->name]));
-            }
+            $fromType = $field->type;
+            $numberChange = $this->assertNumberChange($table, $field, $new);
 
             // Bezugsdatum eines Nummernkreises: bleibt ein aktives Pflichtfeld vom Typ Datum bzw. Datum/Zeit.
             if (! in_array($new['type'], [FieldType::Date, FieldType::DateTime], true) || ! $new['is_required'] || ! $new['is_active']) {
@@ -372,8 +369,10 @@ final class DynamicSchemaService
 
             $field->fill($new)->save();
 
+            // Umgestellt: Ganzzahlen formatieren, Zähler je Periode auf den höchsten passenden Wert (vor dem Index).
             if ($numberChange && $field->type === FieldType::Number) {
                 $this->ensureNumberSequences([$field]);
+                app(NumberConversion::class)->apply($table, $field, $fromType);
             }
 
             if ($structural) {
@@ -394,6 +393,40 @@ final class DynamicSchemaService
         }
 
         return $updated;
+    }
+
+    /**
+     * Nummernkreise (B-135): Umstellen von Text, mehrzeiligem Text, Ganzzahl und Auswahl auch mit Werten (N2), wenn die
+     * nicht gelöschten Werte eindeutig sind; zurück zu Text immer. Andere Typwechsel von und zu „Nummernkreis“ nur bei
+     * leerer Spalte (auch im Papierkorb). Gibt zurück, ob der Typ von oder zu „Nummernkreis“ wechselt.
+     *
+     * @param  array<string, mixed>  $new  normalisierte Attribute
+     */
+    private function assertNumberChange(CustomTable $table, CustomField $field, array $new): bool
+    {
+        $from = $field->type;
+
+        if ($new['type'] === $from || ! in_array(FieldType::Number, [$new['type'], $from], true)) {
+            return false;
+        }
+
+        $convertible = $new['type'] === FieldType::Number
+            ? in_array($from, NumberConversion::sources(), true)
+            : in_array($new['type'], NumberConversion::targets(), true);
+
+        if (! $convertible && ! $this->columnIsEmpty($table, $field->name)) {
+            $this->fail(__('numbering.errors.type_change', ['name' => $field->name]));
+        }
+
+        if ($new['type'] === FieldType::Number) {
+            $analysis = app(NumberConversion::class)->analyze($table, $field->name, NumberPattern::fromOptions($new['options']), $from);
+
+            if ($analysis->hasDuplicates()) {
+                $this->fail(__('numbering.errors.duplicates', ['name' => $field->name, 'list' => implode(', ', $analysis->duplicates)]));
+            }
+        }
+
+        return true;
     }
 
     /** So lange rechnet die Nachberechnung direkt im Request mit, bevor sie dem Hintergrund überlassen wird. */
@@ -948,6 +981,8 @@ final class DynamicSchemaService
             },
             // Mehrzeilig → einzeilig: nur, wenn alle vorhandenen Werte in die Länge passen.
             $from === FieldType::Text && $to === FieldType::String => $this->overLength($table, $field->name, (int) $opt['length'])[0] === 0,
+            // Auswahl → kürzerer Text (z. B. Nummernkreis mit 60 Zeichen): nur, wenn alle Werte hineinpassen.
+            $from === FieldType::Select && $to === FieldType::String && $opt['length'] < FieldType::SELECT_LENGTH => $this->overLength($table, $field->name, (int) $opt['length'])[0] === 0,
             in_array($to->value, self::SAFE_CONVERSIONS[$from->value] ?? [], true) => $this->fitsWithoutLoss($from, $old, $to, $opt),
             default => false,
         };

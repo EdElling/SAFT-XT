@@ -421,7 +421,8 @@ class MusikschuleDemoSeeder extends Seeder
 
         foreach ($bills as $bill) {
             $number++;
-            $id = $insert('rechnungen', ['rechnungsnummer' => sprintf('R-2026-%03d', $number), 'datum' => '2026-09-01', 'faellig_am' => '2026-09-30',
+            // Rechnungsnummer vergibt SAFT (Nummernkreis R-{YYYY}-{000} ab 1.5) – in dieser Reihenfolge R-2026-001 …
+            $id = $insert('rechnungen', ['datum' => '2026-09-01', 'faellig_am' => '2026-09-30',
                 'status' => $number === 7 ? 'storniert' : 'versendet', 'semester' => $hs, ...$bill['payer']]);
 
             foreach ($bill['lines'] as $line) {

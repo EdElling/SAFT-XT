@@ -187,24 +187,6 @@ parameters:
 			path: app/Apps/Designer/AppDesigner.php
 
 		-
-			message: '#^Cannot access property \$value on string\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: app/Apps/Designer/AppDesigner.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\CustomField\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Apps/Designer/AppDesigner.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\CustomTable\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Apps/Designer/AppDesigner.php
-
-		-
 			message: '#^Cannot cast array to string\.$#'
 			identifier: cast.string
 			count: 2
@@ -271,21 +253,9 @@ parameters:
 			path: app/Documents/LetterheadResolver.php
 
 		-
-			message: '#^Parameter \#1 \$type of static method App\\DynamicData\\Rules\\RuleFieldTypes\:\:group\(\) expects App\\DynamicData\\Schema\\FieldType\|null, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/DynamicData/Assistant/RuleText.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/DynamicData/Assistant/TableAssistant.php
-
-		-
-			message: '#^Cannot access property \$value on string\.$#'
-			identifier: property.nonObject
-			count: 5
 			path: app/DynamicData/Assistant/TableAssistant.php
 
 		-
@@ -295,27 +265,9 @@ parameters:
 			path: app/DynamicData/Assistant/TableAssistant.php
 
 		-
-			message: '#^Parameter \#1 \$array of function array_values contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/DynamicData/Assistant/TableAssistant.php
-
-		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\App\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
 			count: 1
-			path: app/DynamicData/Assistant/TableAssistant.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\CustomField\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 5
-			path: app/DynamicData/Assistant/TableAssistant.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\CustomTable\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 2
 			path: app/DynamicData/Assistant/TableAssistant.php
 
 		-
@@ -403,24 +355,6 @@ parameters:
 			path: app/DynamicData/Rules/CopySource.php
 
 		-
-			message: '#^Parameter \#1 \$type of static method App\\DynamicData\\Rules\\RuleFieldTypes\:\:group\(\) expects App\\DynamicData\\Schema\\FieldType\|null, string given\.$#'
-			identifier: argument.type
-			count: 2
-			path: app/DynamicData/Rules/RuleFieldTypes.php
-
-		-
-			message: '#^Parameter \#1 \$type of static method App\\DynamicData\\Rules\\RuleFieldTypes\:\:group\(\) expects App\\DynamicData\\Schema\\FieldType\|null, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/DynamicData/Rules/TableRuleNormalizer.php
-
-		-
-			message: '#^Parameter \#1 \$type of static method App\\DynamicData\\Rules\\RuleFieldTypes\:\:group\(\) expects App\\DynamicData\\Schema\\FieldType\|null, string\|null given\.$#'
-			identifier: argument.type
-			count: 2
-			path: app/DynamicData/Rules/TableRuleNormalizer.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -433,28 +367,10 @@ parameters:
 			path: app/DynamicData/Schema/FieldDefinitionNormalizer.php
 
 		-
-			message: '#^Cannot call method fields\(\) on null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/DynamicData/Schema/FieldDefinitionNormalizer.php
-
-		-
-			message: '#^Cannot call method cast\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/DynamicData/TableDefinition.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/DynamicData/TableDefinition.php
-
-		-
-			message: '#^Match expression does not handle remaining value\: string$#'
-			identifier: match.unhandled
-			count: 1
-			path: app/DynamicData/Ui/DynamicFormBuilder.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>exists" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -479,12 +395,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 2
 			path: app/DynamicData/Ui/DynamicRecordActions.php
-
-		-
-			message: '#^Cannot access property \$value on string\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: app/DynamicData/Validation/FieldRuleCheck.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>copies" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -555,12 +465,6 @@ parameters:
 		-
 			message: '#^Cannot call method checkTranslator\(\) on string\.$#'
 			identifier: method.nonObject
-			count: 1
-			path: app/ExternalData/TableConnectorService.php
-
-		-
-			message: '#^Method App\\ExternalData\\TableConnectorService\:\:baseType\(\) should return App\\DynamicData\\Schema\\FieldType but returns string\.$#'
-			identifier: return.type
 			count: 1
 			path: app/ExternalData/TableConnectorService.php
 
@@ -775,18 +679,6 @@ parameters:
 			path: app/Filament/Resources/CustomTables/Pages/ListCustomTables.php
 
 		-
-			message: '#^Method App\\Filament\\Resources\\CustomTables\\RelationManagers\\CustomFieldsRelationManager\:\:typeDetails\(\) never returns string so it can be removed from the return type\.$#'
-			identifier: return.unusedType
-			count: 1
-			path: app/Filament/Resources/CustomTables/RelationManagers/CustomFieldsRelationManager.php
-
-		-
-			message: '#^Parameter \#1 \$type of static method App\\DynamicData\\Rules\\RuleFieldTypes\:\:group\(\) expects App\\DynamicData\\Schema\\FieldType\|null, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Filament/Resources/CustomTables/Schemas/CustomTableForm.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>detail_field_ids" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -805,20 +697,8 @@ parameters:
 			path: app/Filament/Resources/CustomTables/Schemas/FieldForm.php
 
 		-
-			message: '#^Cannot access property \$value on string\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: app/Filament/Resources/CustomTables/Schemas/FieldForm.php
-
-		-
 			message: '#^Method App\\Filament\\Resources\\CustomTables\\Schemas\\FieldForm\:\:pluginCheckHint\(\) never returns null so it can be removed from the return type\.$#'
 			identifier: return.unusedType
-			count: 1
-			path: app/Filament/Resources/CustomTables/Schemas/FieldForm.php
-
-		-
-			message: '#^Parameter \#1 \$type of static method App\\Filament\\Resources\\CustomTables\\Schemas\\FieldForm\:\:typeTitle\(\) expects App\\DynamicData\\Schema\\FieldType, string given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Filament/Resources/CustomTables/Schemas/FieldForm.php
 
@@ -1093,12 +973,6 @@ parameters:
 			path: app/Models/App.php
 
 		-
-			message: '#^Cannot call method valueType\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Models/CustomField.php
-
-		-
 			message: '#^Cannot call method defaultSchema\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -1213,24 +1087,6 @@ parameters:
 			path: app/Plugins/Api/DataTable.php
 
 		-
-			message: '#^Cannot access property \$value on string\.$#'
-			identifier: property.nonObject
-			count: 2
-			path: app/Plugins/Context/SchemaExporter.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\CustomField\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 2
-			path: app/Plugins/Context/SchemaExporter.php
-
-		-
-			message: '#^Cannot access property \$value on string\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: app/Plugins/PluginInspector.php
-
-		-
 			message: '#^Parameter \#3 \$joins of method App\\Reports\\DefinitionResolver\:\:attachDisplays\(\) expects array\<string, array\{alias\: string, parent\: string, relation\: App\\Models\\CustomField, table\: App\\Models\\CustomTable, key\: string\}\>, array\<string, array\{alias\: string, parent\: string, relation\: App\\Models\\CustomField, table\: App\\Models\\CustomTable\}\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -1271,30 +1127,6 @@ parameters:
 			identifier: parameterByRef.type
 			count: 8
 			path: app/Reports/ReportExpression.php
-
-		-
-			message: '#^Cannot call method addColumn\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: app/Services/DynamicSchemaService.php
-
-		-
-			message: '#^Parameter \#1 \$target of static method App\\DynamicData\\Rules\\CopySource\:\:compatible\(\) expects App\\DynamicData\\Schema\\FieldType, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/DynamicSchemaService.php
-
-		-
-			message: '#^Parameter \#1 \$type of static method App\\DynamicData\\Rules\\RuleFieldTypes\:\:group\(\) expects App\\DynamicData\\Schema\\FieldType\|null, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/DynamicSchemaService.php
-
-		-
-			message: '#^Parameter \#3 \$type of method App\\Services\\DynamicSchemaService\:\:recreateColumn\(\) expects App\\DynamicData\\Schema\\FieldType, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/DynamicSchemaService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'

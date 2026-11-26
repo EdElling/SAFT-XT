@@ -8,6 +8,7 @@ use App\Apps\Definition\AppInstaller;
 use App\Apps\Definition\DefinitionObjects;
 use App\Apps\Definition\References;
 use App\Database\DatabaseBackup;
+use App\DynamicData\Numbering\NumberPattern;
 use App\DynamicData\Rules\CopySource;
 use App\DynamicData\Rules\SequenceSuggester;
 use App\DynamicData\Schema\FieldType;
@@ -557,12 +558,18 @@ final class ChangeExecutor
     }
 
     /** @param  list<ChangeStep>  $steps */
+    /** Rang berechneter Felder beim Anlegen: zuletzt, mit Wiederholung, solange es vorangeht. */
+    private const int COMPUTED_RANK = 4;
+
     private function createFields(array $steps): void
     {
         $order = static fn (ChangeStep $s): int => match (true) {
-            ($s->target['type'] ?? null) === FieldType::Relation->value => 1,
-            ($s->target['type'] ?? null) === FieldType::Computed->value => 3,
-            ! empty($s->target['options'][CopySource::OPTION]) || ! empty($s->target['options'][SequenceSuggester::SCOPE]) => 2,
+            // Nummernkreis mit Bezugsdatum (B-135): nach dem Datumsfeld, vor den Verknüpfungen (die ihn anzeigen dürfen).
+            ($s->target['type'] ?? null) === FieldType::Number->value && ! empty($s->target['options'][NumberPattern::DATE_FIELD]) => 1,
+            ($s->target['type'] ?? null) === FieldType::Relation->value => 2,
+            ($s->target['type'] ?? null) === FieldType::Computed->value => self::COMPUTED_RANK,
+            // Bezieht sich auf eine Verknüpfung: Übernehmen aus, fortlaufend je …
+            ! empty($s->target['options'][CopySource::OPTION]) || ! empty($s->target['options'][SequenceSuggester::SCOPE]) => 3,
             default => 0,
         };
         usort($steps, static fn (ChangeStep $a, ChangeStep $b): int => $order($a) <=> $order($b));
@@ -579,7 +586,7 @@ final class ChangeExecutor
                     $field->forceFill(['uuid' => $step->key])->saveQuietly();
                     $this->done[] = $step->label;
                 } catch (BusinessRuleException $e) {
-                    if ($order($step) !== 3) {
+                    if ($order($step) !== self::COMPUTED_RANK) {
                         throw $e;
                     }
 

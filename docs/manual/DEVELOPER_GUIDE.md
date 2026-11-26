@@ -534,6 +534,8 @@ or changed).
   listener already sees it but may neither set nor change it – otherwise saving is rejected. Likewise `DataTable::create()`
   rejects a given number (code `dynamic.number_given`) and `update()` a change of an assigned one
   (`dynamic.number_immutable`); simply leave the field out. Only the data import and seeders may bring numbers.
+  Empty numbers of existing records are filled only by the job "Assign empty numbers" (`number_backfill`, origin
+  `WriteOptions::NUMBERING` without plugin events); its change log entries carry the run identifier `run`.
 - **Reject** in `RecordSaving` or `RecordDeleting`: `throw new RecordRejected('Message for display');`. SAFT saves
   nothing and shows “Action not possible” with your message; in an import it appears as an error of the row and the
   whole import is not carried out.

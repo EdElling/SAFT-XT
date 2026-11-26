@@ -21,6 +21,7 @@ return [
         'app_designer_turn' => 'Concevoir une app',
         'app_designer_create' => 'Créer une app',
         'app_designer_reports' => 'Créer les rapports de l’app',
+        'number_backfill' => 'Attribuer les numéros vides',
     ],
     'export' => [
         'done' => '1 ligne exportée.|:count lignes exportées.',
@@ -33,6 +34,12 @@ return [
         'importing_of' => 'Importation : :done sur :total enregistrements',
         'table_missing' => 'La table n’existe plus.',
         'file_missing' => 'Le fichier téléversé n’est plus disponible ; veuillez relancer l’importation.',
+    ],
+    'number_backfill' => [
+        'done' => '{0} Aucun numéro attribué.|{1} 1 numéro attribué.|[2,*] :count numéros attribués.',
+        'without_date' => '{1} 1 enregistrement sans date de référence est resté vide.|[2,*] :count enregistrements sans date de référence sont restés vides.',
+        'skipped' => '{1} 1 enregistrement ignoré : :errors|[2,*] :count enregistrements ignorés : :errors',
+        'too_many_errors' => 'Interrompu : :count enregistrements n’ont pas pu être numérotés (:errors).',
     ],
     'recompute' => [
         'all_tables' => 'toutes les tables avec des champs calculés',

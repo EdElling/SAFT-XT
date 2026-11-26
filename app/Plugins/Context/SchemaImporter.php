@@ -100,6 +100,7 @@ final readonly class SchemaImporter
     private function split(array $fields): array
     {
         $simple = [];
+        $numbers = [];
         $later = ['relation' => [], 'copy' => [], 'computed' => []];
 
         foreach ($fields as $field) {
@@ -107,13 +108,26 @@ final readonly class SchemaImporter
             $kind = match (true) {
                 ($field['type'] ?? null) === 'relation' => 'relation',
                 ($field['type'] ?? null) === 'computed' => 'computed',
+                // Nummernkreis mit Bezugsdatum (B-135): nach dem Datumsfeld, aber vor den Verknüpfungen – eine Verknüpfung
+                // darf die Nummer anzeigen (Rechnungsposition → Rechnung).
+                ! empty($field['options'][NumberPattern::DATE_FIELD]) => 'number',
                 // „Übernehmen aus“ und „Zählen je“ (Vorschlag der nächsten Nummer je Verknüpfung) brauchen die Verknüpfung.
-                // Ebenso ein Nummernkreis mit Bezugsdatum (B-135) das Datumsfeld.
-                ! empty($field['options'][CopySource::OPTION]), ! empty($field['options'][SequenceSuggester::SCOPE]), ! empty($field['options'][NumberPattern::DATE_FIELD]) => 'copy',
+                ! empty($field['options'][CopySource::OPTION]), ! empty($field['options'][SequenceSuggester::SCOPE]) => 'copy',
                 default => null,
             };
 
-            $kind === null ? $simple[] = $field : $later[$kind][] = $field;
+            match ($kind) {
+                null => $simple[] = $field,
+                'number' => $numbers[] = $field,
+                default => $later[$kind][] = $field,
+            };
+        }
+
+        // Ans Ende der einfachen Felder, wenn das Datumsfeld eines davon ist; sonst (Datum selbst übernommen) später.
+        $names = array_column($simple, 'name');
+
+        foreach ($numbers as $field) {
+            in_array($field['options'][NumberPattern::DATE_FIELD], $names, true) ? $simple[] = $field : $later['copy'][] = $field;
         }
 
         return [$simple, $later];

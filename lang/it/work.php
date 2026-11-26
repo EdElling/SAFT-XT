@@ -21,6 +21,7 @@ return [
         'app_designer_turn' => 'Progettare app',
         'app_designer_create' => 'Creare app',
         'app_designer_reports' => 'Creare i report dell’app',
+        'number_backfill' => 'Assegnare i numeri vuoti',
     ],
     'export' => [
         'done' => '1 riga esportata.|:count righe esportate.',
@@ -33,6 +34,12 @@ return [
         'importing_of' => 'Importazione: :done di :total record',
         'table_missing' => 'La tabella non esiste più.',
         'file_missing' => 'Il file caricato non è più disponibile; riavviare l’importazione.',
+    ],
+    'number_backfill' => [
+        'done' => '{0} Nessun numero assegnato.|{1} 1 numero assegnato.|[2,*] :count numeri assegnati.',
+        'without_date' => '{1} 1 record senza data di riferimento è rimasto vuoto.|[2,*] :count record senza data di riferimento sono rimasti vuoti.',
+        'skipped' => '{1} 1 record saltato: :errors|[2,*] :count record saltati: :errors',
+        'too_many_errors' => 'Interrotto: non è stato possibile numerare :count record (:errors).',
     ],
     'recompute' => [
         'all_tables' => 'tutte le tabelle con campi calcolati',

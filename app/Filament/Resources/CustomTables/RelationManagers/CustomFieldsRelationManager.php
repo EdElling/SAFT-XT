@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\CustomTables\RelationManagers;
 
 use App\Apps\AppInterfaces;
+use App\Apps\CurrentApp;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
@@ -18,6 +19,8 @@ use App\Models\DynamicRecord;
 use App\Models\WorkItem;
 use App\Services\DynamicSchemaService;
 use App\Support\Translations;
+use App\Work\Types\NumberBackfillWork;
+use App\Work\WorkService;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -116,8 +119,23 @@ class CustomFieldsRelationManager extends RelationManager
                         self::warnAboutRemovedOptionsInUse($field, $previousOptions);
                         self::reportRecompute($service->lastRecompute());
 
+                        // Umgestellt auf Nummernkreis mit „Leere Werte jetzt nummerieren“ (B-135, N2).
+                        if (($data['number_backfill'] ?? false) && $field->type === FieldType::Number) {
+                            self::startBackfill($field);
+                        }
+
                         return $field;
                     }),
+                // Nummernkreis mit leeren Werten (B-135, N2): in der Reihenfolge des Bezugsdatums nachnummerieren.
+                Action::make('numberNow')
+                    ->label(__('numbering.counter.backfill'))
+                    ->icon('heroicon-o-hashtag')
+                    ->color('gray')
+                    ->visible(fn (CustomField $record): bool => NumberBackfillWork::pending($record) > 0)
+                    ->authorize(fn (CustomField $record): bool => auth()->user()?->can('update', $record) ?? false)
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (CustomField $record): string => trans_choice('numbering.counter.backfill_confirm', $count = NumberBackfillWork::pending($record), ['count' => $count]))
+                    ->action(fn (CustomField $record) => self::startBackfill($record)),
                 // Verlauf des Felds (B-113): wer wann was geändert hat.
                 DynamicRecordActions::modelHistory(),
                 Action::make('toggleActive')
@@ -185,6 +203,23 @@ class CustomFieldsRelationManager extends RelationManager
         } else {
             $notification->danger()->title((string) $item->message)->persistent()->send();
         }
+    }
+
+    /** So lange vergibt „Jetzt nummerieren“ direkt im Request, bevor es im Hintergrund weiterläuft. */
+    private const float BACKFILL_BUDGET = 5.0;
+
+    /** Arbeit „Leere Nummern vergeben“ starten und kurz mitarbeiten; danach Ergebnis bzw. Hinweis mit Link. */
+    private static function startBackfill(CustomField $field): void
+    {
+        $user = auth()->user();
+        $item = app(WorkService::class)->startAndAdvance(NumberBackfillWork::KEY, ['field' => $field->id], $user, app(CurrentApp::class)->id($user), self::BACKFILL_BUDGET);
+        $open = Action::make('open')->label(__('work.notifications.open'))->url(WorkItemResource::getUrl('view', ['record' => $item]));
+
+        match (true) {
+            $item->status === WorkItem::DONE => Notification::make()->success()->title((string) $item->message)->send(),
+            $item->isOpen() => Notification::make()->info()->title(__('numbering.counter.backfill_started'))->actions([$open])->send(),
+            default => Notification::make()->danger()->title((string) $item->message)->actions([$open])->persistent()->send(),
+        };
     }
 
     private function ownerTable(): CustomTable

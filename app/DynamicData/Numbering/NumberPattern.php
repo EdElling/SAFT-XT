@@ -188,6 +188,12 @@ final readonly class NumberPattern
         return ['key' => $key, 'number' => $number];
     }
 
+    /** Besteht das Muster nur aus der laufenden Nummer ({0000} bzw. {#})? Dann werden Ganzzahlen beim Umstellen formatiert. */
+    public function isCounterOnly(): bool
+    {
+        return count($this->tokens) === 1 && $this->tokens[0][0] === 'counter';
+    }
+
     /** Länge der Nummer mit der laufenden Nummer in ihrer Breite. */
     public function maxLength(): int
     {

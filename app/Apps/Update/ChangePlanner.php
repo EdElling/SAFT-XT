@@ -9,10 +9,14 @@ use App\Apps\Definition\AppDefinition;
 use App\Apps\Definition\AppDefinitionValidator;
 use App\Apps\Definition\AppInstaller;
 use App\Apps\Definition\References;
+use App\DynamicData\Numbering\NumberConversion;
+use App\DynamicData\Numbering\NumberPattern;
 use App\DynamicData\Schema\FieldType;
+use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\Reports\ReportResource;
 use App\Models\App;
 use App\Models\AppBaseline;
+use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DocumentTemplate;
 use App\Models\DynamicRecord;
@@ -356,6 +360,13 @@ final class ChangePlanner
             $structural = $structural || in_array($attr, ['name', 'type'], true) || ($attr === 'is_active' && $to === false);
         }
 
+        // Umstellen auf Nummernkreis (B-135, N2): dieselbe Analyse wie die Vorschau im Feldformular.
+        $note = $this->numberConversionNote($changes, $current, $model);
+
+        if ($note !== null) {
+            $notes[] = $note;
+        }
+
         $usages = $structural && $model !== null ? $this->interfaces->usages($model, $column) : [];
 
         if ($usages !== []) {
@@ -367,6 +378,29 @@ final class ChangePlanner
         $data = array_column(array_values(array_filter($changes, static fn (array $c): bool => in_array($c['attr'], ['type', 'options'], true))), 'to', 'attr');
 
         return [$level, $notes, $field !== null && $data !== [] ? $this->service->fieldChangeProblem($field, $data) : null];
+    }
+
+    /**
+     * @param  list<array{attr: string, from: mixed, to: mixed}>  $changes
+     * @param  array<string, mixed>  $current
+     */
+    private function numberConversionNote(array $changes, array $current, ?CustomTable $model): ?string
+    {
+        $to = array_column($changes, 'to', 'attr');
+        $field = $model?->fields->firstWhere('name', (string) $current['name']);
+
+        if (($to['type'] ?? null) !== FieldType::Number->value || ! $field instanceof CustomField || $field->type === FieldType::Number) {
+            return null;
+        }
+
+        try {
+            $pattern = NumberPattern::fromOptions((array) ($to['options'] ?? $current['options'] ?? []));
+            $analysis = app(NumberConversion::class)->analyze($model, $field->name, $pattern, $field->type);
+        } catch (BusinessRuleException) {
+            return null; // ungültiges Muster: meldet fieldChangeProblem
+        }
+
+        return __('apps.update.notes.number_conversion', ['summary' => $analysis->summary()]);
     }
 
     /**

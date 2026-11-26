@@ -173,3 +173,11 @@ Con un campo di tipo **Intervallo di numerazione**, p. es. con il modello `R-{YY
 assegna il numero alla creazione, mai due volte e non di nuovo dopo l’eliminazione; in seguito non può essere
 modificato. Per questo il modulo mostra solo «assegnato al salvataggio». Si configura nel designer di tabelle, vedere
 [Manuale dell’amministratore, Intervalli di numerazione](ADMIN_GUIDE.it.md#intervalli-di-numerazione).
+
+### Come riprendo numeri di fattura esistenti in un intervallo di numerazione?
+
+Nel designer di tabelle fate passare il campo esistente (testo, numero intero o scelta) al tipo **Intervallo di
+numerazione**. Prima SAFT mostra quanti valori sono conformi al modello e da dove proseguono i numeri; i valori non
+conformi restano invariati. I valori vuoti si possono riempire subito o più tardi con **Numerare ora**, e con
+**Impostare il contatore** l’anno successivo inizia p. es. da 1000. Vedere
+[Manuale dell’amministratore, Convertire campi esistenti](ADMIN_GUIDE.it.md#convertire-campi-esistenti).

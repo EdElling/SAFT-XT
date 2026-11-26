@@ -23,7 +23,7 @@
         },
         "icon": "heroicon-o-musical-note",
         "prefix": "musikschule",
-        "version": "1.4",
+        "version": "1.5",
         "interface_version": 1,
         "manual": []
     },
@@ -2712,12 +2712,16 @@
                         "fr": "Numéro de facture",
                         "it": "Numero fattura"
                     },
-                    "type": "string",
+                    "type": "number",
                     "options": {
-                        "length": 50
+                        "pattern": "R-{YYYY}-{000}",
+                        "reset": "yearly",
+                        "date_field": "datum",
+                        "start": 1,
+                        "length": 60
                     },
                     "validation_rules": null,
-                    "is_required": true,
+                    "is_required": false,
                     "is_unique": true,
                     "is_searchable": true,
                     "is_sortable": true,

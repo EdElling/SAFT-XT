@@ -252,12 +252,12 @@ class NumberSequenceTest extends DynamicDataTestCase
         $this->assertFalse($field->is_required, 'Pflicht entfällt: SAFT vergibt die Nummer.');
         $this->assertSame('K-00001', $this->writer()->create($table->fresh(), ['name' => 'Muster AG'])->kundennummer);
 
-        // Zurück zu Text: nur ohne Werte, dann entfallen die Zähler.
-        $this->assertRejected('dynamic.schema', fn () => $this->service()->updateField($field, ['type' => 'string', 'options' => ['length' => 60]]));
+        // Zu einem anderen Typ als Text: nur ohne Werte, dann entfallen die Zähler (zurück zu Text mit Werten: N2).
+        $this->assertRejected('dynamic.schema', fn () => $this->service()->updateField($field, ['type' => 'integer', 'options' => []]));
         DynamicRecord::forTable($table->fresh())->newQuery()->get()->each(fn (DynamicRecord $r) => $this->writer()->forceDelete($r));
-        $this->service()->updateField($field->fresh(), ['type' => 'string', 'options' => ['length' => 60]]);
+        $this->service()->updateField($field->fresh(), ['type' => 'integer', 'options' => []]);
 
-        $this->assertSame(FieldType::String, $field->fresh()->type);
+        $this->assertSame(FieldType::Integer, $field->fresh()->type);
         $this->assertNull(app(NumberSequences::class)->current($field->id, NumberPattern::NO_PERIOD));
     }
 
@@ -266,8 +266,9 @@ class NumberSequenceTest extends DynamicDataTestCase
         $table = $this->invoices();
         $this->create($table, ['betreff' => 'Kurs']);
 
-        $this->assertRejected('dynamic.schema', fn () => $this->service()->updateField($table->fields->firstWhere('name', 'betreff'), ['type' => 'number', 'options' => [NumberPattern::PATTERN => '{#}']]));
-        $this->assertRejected('dynamic.schema', fn () => $this->service()->updateField($table->fields->firstWhere('name', 'nummer'), ['type' => 'string', 'options' => ['length' => 60]]));
+        // Mit Werten nur Text, Ganzzahl und Auswahl → Nummernkreis und zurück zu Text (N2, NumberConversionTest).
+        $this->assertRejected('dynamic.schema', fn () => $this->service()->updateField($table->fields->firstWhere('name', 'datum'), ['type' => 'number', 'options' => [NumberPattern::PATTERN => '{#}']]));
+        $this->assertRejected('dynamic.schema', fn () => $this->service()->updateField($table->fields->firstWhere('name', 'nummer'), ['type' => 'integer', 'options' => []]));
     }
 
     public function test_dropping_the_field_forgets_its_counters(): void

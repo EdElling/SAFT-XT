@@ -21,6 +21,7 @@ return [
         'app_designer_turn' => 'App entwerfen',
         'app_designer_create' => 'App erzeugen',
         'app_designer_reports' => 'Auswertungen der App anlegen',
+        'number_backfill' => 'Leere Nummern vergeben',
     ],
     'export' => [
         'done' => '1 Zeile exportiert.|:count Zeilen exportiert.',
@@ -33,6 +34,12 @@ return [
         'importing_of' => 'Einspielen: :done von :total Datensätzen',
         'table_missing' => 'Die Tabelle gibt es nicht mehr.',
         'file_missing' => 'Die hochgeladene Datei liegt nicht mehr vor; bitte den Import neu starten.',
+    ],
+    'number_backfill' => [
+        'done' => '{0} Keine Nummer vergeben.|{1} 1 Nummer vergeben.|[2,*] :count Nummern vergeben.',
+        'without_date' => '{1} 1 Datensatz ohne Bezugsdatum blieb leer.|[2,*] :count Datensätze ohne Bezugsdatum blieben leer.',
+        'skipped' => '{1} 1 Datensatz übersprungen: :errors|[2,*] :count Datensätze übersprungen: :errors',
+        'too_many_errors' => 'Abgebrochen: :count Datensätze liessen sich nicht nummerieren (:errors).',
     ],
     'recompute' => [
         'all_tables' => 'alle Tabellen mit berechneten Feldern',

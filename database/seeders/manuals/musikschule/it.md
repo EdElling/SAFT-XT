@@ -43,7 +43,8 @@ giorni – e registrate le presenze di una lezione su una sola pagina.
 ### Fattura semestrale
 
 1. In **Finanze & strumenti › Fatture** creare una fattura alla persona di contatto (per i minorenni) o all'allievo
-   adulto, con semestre e scadenza.
+   adulto, con data fattura, semestre e scadenza. SAFT assegna il **numero fattura** al salvataggio (intervallo di
+   numerazione `R-2026-001`, che riparte ogni anno secondo la data fattura); in seguito non è più modificabile.
 2. Sotto, una **posizione fattura** di tipo *corso* per ogni corso – SAFT riprende il **prezzo unitario** dalla tariffa
    del corso e deduce lo sconto. Gli strumenti a noleggio sono una posizione di tipo *noleggio* con il numero di mesi.
 3. Registrare i **pagamenti**; **pagato** e **aperto** mostrano lo stato. Una fattura annullata non ha più nulla di

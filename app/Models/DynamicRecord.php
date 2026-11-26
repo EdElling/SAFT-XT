@@ -188,6 +188,11 @@ class DynamicRecord extends Model
             if (WriteContext::options()->overwriting) {
                 $properties->put('overwrote', true);
             }
+
+            // Kennung eines Laufs (Nachnummerieren, später Sammeländerung): zusammengehörige Einträge finden.
+            if (WriteContext::options()->run !== null) {
+                $properties->put('run', WriteContext::options()->run);
+            }
         }
 
         $key = $this->activityKey();

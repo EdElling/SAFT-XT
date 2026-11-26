@@ -1,6 +1,6 @@
 # Konzept: Nummernkreise in SAFT XT
 
-Stand: 26.11.2026 · Status: **abgestimmt**, auf Fundament 2 nachgeführt; **Etappe N1 umgesetzt** (Abschnitt 12) ·
+Stand: 26.11.2026 · Status: **abgestimmt**, auf Fundament 2 nachgeführt; **Etappen N1 und N2 umgesetzt** (Abschnitt 12) ·
 Backlog: B-135
 
 ## 1. Ziel
@@ -306,3 +306,29 @@ Nummernkreis. Reihenfolge der Teilschritte:
 
 Entschieden 26.11.2026: N2 in einer eigenen Sitzung; danach **Release 0.7.0** mit N1 und N2 und Aktualisierung der
 Strato-Demo.
+
+### 12.3 Umsetzung N2 (26.11.2026)
+
+- **Umstellen:** `NumberConversion` (Analyse als `NumberAnalysis`, Übernahme nach dem Typwechsel) im Lock des
+  `DynamicSchemaService`; `assertNumberChange` gilt auch für `fieldChangeProblem` (Änderungsplan). Quellen mit Werten:
+  Text, mehrzeiliger Text (bis 60 Zeichen), Ganzzahl, Auswahl (Auswahl → kürzerer Text neu, wenn alle Werte passen);
+  zurück zu Text bzw. mehrzeiligem Text immer. Doppel zählen nur unter nicht gelöschten Datensätzen (wie der Index),
+  höchste Werte auch im Papierkorb. Das Auffüllen von Ganzzahlen ist Teil der Strukturänderung und läuft über den Query
+  Builder, nicht über den `RecordWriter`.
+- **Jetzt nummerieren:** Arbeit `number_backfill` (`NumberBackfillWork`): je Block die ersten leeren Datensätze nach
+  Bezugsdatum, `created_at`, `id` (nummerierte fallen heraus, deshalb ohne Cursor; Übersprungene im Zustand).
+  Herkunft `WriteOptions::NUMBERING`, ohne Plugin-Ereignisse, mit Protokoll je Datensatz und Laufkennung `run`
+  (`number_backfill:<uuid>`), Sicherungspunkt je Datensatz. Ohne Datumsfeld gilt das Anlegedatum des Datensatzes.
+  Papierkorb und Datensätze ohne Bezugsdatum bleiben leer. Anders als die Sammeländerung (BULK_EDIT.md) nicht „alles
+  oder nichts“: Scheitert ein Datensatz, wird er übersprungen und gemeldet; ein zweiter Lauf nimmt den Rest.
+- **Zählerstand:** `NumberCounter` (Übersicht je Periode mit höchster vorhandener Nummer, setzen mit Prüfung),
+  `NumberSequences::periods()`/`set()`; Eintrag `number_counter` im Verlauf des Felds.
+- **Oberfläche:** Vorschau und Schalter „Leere Werte jetzt nummerieren“ im Abschnitt „Nummernkreis“, Prüfung auf Doppel
+  am Muster, Zählerstände mit Aktion „Zählerstand setzen“, Zeilenaktion „Jetzt nummerieren“ in der Feldliste.
+- **App-Aktualisierung:** Notiz `number_conversion` im Änderungsplan. Behoben aus N1: Ein Nummernkreis mit Bezugsdatum
+  entsteht beim Installieren (`SchemaImporter`) und Aktualisieren (`ChangeExecutor`) direkt nach seinem Datumsfeld,
+  vor den Verknüpfungen, die ihn anzeigen dürfen.
+- **Musikschule 1.5:** `rechnungsnummer` als Nummernkreis `R-{YYYY}-{000}`, jährlich, Bezugsdatum `datum`; der Seeder
+  gibt keine Nummern mehr vor; Aktualisierung 1.4 → 1.5 übernimmt vorhandene Nummern.
+- **Tests:** `NumberConversionTest` (15 Fälle, Spaltenänderung auch auf MySQL und MariaDB), `DemoSeedersTest`
+  (1.4 → 1.5). `CustomField::$type` als `FieldType` beschrieben: Larastan-Baseline 319 → 277.

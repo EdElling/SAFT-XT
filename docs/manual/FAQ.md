@@ -167,3 +167,10 @@ With a field of type **Number sequence**, e.g. with the pattern `R-{YYYY}-{0000}
 the number on create, never twice and not again after deletion; afterwards it cannot be changed. That is why the form
 only shows "assigned when saving". Set it up in the table designer, see
 [Administrator guide, Number sequences](ADMIN_GUIDE.md#number-sequences).
+
+### How do I take over existing invoice numbers into a number sequence?
+
+Change the existing field (text, integer or choice) to the type **Number sequence** in the table designer. Beforehand,
+SAFT shows how many values match the pattern and where the numbers continue; values that do not match stay unchanged.
+Empty values can be filled right away or later with **Number now**, and with **Set counter** e.g. the next year starts
+at 1000. See [Administrator guide, Converting existing fields](ADMIN_GUIDE.md#converting-existing-fields).

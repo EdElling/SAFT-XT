@@ -413,7 +413,7 @@ crea anche una voce aggiuntiva se la tabella deve comparire in un secondo punto 
 |---|---|
 | Rinominare un campo | in qualsiasi momento, i dati restano |
 | Cambiare il tipo | senza perdita di dati in qualsiasi momento (ad es. numero intero → numero decimale, testo → testo su più righe, data → data e ora); testo su più righe → su una riga se tutti i valori stanno nella lunghezza; altrimenti solo se la colonna è vuota |
-| Cambiare il tipo verso o da intervallo di numerazione | solo se nessun record ha un valore nel campo (cestino compreso); vedere [Intervalli di numerazione](#intervalli-di-numerazione) |
+| Cambiare il tipo verso o da intervallo di numerazione | da testo, testo su più righe, numero intero e scelta anche con valori, se sono univoci; ritorno a testo sempre; altrimenti solo se nessun record ha un valore nel campo (cestino compreso); vedere [Intervalli di numerazione](#intervalli-di-numerazione) |
 | Lunghezza del testo | aumentare in qualsiasi momento, ridurre solo se tutti i valori esistenti stanno nella nuova lunghezza (altrimenti il messaggio indica quanti sono troppo lunghi) |
 | Attivare «Univoco» | solo se i dati esistenti non contengono duplicati |
 | Rimuovere un valore da un elenco di selezione | in qualsiasi momento; se il valore è in uso, compare un avviso con il numero di record. Questi mantengono il loro valore, ma alla modifica successiva occorre sceglierne uno valido. |
@@ -462,10 +462,45 @@ modello, SAFT prosegue da lì. La [definizione dell’app](#15-app-applicazioni-
 non i contatori: una nuova installazione parte dal valore iniziale; un modello modificato durante un aggiornamento è
 considerato delicato. «Reimposta i dati dell’app» azzera anche i contatori.
 
-Un campo esistente può passare a «Intervallo di numerazione» e tornare indietro finché nessun record ha un valore in
-questo campo (cestino compreso). Riprendere numeri esistenti in un intervallo di numerazione non è ancora possibile. Per
+#### Convertire campi esistenti
+
+Un campo di tipo testo, testo su più righe, numero intero o scelta può passare a «Intervallo di numerazione» anche se
+contiene valori, p. es. un numero di fattura finora inserito a mano. Modificando il campo, scegliete il tipo
+**Intervallo di numerazione** e il modello. Sotto il numero successivo, SAFT mostra cosa succede ai valori esistenti:
+
+- quanti valori ci sono e quanti sono conformi al modello,
+- il numero progressivo più alto per periodo: i nuovi numeri proseguono da lì,
+- i primi valori non conformi: restano invariati, p. es. un vecchio numero a tre cifre con un modello a quattro.
+  Adattate le cifre del modello se i vecchi numeri devono farne parte,
+- quanti record non hanno un valore.
+
+I valori esistenti devono essere univoci (i record nel cestino non contano); altrimenti il modello indica i doppioni e
+non è possibile salvare. I numeri interi vengono completati secondo il modello se contiene solo il numero progressivo
+(`42` diventa `0042` con `{0000}`); altrimenti restano come sono. Valori con più di 60 caratteri impediscono il
+cambio.
+
+I record senza valore restano vuoti finché non attivate **Numerare ora i valori vuoti** o scegliete più tardi
+**Numerare ora** (icona #) nell’elenco dei campi. SAFT assegna allora i numeri nell’ordine della data di riferimento,
+poi della data di creazione; senza data di riferimento, la data di creazione del record determina anche anno e mese. I
+record nel cestino e quelli senza data di riferimento restano vuoti. Con molti record, il lavoro prosegue in
+background (vedere [Lavori](#lavori)). Ogni assegnazione figura nel registro delle modifiche del record, con un
+identificativo comune per l’intera esecuzione.
+
+Il ritorno a testo (su una o più righe) è sempre possibile: i numeri restano testo, i contatori vengono eliminati. Per
 numeri di posizione che devono restare modificabili resta disponibile **Proponi il numero successivo** per i numeri
 interi.
+
+#### Consultare e impostare il contatore
+
+Modificando un intervallo di numerazione, sotto il numero successivo compaiono i **contatori** per periodo: l’ultimo
+numero progressivo assegnato e il più alto esistente. Con **Impostare il contatore** indicate per un periodo (p. es.
+`2027`, mensile `2027-01`, senza ripartenza `-`) l’ultimo numero assegnato; il successivo è più alto di uno.
+
+- **Aumentare** è sempre possibile, p. es. «le fatture 2027 iniziano da 1000»: contatore 999.
+- **Abbassare** è possibile solo se nessun numero esistente del periodo è più alto (cestino compreso), e solo con
+  conferma.
+
+Ogni modifica figura nella cronologia del campo (icona orologio nell’elenco dei campi).
 
 ### Usata in
 

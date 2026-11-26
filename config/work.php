@@ -7,6 +7,7 @@ use App\Work\Types\AppDesignerReportsWork;
 use App\Work\Types\AppDesignerTurnWork;
 use App\Work\Types\DocumentsWork;
 use App\Work\Types\ExportWork;
+use App\Work\Types\NumberBackfillWork;
 use App\Work\Types\RecomputeWork;
 use App\Work\Types\RecordImportWork;
 use App\Work\Types\SnapshotRefreshWork;
@@ -24,6 +25,7 @@ return [
         DocumentsWork::class,
         RecordImportWork::class,
         SnapshotRefreshWork::class,
+        NumberBackfillWork::class,
         AppDesignerTurnWork::class,
         AppDesignerCreateWork::class,
         AppDesignerReportsWork::class,
