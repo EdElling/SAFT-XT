@@ -102,6 +102,18 @@ class CurrentAppTest extends DynamicDataTestCase
         $this->assertSame(0, $this->current()->accessible(User::factory()->create()->assignRole(User::ROLE_DEFAULT))->count(), 'Nur Systemrolle: keine App.');
     }
 
+    /** CurrentApp ist je Request scoped (B-150); Arbeiten setzen die App nur im Speicher (WorkRunner). */
+    public function test_current_app_follows_in_memory_choice_and_app_changes_within_a_request(): void
+    {
+        $this->assertSame($this->sales->id, $this->current()->id($this->person));
+
+        $this->person->current_app_id = $this->hr->id;
+        $this->assertSame($this->hr->id, $this->current()->id($this->person), 'Gewählte App am Model, ohne Speichern.');
+
+        $this->hr->update(['is_active' => false]);
+        $this->assertSame($this->sales->id, $this->current()->id($this->person), 'Deaktivierte App fällt im selben Request weg.');
+    }
+
     public function test_navigation_shows_system_entries_and_the_current_app_only(): void
     {
         $navigation = $this->navigation($this->person);

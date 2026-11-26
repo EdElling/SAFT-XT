@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
  */
 final class CurrentApp
 {
-    /** @var array<int, App|null> */
+    /** @var array<string, App|null> Person:gewählte App => App */
     private array $resolved = [];
 
     /** @return Collection<int, App> zugängliche Apps in ihrer Reihenfolge */
@@ -101,13 +101,16 @@ final class CurrentApp
             return null;
         }
 
-        if (array_key_exists($user->id, $this->resolved)) {
-            return $this->resolved[$user->id];
+        // Je Person und gewählter App: wer current_app_id am Model setzt, bekommt die neue App (CurrentApp ist scoped).
+        $key = $user->id.':'.$user->current_app_id;
+
+        if (array_key_exists($key, $this->resolved)) {
+            return $this->resolved[$key];
         }
 
         $apps = $this->accessible($user);
 
-        return $this->resolved[$user->id] = $apps->firstWhere('id', $user->current_app_id) ?? $apps->first();
+        return $this->resolved[$key] = $apps->firstWhere('id', $user->current_app_id) ?? $apps->first();
     }
 
     /** Nach Änderungen an Apps: neu ermitteln (CurrentApp ist je Request scoped). */
@@ -138,7 +141,7 @@ final class CurrentApp
             $user->syncOriginalAttribute('current_app_id');
         }
 
-        $this->resolved[$user->id] = $target;
+        $this->resolved[$user->id.':'.$user->current_app_id] = $target;
 
         return true;
     }
