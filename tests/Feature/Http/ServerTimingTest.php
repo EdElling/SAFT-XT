@@ -59,4 +59,29 @@ class ServerTimingTest extends TestCase
 
         $this->assertTrue($response->headers->has('Server-Timing'), 'Status '.$response->getStatusCode());
     }
+
+    public function test_header_names_the_slowest_queries_without_values(): void
+    {
+        config(['saft.server_timing' => true]);
+        $this->app['router']->get('/_server-timing-slowest', function () {
+            DB::select("select 'geheim' as wert");
+            DB::select('select 2');
+            DB::select('select 3');
+            DB::select('select 4');
+
+            return 'ok';
+        });
+
+        $header = (string) $this->get('/_server-timing-slowest')->assertOk()->headers->get('Server-Timing');
+        $slowest = ServerTiming::slowest();
+
+        $this->assertCount(3, $slowest, 'Nur die drei langsamsten.');
+        $this->assertGreaterThanOrEqual($slowest[1]['ms'], $slowest[0]['ms'], 'Absteigend sortiert.');
+        $this->assertGreaterThanOrEqual($slowest[2]['ms'], $slowest[1]['ms']);
+        $this->assertMatchesRegularExpression('/(^|, )q1;dur=[\d.]+;desc="[^"]+"/', $header);
+        $this->assertMatchesRegularExpression('/(^|, )q3;dur=[\d.]+;desc="[^"]+"/', $header);
+        $this->assertStringNotContainsString('q4;', $header);
+        $this->assertStringNotContainsString('geheim', $header, 'Keine Werte aus dem SQL.');
+        $this->assertLessThanOrEqual(1, substr_count($header, '(erste)'), 'Nur die erste Abfrage der Verbindung ist markiert.');
+    }
 }
