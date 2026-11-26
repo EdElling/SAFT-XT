@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Exceptions\BusinessRuleException;
 use App\Exceptions\ErrorPresenter;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\ServerTiming;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
@@ -23,6 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Zuerst: misst die ganze Antwort samt Session und Rechten (nur mit SERVER_TIMING=true).
+        $middleware->prepend(ServerTiming::class);
         // Sicherheits-Header für alle Antworten (Seiten, Livewire, Downloads, Fehlerseiten).
         $middleware->append(SecurityHeaders::class);
         // Auch Livewire-Anfragen laufen über "web" und brauchen die Sprache des Benutzers.

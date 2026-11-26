@@ -26,4 +26,8 @@ return [
 
     // Geplante Aufgabe „Demo-Daten zurücksetzen“ erlauben – nur für öffentliche Demo- und Schulungssysteme.
     'demo_reset' => (bool) env('DEMO_RESET', false),
+
+    // Antwortzeit im Header „Server-Timing“ aufschlüsseln (Start, Datenbank, Anwendung) – zum Messen auf Hosting ohne
+    // Server-Logs; jeder Besucher sieht die Zeiten, darum nach dem Messen wieder ausschalten.
+    'server_timing' => (bool) env('SERVER_TIMING', false),
 ];
