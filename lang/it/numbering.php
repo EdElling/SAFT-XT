@@ -15,7 +15,6 @@ return [
         'group_codes' => 'Codici per {GROUP}',
     ],
     'form' => [
-        'section' => 'Intervallo di numerazione',
         'pattern_help' => 'Testo fisso e segnaposto, p. es. R-{YYYY}-{0000}. Il numero progressivo ha tante cifre quanti zeri.',
         'insert' => 'Inserisci elemento',
         'insert_placeholder' => 'Scegli un segnaposto …',

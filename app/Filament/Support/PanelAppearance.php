@@ -135,6 +135,10 @@ final class PanelAppearance
             .'@media (min-width:768px){.saft-mobile-only{display:none!important}.saft-desktop-only{display:inline-flex!important}}'
             // Gesperrte Symbol-Knöpfe in Tabellenzeilen deutlich blasser als aktive (Filament: 70 %).
             .'.fi-ta-row :is(.fi-icon-btn.fi-disabled,.fi-icon-btn[disabled]):not(.fi-force-enabled){opacity:.5}'
+            // Inline-Beschriftungen immer auf Höhe des Eingabefelds, nie mittig über Feld und Erläuterung (Filament richtet
+            // Texteingaben sonst anders aus als Auswahlfelder).
+            .'@media (min-width:640px){.fi-fo-field.fi-fo-field-has-inline-label>.fi-fo-field-label-col'
+            .'{align-items:start!important;align-content:start!important;padding-top:.375rem!important}}'
             // Systemprotokoll: Meldungen höchstens etwa 60 Zeichen breit, auch lange Wörter (Pfade) umbrechen.
             .'.saft-log-message{max-width:40rem;overflow-wrap:anywhere}'
             // Reiter über Listen (z. B. App-Reiter, HasAppTabs) links bündig wie Titel und Tabelle, nur so breit wie nötig.

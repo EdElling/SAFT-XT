@@ -15,7 +15,6 @@ return [
         'group_codes' => 'Codes pour {GROUP}',
     ],
     'form' => [
-        'section' => 'Plage de numéros',
         'pattern_help' => 'Texte fixe et espaces réservés, p. ex. R-{YYYY}-{0000}. Le numéro courant a autant de chiffres que de zéros.',
         'insert' => 'Insérer un élément',
         'insert_placeholder' => 'Choisir un espace réservé …',

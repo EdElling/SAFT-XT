@@ -15,7 +15,6 @@ return [
         'group_codes' => 'Codes for {GROUP}',
     ],
     'form' => [
-        'section' => 'Number sequence',
         'pattern_help' => 'Fixed text and placeholders, e.g. R-{YYYY}-{0000}. The running number has as many digits as zeros.',
         'insert' => 'Insert placeholder',
         'insert_placeholder' => 'Choose a placeholder …',

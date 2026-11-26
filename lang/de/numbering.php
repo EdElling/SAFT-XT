@@ -15,7 +15,6 @@ return [
         'group_codes' => 'Kurzzeichen für {GROUP}',
     ],
     'form' => [
-        'section' => 'Nummernkreis',
         'pattern_help' => 'Fester Text und Platzhalter, z. B. R-{YYYY}-{0000}. Die laufende Nummer hat so viele Stellen wie Nullen.',
         'insert' => 'Baustein einfügen',
         'insert_placeholder' => 'Platzhalter wählen …',

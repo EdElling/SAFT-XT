@@ -28,6 +28,7 @@ use App\Models\CustomTable;
 use App\Plugins\Api\FormulaFunction;
 use App\Plugins\PluginDependencies;
 use App\Plugins\PluginRegistry;
+use App\Support\AppLocale;
 use App\Support\Translations;
 use Closure;
 use Filament\Actions\Action;
@@ -36,6 +37,7 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -83,7 +85,8 @@ final class FieldForm
     public static function components(?CustomTable $owner = null): array
     {
         return [
-            Grid::make(2)->schema([
+            // Kopf über die ganze Breite: Bezeichnung und Spaltenname nebeneinander, darunter der Typ (halbe Breite).
+            Grid::make(2)->columnSpanFull()->inlineLabel()->schema([
                 TranslatableInputs::make('label', __('common.label'), required: true, configure: static function ($input, string $locale): void {
                     if ($locale !== config('locales.default')) {
                         return;
@@ -120,33 +123,51 @@ final class FieldForm
                     })
                     ->disabled(fn (mixed $record): bool => self::pluginHint($record) !== null)
                     ->dehydrated()
-                    ->helperText(fn (mixed $record): string => self::pluginHint($record) ?? __('tables.fields.type_help'))
-                    ->columnSpanFull(),
+                    ->helperText(fn (mixed $record): string => self::pluginHint($record) ?? __('tables.fields.type_help')),
             ]),
             self::typeOptions($owner),
             self::numbering($owner),
             self::validation($owner),
             self::suggestion($owner),
+            // Alle sichtbaren Schalter in einer Reihe über die ganze Breite.
             Fieldset::make(__('tables.fields.behaviour'))
-                ->columns(3)
+                ->columnSpanFull()
+                ->columns(static fn (Get $get): array => ['default' => 2, 'lg' => count(self::behaviourToggles((string) $get('type')))])
                 ->schema([
                     Toggle::make('is_required')->label(__('tables.fields.required'))
-                        ->visible(fn (Get $get): bool => ! in_array($get('type'), [FieldType::Computed->value, FieldType::Number->value], true)),
+                        ->visible(fn (Get $get): bool => in_array('is_required', self::behaviourToggles((string) $get('type')), true)),
                     // Nummernkreise sind immer eindeutig (B-135).
                     Toggle::make('is_unique')
                         ->label(__('tables.fields.unique'))
-                        ->visible(fn (Get $get): bool => ! in_array($get('type'), [FieldType::Text->value, FieldType::Boolean->value, FieldType::Computed->value, FieldType::File->value, FieldType::Number->value], true)),
+                        ->visible(fn (Get $get): bool => in_array('is_unique', self::behaviourToggles((string) $get('type')), true)),
                     Toggle::make('is_searchable')
                         ->label(__('tables.fields.searchable'))
-                        ->visible(fn (Get $get): bool => in_array($get('type'), [FieldType::String->value, FieldType::Text->value, FieldType::Select->value, FieldType::Number->value], true)),
+                        ->visible(fn (Get $get): bool => in_array('is_searchable', self::behaviourToggles((string) $get('type')), true)),
                     Toggle::make('is_sortable')
                         ->label(__('tables.fields.index'))
                         ->helperText(__('tables.fields.index_help'))
-                        ->visible(fn (Get $get): bool => ! in_array($get('type'), [FieldType::Text->value, FieldType::File->value], true)),
+                        ->visible(fn (Get $get): bool => in_array('is_sortable', self::behaviourToggles((string) $get('type')), true)),
                     Toggle::make('show_in_table')->label(__('tables.fields.show_in_table'))->default(true),
                     Toggle::make('show_in_form')->label(__('tables.fields.show_in_form'))->default(true),
                 ]),
         ];
+    }
+
+    /**
+     * Schalter unter „Verhalten“ je Feldtyp (bestimmt auch die Anzahl Spalten, damit sie in einer Reihe stehen).
+     *
+     * @return list<string>
+     */
+    private static function behaviourToggles(string $type): array
+    {
+        return array_values(array_filter([
+            in_array($type, [FieldType::Computed->value, FieldType::Number->value], true) ? null : 'is_required',
+            in_array($type, [FieldType::Text->value, FieldType::Boolean->value, FieldType::Computed->value, FieldType::File->value, FieldType::Number->value], true) ? null : 'is_unique',
+            in_array($type, [FieldType::String->value, FieldType::Text->value, FieldType::Select->value, FieldType::Number->value], true) ? 'is_searchable' : null,
+            in_array($type, [FieldType::Text->value, FieldType::File->value], true) ? null : 'is_sortable',
+            'show_in_table',
+            'show_in_form',
+        ]));
     }
 
     /**
@@ -251,6 +272,8 @@ final class FieldForm
             || ($get('type') === FieldType::Computed->value && $get('options.result') !== 'integer');
 
         return Fieldset::make(__('tables.fields.type_settings'))
+            ->columnSpanFull()
+            ->inlineLabel()
             ->columns(2)
             ->visible($is(FieldType::String, FieldType::Decimal, FieldType::Select, FieldType::Relation, FieldType::Computed, FieldType::File))
             ->schema([
@@ -277,7 +300,7 @@ final class FieldForm
                     ->columnSpanFull(),
                 ...self::formula($owner),
                 // Dateien (B-021): erlaubte Arten, Höchstgrösse je Datei, Anzahl.
-                CheckboxList::make('options.kinds')
+                CheckboxList::make('options.kinds')->inlineLabel(false)
                     ->label(__('tables.fields.file_kinds'))
                     ->helperText(__('tables.fields.file_kinds_help'))
                     ->options(FileKinds::options())
@@ -315,13 +338,25 @@ final class FieldForm
                     ->maxValue(FieldDefinitionNormalizer::MAX_STRING_LENGTH)
                     ->default(255)
                     ->visible($is(FieldType::String)),
-                Repeater::make('options.options')
+                // Tabelle: Wert und Anzeige je Sprache; leere Übersetzungen zeigen grau, was stattdessen erscheint.
+                Repeater::make('options.options')->inlineLabel(false)
                     ->label(__('tables.fields.options'))
-                    ->schema([
-                        TextInput::make('value')->label(__('tables.fields.option_value'))->required()->maxLength(FieldType::SELECT_LENGTH),
-                        TranslatableInputs::make('label', __('tables.fields.option_label')),
+                    ->table([
+                        TableColumn::make(__('tables.fields.option_value'))->markAsRequired(),
+                        ...array_map(static fn (string $locale): TableColumn => TableColumn::make(__('tables.fields.option_label').' '.strtoupper($locale)), array_keys(AppLocale::labels())),
                     ])
-                    ->columns(2)
+                    ->compact()
+                    ->schema([
+                        TextInput::make('value')->hiddenLabel()->label(__('tables.fields.option_value'))->required()->maxLength(FieldType::SELECT_LENGTH),
+                        ...array_map(
+                            static fn (string $locale): TextInput => TextInput::make('label.'.$locale)->hiddenLabel()->maxLength(255)
+                                ->label(__('tables.fields.option_label').' '.strtoupper($locale))
+                                ->placeholder(static fn (Get $get): ?string => $locale === config('locales.default')
+                                    ? $get('value')
+                                    : (filled($get('label.'.config('locales.default'))) ? $get('label.'.config('locales.default')) : $get('value'))),
+                            array_keys(AppLocale::labels()),
+                        ),
+                    ])
                     ->minItems(1)
                     ->defaultItems(1)
                     ->addActionLabel(__('tables.fields.option_add'))
@@ -360,7 +395,7 @@ final class FieldForm
                     ->selectablePlaceholder(false)
                     ->visible(fn (Get $get): bool => $get('type') === FieldType::Relation->value && count((array) $get('options.display_fields')) > 1),
                 // Kind-Datensätze mitkopieren (B-123): nicht für Selbstreferenzen und Tabellen anderer Apps.
-                Toggle::make('options.'.FieldDefinitionNormalizer::COPY_WITH_PARENT)
+                Toggle::make('options.'.FieldDefinitionNormalizer::COPY_WITH_PARENT)->inlineLabel(false)
                     ->label(__('tables.fields.copy_with_parent'))
                     ->helperText(__('tables.fields.copy_with_parent_help'))
                     ->visible(fn (Get $get): bool => $get('type') === FieldType::Relation->value
@@ -385,7 +420,7 @@ final class FieldForm
         $isComputed = static fn (Get $get): bool => $get('type') === FieldType::Computed->value;
 
         return [
-            Textarea::make('options.formula')
+            Textarea::make('options.formula')->inlineLabel(false)
                 ->label(__('tables.formula.label'))
                 ->rows(2)
                 ->required(fn (Get $get): bool => $isComputed($get))
@@ -621,7 +656,9 @@ final class FieldForm
             ->keyBy('name');
         $codes = 'options.'.NumberPattern::GROUP_CODES;
 
-        return Fieldset::make(__('numbering.form.section'))
+        return Fieldset::make(__('tables.fields.type_settings'))
+            ->columnSpanFull()
+            ->inlineLabel()
             ->columns(2)
             ->visible(fn (Get $get): bool => $get('type') === FieldType::Number->value)
             ->schema([
@@ -688,7 +725,7 @@ final class FieldForm
                         $set($codes, $select === null ? [] : collect(FieldDefinitionNormalizer::choiceValues($select))
                             ->mapWithKeys(static fn (string $v): array => [$v => (string) ($current[$v] ?? (NumberPattern::validCode($v) ? $v : ''))])->all());
                     }),
-                KeyValue::make($codes)
+                KeyValue::make($codes)->inlineLabel(false)
                     ->label(__('numbering.fields.group_codes'))
                     ->keyLabel(__('numbering.form.group_choice'))
                     ->valueLabel(__('numbering.form.group_code'))
@@ -704,7 +741,7 @@ final class FieldForm
                     ->live(onBlur: true),
                 // „Vergeben, wenn“ (N3): Bedingung in der Formelsprache, mit denselben Hilfen wie die Formel eines
                 // berechneten Felds (Prüfung beim Tippen, Bausteine, Hilfe); dieselbe Prüfung wie im Normalizer.
-                Textarea::make('options.'.NumberCondition::OPTION)
+                Textarea::make('options.'.NumberCondition::OPTION)->inlineLabel(false)
                     ->label(__('numbering.fields.assign_when'))
                     ->rows(2)
                     ->disabled($owner === null)
@@ -747,7 +784,7 @@ final class FieldForm
                 Text::make(static fn (Get $get, mixed $record): string => __('numbering.conversion.preview', ['summary' => self::conversionAnalysis($get, $record)?->summary() ?? '']))
                     ->visible(static fn (Get $get, mixed $record): bool => self::conversionAnalysis($get, $record) !== null)
                     ->columnSpanFull(),
-                Toggle::make('number_backfill')
+                Toggle::make('number_backfill')->inlineLabel(false)
                     ->label(__('numbering.conversion.backfill'))
                     ->helperText(__('numbering.conversion.backfill_help'))
                     ->visible(static fn (Get $get, mixed $record): bool => (self::conversionAnalysis($get, $record)->empty ?? 0) > 0)
@@ -867,7 +904,7 @@ final class FieldForm
                     ->helperText(__('numbering.counter.value_help'))
                     ->integer()->minValue(0)->required()
                     ->live(onBlur: true),
-                Checkbox::make('confirmed')
+                Checkbox::make('confirmed')->inlineLabel(false)
                     ->label(__('numbering.counter.confirm'))
                     ->visible(static fn (CustomField $record, Get $get): bool => ($now = $current($record, $get)) !== null && (int) $get('value') < $now),
             ])
@@ -984,6 +1021,8 @@ final class FieldForm
             ->all();
 
         return Fieldset::make(__('tables.fields.suggestion'))
+            ->columnSpanFull()
+            ->inlineLabel()
             ->columns(2)
             ->visible(fn (Get $get): bool => FieldType::tryFrom((string) $get('type')) !== null && ! in_array($get('type'), [FieldType::Relation->value, FieldType::Computed->value, FieldType::Number->value], true))
             ->schema([
@@ -997,18 +1036,18 @@ final class FieldForm
                     ->disabled(fn (Get $get): bool => $owner === null || (bool) $get('options.'.SequenceSuggester::OPTION) || (bool) $get('options.'.NowDefault::OPTION))
                     ->live()
                     ->columnSpanFull(),
-                Toggle::make('options.'.CustomField::GROUP_DIGITS)
+                Toggle::make('options.'.CustomField::GROUP_DIGITS)->inlineLabel(false)
                     ->label(__('tables.fields.group_digits'))
                     ->helperText(__('tables.fields.group_digits_help'))
                     ->default(true)
                     ->visible(fn (Get $get): bool => $get('type') === FieldType::Integer->value),
-                Toggle::make('options.'.SequenceSuggester::OPTION)
+                Toggle::make('options.'.SequenceSuggester::OPTION)->inlineLabel(false)
                     ->label(__('tables.fields.suggest_next'))
                     ->helperText(__('tables.fields.suggest_next_help'))
                     ->visible(fn (Get $get): bool => $get('type') === FieldType::Integer->value)
                     ->disabled(fn (Get $get): bool => filled($get('options.'.CopySource::OPTION)))
                     ->live(),
-                Toggle::make('options.'.NowDefault::OPTION)
+                Toggle::make('options.'.NowDefault::OPTION)->inlineLabel(false)
                     ->label(fn (Get $get): string => $get('type') === FieldType::Date->value ? __('tables.fields.prefill_today') : __('tables.fields.prefill_now'))
                     ->helperText(__('tables.fields.prefill_now_help'))
                     ->visible(fn (Get $get): bool => in_array($get('type'), [FieldType::Date->value, FieldType::DateTime->value], true))
@@ -1029,6 +1068,8 @@ final class FieldForm
         $is = static fn (string ...$types): Closure => static fn (Get $get): bool => in_array($get('type'), $types, true);
 
         return Fieldset::make(__('tables.fields.validation'))
+            ->columnSpanFull()
+            ->inlineLabel()
             ->columns(2)
             ->visible($is('string', 'text', 'integer', 'decimal'))
             ->schema([
@@ -1036,8 +1077,8 @@ final class FieldForm
                 TextInput::make('validation_rules.max_length')->label(__('tables.fields.max_length'))->integer()->minValue(0)->visible($is('string', 'text')),
                 TextInput::make('validation_rules.min')->label(__('tables.fields.min'))->numeric()->visible($is('integer', 'decimal')),
                 TextInput::make('validation_rules.max')->label(__('tables.fields.max'))->numeric()->visible($is('integer', 'decimal')),
-                Toggle::make('validation_rules.email')->label(__('tables.fields.email'))->visible($is('string')),
-                Toggle::make('validation_rules.url')->label(__('tables.fields.url'))->visible($is('string')),
+                Toggle::make('validation_rules.email')->inlineLabel(false)->label(__('tables.fields.email'))->visible($is('string')),
+                Toggle::make('validation_rules.url')->inlineLabel(false)->label(__('tables.fields.url'))->visible($is('string')),
                 Select::make('validation_rules.'.FieldRuleCheck::OPTION)
                     ->label(__('tables.fields.plugin_checks'))
                     ->multiple()
