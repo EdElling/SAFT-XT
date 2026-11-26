@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Browser;
 
 use App\DynamicData\DataMenu;
+use App\DynamicData\Numbering\NumberPattern;
 use App\DynamicData\Schema\FieldType;
 use App\Models\CustomField;
 use App\Models\CustomTable;
@@ -527,6 +528,54 @@ class TableDesignerTest extends DuskTestCase
         DynamicRecord::forget('rechnungen');
         $this->assertSame(['R-2026-001', 'R-2026-004', 'R-2026-005'], DynamicRecord::forTableName('rechnungen')->newQuery()->orderBy('id')->pluck('nummer')->all());
         $this->assertSame('R-2027-1000', DynamicRecord::forTableName('rechnungen')->newQuery()->create(['datum' => '2027-01-05'])->nummer);
+    }
+
+    /**
+     * TDE-39: „Vergeben, wenn“ – Bedingung mit Prüfung beim Tippen setzen; ein Entwurf bleibt ohne Nummer, die Nummer
+     * kommt beim Speichern mit „Versendet“ (B-135, N3).
+     */
+    public function test_number_sequence_assigned_once_the_condition_holds(): void
+    {
+        $bills = $this->service()->createTable(['name' => 'rechnungen', 'label' => 'Rechnungen'], [
+            ['name' => 'datum', 'label' => 'Datum', 'type' => 'date', 'is_required' => true],
+            ['name' => 'betreff', 'label' => 'Betreff', 'type' => 'string'],
+            ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'is_required' => true, 'options' => ['options' => [
+                ['value' => 'entwurf', 'label' => ['de' => 'Entwurf']],
+                ['value' => 'versendet', 'label' => ['de' => 'Versendet']],
+            ]]],
+            ['name' => 'nummer', 'label' => 'Nummer', 'type' => 'number', 'options' => [
+                NumberPattern::PATTERN => 'R-{YYYY}-{000}', NumberPattern::RESET => 'yearly', NumberPattern::DATE_FIELD => 'datum',
+            ]],
+        ]);
+        app(DataMenu::class)->ensure($bills);
+
+        $this->browse(function (Browser $browser) use ($bills): void {
+            $this->openDesigner($browser, $bills);
+            $this->rowAction($browser, 'nummer', 'Bearbeiten')->waitFor($this->input('options.assign_when'), 15);
+            $condition = $this->input('options.assign_when');
+            $browser->type($condition, "status <> 'entwurf' x")
+                ->waitForText('„x“ ist hier nicht erwartet.', 15)
+                ->clear($condition)->type($condition, "status <> 'entwurf'")
+                ->waitForText('Bedingung in Ordnung – hängt ab von: status', 15);
+            $this->clickVisibleButton($browser, 'Speichern')->waitUntilMissing($condition, 15);
+
+            $browser->visit('/admin/data/rechnungen')->waitForText('Neuer Datensatz', 15);
+            $this->clickVisibleButton($browser, 'Neuer Datensatz')->waitFor($this->input('betreff'), 15)
+                ->assertAttribute($this->input('nummer'), 'placeholder', "wird vergeben, wenn status <> 'entwurf'")
+                ->keys($this->input('datum'), '20112026')
+                ->type($this->input('betreff'), 'Kursgeld')
+                ->select($this->input('status'), 'entwurf');
+            $this->clickVisibleButton($browser, 'Erstellen')->waitUntilMissing($this->input('betreff'), 15)->waitForText('Kursgeld', 15);
+
+            $this->rowAction($browser, 'Kursgeld', 'Bearbeiten')->waitFor($this->input('status'), 15)
+                ->select($this->input('status'), 'versendet');
+            $this->clickVisibleButton($browser, 'Speichern')->waitForText('R-2026-001', 15);
+        });
+
+        $field = $this->field($bills, 'nummer');
+        $this->assertSame("status <> 'entwurf'", $field->optionsArray()['assign_when']);
+        DynamicRecord::forget('rechnungen');
+        $this->assertSame('R-2026-001', DynamicRecord::forTableName('rechnungen')->newQuery()->where('betreff', 'Kursgeld')->value('nummer'));
     }
 
     /** TDE-15 */
