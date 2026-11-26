@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Apps\AppInterfaces;
+use App\DynamicData\CustomTableLookup;
 use App\Exceptions\BusinessRuleException;
 use App\Models\Base\ReportLink as BaseReportLink;
 use App\Models\Concerns\BelongsToApp;
@@ -30,6 +31,9 @@ class ReportLink extends BaseReportLink
 
     protected static function booted(): void
     {
+        // Je Request gemerkte Details bzw. Vorlagen (CustomTableLookup::remember) verwerfen.
+        static::saved(static fn () => app(CustomTableLookup::class)->forget());
+        static::deleted(static fn () => app(CustomTableLookup::class)->forget());
         // Gehört zur App der Quelltabelle; Ziel in derselben App oder eine freigegebene Tabelle einer anderen App mit
         // freigegebenem Zielfeld (Schnittstelle, B-107 Etappe 5b).
         static::saving(static function (self $link): void {

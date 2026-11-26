@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\DynamicData\CustomTableLookup;
 use App\DynamicData\Schema\FieldType;
 use App\Models\Base\CustomField as BaseCustomField;
 use App\Models\Concerns\HasAuditLog;
@@ -36,6 +37,13 @@ class CustomField extends BaseCustomField
         'is_generated' => false,
         'sort_order' => 0,
     ];
+
+    protected static function booted(): void
+    {
+        // Je Request geladene Tabellen samt Feldern und Abgeleitetes (CustomTableLookup) verwerfen.
+        static::saved(static fn () => app(CustomTableLookup::class)->forget());
+        static::deleted(static fn () => app(CustomTableLookup::class)->forget());
+    }
 
     /**
      * @return array<string, string>

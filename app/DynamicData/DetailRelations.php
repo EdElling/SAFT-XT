@@ -25,10 +25,11 @@ final class DetailRelations
      */
     public static function candidates(string $parentTable): Collection
     {
-        return self::fieldCandidates($parentTable)
+        // Je Request einmal: jede Detailtabelle der Kaskade prüft ihre Verknüpfung (B-150).
+        return app(CustomTableLookup::class)->remember('details.'.$parentTable, static fn (): Collection => self::fieldCandidates($parentTable)
             ->map(fn (CustomField $f): DetailSource => DetailSource::ofField($f))
             ->concat(self::linkCandidates($parentTable))
-            ->values();
+            ->values());
     }
 
     /**
@@ -40,7 +41,7 @@ final class DetailRelations
     {
         // Nur Kind-Tabellen derselben App: Verknüpfungen anderer Apps auf eine freigegebene Tabelle (B-107,
         // Schnittstellen) bringen deren Datensätze nicht als Details in diese App.
-        $appId = CustomTable::query()->where('name', $parentTable)->value('app_id');
+        $appId = app(CustomTableLookup::class)->byName($parentTable)?->app_id;
 
         return self::referencing($parentTable)
             ->filter(fn (CustomField $f): bool => $f->is_active && $f->custom_table->is_active
@@ -75,14 +76,15 @@ final class DetailRelations
      */
     public static function referencing(string $parentTable): Collection
     {
-        // Bewusst ohne Zwischenspeicher: Verknüpfungen können sich im selben Request ändern.
-        return CustomField::query()
-            ->with('custom_table')
+        // Je Request einmal; Speichern oder Löschen eines Felds leert den Speicher (CustomTableLookup).
+        return app(CustomTableLookup::class)->remember('referencing.'.$parentTable, static fn (): Collection => CustomField::query()
+            // Mit Feldern: jede Detailtabelle der Kaskade braucht die Felder ihrer Kindtabelle.
+            ->with('custom_table.fields')
             ->where('type', FieldType::Relation->value)
             ->where('options->table', $parentTable)
             ->orderBy('custom_table_id')
             ->orderBy('sort_order')
-            ->get();
+            ->get());
     }
 
     /**

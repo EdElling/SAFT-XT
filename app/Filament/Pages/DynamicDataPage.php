@@ -7,6 +7,7 @@ namespace App\Filament\Pages;
 use App\Apps\CurrentApp;
 use App\DynamicData\Cascade\CascadePath;
 use App\DynamicData\Cascade\CascadeResolver;
+use App\DynamicData\CustomTableLookup;
 use App\DynamicData\DataAccess;
 use App\DynamicData\DataView;
 use App\DynamicData\DetailRelations;
@@ -46,6 +47,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
@@ -425,9 +427,7 @@ class DynamicDataPage extends Page implements HasTable
 
     private function customTable(): CustomTable
     {
-        return $this->customTable ??= CustomTable::query()
-            ->with('fields')
-            ->where('name', $this->tableName)
-            ->firstOrFail();
+        return $this->customTable ??= app(CustomTableLookup::class)->byName($this->tableName)
+            ?? throw (new ModelNotFoundException)->setModel(CustomTable::class, [$this->tableName]);
     }
 }

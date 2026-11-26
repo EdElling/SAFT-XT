@@ -339,3 +339,12 @@ no. n".
     is listed in `tests/Fixtures/read-sites.json` with reason and classification `person`/`system`/`none`;
     architecture test 4. *Why:* the row-level access scope (B-020) must know where it applies and where it is
     explicitly switched off; a forgotten site would be a data leak.
+25. **Metadata once per request, query budget in tests** (26 November 2026). Tables with their fields, a table's
+    details, dependent computed fields, document templates and the person's column selection are read by the core
+    through the scoped service `CustomTableLookup` (`byName()`, `remember()`); saving or deleting a `CustomTable`,
+    `CustomField`, `ReportLink` or `DocumentTemplate` clears it. `CurrentApp` is scoped as well. `QueryBudgetTest`
+    sets an upper limit of queries for the page and the click of the master-detail view (warehouse demo). *Why:* on
+    shared hosting every query costs a round trip to the database host (Strato about 2.2 ms); the cascade queried the
+    same metadata again for each detail table (B-150: click 58 → 32, page 101 → 47 queries). *Consequence:* whoever
+    writes metadata bypassing the model (query builder) must call `CustomTableLookup::forget()`; records are
+    deliberately not cached.

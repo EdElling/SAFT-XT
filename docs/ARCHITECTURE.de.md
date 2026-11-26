@@ -346,3 +346,12 @@ durch Nr. n“ markiert.
     `tests/Fixtures/read-sites.json` mit Begründung und Einordnung `person`/`system`/`none`; Architekturtest 4.
     *Warum:* der Zeilenrechte-Scope (B-020) muss wissen, wo er greift und wo er ausdrücklich abgeschaltet wird; eine
     vergessene Stelle wäre ein Datenleck.
+25. **Metadaten je Request einmal, Abfragebudget im Test** (26.11.2026). Tabellen samt Feldern, Details einer Tabelle,
+    abhängige berechnete Felder, Dokumentvorlagen und die Spaltenauswahl der Person liest der Kern über den scoped
+    Dienst `CustomTableLookup` (`byName()`, `remember()`); Speichern oder Löschen von `CustomTable`, `CustomField`,
+    `ReportLink` oder `DocumentTemplate` leert ihn. Auch `CurrentApp` ist scoped. `QueryBudgetTest` legt eine
+    Obergrenze der Abfragen für Seite und Klick der Master-Detail-Ansicht fest (Lager-Demo). *Warum:* auf dem Webspace
+    kostet jede Abfrage eine Rundreise zum Datenbankrechner (Strato rund 2,2 ms); die Kaskade fragte dieselben
+    Metadaten je Detailtabelle neu ab (B-150: Klick 58 → 32, Seite 101 → 47 Abfragen). *Folge:* wer Metadaten am
+    Model vorbei schreibt (Query Builder), muss `CustomTableLookup::forget()` aufrufen; Datensätze werden bewusst
+    nicht zwischengespeichert.

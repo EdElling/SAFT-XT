@@ -8,6 +8,7 @@ use App\Apps\AppPermissions;
 use App\Documents\Templates\RenderedDocument;
 use App\Documents\Templates\TemplateFields;
 use App\Documents\Templates\TemplateRenderer;
+use App\DynamicData\CustomTableLookup;
 use App\DynamicData\DataAccess;
 use App\DynamicData\Files\RecordFiles;
 use App\DynamicData\Schema\FieldType;
@@ -53,9 +54,11 @@ final class DocumentGenerator
             return collect();
         }
 
-        return once(static fn (): Collection => DocumentTemplate::query()
-            ->where('custom_table_id', $table->id)->where('is_active', true)
-            ->orderBy('sort_order')->orderBy('name')->get()
+        // Aktive Vorlagen aller Tabellen je Request einmal (B-150): jede Tabelle der Kaskade baut ihre Aktionen.
+        $all = app(CustomTableLookup::class)->remember('document-templates', static fn (): Collection => DocumentTemplate::query()
+            ->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get()->groupBy('custom_table_id'));
+
+        return app(CustomTableLookup::class)->remember('templates.'.$table->id.'.'.$user->getKey(), static fn (): Collection => collect($all->get($table->id, []))
             ->filter(static fn (DocumentTemplate $template): bool => AppPermissions::can($user, self::PERMISSION, $template->app_id))
             ->each(static fn (DocumentTemplate $template) => $template->setRelation('customTable', $table))
             ->values());

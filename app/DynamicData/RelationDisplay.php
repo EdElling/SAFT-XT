@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\DynamicData;
 
 use App\Models\App;
-use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -122,15 +121,7 @@ final class RelationDisplay
      */
     public static function unavailable(array $options): bool
     {
-        $table = (string) ($options['table'] ?? '');
-        $key = 'saft.relation.app.'.$table;
-        $attributes = request()->attributes;
-
-        if (! $attributes->has($key)) {
-            $attributes->set($key, CustomTable::query()->where('name', $table)->value('app_id'));
-        }
-
-        $appId = $attributes->get($key);
+        $appId = app(CustomTableLookup::class)->byName((string) ($options['table'] ?? ''))?->app_id;
         $user = auth()->user();
 
         return $appId !== null && ! App::isActiveId((int) $appId) && ! ($user instanceof User && $user->isSuperAdmin());

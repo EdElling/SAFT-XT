@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Ui;
 
+use App\DynamicData\CustomTableLookup;
 use App\DynamicData\DataAccess;
 use App\DynamicData\DataMenu;
 use App\DynamicData\RelationDisplay;
@@ -29,7 +30,7 @@ final class RelationPreview
     public static function make(CustomField $relationField, Closure $parentId, string $name): ?Action
     {
         $options = $relationField->optionsArray();
-        $target = once(fn (): ?CustomTable => CustomTable::query()->with('fields')->where('name', (string) ($options['table'] ?? ''))->first());
+        $target = app(CustomTableLookup::class)->byName((string) ($options['table'] ?? ''));
 
         if ($target === null || ! DataAccess::current($target, 'view')) {
             return null;

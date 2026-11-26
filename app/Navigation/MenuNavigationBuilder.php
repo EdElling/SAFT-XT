@@ -36,6 +36,9 @@ use Illuminate\Support\Str;
  */
 final class MenuNavigationBuilder
 {
+    /** Request-Attribut mit dem Fingerabdruck der Menüs. */
+    public const string FINGERPRINT = 'saft.navigation.fingerprint';
+
     private const string DEFAULT_PARENT_ICON = 'heroicon-o-folder';
 
     /** Auswertungen der Menüeinträge, einmal je Aufbau geladen. @var array<int, Report> */
@@ -184,7 +187,15 @@ final class MenuNavigationBuilder
             return $builder;
         }
 
-        $fingerprint = Menu::query()->toBase()->selectRaw('count(*) as entries, max(updated_at) as changed')->first();
+        // Fingerabdruck einmal je Anfrage (B-150): Filament ruft die Navigation mehrfach ab. Speichern oder Löschen eines
+        // Menüs verwirft ihn (Menu::booted).
+        $attributes = request()->attributes;
+
+        if (! $attributes->has(self::FINGERPRINT)) {
+            $attributes->set(self::FINGERPRINT, Menu::query()->toBase()->selectRaw('count(*) as entries, max(updated_at) as changed')->first());
+        }
+
+        $fingerprint = $attributes->get(self::FINGERPRINT);
         $key = 'saft.navigation.'.md5(json_encode([
             $user->getKey(),
             app()->getLocale(),
@@ -194,7 +205,6 @@ final class MenuNavigationBuilder
             $fingerprint?->entries,
             $fingerprint?->changed,
         ], JSON_THROW_ON_ERROR));
-        $attributes = request()->attributes;
 
         if (! $attributes->has($key)) {
             $attributes->set($key, app(self::class)->build($builder, $user));

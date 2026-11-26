@@ -110,6 +110,12 @@ final class CurrentApp
         return $this->resolved[$user->id] = $apps->firstWhere('id', $user->current_app_id) ?? $apps->first();
     }
 
+    /** Nach Änderungen an Apps: neu ermitteln (CurrentApp ist je Request scoped). */
+    public function forget(): void
+    {
+        $this->resolved = [];
+    }
+
     public function id(?User $user): ?int
     {
         return $this->get($user)?->id;

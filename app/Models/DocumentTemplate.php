@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\DynamicData\CustomTableLookup;
 use App\Models\Base\DocumentTemplate as BaseDocumentTemplate;
 use App\Models\Concerns\HasAuditLog;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,6 +43,9 @@ class DocumentTemplate extends BaseDocumentTemplate
 
     protected static function booted(): void
     {
+        // Je Request gemerkte Details bzw. Vorlagen (CustomTableLookup::remember) verwerfen.
+        static::saved(static fn () => app(CustomTableLookup::class)->forget());
+        static::deleted(static fn () => app(CustomTableLookup::class)->forget());
         static::creating(static function (self $template): void {
             $template->uuid ??= (string) Str::uuid();
         });

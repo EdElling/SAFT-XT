@@ -12,6 +12,7 @@ use App\Models\Concerns\BelongsToApp;
 use App\Models\Concerns\HasAuditLog;
 use App\Models\Concerns\HasStableKey;
 use App\Models\Concerns\HasTranslatedAttributes;
+use App\Navigation\MenuNavigationBuilder;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -69,6 +70,11 @@ class Menu extends BaseMenu
 
     protected static function booted(): void
     {
+        // Fingerabdruck der Menüs für die Navigation (MenuNavigationBuilder::cachedForRequest) neu ermitteln.
+        $forget = static fn () => request()->attributes->remove(MenuNavigationBuilder::FINGERPRINT);
+        static::saved($forget);
+        static::deleted($forget);
+
         // App eines Eintrags (B-107): Dateneinträge gehören zur App ihrer Tabelle, andere Einträge zur App ihrer Gruppe;
         // nur oberste Gruppen wählen sie selbst. System-Menüs haben keine.
         static::saving(static function (self $menu): void {

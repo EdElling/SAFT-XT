@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Apps\CurrentApp;
 use App\Exceptions\BusinessRuleException;
 use App\Models\Base\App as BaseApp;
 use App\Models\Concerns\HasAuditLog;
@@ -47,6 +48,10 @@ class App extends BaseApp
 
     protected static function booted(): void
     {
+        // Je Request ermittelte aktuelle App (CurrentApp, scoped) verwerfen, sobald sich eine App ändert.
+        static::saved(static fn () => app(CurrentApp::class)->forget());
+        static::deleted(static fn () => app(CurrentApp::class)->forget());
+
         // Direkt löschen nur leere Apps; samt Inhalt entfernt AppRemover (Etappe 3), der vorher alles abbaut.
         static::deleting(static function (self $app): void {
             if (! $app->isEmpty()) {

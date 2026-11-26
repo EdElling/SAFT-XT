@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Ai\AnthropicChatClient;
 use App\Ai\ChatClient;
+use App\Apps\CurrentApp;
 use App\Auth\RoleSimulation;
 use App\Auth\Sso\Drivers\EntraDriver;
 use App\Auth\Sso\Drivers\SamlDriver;
@@ -93,6 +94,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ChatClient::class, AnthropicChatClient::class);
         $this->app->scoped(RoleSimulation::class);
         $this->app->scoped(CustomTableLookup::class);
+        // Je Request einmal ermittelt (B-150): Navigation, Menüs und Tabellen fragen die aktuelle App vielfach ab.
+        $this->app->scoped(CurrentApp::class);
         // Plugins melden sich in ihren ServiceProvidern an (die vor diesem laufen, daher singletonIf).
         $this->app->singletonIf(PluginRegistry::class);
         $this->app->singleton(PluginDependencies::class);

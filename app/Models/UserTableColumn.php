@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\DynamicData\CustomTableLookup;
 use App\Models\Base\UserTableColumn as BaseUserTableColumn;
 
 /**
@@ -20,11 +21,7 @@ class UserTableColumn extends BaseUserTableColumn
      */
     public static function columnsFor(int $userId, string $key): ?array
     {
-        $columns = self::query()->where('user_id', $userId)->where('table_key', $key)->value('columns');
-
-        if (is_string($columns)) {
-            $columns = json_decode($columns, true);
-        }
+        $columns = self::stored($userId, $key);
 
         if (! is_array($columns)) {
             return null;
@@ -49,8 +46,7 @@ class UserTableColumn extends BaseUserTableColumn
      */
     public static function orderFor(int $userId, string $key): ?array
     {
-        $columns = self::query()->where('user_id', $userId)->where('table_key', $key)->value('columns');
-        $columns = is_string($columns) ? json_decode($columns, true) : $columns;
+        $columns = self::stored($userId, $key);
         $order = is_array($columns) ? ($columns[self::ORDER] ?? null) : null;
 
         return is_array($order) && $order !== [] ? array_values(array_map('strval', $order)) : null;
@@ -68,6 +64,8 @@ class UserTableColumn extends BaseUserTableColumn
             $columns[self::ORDER] = $order;
         }
 
+        app(CustomTableLookup::class)->forgetRemembered(self::rememberKey($userId));
+
         if ($columns === []) {
             self::query()->where('user_id', $userId)->where('table_key', $key)->delete();
 
@@ -75,5 +73,23 @@ class UserTableColumn extends BaseUserTableColumn
         }
 
         self::query()->updateOrCreate(['user_id' => $userId, 'table_key' => $key], ['columns' => $columns]);
+    }
+
+    /**
+     * Gespeichertes JSON; alle Einträge der Person je Request einmal gelesen. Laden und Speichern der Spaltenauswahl fragen
+     * sonst je Tabelle bis zu viermal ab, die Kaskade zeigt mehrere Tabellen (B-150).
+     */
+    private static function stored(int $userId, string $key): mixed
+    {
+        $all = app(CustomTableLookup::class)->remember(self::rememberKey($userId), static fn (): array => self::query()
+            ->where('user_id', $userId)->pluck('columns', 'table_key')->all());
+        $columns = $all[$key] ?? null;
+
+        return is_string($columns) ? json_decode($columns, true) : $columns;
+    }
+
+    private static function rememberKey(int $userId): string
+    {
+        return 'table-columns.'.$userId;
     }
 }

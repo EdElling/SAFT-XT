@@ -255,7 +255,8 @@ class DynamicRecord extends Model
             return (new self)->applyDefinition(self::$definitions[$name]);
         }
 
-        return self::forTable(CustomTable::query()->with('fields')->where('name', $name)->firstOrFail());
+        return self::forTable(app(CustomTableLookup::class)->byName($name)
+            ?? throw (new ModelNotFoundException)->setModel(CustomTable::class, [$name]));
     }
 
     public static function isMorphType(?string $type): bool

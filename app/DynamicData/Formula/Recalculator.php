@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DynamicData\Formula;
 
+use App\DynamicData\CustomTableLookup;
 use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Write\RecordWriter;
 use App\DynamicData\Write\WriteOptions;
@@ -231,7 +232,11 @@ final class Recalculator
     {
         $dependents = [];
 
-        foreach (CustomField::query()->with('custom_table')->where('type', FieldType::Computed->value)->get() as $field) {
+        // Berechnete Felder je Request einmal laden (B-150): jede Tabellendefinition fragt sonst neu.
+        $computed = app(CustomTableLookup::class)->remember('computed-fields', static fn () => CustomField::query()
+            ->with('custom_table')->where('type', FieldType::Computed->value)->get());
+
+        foreach ($computed as $field) {
             if (! $field->is_active || ! $field->custom_table instanceof CustomTable) {
                 continue;
             }
