@@ -370,7 +370,7 @@ class DataEntryTest extends DuskTestCase
             $this->openFieldList($browser)
                 ->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., 'status')]//*[self::button or self::a][contains(., 'Bearbeiten') or @aria-label='Bearbeiten']")
                 ->waitFor('input[id$=".value"]', 15)
-                ->clickAtXPath("(//*[contains(@class, 'fi-fo-repeater')]//button[contains(@title, 'öschen')])[2]")
+                ->clickAtXPath("(//*[contains(@class, 'fi-fo-table-repeater')]//button[contains(@title, 'öschen')])[2]")
                 ->pause(900);
             $this->clickVisibleButton($browser, 'Speichern')->waitForText('Verwendeter Auswahlwert entfernt', 15)->assertSee('1 Datensatz');
 
