@@ -371,3 +371,8 @@ durch Nr. n“ markiert.
     vergibt dieselbe Vorher-Phase die Nummer erst **nach** `RecordSaving` und vor den Formeln, beim ersten Speichern
     mit erfüllter Bedingung, auch beim Ändern – gleiche Sperre, gleiche Transaktion. Ein geändertes Muster hebt die
     Zähler auf die höchste vorhandene passende Nummer.
+    *Nachtrag N4 (26.11.2026):* Mit einer Gruppe (`group_field`, ein aktives Pflichtfeld vom Typ Auswahl, und
+    `group_codes`, Wert → Kurzzeichen) zählt die Zählerzeile je **Kurzzeichen** (Spalte `grp`), nicht je Wert: So kommt
+    die Gruppe beim Zurücklesen aus der Nummer selbst (Import, Umstellen, Zählerstände), Wahlen mit gleichem Kurzzeichen
+    teilen bewusst einen Zähler, und Doppel sind ausgeschlossen. Massgeblich ist die Gruppe zum Zeitpunkt der Vergabe;
+    eine spätere Änderung lässt die Nummer stehen. Kurzzeichen entfernter Wahlen bleiben in den Optionen.

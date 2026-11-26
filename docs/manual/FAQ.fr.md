@@ -191,3 +191,10 @@ Saisissez une condition sous **Attribuer si** pour la plage de numéros, p. ex. 
 alors vide pour les brouillons et est attribué au premier enregistrement où la condition est vraie ; ensuite il est fixe.
 Les brouillons abandonnés ne laissent ainsi pas de trous. Voir
 [Manuel d’administration, Attribuer seulement si une condition est remplie](ADMIN_GUIDE.fr.md#attribuer-seulement-si-une-condition-est-remplie).
+
+### Comment les factures et les notes de crédit reçoivent-elles leurs propres numéros ?
+
+Sous **Groupe** dans la plage de numéros, choisissez le champ de sélection du type de justificatif et placez `{GROUP}`
+dans le modèle, p. ex. `{GROUP}-{YYYY}-{000}`. Saisissez un code pour chaque choix, p. ex. `R` pour facture et `G` pour
+note de crédit ; chaque type compte alors pour lui-même (`R-2026-001`, `G-2026-001`). Voir
+[Manuel d’administration, Un compteur par groupe](ADMIN_GUIDE.fr.md#un-compteur-par-groupe).

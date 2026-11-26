@@ -464,6 +464,30 @@ This way drafts get no number, and discarded drafts leave no gaps. Empty means: 
   away.
 - Fields used by the condition stay active and cannot be changed into a file field; renaming is followed.
 
+#### A counter per group
+
+If, for example, income and expenses or invoices and credit notes should each get their own numbers (`V-2026-001`,
+`E-2026-001`), choose a select field of the table under **Group**, e.g. the document type. Each choice then counts on
+its own, and the pattern contains the placeholder `{GROUP}`, e.g. `{GROUP}-{YYYY}-{000}`.
+
+- **Codes for {GROUP}:** The table below lists for each choice the code that goes into the number, e.g. `V` for
+  *Income*. When you choose the group it is prefilled with the stored value of the choice. 1 to 10 characters from
+  letters, digits and `- / . _` are allowed; values with accents or spaces stay empty and need a code. Choices with the
+  same code share a counter.
+- **Pattern:** With a group, `{GROUP}` must appear exactly once in the pattern; without a group it must not appear –
+  otherwise numbers would repeat. The **next number** is shown per code, e.g. "V-2026-003 (Income) · E-2026-004
+  (Expense)".
+- **Available** are active, required select fields. The field then stays one: it cannot be deactivated, changed to
+  another type or made optional; renaming is followed.
+- **New choices** in the group field get their value as code. If the value cannot be one (e.g. *Rückerstattung*), first
+  enter a code for it in the number sequence. **Removed choices** keep their code so that old numbers are recognised.
+- **Group at the time of assignment:** If a record's document type changes later, its number stays. With "Assign when"
+  the group counts at the save that assigns the number.
+- **Changing a code:** Existing numbers stay; new ones count under the new code and continue after existing numbers
+  with that code. When updating an app this is risky.
+- **Import, conversion and Number now** recognise the group from the number: an imported `E-2026-012` raises the
+  counter of `E` for 2026.
+
 #### Converting existing fields
 
 A field of type text, multi-line text, integer or choice can be changed to "Number sequence" even when it has values,
@@ -499,6 +523,9 @@ number and the highest existing one. With **Set counter** you enter the last ass
 - **Raising** is always possible, e.g. "invoices 2027 start at 1000": counter 999.
 - **Lowering** is only possible if no existing number of the period is higher (including the recycle bin), and only
   with confirmation.
+
+With a [group](#a-counter-per-group) the counters appear per code and period (e.g. `E · 2026`), and **Set
+counter** also asks for the group.
 
 Each change appears in the field's history (clock icon in the field list).
 

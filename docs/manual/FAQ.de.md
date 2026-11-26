@@ -188,3 +188,10 @@ Tragen Sie beim Nummernkreis unter **Vergeben, wenn** eine Bedingung ein, z. B. 
 Nummer bei Entwürfen leer und wird beim ersten Speichern vergeben, bei dem die Bedingung zutrifft; danach ist sie fest.
 Verworfene Entwürfe hinterlassen so keine Lücken. Siehe
 [Administratorhandbuch, Vergabe erst bei einer Bedingung](ADMIN_GUIDE.de.md#vergabe-erst-bei-einer-bedingung).
+
+### Wie bekommen Rechnungen und Gutschriften eigene Nummern?
+
+Wählen Sie beim Nummernkreis unter **Gruppe** das Auswahlfeld mit der Belegart und setzen Sie `{GROUP}` ins Muster,
+z. B. `{GROUP}-{YYYY}-{000}`. Je Wahl tragen Sie ein Kurzzeichen ein, z. B. `R` für Rechnung und `G` für Gutschrift;
+dann zählt jede Belegart für sich (`R-2026-001`, `G-2026-001`). Siehe
+[Administratorhandbuch, Eigener Zähler je Gruppe](ADMIN_GUIDE.de.md#eigener-zähler-je-gruppe).

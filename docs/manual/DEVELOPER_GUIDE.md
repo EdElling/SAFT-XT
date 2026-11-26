@@ -538,7 +538,9 @@ or changed).
   `WriteOptions::NUMBERING` without plugin events); its change log entries carry the run identifier `run`. If the field
   has an **"Assign when"** condition (option `assign_when`), SAFT assigns the number only **after** `RecordSaving` on
   the first save on which the condition is true – also on `update()`. The condition therefore sees values your listener
-  sets (e.g. a status); the listener itself sees the number only in `RecordSaved`.
+  sets (e.g. a status); the listener itself sees the number only in `RecordSaved`. With a **group** (options
+  `group_field`, `group_codes`) SAFT counts per code of the choice in the group field at the time of assignment; if the
+  group field has no value, the write path rejects with `dynamic.number_group_missing`.
 - **Reject** in `RecordSaving` or `RecordDeleting`: `throw new RecordRejected('Message for display');`. SAFT saves
   nothing and shows “Action not possible” with your message; in an import it appears as an error of the row and the
   whole import is not carried out.

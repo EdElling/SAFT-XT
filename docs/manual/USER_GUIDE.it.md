@@ -641,7 +641,7 @@ sempre il PDF. Più record in Word arrivano in uno ZIP.
 | Collegamento | Cliente di un ordine | tabella di destinazione e campo visualizzato; base per dettagli e anteprima |
 | File | Contratto, foto del prodotto | immagini, PDF, documenti Office, testo/CSV o file qualsiasi; dimensione massima e numero per campo; anteprima nell’elenco e nei dettagli. Non nell’importazione; l’esportazione contiene solo i nomi dei file (vedi [4.2](#42-visualizzare-creare-modificare-ed-eliminare-record)) |
 | Calcolato | Importo = quantità × prezzo unitario | risultato come numero intero o decimale, formula; calcolato al salvataggio, non inserito (vedere [Campi calcolati](ADMIN_GUIDE.it.md#campi-calcolati)) |
-| Intervallo di numerazione | Numero di fattura R-2026-0042 | modello con anno, mese e numero progressivo; assegnato alla creazione (o solo quando una condizione è vera, p. es. stato *Inviata*; fino ad allora il modulo mostra «assegnato se …»), univoco e poi non modificabile (vedere [Intervalli di numerazione](ADMIN_GUIDE.it.md#intervalli-di-numerazione)) |
+| Intervallo di numerazione | Numero di fattura R-2026-0042 | modello con anno, mese e numero progressivo, a richiesta con un contatore proprio per tipo di documento (p. es. V-2026-001 per le entrate, E-2026-001 per le uscite); assegnato alla creazione (o solo quando una condizione è vera, p. es. stato *Inviata*; fino ad allora il modulo mostra «assegnato se …»), univoco e poi non modificabile (vedere [Intervalli di numerazione](ADMIN_GUIDE.it.md#intervalli-di-numerazione)) |
 
 ---
 

@@ -112,8 +112,8 @@ class DocumentGenerationTest extends DynamicDataTestCase
 
         // Kopieren: das Dokument bleibt beim Original.
         $copy = RecordCopier::values($this->receipts, $receipt);
-        $copy['belegnummer'] = 'V-2025-999';
         $result = app(RecordCopier::class)->copy($this->receipts, $receipt, $copy, [], []);
+        $this->assertSame('V-2025-003', $result['record']->belegnummer, 'Die Kopie bekommt eine neue Belegnummer im Jahr ihres Belegdatums.');
         $this->assertNotContains($stored->name, array_column((array) $result['record']->dateien, 'name'));
 
         // Entfernen ohne Lösch-Recht: abgelehnt.

@@ -188,3 +188,10 @@ Inserite una condizione in **Assegna se** per l’intervallo di numerazione, p. 
 allora vuoto per le bozze e viene assegnato al primo salvataggio in cui la condizione è vera; in seguito è fisso. Le
 bozze scartate non lasciano così lacune. Vedere
 [Manuale di amministrazione, Assegnare solo se una condizione è vera](ADMIN_GUIDE.it.md#assegnare-solo-se-una-condizione-è-vera).
+
+### Come ricevono fatture e note di credito numeri propri?
+
+In **Gruppo** dell’intervallo di numerazione scegliete il campo di selezione con il tipo di documento e inserite
+`{GROUP}` nel modello, p. es. `{GROUP}-{YYYY}-{000}`. Per ogni scelta inserite un codice, p. es. `R` per fattura e `G`
+per nota di credito; ogni tipo conta allora per sé (`R-2026-001`, `G-2026-001`). Vedere
+[Manuale di amministrazione, Un contatore per gruppo](ADMIN_GUIDE.it.md#un-contatore-per-gruppo).

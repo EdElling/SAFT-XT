@@ -11,6 +11,8 @@ return [
         'fiscal_start' => 'L’esercizio inizia a',
         'start' => 'Valore iniziale',
         'assign_when' => 'Assegna se',
+        'group_field' => 'Gruppo',
+        'group_codes' => 'Codici per {GROUP}',
     ],
     'form' => [
         'section' => 'Intervallo di numerazione',
@@ -27,6 +29,11 @@ return [
         'assign_when_ok' => 'Condizione corretta – dipende da: :fields. Il numero viene assegnato al primo salvataggio in cui è vera.',
         'assign_when_help_toggle' => 'Aiuto sulla condizione',
         'assign_when_help_text' => 'La condizione confronta campi di questo record con = <> < <= > >=, combinati con and/or e parentesi. Il testo va tra apici singoli; per i campi di scelta conta il valore salvato (vedi il tooltip del campo), p. es. status <> \'bozza\'. Un campo sì/no da solo è già una condizione, p. es. definitivo. Se un lato di un confronto è vuoto, non è soddisfatto. Confrontare testo in modo approssimativo (senza maiuscole/minuscole): contains(campo, \'parte\'), startswith(…), endswith(…); inoltre coalesce, if, round, abs, min e max. Non sono possibili campi calcolati e somme su altre tabelle, perché la condizione viene verificata prima delle formule. Il numero viene assegnato al primo salvataggio in cui la condizione è vera – anche in modifica – e poi resta fisso.',
+        'group_none' => 'nessuno',
+        'group_field_help' => 'Un contatore proprio per ogni scelta di un campo di selezione, p. es. per tipo di documento. Si possono scegliere i campi di selezione obbligatori. Il modello deve allora contenere {GROUP}.',
+        'group_choice' => 'Scelta',
+        'group_code' => 'Codice',
+        'group_codes_help' => 'Sostituisce {GROUP} nel numero: da 1 a :max caratteri tra lettere, cifre e - / . _. Le scelte con lo stesso codice condividono un contatore. Un numero assegnato resta, anche se il gruppo del record cambia in seguito.',
     ],
     'resets' => [
         'never' => 'mai',
@@ -53,6 +60,7 @@ return [
         'month' => 'mese',
         'counter' => 'numero progressivo, con zeri',
         'counter_plain' => 'numero progressivo, senza zeri',
+        'group' => 'gruppo (codice)',
     ],
     'errors' => [
         'reset' => 'Ripartenza sconosciuta «:reset» (mai, annuale o mensile).',

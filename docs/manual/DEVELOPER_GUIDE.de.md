@@ -548,7 +548,9 @@ angelegt oder geändert).
   Laufkennung `run`. Hat das Feld eine Bedingung **„Vergeben, wenn“** (Option `assign_when`), vergibt SAFT die Nummer
   erst **nach** `RecordSaving` beim ersten Speichern, bei dem die Bedingung zutrifft – auch bei `update()`. Die
   Bedingung sieht also Werte, die Ihr Listener setzt (z. B. einen Status); die Nummer selbst sieht der Listener erst in
-  `RecordSaved`.
+  `RecordSaved`. Mit einer **Gruppe** (Optionen `group_field`, `group_codes`) zählt SAFT je Kurzzeichen der Wahl im
+  Gruppenfeld zum Zeitpunkt der Vergabe; fehlt der Wert des Gruppenfelds, lehnt der Schreibweg mit
+  `dynamic.number_group_missing` ab.
 - **Ablehnen** in `RecordSaving` oder `RecordDeleting`: `throw new RecordRejected('Meldung für die Anzeige');`. SAFT
   speichert nichts und zeigt „Aktion nicht möglich“ mit Ihrer Meldung an; beim Import erscheint sie als Fehler der
   Zeile, und der ganze Import wird nicht ausgeführt.

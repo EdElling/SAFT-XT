@@ -181,3 +181,10 @@ Enter a condition under **Assign when** for the number sequence, e.g. `status <>
 for drafts and is assigned on the first save on which the condition is true; after that it is fixed. Discarded drafts
 therefore leave no gaps. See
 [Administrator guide, Assigning only when a condition holds](ADMIN_GUIDE.md#assigning-only-when-a-condition-holds).
+
+### How do invoices and credit notes get numbers of their own?
+
+Under **Group** in the number sequence, choose the select field with the document type and put `{GROUP}` into the
+pattern, e.g. `{GROUP}-{YYYY}-{000}`. Enter a code for each choice, e.g. `R` for invoice and `G` for credit note; each
+document type then counts on its own (`R-2026-001`, `G-2026-001`). See
+[Administrator guide, A counter per group](ADMIN_GUIDE.md#a-counter-per-group).

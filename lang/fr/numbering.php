@@ -11,6 +11,8 @@ return [
         'fiscal_start' => 'L’exercice commence en',
         'start' => 'Valeur de départ',
         'assign_when' => 'Attribuer si',
+        'group_field' => 'Groupe',
+        'group_codes' => 'Codes pour {GROUP}',
     ],
     'form' => [
         'section' => 'Plage de numéros',
@@ -27,6 +29,11 @@ return [
         'assign_when_ok' => 'Condition correcte – dépend de : :fields. Le numéro est attribué au premier enregistrement où elle est vraie.',
         'assign_when_help_toggle' => 'Aide sur la condition',
         'assign_when_help_text' => 'La condition compare des champs de cet enregistrement avec = <> < <= > >=, combinés avec and/or et des parenthèses. Le texte s’écrit entre apostrophes ; pour les champs de choix, c’est la valeur enregistrée qui compte (voir l’info-bulle du champ), p. ex. status <> \'brouillon\'. Un champ oui/non seul est déjà une condition, p. ex. definitif. Si un côté d’une comparaison est vide, elle n’est pas remplie. Comparer du texte de manière approximative (sans tenir compte de la casse) : contains(champ, \'partie\'), startswith(…), endswith(…) ; en outre coalesce, if, round, abs, min et max. Les champs calculés et les sommes sur d’autres tables ne sont pas possibles, car la condition est vérifiée avant les formules. Le numéro est attribué au premier enregistrement où la condition est vraie – aussi lors d’une modification – et reste ensuite fixe.',
+        'group_none' => 'aucun',
+        'group_field_help' => 'Un compteur propre pour chaque choix d’un champ de sélection, p. ex. par type de justificatif. Les champs de sélection obligatoires peuvent être choisis. Le modèle doit alors contenir {GROUP}.',
+        'group_choice' => 'Choix',
+        'group_code' => 'Code',
+        'group_codes_help' => 'Remplace {GROUP} dans le numéro : 1 à :max caractères parmi lettres, chiffres et - / . _. Les choix ayant le même code partagent un compteur. Un numéro attribué reste, même si le groupe de l’enregistrement change ensuite.',
     ],
     'resets' => [
         'never' => 'jamais',
@@ -53,6 +60,7 @@ return [
         'month' => 'mois',
         'counter' => 'numéro courant, complété par des zéros',
         'counter_plain' => 'numéro courant, sans zéros',
+        'group' => 'groupe (code)',
     ],
     'errors' => [
         'reset' => 'Redémarrage inconnu « :reset » (jamais, annuel ou mensuel).',

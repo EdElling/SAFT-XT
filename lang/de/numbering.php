@@ -11,6 +11,8 @@ return [
         'fiscal_start' => 'Geschäftsjahr beginnt im',
         'start' => 'Startwert',
         'assign_when' => 'Vergeben, wenn',
+        'group_field' => 'Gruppe',
+        'group_codes' => 'Kurzzeichen für {GROUP}',
     ],
     'form' => [
         'section' => 'Nummernkreis',
@@ -27,6 +29,11 @@ return [
         'assign_when_ok' => 'Bedingung in Ordnung – hängt ab von: :fields. Die Nummer wird beim ersten Speichern vergeben, bei dem sie zutrifft.',
         'assign_when_help_toggle' => 'Hilfe zur Bedingung',
         'assign_when_help_text' => 'Die Bedingung vergleicht Felder dieses Datensatzes mit = <> < <= > >=, verknüpft mit and/or und Klammern. Text steht in einfachen Anführungszeichen; bei Auswahlfeldern zählt der gespeicherte Wert (siehe Tooltip des Felds), z. B. status <> \'entwurf\'. Ein Ja/Nein-Feld allein ist schon eine Bedingung, z. B. definitiv. Ist eine Seite eines Vergleichs leer, ist er nicht erfüllt. Text unscharf vergleichen (ohne Gross-/Kleinschreibung): contains(feld, \'teil\'), startswith(…), endswith(…); dazu coalesce, if, round, abs, min und max. Nicht möglich sind berechnete Felder und Summen über andere Tabellen, weil die Bedingung vor den Formeln geprüft wird. Die Nummer wird beim ersten Speichern vergeben, bei dem die Bedingung zutrifft – auch beim Ändern – und bleibt danach fest.',
+        'group_none' => 'keine',
+        'group_field_help' => 'Eigener Zähler je Wahl eines Auswahlfelds, z. B. je Belegart. Wählbar sind Pflichtfelder vom Typ Auswahl. Das Muster braucht dann {GROUP}.',
+        'group_choice' => 'Wahl',
+        'group_code' => 'Kurzzeichen',
+        'group_codes_help' => 'Steht in der Nummer an der Stelle von {GROUP}: 1 bis :max Zeichen aus Buchstaben, Ziffern und - / . _. Wahlen mit demselben Kurzzeichen teilen sich einen Zähler. Eine vergebene Nummer bleibt, auch wenn sich die Gruppe des Datensatzes später ändert.',
     ],
     'resets' => [
         'never' => 'nie',
@@ -53,6 +60,7 @@ return [
         'month' => 'Monat',
         'counter' => 'laufende Nummer, aufgefüllt',
         'counter_plain' => 'laufende Nummer, ohne Auffüllen',
+        'group' => 'Gruppe (Kurzzeichen)',
     ],
     'errors' => [
         'reset' => 'Unbekannter Neubeginn „:reset“ (nie, jährlich oder monatlich).',

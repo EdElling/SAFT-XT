@@ -34,6 +34,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Field;
+use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -614,6 +615,11 @@ final class FieldForm
             ->filter(fn (CustomField $f): bool => in_array($f->type, [FieldType::Date, FieldType::DateTime], true) && $f->is_required && $f->is_active)
             ->mapWithKeys(fn (CustomField $f): array => [$f->name => $f->label.' ('.$f->name.')'])
             ->all();
+        // Gruppe (N4): aktive Pflichtfelder vom Typ Auswahl der Tabelle.
+        $selects = $owner === null ? collect() : $owner->fields()->get()
+            ->filter(fn (CustomField $f): bool => $f->type === FieldType::Select && $f->is_required && $f->is_active)
+            ->keyBy('name');
+        $codes = 'options.'.NumberPattern::GROUP_CODES;
 
         return Fieldset::make(__('numbering.form.section'))
             ->columns(2)
@@ -666,6 +672,31 @@ final class FieldForm
                     ->helperText($owner === null ? __('tables.fields.suggest_scope_later') : __('numbering.form.date_field_help'))
                     ->options($dates)
                     ->disabled($owner === null),
+                // Gruppe (N4): eigener Zähler je Kurzzeichen; beim Wählen werden die Kurzzeichen mit den Werten vorbelegt
+                // (ungültige leer, die müssen eingetragen werden).
+                Select::make('options.'.NumberPattern::GROUP_FIELD)
+                    ->label(__('numbering.fields.group_field'))
+                    ->placeholder(__('numbering.form.group_none'))
+                    ->helperText($owner === null ? __('tables.fields.suggest_scope_later') : __('numbering.form.group_field_help'))
+                    ->options($selects->map(fn (CustomField $f): string => $f->label.' ('.$f->name.')')->all())
+                    ->disabled($owner === null)
+                    ->live()
+                    ->afterStateUpdated(static function (Set $set, Get $get, ?string $state) use ($selects, $codes): void {
+                        $select = $state === null ? null : $selects->get($state);
+                        $current = (array) $get($codes);
+
+                        $set($codes, $select === null ? [] : collect(FieldDefinitionNormalizer::choiceValues($select))
+                            ->mapWithKeys(static fn (string $v): array => [$v => (string) ($current[$v] ?? (NumberPattern::validCode($v) ? $v : ''))])->all());
+                    }),
+                KeyValue::make($codes)
+                    ->label(__('numbering.fields.group_codes'))
+                    ->keyLabel(__('numbering.form.group_choice'))
+                    ->valueLabel(__('numbering.form.group_code'))
+                    ->helperText(__('numbering.form.group_codes_help', ['max' => NumberPattern::MAX_CODE]))
+                    ->editableKeys(false)
+                    ->addable(false)
+                    ->live(onBlur: true)
+                    ->visible(static fn (Get $get): bool => filled($get('options.'.NumberPattern::GROUP_FIELD))),
                 TextInput::make('options.'.NumberPattern::START)
                     ->label(__('numbering.fields.start'))
                     ->helperText(__('numbering.form.start_help'))
@@ -748,18 +779,13 @@ final class FieldForm
         }
 
         try {
-            $pattern = NumberPattern::make(
-                (string) $get('options.'.NumberPattern::PATTERN),
-                (string) ($get('options.'.NumberPattern::RESET) ?: 'yearly'),
-                1,
-                max(1, (int) ($get('options.'.NumberPattern::START) ?: 1)),
-            );
+            $pattern = self::formPattern($get, fiscal: false);
         } catch (BusinessRuleException) {
             return null;
         }
 
         // Je Request einmal: Vorschau, Schalter und Prüfung des Musters fragen dieselbe Analyse.
-        $key = 'saft.number_conversion.'.$record->id.'|'.$pattern->pattern.'|'.$pattern->reset;
+        $key = 'saft.number_conversion.'.$record->id.'|'.$pattern->pattern.'|'.$pattern->reset.'|'.implode(',', $pattern->groups ?? []);
         $analysis = request()->attributes->get($key);
 
         if (! $analysis instanceof NumberAnalysis) {
@@ -780,9 +806,11 @@ final class FieldForm
         $rows = app(NumberCounter::class)->overview($record);
         $lines = [e(__('numbering.counter.section')).':'];
 
-        foreach ($rows as $period => $row) {
+        foreach ($rows as $key => $row) {
+            ['group' => $group, 'period' => $period] = NumberAnalysis::split((string) $key);
+            $period = $period === NumberPattern::NO_PERIOD ? __('numbering.counter.no_period') : $period;
             $lines[] = e(__('numbering.counter.row', [
-                'period' => $period === NumberPattern::NO_PERIOD ? __('numbering.counter.no_period') : $period,
+                'period' => $group === NumberSequences::NO_GROUP ? $period : $group.' · '.$period,
                 'counter' => $row['counter'] ?? '–',
                 'highest' => $row['highest'] ?? '–',
             ]));
@@ -799,7 +827,8 @@ final class FieldForm
     private static function setCounterAction(): Action
     {
         $reset = static fn (CustomField $record): string => (string) ($record->optionsArray()[NumberPattern::RESET] ?? 'never');
-        $current = static fn (CustomField $record, Get $get): ?int => app(NumberSequences::class)->current((int) $record->id, trim((string) $get('period')));
+        $current = static fn (CustomField $record, Get $get): ?int => app(NumberSequences::class)->current((int) $record->id, trim((string) $get('period')), (string) $get('group'));
+        $groups = static fn (CustomField $record): ?array => NumberPattern::fromOptions($record->optionsArray())->groups;
 
         return Action::make('setNumberCounter')
             ->label(__('numbering.counter.set'))
@@ -810,10 +839,18 @@ final class FieldForm
             ->fillForm(static function (CustomField $record): array {
                 $pattern = NumberPattern::fromOptions($record->optionsArray());
                 $period = $pattern->period(now())['key'];
+                $group = $pattern->groups === null ? NumberSequences::NO_GROUP : (string) (collect($pattern->groups)->sort()->first() ?? '');
 
-                return ['period' => $period, 'value' => app(NumberSequences::class)->current((int) $record->id, $period) ?? $pattern->start - 1];
+                return ['period' => $period, 'group' => $group, 'value' => app(NumberSequences::class)->current((int) $record->id, $period, $group) ?? $pattern->start - 1];
             })
             ->schema([
+                Select::make('group')
+                    ->label(__('numbering.fields.group_field'))
+                    ->options(static fn (CustomField $record): array => collect($groups($record) ?? [])->sort()->mapWithKeys(static fn (string $c): array => [$c => $c])->all())
+                    ->visible(static fn (CustomField $record): bool => $groups($record) !== null)
+                    ->selectablePlaceholder(false)
+                    ->required(static fn (CustomField $record): bool => $groups($record) !== null)
+                    ->live(),
                 TextInput::make('period')
                     ->label(__('numbering.counter.period'))
                     ->helperText(static fn (CustomField $record): ?string => match ($reset($record)) {
@@ -836,7 +873,7 @@ final class FieldForm
             ])
             ->action(static function (CustomField $record, array $data, Action $action): void {
                 try {
-                    app(NumberCounter::class)->set($record, (string) $data['period'], (int) $data['value'], (bool) ($data['confirmed'] ?? false));
+                    app(NumberCounter::class)->set($record, (string) $data['period'], (int) $data['value'], (bool) ($data['confirmed'] ?? false), group: (string) ($data['group'] ?? NumberSequences::NO_GROUP));
                 } catch (BusinessRuleException $e) {
                     Notification::make()->danger()->title($e->getMessage())->send();
                     $action->halt();
@@ -855,42 +892,84 @@ final class FieldForm
             '{MM}' => '{MM} – '.__('numbering.blocks.month'),
             '{0000}' => '{0000} – '.__('numbering.blocks.counter'),
             '{#}' => '{#} – '.__('numbering.blocks.counter_plain'),
+            '{GROUP}' => '{GROUP} – '.__('numbering.blocks.group'),
         ];
     }
 
-    /** „Nächste Nummer: R-2026-0043“ bzw. die Meldung, warum das Muster nicht geht. */
+    /**
+     * Muster aus dem Formularzustand, mit den Kurzzeichen der Gruppe (N4), wenn ein Gruppenfeld gewählt ist.
+     *
+     * @throws BusinessRuleException
+     */
+    private static function formPattern(Get $get, bool $fiscal = true): NumberPattern
+    {
+        $reset = (string) ($get('options.'.NumberPattern::RESET) ?: 'yearly');
+
+        return NumberPattern::make(
+            (string) $get('options.'.NumberPattern::PATTERN),
+            $reset,
+            $fiscal && $reset === 'yearly' ? max(1, (int) $get('options.'.NumberPattern::FISCAL_START)) : 1,
+            max(1, (int) ($get('options.'.NumberPattern::START) ?: 1)),
+            NumberPattern::groupsFromOptions([
+                NumberPattern::GROUP_FIELD => $get('options.'.NumberPattern::GROUP_FIELD),
+                NumberPattern::GROUP_CODES => array_filter(array_map(static fn (mixed $c): string => trim((string) $c), (array) $get('options.'.NumberPattern::GROUP_CODES)), static fn (string $c): bool => $c !== ''),
+            ]),
+        );
+    }
+
+    /**
+     * „Nächste Nummer: R-2026-0043“, mit Gruppe je Kurzzeichen („V-2026-004 (Einnahme) · E-2026-007 (Ausgabe)“), bzw.
+     * die Meldung, warum das Muster nicht geht.
+     */
     private static function nextNumberPreview(Get $get, mixed $record): string
     {
         try {
-            $pattern = NumberPattern::make(
-                (string) $get('options.'.NumberPattern::PATTERN),
-                (string) ($get('options.'.NumberPattern::RESET) ?: 'yearly'),
-                (string) $get('options.'.NumberPattern::RESET) === 'yearly' ? max(1, (int) $get('options.'.NumberPattern::FISCAL_START)) : 1,
-                max(1, (int) ($get('options.'.NumberPattern::START) ?: 1)),
-            );
+            $pattern = self::formPattern($get);
         } catch (BusinessRuleException $e) {
             return $e->getMessage();
         }
 
         $period = $pattern->period(now());
         $saved = $record instanceof CustomField && $record->exists && $record->type === FieldType::Number;
-        $last = $saved ? app(NumberSequences::class)->current((int) $record->id, $period['key']) : null;
+        $analysis = null;
 
         // Muster im Formular geändert (noch nicht gespeichert): Beim Speichern heben vorhandene Nummern, die zum neuen
         // Muster passen, den Zähler an (DynamicSchemaService) – die Vorschau rechnet schon damit.
         if ($saved && NumberPattern::fromOptions($record->optionsArray())->differs($pattern)) {
-            $key = 'saft.number_preview.'.$record->id.'|'.$pattern->pattern.'|'.$pattern->reset.'|'.$pattern->fiscalStart;
+            $key = 'saft.number_preview.'.$record->id.'|'.$pattern->pattern.'|'.$pattern->reset.'|'.$pattern->fiscalStart.'|'.implode(',', $pattern->groups ?? []);
             $analysis = request()->attributes->get($key);
 
             if (! $analysis instanceof NumberAnalysis) {
                 $analysis = app(NumberConversion::class)->analyze($record->customTable, $record->name, $pattern, FieldType::Number);
                 request()->attributes->set($key, $analysis);
             }
-
-            $last = max($last ?? 0, $analysis->highest[$period['key']] ?? 0) ?: null;
         }
 
-        return __('numbering.form.next', ['number' => $pattern->format(($last ?? $pattern->start - 1) + 1, $period['year'], $period['month'])]);
+        $next = static function (string $group) use ($pattern, $period, $saved, $record, $analysis): string {
+            $last = $saved ? app(NumberSequences::class)->current((int) $record->id, $period['key'], $group) : null;
+            $last = max($last ?? 0, $analysis?->highest[NumberAnalysis::key($period['key'], $group)] ?? 0) ?: null;
+
+            return $pattern->format(($last ?? $pattern->start - 1) + 1, $period['year'], $period['month'], $group);
+        };
+
+        if (! $pattern->grouped()) {
+            return __('numbering.form.next', ['number' => $next(NumberSequences::NO_GROUP)]);
+        }
+
+        // Je Kurzzeichen einmal, mit den Wahlen, die es tragen.
+        $byCode = [];
+
+        foreach ((array) $get('options.'.NumberPattern::GROUP_CODES) as $value => $code) {
+            if (($code = trim((string) $code)) !== '') {
+                $byCode[$code][] = (string) $value;
+            }
+        }
+
+        return __('numbering.form.next', ['number' => implode(' · ', array_map(
+            static fn (int|string $code, array $values): string => $next((string) $code).' ('.implode(', ', $values).')',
+            array_keys($byCode),
+            $byCode,
+        ))]);
     }
 
     /**

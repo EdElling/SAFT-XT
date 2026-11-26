@@ -500,6 +500,32 @@ pas de trous. Vide signifie : attribuer à la création.
 - Les champs utilisés par la condition restent actifs et ne peuvent pas devenir un champ fichier ; un renommage est
   suivi.
 
+#### Un compteur par groupe
+
+Si, par exemple, les recettes et les dépenses ou les factures et les notes de crédit doivent avoir chacune leurs propres
+numéros (`V-2026-001`, `E-2026-001`), choisissez sous **Groupe** un champ de sélection de la table, p. ex. le type de
+justificatif. Chaque choix compte alors pour lui-même, et le modèle contient l’espace réservé `{GROUP}`, p. ex.
+`{GROUP}-{YYYY}-{000}`.
+
+- **Codes pour {GROUP} :** le tableau en dessous indique pour chaque choix le code qui entre dans le numéro, p. ex. `V`
+  pour *Recette*. En choisissant le groupe, il est prérempli avec la valeur enregistrée du choix. 1 à 10 caractères
+  parmi lettres, chiffres et `- / . _` sont permis ; les valeurs avec accents ou espaces restent vides et nécessitent un
+  code. Les choix ayant le même code partagent un compteur.
+- **Modèle :** avec un groupe, `{GROUP}` doit figurer exactement une fois dans le modèle ; sans groupe, il ne doit pas
+  figurer – sinon des numéros se répéteraient. Le **numéro suivant** est indiqué par code, p. ex. « V-2026-003
+  (Recette) · E-2026-004 (Dépense) ».
+- **Peuvent être choisis** les champs de sélection actifs et obligatoires. Le champ le reste alors : il ne peut être ni
+  désactivé, ni changé de type, ni rendu facultatif ; un renommage est suivi.
+- **Les nouveaux choix** du champ de groupe reçoivent leur valeur comme code. Si la valeur ne peut pas en être un
+  (p. ex. *Rückerstattung*), saisissez d’abord un code pour elle dans la plage de numéros. **Les choix supprimés**
+  gardent leur code, afin que les anciens numéros soient reconnus.
+- **Groupe au moment de l’attribution :** si le type d’un enregistrement change ensuite, son numéro reste. Avec
+  « Attribuer si », c’est le groupe lors de l’enregistrement qui attribue le numéro qui compte.
+- **Changer un code :** les numéros existants restent ; les nouveaux comptent sous le nouveau code et continuent après
+  les numéros existants portant ce code. Lors de la mise à jour d’une app, c’est délicat.
+- **Import, conversion et Numéroter maintenant** reconnaissent le groupe au numéro : un `E-2026-012` importé relève le
+  compteur de `E` pour 2026.
+
 #### Convertir des champs existants
 
 Un champ de type texte, texte multiligne, nombre entier ou choix peut passer à « Plage de numéros » même s’il contient
@@ -538,6 +564,9 @@ mensuel `2027-01`, sans redémarrage `-`) le dernier numéro attribué ; le suiv
 - **Augmenter** est toujours possible, p. ex. « les factures 2027 commencent à 1000 » : compteur 999.
 - **Baisser** n’est possible que si aucun numéro existant de la période n’est plus élevé (corbeille comprise), et
   seulement avec confirmation.
+
+Avec un [groupe](#un-compteur-par-groupe), les compteurs apparaissent par code et période (p. ex. `E · 2026`), et
+**Définir le compteur** demande aussi le groupe.
 
 Chaque modification figure dans l’historique du champ (icône horloge dans la liste des champs).
 

@@ -6,10 +6,13 @@ namespace Database\Seeders;
 
 use App\DynamicData\DataPermissions;
 use App\DynamicData\Files\RecordFiles;
+use App\DynamicData\Schema\FieldType;
+use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\Menu;
 use App\Models\Role;
+use App\Services\DynamicSchemaService;
 use Database\Seeders\Concerns\SeedsDemoTables;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\UploadedFile;
@@ -51,10 +54,20 @@ class GitarrenshopDemoSeeder extends Seeder
         return ['uuid' => '8f0c6a52-6d0e-4c8e-9a43-5b1c2f6e0a05', 'name' => self::GROUP, 'prefix' => 'gitarren', 'icon' => 'heroicon-o-musical-note', 'sort_order' => 550, 'manual' => 'gitarrenshop'];
     }
 
+    /**
+     * Belegnummer als Nummernkreis je Belegart (B-135, N4): V für Einnahmen (Verkauf), E für Ausgaben (Einkauf), jährlich
+     * nach dem Belegdatum, z. B. V-2026-001.
+     */
+    public const array RECEIPT_NUMBER = [
+        'pattern' => '{GROUP}-{YYYY}-{000}', 'reset' => 'yearly', 'date_field' => 'datum',
+        'group_field' => 'typ', 'group_codes' => ['Einnahme' => 'V', 'Ausgabe' => 'E'],
+    ];
+
     public function run(): void
     {
         $group = $this->demoGroup(self::GROUP, 550);
         $created = $this->demoTables($group, $this->definitions());
+        $this->upgradeReceiptNumber();
 
         if (in_array('gitarren_artikel', $created, true)) {
             $this->seedRecords();
@@ -291,12 +304,13 @@ class GitarrenshopDemoSeeder extends Seeder
                 'name' => 'gitarren_belege', 'label' => $t('Belege', 'Receipts', 'Justificatifs', 'Giustificativi'), 'icon' => 'heroicon-o-document-text',
                 'description' => $t('Kaufbelege, Quittungen und Rechnungen; die Buchungen ergeben die Summe, die Zahlungen den bezahlten und offenen Betrag.', 'Purchase receipts and invoices; the bookings give the total, the payments the paid and open amount.', 'Justificatifs d’achat et factures ; les écritures donnent le total, les paiements le montant payé et ouvert.', 'Ricevute d’acquisto e fatture; le registrazioni danno il totale, i pagamenti l’importo pagato e aperto.'),
                 'fields' => [
-                    ['name' => 'belegnummer', 'label' => $t('Belegnummer', 'Receipt number', 'Numéro de justificatif', 'Numero del giustificativo'), 'type' => 'string', 'options' => ['length' => 30], 'is_required' => true, 'is_unique' => true, 'is_searchable' => true],
-                    ['name' => 'datum', 'label' => $t('Datum', 'Date', 'Date', 'Data'), 'type' => 'date', 'is_required' => true, 'is_sortable' => true],
-                    ['name' => 'typ', 'label' => $t('Typ', 'Type', 'Type', 'Tipo'), 'type' => 'select', 'is_required' => true, 'options' => ['options' => [
+                    // Belegnummer (Nummernkreis mit Gruppe, B-135 N4) nach Datum und Typ angelegt, aber zuerst angezeigt.
+                    ['name' => 'datum', 'label' => $t('Datum', 'Date', 'Date', 'Data'), 'type' => 'date', 'is_required' => true, 'is_sortable' => true, 'sort_order' => 1],
+                    ['name' => 'typ', 'label' => $t('Typ', 'Type', 'Type', 'Tipo'), 'type' => 'select', 'is_required' => true, 'sort_order' => 2, 'options' => ['options' => [
                         $o('Einnahme', 'Einnahme', 'Income', 'Recette', 'Entrata'),
                         $o('Ausgabe', 'Ausgabe', 'Expense', 'Dépense', 'Uscita'),
                     ]]],
+                    ['name' => 'belegnummer', 'label' => $t('Belegnummer', 'Receipt number', 'Numéro de justificatif', 'Numero del giustificativo'), 'type' => 'number', 'options' => self::RECEIPT_NUMBER, 'is_searchable' => true, 'sort_order' => 0],
                     // Einnahme: Kunde, Ausgabe: Lieferant.
                     ['name' => 'kunde_id', 'label' => $t('Kunde', 'Customer', 'Client', 'Cliente'), 'type' => 'relation', 'options' => ['table' => 'gitarren_kunden', 'display_fields' => ['vorname', 'name'], 'separator' => ' ']],
                     ['name' => 'lieferant_id', 'label' => $t('Lieferant', 'Supplier', 'Fournisseur', 'Fornitore'), 'type' => 'relation', 'options' => ['table' => 'gitarren_lieferanten', 'display_fields' => ['name']]],
@@ -436,7 +450,8 @@ class GitarrenshopDemoSeeder extends Seeder
             ], [['2026-05-18', '130.00', 'bank', false, 'Anzahlung 50 %']]],
         ] as [$nummer, $datum, $typ, $partner, $lines, $payments]) {
             $receipt = $insert('gitarren_belege', [
-                'belegnummer' => $nummer, 'datum' => $datum, 'typ' => $typ,
+                // Die Belegnummer vergibt SAFT (Nummernkreis je Typ und Jahr); $nummer ist die erwartete.
+                'datum' => $datum, 'typ' => $typ,
                 'kunde_id' => $partners[$partner]['kunde_id'] ?? null, 'lieferant_id' => $partners[$partner]['lieferant_id'] ?? null,
                 'dateien' => [$this->file('gitarren_belege', 'dateien', strtolower($nummer).'.pdf', self::pdf(($typ === 'Einnahme' ? 'Rechnung ' : 'Beleg ').$nummer, [
                     $partners[$partner]['address'], 'Datum: '.$datum,
@@ -454,6 +469,20 @@ class GitarrenshopDemoSeeder extends Seeder
                     'kassenbeleg' => $withReceipt ? [$this->file('gitarren_zahlungen', 'kassenbeleg', strtolower($nummer).'-zahlung-'.($i + 1).'.pdf', self::pdf('Quittung '.$nummer, ['Datum: '.$date, 'Betrag: CHF '.$amount, (string) $note]))] : null,
                 ]);
             }
+        }
+    }
+
+    /**
+     * Bestehende Installationen (vor N4: Belegnummer als Text): auf den Nummernkreis umstellen. Die vorhandenen Nummern
+     * bleiben und heben die Zähler je Belegart und Jahr (wie „Typ ändern“ im Table-Designer).
+     */
+    private function upgradeReceiptNumber(): void
+    {
+        $field = CustomField::query()->where('name', 'belegnummer')
+            ->whereHas('custom_table', static fn ($q) => $q->where('name', 'gitarren_belege'))->first();
+
+        if ($field !== null && $field->type === FieldType::String) {
+            app(DynamicSchemaService::class)->updateField($field, ['type' => 'number', 'options' => self::RECEIPT_NUMBER, 'is_required' => false]);
         }
     }
 

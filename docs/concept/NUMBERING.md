@@ -1,6 +1,6 @@
 # Konzept: Nummernkreise in SAFT XT
 
-Stand: 26.11.2026 · Status: **abgestimmt**, auf Fundament 2 nachgeführt; **Etappen N1, N2 und N3 umgesetzt** (Abschnitt 12) ·
+Stand: 26.11.2026 · Status: **abgestimmt**, auf Fundament 2 nachgeführt; **Etappen N1 bis N4 umgesetzt** (Abschnitt 12) ·
 Backlog: B-135
 
 ## 1. Ziel
@@ -61,7 +61,7 @@ z. B. die Positionsnummer in einer Rechnung oder die Reihenfolge von Lektionen.
 | **Bezugsdatum** | `date_field` | leer = Anlegedatum (Vorgabe) oder ein Feld vom Typ Datum bzw. Datum/Zeit der Tabelle; bestimmt Jahr und Monat im Muster und die Periode | Feld `datum` (Rechnungsdatum) |
 | **Geschäftsjahr beginnt im** | `fiscal_start` | Monat 1–12 (Vorgabe Januar); nur bei jährlichem Neubeginn | Juli: `{YYYY}` = Jahr, in dem das Geschäftsjahr beginnt |
 | **Startwert** | `start` | erste Nummer je Periode (Vorgabe 1); gilt für Perioden, die noch keinen Zähler haben | 1 |
-| **Gruppe** (Etappe N4) | `group_field` | eigener Zähler je Wert eines Auswahlfelds | je Belegart |
+| **Gruppe** (Etappe N4) | `group_field`, `group_codes` | eigener Zähler je Wahl eines Auswahlfelds (aktives Pflichtfeld); je Wahl ein Kurzzeichen für `{GROUP}`, Vorgabe der Wert | je Belegart: Einnahme → `V`, Ausgabe → `E` |
 | **Vergeben, wenn** (Etappe N3) | `assign_when` | Bedingung als Formel; leer = beim Anlegen | `status = 'definitiv'` |
 
 Im Formular steht unter dem Muster eine **Vorschau** mit der nächsten Nummer, z. B. „Nächste Nummer: R-2026-0043“.
@@ -79,7 +79,7 @@ fachlichen Meldung (`BusinessRuleException`).
 | `{MM}` | 11 | |
 | `{0000}` | 0042 | laufende Nummer, so viele Stellen wie Nullen. Bei Überlauf wird die Nummer länger (`10000`) und nie abgeschnitten. |
 | `{#}` | 42 | laufende Nummer ohne Auffüllen; wird dann nicht mehr richtig als Text sortiert |
-| `{GROUP}` (N4) | AN | Wert bzw. Kurzzeichen der Gruppe |
+| `{GROUP}` (N4) | AN | Kurzzeichen der Gruppe: 1–10 Zeichen aus Buchstaben, Ziffern und `- / . _`; Vorgabe der gespeicherte Wert der Wahl |
 | übriger Text | `R-`, `/` | wörtlich |
 
 **Prüfung des Musters** (eine Klasse `NumberPattern`, dieselbe Prüfung im Table-Designer, in der App-Definition und
@@ -364,3 +364,32 @@ Rechnungsauswertungen nur für versendete Rechnungen.
 - **Musikschule 1.6:** wie in 12.4 (D); Aktualisierung 1.5 → 1.6 lässt vergebene Nummern stehen.
 - **Tests:** `NumberConditionTest` (15 Fälle), Gleichzeitigkeit beim Ändern auf drei Datenbanken,
   `DemoSeedersTest` (1.5 → 1.6), Browser-Fall TDE-39.
+
+### 12.6 Plan N4 (26.11.2026)
+
+Entschieden 26.11.2026: (A) `{GROUP}` ist ein **Kurzzeichen je Wahl** (Option `group_codes` am Nummernkreis), Vorgabe der
+gespeicherte Wert, wenn er eines sein kann; 1–10 Zeichen aus Buchstaben, Ziffern und `- / . _`. (B) Der Zähler hängt am
+**Kurzzeichen**, nicht am Wert: Zurücklesen ohne Wissen um den Datensatz, geteilte Zähler gewollt, keine Doppel; ein
+geändertes Kurzzeichen wirkt wie ein geändertes Muster (Zähler angehoben). (C) Mit Gruppe muss `{GROUP}` genau einmal im
+Muster stehen, ohne Gruppe nie. (D) Das Gruppenfeld bleibt ein aktives Pflichtfeld vom Typ Auswahl (wie das
+Bezugsdatum); neue Wahlen brauchen ein gültiges Kurzzeichen, Kurzzeichen entfernter Wahlen bleiben. (E) Die Nummer
+bleibt fest, auch wenn sich die Gruppe später ändert; mit „Vergeben, wenn“ gilt die Gruppe bei der Vergabe. (F) Demo:
+Gitarrenshop-Belege `{GROUP}-{YYYY}-{000}` mit Einnahme → `V`, Ausgabe → `E` (dieselben Nummern wie bisher).
+
+### 12.7 Umsetzung N4 (26.11.2026)
+
+- **Kern:** `NumberPattern` mit Platzhalter `{GROUP}`, Kurzzeichen (`groups`, längste zuerst beim Zurücklesen),
+  `parse()` liefert die Gruppe; `NumberSequences::counters()`; `NumberAssigner` zieht je Kurzzeichen, ein Import hebt den
+  Zähler des Kurzzeichens in der Nummer; `NumberAnalysis::key()` („V 2026“) für Vorschau, Umstellen und Zählerstände;
+  `NumberCounter::set(…, group:)`.
+- **Schema:** `FieldDefinitionNormalizer` prüft Gruppenfeld und Kurzzeichen und ergänzt fehlende; `DynamicSchemaService`
+  sperrt Deaktivieren, Typwechsel, „freiwillig“ und Löschen des Gruppenfelds, führt Umbenennen nach, prüft neue Wahlen
+  und trägt ihren Wert als Kurzzeichen nach.
+- **App-Definition:** Nummernkreis nach seinem Gruppenfeld angelegt (`SchemaImporter`, `ChangeExecutor`), beim
+  Aktualisieren Nummernkreise vor Auswahlfeldern geändert; geänderte Gruppe bzw. Kurzzeichen heikel (`number_group`).
+  Die KI schlägt keine Gruppe vor.
+- **Oberfläche:** Auswahl „Gruppe“, Tabelle „Kurzzeichen für {GROUP}“ (vorbelegt), Baustein `{GROUP}`, Vorschau je
+  Kurzzeichen, Zählerstände „E · 2026“, „Zählerstand setzen“ mit Gruppe.
+- **Gitarrenshop:** Belegnummer als Nummernkreis je Typ; der Seeder stellt bestehende Installationen um.
+- **Tests:** `NumberGroupTest` (14 Fälle), `NumberPatternTest`, Gleichzeitigkeit in zwei Gruppen auf drei Datenbanken,
+  `AppInstallerTest`, `AppUpdateTest`, `DemoSeedersTest`, Browser-Fall TDE-40.

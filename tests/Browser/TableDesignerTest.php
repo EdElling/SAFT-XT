@@ -578,6 +578,59 @@ class TableDesignerTest extends DuskTestCase
         $this->assertSame('R-2026-001', DynamicRecord::forTableName('rechnungen')->newQuery()->where('betreff', 'Kursgeld')->value('nummer'));
     }
 
+    /**
+     * TDE-40: Gruppe – Auswahlfeld wählen, Kurzzeichen eintragen, {GROUP} ins Muster; Vorschau je Kurzzeichen,
+     * Zählerstände je Gruppe und „Zählerstand setzen“ für eine Gruppe (B-135, N4).
+     */
+    public function test_number_sequence_counts_per_group(): void
+    {
+        $receipts = $this->service()->createTable(['name' => 'belege', 'label' => 'Belege'], [
+            ['name' => 'datum', 'label' => 'Datum', 'type' => 'date', 'is_required' => true],
+            ['name' => 'typ', 'label' => 'Typ', 'type' => 'select', 'is_required' => true, 'options' => ['options' => [
+                ['value' => 'Einnahme', 'label' => ['de' => 'Einnahme']],
+                ['value' => 'Rückgabe', 'label' => ['de' => 'Rückgabe']],
+            ]]],
+            ['name' => 'nummer', 'label' => 'Nummer', 'type' => 'number', 'options' => [
+                NumberPattern::PATTERN => 'B-{YYYY}-{000}', NumberPattern::RESET => 'yearly', NumberPattern::DATE_FIELD => 'datum',
+            ]],
+        ]);
+        $year = now()->format('Y');
+        $code = static fn (int $row): string => '.fi-fo-key-value-table tbody tr:nth-of-type('.$row.') input[x-model="row.value"]';
+
+        $this->browse(function (Browser $browser) use ($receipts, $year, $code): void {
+            $this->openDesigner($browser, $receipts);
+            $this->rowAction($browser, 'nummer', 'Bearbeiten')->waitFor($this->input('options.group_field'), 15);
+            $pattern = $this->input('options.pattern');
+
+            // Vorbelegt: gültige Werte als Kurzzeichen, „Rückgabe“ (Umlaut) leer.
+            $browser->select($this->input('options.group_field'), 'typ')
+                ->waitFor($code(2), 15)
+                ->waitUsing(15, 100, fn (): bool => $browser->value($code(1)) === 'Einnahme' && $browser->value($code(2)) === '')
+                ->clear($code(1))->type($code(1), 'V')
+                ->type($code(2), 'R')->keys($code(2), '{tab}')
+                ->clear($pattern)->type($pattern, '{GROUP}-{YYYY}-{000}')->keys($pattern, '{tab}')
+                ->waitForText("Nächste Nummer: V-{$year}-001 (Einnahme) · R-{$year}-001 (Rückgabe)", 15);
+            $this->clickVisibleButton($browser, 'Speichern')->waitUntilMissing($pattern, 15);
+
+            DynamicRecord::forTable($receipts->fresh())->create(['datum' => now()->toDateString(), 'typ' => 'Rückgabe']);
+
+            // Zählerstand der Gruppe R setzen.
+            $this->rowAction($browser, 'nummer', 'Bearbeiten')
+                ->waitForText("R · {$year}: zuletzt vergeben 1, höchste vorhandene Nummer 1", 15);
+            $this->clickVisibleButton($browser, 'Zählerstand setzen')->waitFor('[id="mountedActionSchema1.group"]', 15)
+                ->select('[id="mountedActionSchema1.group"]', 'R')
+                ->clear('[id="mountedActionSchema1.value"]')->type('[id="mountedActionSchema1.value"]', '41');
+            $this->clickVisibleButton($browser, 'Absenden')->waitForText('Zählerstand gesetzt', 15)
+                ->waitForText("R · {$year}: zuletzt vergeben 41", 15);
+        });
+
+        $field = $this->field($receipts, 'nummer');
+        $this->assertEquals(['typ', ['Einnahme' => 'V', 'Rückgabe' => 'R']], [$field->optionsArray()['group_field'], $field->optionsArray()['group_codes']]);
+        DynamicRecord::forget('belege');
+        $this->assertSame("R-{$year}-042", DynamicRecord::forTableName('belege')->newQuery()->create(['datum' => now()->toDateString(), 'typ' => 'Rückgabe'])->nummer);
+        $this->assertSame("V-{$year}-001", DynamicRecord::forTableName('belege')->newQuery()->create(['datum' => now()->toDateString(), 'typ' => 'Einnahme'])->nummer);
+    }
+
     /** TDE-15 */
     public function test_physical_table_box_counts_deleted_records_and_shows_no_drift(): void
     {

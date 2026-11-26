@@ -11,6 +11,8 @@ use App\DynamicData\Numbering\NumberSequences;
 use App\DynamicData\Write\RecordWriter;
 use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
+use App\Filament\Resources\CustomTables\Pages\EditCustomTable;
+use App\Filament\Resources\CustomTables\RelationManagers\CustomFieldsRelationManager;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -18,8 +20,11 @@ use App\Models\WorkItem;
 use App\Work\Types\NumberBackfillWork;
 use App\Work\WorkService;
 use Closure;
+use Filament\Actions\CreateAction;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 
 /** Nummernkreise (B-135, N4): eigener Zähler je Gruppe, Platzhalter {GROUP} mit Kurzzeichen je Wahl. */
 class NumberGroupTest extends DynamicDataTestCase
@@ -269,5 +274,32 @@ class NumberGroupTest extends DynamicDataTestCase
             ['2026-01-01' => 'V-2026-001', '2026-02-01' => 'E-2026-001', '2026-03-01' => 'E-2026-002'],
             DynamicRecord::forTable($table)->newQuery()->orderBy('datum')->pluck('nummer', 'betreff')->all(),
         );
+    }
+
+    public function test_field_editor_prefills_codes_and_saves_them(): void
+    {
+        $this->actingAs($this->superAdmin());
+        $table = $this->receipts(null);
+        $this->service()->updateField($this->field('typ'), ['options' => ['options' => [['value' => 'Einnahme'], ['value' => 'Ausgabe'], ['value' => 'Rückgabe']]]]);
+        $manager = fn () => Livewire::test(CustomFieldsRelationManager::class, ['ownerRecord' => $table->fresh(), 'pageClass' => EditCustomTable::class]);
+
+        $manager()
+            ->mountAction(TestAction::make(CreateAction::class)->table())
+            ->fillForm(['label' => ['de' => 'Nummer'], 'name' => 'nummer', 'type' => 'number', 'options' => [NumberPattern::PATTERN => '{GROUP}-{YYYY}-{000}', NumberPattern::RESET => 'yearly']])
+            ->fillForm(['options.'.NumberPattern::GROUP_FIELD => 'typ'])
+            ->assertSchemaStateSet(['options.'.NumberPattern::GROUP_CODES => ['Einnahme' => 'Einnahme', 'Ausgabe' => 'Ausgabe', 'Rückgabe' => '']])
+            ->fillForm(['options.'.NumberPattern::GROUP_CODES => ['Einnahme' => 'V', 'Ausgabe' => 'E', 'Rückgabe' => 'R']])
+            ->callMountedAction()
+            ->assertHasNoFormErrors();
+
+        $this->assertEquals(['Einnahme' => 'V', 'Ausgabe' => 'E', 'Rückgabe' => 'R'], $this->field()->optionsArray()[NumberPattern::GROUP_CODES]);
+        $this->assertSame('R-2026-001', $this->create($table, ['typ' => 'Rückgabe'])->nummer);
+
+        // Ein ungültiges Kurzzeichen lehnt das Speichern ab.
+        $manager()
+            ->mountAction(TestAction::make('edit')->table($this->field()))
+            ->fillForm(['options.'.NumberPattern::GROUP_CODES => ['Einnahme' => 'V', 'Ausgabe' => 'E', 'Rückgabe' => 'Rü']])
+            ->callMountedAction();
+        $this->assertSame('R', $this->field()->optionsArray()[NumberPattern::GROUP_CODES]['Rückgabe']);
     }
 }

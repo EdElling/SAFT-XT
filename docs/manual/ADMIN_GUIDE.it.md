@@ -485,6 +485,31 @@ creazione.
   quindi subito un numero.
 - I campi usati dalla condizione restano attivi e non possono diventare un campo file; una ridenominazione viene seguita.
 
+#### Un contatore per gruppo
+
+Se, per esempio, entrate e uscite o fatture e note di credito devono avere ciascuna numeri propri (`V-2026-001`,
+`E-2026-001`), scegliete sotto **Gruppo** un campo di selezione della tabella, p. es. il tipo di documento. Ogni scelta
+conta allora per sé, e il modello contiene il segnaposto `{GROUP}`, p. es. `{GROUP}-{YYYY}-{000}`.
+
+- **Codici per {GROUP}:** la tabella sottostante indica per ogni scelta il codice che entra nel numero, p. es. `V` per
+  *Entrata*. Scegliendo il gruppo, è precompilato con il valore salvato della scelta. Sono ammessi da 1 a 10 caratteri
+  tra lettere, cifre e `- / . _`; i valori con accenti o spazi restano vuoti e richiedono un codice. Le scelte con lo
+  stesso codice condividono un contatore.
+- **Modello:** con un gruppo, `{GROUP}` deve comparire esattamente una volta nel modello; senza gruppo non deve
+  comparire – altrimenti i numeri si ripeterebbero. Il **numero successivo** è indicato per codice, p. es. «V-2026-003
+  (Entrata) · E-2026-004 (Uscita)».
+- **Si possono scegliere** i campi di selezione attivi e obbligatori. Il campo resta tale: non può essere disattivato,
+  cambiato di tipo né reso facoltativo; una ridenominazione viene seguita.
+- **Le nuove scelte** del campo gruppo ricevono il loro valore come codice. Se il valore non può esserlo (p. es.
+  *Rückerstattung*), inserite prima un codice per esso nell’intervallo di numerazione. **Le scelte rimosse** mantengono
+  il loro codice, affinché i numeri vecchi siano riconosciuti.
+- **Gruppo al momento dell’assegnazione:** se il tipo di un record cambia in seguito, il suo numero resta. Con «Assegna
+  se» conta il gruppo al salvataggio che assegna il numero.
+- **Cambiare un codice:** i numeri esistenti restano; i nuovi contano sotto il nuovo codice e proseguono dopo i numeri
+  esistenti con quel codice. All’aggiornamento di un’app ciò è delicato.
+- **Importazione, conversione e Numerare ora** riconoscono il gruppo dal numero: un `E-2026-012` importato alza il
+  contatore di `E` per il 2026.
+
 #### Convertire campi esistenti
 
 Un campo di tipo testo, testo su più righe, numero intero o scelta può passare a «Intervallo di numerazione» anche se
@@ -522,6 +547,9 @@ numero progressivo assegnato e il più alto esistente. Con **Impostare il contat
 - **Aumentare** è sempre possibile, p. es. «le fatture 2027 iniziano da 1000»: contatore 999.
 - **Abbassare** è possibile solo se nessun numero esistente del periodo è più alto (cestino compreso), e solo con
   conferma.
+
+Con un [gruppo](#un-contatore-per-gruppo) i contatori compaiono per codice e periodo (p. es. `E · 2026`), e
+**Impostare il contatore** chiede anche il gruppo.
 
 Ogni modifica figura nella cronologia del campo (icona orologio nell’elenco dei campi).
 

@@ -364,3 +364,8 @@ no. n".
     the same before phase assigns the number only **after** `RecordSaving` and before the formulas, on the first save
     with the condition true, also on update – same lock, same transaction. A changed pattern raises the counters to the
     highest existing matching number.
+    *Addendum N4 (26 November 2026):* with a group (`group_field`, an active required select field, and `group_codes`,
+    value → code) the counter row counts per **code** (column `grp`), not per value: reading a number back (import,
+    conversion, counters) thus yields the group from the number itself, choices with the same code deliberately share a
+    counter, and duplicates are impossible. The group at the time of assignment applies; a later change leaves the
+    number as it is. Codes of removed choices stay in the options.

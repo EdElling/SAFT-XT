@@ -27,6 +27,7 @@ use App\Reports\ChartData;
 use App\Reports\ReportResult;
 use App\Reports\ReportRunner;
 use App\Reports\ValueFormatter;
+use App\Services\DynamicSchemaService;
 use Database\Seeders\DemoDataSeeder;
 use Database\Seeders\ForschungDemoSeeder;
 use Database\Seeders\GitarrenshopDemoSeeder;
@@ -34,6 +35,7 @@ use Database\Seeders\LagerDemoSeeder;
 use Database\Seeders\MusikschuleDemoSeeder;
 use Database\Seeders\VertriebDemoSeeder;
 use Illuminate\Process\PendingProcess;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
@@ -214,6 +216,38 @@ class DemoSeedersTest extends DynamicDataTestCase
         $this->assertNotEmpty($this->runReport(VertriebDemoSeeder::REPORT_ITEMS)->rows);
     }
 
+    /**
+     * @param  Collection<int, DynamicRecord>  $receipts
+     * @return list<string> höchste Belegnummer je Typ und Jahr
+     */
+    private function highestReceipts($receipts): array
+    {
+        return $receipts->pluck('belegnummer')->groupBy(static fn (string $n): string => substr($n, 0, 6))->map(static fn ($g): string => $g->max())->sort()->values()->all();
+    }
+
+    private function numberField(string $table, string $field): CustomField
+    {
+        return CustomField::query()->where('name', $field)->whereHas('custom_table', static fn ($q) => $q->where('name', $table))->sole();
+    }
+
+    /** Installationen vor N4 (Belegnummer als Text) stellt der Seeder um; die Nummern bleiben, die Zähler folgen. */
+    public function test_gitarrenshop_receipt_number_is_converted_in_existing_installations(): void
+    {
+        Storage::fake('local');
+        $this->seed(GitarrenshopDemoSeeder::class);
+        $field = $this->numberField('gitarren_belege', 'belegnummer');
+        app(DynamicSchemaService::class)->updateField($field, ['type' => 'string', 'options' => ['length' => 30]]);
+        $this->assertSame([], app(NumberSequences::class)->counters($field->id));
+
+        $this->seed(GitarrenshopDemoSeeder::class);
+
+        $field = $field->fresh();
+        $this->assertSame([FieldType::Number, GitarrenshopDemoSeeder::RECEIPT_NUMBER['pattern']], [$field->type, $field->optionsArray()['pattern']]);
+        $this->assertCount(4, app(NumberSequences::class)->counters($field->id));
+        $customer = DynamicRecord::forTableName('gitarren_kunden')->newQuery()->value('id');
+        $this->assertSame('V-2026-003', DynamicRecord::forTableName('gitarren_belege')->create(['datum' => '2026-11-20', 'typ' => 'Einnahme', 'kunde_id' => $customer])->belegnummer);
+    }
+
     public function test_gitarrenshop_demo_with_vat_files_and_instalments(): void
     {
         Storage::fake('local');
@@ -231,6 +265,17 @@ class DemoSeedersTest extends DynamicDataTestCase
         $keller = DynamicRecord::forTableName('gitarren_kunden')->newQuery()->where('name', 'Keller')->sole();
         $this->assertSame((int) $keller->id, (int) $receipts->firstWhere('belegnummer', 'V-2026-002')->kunde_id);
         $this->assertSame('8f0c6a52-6d0e-4c8e-9a43-5b1c2f6e0a05', CustomTable::query()->where('name', 'gitarren_artikel')->sole()->app->uuid);
+
+        // Belegnummer als Nummernkreis je Typ (N4): SAFT vergibt dieselben Nummern, die die Belegdateien tragen.
+        foreach ($receipts as $receipt) {
+            $this->assertSame(strtolower((string) $receipt->belegnummer).'.pdf', $receipt->dateien[0]['name'] ?? null);
+        }
+
+        $this->assertSame(['E-2025-004', 'E-2026-003', 'V-2025-002', 'V-2026-002'], $this->highestReceipts($receipts));
+        $this->assertSame([
+            ['group' => 'E', 'period' => '2025', 'value' => 4], ['group' => 'E', 'period' => '2026', 'value' => 3],
+            ['group' => 'V', 'period' => '2025', 'value' => 2], ['group' => 'V', 'period' => '2026', 'value' => 2],
+        ], app(NumberSequences::class)->counters($this->numberField('gitarren_belege', 'belegnummer')->id));
 
         // MWST aus dem gewählten Satz (if-Formel), Brutto, Einnahme bzw. Ausgabe nach der Art.
         $repair = DynamicRecord::forTableName('gitarren_buchungen')->newQuery()->where('text', 'Neue Bundierung')->sole();

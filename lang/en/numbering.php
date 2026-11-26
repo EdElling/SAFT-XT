@@ -11,6 +11,8 @@ return [
         'fiscal_start' => 'Financial year starts in',
         'start' => 'Start value',
         'assign_when' => 'Assign when',
+        'group_field' => 'Group',
+        'group_codes' => 'Codes for {GROUP}',
     ],
     'form' => [
         'section' => 'Number sequence',
@@ -27,6 +29,11 @@ return [
         'assign_when_ok' => 'Condition OK – depends on: :fields. The number is assigned on the first save on which it is true.',
         'assign_when_help_toggle' => 'Help on the condition',
         'assign_when_help_text' => 'The condition compares fields of this record with = <> < <= > >=, combined with and/or and brackets. Text is written in single quotes; for choice fields the stored value counts (see the field\'s tooltip), e.g. status <> \'draft\'. A yes/no field on its own is already a condition, e.g. final. If one side of a comparison is empty, it is not met. Compare text loosely (ignoring case): contains(field, \'part\'), startswith(…), endswith(…); also coalesce, if, round, abs, min and max. Computed fields and sums over other tables are not possible because the condition is checked before the formulas. The number is assigned on the first save on which the condition is true – also when editing – and stays fixed afterwards.',
+        'group_none' => 'none',
+        'group_field_help' => 'A counter of its own for each choice of a select field, e.g. per document type. Required select fields can be chosen. The pattern then needs {GROUP}.',
+        'group_choice' => 'Choice',
+        'group_code' => 'Code',
+        'group_codes_help' => 'Takes the place of {GROUP} in the number: 1 to :max characters from letters, digits and - / . _. Choices with the same code share a counter. An assigned number stays, even if the record’s group changes later.',
     ],
     'resets' => [
         'never' => 'never',
@@ -53,6 +60,7 @@ return [
         'month' => 'month',
         'counter' => 'running number, zero-padded',
         'counter_plain' => 'running number, not padded',
+        'group' => 'group (code)',
     ],
     'errors' => [
         'reset' => 'Unknown restart ":reset" (never, yearly or monthly).',

@@ -76,7 +76,8 @@ final class TableAssistant
         {YYYY} or {YY} (year), {MM} (month) and exactly one running number {0000} (zero-padded, as many digits as zeros)
         or {#} (not padded), e.g. "R-{YYYY}-{0000}" for invoices. With a year the counter restarts every year, with year
         and month every month, without a year never. Number fields are always unique and never required; at most 50
-        characters. Leave "formula" "" for all other types.
+        characters. Do not use {GROUP}: a counter per group is set up afterwards in the table designer. Leave "formula"
+        "" for all other types.
 
         Field rules (only when the user asks for limits or formats) go into "rules" as short text, separated by ";":
         min=<number> and max=<number> (integer, decimal), min_length=<n> and max_length=<n> (string, text), email and url

@@ -481,6 +481,31 @@ Lücken. Leer heisst: beim Anlegen vergeben.
 - Felder, die die Bedingung verwendet, bleiben aktiv und lassen sich nicht in ein Dateifeld ändern; Umbenennen wird
   nachgeführt.
 
+#### Eigener Zähler je Gruppe
+
+Sollen z. B. Einnahmen und Ausgaben oder Rechnungen und Gutschriften je eigene Nummern bekommen (`V-2026-001`,
+`E-2026-001`), wählen Sie unter **Gruppe** ein Auswahlfeld der Tabelle, z. B. die Belegart. Jede Wahl zählt dann für
+sich, und im Muster steht der Platzhalter `{GROUP}`, z. B. `{GROUP}-{YYYY}-{000}`.
+
+- **Kurzzeichen für {GROUP}:** Je Wahl steht in der Tabelle darunter das Kurzzeichen, das in die Nummer kommt, z. B.
+  `V` für *Einnahme*. Beim Wählen der Gruppe ist es mit dem gespeicherten Wert der Wahl vorbelegt. Erlaubt sind 1 bis
+  10 Zeichen aus Buchstaben, Ziffern und `- / . _`; Werte mit Umlauten oder Leerzeichen bleiben leer und brauchen ein
+  Kurzzeichen. Wahlen mit demselben Kurzzeichen teilen sich einen Zähler.
+- **Muster:** Mit Gruppe muss `{GROUP}` genau einmal im Muster stehen, ohne Gruppe darf es nicht vorkommen – sonst
+  entstünden doppelte Nummern. Die **nächste Nummer** steht je Kurzzeichen da, z. B. „V-2026-003 (Einnahme) ·
+  E-2026-004 (Ausgabe)“.
+- **Wählbar** sind aktive Pflichtfelder vom Typ Auswahl. Das Feld bleibt das dann: Es lässt sich nicht deaktivieren,
+  nicht zu einem anderen Typ ändern und nicht als freiwillig markieren; Umbenennen wird nachgeführt.
+- **Neue Wahlen** im Gruppenfeld bekommen ihren Wert als Kurzzeichen. Ist der Wert keines (z. B. *Rückerstattung*),
+  hinterlegen Sie zuerst im Nummernkreis ein Kurzzeichen dafür. **Entfernte Wahlen** behalten ihr Kurzzeichen, damit
+  alte Nummern erkannt werden.
+- **Gruppe zum Zeitpunkt der Vergabe:** Ändert sich die Belegart eines Datensatzes später, bleibt seine Nummer. Mit
+  „Vergeben, wenn“ zählt die Gruppe beim Speichern, bei dem die Nummer vergeben wird.
+- **Kurzzeichen ändern:** Vorhandene Nummern bleiben; neue zählen unter dem neuen Kurzzeichen und schliessen an
+  vorhandene Nummern mit diesem Kurzzeichen an. Beim Aktualisieren einer App gilt das als heikel.
+- **Import, Umstellen und Jetzt nummerieren** erkennen die Gruppe an der Nummer: Eine importierte `E-2026-012` hebt den
+  Zähler von `E` für 2026.
+
 #### Bestehende Felder umstellen
 
 Ein Feld vom Typ Text, mehrzeiliger Text, Ganzzahl oder Auswahl lässt sich auch mit Werten auf „Nummernkreis“
@@ -517,6 +542,9 @@ vergebene laufende Nummer und die höchste vorhandene. Mit **Zählerstand setzen
 - **Erhöhen** geht jederzeit, z. B. „Rechnungen 2027 beginnen bei 1000“: Zählerstand 999.
 - **Senken** geht nur, wenn keine vorhandene Nummer des Zeitraums höher ist (auch im Papierkorb), und nur mit
   Bestätigung.
+
+Mit einer [Gruppe](#eigener-zähler-je-gruppe) stehen die Zählerstände je Kurzzeichen und Zeitraum da (z. B.
+`E · 2026`), und **Zählerstand setzen** fragt zusätzlich nach der Gruppe.
 
 Jede Änderung steht im Verlauf des Felds (Uhr-Symbol in der Feldliste).
 
