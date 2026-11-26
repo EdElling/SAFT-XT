@@ -305,7 +305,9 @@ Further rules:
 - **Up to four levels** are shown one below the other (list + three detail levels).
 - **Several detail tables on one level** (e.g. a customer has *Orders* and *Invoices*) appear as **tabs**. The
   label also names the relation, e.g. "Orders (via "Customer")". This keeps two relations from the same table
-  distinguishable. The next level appears under the tab in which you made the selection.
+  distinguishable. The next level appears under the tab in which you made the selection. Another tab loads its table
+  only when you open it; a loading indicator appears briefly. This keeps the click on a record fast, even if it has
+  many detail tables.
 - **New record in a detail table:** the relation is set automatically: a new order line always belongs to the
   currently selected order. No new records can be created below a deleted record; the button is missing there.
 - **Editing** is done here, too, with the buttons in the respective row (smartphone: **"Details"**).

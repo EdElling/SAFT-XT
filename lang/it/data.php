@@ -95,6 +95,7 @@ return [
     ],
     'empty' => 'Ancora nessun record',
     'empty_details' => 'Nessun record collegato',
+    'loading_details' => 'Caricamento dei record collegati',
     'rules' => [
         'compare' => [
             '=' => 'deve essere uguale a :other.',

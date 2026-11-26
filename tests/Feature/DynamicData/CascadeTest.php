@@ -185,6 +185,38 @@ class CascadeTest extends DynamicDataTestCase
             ->assertSee('role="tab"', escape: false);
     }
 
+    /** Nur der aktive Reiter wird gerendert, die anderen laden beim Öffnen nach (B-151). */
+    public function test_inactive_detail_tabs_load_when_opened(): void
+    {
+        $this->actingAs($this->superAdmin());
+        $this->service()->updateTable($this->kunden->fresh(), ['detail_field_ids' => [
+            $this->fieldId('bestellungen', 'kunde_id'),
+            $this->fieldId('bestellungen', 'rechnung_an_id'),
+        ]]);
+        DynamicRecord::forTable($this->bestellungen)->create(['nummer' => 'R-1', 'rechnung_an_id' => $this->kunde->id]);
+
+        $html = Livewire::test(DynamicDataPage::class, ['table' => 'kunden'])
+            ->call('selectRecord', $this->kunde->id)
+            ->html();
+
+        $this->assertStringContainsString('B-7', $html, 'Aktiver Reiter (Kunde) sofort gerendert.');
+        $this->assertStringNotContainsString('R-1', $html, 'Reiter „Rechnung an“ noch nicht gerendert.');
+        $this->assertSame(1, substr_count($html, 'saft-detail-placeholder"'), 'Platzhalter für den nicht aktiven Reiter.');
+
+        // Beim Öffnen lädt Livewire die Komponente nach: dann mit Inhalt.
+        $this->detailTable('kunden', $this->kunde->id, 'bestellungen', 'rechnung_an_id')->assertSee('R-1');
+    }
+
+    public function test_single_detail_is_not_lazy(): void
+    {
+        $this->actingAs($this->superAdmin());
+
+        $html = Livewire::test(DynamicDataPage::class, ['table' => 'kunden'])->call('selectRecord', $this->kunde->id)->html();
+
+        $this->assertStringContainsString('B-7', $html);
+        $this->assertStringNotContainsString('saft-detail-placeholder"', $html);
+    }
+
     /** Je Klick wurde dieselbe Tabelle je Zeile und Zelle neu geladen (Lager-Demo: 462 Abfragen je Klick, 25.11.2026). */
     public function test_row_click_loads_each_custom_table_once(): void
     {

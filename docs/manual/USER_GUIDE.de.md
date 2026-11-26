@@ -321,7 +321,8 @@ Weitere Regeln:
 - **Mehrere Detailtabellen auf einer Ebene** (z. B. ein Kunde hat *Bestellungen* und *Rechnungen*) erscheinen
   als **Reiter**. Die Beschriftung nennt auch die Verknüpfung, z. B. „Bestellungen (über „Kunde“)“. So bleiben auch
   zwei Verknüpfungen aus derselben Tabelle unterscheidbar. Die nächste Ebene erscheint unter dem Reiter, in dem
-  Sie ausgewählt haben.
+  Sie ausgewählt haben. Ein weiterer Reiter lädt seine Tabelle erst, wenn Sie ihn öffnen – kurz erscheint dabei
+  eine Ladeanzeige. So bleibt der Klick auf einen Datensatz schnell, auch wenn er viele Detailtabellen hat.
 - **Neuer Datensatz in einer Detailtabelle:** Die Verknüpfung ist automatisch gesetzt – eine neue
   Bestellposition gehört immer zur gerade ausgewählten Bestellung. Unter einem gelöschten Datensatz können keine
   neuen Datensätze angelegt werden, die Schaltfläche fehlt dort.

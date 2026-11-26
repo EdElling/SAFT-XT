@@ -219,6 +219,9 @@ final class PanelAppearance
             // Admin-Listen mit App-Auswahl (HasAppTabs): Inhalt so breit wie die Tabelle, die Auswahl darüber gleich breit.
             .'.fi-resource-list-records-page .fi-page-content:has(.saft-app-select){width:fit-content;max-width:100%}'
             .'.saft-data-page .saft-table-with-record .fi-ta{width:100%}'
+            // Platzhalter eines Reiters, der erst beim Öffnen nachlädt (B-151): ungefähr Tabellenhöhe, kein Springen.
+            .'.saft-detail-placeholder{display:flex;align-items:center;justify-content:center;min-height:12rem;color:var(--gray-400)}'
+            .'.saft-detail-placeholder-icon{width:1.5rem;height:1.5rem}'
             // Filament kürzt die Blätterleiste schmaler Tabellen; „1 bis 10 von 30“ und „pro Seite“ bleiben sichtbar.
             .':is(.saft-data-page,.fi-resource-list-records-page,.fi-resource-relation-manager) .fi-pagination'
             .' .fi-pagination-overview{display:inline}'

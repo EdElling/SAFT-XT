@@ -95,6 +95,7 @@ return [
     ],
     'empty' => 'Aucun enregistrement pour l’instant',
     'empty_details' => 'Aucun enregistrement lié',
+    'loading_details' => 'Chargement des enregistrements liés',
     'rules' => [
         'compare' => [
             '=' => 'doit être égal à :other.',

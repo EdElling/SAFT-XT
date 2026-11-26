@@ -95,6 +95,7 @@ return [
     ],
     'empty' => 'No records yet',
     'empty_details' => 'No related records',
+    'loading_details' => 'Loading related records',
     'rules' => [
         'compare' => [
             '=' => 'must be equal to :other.',

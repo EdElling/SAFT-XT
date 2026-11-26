@@ -317,7 +317,8 @@ Altre regole:
 - **Più tabelle di dettaglio sullo stesso livello** (ad es. un cliente ha *Ordini* e *Fatture*) compaiono come
   **schede**. L’etichetta indica anche il collegamento, ad es. «Ordini (tramite «Cliente»)». Così anche due
   collegamenti dalla stessa tabella restano distinguibili. Il livello successivo compare sotto la scheda in cui avete
-  fatto la selezione.
+  fatto la selezione. Un’altra scheda carica la sua tabella solo quando la aprite; compare brevemente un indicatore di
+  caricamento. Così il clic su un record resta rapido, anche se ha molte tabelle di dettaglio.
 - **Nuovo record in una tabella di dettaglio:** il collegamento viene impostato automaticamente – una nuova riga
   d’ordine appartiene sempre all’ordine selezionato. Sotto un record eliminato non si possono creare nuovi record; il
   pulsante lì manca.

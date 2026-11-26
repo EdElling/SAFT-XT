@@ -95,6 +95,7 @@ return [
     ],
     'empty' => 'Noch keine Datensätze',
     'empty_details' => 'Keine zugeordneten Datensätze',
+    'loading_details' => 'Detailtabelle wird geladen',
     'rules' => [
         'compare' => [
             '=' => 'muss gleich :other sein.',

@@ -332,7 +332,8 @@ Autres règles :
 - **Plusieurs tables de détail au même niveau** (p. ex. un client a des *commandes* et des *factures*) apparaissent
   sous forme d’**onglets**. Le libellé indique aussi la liaison, p. ex. « Commandes (via « Client ») ». Deux liaisons
   provenant de la même table restent ainsi distinctes. Le niveau suivant apparaît sous l’onglet dans lequel vous avez
-  fait votre sélection.
+  fait votre sélection. Un autre onglet ne charge sa table qu’à son ouverture ; un indicateur de chargement apparaît
+  brièvement. Le clic sur un enregistrement reste ainsi rapide, même s’il a de nombreuses tables de détail.
 - **Nouvel enregistrement dans une table de détail :** la liaison est renseignée automatiquement – une nouvelle ligne
   de commande appartient toujours à la commande sélectionnée. Sous un enregistrement supprimé, on ne peut pas créer de
   nouveaux enregistrements ; le bouton y manque.

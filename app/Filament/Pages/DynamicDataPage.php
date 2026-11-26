@@ -363,7 +363,10 @@ class DynamicDataPage extends Page implements HasTable
                     'relationFieldId' => $field->id,
                     'level' => $level + 1,
                     'selectedId' => $field->id === $activeField ? $path->selectedAt($level + 1) : null,
-                ])->key("cascade-{$level}-{$field->id}-{$current['record']->getKey()}"),
+                ])->key("cascade-{$level}-{$field->id}-{$current['record']->getKey()}")
+                    // Nicht aktive Reiter erst laden, wenn sie sichtbar werden (B-151): Sonst rendert jeder Klick alle
+                    // Detailtabellen, obwohl nur eine zu sehen ist (Lager-Demo: rund 100 ms und 520 kB je Klick).
+                    ->lazy($field->id !== $activeField),
                 // Nächste Ebene nur unter der Detailtabelle, in der ausgewählt wurde.
                 ...($field->id === $activeField ? $this->levelComponents($levels, $path, $level + 1) : []),
             ],

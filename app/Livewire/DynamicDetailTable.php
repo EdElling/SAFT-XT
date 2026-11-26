@@ -161,6 +161,12 @@ class DynamicDetailTable extends Component implements HasActions, HasSchemas, Ha
             ->emptyStateHeading(__('data.empty_details'));
     }
 
+    /** Bis ein nicht aktiver Reiter sichtbar wird und nachlädt (B-151). */
+    public function placeholder(): View
+    {
+        return view('livewire.dynamic-detail-table-placeholder');
+    }
+
     public function render(): View
     {
         return view('livewire.dynamic-detail-table');
