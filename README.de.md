@@ -13,6 +13,7 @@ PostgreSQL, MySQL oder MariaDB.
 - [Systemadministration](docs/manual/SYSADMIN_GUIDE.de.md)
 - [Entwicklerhandbuch: Plugins](docs/manual/DEVELOPER_GUIDE.de.md)
 - [Architektur](docs/ARCHITECTURE.de.md) (Schichten, Schreibweg, Rechte, Erweiterungspunkte, Entscheidungen)
+- [Projekt in Zahlen](METRICS.de.md) (Codezeilen, Dateien, Tests, Handbücher, Abhängigkeiten)
 
 ## Funktionen
 
@@ -290,7 +291,7 @@ Der Befehl nutzt die Einrichtung der Browser-Tests und leert ebenfalls `SAFT2_du
 
 ## Entwicklung
 
-Architektur- und Arbeitsregeln für die Weiterentwicklung stehen in [CLAUDE.md](CLAUDE.md).
+Architektur- und Arbeitsregeln für die Weiterentwicklung stehen in [CLAUDE.md](CLAUDE.md). Kennzahlen zum Umfang des Projekts (Codezeilen, Dateien, Feature- und Browser-Tests) stehen in [METRICS.de.md](METRICS.de.md).
 
 ## Lizenz
 

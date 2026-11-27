@@ -13,6 +13,7 @@ Modular, metadata-driven database application framework built on Laravel 13, Fil
 - [System administration](docs/manual/SYSADMIN_GUIDE.md)
 - [Developer guide: plugins](docs/manual/DEVELOPER_GUIDE.md)
 - [Architecture](docs/ARCHITECTURE.md) (layers, write path, permissions, extension points, decisions)
+- [Project in numbers](METRICS.md) (lines of code, files, tests, manuals, dependencies)
   
 
 ## Features
@@ -286,7 +287,7 @@ The command uses the browser test setup and also empties `SAFT2_dusk`. The image
 
 ## Development
 
-Architecture and working rules for further development are in [CLAUDE.md](CLAUDE.md).
+Architecture and working rules for further development are in [CLAUDE.md](CLAUDE.md). Figures on the size of the project (lines of code, files, feature and browser tests) are in [METRICS.md](METRICS.md).
 
 ## License
 
