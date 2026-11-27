@@ -1,6 +1,6 @@
 # Konzept: Datensätze auswählen und Sammeländerung in SAFT XT
 
-Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2 umgesetzt 27.11.2026, S3 umgesetzt 27.11.2026 (§13), S4 offen** · Backlog: B-133
+Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2 umgesetzt 27.11.2026, S3 umgesetzt 27.11.2026 (§13), S4 entschieden (§14)** · Backlog: B-133
 (ersetzt B-024)
 
 > **Überarbeitung 27.11.2026:** Seit dem Entwurf vom 23.11.2026 gibt es Fundament 2 und die Nummernkreise. Der
@@ -508,3 +508,183 @@ keine Adresse mit „Str.“.
     gilt `old` aus dem **ersten** und `attributes` aus dem **letzten** Eintrag, nur für die Felder aus dem Kopf. (d) Fehlt
     der Eintrag, wird der Datensatz als „nicht im Protokoll“ übersprungen (Frage 12). Ein Test hält für jeden Feldtyp
     fest, dass Ändern und Rücknahme denselben Rohwert ergeben, auf allen drei Datenbanken.
+
+## 14. Entscheidungen zu S4 „Erweiterungen“ (27.11.2026: alle Empfehlungen angenommen)
+
+**Befund im Code (27.11.2026).**
+
+- **Plugin-API 1.10** (`config/saft.php` `api_versions`). `DataAction` ist ein `readonly`-Wertobjekt mit `TABLE` und
+  `RECORD` und `make: Closure(DataTable): Action`. Filaments `BulkAction` erbt von `Action`; eine Konstante `BULK`
+  ändert also keine Signatur, nur die Oberfläche (`PluginApiContractTest`, Minor 1.11). `PluginRegistry::dataActions()`
+  filtert nach Platzierung und hängt die Herkunft an den Tooltip. Datenansicht und `DynamicDetailTable` binden `TABLE`
+  und `RECORD` ein; Sammelaktionen stehen in `toolbarActions()`.
+- **`DataTable`** schreibt nur in Designer-Tabellen (`assertWritable()`: angebundene Tabellen sind über die API nur
+  lesbar), je Aufruf über den Writer mit `WriteOptions::plugin()`, ohne Kennung `run`. `transaction()` bündelt
+  mehrere Aufrufe. `Saft::startWork()` startet eine Plugin-Arbeit und liefert die Adresse; ein `startAndAdvance()`
+  für kleine Mengen gibt es dort nicht.
+- **Pilot:** `musikschule-planung` hat „Lektionen erzeugen“ (`LessonAction`) für einen Kurs, ein Semester oder alle
+  Kurse eines Semesters, ausgeführt im Request in `Saft::transaction()`. „Für die ausgewählten Kurse“ ist genau eine
+  Sammelaktion, die Datensätze in einer anderen Tabelle anlegt (ein kleiner Lauf, §1).
+- **Export** ist eine Kopfaktion (`DynamicRecordActions::exportAs()`): Abfrage `getFilteredSortedTableQuery()`,
+  serialisiert in die Arbeit `export` (`ExportWork`), Grenze `export_max_rows` (500'000), Formate XLSX und CSV,
+  sichtbare Spalten in ihrer Reihenfolge. Filament liefert die Auswahl über alle Seiten als Abfrage
+  (`getSelectedRecordsQuery()`, `trackDeselectedRecords` ist in Filament standardmässig an: „alle auswählen“ und
+  einzelne abwählen ergibt Filter minus Abgewählte); Kopfaktionen kommen mit `accessSelectedRecords()` daran.
+- **Angebundene Tabellen** sind in `BulkChange::supports()` ausgeschlossen. Der Writer könnte sie schreiben (Version
+  aus den Originalwerten, Nr. 13), aber: kein Papierkorb (Löschen ist endgültig, Rücknahme von Sammel-Löschen
+  unmöglich), keine Zeitstempel, Trigger der fremden Anwendung (können geschriebene Werte ändern, dann meldet die
+  Rücknahme „seither geändert“), und der Probelauf (`RecordWriter::trial()`, Sicherungspunkte) setzt eine
+  transaktionsfähige Tabelle voraus. Auf MySQL/MariaDB mit MyISAM oder bei Triggern mit Wirkung ausserhalb der
+  Transaktion schriebe die **Prüfphase wirklich**. SAFT kann das bei einer fremden Datenbank nicht zuverlässig
+  erkennen.
+- **Gespeicherter Tabellenzustand (B-027):** `RemembersTableState` speichert Filter, Suche, Sortierung und Zeilen je
+  Seite dauerhaft je Person. Ein Filter „Datensätze einer Sammeländerung“ würde ohne Ausnahme mitgespeichert.
+- **Lesestellen:** `ExportWork` und `BulkRecordsWork` stehen mit `scope: person` in `read-sites.json`.
+
+**Fragen mit Empfehlung**
+
+1. **Was gehört in S4?** *Empfehlung:* S4 nimmt den Nutzen ohne neue Risiken am Schreibweg:
+   - **S4a Auswahl exportieren** (Frage 2), klein, sofort nützlich.
+   - **S4b `DataAction::BULK`** mit dem Pilot „Lektionen für ausgewählte Kurse“ (Fragen 3–5), Plugin-API 1.11.
+   - **S4c B-170 „Datensätze anzeigen“** (Frage 8), klein; passt zu S4a („anzeigen, dann exportieren“).
+
+   **Nicht in S4**, als Backlog-Einträge:
+   - **`DataTable::updateMany()`** (Frage 6): Kein Plugin braucht es heute. Dieselben Werte für alle können Personen
+     mit „Ändern …“ setzen, je Datensatz verschiedene Werte bräuchten einen neuen Modus der Arbeit. Das überschneidet
+     sich mit den Läufen der Regel-Engine (B-142 R3b).
+   - **Angebundene Tabellen** (Frage 7): bewusst nicht.
+   - **„Ohne die fehlerhaften ändern“** (§11 Frage 3): erst, wenn alles oder nichts sich im Betrieb als lästig
+     erweist. Bisher gibt es keine Rückmeldung dazu.
+
+   *Warum diese Reihenfolge:* S4a und S4c ändern nur die Oberfläche und lesen. S4b ändert die Plugin-API nur additiv
+   (eine Konstante). Läufe, Kennungen und ein Kopf für Plugin-Läufe gehören zum Laufprotokoll von B-142 (RULES.md §8.7,
+   AI_AGENTS.md V7) und werden hier nicht vorweggenommen.
+
+2. **Auswahl exportieren: wie?** *Empfehlung:*
+   - **Ort:** eine eigene Sammelaktion **„Auswahl exportieren“** (Gruppe mit XLSX und CSV) in der Werkzeugleiste,
+     sichtbar sobald Zeilen ausgewählt sind. „Export“ oben bleibt „alle gefilterten“. Ein Umschalter im Kopf-Export
+     wäre eine versteckte Betriebsart, und die Person sähe nicht, was gilt.
+   - **Menge:** Auswahl über alle Seiten, geschnitten mit Filter und Suche, ohne die Abgewählten (Filament,
+     `getSelectedRecordsQuery()`). **Sortierung** wie die Tabelle.
+   - **Spalten:** wie beim Export (sichtbare Spalten, Reihenfolge der Spaltenauswahl).
+   - **Grenze:** `export_max_rows` wie beim Export, nicht `bulk_max`, weil nichts geschrieben wird.
+   - **Gelöschte:** wie der Export, also was der Papierkorb-Filter zeigt.
+   - **Weg:** dieselbe Arbeit `export`. Die serialisierte Abfrage ist die der Auswahl, die Parameter bekommen
+     `selected` (Anzahl) fürs Protokoll.
+   - **Recht:** `data.<tabelle>.export` und Schalter `export_enabled`, unabhängig von `bulk_enabled`. Das gilt auch für
+     angebundene Tabellen mit einfachem Schlüssel, weil nur gelesen wird.
+   - **Folge:** Häkchen erscheinen dann auch für Rollen, die nur exportieren dürfen. Keine neue Lesestelle
+     (`ExportWork` liest schon mit `scope: person`).
+
+3. **`DataAction::BULK`: Signatur und was das Plugin bekommt?** *Empfehlung:*
+   - **Signatur:** `new DataAction($table, DataAction::BULK, fn (DataTable $t): BulkAction => …)`. Das PHPDoc von
+     `$make` nennt bei `BULK` eine `Filament\Actions\BulkAction`; `PluginRegistry` prüft den Typ und meldet einen
+     falschen mit Plugin-Namen. In den Closures der Aktion erhält das Plugin wie bei Filament üblich `$records`, also
+     die ausgewählten Datensätze als `DynamicRecord`, geschnitten mit dem Filter.
+   - **Keine eigene Abfrage, keine Schlüsselliste von SAFT:** Das bleibt Filament-üblich wie bei `TABLE`/`RECORD`.
+     Wer viele Datensätze verarbeitet, nimmt `$records->modelKeys()` und übergibt sie an `Saft::startWork()` (Frage 4).
+   - **SAFT sorgt für:** Herkunft im Tooltip. Ausgeblendet, sobald der Papierkorb-Filter gesetzt ist, damit nie
+     gelöschte Datensätze dabei sind. Grenze `APP_DATA_BULK_MAX` vor dem Ausführen geprüft (Meldung wie beim
+     Sammel-Löschen; das Plugin kann eine eigene, kleinere setzen). Auswahl danach aufheben.
+   - **Rechte:** wie bei `TABLE`/`RECORD`. Die Aktion prüft ihre Sichtbarkeit selbst (eigenes Plugin-Recht, z. B.
+     `musikschule-planung.lessons`). SAFT verlangt nur `data.<tabelle>.view` und eine Tabelle mit einfachem Schlüssel.
+     **Nicht** an `bulk_enabled` gebunden: Der Schalter heisst „Sammeländerung erlauben“ und meint das Ändern von
+     Feldinhalten.
+   - **Detailtabellen:** ja, wie `TABLE` und `RECORD` heute. Die Aktion der Kind-Tabelle erscheint auch in deren
+     Detailtabelle.
+
+4. **`DataAction::BULK`: im Request oder als Arbeit?** *Empfehlung:* Das entscheidet das Plugin, wie bei
+   `TABLE`/`RECORD`. Das Entwicklerhandbuch gibt die Regel vor: Was mehr als einige hundert Datensätze oder externe
+   Wirkungen hat, läuft als eigene Arbeit (`SaftPlugin::workTypes()`, `Saft::startWork()` mit den Schlüsseln als
+   Parameter, `WritesRecords` und `CleansUp` für alles oder nichts). Wirkungen nach aussen laufen immer über
+   `Saft::afterCommit()`. Der Pilot bleibt im Request (Lektionen eines Semesters sind wenige hundert, wie heute bei
+   „alle Kurse“). *Offen und nicht in S4:* ein `Saft::startWork()` mit „kleine Mengen gleich im Request“
+   (`startAndAdvance`). Das kommt dazu, sobald ein Plugin es braucht (B-137 Rechnungslauf).
+
+5. **`DataAction::BULK`: Kennung, Kopf und Rücknahme?** *Empfehlung:* **keine** in S4. Plugin-Sammelaktionen
+   schreiben mit Herkunft `plugin` wie bisher, ohne Kennung `run`, ohne Kopf in `bulk_changes`, ohne „Rückgängig“.
+   *Warum:*
+   - Ein Plugin-Lauf schreibt in **andere** Tabellen (Lektionen zu Kursen), legt an, erzeugt Dokumente und E-Mails.
+     `bulk_changes` hängt an einer Tabelle und nimmt nur Feldwerte zurück.
+   - Den allgemeinen Kopf je Kennung samt Rücknahme angelegter Datensätze (Papierkorb), gelöster Dateien und
+     bleibender Dokumente entwirft B-142 R3b (RULES.md §8.7 Punkt 2, AI_AGENTS.md V7). Eine eigene Lösung jetzt wäre
+     eine zweite, die man später ablösen müsste.
+   - Das Handbuch sagt deutlich: Plugin-Sammelaktionen sind nicht über „Letzte Sammeländerungen“ rücknehmbar. Ein
+     Plugin, das das braucht, bietet eine eigene Gegenaktion an.
+
+6. **`DataTable::updateMany()`: falls doch in S4, wie?** *Empfehlung:* **eigener Backlog-Eintrag**, nicht in S4. Für
+   später festgehalten:
+   - Signatur `updateMany(array $keys, array $values): string`: dieselben Werte (setzen und leeren) für alle.
+   - Startet die Arbeit `bulk_records` über `startAndAdvance()` mit allen Eigenschaften: Prüfphase, alles oder nichts,
+     Herkunft `bulk`, Kennung, Kopf, Rücknahme.
+   - Liefert die Adresse der Arbeit. Nur mit angemeldeter Person, nicht nach `withoutAuthorization()`, weil die Arbeit
+     als Person läuft und deren Recht *ändern* prüft.
+   - Der Kopf bekommt die Plugin-Kennung (Migration, Spalte `plugin`), damit die Liste „durch Plugin X“ zeigt.
+   - Je Datensatz verschiedene Werte gehören zu B-142 R3b.
+
+   *Warum nicht jetzt:* Kein Plugin braucht es heute. Personen setzen gleiche Werte über „Ändern …“, Plugins im
+   Hintergrund mit `transaction()` und `update()`. Der Nutzen ist klein, und Vertrag sowie Migration blieben stehen.
+
+7. **Angebundene Tabellen: zulassen?** *Empfehlung:* **bewusst nicht**. Entscheidung im Konzept, Abgrenzung im
+   Handbuch.
+   - **Probelauf:** Er rollt nur bei transaktionsfähigen Tabellen ohne äussere Trigger-Wirkungen zurück. Das lässt sich
+     bei fremden Datenbanken nicht zusichern, die Prüfphase könnte also wirklich schreiben.
+   - **Löschen** ist endgültig, eine Rücknahme gibt es dafür nicht.
+   - **Trigger** der fremden Anwendung verfälschen den Vergleich „seither geändert“.
+   - Dazu ist die Plugin-API für sie ohnehin nur lesend.
+
+   Lesen bleibt erlaubt: **Auswahl exportieren** geht auch bei angebundenen Tabellen (Frage 2). Falls es später
+   gewünscht wird, kommt es in den Backlog: nur *setzen/leeren*, Schalter je Tabelle „Sammeländerung (ohne Probelauf)“,
+   Vorab-Prüfung nur mit `RecordChecker`, ohne Löschen.
+
+8. **B-170 „Datensätze einer Sammeländerung anzeigen“: wie, und Zusammenspiel mit B-027?** *Empfehlung:*
+   - **Link** „Datensätze anzeigen“ in „Letzte Sammeländerungen“ und in der Bestätigung „Rückgängig“. Er öffnet die
+     Datenansicht mit `?bulk=<Kopf>`.
+   - **Filter:** Die Seite setzt einen eigenen, sichtbaren Filter **„Sammeländerung vom 27.11., 14:02 (47)“**,
+     `whereIn` der Schlüssel aus `record_ids`, mit Papierkorb, weil auch Gelöschte zu Sammel-Löschen gehören.
+     Entfernen über das Filter-Kärtchen bzw. „Ansicht zurücksetzen“.
+   - **Nicht dauerhaft gespeichert:** `RemembersTableState` nimmt diesen Filter aus. Sonst öffnete die Datenansicht am
+     nächsten Tag noch gefiltert, und nach dem Kürzen des Protokolls zeigte der Filter auf einen fehlenden Kopf. Die
+     übrigen Filter werden für die Dauer aufgehoben und danach wiederhergestellt.
+   - **Rechte und Lesestelle:** dieselben Rechte wie die Liste (BulkChangeAccess, eigene bzw. fremde mit
+     `activity_log.view`). Gelesen wird über die Abfrage der Datenansicht (`scope: person`), also keine neue Lesestelle.
+     Zeilenrechte (B-020) schränken später automatisch ein.
+   - Danach gehen Sortieren, „Auswahl exportieren“ und erneutes Ändern wie gewohnt. In Detailtabellen gibt es keinen
+     Link (wie die Liste, §13 Frage 10).
+
+9. **Zeilenrechte (B-020): wie filtern die neuen Wege später?** *Empfehlung:*
+   - **Auswahl exportieren und B-170** laufen über die Abfrage der Datenansicht bzw. `ExportWork` (`scope: person`).
+     Der Zeilen-Scope greift dort ohne Zutun.
+   - **`DataAction::BULK`:** `$records` kommen aus derselben Abfrage. Liest das Plugin danach selbst über
+     `DataTable::query()`, gilt `scope: person` der Plugin-API. Nach `withoutAuthorization()` liegt die Verantwortung
+     beim Plugin (Handbuch).
+   - Neue Einträge in `read-sites.json` entstehen nur, wenn die Umsetzung eine neue Stelle mit
+     `DynamicRecord::forTable()` braucht. Dann bekommen sie `scope: person`.
+
+10. **Plugin-API, Handbücher, Tests.** *Empfehlung:*
+    - **Plugin-API:** Version **1.11** (Minor). `DataAction::BULK` neu, Schnappschuss mit `SAFT_UPDATE_API_SNAPSHOT=1`.
+      `musikschule-planung` verlangt `^1.11` und bekommt die Sammelaktion „Lektionen erzeugen“ an der Tabelle Kurse.
+      Der Dialog ist derselbe wie bei „alle Kurse“, ohne Semesterwahl, mit Vorschau für die ausgewählten Kurse.
+      `saft:plugin-context` (api-reference) zieht automatisch nach.
+    - **Keine Migration**, keine neuen Rechte, keine neue `.env`-Variable. Sysadmin-Handbuch nicht betroffen.
+    - **Handbücher:** Anwender 4.11 und Export (Auswahl exportieren, Datensätze anzeigen, Plugin-Sammelaktionen nicht
+      rücknehmbar), FAQ, Admin (Export-Recht zeigt Häkchen) in vier Sprachen. Entwickler (DataAction::BULK, Regeln aus
+      Frage 4, Abgrenzung zu B-142) in zwei.
+    - **Tests:** Feature-Tests für die Export-Auswahl (inklusive „alle“ minus abgewählte), Plugin-Registry/BULK, Filter
+      B-170 und Tabellenzustand. Browser-Batch SAE und manuelle Testfälle ab SAE-17.
+    - **Release:** 0.10.0, weil die Plugin-API eine Minor-Version bekommt.
+
+**Abgleich mit [AI_AGENTS.md](AI_AGENTS.md) (27.11.2026, angenommen).** Der Plan widerspricht dem Review nicht:
+- Plugin-Sammelaktionen bekommen keinen eigenen Kopf, das passt zu Entscheidung 10 und V7.
+- `DataAction::BULK` ist eine Aktion für Personen, kein Werkzeug für die KI (Entscheidung 4, Frage 13).
+- `WriteOptions` bleibt unverändert (V4).
+- Die neuen Wege lesen mit `scope: person` (V6).
+
+Zwei Anpassungen:
+1. **Vorübergehende Ansicht (V5).** B-170 baut keinen Sonderfall für `bulk`. `RemembersTableState` bekommt den
+   allgemeinen Zustand „vorübergehende Ansicht“: Solange sie gilt, wird nichts gespeichert. Beim Verlassen lädt die
+   Seite den gespeicherten Stand neu. Der Link entsteht über `DynamicDataPage::urlFor()` mit einem benannten Parameter.
+   Sprunglinks mit Filterdefinition (V5) setzen später darauf auf.
+2. **Fachvorgänge als Arbeit (V14).** Das Entwicklerhandbuch empfiehlt für Fachvorgänge über viele Datensätze eine
+   eigene `WorkType`, die die Sammelaktion nur startet. So lassen sie sich mit `DescribesParameters` (B-142 R3b) später
+   auch aus Läufen starten. Der Pilot „Lektionen erzeugen“ bleibt im Request.
