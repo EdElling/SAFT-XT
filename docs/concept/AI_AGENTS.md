@@ -1,6 +1,6 @@
 # Architektur-Review: Voraussetzungen für KI-Agenten in SAFT XT
 
-Stand: 27.11.2026 · Status: **Review und erster Vorschlag zur Diskussion**, ergänzt um die Übersetzer-Architektur ohne Datensätze (Abschnitt 5) und das lokale Modell (5.6) · Geprüfter Stand: Release 0.8.0 (Commit d942efa) · Backlog: B-051 (Bezug B-033, B-052, B-053, B-128, B-142, B-020, B-133 S3, B-023)
+Stand: 27.11.2026 · Status: **Review und erster Vorschlag zur Diskussion**, ergänzt um die Übersetzer-Architektur ohne Datensätze (Abschnitt 5) und das lokale Modell (5.6); 27.11.2026 Einordnung „Was vor B-142 gilt“ (Abschnitt 12), Fragen 6 und 8 entschieden · Geprüfter Stand: Release 0.8.0 (Commit d942efa) · Backlog: B-051 (Bezug B-033, B-052, B-053, B-128, B-142, B-020, B-133 S3, B-023)
 
 ## Inhalt
 
@@ -15,6 +15,7 @@ Stand: 27.11.2026 · Status: **Review und erster Vorschlag zur Diskussion**, erg
 - [9. Anstehende Architekturentscheidungen](#9-anstehende-architekturentscheidungen)
 - [10. Risiken](#10-risiken)
 - [11. Offene Fragen zur Diskussion](#11-offene-fragen-zur-diskussion)
+- [12. Einordnung: was vor B-142 gilt, was später kommt](#12-einordnung-was-vor-b-142-gilt-was-später-kommt)
 
 ## 1. Frage und Zielbild
 
@@ -416,14 +417,21 @@ greift der Scope dort automatisch.
 
 ### V7 Rücknahme (B-133 S3, verallgemeinert)
 
-**Heute:** Die Rücknahme der Sammeländerung ist als Fragenkatalog vorgelegt (BULK_EDIT.md §13): Kopf `bulk_changes`,
-alte Werte aus dem Protokoll, Übersprungene zulassen, mit allen Prüfungen.
+**Heute (27.11.2026):** Die Rücknahme der Sammeländerung ist umgesetzt (BULK_EDIT.md §13, Commits defea73 und
+7b33035, Release 0.9.0 offen): Kopf `bulk_changes` (Migration 102) je erfolgreicher Sammelaktion mit Kennung `run`,
+**einer** Tabelle (`custom_table_id`), Art, Angaben je Feld und Schlüsseln der Datensätze; alte Werte aus dem
+Protokoll; Einordnung je Datensatz in `BulkUndo`, Ausführung als Arbeit `bulk_records` mit Übersprungenen.
 
 **Bedeutung:** „Selbstständig durchführen“ ist nur vertretbar, wenn sich die Ausführung **zurücknehmen** lässt.
 Vorschlag: den Kopf nicht auf `bulk_changes` beschränken, sondern als `change_sets` für jede Kennung `run` bauen:
 `bulk:<uuid>`, `assistant:<uuid>`, `rule_run:<id>`. Die Rücknahme-Arbeit ist dieselbe. Angelegte Datensätze kommen in
-den Papierkorb, angehängte Dateien werden gelöst, erzeugte Dokumente bleiben (mit Hinweis). Das sollte in der
-S3-Entscheidung berücksichtigt werden, bevor `bulk_changes` gebaut wird.
+den Papierkorb, angehängte Dateien werden gelöst, erzeugte Dokumente bleiben (mit Hinweis).
+
+**Entschieden 27.11.2026:** `bulk_changes` bleibt für das Release 0.9.0, wie es gebaut ist; ein Umbau vor dem Release
+lohnt nicht, weil ein Lauf in **mehrere** Tabellen schreibt und ein Umbenennen darum ohnehin nicht reicht. Das
+**Laufprotokoll von B-142 (R3b)** wird als allgemeiner Kopf je Kennung `run` entworfen (RULES.md §8.7); `bulk_changes`
+geht dann darin auf oder bleibt dessen Spezialfall mit eigener Liste in der Datenansicht. Die Rücknahme-Arbeit ist
+dieselbe. Das beantwortet auch RULES.md Frage 9.
 
 ### V8 Läufe und Regel-Engine (B-142)
 
@@ -565,7 +573,7 @@ geht in die App-Definition `saft-app/1`; der Tabellen-Assistent schlägt die Bes
 
 | Etappe | Inhalt | Setzt voraus | Ergebnis für Anwender |
 |---|---|---|---|
-| **A0 Entscheidungen** | Abschnitt 9 und 11 entscheiden; Konzept nachführen; B-051, B-052, B-053 aktualisieren; Datenstufen in RULES.md §10.2 und ROW_ACCESS.md §10 aufnehmen | – | – |
+| **A0 Entscheidungen** | Abschnitt 9 und 11 entscheiden; Konzept nachführen; B-051, B-052, B-053 aktualisieren; Datenstufen in RULES.md §10.2 und ROW_ACCESS.md §10 aufnehmen. **Teilweise erledigt 27.11.2026** (Abschnitt 12): Vorgaben für B-142 in RULES.md §8.7 und §10.2, Datenstufen in ROW_ACCESS.md §10, Fragen 6 und 8 entschieden; die übrigen Entscheidungen fallen mit A1 | – | – |
 | **A1 Beratender Assistent (Stufe 0 und 1)** | V1 (`AgentClient`, Schleife), V2 (Register mit Datenstufe; `schema`, `pages`, `validate`, `count`, `statistics`), V5 (Filterdefinition mit Sprunglink), V11 (Grenzen, Audit, Token-Budget), V15 (Feldbeschreibung), Sitzung als Model mit Runden als Arbeit, Antwortformen Antwort/Rückfrage/**Arbeitsanweisung mit Sprunglinks**; Chat-Seite „Assistent“ je App (Erweiterung der Hilfe-Chat-Komponente). Teilbar: A1a Client, Schleife, `schema`, `pages`, Anleitung; A1b Zahlen-Werkzeuge, Filterlinks, Budget | – | „Welche Buchungen haben keinen Beleg?“ → „27, hier der Link in die gefilterte Ansicht; so tragen Sie sie in Aufgaben ein: …“. Erfüllt B-051 Stufe 2 ohne Datensätze |
 | **A2 Läufe** (B-142 §8) | Laufdefinition `saft-rule/1 kind run`, `RuleValidator`, Parameterdialog, **Vorschau** mit Treffern, Abwahl, Probelauf, Ausführung als Arbeit je Treffer, Laufprotokoll, Markierung gegen Doppelverarbeitung, Recht je Lauf, Aufgabenart „Lauf ausführen“; V14 für Plugin-Arbeiten als Aktion | A1 nicht nötig; eigenständig nützlich | Rechnungslauf, Mahnlauf ohne Plugin, auch ohne KI |
 | **A3 Vorschlagender Assistent** | V3 (`propose_run`, `propose_rule`, `assistant_proposals`, flüchtig oder gespeichert), V4 (Herkunft `assistant`), `list_runs`, `preview_run`; Protokollfilter „via Assistent“; V7 im Umfang von B-133 S3 mitentscheiden | A1, A2; B-133 S3 für die Rücknahme | Beispiele 3.1 und 3.3 vollständig. Erfüllt B-051 Stufe 3 und 4 ohne Datensätze |
@@ -640,11 +648,13 @@ Vorschläge für `docs/ARCHITECTURE.de.md`/`.md` Abschnitt 10, Nummern folgen de
 5. **Sitzungen aufbewahren?** Wie Hilfe-Unterhaltungen (gespeichert, löschbar); auf Stufe 3 mit Frist
    (`activity_prune`-Muster).
 6. **Rücknahme-Kopf:** `bulk_changes` jetzt bauen und später verallgemeinern, oder gleich `change_sets` für alle
-   Kennungen (Vorschlag: gleich allgemein, B-133 S3 entsprechend anpassen)?
+   Kennungen? **Entschieden 27.11.2026:** `bulk_changes` bleibt (ist gebaut); der allgemeine Kopf entsteht mit dem
+   Laufprotokoll in B-142 R3b (V7, RULES.md §8.7).
 7. **Bereich „System“:** Werkzeuge für Systemobjekte (Benutzer, Rollen, Menüs, Aufgaben) zuerst nur lesend
    („Wer hat das Recht X?“, Stufe 0); schreibend bräuchte es eine zweite Ausführungsart über Models und Policies.
 8. **Reihenfolge A1 und A2:** Läufe zuerst (schneller schreibender Nutzen, auch ohne KI) oder beratender Assistent
-   zuerst (schneller sichtbarer KI-Nutzen)?
+   zuerst (schneller sichtbarer KI-Nutzen)? **Entschieden 27.11.2026:** Läufe zuerst, als Teil von B-142 (Prio 1);
+   A1 folgt nach den Prio-1-Punkten (Abschnitt 12).
 9. **Arbeitsanweisung mit Sprunglinks:** Sollen Links auch Dialoge vorbelegen können (Sammeländerung mit Feld und
    Wert), oder nur Seiten mit Filter?
 10. **Entwickler-Kontext:** Soll `AGENTS.md` des Kontexts die Werkzeuge und Datenstufen beschreiben, damit externe
@@ -653,3 +663,33 @@ Vorschläge für `docs/ARCHITECTURE.de.md`/`.md` Abschnitt 10, Nummern folgen de
     Datenstände); Läufe schreiben dorthin nicht. Bestätigen.
 12. **Lokales Modell für die Extraktion (5.4):** Lohnt ein eigener, kleiner Einsatz (nur Dokumente, kein Agent) vor
     A5, oder reichen PHP-Textextraktion und Muster für Belege?
+
+## 12. Einordnung: was vor B-142 gilt, was später kommt
+
+Beurteilt am 27.11.2026 gegen den Backlog (Prio 1: B-142, B-133 S4, B-158/B-159, B-020). Massstab: Was muss **vor**
+den nächsten Vorhaben entschieden sein, damit sie nicht anders gebaut werden, als der Agent es später braucht?
+
+**Vor B-142 entschieden (kein Code, nur Vorgaben; nachgeführt in RULES.md §8.7 und §10.2):**
+
+- **Entscheidungen 1 und 4** (das Modell übersetzt, SAFT führt aus; die KI löst Vorgänge nur über Läufe aus). Folge für
+  B-142: `RuleValidator`, Vorschau und Ausführung nehmen eine **Definition** entgegen, nicht nur eine gespeicherte ID,
+  damit flüchtige Läufe (V3) später ohne Umbau gehen. Das kostet in R1 nichts.
+- **Entscheidung 10** (Rücknahme über die Kennung): Das Laufprotokoll von R3b ist der allgemeine Kopf je Kennung;
+  `bulk_changes` bleibt bis dahin (V7, Frage 6).
+- **V14** `DescribesParameters` gehört in den Umfang von R3b, weil Läufe Plugin-Arbeiten als Aktion starten.
+- **Frage 8**: Läufe (A2) vor dem beratenden Assistenten (A1).
+
+**Mit den nächsten Prio-1-Punkten mitnehmen, ohne eigenen Aufwand:**
+
+- **B-158** (Filter „leer/gefüllt“): dieselbe Semantik wie `is_empty`/`not_empty` der Auswertungen (`ReportQuery`:
+  Text leer = NULL oder Leertext). Dann ist V5 später nur ein Übersetzer von der Filterdefinition in den
+  Filament-Zustand, kein zweites Format.
+- **B-020** (Zeilenrechte): nichts vorziehen; ROW_ACCESS.md §10 nennt die Datenstufen.
+
+**Früh und unabhängig, nicht blockierend:** **V15** Feldbeschreibung im Table-Designer (B-172). Sie nützt den fünf
+bestehenden Assistenten und dem Entwickler-Kontext schon heute.
+
+**Später, nach B-142, B-133 S4, B-158/B-159 und B-020:** A1 (`AgentClient`, Schleife, Werkzeugregister mit
+Datenstufe, Zahlen-Werkzeuge, Sprunglinks, Token-Budget V11; erst dann `WriteOptions::ASSISTANT`, vorher wäre es toter
+Code), danach A3 bis A6 in der Reihenfolge von Abschnitt 8. Die offenen Fragen 1 bis 5, 7 und 9 bis 12 warten bis A1;
+keine davon ändert B-142 oder B-020.

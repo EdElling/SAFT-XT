@@ -1,6 +1,6 @@
 # Konzept: Regel-Engine (Ereignisregeln über mehrere Tabellen) in SAFT XT
 
-Stand: 23.11.2026 · Status: **erster Vorschlag zur Diskussion**, ergänzt um Läufe (Abschnitt 8) · Backlog: B-142 (ersetzt B-025)
+Stand: 27.11.2026 · Status: **erster Vorschlag zur Diskussion**, ergänzt um Läufe (Abschnitt 8); 27.11.2026 Vorgaben aus dem KI-Review (8.7, 10.2, Frage 9) · Backlog: B-142 (ersetzt B-025)
 
 ## 1. Ziel
 
@@ -297,6 +297,31 @@ Mal gestartet werden. Darum gilt:
 
 Ein **Prüfstein** ist der Rechnungslauf der Musikschule (B-137): Wie viel davon schafft ein Lauf ohne Plugin?
 
+### 8.7 Vorgaben aus dem KI-Review (27.11.2026)
+
+Das Architektur-Review für KI-Agenten ([AI_AGENTS.md](AI_AGENTS.md), Abschnitte 5, 6 und 12) macht Läufe zum
+**Vorschlagstyp** des künftigen Assistenten: Das Modell erzeugt eine Laufdefinition, SAFT prüft sie, zeigt die Treffer
+in der Vorschau und führt nach Freigabe aus. Damit das später ohne Umbau geht, gelten ab R1 drei Vorgaben:
+
+1. **Definition statt ID.** `RuleValidator`, Vorschau und Ausführung nehmen eine Definition `saft-rule/1` entgegen,
+   nicht nur den Schlüssel einer gespeicherten Regel oder eines gespeicherten Laufs. Ein gespeicherter Lauf ist eine
+   Definition mit Namen und Recht; ein **flüchtiger** Lauf (Vorschlag des Assistenten, einmalige Ausführung) dieselbe
+   Definition ohne Zeile in `rules`. Die Person kann einen flüchtigen Lauf aus der Vorschau heraus speichern.
+2. **Laufprotokoll als allgemeiner Kopf je Kennung.** Jede Ausführung schreibt mit einer Kennung `run` ins
+   Änderungsprotokoll (`rule_run:<id>`); der Kopf dazu (Person, App, Definition bzw. Lauf, Parameter, Anzahl, Ergebnis,
+   `undo_of`, `undone_by`) ist **nicht** an eine Tabelle gebunden, weil ein Lauf in mehrere Tabellen schreibt. Er ist
+   zugleich der Kopf für die Rücknahme (Frage 9) und später für Vorschläge des Assistenten (`assistant:<uuid>`). Der
+   Kopf der Sammeländerung `bulk_changes` (B-133 S3, gebaut) geht darin auf oder bleibt dessen Spezialfall mit eigener
+   Liste in der Datenansicht; die Rücknahme-Arbeit ist dieselbe (`BulkUndo`-Muster: alte Werte aus dem Protokoll,
+   Übersprungene zulassen, alle Prüfungen).
+3. **Maschinenlesbare Parameter.** Damit ein Lauf eine Plugin-Arbeit (`WorkType`) oder eine Aufgabenart (`TaskType`)
+   als Aktion starten kann, beschreibt diese ihre Parameter über ein optionales Interface `DescribesParameters` mit
+   `parameterSchema(): array` (JSON-Schema). Wer es nicht implementiert, ist für Läufe nicht startbar. Plugin-API
+   Minor; Teil von R3b.
+
+Die Reihenfolge R2 und R3b ist beim Start von B-142 zu entscheiden: Braucht die Demo den Rechnungslauf vor den
+Ereignisregeln, kommt R3b vor R2. Die drei Vorgaben gelten unabhängig davon ab R1.
+
 ## 9. Datenmodell und Format
 
 Tabelle `rules` (Base-Model-Muster, `LogsActivity`):
@@ -389,6 +414,10 @@ Mit dieser Struktur kann die KI mitarbeiten, ohne dass ihr Code vertraut werden 
   bekommen.“ Der Assistent kennt das Datenmodell der App (wie der Tabellen-Assistent) und das Schema `saft-rule/1` und
   liefert eine Definition. Der `RuleValidator` prüft sie; Fehler gehen einmal zur Korrektur zurück (wie bei den
   Dokumentvorlagen). Die Person sieht Zusammenfassung und Formular und speichert selbst, die KI speichert nie.
+- **Datenstufe:** Der Assistent für Regeln und Läufe arbeitet auf **Stufe 0** (AI_AGENTS.md 5.2): Er sieht
+  Datenmodell, Schema und Prüffehler, keine Datensätze. Treffer eines vorgeschlagenen Laufs sieht nur die Person in der
+  Vorschau; ans Modell gehen höchstens Anzahlen (Stufe 1). Ein Lauf wird nie aus dem Gesprächsverlauf ausgeführt,
+  sondern aus der geprüften Definition (8.7).
 - **Regel erklären:** Die Zusammenfassung in Worten ergibt sich ohne KI aus der Definition. Die KI kann auf Wunsch
   ausführlicher erklären.
 - **Später:** Der App-Designer schlägt beim Entwurf einer App Regeln vor (wie Auswertungen und Dokumentvorlagen, B-139).
@@ -414,7 +443,7 @@ Mit dieser Struktur kann die KI mitarbeiten, ohne dass ihr Code vertraut werden 
 | **R1 Grundlage** | Tabelle `rules`, Format `saft-rule/1`, `RuleValidator`, Engine auf `RecordSaving`/`RecordSaved`, Phase vorher (`reject`, `set`), Funktionen `changed()`/`old()`, Recht *Regeln: verwalten*, Admin-Liste und Formular mit Zusammenfassung, Protokoll im Änderungsprotokoll, Nutzung im Table-Designer | mittel |
 | **R2 Folgeaktionen** | Phase nachher: `create`, `update` (Master, Kinder), `notify`; Transaktion über alles; Ketten mit Höchsttiefe und Kreis-Erkennung; `rule_runs` mit Kürzen; Probelauf | gross |
 | **R3 Apps, Knopf, Dokument** | Regeln in der App-Definition (Export, Installieren, Aktualisieren); Auslöser `manual` als Knopf bzw. Sammelaktion; Aktion `document` (B-124); Datumsfunktionen in der Formelsprache | mittel |
-| **R3b Läufe** | Läufe mit Auswahl, Parametern (`param()`), Vorschau, Ausführung im Hintergrund je Treffer, Laufprotokoll, Sammel-PDF bzw. ZIP; Aktion `create_each` mit Verweisen `@name`; Recht je Lauf; Aufgabenart „Lauf ausführen“. Voraussetzung: Nummernkreise (B-135). Prüfstein: Mahnlauf und Rechnungslauf Musikschule (B-137) | gross |
+| **R3b Läufe** | Läufe mit Auswahl, Parametern (`param()`), Vorschau, Ausführung im Hintergrund je Treffer, Laufprotokoll als allgemeiner Kopf je Kennung mit Rücknahme (8.7), Sammel-PDF bzw. ZIP; Aktion `create_each` mit Verweisen `@name`; flüchtige Läufe aus einer Definition (8.7); `DescribesParameters` für Plugin-Arbeiten und Aufgabenarten (8.7); Recht je Lauf; Aufgabenart „Lauf ausführen“. Voraussetzung: Nummernkreise (B-135, umgesetzt). Prüfstein: Mahnlauf und Rechnungslauf Musikschule (B-137) | gross |
 | **R4 Zeitplan, KI** | Auslöser `scheduled` für Regeln (über die Aufgabenart aus R3b); KI-Assistent für Regeln und Läufe | mittel |
 | **R5 Erweiterung** | Plugin-API: Aktionen und Bedingungsfunktionen aus Plugins; `webhook` (B-060); gegebenenfalls Statusmodell (Abschnitt 13) | offen |
 
@@ -445,4 +474,7 @@ Was weiter Plugin bleibt, zeigt die Grenze, z. B. die Konfliktprüfung im Stunde
    grosse Läufe einen Worker voraus?
 9. **Rückgängig machen eines Laufs:** Soll ein Lauf als Ganzes zurückgenommen werden können (angelegte Belege löschen,
    Markierungen zurücksetzen), solange nichts versendet ist? Oder gilt das bewusst nicht, wie in der Buchhaltung
-   (Storno statt Löschen)?
+   (Storno statt Löschen)? **Richtung entschieden 27.11.2026 (8.7):** ja, über den allgemeinen Kopf je Kennung mit
+   derselben Rücknahme-Arbeit wie die Sammeländerung: angelegte Datensätze in den Papierkorb, Markierungen zurück,
+   angehängte Dateien gelöst, erzeugte Dokumente bleiben mit Hinweis; vergebene Nummern bleiben (Nr. 26). Ob Versand
+   die Rücknahme sperrt, ist in R3b zu entscheiden.

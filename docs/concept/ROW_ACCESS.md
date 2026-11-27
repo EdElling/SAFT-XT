@@ -1,6 +1,6 @@
 # Konzept: Rechte auf Zeilenebene in SAFT XT
 
-Stand: 23.11.2026 · Status: **erster Vorschlag zur Diskussion**, ergänzt um Hierarchien (Abschnitt 5) · Backlog: B-020 (Grundlage für B-134)
+Stand: 27.11.2026 · Status: **erster Vorschlag zur Diskussion**, ergänzt um Hierarchien (Abschnitt 5); 27.11.2026 Datenstufen des KI-Agenten (Abschnitt 10) · Backlog: B-020 (Grundlage für B-134)
 
 ## 1. Ziel
 
@@ -274,6 +274,12 @@ Person“).
 - **KI:** Der App-Designer schlägt bei Rollen wie „Lehrperson“ das Benutzer-Feld und die Einschränkung vor. Ein
   Assistent im Rollenformular übersetzt „nur eigene Kurse“ in die Formel; die Person prüft sie mit dem Zähler zur
   Probe.
+- **KI-Agent und Datenstufen** ([AI_AGENTS.md](AI_AGENTS.md) 5.2, V6): Die Werkzeuge des Agenten lesen über
+  `DataTable` und `ReportRunner` und tragen ihre Lesestellen mit `scope: person` ein; die Einschränkungen wirken dort
+  also wie für die Person am Bildschirm, sobald Z2 umgesetzt ist. Bis dahin gilt für den Agenten die Tabellenebene wie
+  heute. Für Stufe 0 und 1 (Metadaten, Anzahlen) ist das vertretbar; **Stufe 3** (Datensätze ans Modell) ist in Apps
+  mit personenbezogenen Einschränkungen erst nach Z2 freizuschalten. Zeilenrechte sind darum keine Voraussetzung der
+  ersten KI-Etappen, aber Voraussetzung vor Stufe 3.
 
 ## 11. Etappen
 
