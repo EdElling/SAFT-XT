@@ -1,6 +1,6 @@
 # Architektur-Review: Voraussetzungen für KI-Agenten in SAFT XT
 
-Stand: 27.11.2026 · Status: **Review und erster Vorschlag zur Diskussion**, ergänzt um die Übersetzer-Architektur ohne Datensätze (Abschnitt 5) und das lokale Modell (5.6); 27.11.2026 Einordnung „Was vor B-142 gilt“ (Abschnitt 12), Fragen 6 und 8 entschieden · Geprüfter Stand: Release 0.8.0 (Commit d942efa) · Backlog: B-051 (Bezug B-033, B-052, B-053, B-128, B-142, B-020, B-133 S3, B-023)
+Stand: 27.11.2026 · Status: **Review und erster Vorschlag zur Diskussion**, ergänzt um die Übersetzer-Architektur ohne Datensätze (Abschnitt 5) und das lokale Modell (5.6); 27.11.2026 Einordnung „Was vor B-142 gilt“ (Abschnitt 12), Fragen 6 und 8 entschieden, Frage 13 (verändernde Plugin-Werkzeuge) aufgenommen · Geprüfter Stand: Release 0.8.0 (Commit d942efa) · Backlog: B-051 (Bezug B-033, B-052, B-053, B-128, B-142, B-020, B-133 S3, B-023)
 
 ## Inhalt
 
@@ -327,7 +327,7 @@ eines Werkzeugaufrufs umgehen, und Definitionen werden über `strict`-Werkzeuge 
 `run(array $input, AgentContext): ToolResult`. Ein Register (`config/ai_tools.php`, `SaftPlugin::agentTools()`) wie bei
 `TaskType` und `WorkType`. Jeder Aufruf prüft die Rechte **im Werkzeug**, nie im Modell, läuft als die Person (mit
 simulierten Rollen) in ihrer App und wird protokolliert. Das Register filtert nach Höchststufe der Installation und
-Fähigkeitsprofil des Modells.
+Fähigkeitsprofil des Modells. Ob Werkzeuge aus Plugins `mutating()` mit `true` melden dürfen, ist offen (Frage 13).
 
 **Kern-Werkzeuge:**
 
@@ -663,6 +663,13 @@ Vorschläge für `docs/ARCHITECTURE.de.md`/`.md` Abschnitt 10, Nummern folgen de
     Datenstände); Läufe schreiben dorthin nicht. Bestätigen.
 12. **Lokales Modell für die Extraktion (5.4):** Lohnt ein eigener, kleiner Einsatz (nur Dokumente, kein Agent) vor
     A5, oder reichen PHP-Textextraktion und Muster für Belege?
+13. **Verändernde Werkzeuge aus Plugins (V2):** Darf ein Werkzeug aus `SaftPlugin::agentTools()` `mutating()` mit
+    `true` melden, und was geschieht dann? Entscheidung 4 lässt Vorgänge nur über Läufe zu, regelt Plugin-Werkzeuge
+    aber nicht ausdrücklich. Varianten: (a) das Register weist verändernde Plugin-Werkzeuge ab; ein Plugin schreibt
+    nur über eine eigene Arbeit als Aktion eines Laufs (V14, `DescribesParameters`) (Vorschlag); (b) zugelassen, aber
+    der Aufruf erzeugt nur einen Vorschlag mit Freigabe in der Vorschau (V3), nie eine direkte Ausführung. Zu klären
+    ist auch, ob Wirkungen nach aussen ohne Datensatzänderung (E-Mail, Webhook, Aufruf eines Fremdsystems) als
+    verändernd gelten, und wie das Register die Angabe prüft, da es sich auf die Deklaration des Plugins verlässt.
 
 ## 12. Einordnung: was vor B-142 gilt, was später kommt
 
@@ -691,5 +698,5 @@ bestehenden Assistenten und dem Entwickler-Kontext schon heute.
 
 **Später, nach B-142, B-133 S4, B-158/B-159 und B-020:** A1 (`AgentClient`, Schleife, Werkzeugregister mit
 Datenstufe, Zahlen-Werkzeuge, Sprunglinks, Token-Budget V11; erst dann `WriteOptions::ASSISTANT`, vorher wäre es toter
-Code), danach A3 bis A6 in der Reihenfolge von Abschnitt 8. Die offenen Fragen 1 bis 5, 7 und 9 bis 12 warten bis A1;
+Code), danach A3 bis A6 in der Reihenfolge von Abschnitt 8. Die offenen Fragen 1 bis 5, 7 und 9 bis 13 warten bis A1;
 keine davon ändert B-142 oder B-020.

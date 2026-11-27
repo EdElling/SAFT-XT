@@ -1,6 +1,6 @@
 # Konzept: Apps (Fachanwendungen) in SAFT XT
 
-Stand: 18.11.2026 · Status: abgestimmt, Etappe 1a in Planung · Backlog: B-107
+Stand: 18.11.2026 · Status: abgestimmt, Etappe 1a in Planung · Backlog: B-107 · 27.11.2026 ergänzt um 7.1 (Ausbau des KI-App-Designers: Fachkonzept und Schritte, Vorschlag zur Diskussion, B-178)
 
 ## 1. Ziel
 
@@ -220,6 +220,117 @@ für nicht gespeicherte Tabellen nachbauen und dauerhaft mitpflegen. Grobe Umbau
 
 **Offen:** Änderungen an bestehenden Apps über den Änderungsplan (Etappe 6).
 
+### 7.1 Ausbau: Fachkonzept und Schritte (Vorschlag, 27.11.2026)
+
+Stand: **Vorschlag zur Diskussion, nicht Prio 1** (B-178). Zuerst ist die Nutzenfrage zu entscheiden (7.1.6).
+
+#### 7.1.1 Anlass
+
+Heute schlägt der Designer Tabellen, Menüs und Auswertungswünsche in **einer** Antwort vor und schreibt bei jeder
+Runde die ganze App neu (bis 32'000 Tokens, oft 2–3 Minuten). Das Antwortschema ist dem Anbieter als Grammatik zu
+gross (`strict: false`, siehe B-161). Der Gesprächskontext wächst dagegen kaum: Jede Runde bekommt den aktuellen
+Entwurf und höchstens vier frühere Runden in Kurzfassung. Der Engpass ist die Antwort, nicht das Kontextfenster.
+
+Zwei Änderungen:
+
+1. Ausgangspunkt ist ein gespeichertes **Fachkonzept**, das die ganze Lösung beschreibt und allen Schritten vorliegt.
+2. Der Entwurf läuft in **Schritten**, die einzeln aufrufbar sind und je eine eigene Sitzung haben.
+
+#### 7.1.2 Das Fachkonzept
+
+- **Eingabe:** Text eingeben oder einfügen, oder eine Datei hochladen (Markdown, Text, Word, PDF).
+- **Gespeichert wird Markdown.** SAFT wandelt die Datei einmal um, zeigt das Ergebnis zum Prüfen und Bearbeiten und
+  speichert den Text; die Originaldatei bleibt als Anhang. An die KI geht nur der Text. Markdown und Text direkt, Word
+  über PhpWord (vorhanden, heute nur zum Erzeugen von Dokumenten genutzt). Für PDF gibt es keine Textextraktion in
+  SAFT: neue Abhängigkeit oder einmaliges Lesen durch das Modell als Dokumentblock (Frage 3).
+- **Ort:** zuerst am Entwurf (`app_drafts`), mit dem Erzeugen an der App, wie das Handbuch der App. Je App ein
+  Fachkonzept; ersetzen legt eine neue Fassung an, die vorherige bleibt lesbar.
+- **An die KI** als eigener, gecachter Block der Anfrage (wie heute der Kontext mit Präfixen, Schnittstellen und
+  Symbolen). Innerhalb eines Schritts ist er je Runde gleich, das Prompt-Caching wirkt voll.
+- **Grösse:** Obergrenze in Zeichen (Vorschlag in der Grössenordnung von 20 Seiten); darüber Ablehnung mit Hinweis
+  statt stillem Kürzen.
+- **Datenschutz:** Das Fachkonzept geht an den KI-Anbieter. Hinweis beim Hochladen, dass es keine Personendaten oder
+  Datensätze enthalten soll; SAFT kann das nicht prüfen.
+- **Absicht und Stand:** Das Fachkonzept beschreibt die Absicht, die Datenbank den Stand. Nach Änderungen von Hand
+  weichen beide ab; jeder Schritt bekommt beides, und der Stand gilt. Das Fachkonzept nachführen (von Hand, später
+  auf Vorschlag der KI) ist freiwillig.
+
+#### 7.1.3 Schritte
+
+Schritt 1 arbeitet am Entwurf und endet mit „App erzeugen“. **Alle weiteren Schritte arbeiten gegen die erzeugte
+App**, nicht gegen den Entwurf: Auswertungen und Dokumentvorlagen brauchen echte Tabellen und IDs (so schon in 7c),
+und der Kontext eines Schritts entsteht frisch aus der Datenbank statt aus einem Gesprächsverlauf. Damit sind
+getrennte Sitzungen die natürliche Form, und die Schritte gehen auch für installierte oder von Hand gebaute Apps.
+
+| Schritt | Inhalt | Vorhanden | Fehlt |
+|---|---|---|---|
+| 1 Datenmodell | Tabellen, Felder, Verknüpfungen, berechnete Felder, Tabellenregeln; im Dialog verfeinern; erzeugen | `AppDesigner`, `DraftCompiler`, Vorschau, `AppInstaller` | Fachkonzept als Eingabe; Auswertungen und Menüs aus dem Schema nehmen |
+| 2 Auswertungen | Wunschliste vorschlagen, im Dialog ändern, einzeln anlegen | `ReportAssistant`, `DraftReports` (anlegen als Arbeit) | Dialog über die Wunschliste; Verfeinern einer angelegten Auswertung im Auswertungs-Designer wie heute |
+| 3 Rollen | Rollen mit Rechten je Tabelle und ausgeblendeten Menüs | eine Fachrolle mit allen Rechten, automatisch | Rollen-Assistent: Schema, Prüfung, Vorschau als Differenz; weist nie Mitglieder zu. Nach B-020 (Zeilenrechte erweitern die Rolle) |
+| 4 Menüs | Gruppen und Reihenfolge, auch der Auswertungen | Menügruppen im Entwurf, Untermenü „Auswertungen“ | Assistent auf den bestehenden Menüs der App |
+| 5 Dokumentvorlagen | Vorlagen vorschlagen, erzeugen, Grundtabelle und Ablagefeld zuordnen | `TemplateAssistant` (B-124 D2a) | Vorschlagsliste und Zuordnung (B-139 geht hier auf) |
+| 6 Aktionen | Ereignisregeln und Läufe vorschlagen | – | nach B-142; dasselbe wie `propose_rule`/`propose_run` in AI_AGENTS.md V2 |
+| weitere | Beispieldaten zum Prüfen von Auswertungen und Vorlagen; Handbuch der App | Handbuch je App und Sprache | je ein eigener Schritt, später |
+
+Reihenfolge: Datenmodell zuerst, danach frei wählbar und wiederholbar. Menüs sinnvoll nach Auswertungen, weil diese
+selbst Menüeinträge sind. Die Schrittübersicht je App zeigt, was gemacht ist und wo Vorschläge offen sind.
+
+Jeder Schritt bekommt drei Dinge: das Fachkonzept, den für ihn zugeschnittenen Stand der App (aus der Datenbank
+erzeugte Definition) und das Gespräch dieses Schritts. Er liefert einen Vorschlag in einem kleinen, eigenen Schema,
+den SAFT vollständig prüft und erst nach Bestätigung anwendet (AI_AGENTS.md, Entscheidung 1: das Modell übersetzt,
+SAFT führt aus).
+
+#### 7.1.4 Datenmodell erweitern
+
+Für spätere Änderungen bleiben Table-Designer und „Mit KI anpassen“ je Tabelle. Zusätzlich soll Schritt 1 an einer
+bestehenden App **ergänzen** können: neue Tabellen, die aus fachlichen Gründen mit vorhandenen verknüpft sind, und
+neue Felder an vorhandenen Tabellen (z. B. eine Summe über die neue Kind-Tabelle).
+
+- Die KI erhält Fachkonzept und aktuellen Stand und schlägt **nur Ergänzungen** vor.
+- `DraftCompiler` lässt als Ziel einer Verknüpfung heute Tabellen des Entwurfs und freigegebene Tabellen anderer Apps
+  zu; neu auch die vorhandenen Tabellen der eigenen App.
+- Ausgeführt über den Änderungsplan (Etappe 6). Reine Ergänzungen sind dort „sicher“; damit braucht dieser Weg weder
+  Konflikte noch Datenprüfung.
+- Ändern oder Entfernen von Vorhandenem durch den Designer bleibt der offene Punkt aus Abschnitt 7 und ist nicht Teil
+  dieses Ausbaus.
+
+#### 7.1.5 Was es als Rahmen braucht
+
+- **Sitzung je App und Schritt** (Gespräch, offener Vorschlag, Stand). `app_drafts` kennt heute einen Entwurf, der zu
+  einer App wird; entweder um Schritt und App erweitern oder eine eigene Tabelle. Migration.
+- **Ein Vertrag je Schritt** (Auftrag, Antwortschema, Prüfung, Anwenden), damit Schritt 6 ohne Umbau dazukommt; die
+  Runden laufen wie heute als Arbeiten mit langen Schritten.
+- **Fachkonzept:** Speicherung, Umwandlung, Fassungen, Seite zum Ansehen und Bearbeiten.
+- **Schrittübersicht** je App (Oberfläche).
+- **Übersetzung je Schritt:** `DraftTranslator` läuft heute einmal beim Erzeugen (Lücke schon in B-130).
+- **App-Definition:** Fachkonzept als optionaler Teil von `saft-app/1` (Frage 4).
+- Handbücher in vier Sprachen, Browser-Tests.
+
+#### 7.1.6 Nutzenfrage: App-Designer oder Entwicklung mit einem Coding-Agenten?
+
+Eine Entwicklerin oder ein Entwickler erreicht mit einem Coding-Agenten (z. B. Claude Code) im Repository dasselbe
+und mehr; so sind die Demo-Apps entstanden bzw. verbessert worden.
+
+| | KI-App-Designer in SAFT | Coding-Agent im Repository |
+|---|---|---|
+| Wer | Administratorin ohne Entwicklungsumgebung, auf der laufenden Installation | Entwickler mit Repository, Agent und Deployment |
+| Ergebnis | App aus Tabellen, Auswertungen, Rollen, Menüs, Vorlagen; später Regeln | dasselbe als `saft-app/1`, dazu **Plugins**, Beispieldaten als Seeder, Handbuch, Tests |
+| Grenzen | Antwortgrösse je Anfrage, geschlossene Schemata, nur was der Designer kennt | keine der drei; dafür Fachwissen über SAFT nötig (Entwickler-Kontext) |
+| Kontrolle | Rechte, Tageslimit, Protokoll und Prüfung der Installation | Review und Tests des Entwicklers; Prüfung erst beim Installieren |
+| Weg in die Installation | direkt | Paket installieren bzw. aktualisieren (Etappen 4b, 6) |
+
+Beide Wege treffen sich in der App-Definition. Daraus folgen zwei mögliche Investitionen:
+
+- **(a) Designer ausbauen** wie in 7.1.1 bis 7.1.5. Lohnt, wenn Administratoren ohne Entwickler Apps bauen sollen.
+- **(b) Entwicklerweg stärken:** Beschreibung von `saft-app/1` in den Entwickler-Kontext (`saft:plugin-context` liefert
+  heute `AGENTS.md`, API-Referenz und Schema, aber nicht das Format der App-Definition), ein Konsolenbefehl zum Prüfen
+  und Installieren einer Definition (fehlt; die Musikschule installiert der Seeder), später der MCP-Server (B-033).
+  Deutlich kleiner als (a) und nützt auch Plugins.
+
+**Vorschlag:** Zuerst die Zielgruppe entscheiden. (b) ist klein und unabhängig. Aus (a) trägt das Fachkonzept auch
+für sich: Es dokumentiert die App und kann dem Coding-Agenten mit dem Paket mitgegeben werden. Die Schritte 2 bis 6
+erst bauen, wenn feststeht, dass Administratoren ohne Entwickler die Zielgruppe sind.
+
 ## 8. Etappen
 
 | Etappe | Inhalt | Grösse |
@@ -231,7 +342,7 @@ für nicht gespeicherte Tabellen nachbauen und dauerhaft mitpflegen. Grobe Umbau
 | 4 App-Definition | Format `saft-app/1`: aus dem aktuellen Stand erzeugen, exportieren, als neue App installieren, Ausgangsstand speichern; Diagramm aus einer Definition; Seite „Apps“ ersetzt „Konfiguration übertragen“. Beim Export **zuerst die App wählen**, dann ihre Objekte; System-Menüs (Dashboard, Dokumentation, Auswertungen, Administration) und Systemrollen werden nie angeboten. In zwei Teilen: **4a** Format, Export, Version, Datenmodell je App; **4b** Installieren (auch **als Kopie** mit neuen Schlüsseln und anderem Präfix; dieselbe App ein zweites Mal sonst abgelehnt), Ausgangsstand, eigene Rechte *Apps: exportieren* und *Apps: installieren*, „Konfiguration übertragen“ wird abgelöst (alte Pakete weiter einspielbar) | mittel |
 | 5 Schnittstellen | Freigabe von Tabellen/Feldern, Verweise aus anderen Apps nur darauf, Vertragsschutz, „Verwendet in“ über Apps | mittel |
 | 6 Änderungsplan | Vergleich, Einstufung, Konflikte, Vorschau, Ausführen; Aktualisieren einer installierten App aus einem Paket (löst B-001 ab) | gross |
-| 7 KI-App-Designer | siehe Abschnitt 7: **7a** Entwurf im Gespräch, Vorschau, Erzeugen (umgesetzt); **7c** Auswertungen (umgesetzt); **7b** Editor (zurückgestellt) | gross |
+| 7 KI-App-Designer | siehe Abschnitt 7: **7a** Entwurf im Gespräch, Vorschau, Erzeugen (umgesetzt); **7c** Auswertungen (umgesetzt); **7b** Editor (zurückgestellt); **7.1** Fachkonzept und Schritte (Vorschlag, B-178, nicht Prio 1) | gross |
 | 8 Plugins je App | Plugin-Zuordnung von Hand und Aktivierung je App, Plugin-API 1.9 (Plugin schlägt seine App vor). Bereits umgesetzt (in 0.4.0): App eines Plugins aus seinen Tabellen, Menüs, Rechte, Handbücher, Kacheln, Prüfregeln, Formelfunktionen und Aufgabenarten je App, KI-Kontext je App (Hilfe-, Tabellen- und Auswertungsassistent) | mittel |
 
 Jede Etappe ist für sich auslieferbar; ab Etappe 2 ist der Nutzen sichtbar. Etappe 1 legt mit den stabilen
@@ -249,4 +360,20 @@ Schlüsseln die Grundlage für 4, 6 und 8.
 
 ## 10. Offene Punkte
 
-Keine – Etappe 1a ist abgestimmt (18.11.2026).
+Etappen 1 bis 6 und 8: keine – Etappe 1a ist abgestimmt (18.11.2026).
+
+Zum Ausbau des KI-App-Designers (7.1, B-178, 27.11.2026):
+
+1. **Nutzen und Zielgruppe (7.1.6):** Bringt der Ausbau genug, wenn ein Entwickler dasselbe mit einem Coding-Agenten
+   gleich gut oder besser erreicht, samt Plugins? Für wen wird der Designer gebaut: Administratoren ohne Entwickler,
+   oder genügt der gestärkte Entwicklerweg (b)?
+2. **Rückkehr zum Datenmodell:** Reichen Ergänzungen (7.1.4), oder soll der Designer Vorhandenes auch ändern und
+   entfernen können (Änderungsplan mit Konflikten und Datenprüfung)?
+3. **PDF als Fachkonzept:** Textextraktion in SAFT (neue Abhängigkeit) oder einmaliges Lesen durch das Modell? Oder
+   zuerst nur Markdown, Text und Word?
+4. **Fachkonzept in der App-Definition:** optionaler Teil von `saft-app/1`, der mit dem Paket wandert, oder nur in der
+   Installation, in der die App entworfen wurde?
+5. **Grösse des Fachkonzepts:** feste Obergrenze, oder ab einer Grösse eine von der KI erzeugte Kurzfassung je Schritt?
+6. **Rollen-Schritt:** vor oder nach B-020 (Zeilenrechte)?
+7. **Sitzungen:** `app_drafts` erweitern oder eigene Tabelle je App und Schritt? Sitzungen nur für die Person, die sie
+   begonnen hat (wie heute), oder für alle mit dem Recht *Apps: mit KI entwerfen* an dieser App?
