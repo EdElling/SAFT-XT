@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Activities\Schemas;
 
+use App\DynamicData\History\LoggedChanges;
 use App\Filament\Support\ActivityChanges;
 use App\Filament\Support\FieldBlocks;
 use Filament\Infolists\Components\RepeatableEntry;
@@ -63,7 +64,7 @@ class ActivityInfolist
                         TextEntry::make('event')
                             ->label(__('activity.event'))
                             ->badge()
-                            ->formatStateUsing(fn (?string $state): string => ActivityChanges::eventLabel($state))
+                            ->formatStateUsing(fn (?string $state, Activity $record): string => ActivityChanges::eventText($record))
                             ->color(fn (?string $state): string => ActivityEventColor::for($state)),
                         TextEntry::make('subject')
                             ->label(__('activity.subject'))
@@ -95,6 +96,25 @@ class ActivityInfolist
                                 TextEntry::make('new')->extraAttributes(self::WRAP),
                             ])
                             ->placeholder(__('activity.no_changes')),
+                    ]),
+                // B-174: oben lesbar, hier die Werte wie im Protokoll (Spaltennamen, Rohwerte) für die Fehlersuche.
+                Section::make(__('activity.technical'))
+                    ->collapsed()
+                    ->visible(fn (Activity $record): bool => app(LoggedChanges::class)->covers($record) && ActivityChanges::technicalRows($record) !== [])
+                    ->schema([
+                        RepeatableEntry::make('technical')
+                            ->hiddenLabel()
+                            ->state(fn (Activity $record): array => ActivityChanges::technicalRows($record))
+                            ->table([
+                                TableColumn::make(__('activity.field')),
+                                TableColumn::make(__('activity.old')),
+                                TableColumn::make(__('activity.new')),
+                            ])
+                            ->schema([
+                                TextEntry::make('field')->extraAttributes(self::WRAP),
+                                TextEntry::make('old')->extraAttributes(self::WRAP),
+                                TextEntry::make('new')->extraAttributes(self::WRAP),
+                            ]),
                     ]),
             ]);
     }

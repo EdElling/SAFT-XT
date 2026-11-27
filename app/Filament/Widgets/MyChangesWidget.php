@@ -7,6 +7,7 @@ namespace App\Filament\Widgets;
 use App\Filament\Resources\Activities\Schemas\ActivityEventColor;
 use App\Filament\Support\ActivityChanges;
 use App\Filament\Support\RecordLink;
+use App\Filament\Widgets\Concerns\PrimesLoggedChanges;
 use App\Filament\Widgets\Concerns\QueriesActivities;
 use App\Filament\Widgets\Concerns\RequiresPermissions;
 use App\Models\Activity;
@@ -17,6 +18,7 @@ use Filament\Widgets\TableWidget;
 /** Vom Benutzer selbst vorgenommene Änderungen (nur eigene Einträge). */
 class MyChangesWidget extends TableWidget
 {
+    use PrimesLoggedChanges;
     use QueriesActivities;
     use RequiresPermissions;
 
@@ -45,7 +47,7 @@ class MyChangesWidget extends TableWidget
                 TextColumn::make('event')
                     ->label(__('dashboard.action'))
                     ->badge()
-                    ->formatStateUsing(fn (?string $state): string => ActivityChanges::eventLabel($state))
+                    ->formatStateUsing(fn (?string $state, Activity $record): string => ActivityChanges::eventText($record))
                     ->color(fn (?string $state): string => ActivityEventColor::for($state)),
                 TextColumn::make('subject_type')
                     ->label(__('activity.subject'))

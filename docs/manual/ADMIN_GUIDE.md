@@ -757,6 +757,11 @@ switched on; it ships switched off, and the dashboard points out entries older t
 - **Detail view:** in form width; for changes a table with all changed fields (before → after), for creation and
   deletion the fields compactly in blocks (field and value side by side). Long values wrap. Labels in several
   languages appear with all languages, e.g. `{"de":"Kunden","en":"Customers"}`.
+- **Records readable:** for records of data tables, the list, the detail view and the dashboard widgets show field
+  labels and values as in the application (“Subject: Piano → Drums”, “Weekday: Thursday”); linked records with their
+  current name, deleted ones with “(deleted)”. Below, the detail view has a collapsed section **Technical values** with
+  column names and the values as stored – for troubleshooting. The log itself stays technical. Entries of a bulk edit
+  carry the note “(bulk edit)”.
 - **Times** are shown in the time zone of the application (see [System administration, chapter 1](SYSADMIN_GUIDE.md#1-operations)).
 - In the dashboard widget **"My recent changes"**, clicking an entry leads directly to the changed record; for tables
   of the table designer into the data view with the record selected.

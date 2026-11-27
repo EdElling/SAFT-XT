@@ -782,6 +782,11 @@ Einträge hin, die älter als die eingestellte Frist sind.
 - **Detailansicht:** in Formularbreite; bei Änderungen eine Tabelle mit allen geänderten Feldern (vorher → nachher),
   beim Anlegen und Löschen die Felder kompakt in Blöcken (Feld und Wert nebeneinander). Lange Werte werden umbrochen.
   Bezeichnungen in mehreren Sprachen erscheinen mit allen Sprachen, z. B. `{"de":"Kunden","en":"Customers"}`.
+- **Datensätze lesbar:** Bei Datensätzen der Datentabellen zeigen Liste, Detailansicht und die Dashboard-Widgets
+  Feldbezeichnungen und Werte wie in der Anwendung („Fach: Klavier → Schlagzeug“, „Wochentag: Donnerstag“);
+  verknüpfte Datensätze mit ihrem heutigen Namen, gelöschte mit „(gelöscht)“. Die Detailansicht hat darunter
+  eingeklappt **Technische Werte** mit Spaltennamen und den Werten, wie sie gespeichert sind – für die Fehlersuche.
+  Gespeichert bleibt das Protokoll technisch. Einträge einer Sammeländerung tragen den Vermerk „(Sammeländerung)“.
 - **Zeitangaben** erscheinen in der Zeitzone der Anwendung (siehe [Systemadministration, Kapitel 1](SYSADMIN_GUIDE.de.md#1-für-den-betrieb)).
 - Im Dashboard-Widget **„Meine letzten Änderungen“** führt ein Klick auf einen Eintrag direkt zum geänderten
   Datensatz – bei Tabellen des Table-Designers in die Datenansicht mit dem Datensatz ausgewählt.

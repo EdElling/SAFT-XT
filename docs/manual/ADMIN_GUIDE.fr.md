@@ -813,6 +813,12 @@ le délai configuré.
   (avant → après), pour la création et la suppression les champs de façon compacte en blocs (champ et valeur côte à
   côte). Les valeurs longues passent à la ligne. Les libellés en plusieurs langues apparaissent avec toutes les
   langues, p. ex. `{"de":"Kunden","en":"Customers"}`.
+- **Enregistrements lisibles :** pour les enregistrements des tables de données, la liste, la vue détaillée et les
+  widgets du tableau de bord affichent les libellés des champs et les valeurs comme dans l’application (« Branche :
+  Piano → Batterie », « Jour : jeudi ») ; les enregistrements liés avec leur nom actuel, les supprimés avec
+  « (supprimé) ». En dessous, la vue détaillée contient, repliée, la section **Valeurs techniques** avec les noms de
+  colonnes et les valeurs telles qu’enregistrées – pour le dépannage. Le journal lui-même reste technique. Les entrées
+  d’une modification groupée portent la mention « (modification groupée) ».
 - **Les heures** apparaissent dans le fuseau horaire de l’application (voir [Administration système, chapitre 1](SYSADMIN_GUIDE.md#1-operations)).
 - Dans le widget **« Mes dernières modifications »**, un clic sur une entrée mène directement à l’enregistrement
   modifié – pour les tables du Concepteur de tables dans la vue des données avec l’enregistrement sélectionné.

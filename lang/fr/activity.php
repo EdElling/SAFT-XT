@@ -47,6 +47,8 @@ return [
     'no_changes' => 'Aucune modification de champ enregistrée.',
     'system' => 'Système',
     'deleted_user' => ':name (supprimé)',
+    'deleted_record' => ':label (supprimé)',
+    'technical' => 'Valeurs techniques',
     'removed_user' => 'Utilisateur supprimé n° :id',
     'settings' => 'Paramètres : :group',
 ];

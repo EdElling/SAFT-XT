@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Browser;
 
 use App\DynamicData\DataMenu;
+use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteOptions;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -423,5 +425,25 @@ class DataEntryTest extends DuskTestCase
         });
 
         $this->assertTrue(DynamicRecord::forTable($this->kunden)->newQuery()->withTrashed()->find($this->acme->id)->trashed());
+    }
+
+    /** EIN-22 (B-174): Verlauf lesbar – Bezeichnungen und Werte wie in der Anwendung, je Feld eine Zeile. */
+    public function test_history_shows_labels_and_readable_values(): void
+    {
+        $alpha = DynamicRecord::forTable($this->kunden)->create(['firma' => 'Alpha AG']);
+        $beta = DynamicRecord::forTable($this->kunden)->create(['firma' => 'Beta GmbH']);
+        $record = app(RecordWriter::class)->create($this->daten, ['titel' => 'Verlauf', 'status' => 'wip', 'kunde_id' => $alpha->getKey(), 'aktiv' => false], WriteOptions::ui());
+        app(RecordWriter::class)->update($record->refresh(), ['status' => 'done', 'kunde_id' => $beta->getKey(), 'aktiv' => true], WriteOptions::ui());
+
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/data/daten')->waitForText('Verlauf', 15);
+            $this->mobile($browser)->clickAtXPath("//tr[contains(@class, 'fi-ta-row')]//button[contains(., 'Details')]")->waitForText('Schliessen', 15)->pause(300);
+            $this->clickVisibleButton($browser, 'Verlauf')
+                ->waitFor('.saft-history', 15)
+                ->assertSeeIn('.saft-history', 'Status: In Arbeit → Erledigt')
+                ->assertSeeIn('.saft-history', 'Kunde: Alpha AG → Beta GmbH')
+                ->assertSeeIn('.saft-history', 'Aktiv: Nein → Ja')
+                ->assertDontSeeIn('.saft-history', 'kunde_id');
+        });
     }
 }

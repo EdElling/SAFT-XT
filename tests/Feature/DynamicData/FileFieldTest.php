@@ -222,7 +222,8 @@ class FileFieldTest extends DynamicDataTestCase
         $this->assertStringContainsString('scan<1>.png', base64_decode($csv, true) ?: $csv);
 
         $activity = Activity::query()->where('subject_type', $record->getMorphClass())->where('subject_id', $record->getKey())->where('event', 'created')->latest('id')->firstOrFail();
-        $this->assertStringContainsString('belege: scan<1>.png', ActivityChanges::summary($activity));
+        $this->assertStringContainsString('Belege: scan<1>.png', ActivityChanges::summary($activity));
+        $this->assertContains('belege', array_column(ActivityChanges::technicalRows($activity), 'field'), 'Technisch mit Spaltennamen');
     }
 
     public function test_livewire_accepts_uploads_up_to_the_designer_limit(): void

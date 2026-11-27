@@ -47,6 +47,8 @@ return [
     'no_changes' => 'Keine Feldänderungen protokolliert.',
     'system' => 'System',
     'deleted_user' => ':name (gelöscht)',
+    'deleted_record' => ':label (gelöscht)',
+    'technical' => 'Technische Werte',
     'removed_user' => 'Gelöschter Benutzer #:id',
     'settings' => 'Einstellungen: :group',
 ];

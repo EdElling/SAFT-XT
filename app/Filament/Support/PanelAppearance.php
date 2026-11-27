@@ -205,6 +205,8 @@ final class PanelAppearance
             // Hervorhebung der ausgewählten Zeile in der Master-Detail-Kaskade (Filament-Farbvariablen, Dark Mode).
             .'.saft-row-selected > td{background-color:color-mix(in oklab,var(--saft-highlight) 14%,transparent)!important}'
             .'.saft-row-selected > td:first-child{box-shadow:inset 3px 0 0 var(--saft-highlight)}'
+            // Verlauf eines Datensatzes: Zeitpunkt, Person und Änderung einer Zeile oben ausgerichtet (B-174).
+            .'.saft-history td{vertical-align:top}'
             // Seiten mit fester Breite, aber linksbündig (statt mittig), z. B. App-Einstellungen.
             .'body.saft-content-left .fi-main{margin-inline:0}'
             .'.fi-sidebar.fi-sidebar-open{min-width:14rem;max-width:calc(100vw - 3rem)}'

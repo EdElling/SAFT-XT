@@ -14,6 +14,7 @@ use App\Documents\Templates\TemplateException;
 use App\Documents\Templates\TemplateRenderer;
 use App\DynamicData\DataAccess;
 use App\DynamicData\Export\ExportFormat;
+use App\DynamicData\History\LoggedChanges;
 use App\DynamicData\Import\RecordImportAnalysis;
 use App\DynamicData\Import\RecordImporter;
 use App\DynamicData\RecordCopier;
@@ -66,6 +67,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\Support\Exceptions\Halt;
 use Filament\Tables\Contracts\HasTable;
 use Illuminate\Database\Eloquent\Builder;
@@ -985,6 +987,10 @@ final class DynamicRecordActions
             ->color('gray')
             ->modalSubmitAction(false)
             ->modalCancelActionLabel(__('common.close'))
+            // Breiter als die Vorgabe (4xl), damit „Änderung“ weniger umbricht; ohne Autofokus, sonst scrollt ein langer
+            // Verlauf zum Knopf „Schliessen“ und die neuesten Einträge oben sind nicht mehr zu sehen.
+            ->modalWidth(Width::SevenExtraLarge)
+            ->modalAutofocus(false)
             ->schema([self::historyEntry(fn (DynamicRecord $record): array => self::historyRows($record))]);
     }
 
@@ -995,6 +1001,8 @@ final class DynamicRecordActions
     {
         return RepeatableEntry::make('history')
             ->hiddenLabel()
+            // Zellen einer Zeile oben ausgerichtet (PanelAppearance).
+            ->extraAttributes(['class' => 'saft-history'])
             ->state($state)
             ->table([
                 TableColumn::make(__('data.history.when')),
@@ -1004,7 +1012,8 @@ final class DynamicRecordActions
             ->schema([
                 TextEntry::make('when'),
                 TextEntry::make('who'),
-                TextEntry::make('what'),
+                // Je Feld eine Zeile (B-174).
+                TextEntry::make('what')->extraAttributes(['style' => 'white-space: pre-line']),
             ])
             ->placeholder(__('data.history.empty'));
     }
@@ -1075,6 +1084,10 @@ final class DynamicRecordActions
             ->color('gray')
             ->modalSubmitAction(false)
             ->modalCancelActionLabel(__('common.close'))
+            // Breiter als die Vorgabe (4xl), damit „Änderung“ weniger umbricht; ohne Autofokus, sonst scrollt ein langer
+            // Verlauf zum Knopf „Schliessen“ und die neuesten Einträge oben sind nicht mehr zu sehen.
+            ->modalWidth(Width::SevenExtraLarge)
+            ->modalAutofocus(false)
             ->schema([self::historyEntry(fn (Model $record): array => self::modelHistoryRows($record))]);
     }
 
@@ -1091,9 +1104,8 @@ final class DynamicRecordActions
             ->map(fn (Activity $a): array => [
                 'when' => AppLocale::dateTime($a->created_at) ?? '—',
                 'who' => ActivityChanges::causerLabel($a),
-                'what' => ActivityChanges::eventLabel($a->event)
-                    // Sammeländerung (B-133): Herkunft aus WriteOptions::$origin.
-                    .(($a->properties['via'] ?? null) === WriteOptions::BULK ? ' ('.__('data.bulk.history').')' : '')
+                // Ereignis mit Herkunft, z. B. „(Sammeländerung)“ (B-133, B-174).
+                'what' => ActivityChanges::eventText($a)
                     .': '.ActivityChanges::summary($a, 200),
             ])
             ->all();
@@ -1101,7 +1113,7 @@ final class DynamicRecordActions
 
     public static function historyRows(DynamicRecord $record): array
     {
-        return Activity::query()
+        $activities = Activity::query()
             ->where('subject_type', $record->getMorphClass())
             // Text- und UUID-Schlüssel angebundener Tabellen stehen in den Eigenschaften.
             ->when(
@@ -1112,14 +1124,18 @@ final class DynamicRecordActions
             ->with('causer')
             ->orderByDesc('id')
             ->limit(25)
-            ->get()
+            ->get();
+
+        // B-174: verknüpfte Datensätze aller Einträge gesammelt nachschlagen, Werte lesbar und je Feld eine Zeile.
+        app(LoggedChanges::class)->prime($activities);
+
+        return $activities
             ->map(fn (Activity $a): array => [
                 'when' => AppLocale::dateTime($a->created_at) ?? '—',
                 'who' => ActivityChanges::causerLabel($a),
-                'what' => ActivityChanges::eventLabel($a->event)
-                    // Sammeländerung (B-133): Herkunft aus WriteOptions::$origin.
-                    .(($a->properties['via'] ?? null) === WriteOptions::BULK ? ' ('.__('data.bulk.history').')' : '')
-                    .': '.ActivityChanges::summary($a, 200),
+                // Ereignis mit Herkunft, z. B. „(Sammeländerung)“ (B-133, B-174).
+                'what' => ActivityChanges::eventText($a)
+                    ."\n".ActivityChanges::lines($a),
             ])
             ->all();
     }

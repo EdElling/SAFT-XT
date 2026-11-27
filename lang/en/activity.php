@@ -47,6 +47,8 @@ return [
     'no_changes' => 'No field changes recorded.',
     'system' => 'System',
     'deleted_user' => ':name (deleted)',
+    'deleted_record' => ':label (deleted)',
+    'technical' => 'Technical values',
     'removed_user' => 'Deleted user #:id',
     'settings' => 'Settings: :group',
 ];

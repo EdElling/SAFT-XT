@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Filament\Support;
 
 use App\DynamicData\Files\RecordFiles;
+use App\DynamicData\History\LoggedChanges;
 use App\DynamicData\Ui\KeylessRow;
+use App\DynamicData\Write\WriteOptions;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\User;
@@ -20,9 +22,22 @@ use Spatie\Activitylog\Models\Activity;
 final class ActivityChanges
 {
     /**
+     * Zeilen für die Anzeige: bei Datensätzen lesbar (Bezeichnungen, Werte im Format der Anwendung, B-174), sonst
+     * technisch.
+     *
      * @return list<array{field: string, old: string, new: string}>
      */
     public static function rows(Activity $activity): array
+    {
+        return app(LoggedChanges::class)->rows($activity) ?? self::technicalRows($activity);
+    }
+
+    /**
+     * Zeilen mit Spaltennamen und Werten wie im Protokoll (Änderungsprotokoll der Administration, Fehlersuche).
+     *
+     * @return list<array{field: string, old: string, new: string}>
+     */
+    public static function technicalRows(Activity $activity): array
     {
         /** @var Collection<string, mixed>|null $changes */
         $changes = $activity->attribute_changes;
@@ -43,15 +58,24 @@ final class ActivityChanges
         return $rows;
     }
 
+    /** Je Feld eine Zeile „Feld: alt → neu“ (Verlauf eines Datensatzes, B-174). */
+    public static function lines(Activity $activity): string
+    {
+        $lines = array_map(self::line(...), self::rows($activity));
+
+        return $lines === [] ? '—' : implode("\n", $lines);
+    }
+
+    /** @param  array{field: string, old: string, new: string}  $row */
+    private static function line(array $row): string
+    {
+        return $row['old'] === '—' ? "{$row['field']}: {$row['new']}" : "{$row['field']}: {$row['old']} → {$row['new']}";
+    }
+
     /** Kurzfassung der Änderungen, z. B. "roles: benutzer → leitung; name: A → B". */
     public static function summary(Activity $activity, int $limit = 160): string
     {
-        $parts = array_map(
-            static fn (array $row): string => $row['old'] === '—'
-                ? "{$row['field']}: {$row['new']}"
-                : "{$row['field']}: {$row['old']} → {$row['new']}",
-            self::rows($activity),
-        );
+        $parts = array_map(self::line(...), self::rows($activity));
 
         return $parts === [] ? '—' : Str::limit(implode('; ', $parts), $limit);
     }
@@ -75,6 +99,17 @@ final class ActivityChanges
         $softDeleted = User::onlyTrashed()->whereKey($activity->causer_id)->value('name');
 
         return $softDeleted !== null ? __('activity.deleted_user', ['name' => $softDeleted]) : __('activity.removed_user', ['id' => $activity->causer_id]);
+    }
+
+    /**
+     * Ereignis eines Eintrags mit Herkunft, z. B. „geändert (Sammeländerung)“ – gleich in Verlauf, Widgets und
+     * Änderungsprotokoll (B-174).
+     */
+    public static function eventText(Activity $activity): string
+    {
+        $origin = ($activity->properties['via'] ?? null) === WriteOptions::BULK ? ' ('.__('data.bulk.history').')' : '';
+
+        return self::eventLabel($activity->event).$origin;
     }
 
     /** Lesbarer Name eines Ereignisses; unbekannte erscheinen unverändert. */

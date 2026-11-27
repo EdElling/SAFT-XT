@@ -47,6 +47,8 @@ return [
     'no_changes' => 'Nessuna modifica di campo registrata.',
     'system' => 'Sistema',
     'deleted_user' => ':name (eliminato)',
+    'deleted_record' => ':label (eliminato)',
+    'technical' => 'Valori tecnici',
     'removed_user' => 'Utente eliminato n. :id',
     'settings' => 'Impostazioni: :group',
 ];

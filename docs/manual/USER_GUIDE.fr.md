@@ -252,7 +252,7 @@ Les tableaux servent à la **lecture**. Un clic sur une ligne sélectionne l’e
 | **Afficher** (loupe) | Le formulaire avec tous les champs, verrouillé – champs calculés compris. |
 | **Modifier** (crayon) | Ouvre le formulaire de saisie dans une fenêtre ; **Sauvegarder les modifications** ou **Annuler** ramène directement au tableau. |
 | **Copier** (deux feuilles) | Ouvre « Nouvel enregistrement » avec toutes les valeurs de l’original ; les champs uniques (p. ex. numéro d’article) restent vides, les champs calculés sont recalculés. Fichiers et images sont créés comme copies distinctes à l’enregistrement. Si des enregistrements en font partie (p. ex. les lignes d’une commande), ils figurent en haut sous **Copier avec**, cochés d’avance – décochez pour les exclure. Nécessite le droit de créer. |
-| **Historique** (horloge) | Qui a modifié quoi et quand. |
+| **Historique** (horloge) | Qui a modifié quoi et quand, une ligne par champ (p. ex. « Statut : Nouveau → Expédié »). |
 | **Supprimer** (corbeille) | Supprime après une question de sécurité. |
 | **Restaurer** | Pour les enregistrements supprimés, à la place de « Modifier » et « Supprimer ». |
 | Icônes de plugins | Fonctions issues de plugins ; l’infobulle nomme aussi le plugin. |
@@ -271,7 +271,7 @@ En bas se trouvent (1) :
 |---|---|
 | **Modifier** | Ouvre le formulaire de saisie. Les modifications sont appliquées dès l’enregistrement. Non disponible pour les enregistrements supprimés. |
 | **Copier** | Crée un nouvel enregistrement avec les valeurs de celui-ci (comme dans le tableau). |
-| **Historique** | Montre qui a modifié quoi et quand (p. ex. « status : Nouveau → Expédié »). |
+| **Historique** | Montre qui a modifié quoi et quand : les 25 dernières entrées, les plus récentes en haut, une ligne par champ avec le libellé du champ et les valeurs comme dans l’application (p. ex. « Statut : Nouveau → Expédié », « Client : Müller AG → Meier GmbH », « Montant : 120,00 → 135,50 »). Les enregistrements liés apparaissent avec leur nom actuel, les supprimés avec « (supprimé) ». Les modifications groupées portent la mention « (modification groupée) ». |
 | **Supprimer** | Marque l’enregistrement comme supprimé. Il disparaît de la liste, mais reste restaurable. |
 | **Restaurer** | Visible uniquement pour les enregistrements supprimés. |
 | **Fermer** | Ferme la fenêtre sans modification. |

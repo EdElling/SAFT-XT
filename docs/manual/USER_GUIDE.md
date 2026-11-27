@@ -234,7 +234,7 @@ buttons at the end of the row – depending on the screen width:
 | **View** (magnifying glass) | The form with all fields, locked – computed fields too. |
 | **Edit** (pencil) | Opens the input form as a window; **Save** or **Cancel** leads straight back to the table. |
 | **Copy** (two sheets) | Opens “New record” with all values of the original; unique fields (e.g. item number) stay empty, computed ones are recalculated. Files and images are created as separate copies when saving. If records belong to it (e.g. the lines of an order), they are listed at the top under **Copy along** with a preselected tick – remove it to leave them out. Needs the permission to create. |
-| **History** (clock) | Who changed what when (e.g. “status: New → Shipped”). |
+| **History** (clock) | Who changed what when, one line per field (e.g. “Status: New → Shipped”). |
 | **Delete** (bin) | Deletes after a confirmation. |
 | **Restore** | For deleted records instead of “Edit” and “Delete”. |
 | Plugin icons | Functions from plugins, e.g. *Warehouse board*; the tooltip also names the plugin. |
@@ -253,7 +253,7 @@ At the bottom you find (1):
 |---|---|
 | **Edit** | Opens the input form. Changes take effect as soon as you save. Not available for deleted records. |
 | **Copy** | Creates a new record with the values of this record (as in the table). |
-| **History** | Shows who changed what and when (e.g. "status: New → Shipped"). |
+| **History** | Shows who changed what and when: the last 25 entries, newest first, one line per field with the field's label and the values as shown in the application (e.g. “Status: New → Shipped”, “Customer: Müller AG → Meier GmbH”, “Amount: 120.00 → 135.50”). Linked records appear with their current name, deleted ones with “(deleted)”. Bulk edits carry the note “(bulk edit)”. |
 | **Delete** | Marks the record as deleted. It disappears from the list but can be restored. |
 | **Restore** | Only visible for deleted records. |
 | **Close** | Closes the window without changes. |

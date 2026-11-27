@@ -242,7 +242,7 @@ class DynamicDataPageTest extends DynamicDataTestCase
             ->callAction([$details(), TestAction::make('edit')], ['titel' => 'Neu'])
             ->assertHasNoFormErrors()
             ->mountAction([$details(), TestAction::make('history')])
-            ->assertMountedActionModalSee('titel: Alt → Neu');
+            ->assertMountedActionModalSee('Titel: Alt → Neu');
 
         // Aktiver Datensatz: Löschen ja, Wiederherstellen nicht.
         Livewire::test(DynamicDataPage::class, ['table' => 'projekte'])

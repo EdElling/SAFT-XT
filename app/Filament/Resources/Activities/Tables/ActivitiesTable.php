@@ -78,7 +78,7 @@ class ActivitiesTable
             TextColumn::make('event')
                 ->label(__('activity.event'))
                 ->badge()
-                ->formatStateUsing(fn (?string $state): string => ActivityChanges::eventLabel($state))
+                ->formatStateUsing(fn (?string $state, Activity $record): string => ActivityChanges::eventText($record))
                 ->color(fn (?string $state): string => ActivityEventColor::for($state)),
             $withSubject
                 ? TextColumn::make('subject_type')

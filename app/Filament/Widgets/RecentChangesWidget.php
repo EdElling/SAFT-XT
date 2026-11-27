@@ -7,6 +7,7 @@ namespace App\Filament\Widgets;
 use App\Filament\Resources\Activities\ActivityResource;
 use App\Filament\Resources\Activities\Tables\ActivitiesTable;
 use App\Filament\Support\ActivityChanges;
+use App\Filament\Widgets\Concerns\PrimesLoggedChanges;
 use App\Filament\Widgets\Concerns\QueriesActivities;
 use App\Filament\Widgets\Concerns\RequiresPermissions;
 use App\Models\Activity;
@@ -16,6 +17,7 @@ use Filament\Widgets\TableWidget;
 
 class RecentChangesWidget extends TableWidget
 {
+    use PrimesLoggedChanges;
     use QueriesActivities;
     use RequiresPermissions;
 

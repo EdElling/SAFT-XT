@@ -788,6 +788,11 @@ periodo impostato.
   dopo), per creazione ed eliminazione i campi in forma compatta in blocchi (campo e valore affiancati). I valori
   lunghi vanno a capo. Le etichette in più lingue compaiono con tutte le lingue, ad es.
   `{"de":"Kunden","en":"Customers"}`.
+- **Record leggibili:** per i record delle tabelle di dati, l’elenco, la vista di dettaglio e i widget della dashboard
+  mostrano le etichette dei campi e i valori come nell’applicazione («Materia: Pianoforte → Batteria», «Giorno:
+  giovedì»); i record collegati con il nome attuale, quelli eliminati con «(eliminato)». Sotto, la vista di dettaglio
+  ha, chiusa, la sezione **Valori tecnici** con i nomi delle colonne e i valori come salvati – per la ricerca degli
+  errori. Il registro stesso resta tecnico. Le voci di una modifica multipla portano la nota «(modifica multipla)».
 - **Gli orari** compaiono nel fuso orario dell’applicazione (vedere [Amministrazione di sistema, capitolo 1](SYSADMIN_GUIDE.md#1-operations)).
 - Nel widget **«Le mie ultime modifiche»** un clic su una voce porta direttamente al record modificato – per le
   tabelle del Designer di tabelle nella vista dei dati con il record selezionato.
