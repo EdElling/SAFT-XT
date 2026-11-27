@@ -243,7 +243,9 @@ Auswahlwerte gelten für alle Sprachen.
 
 **Export erlauben:** Dieser Schalter in den Stammdaten der Tabelle gibt den Export frei (siehe
 [Anwenderhandbuch 4.7](USER_GUIDE.de.md#47-daten-exportieren)). Er ist zunächst aus. Auch Super-Admins sehen „Exportieren“ erst, wenn er an ist;
-alle anderen brauchen zusätzlich das Recht **Exportieren** in ihrer Rolle.
+alle anderen brauchen zusätzlich das Recht **Exportieren** in ihrer Rolle. Wer exportieren darf, sieht in der Liste auch
+die Häkchen zum Auswählen und **„Auswahl exportieren“** für die ausgewählten Datensätze, auch ohne das Recht
+**Bearbeiten**.
 
 **Import erlauben:** Dieser Schalter gibt den Datenimport frei – neue Datensätze aus einer Excel- oder CSV-Datei, etwa
 aus einer heruntergeladenen Vorlage (siehe [Anwenderhandbuch 4.8](USER_GUIDE.de.md#48-daten-importieren)). Er ist
@@ -773,7 +775,8 @@ Einträge hin, die älter als die eingestellte Frist sind.
 - **Filter:** Benutzer, Ereignis, Objekttyp, Zeitraum. Ereignisse sind: angelegt, geändert, gelöscht,
   wiederhergestellt, Anmeldung, Anmeldung fehlgeschlagen, Abmeldung, exportiert, Dokument erzeugt (mit Vorlage,
   Dateiname und Prüfwert SHA-256) und Dokument versendet (zusätzlich mit Empfänger, Betreff und Kopie).
-- **Exporte:** Festgehalten werden Tabelle, Format, Zeilenzahl, Filter und Suche, nie die exportierten Daten.
+- **Exporte:** Festgehalten werden Tabelle, Format, Zeilenzahl, Filter und Suche, bei „Auswahl exportieren“
+  zusätzlich „Auswahl“, nie die exportierten Daten.
 - **Benutzer:** „System“ steht nur dort, wo wirklich kein Benutzer beteiligt war. Gelöschte Benutzer erscheinen
   mit Namen und „(gelöscht)“, endgültig gelöschte als „Gelöschter Benutzer #12“.
 - **Detailansicht:** in Formularbreite; bei Änderungen eine Tabelle mit allen geänderten Feldern (vorher → nachher),

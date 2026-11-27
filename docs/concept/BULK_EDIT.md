@@ -1,6 +1,6 @@
 # Konzept: Datensätze auswählen und Sammeländerung in SAFT XT
 
-Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2 umgesetzt 27.11.2026, S3 umgesetzt 27.11.2026 (§13), S4 entschieden (§14)** · Backlog: B-133
+Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2 umgesetzt 27.11.2026, S3 umgesetzt 27.11.2026 (§13), S4 entschieden (§14), S4a und S4c umgesetzt 27.11.2026, S4b offen** · Backlog: B-133
 (ersetzt B-024)
 
 > **Überarbeitung 27.11.2026:** Seit dem Entwurf vom 23.11.2026 gibt es Fundament 2 und die Nummernkreise. Der
@@ -245,6 +245,21 @@ sie nicht), und unter den Fehlern einer Prüfphase steht ein Hinweis, dass ein K
 Datensätzen bestehen kann. Zurückgestellt: Datensätze einer Sammeländerung in der Datenansicht anzeigen (B-170). S3c:
 Browser-Test SAE-13 und SAE-14, manuelle Testfälle SAE-13 bis SAE-16, Handbücher. Keine neuen Rechte, Plugin-API
 unverändert.
+
+**Stand S4 (27.11.2026): S4a und S4c umgesetzt, S4b offen** nach den Entscheidungen in §14. S4a: Sammelaktion
+„Auswahl exportieren“ (`DynamicRecordActions::exportSelected()`, Gruppe mit XLSX und CSV) in Datenansicht und
+Detailtabellen; Abfrage aus `getSelectedRecordsQuery()` (Auswahl über alle Seiten minus Abgewählte, Filter, Suche,
+Sortierung der Tabelle), Start der Arbeit `export` mit dem Kopf-Export geteilt (`startExport()`), Parameter `selected`
+und Vermerk `auswahl` im Protokoll; Recht *Exportieren* und `export_enabled`, auch angebundene Tabellen mit einfachem
+Schlüssel. S4c (B-170): Filter `App\DynamicData\Bulk\BulkChangeFilter` (`_bulk_change`, Schlüssel aus `record_ids`,
+Rechte wie die Liste, mit Papierkorb für Personen mit *Löschen*), geöffnet über `DynamicDataPage::urlFor(…, bulk:)`;
+`RemembersTableState` hat dafür die allgemeine **vorübergehende Ansicht** (`startTransientTableView()`,
+`endTransientTableView()`, Merker in der Sitzung; nichts gespeichert, Beenden über das Kärtchen, „Alle Filter löschen“,
+„Ansicht zurücksetzen“ oder einen Aufruf ohne `?bulk=` lädt den gespeicherten Stand). Bei der Umsetzung gefunden: Ein
+Zurücksetzen des Merkers vor der Weiterleitung hätte am Ende der Anfrage den vorübergehenden Stand gespeichert. Keine
+Migration, keine neuen Rechte, Plugin-API unverändert. Zurückgestellt: B-179 (`DataTable::updateMany()`), B-180
+(angebundene Tabellen), B-181 („ohne die fehlerhaften ändern“), B-182 (`Saft::startWork()` mit kleinen Mengen im
+Request).
 
 ## 11. Entscheidungen zu den offenen Fragen (27.11.2026: alle Empfehlungen angenommen)
 

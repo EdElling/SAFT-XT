@@ -40,6 +40,8 @@
    - [La modification groupée indique « Rien n’a été modifié ».](#la-modification-groupée-indique--rien-na-été-modifié-)
    - [Lors de la modification groupée, des enregistrements sont restés inchangés.](#lors-de-la-modification-groupée-des-enregistrements-sont-restés-inchangés)
    - [Comment annuler une modification groupée ?](#comment-annuler-une-modification-groupée-)
+   - [Comment exporter seulement certains enregistrements ?](#comment-exporter-seulement-certains-enregistrements-)
+   - [Quels enregistrements une modification groupée a-t-elle modifiés ?](#quels-enregistrements-une-modification-groupée-a-t-elle-modifiés-)
 
 ---
 ## Questions fréquentes
@@ -134,9 +136,9 @@ le droit de suppression.
 
 Les cases à cocher pour sélectionner plusieurs enregistrements n’apparaissent que s’il existe une action groupée que
 vous pouvez utiliser : **« Modifier … »** (droit *Modifier*, et l’administration autorise la modification groupée pour la
-table ; manuel de l’utilisateur, section 4.11), **« Supprimer la sélection »** (droit *Supprimer*) ou **« Créer des
+table ; manuel de l’utilisateur, section 4.11), **« Supprimer la sélection »** (droit *Supprimer*), **« Exporter la sélection »** (droit *Exporter* et export activé pour la table ; section 4.7) ou **« Créer des
 documents »** (modèle de document actif et droit *Documents: générer* ; section 4.10). Les tables liées n’ont pas de
-modification groupée.
+modification groupée, mais bien « Exporter la sélection ».
 
 ### Un document n’a pas pu être envoyé par e-mail.
 
@@ -246,4 +248,20 @@ nomme. Si le bouton est désactivé (« Aucun enregistrement ne serait annulé �
 depuis, souvent par une modification groupée plus récente : annulez d’abord celle-ci. Les numéros attribués et les
 e-mails envoyés restent. Seules les personnes autorisées à voir le journal des modifications annulent les modifications
 groupées d’autres personnes. Voir
+[Manuel d’utilisation 4.11](USER_GUIDE.fr.md#411-modifier-plusieurs-enregistrements-modification-groupée).
+
+### Comment exporter seulement certains enregistrements ?
+
+Cochez les enregistrements en début de ligne et choisissez **« Exporter la sélection »** (Excel ou CSV) dans la barre
+au-dessus du tableau. Le fichier ne contient que les enregistrements sélectionnés, dans l’ordre de la liste et avec les
+colonnes visibles. Pour sélectionner sur toutes les pages, utilisez la case de l’en-tête et **« Sélectionner tout (N) »** ;
+vous pouvez ensuite en décocher certains. « Exporter » en haut exporte en revanche tous les résultats du filtre. Voir
+[Manuel d’utilisation 4.7](USER_GUIDE.fr.md#47-exporter-des-données).
+
+### Quels enregistrements une modification groupée a-t-elle modifiés ?
+
+Ouvrez **« Dernières modifications groupées »** au-dessus de la table et cliquez sur **« Afficher les enregistrements »**
+à côté de la modification groupée (le lien figure aussi dans la confirmation « Annuler »). La liste montre alors
+exactement ces enregistrements, avec une étiquette « Modification groupée du … » au-dessus du tableau. Votre vue
+enregistrée est conservée : le ✕ de l’étiquette ou « Réinitialiser la vue » rétablit vos filtres précédents. Voir
 [Manuel d’utilisation 4.11](USER_GUIDE.fr.md#411-modifier-plusieurs-enregistrements-modification-groupée).

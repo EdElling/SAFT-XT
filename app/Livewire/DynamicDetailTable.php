@@ -162,6 +162,7 @@ class DynamicDetailTable extends Component implements HasActions, HasSchemas, Ha
             // Sammelaktionen wie in der Datenansicht (B-133); die Verknüpfung zur Haupttabelle bleibt fest.
             ->toolbarActions([
                 BulkRecordActions::edit($child, [$fk]),
+                DynamicRecordActions::exportSelected($child, null, [$fk]),
                 DynamicRecordActions::documentBulk($child),
                 BulkRecordActions::delete($child),
                 BulkRecordActions::restore($child),

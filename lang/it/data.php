@@ -64,6 +64,8 @@ return [
         'label' => 'Esporta',
         'too_large' => 'Esportazione troppo grande',
         'too_large_body' => 'La selezione contiene :rows record, se ne possono esportare al massimo :limit. Restringere la selezione con filtri o ricerca.',
+        'too_large_selected' => 'Sono selezionati :rows record, se ne possono esportare al massimo :limit. Selezionare meno record.',
+        'selected' => 'Esporta selezione',
     ],
     'history' => [
         'label' => 'Cronologia',
@@ -195,6 +197,12 @@ return [
         'hints' => [
             'number_kept' => '{1} 1 record ha già un numero in «:number»; resta anche se :fields cambia.|[2,*] :count record hanno già un numero in «:number»; resta anche se :fields cambia.',
             'number_assigned' => ':fields controlla «Assegnare se» della numerazione «:number»: il salvataggio può assegnare numeri, nell’ordine delle chiavi.',
+        ],
+        // B-170: Datensätze einer Sammelaktion als vorübergehende Ansicht.
+        'view' => [
+            'show' => 'Mostra record',
+            'indicator' => 'Modifica multipla del :when: :what (:count)',
+            'missing' => 'Questa modifica multipla non esiste più o non si è autorizzati a vederla.',
         ],
         'undo' => [
             'history' => 'Ultime modifiche multiple',

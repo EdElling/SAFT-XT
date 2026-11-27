@@ -402,6 +402,13 @@ centinaio di righe al secondo. Per ogni esportazione sono possibili di norma al 
 (l’amministrazione può modificare o togliere il limite); con più risultati compare un avviso e non viene creato alcun
 file – restringete allora la selezione con filtro o ricerca.
 
+**Solo i record selezionati:** selezionare le caselle all’inizio delle righe (anche su tutte le pagine con
+**«Seleziona tutti N»**; poi se ne possono deselezionare singoli) e scegliere **«Esporta selezione»** nella
+barra sopra la tabella. Il file contiene allora solo i record selezionati mostrati dal filtro, nell’ordine
+dell’elenco e con le stesse colonne e gli stessi formati indicati sopra; vale lo stesso limite. Funziona anche nelle
+tabelle di dettaglio e per le tabelle collegate. Le caselle compaiono non appena si ha il diritto di esportare, anche
+senza il diritto *Modificare*.
+
 > **Protezione dei dati:** ogni esportazione viene registrata nel registro modifiche. Il file esportato però non è
 > più soggetto ad alcun controllo dei diritti. Trattatelo quindi con cura.
 
@@ -694,6 +701,13 @@ l’ultima modifica multipla. Anche un annullamento si può annullare. I numeri 
 e-mail inviate restano. Annullate le vostre modifiche multiple con il diritto *Modificare* (o *Eliminare*), quelle di
 altre persone solo con il diritto di vedere il registro delle modifiche. Quando il registro delle modifiche viene
 ridotto, le modifiche multiple più vecchie scompaiono anche dall’elenco.
+
+**Mostrare i record:** il link **«Mostra record»** in «Ultime modifiche multiple» e nella conferma «Annulla» apre
+l’elenco con esattamente i record di quella modifica multipla; chi ha il diritto *Eliminare* vede anche quelli eliminati
+nel frattempo. Un’etichetta sopra la tabella indica «Modifica multipla del …». Si può ordinare, filtrare ancora,
+esportare la selezione o modificarla di nuovo. Questa vista non viene salvata: la ✕ sull’etichetta, **«Rimuovi tutti i
+filtri»** o **«Reimposta vista»** riportano alla vista salvata con i filtri precedenti, così come la prossima apertura
+della tabella dal menu.
 
 Il pulsante «Modifica …» è visibile con il diritto *Modificare* se l’amministrazione consente la modifica multipla per
 la tabella. Al massimo 5’000 record per modifica multipla, salvo diversa impostazione dell’amministrazione.

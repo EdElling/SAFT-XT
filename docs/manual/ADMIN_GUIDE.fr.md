@@ -253,7 +253,8 @@ valent pour toutes les langues.
 **Autoriser l’export :** cet interrupteur dans les données de base de la table autorise l’export (voir
 [Guide utilisateur 4.7](USER_GUIDE.fr.md#47-exporter-des-données)). Il est d’abord désactivé. Même les super-admins ne
 voient « Exporter » que lorsqu’il est activé ; toutes les autres personnes ont besoin en plus du droit **Exporter**
-dans leur rôle.
+dans leur rôle. Qui peut exporter voit aussi dans la liste les cases à cocher et **« Exporter la sélection »**
+pour les enregistrements sélectionnés, même sans le droit **Modifier**.
 
 **Autoriser l’import :** cet interrupteur autorise l’import de données – de nouveaux enregistrements à partir d’un
 fichier Excel ou CSV, p. ex. d’un modèle téléchargé (voir [Guide utilisateur 4.8](USER_GUIDE.fr.md#48-importer-des-données)).
@@ -802,7 +803,8 @@ le délai configuré.
 - **Filtres :** utilisateur, événement, type d’objet, période. Les événements sont : créé, modifié, supprimé,
   restauré, connexion, échec de connexion, déconnexion, exporté, document généré (avec modèle, nom de fichier et
   valeur de contrôle SHA-256) et document envoyé (en plus avec destinataire, objet et copie).
-- **Exports :** sont consignés la table, le format, le nombre de lignes, le filtre et la recherche, jamais les
+- **Exports :** sont consignés la table, le format, le nombre de lignes, le filtre et la recherche, pour
+  « Exporter la sélection » en plus « sélection », jamais les
   données exportées.
 - **Utilisateurs :** « Système » n’apparaît que là où aucun utilisateur n’était réellement impliqué. Les utilisateurs
   supprimés apparaissent avec leur nom et « (supprimé) », ceux supprimés définitivement comme « Utilisateur supprimé

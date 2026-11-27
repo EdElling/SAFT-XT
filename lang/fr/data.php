@@ -64,6 +64,8 @@ return [
         'label' => 'Exporter',
         'too_large' => 'Export trop volumineux',
         'too_large_body' => 'La sélection contient :rows enregistrements, au maximum :limit peuvent être exportés. Affinez la sélection avec les filtres ou la recherche.',
+        'too_large_selected' => 'Vous avez sélectionné :rows enregistrements, au maximum :limit peuvent être exportés. Sélectionnez moins d’enregistrements.',
+        'selected' => 'Exporter la sélection',
     ],
     'history' => [
         'label' => 'Historique',
@@ -195,6 +197,12 @@ return [
         'hints' => [
             'number_kept' => '{1} 1 enregistrement a déjà un numéro dans « :number » ; il reste même si :fields change.|[2,*] :count enregistrements ont déjà un numéro dans « :number » ; il reste même si :fields change.',
             'number_assigned' => ':fields commande « Attribuer si » de la numérotation « :number » : l’enregistrement peut attribuer des numéros, dans l’ordre des clés.',
+        ],
+        // B-170: Datensätze einer Sammelaktion als vorübergehende Ansicht.
+        'view' => [
+            'show' => 'Afficher les enregistrements',
+            'indicator' => 'Modification groupée du :when : :what (:count)',
+            'missing' => 'Cette modification groupée n’existe plus ou vous n’êtes pas autorisé à la voir.',
         ],
         'undo' => [
             'history' => 'Dernières modifications groupées',

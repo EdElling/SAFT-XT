@@ -208,4 +208,62 @@ class BulkUndoUiTest extends DynamicDataTestCase
             ->assertActionVisible('undo')
             ->assertSee(BulkUndoActions::undoUrl($head));
     }
+
+    /** B-170: „Datensätze anzeigen“ in Liste und Bestätigung öffnet die Liste mit genau den Datensätzen der Sammelaktion. */
+    public function test_show_records_opens_the_list_with_the_records_of_the_bulk_edit(): void
+    {
+        $ids = $this->seedCourses(3);
+        $head = BulkChange::query()->where('run', (string) $this->raise([$ids[0], $ids[2]])->result['run'])->sole();
+        $url = DynamicDataPage::urlFor('kurse', bulk: $head->id);
+        $this->assertStringContainsString('bulk='.$head->id, $url);
+
+        Livewire::test(DynamicDataPage::class, ['table' => 'kurse'])
+            ->mountAction(TestAction::make(BulkUndoActions::HISTORY)->table())
+            ->assertMountedActionModalSeeHtml('data-bulk-records="'.$head->id.'"')
+            ->assertMountedActionModalSeeHtml(e($url));
+
+        Livewire::withQueryParams(['action' => BulkUndoActions::UNDO, 'actionArguments' => ['head' => $head->id]])
+            ->test(DynamicDataPage::class, ['table' => 'kurse'])
+            ->call('mountDefaultActions')
+            ->assertMountedActionModalSeeHtml('data-bulk-records-confirm');
+
+        // Auch gelöschte gehören dazu (Papierkorb für Personen, die löschen dürfen).
+        app(RecordWriter::class)->delete(DynamicRecord::forTable($this->courses)->newQuery()->findOrFail($ids[2]), WriteOptions::ui());
+
+        Livewire::withQueryParams(['bulk' => $head->id])
+            ->test(DynamicDataPage::class, ['table' => 'kurse'])
+            ->assertSet('transientTableView', true)
+            ->assertSee('Sammeländerung vom')
+            ->assertCanSeeTableRecords([$ids[0], $ids[2]])
+            ->assertCanNotSeeTableRecords([$ids[1]]);
+    }
+
+    public function test_show_records_needs_the_same_rights_as_the_list(): void
+    {
+        $ids = $this->seedCourses(2);
+        $head = BulkChange::query()->where('run', (string) $this->raise([$ids[0]])->result['run'])->sole();
+
+        $this->actingAs($this->userWithPermissions(['data.kurse.view', 'data.kurse.update']));
+        Livewire::withQueryParams(['bulk' => $head->id])
+            ->test(DynamicDataPage::class, ['table' => 'kurse'])
+            ->assertNotified('Diese Sammeländerung gibt es nicht mehr oder Sie dürfen sie nicht sehen.')
+            ->assertSet('transientTableView', false)
+            ->assertCanSeeTableRecords($ids);
+
+        // Ein fremder Kopf über den Filterstand (Livewire-Zustand ist veränderbar) zeigt nichts.
+        Livewire::test(DynamicDataPage::class, ['table' => 'kurse'])
+            ->set('tableFilters._bulk_change.head', $head->id)
+            ->assertCanNotSeeTableRecords($ids);
+
+        $this->actingAs($this->userWithPermissions(['data.kurse.view', 'data.kurse.update', 'activity_log.view']));
+        Livewire::withQueryParams(['bulk' => $head->id])
+            ->test(DynamicDataPage::class, ['table' => 'kurse'])
+            ->assertSet('transientTableView', true)
+            ->assertCanSeeTableRecords([$ids[0]])
+            ->assertCanNotSeeTableRecords([$ids[1]]);
+
+        Livewire::withQueryParams(['bulk' => 999999])
+            ->test(DynamicDataPage::class, ['table' => 'kurse'])
+            ->assertNotified('Diese Sammeländerung gibt es nicht mehr oder Sie dürfen sie nicht sehen.');
+    }
 }

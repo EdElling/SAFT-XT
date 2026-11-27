@@ -40,6 +40,8 @@
    - [Die Sammeländerung meldet „Nichts geändert“.](#die-sammeländerung-meldet-nichts-geändert)
    - [Bei der Sammeländerung blieben Datensätze unverändert.](#bei-der-sammeländerung-blieben-datensätze-unverändert)
    - [Wie mache ich eine Sammeländerung rückgängig?](#wie-mache-ich-eine-sammeländerung-rückgängig)
+   - [Wie exportiere ich nur einige Datensätze?](#wie-exportiere-ich-nur-einige-datensätze)
+   - [Welche Datensätze hat eine Sammeländerung geändert?](#welche-datensätze-hat-eine-sammeländerung-geändert)
 
 ---
 ## Häufige Fragen
@@ -132,8 +134,8 @@ Dokument verschickt wurde. Ein korrigiertes Dokument erstellen Sie einfach neu �
 
 Häkchen zum Auswählen mehrerer Datensätze erscheinen nur, wenn es dafür eine Sammelaktion gibt, die Sie nutzen dürfen:
 **„Ändern …“** (Recht *Bearbeiten*, und die Administration erlaubt die Sammeländerung für die Tabelle; Anwenderhandbuch,
-Abschnitt 4.11), **„Ausgewählte löschen“** (Recht *Löschen*) oder **„Dokumente erstellen“** (aktive Dokumentvorlage und
-Recht *Dokumente: erzeugen*; Abschnitt 4.10). Angebundene Tabellen haben keine Sammeländerung.
+Abschnitt 4.11), **„Ausgewählte löschen“** (Recht *Löschen*), **„Auswahl exportieren“** (Recht *Exportieren* und Export für die Tabelle freigegeben; Abschnitt 4.7) oder **„Dokumente erstellen“** (aktive Dokumentvorlage und
+Recht *Dokumente: erzeugen*; Abschnitt 4.10). Angebundene Tabellen haben keine Sammeländerung, wohl aber „Auswahl exportieren“.
 
 ### Ein Dokument liess sich nicht per E-Mail senden.
 
@@ -239,4 +241,20 @@ denen ein geändertes Feld seither einen anderen Wert hat, bleiben stehen und di
 gesperrt („Kein Datensatz würde zurückgenommen“), wurden alle Datensätze seither wieder geändert, oft von einer späteren
 Sammeländerung: Nehmen Sie zuerst diese zurück. Vergebene Nummern und versendete E-Mails bleiben. Fremde
 Sammeländerungen nimmt nur zurück, wer das Änderungsprotokoll sehen darf. Siehe
+[Anwenderhandbuch 4.11](USER_GUIDE.de.md#411-mehrere-datensätze-ändern-sammeländerung).
+
+### Wie exportiere ich nur einige Datensätze?
+
+Haken Sie die Datensätze am Zeilenanfang an und wählen Sie in der Leiste über der Tabelle **„Auswahl exportieren“**
+(Excel oder CSV). Die Datei enthält nur die ausgewählten Datensätze, in der Sortierung der Liste und mit den sichtbaren
+Spalten. Über alle Seiten wählen Sie mit dem Häkchen im Tabellenkopf und **„Alle N Datensätze auswählen“**; einzelne
+lassen sich danach wieder abwählen. „Exportieren“ oben exportiert dagegen alle Treffer des Filters. Siehe
+[Anwenderhandbuch 4.7](USER_GUIDE.de.md#47-daten-exportieren).
+
+### Welche Datensätze hat eine Sammeländerung geändert?
+
+Öffnen Sie **„Letzte Sammeländerungen“** über der Tabelle und klicken Sie bei der Sammeländerung auf **„Datensätze
+anzeigen“** (den Link gibt es auch in der Bestätigung „Rückgängig“). Die Liste zeigt dann genau diese Datensätze, mit
+einem Kärtchen „Sammeländerung vom …“ über der Tabelle. Ihre gespeicherte Ansicht bleibt erhalten: Das ✕ am Kärtchen
+oder „Ansicht zurücksetzen“ bringt Ihre bisherigen Filter zurück. Siehe
 [Anwenderhandbuch 4.11](USER_GUIDE.de.md#411-mehrere-datensätze-ändern-sammeländerung).

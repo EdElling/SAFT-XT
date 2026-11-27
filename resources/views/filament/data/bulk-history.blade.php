@@ -9,6 +9,7 @@
         .saft-bulk-history .muted { color: var(--gray-500); }
         .saft-bulk-history .num { text-align: right; white-space: nowrap; }
         .saft-bulk-history .nowrap { white-space: nowrap; }
+        .saft-bulk-history .links { display: flex; flex-direction: column; gap: .25rem; align-items: flex-start; }
     </style>
 
     @if ($rows === [])
@@ -36,7 +37,14 @@
                             @endif
                         </td>
                         <td class="num">{{ $row['count'] }}</td>
-                        <td class="nowrap">
+                        <td class="nowrap"><div class="links">
+                            {{-- B-170: Datensätze der Sammelaktion als vorübergehende Ansicht der Liste. --}}
+                            <x-filament::link
+                                :href="$row['records']"
+                                icon="heroicon-o-funnel"
+                                color="gray"
+                                data-bulk-records="{{ $row['id'] }}"
+                            >{{ __('data.bulk.view.show') }}</x-filament::link>
                             @if ($row['undoable'])
                                 <x-filament::link
                                     tag="button"
@@ -46,6 +54,7 @@
                                     data-bulk-undo="{{ $row['id'] }}"
                                 >{{ __('data.bulk.undo.action') }}</x-filament::link>
                             @endif
+                        </div>
                         </td>
                     </tr>
                 @endforeach

@@ -40,6 +40,8 @@
    - [La modifica multipla segnala «Nulla modificato».](#la-modifica-multipla-segnala-nulla-modificato)
    - [Nella modifica multipla alcuni record sono rimasti invariati.](#nella-modifica-multipla-alcuni-record-sono-rimasti-invariati)
    - [Come annullo una modifica multipla?](#come-annullo-una-modifica-multipla)
+   - [Come esporto solo alcuni record?](#come-esporto-solo-alcuni-record)
+   - [Quali record ha modificato una modifica multipla?](#quali-record-ha-modificato-una-modifica-multipla)
 
 ---
 ## Domande frequenti
@@ -132,8 +134,8 @@ utente, sezione 4.10). Se un documento deve davvero sparire, chiedete a qualcuno
 
 Le caselle di spunta per selezionare più record appaiono solo se esiste un’azione di gruppo che potete usare:
 **«Modifica …»** (diritto *Modificare*, e l’amministrazione consente la modifica multipla per la tabella; manuale utente,
-sezione 4.11), **«Elimina selezionati»** (diritto *Eliminare*) o **«Crea documenti»** (modello di documento attivo e
-diritto *Documenti: generare*; sezione 4.10). Le tabelle collegate non hanno la modifica multipla.
+sezione 4.11), **«Elimina selezionati»** (diritto *Eliminare*), **«Esporta selezione»** (diritto *Esportare* ed esportazione abilitata per la tabella; sezione 4.7) o **«Crea documenti»** (modello di documento attivo e
+diritto *Documenti: generare*; sezione 4.10). Le tabelle collegate non hanno la modifica multipla, ma hanno «Esporta selezione».
 
 ### Non è stato possibile inviare un documento per e-mail.
 
@@ -239,4 +241,20 @@ ha nel frattempo un altro valore restano e il messaggio li indica. Se il pulsant
 annullato»), tutti i record sono stati modificati nel frattempo, spesso da una modifica multipla successiva: annullate
 prima quella. I numeri assegnati e le e-mail inviate restano. Solo chi può vedere il registro delle modifiche annulla le
 modifiche multiple di altre persone. Vedi
+[Manuale utente 4.11](USER_GUIDE.it.md#411-modificare-più-record-modifica-multipla).
+
+### Come esporto solo alcuni record?
+
+Selezionate i record all’inizio delle righe e scegliete **«Esporta selezione»** (Excel o CSV) nella barra sopra la
+tabella. Il file contiene solo i record selezionati, nell’ordine dell’elenco e con le colonne visibili. Per selezionare
+su tutte le pagine usate la casella nell’intestazione e **«Seleziona tutti N»**; poi se ne possono deselezionare
+singoli. «Esporta» in alto esporta invece tutti i risultati del filtro. Vedi
+[Manuale utente 4.7](USER_GUIDE.it.md#47-esportare-i-dati).
+
+### Quali record ha modificato una modifica multipla?
+
+Aprite **«Ultime modifiche multiple»** sopra la tabella e cliccate su **«Mostra record»** accanto alla modifica
+multipla (il link è anche nella conferma «Annulla»). L’elenco mostra allora esattamente quei record, con un’etichetta
+«Modifica multipla del …» sopra la tabella. La vista salvata resta: la ✕ sull’etichetta o «Reimposta vista» riporta i
+filtri precedenti. Vedi
 [Manuale utente 4.11](USER_GUIDE.it.md#411-modificare-più-record-modifica-multipla).

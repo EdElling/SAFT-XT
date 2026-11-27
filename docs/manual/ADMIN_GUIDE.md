@@ -237,7 +237,8 @@ values apply to all languages.
 
 **Allow export:** This switch in the master data of the table allows export (see [User guide 4.7](USER_GUIDE.md#47-exporting-data)). It is
 initially off. Even super admins only see "Export" once it is on; everyone else also needs the **Export**
-permission in their role.
+permission in their role. Whoever may export also sees the checkboxes for selecting in the list and **“Export
+selection”** for the selected records, even without the **Edit** permission.
 
 **Allow import:** This switch allows data import – new records from an Excel or CSV file, e.g. from a downloaded
 template (see [User guide 4.8](USER_GUIDE.md#48-importing-data)). It is initially off. Then "Import" appears in the
@@ -749,7 +750,8 @@ switched on; it ships switched off, and the dashboard points out entries older t
 - **Filters:** user, event, object type, period. The events are: created, updated, deleted, restored, sign-in,
   sign-in failed, sign-out, exported, document generated (with template, file name and checksum SHA-256) and document
   sent (also with recipient, subject and copy).
-- **Exports:** table, format, number of rows, filter and search are recorded, never the exported data.
+- **Exports:** table, format, number of rows, filter and search are recorded, for “Export selection” also
+  “selection”, never the exported data.
 - **User:** "System" only appears where really no user was involved. Deleted users appear with their name and
   "(deleted)", permanently deleted ones as "Deleted user #12".
 - **Detail view:** in form width; for changes a table with all changed fields (before → after), for creation and

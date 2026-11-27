@@ -60,6 +60,7 @@ final class BulkUndoActions
                     'count' => $head->count,
                     'state' => self::state($head),
                     'undoable' => BulkChangeAccess::canUndo(self::user(), $head),
+                    'records' => DynamicDataPage::urlFor($table->name, bulk: $head->id),
                 ])->all(),
                 'action' => self::UNDO,
             ]))
@@ -104,6 +105,7 @@ final class BulkUndoActions
                 'count' => $found->count,
                 'hints' => self::hints($found, $table),
                 'preview' => $preview($arguments),
+                'records' => DynamicDataPage::urlFor($table->name, bulk: $found->id),
             ]))
             // Knopf mit der Zahl, die zurückkommt; gesperrt, wenn nachweislich keiner (Vorschau über alle).
             ->modalSubmitActionLabel(static function (array $arguments) use ($preview): string {

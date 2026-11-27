@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Builder;
  * Schlüssel werden in einem Durchgang gelesen (ein Schritt).
  *
  * Parameter: table_id, fields (Namen in Spaltenreihenfolge), format, title, query (serialisiert), rows (gezählt beim
- * Start), file (Dateiname), filter und search (fürs Protokoll).
+ * Start), file (Dateiname), filter, search und selected (nur ausgewählte Datensätze, B-133 S4a; fürs Protokoll).
  */
 final readonly class ExportWork implements WorkType
 {
@@ -121,6 +121,7 @@ final readonly class ExportWork implements WorkType
                 'zeilen' => $rows,
                 'filter' => (array) ($step->parameters['filter'] ?? []),
                 'suche' => (string) ($step->parameters['search'] ?? ''),
+                ...(($step->parameters['selected'] ?? false) ? ['auswahl' => true] : []),
             ]])
             ->log('exported');
 

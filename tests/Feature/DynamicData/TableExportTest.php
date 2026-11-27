@@ -508,4 +508,110 @@ class TableExportTest extends DynamicDataTestCase
         $this->assertSame(['Titel', 'Status', 'Budget', 'Menge', 'Aktiv', 'Start', 'Kunde'], str_getcsv(explode("\n", substr($content, 3))[0], ';', '"', ''));
         $this->assertStringContainsString("\nC;", $content);
     }
+
+    private function selectedAction(string $format): TestAction
+    {
+        return TestAction::make('exportSelected_'.$format)->table()->bulk();
+    }
+
+    /** B-133 S4a: nur die ausgewählten, in der Sortierung der Tabelle, Spalten wie beim Export; im Protokoll vermerkt. */
+    public function test_selected_export_contains_only_the_selection_in_table_order(): void
+    {
+        $ids = [];
+
+        foreach (['B', 'D', 'A', 'C'] as $titel) {
+            $ids[$titel] = (string) $this->record(['titel' => $titel, 'status' => 'offen'])->getKey();
+        }
+
+        $this->actingAs($this->userWithPermissions(self::ALL_RIGHTS));
+
+        $rows = $this->csvRows($this->page()
+            ->sortTable('titel', 'asc')
+            ->selectTableRecords([$ids['D'], $ids['A'], $ids['C']])
+            ->callAction($this->selectedAction('csv')));
+
+        $this->assertSame(['Titel', 'Status', 'Budget', 'Menge', 'Aktiv', 'Start', 'Kunde'], $rows[0]);
+        $this->assertSame(['A', 'C', 'D'], array_column(array_slice($rows, 1), 0));
+
+        $entry = Activity::query()->where('event', 'exported')->sole();
+        $this->assertTrue($entry->attribute_changes->get('attributes')['auswahl']);
+        $this->assertSame(3, $entry->attribute_changes->get('attributes')['zeilen']);
+    }
+
+    /** „Alle auswählen“ über alle Seiten und einzelne abwählen: Filter und Suche minus die abgewählten. */
+    public function test_selected_export_over_all_pages_without_deselected_records(): void
+    {
+        $ids = [];
+
+        foreach (range(1, 25) as $i) {
+            $ids[$i] = (string) $this->record(['titel' => sprintf('Treffer %02d', $i), 'status' => 'offen'])->getKey();
+        }
+        $this->record(['titel' => 'Treffer fertig', 'status' => 'fertig']);
+
+        $this->actingAs($this->userWithPermissions(self::ALL_RIGHTS));
+
+        $rows = $this->csvRows($this->page()
+            ->filterTable('status', ['offen'])
+            ->sortTable('titel', 'asc')
+            ->set('isTrackingDeselectedTableRecords', true)
+            ->set('deselectedTableRecords', [$ids[3], $ids[20]])
+            ->callAction($this->selectedAction('csv')));
+
+        $this->assertCount(24, $rows, 'Kopfzeile und 23 Datensätze');
+        $titles = array_column(array_slice($rows, 1), 0);
+        $this->assertNotContains('Treffer 03', $titles);
+        $this->assertNotContains('Treffer 20', $titles);
+        $this->assertNotContains('Treffer fertig', $titles, 'Der Filter gilt auch bei „alle auswählen“');
+        $this->assertSame('Treffer 01', $titles[0]);
+    }
+
+    public function test_selected_export_needs_export_right_and_setting_but_not_bulk_edit(): void
+    {
+        $id = (string) $this->record()->getKey();
+
+        $this->actingAs($this->userWithPermissions(self::ALL_RIGHTS));
+        $this->page()->assertActionVisible($this->selectedAction('xlsx'))
+            ->assertActionHidden(TestAction::make('bulkEdit')->table()->bulk());
+        $this->assertArrayHasKey('download', $this->page()->selectTableRecords([$id])->callAction($this->selectedAction('xlsx'))->effects);
+
+        $this->actingAs($this->userWithPermissions(['data.projekte.view']));
+        $this->page()->assertActionHidden($this->selectedAction('xlsx'));
+
+        $this->service()->updateTable($this->projekte, ['export_enabled' => false]);
+        $this->actingAs($this->userWithPermissions(self::ALL_RIGHTS));
+        $this->page()->assertActionHidden($this->selectedAction('xlsx'));
+    }
+
+    public function test_selected_export_respects_the_export_limit(): void
+    {
+        config(['dynamic_data.export_max_rows' => 2]);
+        $ids = [(string) $this->record()->getKey(), (string) $this->record()->getKey(), (string) $this->record()->getKey()];
+
+        $this->actingAs($this->userWithPermissions(self::ALL_RIGHTS));
+
+        $component = $this->page()->selectTableRecords($ids)->callAction($this->selectedAction('csv'))->assertNotified('Export zu gross');
+        $this->assertArrayNotHasKey('download', $component->effects);
+        $this->assertArrayHasKey('download', $this->page()->selectTableRecords([$ids[0], $ids[1]])->callAction($this->selectedAction('csv'))->effects);
+    }
+
+    public function test_detail_table_exports_selected_child_records(): void
+    {
+        $this->service()->updateTable($this->kunden, ['detail_field_ids' => [$this->fieldId('projekte', 'kunde_id')]]);
+        $kunde = DynamicRecord::forTable($this->kunden)->create(['firma' => 'Mein']);
+        $eins = $this->record(['titel' => 'Eins', 'kunde_id' => $kunde->id]);
+        $this->record(['titel' => 'Zwei', 'kunde_id' => $kunde->id]);
+
+        $this->actingAs($this->userWithPermissions(['data.kunden.view', ...self::ALL_RIGHTS]));
+
+        $rows = $this->csvRows(Livewire::test(DynamicDetailTable::class, [
+            'parentTable' => 'kunden',
+            'parentId' => $kunde->id,
+            'relationFieldId' => $this->fieldId('projekte', 'kunde_id'),
+            'level' => 1,
+        ])->selectTableRecords([(string) $eins->getKey()])->callAction($this->selectedAction('csv')));
+
+        $this->assertCount(2, $rows);
+        $this->assertSame('Eins', $rows[1][0]);
+        $this->assertNotContains('Kunde', $rows[0]);
+    }
 }

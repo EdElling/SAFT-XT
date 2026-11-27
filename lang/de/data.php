@@ -64,6 +64,8 @@ return [
         'label' => 'Exportieren',
         'too_large' => 'Export zu gross',
         'too_large_body' => 'Die Auswahl enthält :rows Datensätze, exportiert werden können höchstens :limit. Schränken Sie die Auswahl mit Filter oder Suche ein.',
+        'too_large_selected' => 'Ausgewählt sind :rows Datensätze, exportiert werden können höchstens :limit. Wählen Sie weniger Datensätze aus.',
+        'selected' => 'Auswahl exportieren',
     ],
     'history' => [
         'label' => 'Verlauf',
@@ -195,6 +197,12 @@ return [
         'hints' => [
             'number_kept' => '{1} Bei 1 Datensatz steht schon eine Nummer in „:number“; sie bleibt, auch wenn sich :fields ändert.|[2,*] Bei :count Datensätzen steht schon eine Nummer in „:number“; sie bleibt, auch wenn sich :fields ändert.',
             'number_assigned' => ':fields steuert „Vergeben, wenn“ des Nummernkreises „:number“: Beim Speichern können Nummern vergeben werden, in der Reihenfolge der Schlüssel.',
+        ],
+        // B-170: Datensätze einer Sammelaktion als vorübergehende Ansicht.
+        'view' => [
+            'show' => 'Datensätze anzeigen',
+            'indicator' => 'Sammeländerung vom :when: :what (:count)',
+            'missing' => 'Diese Sammeländerung gibt es nicht mehr oder Sie dürfen sie nicht sehen.',
         ],
         'undo' => [
             'history' => 'Letzte Sammeländerungen',

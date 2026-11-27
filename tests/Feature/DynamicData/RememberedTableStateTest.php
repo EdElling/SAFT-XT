@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\DynamicData;
 
 use App\Filament\Pages\DynamicDataPage;
+use App\Models\BulkChange;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\UserTableColumn;
@@ -37,7 +38,8 @@ class RememberedTableStateTest extends DynamicDataTestCase
 
     private function page(): Testable
     {
-        return Livewire::test(DynamicDataPage::class, ['table' => 'projekte']);
+        // Ohne Adressparameter: Livewire behält die von withQueryParams() für spätere Aufrufe im selben Test.
+        return Livewire::withQueryParams([])->test(DynamicDataPage::class, ['table' => 'projekte']);
     }
 
     public function test_view_survives_a_new_session(): void
@@ -178,5 +180,66 @@ class RememberedTableStateTest extends DynamicDataTestCase
             ->assertActionVisible(TestAction::make('resetTableView')->table());
 
         $this->assertSame('alp', UserTableState::stateFor($admin->id, $page->instance()->rememberedTableKey())['search'] ?? null, 'Gemerkte Ansicht bleibt gespeichert.');
+    }
+
+    /** Kopf einer Sammeländerung über Alpha (B-170), als angemeldete Person. */
+    private function bulkHead(): BulkChange
+    {
+        return BulkChange::recordRun('bulk:test', $this->projekte, BulkChange::UPDATE, [$this->alpha->getKey()], ['anzahl' => ['op' => 'set', 'value' => 3]]);
+    }
+
+    /** Vorübergehende Ansicht (B-170): eigener Stand, nichts gespeichert, Beenden stellt den gespeicherten wieder her. */
+    public function test_transient_view_is_not_saved_and_ending_it_restores_the_saved_view(): void
+    {
+        $this->actingAs($admin = $this->superAdmin());
+        $key = $this->page()->filterTable('status', ['erledigt'])->sortTable('anzahl', 'desc')->instance()->rememberedTableKey();
+        $saved = UserTableState::stateFor($admin->id, $key);
+
+        $transient = Livewire::withQueryParams(['bulk' => $this->bulkHead()->id])->test(DynamicDataPage::class, ['table' => 'projekte'])
+            ->assertSet('transientTableView', true)
+            ->assertSet('tableSort', 'anzahl:desc')
+            ->assertCanSeeTableRecords([$this->alpha])
+            ->assertCanNotSeeTableRecords([$this->beta])
+            ->assertActionVisible('resetTableView')
+            ->searchTable('Alp')
+            ->filterTable('status', ['offen']);
+
+        $this->assertSame($saved, UserTableState::stateFor($admin->id, $key), 'In der vorübergehenden Ansicht wird nichts gespeichert.');
+
+        $transient->call('endTransientTableView')->assertRedirect(DynamicDataPage::urlFor('projekte'));
+
+        $this->page()
+            ->assertSet('transientTableView', false)
+            ->assertSet('tableSearch', '')
+            ->assertCanSeeTableRecords([$this->beta])
+            ->assertCanNotSeeTableRecords([$this->alpha]);
+    }
+
+    public function test_leaving_a_transient_view_restores_the_saved_view(): void
+    {
+        $this->actingAs($this->superAdmin());
+        $this->page()->filterTable('status', ['erledigt']);
+
+        Livewire::withQueryParams(['bulk' => $this->bulkHead()->id])->test(DynamicDataPage::class, ['table' => 'projekte'])
+            ->assertCanSeeTableRecords([$this->alpha]);
+
+        // Ohne „Beenden“ zu einer anderen Seite und zurück: die Liste zeigt wieder den gespeicherten Stand.
+        $this->page()
+            ->assertSet('transientTableView', false)
+            ->assertCanSeeTableRecords([$this->beta])
+            ->assertCanNotSeeTableRecords([$this->alpha]);
+    }
+
+    public function test_remove_all_filters_and_reset_end_the_transient_view(): void
+    {
+        $this->actingAs($admin = $this->superAdmin());
+        $key = $this->page()->searchTable('Bet')->instance()->rememberedTableKey();
+        $head = $this->bulkHead();
+        $open = fn () => Livewire::withQueryParams(['bulk' => $head->id])->test(DynamicDataPage::class, ['table' => 'projekte']);
+
+        $open()->call('removeTableFilters')->assertRedirect(DynamicDataPage::urlFor('projekte'));
+        $open()->callTableAction('resetTableView')->assertRedirect(DynamicDataPage::urlFor('projekte'));
+
+        $this->assertSame('Bet', UserTableState::stateFor($admin->id, $key)['search'] ?? null, '„Zurücksetzen“ beendet nur die vorübergehende Ansicht.');
     }
 }

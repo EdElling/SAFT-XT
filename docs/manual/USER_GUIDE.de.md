@@ -405,6 +405,13 @@ einige hundert Zeilen pro Sekunde. Pro Export sind standardmässig höchstens 50
 Administration kann die Grenze ändern oder aufheben); bei mehr Treffern erscheint ein Hinweis, und es wird keine Datei
 erstellt – schränken Sie die Auswahl dann mit Filter oder Suche ein.
 
+**Nur ausgewählte Datensätze:** Setzen Sie die Häkchen am Zeilenanfang (auch über alle Seiten mit **„Alle N
+Datensätze auswählen“**, einzelne lassen sich danach wieder abwählen) und wählen Sie in der Leiste über der Tabelle
+**„Auswahl exportieren“**. Die Datei enthält dann nur die ausgewählten Datensätze, die der Filter zeigt, in der
+Sortierung der Liste und mit denselben Spalten und Formaten wie oben; es gilt dieselbe Grenze. Das geht auch in
+Detailtabellen und bei angebundenen Tabellen. Die Häkchen erscheinen, sobald Sie exportieren dürfen, auch ohne das Recht
+*Bearbeiten*.
+
 > **Datenschutz:** Jeder Export wird im Änderungsprotokoll festgehalten. Die exportierte Datei selbst unterliegt
 > danach aber keiner Rechteprüfung mehr. Gehen Sie entsprechend sorgfältig mit ihr um.
 
@@ -694,6 +701,13 @@ mehrmals geändert, nehmen Sie zuerst die letzte Sammeländerung zurück. Auch e
 Vergebene Nummern, Folgen über Plugins und versendete E-Mails bleiben. Eigene Sammeländerungen nehmen Sie mit dem Recht
 *Bearbeiten* (bzw. *Löschen*) zurück, die anderer Personen nur mit dem Recht, das Änderungsprotokoll zu sehen. Wird das
 Änderungsprotokoll gekürzt, verschwinden ältere Sammeländerungen auch aus der Liste.
+
+**Datensätze anzeigen:** Der Link **„Datensätze anzeigen“** in „Letzte Sammeländerungen“ und in der Bestätigung
+„Rückgängig“ öffnet die Liste mit genau den Datensätzen dieser Sammeländerung, bei Personen mit dem Recht *Löschen* auch
+die inzwischen gelöschten. Ein Kärtchen über der Tabelle zeigt „Sammeländerung vom …“. Sie können darin sortieren,
+weiter filtern, die Auswahl exportieren oder erneut ändern. Diese Ansicht wird nicht gespeichert: Das ✕ am Kärtchen,
+**„Alle Filter löschen“** oder **„Ansicht zurücksetzen“** führt zurück zu Ihrer gespeicherten Ansicht mit Ihren
+bisherigen Filtern, ebenso der nächste Aufruf der Tabelle über das Menü.
 
 Den Knopf „Ändern …“ sehen Sie mit dem Recht *Bearbeiten*, wenn die Administration die Sammeländerung für die Tabelle
 erlaubt. Höchstens 5'000 Datensätze je Sammeländerung, sofern die Administration nichts anderes einstellt.

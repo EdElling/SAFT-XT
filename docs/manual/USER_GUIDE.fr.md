@@ -417,6 +417,13 @@ traite quelques centaines de lignes par seconde. Par défaut, un export comprend
 (l’administration peut modifier ou lever la limite) ; s’il y a plus de résultats, un avertissement s’affiche et aucun
 fichier n’est créé – restreignez alors la sélection avec un filtre ou la recherche.
 
+**Uniquement les enregistrements sélectionnés :** cochez les cases en début de ligne (aussi sur toutes les pages
+avec **« Sélectionner tout (N) »** ; vous pouvez ensuite en décocher certains) et choisissez
+**« Exporter la sélection »** dans la barre au-dessus du tableau. Le fichier ne contient alors que les enregistrements
+sélectionnés que le filtre affiche, dans l’ordre de la liste et avec les mêmes colonnes et formats que ci-dessus ; la
+même limite s’applique. Cela fonctionne aussi dans les tableaux de détail et pour les tables connectées. Les cases
+apparaissent dès que vous avez le droit d’exporter, même sans le droit *Modifier*.
+
 > **Protection des données :** chaque export est consigné dans le journal des modifications. Le fichier exporté
 > n’est cependant plus soumis à aucun contrôle des droits. Manipulez-le donc avec soin.
 
@@ -727,6 +734,14 @@ modification groupée. Une annulation peut elle-même être annulée. Les numér
 e-mails envoyés restent. Vous annulez vos propres modifications groupées avec le droit *Modifier* (ou *Supprimer*),
 celles d’autres personnes seulement avec le droit de voir le journal des modifications. Quand le journal des
 modifications est raccourci, les modifications groupées plus anciennes disparaissent aussi de la liste.
+
+**Afficher les enregistrements :** le lien **« Afficher les enregistrements »** dans « Dernières modifications
+groupées » et dans la confirmation « Annuler » ouvre la liste avec exactement les enregistrements de cette modification
+groupée ; les personnes ayant le droit *Supprimer* voient aussi ceux supprimés depuis. Une étiquette au-dessus du
+tableau indique « Modification groupée du … ». Vous pouvez y trier, filtrer davantage, exporter la sélection ou la
+modifier à nouveau. Cette vue n’est pas enregistrée : le ✕ de l’étiquette, **« Supprimer tous les filtres »** ou
+**« Réinitialiser la vue »** vous ramènent à votre vue enregistrée avec vos filtres précédents, tout comme la prochaine
+ouverture du tableau depuis le menu.
 
 Vous voyez le bouton « Modifier … » avec le droit *Modifier* si l’administration autorise la modification groupée pour
 la table. Au maximum 5 000 enregistrements par modification groupée, sauf réglage contraire de l’administration.

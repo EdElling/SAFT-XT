@@ -8,6 +8,7 @@ use App\Models\UserTableState;
 use Filament\Actions\Action;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Locked;
 
 /**
  * Filter, Sortierung, Suche und Zeilen pro Seite einer Filament-Tabelle je Person dauerhaft speichern (B-027,
@@ -18,14 +19,26 @@ use Illuminate\Support\Str;
  *
  * Voraussetzung: Die Tabelle hält Filter, Suche, Spaltensuche und Sortierung in der Sitzung
  * (AppServiceProvider::boot) und die Seite nennt ihren Tabellen-Bezeichner schon vor dem Aufbau.
+ *
+ * **Vorübergehende Ansicht** (B-170, BULK_EDIT.md §14): Ein Link kann die Tabelle mit einem eigenen Stand öffnen, z. B.
+ * gefiltert auf die Datensätze einer Sammeländerung, später Sprunglinks mit Filterdefinition (AI_AGENTS.md V5). Solange
+ * sie gilt, wird nichts gespeichert; endTransientTableView() oder ein Aufruf der Seite ohne den Link verwirft den
+ * Stand der Sitzung und lädt den gespeicherten neu.
  */
 trait RemembersTableState
 {
+    /** Gilt gerade eine vorübergehende Ansicht? Dann wird der Stand nicht gespeichert. */
+    #[Locked]
+    public bool $transientTableView = false;
+
     /** Teile des Stands, mit Filaments Namen in der Sitzung. */
     private static array $rememberedParts = ['filters', 'search', 'column_search', 'sort', 'per_page'];
 
     /** Bezeichner der Tabelle wie in table()->identifier(), schon vor dem Aufbau der Tabelle bekannt. */
     abstract protected function rememberedTableIdentifier(): string;
+
+    /** Adresse der Seite ohne vorübergehende Ansicht; dorthin führt endTransientTableView(). */
+    abstract protected function rememberedTableUrl(): string;
 
     public function rememberedTableKey(): string
     {
@@ -43,6 +56,53 @@ trait RemembersTableState
         return 'saft.table_state.'.hash('sha256', $this->rememberedTableKey());
     }
 
+    /** Merker in der Sitzung: Ihr Stand stammt aus einer vorübergehenden Ansicht und gehört nicht der Person. */
+    private function transientSessionKey(): string
+    {
+        return 'saft.table_transient.'.hash('sha256', $this->rememberedTableKey());
+    }
+
+    /**
+     * Vorübergehende Ansicht beginnen – statt restoreRememberedTableState() aus mount() aufrufen. Filter, Suche und
+     * Spaltensuche kommen aus $parts (fehlende sind leer), Sortierung und Zeilen pro Seite aus dem gespeicherten Stand.
+     *
+     * @param  array<string, mixed>  $parts  Teile wie in der Sitzung, z. B. ['filters' => [...]]
+     */
+    protected function startTransientTableView(array $parts): void
+    {
+        $userId = Auth::id();
+        $saved = $userId === null ? [] : (UserTableState::stateFor((int) $userId, $this->rememberedTableKey()) ?? []);
+        $state = [...$saved, 'filters' => null, 'search' => null, 'column_search' => null, ...$parts];
+
+        foreach (self::$rememberedParts as $part) {
+            ($state[$part] ?? null) === null
+                ? session()->forget($this->rememberedSessionKey($part))
+                : session()->put($this->rememberedSessionKey($part), $state[$part]);
+        }
+
+        session()->forget($this->rememberedHashKey());
+        session()->put($this->transientSessionKey(), true);
+        $this->transientTableView = true;
+    }
+
+    /** Vorübergehende Ansicht beenden: Stand der Sitzung verwerfen und die Seite mit dem gespeicherten Stand laden. */
+    public function endTransientTableView(): void
+    {
+        // Der Merker bleibt bis zur Weiterleitung stehen: Sonst speicherte das Ende dieser Anfrage den vorübergehenden
+        // Stand über den gemerkten.
+        $this->forgetTransientTableState();
+        $this->redirect($this->rememberedTableUrl());
+    }
+
+    private function forgetTransientTableState(): void
+    {
+        foreach (self::$rememberedParts as $part) {
+            session()->forget($this->rememberedSessionKey($part));
+        }
+
+        session()->forget([$this->rememberedHashKey(), $this->transientSessionKey()]);
+    }
+
     /**
      * Gespeicherten Stand in die Sitzung übernehmen – aus mount() der Seite aufrufen, sobald der Bezeichner feststeht;
      * das läuft vor bootedInteractsWithTable(), das die Sitzung liest.
@@ -53,6 +113,11 @@ trait RemembersTableState
 
         if ($userId === null) {
             return;
+        }
+
+        // Stand einer verlassenen vorübergehenden Ansicht gehört nicht der Person.
+        if (session()->has($this->transientSessionKey())) {
+            $this->forgetTransientTableState();
         }
 
         foreach (self::$rememberedParts as $part) {
@@ -76,7 +141,7 @@ trait RemembersTableState
     {
         $userId = Auth::id();
 
-        if ($userId === null) {
+        if ($userId === null || $this->transientTableView) {
             return;
         }
 
@@ -136,8 +201,15 @@ trait RemembersTableState
             ->tooltip(__('data.reset_view_help'))
             ->icon('heroicon-o-arrow-uturn-left')
             ->color('gray')
-            ->visible(fn (): bool => $this->hasRememberedTableState())
+            ->visible(fn (): bool => $this->transientTableView || $this->hasRememberedTableState())
             ->action(function (): void {
+                // In einer vorübergehenden Ansicht zurück zum gespeicherten Stand, nicht zur Vorgabe.
+                if ($this->transientTableView) {
+                    $this->endTransientTableView();
+
+                    return;
+                }
+
                 $this->resetTableFiltersForm();
                 $this->resetTableSearch();
                 $this->resetTableColumnSearches();

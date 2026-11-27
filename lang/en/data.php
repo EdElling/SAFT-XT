@@ -64,6 +64,8 @@ return [
         'label' => 'Export',
         'too_large' => 'Export too large',
         'too_large_body' => 'The selection contains :rows records, at most :limit can be exported. Narrow the selection with filters or search.',
+        'too_large_selected' => 'You selected :rows records, at most :limit can be exported. Select fewer records.',
+        'selected' => 'Export selection',
     ],
     'history' => [
         'label' => 'History',
@@ -195,6 +197,12 @@ return [
         'hints' => [
             'number_kept' => '{1} 1 record already has a number in “:number”; it stays even if :fields changes.|[2,*] :count records already have a number in “:number”; it stays even if :fields changes.',
             'number_assigned' => ':fields controls “Assign when” of the number sequence “:number”: saving may assign numbers, in key order.',
+        ],
+        // B-170: Datensätze einer Sammelaktion als vorübergehende Ansicht.
+        'view' => [
+            'show' => 'Show records',
+            'indicator' => 'Bulk edit of :when: :what (:count)',
+            'missing' => 'This bulk edit no longer exists or you are not allowed to see it.',
         ],
         'undo' => [
             'history' => 'Recent bulk edits',

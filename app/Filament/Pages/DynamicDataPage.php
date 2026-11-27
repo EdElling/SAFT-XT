@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Apps\CurrentApp;
+use App\DynamicData\Bulk\BulkChangeFilter;
 use App\DynamicData\Cascade\CascadePath;
 use App\DynamicData\Cascade\CascadeResolver;
 use App\DynamicData\CustomTableLookup;
@@ -32,6 +33,7 @@ use App\Models\User;
 use App\Plugins\Api\DataAction;
 use App\Plugins\PluginRegistry;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Panel;
 use Filament\Schemas\Components\Callout;
@@ -70,6 +72,7 @@ class DynamicDataPage extends Page implements HasTable
     use InteractsWithTable, RemembersTableColumns {
         getTableRecordKey as private filamentTableRecordKey;
         resolveTableRecord as private filamentResolveTableRecord;
+        removeTableFilters as private filamentRemoveTableFilters;
         RemembersTableColumns::loadTableColumnsFromSession insteadof InteractsWithTable;
         RemembersTableColumns::persistTableColumns insteadof InteractsWithTable;
     }
@@ -89,6 +92,10 @@ class DynamicDataPage extends Page implements HasTable
     /** Auswahlpfad der Kaskade (?sel=…), wird bei jeder Darstellung geprüft. */
     #[Url(as: 'sel')]
     public ?string $selection = null;
+
+    /** Vorübergehende Ansicht der Datensätze einer Sammeländerung (?bulk=<Kopf>, B-170); geprüft beim Öffnen. */
+    #[Url(as: 'bulk')]
+    public ?int $bulkHead = null;
 
     /** Meldung, wenn die externe Datenbank einer angebundenen Tabelle nicht erreichbar ist. */
     #[Locked]
@@ -110,11 +117,19 @@ class DynamicDataPage extends Page implements HasTable
         return 'data';
     }
 
-    public static function urlFor(string $table, int|string|null $record = null, ?int $viewId = null): string
+    /**
+     * @param  int|null  $bulk  Kopf einer Sammelaktion: öffnet die Liste als vorübergehende Ansicht mit ihren Datensätzen
+     */
+    public static function urlFor(string $table, int|string|null $record = null, ?int $viewId = null, ?int $bulk = null): string
     {
         $selection = $record === null ? null : CascadePath::formatKey($record);
 
-        return static::getUrl(array_filter(['table' => $table, 'view' => $viewId, 'sel' => $selection], fn ($v) => $v !== null));
+        return static::getUrl(array_filter(['table' => $table, 'view' => $viewId, 'sel' => $selection, 'bulk' => $bulk], fn ($v) => $v !== null));
+    }
+
+    protected function rememberedTableUrl(): string
+    {
+        return static::urlFor($this->tableName, null, $this->viewId);
     }
 
     public function mount(string $table): void
@@ -126,11 +141,48 @@ class DynamicDataPage extends Page implements HasTable
         abort_unless(DataAccess::current($customTable, 'view'), 403);
         // Link auf eine Tabelle einer anderen App: in diese App wechseln (B-107).
         app(CurrentApp::class)->follow(($user = auth()->user()) instanceof User ? $user : null, $customTable->app_id);
-        $this->restoreRememberedTableState();
+        $this->openTableView($customTable);
 
         if ($customTable->isExternal()) {
             $this->unavailable = $this->checkExternal($customTable);
         }
+    }
+
+    /**
+     * Gespeicherten Stand laden oder, mit ?bulk=<Kopf>, die Datensätze einer Sammelaktion als vorübergehende Ansicht
+     * zeigen (B-170): nur dieser Filter, ohne Suche, nicht gespeichert. Ein unbekannter oder fremder Kopf wird gemeldet.
+     */
+    private function openTableView(CustomTable $customTable): void
+    {
+        if ($this->bulkHead === null) {
+            $this->restoreRememberedTableState();
+
+            return;
+        }
+
+        $head = BulkChangeFilter::head($customTable, $this->bulkHead);
+
+        if ($head === null) {
+            $this->bulkHead = null;
+            $this->restoreRememberedTableState();
+            Notification::make()->warning()->title(__('data.bulk.view.missing'))->send();
+
+            return;
+        }
+
+        $this->startTransientTableView(['filters' => BulkChangeFilter::state($head, $customTable)]);
+    }
+
+    /** „Alle Filter entfernen“ beendet eine vorübergehende Ansicht, statt ihren Filter nur zu leeren. */
+    public function removeTableFilters(): void
+    {
+        if ($this->transientTableView) {
+            $this->endTransientTableView();
+
+            return;
+        }
+
+        $this->filamentRemoveTableFilters();
     }
 
     /** Verbindung einmal aufbauen: lieber eine klare Meldung als ein Fehler mitten in der Tabelle. */
@@ -245,7 +297,12 @@ class DynamicDataPage extends Page implements HasTable
             ->columns($builder->columns($customTable, $columns, toggleable: true))
             // Reihenfolge per Drag-and-Drop im Spalten-Menü, je Person gespeichert (RemembersTableColumns).
             ->reorderableColumns()
-            ->filters([...$builder->filters($customTable), TrashedFilter::make()->visible(! $external && DataAccess::current($customTable, 'delete'))])
+            ->filters([
+                ...$builder->filters($customTable),
+                TrashedFilter::make()->visible(! $external && DataAccess::current($customTable, 'delete')),
+                // B-170: Datensätze einer Sammelaktion, nur als vorübergehende Ansicht über ?bulk=<Kopf>.
+                ...($external ? [] : [BulkChangeFilter::make($customTable)]),
+            ])
             ->filtersFormColumns(3)
             // Designer-Tabellen: neueste zuerst; externe Tabellen in Schlüsselreihenfolge.
             ->defaultSort($sort, $external ? 'asc' : 'desc')
@@ -275,6 +332,7 @@ class DynamicDataPage extends Page implements HasTable
             // die gelöschten, die übrigen die nicht gelöschten).
             ->toolbarActions([
                 BulkRecordActions::edit($customTable),
+                DynamicRecordActions::exportSelected($customTable, $columns),
                 DynamicRecordActions::documentBulk($customTable),
                 BulkRecordActions::delete($customTable),
                 BulkRecordActions::restore($customTable),

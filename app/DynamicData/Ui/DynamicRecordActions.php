@@ -40,6 +40,7 @@ use App\Work\WorkService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -66,6 +67,7 @@ use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
 use Filament\Tables\Contracts\HasTable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -363,53 +365,91 @@ final class DynamicRecordActions
         return Action::make('export_'.$format->value)
             ->label($format->label())
             ->authorize(fn (): bool => DataAccess::canExport($table))
-            ->action(function (mixed $livewire) use ($format, $table, $visible, $except): ?StreamedResponse {
-                $query = $livewire->getFilteredSortedTableQuery();
-                $rows = (clone $query)->reorder()->count();
-                $limit = (int) config('dynamic_data.export_max_rows');
+            ->action(static fn (mixed $livewire): ?StreamedResponse => self::startExport($format, $table, $livewire->getFilteredSortedTableQuery(), $livewire, self::exportFields($livewire, $table, $visible, $except)));
+    }
 
-                if ($limit > 0 && $rows > $limit) {
-                    Notification::make()
-                        ->title(__('data.export.too_large'))
-                        ->body(__('data.export.too_large_body', ['rows' => Number::format($rows, locale: AppLocale::numberLocale()), 'limit' => Number::format($limit, locale: AppLocale::numberLocale())]))
-                        ->warning()
-                        ->send();
+    /**
+     * Export der ausgewählten Datensätze (B-133 S4a): Auswahl über alle Seiten, geschnitten mit Filter und Suche, ohne
+     * die abgewählten, in der Sortierung der Tabelle; Spalten und Grenze wie beim Export. Nur Tabellen mit einfachem
+     * Schlüssel (sonst gibt es keine Auswahl), auch angebundene, weil nur gelesen wird.
+     *
+     * @param  list<string>|null  $visible
+     * @param  list<string>  $except
+     */
+    public static function exportSelected(CustomTable $table, ?array $visible = null, array $except = []): BulkActionGroup
+    {
+        return BulkActionGroup::make(array_map(
+            static fn (ExportFormat $format): BulkAction => BulkAction::make('exportSelected_'.$format->value)
+                ->label($format->label())
+                ->visible(static fn (): bool => $table->hasSingleKey() && DataAccess::canExport($table))
+                ->authorize(static fn (): bool => DataAccess::canExport($table))
+                ->action(static fn (BulkAction $action, mixed $livewire): ?StreamedResponse => self::startExport(
+                    $format,
+                    $table,
+                    $action->getSelectedRecordsQuery(),
+                    $livewire,
+                    self::exportFields($livewire, $table, $visible, $except),
+                    selected: true,
+                )),
+            ExportFormat::cases(),
+        ))
+            ->label(__('data.export.selected'))
+            ->icon('heroicon-o-arrow-down-tray')
+            ->color('gray');
+    }
 
-                    return null;
-                }
+    /**
+     * Arbeit „Exportieren“ starten; kleine Mengen kommen gleich als Download, grössere leiten auf die Seite der Arbeit.
+     *
+     * @param  list<CustomField>  $fields
+     */
+    private static function startExport(ExportFormat $format, CustomTable $table, Builder $query, mixed $livewire, array $fields, bool $selected = false): ?StreamedResponse
+    {
+        $rows = (clone $query)->reorder()->count();
+        $limit = (int) config('dynamic_data.export_max_rows');
 
-                $table->loadMissing('fields');
-                $user = auth()->user() instanceof User ? auth()->user() : null;
-                $item = app(WorkService::class)->startAndAdvance(ExportWork::KEY, [
-                    'table_id' => $table->id,
-                    'fields' => array_map(static fn (CustomField $field): string => $field->name, self::exportFields($livewire, $table, $visible, $except)),
-                    'format' => $format->value,
-                    'title' => (string) $table->label,
-                    'query' => EloquentSerializeFacade::serialize($query),
-                    'rows' => $rows,
-                    'file' => $table->name.'_'.now()->format('Y-m-d_Hi').'.'.$format->value,
-                    'filter' => array_filter((array) $livewire->tableFilters, self::hasFilterValue(...)),
-                    'search' => (string) $livewire->getTableSearch(),
-                ], $user, app(CurrentApp::class)->id($user));
+        if ($limit > 0 && $rows > $limit) {
+            Notification::make()
+                ->title(__('data.export.too_large'))
+                ->body(__($selected ? 'data.export.too_large_selected' : 'data.export.too_large_body', ['rows' => Number::format($rows, locale: AppLocale::numberLocale()), 'limit' => Number::format($limit, locale: AppLocale::numberLocale())]))
+                ->warning()
+                ->send();
 
-                if ($item->status === WorkItem::DONE && ($file = $item->resultFile()) !== null) {
-                    $path = Storage::disk('local')->path($item->directory().'/'.$file);
+            return null;
+        }
 
-                    return response()->streamDownload(static function () use ($path): void {
-                        readfile($path);
-                    }, $file, ['Content-Type' => $format->contentType()]);
-                }
+        $table->loadMissing('fields');
+        $user = auth()->user() instanceof User ? auth()->user() : null;
+        $item = app(WorkService::class)->startAndAdvance(ExportWork::KEY, [
+            'table_id' => $table->id,
+            'fields' => array_map(static fn (CustomField $field): string => $field->name, $fields),
+            'format' => $format->value,
+            'title' => (string) $table->label,
+            'query' => EloquentSerializeFacade::serialize($query),
+            'rows' => $rows,
+            'file' => $table->name.'_'.now()->format('Y-m-d_Hi').'.'.$format->value,
+            'filter' => array_filter((array) $livewire->tableFilters, self::hasFilterValue(...)),
+            'search' => (string) $livewire->getTableSearch(),
+            'selected' => $selected,
+        ], $user, app(CurrentApp::class)->id($user));
 
-                if ($item->isOpen()) {
-                    $livewire->redirect(WorkItemResource::getUrl('view', ['record' => $item], panel: 'admin'));
+        if ($item->status === WorkItem::DONE && ($file = $item->resultFile()) !== null) {
+            $path = Storage::disk('local')->path($item->directory().'/'.$file);
 
-                    return null;
-                }
+            return response()->streamDownload(static function () use ($path): void {
+                readfile($path);
+            }, $file, ['Content-Type' => $format->contentType()]);
+        }
 
-                Notification::make()->danger()->title((string) $item->message)->persistent()->send();
+        if ($item->isOpen()) {
+            $livewire->redirect(WorkItemResource::getUrl('view', ['record' => $item], panel: 'admin'));
 
-                return null;
-            });
+            return null;
+        }
+
+        Notification::make()->danger()->title((string) $item->message)->persistent()->send();
+
+        return null;
     }
 
     /** Nur wirksame Filter protokollieren, das Filterformular enthält auch alle leeren. */

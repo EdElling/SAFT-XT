@@ -246,7 +246,8 @@ salvati valgono per tutte le lingue.
 
 **Consenti esportazione:** questo interruttore nei dati di base della tabella abilita l’esportazione (vedere
 [Guida utente 4.7](USER_GUIDE.it.md#47-esportare-i-dati)). All’inizio è disattivato. Anche i super-admin vedono
-«Esporta» solo quando è attivo; tutti gli altri hanno bisogno in più del diritto **Esportare** nel loro ruolo.
+«Esporta» solo quando è attivo; tutti gli altri hanno bisogno in più del diritto **Esportare** nel loro ruolo. Chi può esportare vede nell’elenco anche
+le caselle di spunta e **«Esporta selezione»** per i record selezionati, anche senza il diritto **Modificare**.
 
 **Consenti importazione:** questo interruttore abilita l’importazione dei dati – nuovi record da un file Excel o CSV,
 ad es. da un modello scaricato (vedere [Guida utente 4.8](USER_GUIDE.it.md#48-importare-i-dati)). All’inizio è
@@ -779,7 +780,8 @@ periodo impostato.
 - **Filtri:** utente, evento, tipo di oggetto, periodo. Gli eventi sono: creato, modificato, eliminato, ripristinato,
   accesso, accesso fallito, uscita, esportato, documento generato (con modello, nome del file e valore di controllo
   SHA-256) e documento inviato (in più con destinatario, oggetto e copia).
-- **Esportazioni:** vengono registrati tabella, formato, numero di righe, filtro e ricerca, mai i dati esportati.
+- **Esportazioni:** vengono registrati tabella, formato, numero di righe, filtro e ricerca, per «Esporta selezione» anche
+  «selezione», mai i dati esportati.
 - **Utenti:** «Sistema» compare solo dove davvero non era coinvolto alcun utente. Gli utenti eliminati compaiono con
   il nome e «(eliminato)», quelli eliminati definitivamente come «Utente eliminato #12».
 - **Vista di dettaglio:** larga quanto un modulo; per le modifiche una tabella con tutti i campi modificati (prima →

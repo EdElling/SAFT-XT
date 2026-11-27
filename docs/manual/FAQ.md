@@ -40,6 +40,8 @@
    - [The bulk edit reports “Nothing changed”.](#the-bulk-edit-reports-nothing-changed)
    - [Some records stayed unchanged in the bulk edit.](#some-records-stayed-unchanged-in-the-bulk-edit)
    - [How do I undo a bulk edit?](#how-do-i-undo-a-bulk-edit)
+   - [How do I export only some records?](#how-do-i-export-only-some-records)
+   - [Which records did a bulk edit change?](#which-records-did-a-bulk-edit-change)
 
 ---
 ## Frequently asked questions
@@ -129,8 +131,8 @@ really has to go, ask someone with the delete permission.
 
 Checkboxes for selecting several records only appear if there is a bulk action you may use: **“Change …”** (permission
 *Edit*, and the administration allows bulk edits for the table; user guide, section 4.11), **“Delete selected”**
-(permission *Delete*) or **“Create documents”** (active document template and permission *Documents: generate*; section
-4.10). Linked tables have no bulk edit.
+(permission *Delete*), **“Export selection”** (permission *Export* and export enabled for the table; section 4.7) or **“Create documents”** (active document template and permission *Documents: generate*; section
+4.10). Linked tables have no bulk edit, but they do have “Export selection”.
 
 ### A document could not be sent by email.
 
@@ -230,4 +232,19 @@ shows beforehand how many records come back and examples with *now → after*. R
 different value since stay and the message names them. If the button is disabled (“No record would be undone”), all
 records were changed again since, often by a later bulk edit: undo that one first. Assigned numbers and sent e-mails
 stay. Only those who may view the activity log undo other people's bulk edits. See
+[User guide 4.11](USER_GUIDE.md#411-changing-several-records-bulk-edit).
+
+### How do I export only some records?
+
+Tick the records at the start of the rows and choose **“Export selection”** (Excel or CSV) in the bar above the table.
+The file contains only the selected records, in the order of the list and with the visible columns. To select across
+all pages, use the checkbox in the table header and **“Select all N”**; you can untick single ones afterwards.
+“Export” at the top, by contrast, exports all matches of the filter. See
+[User guide 4.7](USER_GUIDE.md#47-exporting-data).
+
+### Which records did a bulk edit change?
+
+Open **“Recent bulk edits”** above the table and click **“Show records”** next to the bulk edit (the link is also in
+the “Undo” confirmation). The list then shows exactly those records, with a chip “Bulk edit of …” above the table.
+Your saved view is kept: the ✕ on the chip or “Reset view” brings your previous filters back. See
 [User guide 4.11](USER_GUIDE.md#411-changing-several-records-bulk-edit).

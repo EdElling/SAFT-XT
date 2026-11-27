@@ -16,6 +16,7 @@
     </style>
     <p><strong>{{ $what }}</strong></p>
     <p class="muted">{{ trans_choice('data.bulk.undo.meta', $count, ['count' => $count, 'who' => $who, 'when' => $when]) }}</p>
+    <p><x-filament::link :href="$records" icon="heroicon-o-funnel" color="gray" data-bulk-records-confirm>{{ __('data.bulk.view.show') }}</x-filament::link></p>
 
     @if ($preview !== null)
         @php($counts = $preview['counts'])

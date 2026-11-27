@@ -384,6 +384,11 @@ in the meantime. As a guide, SAFT manages a few hundred rows per second. By defa
 exported at once (the administration can change or lift the limit); with more hits a notice appears and no file is
 created – narrow the selection with filters or search.
 
+**Selected records only:** Tick the boxes at the start of the rows (also across all pages with **“Select all N”**; you can untick single ones afterwards) and choose **“Export selection”** in the bar above the table. The
+file then contains only the selected records shown by the filter, in the order of the list and with the same columns
+and formats as above; the same limit applies. This also works in detail tables and for connected tables. The boxes
+appear as soon as you may export, even without the *Edit* right.
+
 > **Data protection:** Every export is recorded in the activity log. The exported file itself, however, is no longer
 > subject to any permission check. Handle it with care.
 
@@ -658,6 +663,12 @@ because the old value of a unique field is now taken. If you changed the same re
 bulk edit first. An undo can itself be undone. Assigned numbers, effects via plugins and sent e-mails stay. You undo your
 own bulk edits with the *Edit* (or *Delete*) permission, those of other people only with the permission to view the
 activity log. When the activity log is trimmed, older bulk edits also disappear from the list.
+
+**Show records:** The link **“Show records”** in “Recent bulk edits” and in the “Undo” confirmation opens the
+list with exactly the records of that bulk edit; people with the *Delete* right also see records deleted since. A chip
+above the table shows “Bulk edit of …”. You can sort, filter further, export the selection or change it again. This
+view is not saved: the ✕ on the chip, **“Remove all filters”** or **“Reset view”** take you back to your saved view with
+your previous filters, and so does the next time you open the table from the menu.
 
 You see the button “Change …” with the *Edit* permission if the administration allows bulk edits for the table. At most
 5,000 records per bulk edit unless the administration sets something else.
