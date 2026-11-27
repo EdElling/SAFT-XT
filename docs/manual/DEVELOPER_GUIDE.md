@@ -553,6 +553,14 @@ or changed).
   For the kinds *calculate*, *replace* and *formula*, SAFT computes the new value per record
   (`App\DynamicData\Bulk\BulkChange::resolve()`) before your listener runs; it sees it like an entered value. Records
   without a value or match are not saved at all, so your listener does not see them.
+- **Undoing a bulk edit** (S3): every successful bulk action creates a header in `bulk_changes` (identifier, person,
+  kind and details per field, changed keys; `App\Models\BulkChange`). The undo is again a job `bulk_records`
+  (parameter `undo_of`) with its own identifier `bulk:<uuid>` and origin `bulk`. Your listener sees it like an ordinary
+  edit, including the check phase, and a `RecordRejected` only keeps that record as it is (it is reported), not the
+  whole undo. `App\DynamicData\Bulk\BulkUndo` reads the old values from the activity log. Since 0.8.1,
+  `attribute_changes` holds **raw values** as stored in the database, old and new in the same form (date `2026-09-01`,
+  date/time in the application time zone, decimals as text); older entries have new date values in UTC (`…Z`).
+  `App\DynamicData\Write\LoggedValue` compares values.
 - **Follow-up changes** in `RecordSaved` and `RecordDeleted` are written through `Saft::table(…)`. They always run in the
   same transaction as the triggering change (since API 1.10: record, totals, files and activity log): if a listener
   throws there, the triggering change is rolled back as well. If you trigger events yourself, beware of endless loops.

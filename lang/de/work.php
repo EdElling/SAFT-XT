@@ -101,6 +101,7 @@ return [
         'record_missing' => ':record gibt es nicht mehr (gelöscht).',
         'database_error' => 'Fehler der Datenbank (Details im Systemprotokoll).',
         'check_failed' => '{1} Nichts geändert: 1 Datensatz besteht die Prüfungen nicht.|[2,*] Nichts geändert: :count Datensätze bestehen die Prüfungen nicht.',
+        'check_failed_hint' => 'Die Prüfung sieht die anderen ausgewählten Datensätze schon mit den neuen Werten; ein Konflikt kann auch zwischen zwei ausgewählten Datensätzen bestehen.',
         'check_passed' => '{0} Geprüft: kein Datensatz würde geändert.|{1} Geprüft: 1 Datensatz besteht die Prüfungen und würde geändert.|[2,*] Geprüft: alle :count Datensätze bestehen die Prüfungen und würden geändert.',
         'changed_meanwhile' => ':record wurde inzwischen von jemand anderem geändert. Die Sammeländerung wurde vollständig zurückgenommen.',
         'write_failed' => ':record: :message Die Sammeländerung wurde vollständig zurückgenommen.',

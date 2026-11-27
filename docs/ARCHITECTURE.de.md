@@ -388,3 +388,17 @@ durch Nr. n“ markiert.
     `RecordChecker` nicht kennt, und eine Sammeländerung bleibt kein Weg an den Regeln vorbei. *Restrisiko:* Wer
     zwischen Schreiben und Rücknahme einen Datensatz ändert, behält seinen Stand (Eintrag im Systemprotokoll); eine in
     der Schreibphase über „Vergeben, wenn“ vergebene Nummer bleibt (Lücke wie beim Löschen).
+28. **Rückgängig: Kopf als Verzeichnis, Werte aus dem Protokoll, Rohwerte im Protokoll** (27.11.2026, B-133 S3). Jede
+    erfolgreiche Sammelaktion (ändern, löschen, wiederherstellen, Rücknahme) legt in derselben Transaktion wie ihr
+    letzter Block einen Kopf in `bulk_changes` an: Kennung `run`, App, Tabelle, Person, Art und Angaben je Feld,
+    Schlüssel der geänderten Datensätze. Die alten Werte stehen nicht dort, sondern im Änderungsprotokoll (Nr. 12); die
+    Rücknahme liest sie je Block über den Index `(subject_type, subject_id)` und filtert nach `run`. Sie ist selbst eine
+    Arbeit `bulk_records` mit allen Prüfungen und Plugin-Ereignissen; Datensätze, bei denen ein Feld der Sammeländerung
+    seither anders ist oder die eine Prüfung nicht mehr bestehen, bleiben und werden gemeldet (kein „alles oder
+    nichts“). `DynamicRecord` protokolliert dafür **Rohwerte** wie in der Datenbank, alt und neu in derselben Form;
+    Spatie gab neue Datumswerte bisher in UTC weiter. Die Aufgabe `activity_prune` löscht Köpfe mit derselben Frist.
+    Fremde Sammelaktionen nimmt zurück, wer `activity_log.view` hat. *Warum:* Art und Angaben einer Sammeländerung
+    stehen nicht im Protokoll und `work_items` werden aufgeräumt; eine Gruppierung über `properties->run` ginge ohne
+    Index und sähe gescheiterte Läufe; eine Kopie der alten Werte wäre eine zweite Wahrheit. *Folge:* Ohne
+    Änderungsprotokoll (`ACTIVITYLOG_ENABLED=false`) gibt es keine Rücknahme; Einträge von vor 0.8.1 mit UTC-Datum
+    rechnet `LoggedValue` in die Zeitzone der Anwendung um (Voraussetzung: `APP_TIMEZONE` unverändert).

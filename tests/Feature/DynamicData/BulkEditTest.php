@@ -142,6 +142,7 @@ class BulkEditTest extends DynamicDataTestCase
         $this->assertSame(WorkItem::FAILED, $item->status);
         $this->assertStringContainsString('Nichts geändert: 1 Datensatz', (string) $item->message);
         $this->assertStringContainsString('„Person 2“: Lehrperson hat zu dieser Zeit schon einen Kurs.', (string) $item->message);
+        $this->assertStringContainsString('Die Prüfung sieht die anderen ausgewählten Datensätze schon mit den neuen Werten', (string) $item->message);
         $this->assertSame(['warteliste', 'warteliste', 'warteliste'], array_values($this->column('status')));
         $this->assertSame([null, null, null], array_values($this->column('nummer')));
         $this->assertSame(0, Activity::query()->where('log_name', 'dynamic.anmeldungen')->count());

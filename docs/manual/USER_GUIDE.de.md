@@ -667,7 +667,7 @@ zu langer Text), ist das ein Fehler, nichts wird abgeschnitten.
 
 SAFT prüft jeden Datensatz wie beim Bearbeiten von Hand – Pflichtfelder, Prüfregeln, Regeln der Tabelle und Plugins
 (z. B. eine Konfliktprüfung). Es gilt **alles oder nichts**: Besteht ein Datensatz nicht, wird keiner geändert, und die
-Meldung nennt die Datensätze mit Grund. Wählen Sie diese ab oder korrigieren Sie sie und versuchen Sie es erneut.
+Meldung nennt die Datensätze mit Grund. Wählen Sie diese ab oder korrigieren Sie sie und versuchen Sie es erneut. Die Prüfung sieht die anderen ausgewählten Datensätze schon mit den neuen Werten: Ein Konflikt kann auch zwischen zwei ausgewählten Datensätzen bestehen, z. B. zwei Kurse derselben Lehrperson zur selben neuen Uhrzeit.
 Datensätze, die schon den neuen Wert haben, bleiben unverändert. Bei vielen Datensätzen läuft die Sammeländerung als
 **Arbeit** weiter; Sie sehen den Fortschritt unter *Meine Arbeiten*. Hat jemand einen der Datensätze während der
 Sammeländerung geändert, wird sie vollständig zurückgenommen.
@@ -682,6 +682,18 @@ eine Nummer vergeben wird, bekommen die Datensätze ihre Nummern dabei in der Re
 **Löschen und Wiederherstellen:** **„Ausgewählte löschen“** löscht die ausgewählten Datensätze; solche, auf die andere
 Datensätze verweisen, bleiben und werden in der Meldung gezählt. Mit dem Filter „Gelöschte Datensätze“ holt
 **„Ausgewählte wiederherstellen“** gelöschte Datensätze zurück.
+
+**Rückgängig:** Die Erfolgsmeldung einer Sammeländerung bietet den Link **„Rückgängig“**. Später finden Sie dieselben
+Sammeländerungen unter **„Letzte Sammeländerungen“** über der Tabelle: die letzten 20 mit Wann, Wer, Was und Anzahl,
+auch „Ausgewählte löschen“ und „Ausgewählte wiederherstellen“. Vor der Rücknahme zeigt eine Vorschau, wie viele
+Datensätze zurückkommen, und bis zu zehn Beispiele mit *jetzt → danach*. Die alten Werte kommen aus dem
+Änderungsprotokoll. Hat ein geändertes Feld seither einen anderen Wert, bleibt der ganze Datensatz stehen und die
+Meldung nennt ihn; Änderungen an anderen Feldern spielen keine Rolle. Ebenso bleiben Datensätze, die eine Prüfung nicht
+mehr bestehen, z. B. weil der alte Wert eines eindeutigen Felds inzwischen vergeben ist. Haben Sie dieselben Datensätze
+mehrmals geändert, nehmen Sie zuerst die letzte Sammeländerung zurück. Auch eine Rücknahme lässt sich zurücknehmen.
+Vergebene Nummern, Folgen über Plugins und versendete E-Mails bleiben. Eigene Sammeländerungen nehmen Sie mit dem Recht
+*Bearbeiten* (bzw. *Löschen*) zurück, die anderer Personen nur mit dem Recht, das Änderungsprotokoll zu sehen. Wird das
+Änderungsprotokoll gekürzt, verschwinden ältere Sammeländerungen auch aus der Liste.
 
 Den Knopf „Ändern …“ sehen Sie mit dem Recht *Bearbeiten*, wenn die Administration die Sammeländerung für die Tabelle
 erlaubt. Höchstens 5'000 Datensätze je Sammeländerung, sofern die Administration nichts anderes einstellt.

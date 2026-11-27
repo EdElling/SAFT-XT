@@ -354,4 +354,65 @@ class BulkEditTest extends DuskTestCase
 
         $this->assertSame(['22.00', '40.00'], $this->column('tarif'));
     }
+
+    /** Den Tarif aller Anmeldungen um 5 % erhöhen (Dialog „Ändern …“), Meldung abwarten. */
+    private function raiseTariffs(Browser $browser, string $last, int $count): Browser
+    {
+        $this->selectAllAndOpen($browser, $last);
+        $this->tick($browser, 'tarif');
+        $this->chooseOp($browser, 'tarif', 'calc');
+        $browser->select('select[id="'.self::MODAL.'changes.tarif.operator"]', 'percent')->pause(800);
+        $this->fill($browser, 'changes.tarif.operand', '5');
+        $browser->waitFor('[data-bulk-examples]', 15);
+
+        return $this->clickVisibleButton($browser, "{$count} Datensätze ändern")->waitForText("{$count} Datensätze geändert.", 20);
+    }
+
+    /** SAE-13 */
+    public function test_undo_from_the_success_message_shows_a_preview_and_restores_the_values(): void
+    {
+        $this->enrolWith([['tarif' => '100'], ['tarif' => '200']]);
+
+        $this->browse(function (Browser $browser): void {
+            $this->raiseTariffs($browser, 'Person 2', 2);
+            $browser->clickAtXPath("//*[contains(@class, 'fi-no-notification')]//a[contains(normalize-space(.), 'Rückgängig')]")
+                ->waitFor('[data-bulk-undo-confirm]', 20)
+                ->assertSee('Sammeländerung rückgängig machen?')
+                ->assertSeeIn('[data-bulk-undo-counts]', '2 Datensätze werden zurückgenommen.')
+                ->assertSeeIn('[data-bulk-undo-preview]', '105,00')
+                ->assertSeeIn('[data-bulk-undo-preview]', '100,00');
+            $this->clickVisibleButton($browser, '2 Datensätze zurücknehmen')
+                ->waitForText('2 Datensätze zurückgenommen.', 20);
+        });
+
+        $this->assertSame(['100.00', '200.00'], $this->column('tarif'));
+    }
+
+    /** SAE-14 */
+    public function test_undo_from_the_list_keeps_a_record_changed_by_hand_and_names_it(): void
+    {
+        $records = $this->enrolWith([['tarif' => '100'], ['tarif' => '200'], ['tarif' => '300']]);
+
+        $this->browse(function (Browser $browser) use ($records): void {
+            $this->raiseTariffs($browser, 'Person 3', 3);
+            DynamicRecord::forget('anmeldungen');
+            DynamicRecord::forTableName('anmeldungen')->newQuery()->find($records[1]->getKey())->update(['tarif' => '250']);
+
+            $browser->visit('/admin/data/anmeldungen')->waitForText('Person 3', 15);
+            $this->clickVisibleText($browser, 'Letzte Sammeländerungen')
+                ->waitFor('[data-bulk-history]', 15)
+                ->assertSeeIn('[data-bulk-history]', 'Tarif: um % ändern 5 %')
+                ->click('[data-bulk-undo]')
+                ->waitFor('[data-bulk-undo-confirm]', 20)
+                ->assertSeeIn('[data-bulk-undo-counts]', '2 Datensätze werden zurückgenommen.')
+                ->assertSeeIn('[data-bulk-undo-counts]', '1 seither geändert, bleibt.')
+                ->assertSeeIn('[data-bulk-undo-preview]', 'seither geändert, bleibt');
+            $this->clickVisibleButton($browser, '2 Datensätze zurücknehmen')
+                ->waitForText('2 Datensätze zurückgenommen. 1 seither geändert, bleibt.', 20)
+                ->assertSee('„Person 2“: seither geändert')
+                ->waitUntilMissing('[data-bulk-history]', 15);
+        });
+
+        $this->assertSame(['100.00', '250.00', '300.00'], $this->column('tarif'));
+    }
 }

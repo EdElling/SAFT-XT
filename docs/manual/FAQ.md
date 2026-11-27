@@ -39,6 +39,7 @@
    - [How do I change many records at once?](#how-do-i-change-many-records-at-once)
    - [The bulk edit reports “Nothing changed”.](#the-bulk-edit-reports-nothing-changed)
    - [Some records stayed unchanged in the bulk edit.](#some-records-stayed-unchanged-in-the-bulk-edit)
+   - [How do I undo a bulk edit?](#how-do-i-undo-a-bulk-edit)
 
 ---
 ## Frequently asked questions
@@ -212,7 +213,7 @@ them one by one and start the bulk edit again. If it says “changed by someone 
 during the bulk edit; it was fully reverted and can simply be repeated. With calculations and formulas there are two more
 reasons: **“Division by 0”** (the formula divides by a value of 0 for this record; `if(field = 0, …, …)` avoids it)
 and **“The number is too large for the field”** (the result has more digits before the decimal point than the field
-allows). The preview already shows both in red.
+allows). The preview already shows both in red. If the message names a conflict with a record you cannot find (e.g. “already teaches on Wednesday 23:00 …”), it lies between two selected records: the check already sees the other selected ones with their new values.
 
 ### Some records stayed unchanged in the bulk edit.
 
@@ -221,3 +222,12 @@ calculating the previous value was empty, when replacing the search text did not
 (“without a value or match”). Preview and message count both. To fill empty values, filter for “empty” and choose
 *set*. If *replace* finds less than expected, check the boxes “Match case” and “Whole word only”: “Str.” as a whole word
 does not match in “Bahnhofstr.” because a letter comes before it.
+
+### How do I undo a bulk edit?
+
+Via the link **“Undo”** in the success message or later via **“Recent bulk edits”** above the table. The confirmation
+shows beforehand how many records come back and examples with *now → after*. Records where a changed field has a
+different value since stay and the message names them. If the button is disabled (“No record would be undone”), all
+records were changed again since, often by a later bulk edit: undo that one first. Assigned numbers and sent e-mails
+stay. Only those who may view the activity log undo other people's bulk edits. See
+[User guide 4.11](USER_GUIDE.md#411-changing-several-records-bulk-edit).

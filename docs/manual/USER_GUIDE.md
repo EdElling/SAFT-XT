@@ -635,7 +635,7 @@ nothing is cut off.
 
 SAFT checks every record as when editing by hand – required fields, validation rules, table rules and plugins (e.g. a
 conflict check). It is **all or nothing**: if one record fails, none is changed, and the message names the records with
-the reason. Deselect or correct them and try again. Records that already have the new value stay unchanged. With many
+the reason. Deselect or correct them and try again. The check already sees the other selected records with their new values: a conflict can also exist between two selected records, e.g. two courses of the same teacher at the same new time. Records that already have the new value stay unchanged. With many
 records the bulk edit continues as a **job**; you see the progress under *My jobs*. If someone changes one of the
 records during the bulk edit, it is fully reverted.
 
@@ -648,6 +648,16 @@ of their keys.
 
 **Deleting and restoring:** **“Delete selected”** deletes the selected records; those referred to by other records stay
 and are counted in the message. With the filter “Deleted records”, **“Restore selected”** brings deleted records back.
+
+**Undo:** The success message of a bulk edit offers the link **“Undo”**. Later you find the same bulk edits under
+**“Recent bulk edits”** above the table: the last 20 with when, who, what and count, including “Delete selected” and
+“Restore selected”. Before undoing, a preview shows how many records come back and up to ten examples with *now →
+after*. The old values come from the activity log. If a changed field has a different value since, the whole record stays
+and the message names it; changes to other fields do not matter. Records that no longer pass a check also stay, e.g.
+because the old value of a unique field is now taken. If you changed the same records several times, undo the latest
+bulk edit first. An undo can itself be undone. Assigned numbers, effects via plugins and sent e-mails stay. You undo your
+own bulk edits with the *Edit* (or *Delete*) permission, those of other people only with the permission to view the
+activity log. When the activity log is trimmed, older bulk edits also disappear from the list.
 
 You see the button “Change …” with the *Edit* permission if the administration allows bulk edits for the table. At most
 5,000 records per bulk edit unless the administration sets something else.

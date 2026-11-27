@@ -564,6 +564,14 @@ angelegt oder geändert).
   *rechnen*, *ersetzen* und *Formel* rechnet SAFT den neuen Wert je Datensatz (`App\DynamicData\Bulk\BulkChange::resolve()`)
   vor Ihrem Listener; er sieht ihn wie einen eingegebenen Wert. Datensätze ohne Wert bzw. ohne Treffer speichert SAFT
   gar nicht, Ihr Listener sieht sie also nicht.
+- **Rückgängig einer Sammeländerung** (S3): Jede erfolgreiche Sammelaktion legt einen Kopf in `bulk_changes` an
+  (Kennung, Person, Art und Angaben je Feld, geänderte Schlüssel; `App\Models\BulkChange`). Die Rücknahme ist wieder
+  eine Arbeit `bulk_records` (Parameter `undo_of`) mit eigener Kennung `bulk:<uuid>` und Herkunft `bulk`. Ihr Listener
+  sieht sie wie ein gewöhnliches Ändern, auch in der Prüfphase, und ein `RecordRejected` lässt nur diesen Datensatz
+  stehen (er wird gemeldet), nicht die ganze Rücknahme. Die alten Werte liest `App\DynamicData\Bulk\BulkUndo` aus dem
+  Änderungsprotokoll. Seit 0.8.1 stehen dort in `attribute_changes` **Rohwerte** wie in der Datenbank, alt und neu in
+  derselben Form (Datum `2026-09-01`, Datum/Uhrzeit in der Zeitzone der Anwendung, Dezimalzahlen als Text); ältere
+  Einträge haben neue Datumswerte in UTC (`…Z`). Werte vergleicht `App\DynamicData\Write\LoggedValue`.
 - **Folgeänderungen** in `RecordSaved` und `RecordDeleted` schreiben Sie über `Saft::table(…)`. Sie laufen immer in
   derselben Transaktion wie die auslösende Änderung (seit API 1.10, Datensatz, Summen, Dateien und Protokoll): Wirft ein
   Listener dort eine Ausnahme, wird auch die auslösende Änderung zurückgerollt. Lösen Sie selbst Ereignisse aus, achten

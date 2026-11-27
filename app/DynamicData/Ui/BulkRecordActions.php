@@ -131,6 +131,11 @@ final class BulkRecordActions
                     throw new Halt;
                 }
 
+                // B-133 S3: „Rückgängig“ direkt aus der Meldung.
+                if (! $dryRun && ($undo = BulkUndoActions::notificationAction(BulkChangeHead::query()->where('run', (string) ($item->result['run'] ?? ''))->first())) !== null) {
+                    $notification->actions([$undo])->persistent();
+                }
+
                 $notification->success()->send();
 
                 if ($dryRun) {
@@ -145,7 +150,14 @@ final class BulkRecordActions
     /** Löschen der ausgewählten Datensätze: gesperrte (Löschsperre) übersprungen und mit Grund gemeldet. */
     public static function delete(CustomTable $table): DeleteBulkAction
     {
+        $head = null;
+
         return DeleteBulkAction::make()
+            ->successNotification(static function (Notification $notification) use (&$head): Notification {
+                $undo = BulkUndoActions::notificationAction($head);
+
+                return $undo === null ? $notification : $notification->actions([$undo])->persistent();
+            })
             ->visible(static fn (): bool => ! $table->isExternal() && DataAccess::current($table, 'delete'))
             ->authorize(static fn (): bool => DataAccess::current($table, 'delete'))
             ->before(static function (EloquentCollection|Collection $records): void {
@@ -153,7 +165,7 @@ final class BulkRecordActions
             })
             // Je Datensatz ein Schreibvorgang über den Writer (Löschsperre, Summen, Ereignisse, Transaktion), alle mit
             // derselben Kennung im Protokoll.
-            ->using(static function (DeleteBulkAction $action, EloquentCollection|Collection $records) use ($table): void {
+            ->using(static function (DeleteBulkAction $action, EloquentCollection|Collection $records) use ($table, &$head): void {
                 $options = WriteOptions::bulk($run = BulkRecordsWork::RUN_PREFIX.Str::uuid());
                 $done = [];
 
@@ -176,7 +188,7 @@ final class BulkRecordActions
 
                 // Kopf für „Letzte Sammeländerungen“ und „Rückgängig“ (S3).
                 if ($done !== []) {
-                    BulkChangeHead::recordRun($run, $table, BulkChangeHead::DELETE, $done);
+                    $head = BulkChangeHead::recordRun($run, $table, BulkChangeHead::DELETE, $done);
                 }
             });
     }
@@ -184,13 +196,20 @@ final class BulkRecordActions
     /** Wiederherstellen ausgewählter Datensätze aus dem Papierkorb (Filter „gelöschte“). */
     public static function restore(CustomTable $table): RestoreBulkAction
     {
+        $head = null;
+
         return RestoreBulkAction::make()
+            ->successNotification(static function (Notification $notification) use (&$head): Notification {
+                $undo = BulkUndoActions::notificationAction($head);
+
+                return $undo === null ? $notification : $notification->actions([$undo])->persistent();
+            })
             ->visible(static fn (): bool => ! $table->isExternal() && DataAccess::current($table, 'delete'))
             ->authorize(static fn (): bool => DataAccess::current($table, 'delete'))
             ->before(static function (EloquentCollection|Collection $records): void {
                 self::assertWithinLimit($records->count());
             })
-            ->using(static function (RestoreBulkAction $action, EloquentCollection|Collection $records) use ($table): void {
+            ->using(static function (RestoreBulkAction $action, EloquentCollection|Collection $records) use ($table, &$head): void {
                 $options = WriteOptions::bulk($run = BulkRecordsWork::RUN_PREFIX.Str::uuid());
                 $done = [];
 
@@ -212,7 +231,7 @@ final class BulkRecordActions
                 }
 
                 if ($done !== []) {
-                    BulkChangeHead::recordRun($run, $table, BulkChangeHead::RESTORE, $done);
+                    $head = BulkChangeHead::recordRun($run, $table, BulkChangeHead::RESTORE, $done);
                 }
             });
     }

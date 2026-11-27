@@ -101,6 +101,7 @@ return [
         'record_missing' => ':record n’existe plus (supprimé).',
         'database_error' => 'Erreur de la base de données (détails dans le journal système).',
         'check_failed' => '{1} Rien n’a été modifié : 1 enregistrement ne passe pas les contrôles.|[2,*] Rien n’a été modifié : :count enregistrements ne passent pas les contrôles.',
+        'check_failed_hint' => 'Le contrôle voit déjà les autres enregistrements sélectionnés avec leurs nouvelles valeurs ; un conflit peut aussi exister entre deux enregistrements sélectionnés.',
         'check_passed' => '{0} Vérifié : aucun enregistrement ne serait modifié.|{1} Vérifié : 1 enregistrement passe les contrôles et serait modifié.|[2,*] Vérifié : les :count enregistrements passent les contrôles et seraient modifiés.',
         'changed_meanwhile' => ':record a été modifié entre-temps par quelqu’un d’autre. La modification groupée a été entièrement annulée.',
         'write_failed' => ':record : :message La modification groupée a été entièrement annulée.',

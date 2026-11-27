@@ -39,6 +39,7 @@
    - [Wie ändere ich viele Datensätze auf einmal?](#wie-ändere-ich-viele-datensätze-auf-einmal)
    - [Die Sammeländerung meldet „Nichts geändert“.](#die-sammeländerung-meldet-nichts-geändert)
    - [Bei der Sammeländerung blieben Datensätze unverändert.](#bei-der-sammeländerung-blieben-datensätze-unverändert)
+   - [Wie mache ich eine Sammeländerung rückgängig?](#wie-mache-ich-eine-sammeländerung-rückgängig)
 
 ---
 ## Häufige Fragen
@@ -220,7 +221,7 @@ jemand anderem geändert“ da, hat jemand während der Sammeländerung gespeich
 lässt sich einfach wiederholen. Beim Rechnen und bei Formeln kommen zwei Gründe dazu: **„Division durch 0“** (die Formel
 teilt bei diesem Datensatz durch einen Wert 0; mit `if(feld = 0, …, …)` lässt sich das abfangen) und **„Die Zahl ist zu
 gross für das Feld“** (das Ergebnis hat mehr Stellen vor dem Komma, als das Feld erlaubt). Beides zeigt schon die
-Vorschau rot an.
+Vorschau rot an. Nennt die Meldung einen Konflikt mit einem Datensatz, den Sie nicht finden (z. B. „unterrichtet am Mittwoch 23:00 bereits …“), liegt er zwischen zwei ausgewählten Datensätzen: Die Prüfung sieht die anderen ausgewählten schon mit den neuen Werten.
 
 ### Bei der Sammeländerung blieben Datensätze unverändert.
 
@@ -229,3 +230,13 @@ Rechnen war der bisherige Wert leer, beim Ersetzen kam der Suchtext nicht vor bz
 bzw. ohne Treffer“). Vorschau und Meldung zählen beides. Sollen leere Werte gefüllt werden, filtern Sie nach „leer“ und
 wählen *setzen*. Findet *ersetzen* weniger als erwartet, prüfen Sie die Häkchen „Gross-/Kleinschreibung beachten“ und
 „nur ganzes Wort“: „Str.“ als ganzes Wort passt nicht in „Bahnhofstr.“, weil davor ein Buchstabe steht.
+
+### Wie mache ich eine Sammeländerung rückgängig?
+
+Über den Link **„Rückgängig“** in der Erfolgsmeldung oder später über **„Letzte Sammeländerungen“** über der Tabelle.
+Die Bestätigung zeigt vorher, wie viele Datensätze zurückkommen, und Beispiele mit *jetzt → danach*. Datensätze, bei
+denen ein geändertes Feld seither einen anderen Wert hat, bleiben stehen und die Meldung nennt sie. Ist der Knopf
+gesperrt („Kein Datensatz würde zurückgenommen“), wurden alle Datensätze seither wieder geändert, oft von einer späteren
+Sammeländerung: Nehmen Sie zuerst diese zurück. Vergebene Nummern und versendete E-Mails bleiben. Fremde
+Sammeländerungen nimmt nur zurück, wer das Änderungsprotokoll sehen darf. Siehe
+[Anwenderhandbuch 4.11](USER_GUIDE.de.md#411-mehrere-datensätze-ändern-sammeländerung).

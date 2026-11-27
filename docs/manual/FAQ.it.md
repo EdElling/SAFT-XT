@@ -39,6 +39,7 @@
    - [Come modifico molti record in una volta?](#come-modifico-molti-record-in-una-volta)
    - [La modifica multipla segnala «Nulla modificato».](#la-modifica-multipla-segnala-nulla-modificato)
    - [Nella modifica multipla alcuni record sono rimasti invariati.](#nella-modifica-multipla-alcuni-record-sono-rimasti-invariati)
+   - [Come annullo una modifica multipla?](#come-annullo-una-modifica-multipla)
 
 ---
 ## Domande frequenti
@@ -220,7 +221,7 @@ deselezionate questi record o correggeteli uno per uno e riavviate la modifica m
 frattempo da un’altra persona», qualcuno ha salvato durante la modifica multipla; è stata annullata completamente e si
 può semplicemente ripetere. Con calcoli e formule si aggiungono due motivi: **«Divisione per 0»** (la formula divide per
 un valore 0 per questo record; `if(campo = 0, …, …)` lo evita) e **«Il numero è troppo grande per il campo»** (il
-risultato ha più cifre prima della virgola di quante il campo ne consenta). L’anteprima mostra già entrambi in rosso.
+risultato ha più cifre prima della virgola di quante il campo ne consenta). L’anteprima mostra già entrambi in rosso. Se il messaggio indica un conflitto con un record che non trovate (p. es. «insegna già il mercoledì alle 23:00 …»), esiste tra due record selezionati: il controllo vede già gli altri record selezionati con i nuovi valori.
 
 ### Nella modifica multipla alcuni record sono rimasti invariati.
 
@@ -229,3 +230,13 @@ precedente era vuoto, nella sostituzione il testo cercato non compariva o la for
 senza corrispondenza»). Anteprima e messaggio contano entrambi i casi. Per riempire valori vuoti filtrate per «vuoto» e
 scegliete *impostare*. Se *sostituire* trova meno del previsto, controllate le caselle «Maiuscole/minuscole» e «Solo
 parola intera»: «Str.» come parola intera non corrisponde in «Bahnhofstr.», perché è preceduto da una lettera.
+
+### Come annullo una modifica multipla?
+
+Con il link **«Annulla»** nel messaggio di riuscita o in seguito con **«Ultime modifiche multiple»** sopra la tabella.
+La conferma mostra prima quanti record tornano indietro ed esempi con *ora → dopo*. I record in cui un campo modificato
+ha nel frattempo un altro valore restano e il messaggio li indica. Se il pulsante è disattivato («Nessun record verrebbe
+annullato»), tutti i record sono stati modificati nel frattempo, spesso da una modifica multipla successiva: annullate
+prima quella. I numeri assegnati e le e-mail inviate restano. Solo chi può vedere il registro delle modifiche annulla le
+modifiche multiple di altre persone. Vedi
+[Manuale utente 4.11](USER_GUIDE.it.md#411-modificare-più-record-modifica-multipla).

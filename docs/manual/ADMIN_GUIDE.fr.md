@@ -275,7 +275,7 @@ tout ou rien. Elle s’exécute comme [travail](#travaux), au maximum 5 000 enre
 champs calculés et les fichiers ne sont pas modifiables ; les champs uniques ne peuvent pas être définis, mais vidés,
 remplacés ou calculés (le contrôle signale les résultats en double). Outre *définir* et *vider*, il y a *calculer*
 (nombre, date), *remplacer* (texte) et *formule* (nombre, oui/non, dans le langage de formules des champs calculés ; une
-division par 0 y est une erreur). Les tables liées n’ont pas de modification groupée.
+division par 0 y est une erreur). Les tables liées n’ont pas de modification groupée. **Annuler :** Chaque modification groupée, y compris la suppression et la restauration groupées, figure sous « Dernières modifications groupées » dans la vue des données et peut être annulée ; les anciennes valeurs proviennent du journal des modifications. Les personnes ayant le droit *Modifier* (ou *Supprimer*) annulent leurs propres modifications groupées, celles d’autres personnes seulement si elles peuvent aussi voir le **journal des modifications** (`activity_log.view` ; le super-administrateur toujours). La tâche **Raccourcir le journal des modifications** retire aussi de la liste les modifications groupées plus anciennes avec les entrées ; ensuite, aucune annulation n’est possible. Si le journal des modifications est désactivé (`ACTIVITYLOG_ENABLED=false`), il n’y a rien à annuler.
 
 **Modifier les champs** (zone *Champs*, (2)) : pour chaque champ, vous définissez :
 

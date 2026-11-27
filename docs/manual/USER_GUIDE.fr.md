@@ -699,7 +699,7 @@ dans le champ (trop de chiffres, texte trop long), c’est une erreur ; rien n�
 SAFT contrôle chaque enregistrement comme lors d’une modification manuelle – champs obligatoires, règles de validation,
 règles de la table et plugins (p. ex. un contrôle de conflits). C’est **tout ou rien** : si un enregistrement échoue,
 aucun n’est modifié, et le message nomme les enregistrements avec la raison. Désélectionnez-les ou corrigez-les et
-réessayez. Les enregistrements qui ont déjà la nouvelle valeur restent inchangés. Avec beaucoup d’enregistrements, la
+réessayez. Le contrôle voit déjà les autres enregistrements sélectionnés avec leurs nouvelles valeurs : un conflit peut aussi exister entre deux enregistrements sélectionnés, p. ex. deux cours du même enseignant à la même nouvelle heure. Les enregistrements qui ont déjà la nouvelle valeur restent inchangés. Avec beaucoup d’enregistrements, la
 modification groupée continue comme **travail** ; vous voyez la progression sous *Mes travaux*. Si quelqu’un modifie un
 des enregistrements pendant la modification groupée, elle est entièrement annulée.
 
@@ -714,6 +714,19 @@ de leurs clés.
 **Supprimer et restaurer :** **« Supprimer la sélection »** supprime les enregistrements sélectionnés ; ceux auxquels
 d’autres enregistrements font référence restent et sont comptés dans le message. Avec le filtre « Enregistrements
 supprimés », **« Restaurer la sélection »** récupère les enregistrements supprimés.
+
+**Annuler :** Le message de réussite d’une modification groupée propose le lien **« Annuler »**. Plus tard, vous
+retrouvez les mêmes modifications groupées sous **« Dernières modifications groupées »** au-dessus de la table : les 20
+dernières avec quand, qui, quoi et nombre, y compris « Supprimer la sélection » et « Restaurer la sélection ». Avant
+l’annulation, un aperçu indique combien d’enregistrements reviennent et jusqu’à dix exemples avec *maintenant → après*.
+Les anciennes valeurs proviennent du journal des modifications. Si un champ modifié a changé de valeur depuis,
+l’enregistrement entier reste et le message le nomme ; les modifications d’autres champs ne comptent pas. Les
+enregistrements qui ne passent plus un contrôle restent aussi, p. ex. parce que l’ancienne valeur d’un champ unique est
+désormais attribuée. Si vous avez modifié plusieurs fois les mêmes enregistrements, annulez d’abord la dernière
+modification groupée. Une annulation peut elle-même être annulée. Les numéros attribués, les effets des plugins et les
+e-mails envoyés restent. Vous annulez vos propres modifications groupées avec le droit *Modifier* (ou *Supprimer*),
+celles d’autres personnes seulement avec le droit de voir le journal des modifications. Quand le journal des
+modifications est raccourci, les modifications groupées plus anciennes disparaissent aussi de la liste.
 
 Vous voyez le bouton « Modifier … » avec le droit *Modifier* si l’administration autorise la modification groupée pour
 la table. Au maximum 5 000 enregistrements par modification groupée, sauf réglage contraire de l’administration.

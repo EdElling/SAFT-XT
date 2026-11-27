@@ -35,7 +35,45 @@ final readonly class BulkUndo
 
     public const string GONE = 'gone';
 
+    /** So viele Datensätze ordnet die Vorschau ein (wie BulkPreview::SCAN). */
+    public const int SCAN = 500;
+
+    /** So viele Beispiele zeigt die Vorschau. */
+    public const int EXAMPLES = 10;
+
     public function __construct(public BulkChangeHead $head, public CustomTable $table) {}
+
+    /**
+     * Vorschau für die Bestätigung (BULK_EDIT.md §13, Nachtrag): die ersten SCAN Datensätze einordnen, ohne zu
+     * schreiben; Zählungen je Einordnung und die ersten EXAMPLES Datensätze mit den Werten nach der Rücknahme.
+     * Prüfungen (Pflicht, Regeln, Plugins) laufen erst in der Rücknahme selbst.
+     *
+     * @return array{counts: array<string, int>, examples: list<array{record: DynamicRecord|null, id: int|string, status: string, values: array<string, mixed>}>, total: int, partial: bool}
+     */
+    public function preview(): array
+    {
+        $all = $this->head->recordIds();
+        $counts = array_fill_keys([self::REVERT, self::ALREADY, self::CHANGED, self::NOT_LOGGED, self::GONE], 0);
+        $examples = [];
+
+        foreach (array_chunk(array_slice($all, 0, self::SCAN), 100) as $chunk) {
+            $records = DynamicRecord::forTable($this->table)->newQuery()->withTrashed()->whereKey($chunk)->get()
+                ->keyBy(static fn (DynamicRecord $record): string => (string) $record->getKey());
+            $logged = $this->logged($chunk);
+
+            foreach ($chunk as $id) {
+                $record = $records->get((string) $id);
+                [$status, $values] = $this->classify($record, $logged[(string) $id] ?? null);
+                $counts[$status]++;
+
+                if (count($examples) < self::EXAMPLES) {
+                    $examples[] = ['record' => $record, 'id' => $id, 'status' => $status, 'values' => $values];
+                }
+            }
+        }
+
+        return ['counts' => $counts, 'examples' => $examples, 'total' => count($all), 'partial' => count($all) > self::SCAN];
+    }
 
     public static function of(int $headId, CustomTable $table): self
     {

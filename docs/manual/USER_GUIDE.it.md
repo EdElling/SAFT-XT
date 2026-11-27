@@ -667,7 +667,7 @@ cifre, testo troppo lungo), è un errore; nulla viene troncato.
 
 SAFT controlla ogni record come nella modifica manuale – campi obbligatori, regole di validazione, regole della tabella e
 plugin (p. es. un controllo dei conflitti). Vale **tutto o niente**: se un record non supera i controlli, nessuno viene
-modificato, e il messaggio indica i record con il motivo. Deselezionateli o correggeteli e riprovate. I record che hanno
+modificato, e il messaggio indica i record con il motivo. Deselezionateli o correggeteli e riprovate. Il controllo vede già gli altri record selezionati con i nuovi valori: un conflitto può esistere anche tra due record selezionati, p. es. due corsi dello stesso docente alla stessa nuova ora. I record che hanno
 già il nuovo valore restano invariati. Con molti record la modifica multipla continua come **lavoro**; il progresso è
 visibile in *I miei lavori*. Se qualcuno modifica uno dei record durante la modifica multipla, questa viene annullata
 completamente.
@@ -682,6 +682,18 @@ campo che decide quando viene assegnato un numero, i record ricevono i loro nume
 **Eliminare e ripristinare:** **«Elimina selezionati»** elimina i record selezionati; quelli a cui fanno riferimento altri
 record restano e vengono contati nel messaggio. Con il filtro «Record eliminati», **«Ripristina selezionati»** recupera
 i record eliminati.
+
+**Annullare:** Il messaggio di riuscita di una modifica multipla offre il link **«Annulla»**. In seguito trovate le
+stesse modifiche multiple in **«Ultime modifiche multiple»** sopra la tabella: le ultime 20 con quando, chi, cosa e
+numero, anche «Elimina selezionati» e «Ripristina selezionati». Prima dell’annullamento un’anteprima mostra quanti
+record tornano indietro e fino a dieci esempi con *ora → dopo*. I valori precedenti provengono dal registro delle
+modifiche. Se un campo modificato ha nel frattempo un altro valore, l’intero record resta e il messaggio lo indica; le
+modifiche ad altri campi non contano. Restano anche i record che non superano più un controllo, p. es. perché il valore
+precedente di un campo univoco è ormai assegnato. Se avete modificato più volte gli stessi record, annullate prima
+l’ultima modifica multipla. Anche un annullamento si può annullare. I numeri assegnati, gli effetti dei plugin e le
+e-mail inviate restano. Annullate le vostre modifiche multiple con il diritto *Modificare* (o *Eliminare*), quelle di
+altre persone solo con il diritto di vedere il registro delle modifiche. Quando il registro delle modifiche viene
+ridotto, le modifiche multiple più vecchie scompaiono anche dall’elenco.
 
 Il pulsante «Modifica …» è visibile con il diritto *Modificare* se l’amministrazione consente la modifica multipla per
 la tabella. Al massimo 5’000 record per modifica multipla, salvo diversa impostazione dell’amministrazione.

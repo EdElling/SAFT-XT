@@ -14,6 +14,7 @@ use App\DynamicData\DetailRelations;
 use App\DynamicData\DetailSource;
 use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Ui\BulkRecordActions;
+use App\DynamicData\Ui\BulkUndoActions;
 use App\DynamicData\Ui\DynamicRecordActions;
 use App\DynamicData\Ui\DynamicTableBuilder;
 use App\DynamicData\Ui\KeylessRow;
@@ -30,6 +31,7 @@ use App\Models\DynamicRecord;
 use App\Models\User;
 use App\Plugins\Api\DataAction;
 use App\Plugins\PluginRegistry;
+use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Filament\Panel;
 use Filament\Schemas\Components\Callout;
@@ -260,6 +262,8 @@ class DynamicDataPage extends Page implements HasTable
                 DynamicRecordActions::create($customTable),
                 DynamicRecordActions::export($customTable, $columns),
                 DynamicRecordActions::import($customTable),
+                // B-133 S3: letzte Sammeländerungen mit „Rückgängig“.
+                BulkUndoActions::history($customTable),
                 ...app(PluginRegistry::class)->dataActions($customTable, DataAction::TABLE),
             ])
             ->recordActions([
@@ -276,6 +280,15 @@ class DynamicDataPage extends Page implements HasTable
                 BulkRecordActions::restore($customTable),
             ])
             ->emptyStateHeading(__('data.empty'));
+    }
+
+    /**
+     * Bestätigung „Rückgängig“ einer Sammeländerung (B-133 S3): aus der Liste „Letzte Sammeländerungen“ und über die
+     * Adresse ?action=undoBulkChange&actionArguments[head]=… (Erfolgsmeldung, Detailtabelle, Seite der Arbeit).
+     */
+    public function undoBulkChangeAction(): Action
+    {
+        return BulkUndoActions::undo($this->customTable());
     }
 
     /**

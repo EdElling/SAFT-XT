@@ -380,3 +380,16 @@ no. n".
     MySQL; the trial run also checks plugin rules unknown to `RecordChecker`, and a bulk edit remains no way around the
     rules. *Residual risk:* whoever changes a record between write and revert keeps their state (entry in the system
     log); a number assigned in the write phase through "Assign when" stays (gap as with deletion).
+28. **Undo: header as index, values from the change log, raw values in the change log** (27 November 2026, B-133 S3).
+    Every successful bulk action (change, delete, restore, undo) creates a header in `bulk_changes` in the same
+    transaction as its last block: identifier `run`, app, table, person, kind and details per field, keys of the changed
+    records. The old values are not stored there but in the change log (no. 12); the undo reads them per block through
+    the index `(subject_type, subject_id)` and filters by `run`. It is itself a job `bulk_records` with all checks and
+    plugin events; records where a field of the bulk edit has changed since or that no longer pass a check stay and are
+    reported (not "all or nothing"). For this, `DynamicRecord` logs **raw values** as stored in the database, old and new
+    in the same form; Spatie used to pass new date values on in UTC. The task `activity_prune` deletes headers with the
+    same retention. Other people's bulk actions can be undone by those with `activity_log.view`. *Why:* kind and details
+    of a bulk edit are not in the change log and `work_items` are pruned; grouping by `properties->run` would run without
+    an index and see failed runs; a copy of the old values would be a second truth. *Consequence:* without a change log
+    (`ACTIVITYLOG_ENABLED=false`) there is no undo; entries from before 0.8.1 with UTC dates are converted to the
+    application time zone by `LoggedValue` (requires an unchanged `APP_TIMEZONE`).

@@ -266,7 +266,7 @@ massimo 5’000 record per modifica multipla (`APP_DATA_BULK_MAX`, `0` = senza l
 multipla)». Oltre a *impostare* e *svuotare* ci sono *calcolare* (numero, data), *sostituire* (testo) e *formula*
 (numero, sì/no, nel linguaggio delle formule dei campi calcolati; una divisione per 0 vi è un errore). Intervalli di
 numerazione, campi calcolati e file non sono modificabili; i campi univoci non si possono impostare, ma svuotare,
-sostituire o calcolare (il controllo segnala i risultati doppi). Le tabelle collegate non hanno la modifica multipla.
+sostituire o calcolare (il controllo segnala i risultati doppi). Le tabelle collegate non hanno la modifica multipla. **Annullare:** Ogni modifica multipla, anche l’eliminazione e il ripristino multipli, compare in «Ultime modifiche multiple» nella vista dati e si può annullare; i valori precedenti provengono dal registro delle modifiche. Chi ha il diritto *Modificare* (o *Eliminare*) annulla le proprie modifiche multiple, quelle di altre persone solo se può anche vedere il **registro delle modifiche** (`activity_log.view`; il super-admin sempre). L’attività **Accorciare il registro modifiche** rimuove dall’elenco anche le modifiche multiple più vecchie insieme alle voci; in seguito non è più possibile annullarle. Se il registro delle modifiche è disattivato (`ACTIVITYLOG_ENABLED=false`), non c’è nulla da annullare.
 
 **Modificare i campi** (area *Campi*, (2)): per ogni campo stabilite:
 

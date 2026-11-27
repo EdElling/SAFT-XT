@@ -310,7 +310,10 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
 
         if ($failed > 0) {
             throw new BusinessRuleException(
-                trans_choice('work.bulk.check_failed', $failed, ['count' => $failed])."\n".implode("\n", $errors).($failed > count($errors) ? "\n…" : ''),
+                trans_choice('work.bulk.check_failed', $failed, ['count' => $failed])."\n".implode("\n", $errors).($failed > count($errors) ? "\n…" : '')
+                // Die Prüfung speichert die ausgewählten Datensätze probeweise nacheinander: Ein Konflikt kann zwischen
+                // zwei ausgewählten bestehen, obwohl heute keiner da ist.
+                .(count($ids) > 1 ? "\n".__('work.bulk.check_failed_hint') : ''),
                 'bulk.check_failed',
             );
         }
@@ -628,8 +631,8 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
         return DynamicRecord::forTable($table)->newQuery()->when($trashed, static fn ($query) => $query->withTrashed())->whereKey($chunk)->get()->keyBy(static fn (DynamicRecord $record): int|string => $record->getKey());
     }
 
-    /** Kurzbezeichnung für Meldungen: Schlüssel und erstes Textfeld der Liste. */
-    private static function title(CustomTable $table, DynamicRecord $record): string
+    /** Kurzbezeichnung für Meldungen und die Vorschau der Rücknahme: Schlüssel und erstes Textfeld der Liste. */
+    public static function title(CustomTable $table, DynamicRecord $record): string
     {
         $field = $table->fields->first(static fn (CustomField $f): bool => $f->is_active && $f->show_in_table && in_array($f->type, [FieldType::String, FieldType::Number, FieldType::Select], true));
         $text = $field === null ? '' : trim((string) $record->getRawOriginal($field->name));

@@ -1,6 +1,6 @@
 # Konzept: Datensätze auswählen und Sammeländerung in SAFT XT
 
-Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2 umgesetzt 27.11.2026, S3 entschieden 27.11.2026 (§13), S4 offen** · Backlog: B-133
+Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2 umgesetzt 27.11.2026, S3 umgesetzt 27.11.2026 (§13), S4 offen** · Backlog: B-133
 (ersetzt B-024)
 
 > **Überarbeitung 27.11.2026:** Seit dem Entwurf vom 23.11.2026 gibt es Fundament 2 und die Nummernkreise. Der
@@ -230,6 +230,21 @@ roten Rechenfehlern und der Meldung bei unvollständiger Eingabe. Bei der Prüfu
 S2c: Browser-Test SAE-08 bis SAE-11, manuelle Testfälle SAE-08 bis SAE-12, Handbücher. Zurückgestellt: Felder
 verknüpfter Datensätze in Formeln (B-166), Text- und Datumsergebnisse (B-167), Auf- und Abrunden (B-168). Keine
 Migration, keine neuen Rechte, Plugin-API unverändert.
+
+**Stand S3 (27.11.2026): umgesetzt** nach den Entscheidungen in §13. S3a Backend: Kopf `bulk_changes` (Migration 102,
+`App\Models\BulkChange`, Spalte `field_changes`, weil `changes` mit einer Eigenschaft von Eloquent kollidiert), Rücknahme
+in `BulkRecordsWork` (`undo_of`) mit `BulkUndo` (Einordnung: zurück, schon zurück, seither geändert, nicht im Protokoll,
+gelöscht) und `BulkChangeAccess` (Rechte), Köpfe auch für Sammel-Löschen und -Wiederherstellen, `activity_prune` löscht
+Köpfe, Protokoll mit Rohwerten (`DynamicRecord::beforeActivityLogged()`, `LoggedValue`; `useAttributeRawValues()` genügte
+nicht, weil Spatie auch Rohwerte über `serializeDate()` schickt), Entscheidung Nr. 28. S3b Oberfläche: `BulkUndoActions`
+mit „Letzte Sammeländerungen“ (Seitenfenster) und der Bestätigung „Rückgängig“ als Aktion der Seite, geöffnet auch über
+`?action=undoBulkChange` aus Erfolgsmeldung, Detailtabelle und Seite der Arbeit. Bei der Prüfung in der Musikschule-Demo
+ergänzt: **Vorschau in der Bestätigung** (Zählungen und bis zu 10 Beispiele *jetzt → danach* aus den ersten 500, Knopf
+gesperrt, wenn nachweislich nichts zurückkäme), die Bestätigung ist am Seitenfenster registriert (sonst fand Filament
+sie nicht), und unter den Fehlern einer Prüfphase steht ein Hinweis, dass ein Konflikt zwischen zwei ausgewählten
+Datensätzen bestehen kann. Zurückgestellt: Datensätze einer Sammeländerung in der Datenansicht anzeigen (B-170). S3c:
+Browser-Test SAE-13 und SAE-14, manuelle Testfälle SAE-13 bis SAE-16, Handbücher. Keine neuen Rechte, Plugin-API
+unverändert.
 
 ## 11. Entscheidungen zu den offenen Fragen (27.11.2026: alle Empfehlungen angenommen)
 

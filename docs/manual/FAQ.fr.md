@@ -39,6 +39,7 @@
    - [Comment modifier de nombreux enregistrements en une fois ?](#comment-modifier-de-nombreux-enregistrements-en-une-fois-)
    - [La modification groupée indique « Rien n’a été modifié ».](#la-modification-groupée-indique--rien-na-été-modifié-)
    - [Lors de la modification groupée, des enregistrements sont restés inchangés.](#lors-de-la-modification-groupée-des-enregistrements-sont-restés-inchangés)
+   - [Comment annuler une modification groupée ?](#comment-annuler-une-modification-groupée-)
 
 ---
 ## Questions fréquentes
@@ -225,7 +226,7 @@ tout ou rien : désélectionnez ces enregistrements ou corrigez-les un par un et
 entièrement annulée et peut simplement être répétée. Avec les calculs et les formules, deux raisons s’ajoutent :
 **« Division par 0 »** (la formule divise par une valeur 0 pour cet enregistrement ; `if(champ = 0, …, …)` l’évite) et
 **« Le nombre est trop grand pour le champ »** (le résultat a plus de chiffres avant la virgule que le champ ne le
-permet). L’aperçu affiche déjà les deux en rouge.
+permet). L’aperçu affiche déjà les deux en rouge. Si le message nomme un conflit avec un enregistrement introuvable (p. ex. « enseigne déjà le mercredi à 23:00 … »), il existe entre deux enregistrements sélectionnés : le contrôle voit déjà les autres enregistrements sélectionnés avec leurs nouvelles valeurs.
 
 ### Lors de la modification groupée, des enregistrements sont restés inchangés.
 
@@ -235,3 +236,14 @@ donnait rien (« sans valeur ou sans occurrence »). L’aperçu et le message c
 vides, filtrez sur « vide » et choisissez *définir*. Si *remplacer* trouve moins que prévu, vérifiez les cases
 « Respecter la casse » et « Mot entier uniquement » : « Str. » comme mot entier ne correspond pas dans « Bahnhofstr. »,
 car une lettre le précède.
+
+### Comment annuler une modification groupée ?
+
+Par le lien **« Annuler »** dans le message de réussite ou plus tard par **« Dernières modifications groupées »**
+au-dessus de la table. La confirmation indique au préalable combien d’enregistrements reviennent et des exemples avec
+*maintenant → après*. Les enregistrements dont un champ modifié a changé de valeur depuis restent et le message les
+nomme. Si le bouton est désactivé (« Aucun enregistrement ne serait annulé »), tous les enregistrements ont été modifiés
+depuis, souvent par une modification groupée plus récente : annulez d’abord celle-ci. Les numéros attribués et les
+e-mails envoyés restent. Seules les personnes autorisées à voir le journal des modifications annulent les modifications
+groupées d’autres personnes. Voir
+[Manuel d’utilisation 4.11](USER_GUIDE.fr.md#411-modifier-plusieurs-enregistrements-modification-groupée).

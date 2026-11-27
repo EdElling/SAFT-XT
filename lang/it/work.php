@@ -101,6 +101,7 @@ return [
         'record_missing' => ':record non esiste più (eliminato).',
         'database_error' => 'Errore del database (dettagli nel registro di sistema).',
         'check_failed' => '{1} Nulla modificato: 1 record non supera i controlli.|[2,*] Nulla modificato: :count record non superano i controlli.',
+        'check_failed_hint' => 'Il controllo vede già gli altri record selezionati con i nuovi valori; un conflitto può esistere anche tra due record selezionati.',
         'check_passed' => '{0} Verificato: nessun record verrebbe modificato.|{1} Verificato: 1 record supera i controlli e verrebbe modificato.|[2,*] Verificato: tutti i :count record superano i controlli e verrebbero modificati.',
         'changed_meanwhile' => ':record è stato modificato nel frattempo da un’altra persona. La modifica multipla è stata annullata completamente.',
         'write_failed' => ':record: :message La modifica multipla è stata annullata completamente.',

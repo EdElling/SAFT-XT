@@ -255,7 +255,7 @@ it is all or nothing. It runs as a [job](#jobs), at most 5,000 records per bulk 
 limit); the history shows “(bulk edit)”. Besides *set* and *clear* there are *calculate* (number, date), *replace* (text)
 and *formula* (number, yes/no, in the formula language of computed fields; a division by 0 is an error there). Number
 sequences, computed fields and files cannot be changed; unique fields cannot be set but can be cleared, replaced or
-calculated (the check reports duplicate results). Linked tables have no bulk edit.
+calculated (the check reports duplicate results). Linked tables have no bulk edit. **Undo:** Every bulk edit, including bulk delete and restore, appears under “Recent bulk edits” in the data view and can be undone; the old values come from the activity log. People with the *Edit* (or *Delete*) permission undo their own bulk edits, other people's only if they may also view the **activity log** (`activity_log.view`; the super admin always). The task **Trim activity log** also removes older bulk edits from the list together with the entries; after that no undo is possible. If the activity log is switched off (`ACTIVITYLOG_ENABLED=false`), there is nothing to undo.
 
 **Editing fields** (area *Fields*, (2)): for every field you set:
 

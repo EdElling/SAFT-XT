@@ -263,7 +263,7 @@ höchstens 5'000 Datensätze je Sammeländerung (`APP_DATA_BULK_MAX`, `0` = ohne
 „(Sammeländerung)“. Neben *setzen* und *leeren* gibt es *rechnen* (Zahl, Datum), *ersetzen* (Text) und *Formel* (Zahl,
 Ja/Nein, in der Formelsprache der berechneten Felder, eine Division durch 0 ist dort ein Fehler). Nicht änderbar sind
 Nummernkreise, berechnete Felder und Dateien; eindeutige Felder lassen sich nicht setzen, wohl aber leeren, ersetzen
-oder rechnen (doppelte Ergebnisse meldet die Prüfung). Für angebundene Tabellen gibt es die Sammeländerung nicht.
+oder rechnen (doppelte Ergebnisse meldet die Prüfung). Für angebundene Tabellen gibt es die Sammeländerung nicht. **Rückgängig:** Jede Sammeländerung, auch Sammel-Löschen und -Wiederherstellen, steht unter „Letzte Sammeländerungen“ in der Datenansicht und lässt sich zurücknehmen; die alten Werte kommen aus dem Änderungsprotokoll. Eigene Sammeländerungen nimmt zurück, wer das Recht *Bearbeiten* (bzw. *Löschen*) hat, fremde nur, wer zusätzlich das **Änderungsprotokoll** sehen darf (`activity_log.view`; der Super-Admin immer). Die Aufgabe **Änderungsprotokoll kürzen** löscht mit den Einträgen auch ältere Sammeländerungen aus der Liste; danach ist keine Rücknahme mehr möglich. Ist das Änderungsprotokoll ausgeschaltet (`ACTIVITYLOG_ENABLED=false`), gibt es nichts zurückzunehmen.
 
 **Felder bearbeiten** (Bereich *Felder*, (2)): Für jedes Feld legen Sie fest:
 
