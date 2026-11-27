@@ -106,6 +106,68 @@ final class RecordWriter
     }
 
     /**
+     * Probelauf: Schreibvorgänge wirklich ausführen (alle Phasen, Plugin-Ereignisse, Nummernkreise, Protokoll) und
+     * danach auf beiden Verbindungen zurückrollen – auch innerhalb einer laufenden Transaktion (Sicherungspunkte).
+     * Wirkungen nach aussen, die darin angemeldet wurden (afterCommit), verfallen. Liefert das Ergebnis des Callbacks.
+     * Für die Prüfphase der Sammeländerung (BULK_EDIT.md §6).
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    public function trial(Closure $callback, ?WriteOptions $options = null, ?Connection $connection = null): mixed
+    {
+        $result = null;
+
+        try {
+            $this->savepoint(static function () use ($callback, &$result): never {
+                $result = $callback();
+
+                throw new TrialRollback;
+            }, $options, $connection);
+        } catch (TrialRollback) {
+            // gewollt: alles zurückgerollt
+        }
+
+        return $result;
+    }
+
+    /**
+     * Sicherungspunkt auf beiden Verbindungen: Scheitert der Callback, rollen nur seine Schreibvorgänge zurück (samt
+     * Protokoll und afterCommit-Wirkungen), die umgebende Transaktion bleibt nutzbar; die Ausnahme wird weitergereicht.
+     * Ohne laufende Transaktion wirkt er wie batch(), aber ohne Commit-Wirkungen bei einem Fehler.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    public function savepoint(Closure $callback, ?WriteOptions $options = null, ?Connection $connection = null): mixed
+    {
+        if (! WriteContext::active()) {
+            return $this->batch(fn (): mixed => $this->savepoint($callback), $options, $connection);
+        }
+
+        $data = $connection ?? $this->namespace->connection();
+        $main = DB::connection();
+        $mark = WriteContext::afterCommitMark();
+        $options ??= WriteContext::options();
+
+        try {
+            return WriteContext::run($options, static fn (): mixed => $main->transaction(
+                static fn (): mixed => $data->getName() === $main->getName()
+                    ? $callback()
+                    : $data->transaction(static fn (): mixed => $callback()),
+            ));
+        } catch (Throwable $e) {
+            WriteContext::discardAfterCommitSince($mark);
+
+            throw $e;
+        }
+    }
+
+    /**
      * Nur für Recalculator::recomputeBlock(): berechnete Werte schreiben – ohne Phasen, Ereignisse, Protokoll und
      * Zeitstempel, denn Auslöser ist die Formel, nicht eine Änderung am Datensatz.
      *

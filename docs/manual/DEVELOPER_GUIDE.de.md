@@ -554,6 +554,13 @@ angelegt oder geändert).
 - **Ablehnen** in `RecordSaving` oder `RecordDeleting`: `throw new RecordRejected('Meldung für die Anzeige');`. SAFT
   speichert nichts und zeigt „Aktion nicht möglich“ mit Ihrer Meldung an; beim Import erscheint sie als Fehler der
   Zeile, und der ganze Import wird nicht ausgeführt.
+- **Sammeländerung** (Arbeit `bulk_records`, Herkunft `WriteOptions::BULK`, Laufkennung `run` = `bulk:<uuid>`): Ihr
+  Listener sieht jeden ausgewählten Datensatz wie beim Bearbeiten, und zwar **zweimal**: zuerst in der Prüfphase, die
+  wirklich speichert und danach zurückrollt (`RecordWriter::trial()`), dann beim eigentlichen Schreiben. Ein
+  `RecordRejected` in der Prüfphase verhindert die ganze Sammeländerung, nichts wird geändert. Wirkungen nach aussen
+  (E-Mail, Webhook, Dateien ausserhalb der Datenbank) melden Sie deshalb mit `Saft::afterCommit()` an; in der
+  Prüfphase verfallen sie. Scheitert die Schreibphase, schreibt SAFT die alten Werte **ohne** Plugin-Ereignisse
+  zurück. Ob eine Änderung aus einer Sammeländerung kommt, steht im Protokolleintrag (`via: bulk`).
 - **Folgeänderungen** in `RecordSaved` und `RecordDeleted` schreiben Sie über `Saft::table(…)`. Sie laufen immer in
   derselben Transaktion wie die auslösende Änderung (seit API 1.10, Datensatz, Summen, Dateien und Protokoll): Wirft ein
   Listener dort eine Ausnahme, wird auch die auslösende Änderung zurückgerollt. Lösen Sie selbst Ereignisse aus, achten

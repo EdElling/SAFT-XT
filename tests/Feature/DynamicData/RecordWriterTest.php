@@ -270,4 +270,80 @@ class RecordWriterTest extends DynamicDataTestCase
         $writer->batch(fn () => null);
         $this->assertSame(['a', 'b', 'sofort'], $ran);
     }
+
+    public function test_trial_writes_with_all_phases_and_rolls_back_data_log_and_after_commit(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $table = $this->table();
+        $record = $this->writer()->create($table, ['titel' => 'Alpha']);
+        $logs = Activity::query()->where('log_name', 'dynamic.projekte')->count();
+        $saving = 0;
+        $ran = [];
+        Event::listen(RecordSaving::class, static function () use (&$saving): void {
+            $saving++;
+        });
+
+        $result = $this->writer()->trial(function () use ($record, &$ran): string {
+            $this->writer()->update($record, ['titel' => 'Probe']);
+            $this->writer()->create($this->table(), ['titel' => 'Neu']);
+            WriteContext::afterCommit(function () use (&$ran): void {
+                $ran[] = 'probe';
+            });
+
+            return 'geprüft';
+        });
+
+        $this->assertSame('geprüft', $result);
+        $this->assertSame(2, $saving, 'Plugin-Ereignisse laufen im Probelauf.');
+        $this->assertSame('Alpha', $record->fresh()->titel);
+        $this->assertSame(1, $this->recordCount());
+        $this->assertSame($logs, Activity::query()->where('log_name', 'dynamic.projekte')->count());
+        $this->assertSame([], $ran, 'Wirkungen nach aussen verfallen.');
+    }
+
+    public function test_trial_inside_a_batch_keeps_the_surrounding_writes_and_their_after_commit(): void
+    {
+        $table = $this->table();
+        $ran = [];
+
+        $this->writer()->batch(function () use ($table, &$ran): void {
+            $this->writer()->create($table, ['titel' => 'Bleibt']);
+            WriteContext::afterCommit(function () use (&$ran): void {
+                $ran[] = 'aussen';
+            });
+            $this->writer()->trial(function () use ($table, &$ran): void {
+                $this->writer()->create($table, ['titel' => 'Probe']);
+                WriteContext::afterCommit(function () use (&$ran): void {
+                    $ran[] = 'probe';
+                });
+            });
+        });
+
+        $this->assertSame(['Bleibt'], DynamicRecord::forTableName('projekte')->newQuery()->pluck('titel')->all());
+        $this->assertSame(['aussen'], $ran);
+    }
+
+    public function test_savepoint_rolls_back_only_the_failing_part(): void
+    {
+        $table = $this->table();
+
+        $this->writer()->batch(function () use ($table): void {
+            $this->writer()->create($table, ['titel' => 'Eins']);
+
+            try {
+                $this->writer()->savepoint(function () use ($table): void {
+                    $this->writer()->create($table, ['titel' => 'Zwei']);
+
+                    throw new BusinessRuleException('nein');
+                });
+                $this->fail('Ausnahme erwartet.');
+            } catch (BusinessRuleException) {
+                // erwartet
+            }
+
+            $this->writer()->create($table, ['titel' => 'Drei']);
+        });
+
+        $this->assertSame(['Drei', 'Eins'], DynamicRecord::forTableName('projekte')->newQuery()->orderBy('titel')->pluck('titel')->all());
+    }
 }

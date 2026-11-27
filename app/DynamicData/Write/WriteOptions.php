@@ -33,6 +33,9 @@ final readonly class WriteOptions
     /** Nachnummerieren (B-135, N2): darf eine leere Nummer eines bestehenden Datensatzes füllen. */
     public const string NUMBERING = 'numbering';
 
+    /** Sammeländerung (B-133): gleiche Prüfungen wie beim Bearbeiten, Kennung „bulk:<uuid>“ als run. */
+    public const string BULK = 'bulk';
+
     /** Schritt einer Arbeit (WritesRecords), sofern die Art keine eigenen Optionen mitgibt. */
     public const string WORK = 'work';
 
@@ -69,6 +72,12 @@ final readonly class WriteOptions
         return new self(origin: self::IMPORT, log: false);
     }
 
+    /** Sammeländerung (B-133) mit der Kennung des Laufs. */
+    public static function bulk(string $run): self
+    {
+        return new self(origin: self::BULK, run: $run);
+    }
+
     /** Feste Datensätze (Demo-Daten): keine Geschäftsregeln von Plugins, kein Protokoll. */
     public static function seed(): self
     {
@@ -96,7 +105,7 @@ final readonly class WriteOptions
         return new self($this->origin, $this->pluginEvents, $this->log, $version, $overwriting, $this->run);
     }
 
-    /** Kennung zusammengehöriger Änderungen im Protokoll, z. B. „work:42“ (Sammeländerung später „bulk:<uuid>“). */
+    /** Kennung zusammengehöriger Änderungen im Protokoll, z. B. „work:42“ (Sammeländerung „bulk:<uuid>“). */
     public function withRun(string $run): self
     {
         return new self($this->origin, $this->pluginEvents, $this->log, $this->expectedVersion, $this->overwriting, $run);

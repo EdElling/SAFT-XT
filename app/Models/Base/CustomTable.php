@@ -34,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $is_shared
  * @property bool $export_enabled
  * @property bool $import_enabled
+ * @property bool $bulk_enabled
  * @property bool $allow_create
  * @property bool $allow_update
  * @property bool $allow_delete
@@ -56,6 +57,7 @@ class CustomTable extends Model
         'is_shared' => 'bool',
         'export_enabled' => 'bool',
         'import_enabled' => 'bool',
+        'bulk_enabled' => 'bool',
         'allow_create' => 'bool',
         'allow_update' => 'bool',
         'allow_delete' => 'bool',
@@ -85,6 +87,7 @@ class CustomTable extends Model
         'is_shared',
         'export_enabled',
         'import_enabled',
+        'bulk_enabled',
         'allow_create',
         'allow_update',
         'allow_delete',

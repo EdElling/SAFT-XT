@@ -1,14 +1,15 @@
 # Konzept: Datensätze auswählen und Sammeländerung in SAFT XT
 
-Stand: 23.11.2026 · Status: **erster Vorschlag zur Diskussion** · Backlog: B-133 (ersetzt B-024)
+Stand: 27.11.2026 · Status: **entschieden (§11); S1a (Backend) umgesetzt 27.11.2026, S1b/S1c in Arbeit** · Backlog: B-133
+(ersetzt B-024)
 
-> **Nachtrag 26.11.2026 (Nummernkreise N2):** Den Baustein „Transaktion beim Speichern“ gibt es seit Fundament 2 als
-> `RecordWriter` (Transaktion auf beiden Verbindungen, `batch()`); die Abschnitte unten nennen noch den alten Namen und
-> werden in der Sitzung zu S1 überarbeitet. Die Kennung zusammengehöriger Änderungen steht als `run` in den
-> Eigenschaften des Protokolleintrags (`WriteOptions::withRun()`); das Nachnummerieren nutzt `number_backfill:<uuid>`,
-> die Sammeländerung soll denselben Schlüssel mit `bulk:<uuid>` nutzen statt eines eigenen `bulk`. Das Nachnummerieren
-> ist bewusst keine Sammeländerung (Wert erzeugt statt gewählt, beliebig viele Datensätze, nicht rücknehmbar,
-> Übersprungene statt „alles oder nichts“, siehe NUMBERING.md 12.3).
+> **Überarbeitung 27.11.2026:** Seit dem Entwurf vom 23.11.2026 gibt es Fundament 2 und die Nummernkreise. Der
+> frühere Baustein „Transaktion beim Speichern“ heisst jetzt `RecordWriter` mit `WriteOptions` und `batch()`
+> (ARCHITECTURE Nr. 10, 11). Lange Vorgänge laufen als Arbeiten (`App\Work\WorkType`, Nr. 19–21). Die Kennung
+> zusammengehöriger Änderungen ist `WriteOptions::withRun()` mit dem Schlüssel `bulk:<uuid>`; sie steht als `run` in
+> den Eigenschaften des Protokolleintrags. Das Nachnummerieren nutzt dafür `number_backfill:<uuid>`. Es ist bewusst
+> keine Sammeländerung (NUMBERING.md 12.3). Die Nummernkreise (N1–N4) sind fertig. Statt der festen Sperre
+> (`lockForUpdate` über den ganzen Lauf) nutzt die Sammeländerung jetzt die optimistische Sperre (Nr. 13).
 
 ## 1. Ziel
 
@@ -17,162 +18,223 @@ aus der Musikschule:
 
 - Nach der Semester-Fortschreibung alle Anmeldungen von *Warteliste* auf *aktiv* setzen.
 - Eine Lehrperson in allen Kursen des laufenden Semesters durch eine andere ersetzen (Filter Semester + Lehrperson).
-- Bei allen Kursen eines Fachs den Tarif um 5 % erhöhen.
+- Bei allen Kursen eines Fachs den Tarif um 5 % erhöhen (S2).
 
 Sammeländerungen sind mächtig und deshalb gefährlich. Es gelten folgende Grundsätze:
 
 - **Dieselben Prüfungen wie beim Einzelbearbeiten:** Pflicht, Feld- und Tabellenregeln, Plugin-Listener (z. B. die
-  Konfliktprüfung der Musikschule), Regeln (B-142), Zeilenrechte (B-020), Änderungsprotokoll. Eine Sammeländerung ist
-  kein Weg an den Regeln vorbei.
-- **Vorher sehen, was passiert:** Anzahl, Beispiele vorher → nachher, Probelauf mit allen Prüfungen.
-- **Alles oder nichts:** Scheitert ein Datensatz, wird nichts geändert.
-- **Nachvollziehbar und rücknehmbar:** Jede Sammeländerung erhält eine Kennung im Protokoll und lässt sich zurücknehmen
-  (Etappe S3).
+  Konfliktprüfung der Musikschule), Nummernkreise, Änderungsprotokoll, später Regeln (B-142) und Zeilenrechte (B-020).
+  Eine Sammeländerung ist kein Weg an den Regeln vorbei; sie schreibt je Datensatz über den `RecordWriter`.
+- **Vorher sehen, was passiert:** Anzahl, Beispiele vorher → nachher, Prüfung über alle Datensätze vor dem ersten
+  Schreiben.
+- **Alles oder nichts:** Scheitert ein Datensatz, bleibt kein Datensatz geändert (§6).
+- **Nachvollziehbar und rücknehmbar:** Jede Sammeländerung hat die Kennung `bulk:<uuid>` im Protokoll und lässt sich
+  zurücknehmen (Etappe S3).
 
-## 2. Heute
+**Abgrenzung** (27.11.2026):
+
+- **Nur Feldinhalte.** Die Sammeländerung setzt oder leert Werte vorhandener Datensätze einer Datentabelle bzw.
+  Detailtabelle. Die Struktur (Tabellen, Felder, Typen, Regeln, Formeln, Auswahlwerte, Einstellungen der
+  Nummernkreise) ändert nur der Table-Designer über `DynamicSchemaService`; gesetzt wird nur eine vorhandene Wahl.
+  Verwaltungstabellen (Benutzer, Rollen, Menüs, Aufgaben) gehören nicht dazu. Innerhalb der Daten sind Felder
+  ausgenommen, deren Wert SAFT bestimmt oder die strukturelle Bedeutung haben (§4). Verknüpfungen bleiben änderbar
+  (z. B. Lehrperson eines Kurses); Summen im Master rechnet der Writer wie beim Einzelbearbeiten mit.
+- **Keine Läufe.** Vorgänge, die Datensätze in anderen Tabellen anlegen, Nummern vergeben, Dokumente erzeugen oder
+  E-Mails versenden (Rechnungslauf, Mahnlauf), sind Fachlogik: als Plugin (z. B. B-137, eigene Arbeit über
+  `workTypes()`, ab S4 als Sammelaktion über `DataAction::BULK`) oder als Regel mit Auslöser „manuell“ der Regel-Engine
+  (B-142). Sie nutzen dieselbe Auswahl, Kennung und Arbeit, bauen sie aber nicht neu.
+
+## 2. Heute (27.11.2026)
 
 | Baustein | Stand |
 |---|---|
-| Auswahl per Häkchen | **umgesetzt** mit B-124 D3a. Die Häkchen erscheinen, sobald eine Sammelaktion sichtbar ist; heute ist das nur „Dokumente erstellen“ (`DynamicRecordActions::documentBulk`, höchstens 50 je Lauf). Gelöschte Datensätze sind nicht auswählbar. |
-| Sammelaktion Löschen | `DynamicRecordActions::deleteBulk()` ist vorhanden, steht aber in keiner Datentabelle in der Werkzeugleiste. |
+| Auswahl per Häkchen | **umgesetzt** mit B-124 D3a. Häkchen erscheinen, sobald eine Sammelaktion sichtbar ist; heute ist das nur „Dokumente erstellen“ (`DynamicRecordActions::documentBulk`). Gelöschte Datensätze sind nicht auswählbar (`checkIfRecordIsSelectableUsing`). |
+| Sammelaktion Löschen | `DynamicRecordActions::deleteBulk()` ist vorhanden (je Datensatz `RecordWriter::delete()`, gesperrte werden übersprungen und gezählt), steht aber in keiner Datentabelle in der Werkzeugleiste. |
 | Detailtabellen (`DynamicDetailTable`) | keine Auswahl, keine Sammelaktionen |
-| Filament | „Alle auswählen“ über alle Seiten (`trackDeselectedRecords`: Die Auswahl wird als Abfrage mit Ausnahmen geführt, nicht als lange Liste von Schlüsseln); Auswahl wird beim Ändern eines Filters aufgehoben (`deselectAllRecordsWhenFiltered`, Vorgabe an) |
-| Änderungsprotokoll | spatie/laravel-activitylog, Spalte `properties` (JSON); keine Kennung für zusammengehörige Änderungen |
+| Schreibweg | `RecordWriter` mit Phasen, Version (`WriteOptions::expecting`, `StaleRecordException`), `batch()` für mehrere Schreibvorgänge in einer Transaktion auf beiden Verbindungen, `afterCommit()` für E-Mails und Webhooks |
+| Prüfungen ausserhalb eines Formulars | `RecordChecker::check()` (Pflicht, Länge, Min/Max, E-Mail/URL, Feldregeln aus Plugins, eindeutig, Auswahlwerte, Verknüpfungen, Tabellenregeln); genutzt von Import und Plugin-API `DataTable` |
+| Arbeiten | `work_items`, `WorkType` mit `prepare()`/`step()`, `WritesRecords` (Schritt und Cursor in einer Transaktion), `CleansUp` (Rücknahme bei Fehler/Abbruch), `WorkService::startAndAdvance()` erledigt kleine Mengen im Request |
+| Vorbild Lauf mit Kennung | `NumberBackfillWork`: Blöcke zu 200, Protokoll je Datensatz mit `run`, Übersprungene statt alles oder nichts |
+| Vorbild Prüfphase + Rücknahme | `RecordImportWork`: Prüfphase über alles, dann Blöcke; `abort()` nimmt Angelegtes zurück (Nr. 21) |
+| Filament | „Alle auswählen“ über alle Seiten (`trackDeselectedRecords`), Auswahl wird beim Ändern eines Filters aufgehoben (`deselectAllRecordsWhenFiltered`, Vorgabe an) |
 | Tabellen-Stammdaten | Schalter `export_enabled`, `import_enabled` zusätzlich zum Recht der Rolle |
 
 ## 3. Entscheidungen (Vorschlag)
 
 | Frage | Vorschlag |
 |---|---|
-| Wirkt auf | **Ausgewählte Datensätze, geschnitten mit dem aktuellen Filter**, nur nicht gelöschte. Ausgewählte Zeilen, die ein geänderter Filter nicht mehr zeigt, bleiben unberührt. Filament hebt die Auswahl beim Filtern ohnehin auf; die Schnittmenge wird bei der Ausführung trotzdem noch einmal gebildet, als Sicherung. |
-| Weg des Speicherns | **Je Datensatz derselbe Weg wie beim Bearbeiten:** `RecordChecker` mit dem bestehenden Datensatz, dann `save()` mit allen Ereignissen (Formeln, Summen im Master, Plugin-Listener, Regeln, Protokoll). Es gibt kein `UPDATE … WHERE` an den Regeln vorbei. |
-| Transaktion | **Eine** für die ganze Sammeländerung, alles oder nichts, wie beim Import. Nutzt den gemeinsamen Baustein „Transaktion beim Speichern“ (Konzepte Regel-Engine 7.1, Nummernkreise 6.2, Zeilenrechte). |
-| Obergrenze | einstellbar (`data.bulk_max`), Vorgabe **500** Datensätze je Sammeländerung, synchron. Grössere Mengen: in Teilen per Filter, oder später als Lauf im Hintergrund (Konzept Regel-Engine, Abschnitt 8). |
-| Recht | Recht **ändern** der Tabelle, dazu der Schalter **„Sammeländerung erlauben“** in den Tabellen-Stammdaten (wie Export und Import, Vorgabe an). Mit Zeilenrechten (B-020) nur Datensätze, die man ändern darf. |
-| Protokoll | Jede Änderung mit **Kennung der Sammeländerung** in `properties` (`bulk: <uuid>`) und eine Zeile in `bulk_changes` (Tabelle, Person, Felder, Anzahl, Zeitpunkt). |
+| Wirkt auf | **Ausgewählte Datensätze, geschnitten mit dem aktuellen Filter**, nur nicht gelöschte. Die Schlüssel werden beim Start einmal festgehalten; später neu hinzukommende Datensätze gehören nicht dazu. |
+| Weg des Speicherns | Je Datensatz `RecordWriter::update()` mit `WriteOptions` Herkunft **`bulk`** (neue Konstante, `WriteOptions` steht nicht im `ApiManifest`), Plugin-Ereignisse an, Protokoll an, `withRun('bulk:<uuid>')`, Version aus der Prüfphase (`expecting`). Kein `UPDATE … WHERE`. |
+| Ablauf | **Als Arbeit** `bulk_records` (§6), gestartet mit `startAndAdvance()`: Kleine Mengen sind im Request fertig (wirkt wie synchron), grosse laufen mit Fortschritt weiter. |
+| Alles oder nichts | Prüfphase über alle Datensätze (Probelauf je Block in `batch()`, zurückgerollt); erst wenn alle bestehen, Schreibphase in Blöcken. Scheitert danach ein Block (inzwischen geändert, Plugin), nimmt `CleansUp::abort()` die geschriebenen Blöcke aus dem Journal zurück (Muster Import, Nr. 21). |
+| Obergrenze | `dynamic_data.bulk_max` (`APP_DATA_BULK_MAX`), Vorgabe **5'000**, `0` = ohne Grenze (Muster Nr. 22). |
+| Recht | Recht **ändern** der Tabelle und Schalter **„Sammeländerung erlauben“** (`bulk_enabled`) in den Tabellen-Stammdaten, Vorgabe **an**. Kein eigenes Recht je Rolle. |
+| Tabellen | Designer-Tabellen. Angebundene Tabellen bekommen in S1 keine Sammeländerung (kein Papierkorb, keine Zeitstempel, Trigger der fremden Anwendung); später prüfen (S4). |
+| Protokoll | Je Datensatz ein Eintrag wie beim Einzelbearbeiten, mit `via: bulk` und `run: bulk:<uuid>`. Die Arbeit hält Tabelle, Felder, Art, Anzahl und Person. Eine eigene Tabelle `bulk_changes` entscheidet S3. |
 
 ## 4. Dialog „Ändern …“
 
 Knopf **„Ändern …“** in der Werkzeugleiste, aktiv sobald Zeilen ausgewählt sind. Der Dialog zeigt oben „**N Datensätze
-ausgewählt**“ und listet dann die änderbaren Felder. Je Feld:
+ausgewählt**“ und listet die änderbaren Felder. Je Feld:
 
 - ein Häkchen **„ändern“**. Nur angehakte Felder werden angefasst.
 - die **Art der Änderung**:
 
 | Art | Für | Beispiel |
 |---|---|---|
-| **setzen** | alle änderbaren Typen; das Eingabefeld des Feldtyps (Auswahl, Datum, Verknüpfung mit Suche, Ja/Nein) | Status ← *aktiv*; Lehrperson ← *M. Keller* |
+| **setzen** | alle änderbaren Typen; das Eingabefeld des Feldtyps aus dem Formular (Auswahl, Datum, Verknüpfung mit Suche, Ja/Nein) | Status ← *aktiv*; Lehrperson ← *M. Keller* |
 | **leeren** | Felder ohne Pflicht | Bemerkung ← leer |
 | **rechnen** (S2) | Zahl: `+ − × ÷` und „um %“, mit Runden auf Stellen; Datum: ± Tage, Monate | Tarif × 1,05, gerundet auf 0,05; Fälligkeit + 30 Tage |
-| **Formel** (S2) | alle; Formel in der vorhandenen Sprache, ausgewertet je Datensatz, mit dem bisherigen Wert und verknüpften Feldern | `round(tarif * 1.05 / 0.05, 0) * 0.05`, `kurs.lehrperson` |
+| **ersetzen** (S2) | Text: Suchtext → Ersatz innerhalb des Werts, wahlweise „Gross-/Kleinschreibung beachten“ und „nur ganzes Wort“, keine regulären Ausdrücke; je Feld, nie über alle Felder; Datensätze ohne Treffer bleiben unverändert | Adresse: „Str.“ → „Strasse“ |
+| **Formel** (S2) | alle; Formel in der vorhandenen Sprache (FORMULA_SPEC.md), je Datensatz mit dem bisherigen Wert und verknüpften Feldern | `round(tarif * 1.05 / 0.05, 0) * 0.05` |
 
-**Nicht änderbar** und deshalb nicht angeboten:
+**Nicht änderbar** und deshalb nicht angeboten (Vorschlag, §11 Frage 3):
 
-- berechnete Felder, Dateien, Nummernkreise (B-135), Schlüssel
-- **eindeutige** Felder: Ein Wert für viele Datensätze verletzt die Eindeutigkeit (leeren nur ohne Pflicht)
-- Felder, die ein Plugin sperrt
-- angebundene (externe) Tabellen: Sie sind nur lesbar, der Knopf fehlt dort ganz
+| Feld | setzen | leeren | Grund |
+|---|---|---|---|
+| Nummernkreis | nein | nein | Eine vergebene Nummer ändert kein Schreibweg (Nr. 26). |
+| berechnet | nein | nein | Wert kommt aus der Formel. |
+| Datei, Bild | nein | nein | Hochladen gehört ins Formular; Leeren entfernt Dateien und gefährdet abgelegte Dokumente. |
+| eindeutig | nein | ja, ohne Pflicht | Ein Wert für mehrere Datensätze verletzt die Eindeutigkeit; leere Werte nicht. |
+| inaktiv, Systemspalten | nein | nein | |
+| Verknüpfung zur Haupttabelle in einer Detailtabelle | nein | nein | gesperrt wie im Formular der Detailtabelle |
 
-„**Wert übernehmen aus**“ wirkt heute nur beim Anlegen. Wird eine Verknüpfung geändert, bleiben übernommene Werte
-deshalb wie beim Einzelbearbeiten unverändert. Der Dialog weist darauf hin, wenn er ein Verknüpfungsfeld mit
-abhängigen Übernahmen ändert („Einzelpreis wird nicht neu übernommen“).
+**Gruppen- und Datumsfelder eines Nummernkreises** bleiben änderbar wie beim Einzelbearbeiten. Eine vergebene Nummer
+bleibt dabei stehen (N4). Der Dialog warnt, sobald so ein Feld angehakt ist: „Bei 12 Datensätzen steht schon eine
+Nummer; sie bleibt (Kurzzeichen bzw. Periode passen danach nicht mehr zum Feld).“ Ändert die Sammeländerung ein Feld,
+das in **„Vergeben, wenn“** (N3) vorkommt, vergibt der Writer Nummern je Datensatz in Schlüsselreihenfolge. Die
+Vorschau nennt das: „Bei voraussichtlich 47 Datensätzen wird eine Nummer vergeben.“
 
-## 5. Vorschau und Probelauf
+„**Wert übernehmen aus**“ wirkt nur beim Anlegen. Wird eine Verknüpfung geändert, bleiben übernommene Werte wie beim
+Einzelbearbeiten unverändert. Der Dialog weist darauf hin („Einzelpreis wird nicht neu übernommen“).
 
-Nach „Weiter“ zeigt eine zweite Seite des Dialogs:
+## 5. Vorschau
 
-1. **Wirkt auf:** „47 Datensätze werden geändert, 3 sind schon so (unverändert)“. Datensätze, bei denen sich nichts
-   ändert, werden übersprungen. Das gibt kein Protokoll und keine Ereignisse.
-2. **Beispiele:** die ersten 10 als Tabelle *Datensatz · Feld · vorher → nachher*. Bei „rechnen“ und „Formel“ ist das
-   der einzige Weg, das Ergebnis zu sehen, bevor es gilt.
-3. **Probelauf:** SAFT führt die ganze Änderung in einer Transaktion aus und rollt sie zurück: alle Prüfungen, Plugins
-   und Regeln, aber ohne Benachrichtigungen, E-Mails und Webhooks (die gehen erst nach dem Commit hinaus,
-   vgl. Regel-Engine 7.1). Ergebnis: „Alle 47 bestehen die Prüfungen“ oder eine Liste „Kurs *Klavier Mo 16:00*:
-   Lehrperson hat zu dieser Zeit schon einen Kurs (Konfliktprüfung)“. Mit Fehlern bleibt „Ändern“ gesperrt.
-4. **Bestätigen:** „47 Datensätze ändern“. Erst jetzt wird die Änderung wirklich ausgeführt, mit derselben Prüfung noch
-   einmal, weil sich die Daten inzwischen geändert haben könnten.
+Nach „Weiter“ zeigt die zweite Seite des Dialogs (synchron, ohne zu schreiben):
 
-Bei mehr als 500 Datensätzen gibt es eine Meldung mit der Anzahl und dem Hinweis, den Filter einzugrenzen.
+1. **Wirkt auf:** „50 Datensätze ausgewählt“. Über `dynamic_data.bulk_max` gibt es eine Meldung mit dem Hinweis, den Filter
+   einzugrenzen; „Ändern“ ist dann gesperrt.
+2. **Beispiele:** die ersten 10 als Tabelle *Datensatz · Feld · vorher → nachher*. Bei „rechnen“ und „Formel“ (S2) ist
+   das der einzige Weg, das Ergebnis vorher zu sehen.
+3. **Hinweise:** Nummernkreise (§4), „Wert übernehmen aus“, bei vielen Datensätzen „läuft als Arbeit im Hintergrund
+   weiter“.
+4. **Knöpfe:** „**Nur prüfen**“ startet die Arbeit ohne Schreibphase und meldet das Ergebnis; „**N Datensätze
+   ändern**“ startet sie mit Schreibphase. Beide prüfen vollständig. Der getrennte Probelauf mit späterer Bestätigung
+   entfällt: Bei einer Arbeit läge zwischen Probelauf und Bestätigung beliebig viel Zeit, und die Schreibphase muss
+   ohnehin noch einmal prüfen.
 
-## 6. Ausführung
+## 6. Ausführung als Arbeit `bulk_records`
 
-- **Reihenfolge:** nach Schlüssel. Je Datensatz Werte berechnen, prüfen, speichern.
-- **Summen im Master** (`Recalculator::propagate`) laufen je Datensatz. Bei vielen Kind-Datensätzen desselben Masters
-  ist das mehrfache Rechnen unnötig. Eine Bündelung („Master am Ende einmal nachrechnen“) ist eine Optimierung für
-  später, falls es sich als langsam erweist.
-- **Sperren:** Die Datensätze werden beim Lesen gesperrt (`lockForUpdate`), damit niemand sie zwischen Probelauf und
-  Speichern ändert. Die Sperre gilt nur während der Ausführung.
-- **Ergebnis:** Meldung „47 Datensätze geändert“ mit Link „Rückgängig“ (S3). Die Auswahl wird danach aufgehoben, und
-  die Liste lädt neu.
-- **Fehler trotz Probelauf** (gleichzeitige Änderung): alles zurückrollen und die Meldung mit dem Datensatz zeigen.
+Parameter: Tabelle, Vorgang (`update`, später `delete`, `restore`), Änderungen je Feld (Art, Wert), Schlüssel der
+Datensätze (im Ordner der Arbeit, ab einer gewissen Menge als Datei), `dry_run`.
+
+1. **`prepare()`:** Kennung `bulk:<uuid>`, Menge = Anzahl Schlüssel.
+2. **Prüfphase** (Blöcke zu 100): je Block in `RecordWriter::batch()` jeden Datensatz mit den neuen Werten wirklich
+   speichern (alle Phasen, Plugin-Listener, Nummernkreise, Tabellenregeln), dann die Transaktion zurückrollen. Das
+   prüft genau das, was später geschrieben wird, auch Plugin-Regeln, die `RecordChecker` nicht kennt. E-Mails und
+   Webhooks entstehen nicht (`afterCommit()` wird verworfen). Je Datensatz wird die Version festgehalten;
+   unveränderte Datensätze (neuer Wert = alter Wert) werden gezählt und übersprungen. Fehler werden gesammelt
+   (höchstens 20 mit Datensatz und Meldung). Hat ein Block Fehler, prüft die Arbeit trotzdem weiter, damit die Liste
+   vollständig ist.
+3. **Ende der Prüfphase:** mit Fehlern → Arbeit „fehlgeschlagen“ mit der Liste, nichts geändert. Mit `dry_run` →
+   „fertig: alle 47 bestehen die Prüfungen, 3 sind schon so“.
+4. **Schreibphase** (`WritesRecords`, Blöcke zu 100): je Datensatz `update()` mit `expecting(<Version aus der
+   Prüfphase>)`; vorher die alten Werte der geänderten Felder ins **Journal** im Ordner der Arbeit. Ein inzwischen
+   geänderter Datensatz (`StaleRecordException`) oder ein neuer Fehler beendet die Arbeit; `abort()` schreibt die
+   alten Werte aus dem Journal zurück (gleiche Kennung, Herkunft `bulk`, Version des Laufs) und meldet den Datensatz.
+   Liegen alle Datensätze in einem Block, ist das eine einzige Transaktion ohne Rücknahme.
+5. **Ergebnis:** „47 Datensätze geändert, 3 unverändert“; die Auswahl wird aufgehoben, die Liste lädt neu. In S3
+   kommt der Link „Rückgängig“ dazu.
+
+**Warum keine Sperre über den ganzen Lauf:** Eine Transaktion über tausende Datensätze hielte auf MySQL lange Sperren
+(Begründung Nr. 21). Die optimistische Sperre je Datensatz erkennt dasselbe ohne Sperre: Wer zwischen Prüfung und
+Schreiben speichert, gewinnt, und die Sammeländerung wird vollständig zurückgenommen.
+
+**Reihenfolge** nach Schlüssel. Summen im Master (`Recalculator::propagate`) laufen je Datensatz; eine Bündelung ist
+eine spätere Optimierung. Die Konfliktprüfung der Musikschule sieht in der Schreibphase die schon geänderten
+Datensätze desselben Blocks; Konflikte zwischen ausgewählten Kursen erkennt sie deshalb auch.
 
 ## 7. Protokoll und Rückgängig
 
-**Protokoll (S1):** Jede Änderung erscheint im Änderungsprotokoll des Datensatzes wie eine Einzeländerung, mit dem
-Zusatz „**Sammeländerung**“ und der Kennung in `properties.bulk`. Eine Tabelle `bulk_changes` hält je Sammeländerung
-fest: Tabelle, Person, geänderte Felder und Art, Anzahl, Zeitpunkt, Filter als Text, `undone_at`.
+**Protokoll (S1):** Jede Änderung erscheint im Verlauf des Datensatzes wie eine Einzeländerung, mit dem Zusatz
+„**Sammeländerung**“ (`via: bulk`) und der Kennung `run: bulk:<uuid>`. Eine Rücknahme nach Fehler (§6 Schritt 4)
+erscheint ebenfalls, mit derselben Kennung.
 
-**Rückgängig (S3):** In der Datenansicht gibt es unter „Letzte Sammeländerungen“ die eigenen, Admins sehen alle; dazu
-der Link in der Erfolgsmeldung. „Rückgängig“ setzt die Werte aus dem Protokoll zurück:
-
-- Es gelten dieselben Prüfungen, und alles läuft in einer Transaktion mit eigener Kennung. Die Rücknahme ist selbst
-  wieder eine Sammeländerung.
-- Datensätze, die **seit der Sammeländerung wieder geändert** wurden, werden **übersprungen** und gemeldet. Sonst
-  würde eine spätere Änderung überschrieben.
-- Folgen über Regeln (B-142), etwa ein angelegter Datensatz in einer anderen Tabelle, nimmt das Rückgängig **nicht**
-  zurück. Der Dialog sagt das, wenn Regeln beteiligt waren.
-- Möglich nur, solange das Protokoll die Einträge noch hat, und für die Person mit dem Recht *ändern*.
+**Rückgängig (S3):** „Letzte Sammeländerungen“ in der Datenansicht, die eigenen für alle mit *ändern*; dazu der Link
+in der Erfolgsmeldung. Die Rücknahme ist selbst eine Arbeit `bulk_records` mit eigener Kennung, liest die alten Werte
+aus dem Protokoll (`properties.old`) und überspringt Datensätze, die seither wieder geändert wurden (Meldung).
+Folgen über Regeln (B-142) und vergebene Nummern nimmt sie nicht zurück. Ob die Liste aus `activity_log` (gruppiert
+nach `run`) oder aus einer Tabelle `bulk_changes` kommt, entscheidet S3; `work_items` werden aufgeräumt und taugen
+nicht als Gedächtnis.
 
 ## 8. Weitere Sammelaktionen
 
-Wenn die Auswahl einmal da ist, kommen weitere Aktionen in dieselbe Werkzeugleiste. Der Knopf „Ändern …“ steht dort
-zuerst, die übrigen folgen in einem Menü:
-
-| Aktion | Stand bzw. Vorschlag |
+| Aktion | Vorschlag |
 |---|---|
 | Dokumente erstellen | vorhanden (B-124 D3a) |
-| **Löschen** | `deleteBulk()` vorhanden, in die Werkzeugleiste aufnehmen: Löschsperre je Datensatz (`DeleteGuard`), in einer Transaktion, mit Anzahl in der Bestätigung (S1) |
+| **Löschen** | `deleteBulk()` in die Werkzeugleiste (S1), Recht *löschen*, Anzahl in der Bestätigung, Kennung `bulk:<uuid>`. Gesperrte Datensätze (`DeleteGuard`) werden übersprungen und gemeldet (§11 Frage 6). |
 | **Wiederherstellen** | im Papierkorb-Filter für ausgewählte Datensätze (S1) |
-| **Auswahl exportieren** | Export heute: alles, was der Filter zeigt; neu wahlweise „nur ausgewählte“ (S4) |
-| **Kopieren** | bewusst nicht: Bei Kopien mit Detail-Datensätzen wäre das schwer zu überblicken |
-| **Sammelaktionen aus Plugins** | Plugin-API: `DataAction::BULK` neben `TABLE` und `RECORD` (Minor) (S4) |
-| **Regeln mit Auslöser „manuell“** | erscheinen als Sammelaktion (Konzept Regel-Engine 4.1) |
+| **Auswahl exportieren** | wahlweise „nur ausgewählte“ (S4) |
+| **Kopieren** | bewusst nicht |
+| **Sammelaktionen aus Plugins** | `DataAction::BULK` neben `TABLE` und `RECORD` (S4, Plugin-API minor) |
+| **Regeln mit Auslöser „manuell“** | als Sammelaktion (Konzept Regel-Engine 4.1), z. B. einfache Läufe „je Anmeldung eine Rechnung anlegen“ |
+| **Läufe aus Plugins** | Rechnungs- und Mahnlauf als Plugin-Arbeit (B-137), ab S4 als Sammelaktion |
 
-**Detailtabellen** (Kurs → Anmeldungen) bekommen Auswahl und dieselben Sammelaktionen. Gerade dort liegen die typischen
-Fälle, z. B. alle Anmeldungen eines Kurses auf *aktiv* setzen.
+**Detailtabellen** (Kurs → Anmeldungen) bekommen Auswahl und dieselben Sammelaktionen; die Verknüpfung zur
+Haupttabelle ist dort nicht änderbar.
 
 ## 9. Zusammenspiel
 
 | Bereich | Verhalten |
 |---|---|
-| Zeilenrechte (B-020) | Auswahl nur aus sichtbaren Datensätzen; geändert werden nur solche, die die Einschränkung *ändern* erfüllen, und danach weiter erfüllen (Konzept Zeilenrechte, Abschnitt 6) |
-| Regeln (B-142) | laufen je Datensatz wie bei jeder Änderung, in derselben Transaktion. Die Höchstzahl von Ketten gilt je Datensatz. |
-| Nummernkreise (B-135) | nicht änderbar. Bei „Vergabe bei Bedingung“ (N3) kann eine Sammeländerung des Status Nummern auslösen, in Schlüsselreihenfolge. |
-| Plugin-API | `DataTable::updateMany(iterable $records, array $values)` als Baustein derselben Logik (Prüfungen, Transaktion, Protokoll-Kennung), z. B. für die Semester-Fortschreibung der Musikschule (S4) |
-| KI (B-051 Stufe 3) | später: „Setze alle Anmeldungen der Warteliste im HS 2026 auf aktiv“ ergibt Filter und Dialog vorausgefüllt; die Person bestätigt |
-| Handbücher | Anwender-, Admin- und FAQ-Handbuch in vier Sprachen |
+| Zeilenrechte (B-020) | Auswahl nur aus sichtbaren Datensätzen; geändert werden nur solche, die *ändern* erfüllen und danach weiter erfüllen. Die Lesestelle der Arbeit kommt mit `scope: person` in `read-sites.json`. |
+| Regeln (B-142) | laufen je Datensatz in der Transaktion des Blocks; in der Prüfphase zurückgerollt |
+| Nummernkreise (B-135) | Nummernkreis-Felder nicht änderbar; Gruppe und Bezugsdatum änderbar mit Warnung; „Vergeben, wenn“ vergibt Nummern in Schlüsselreihenfolge (§4). Eine Rücknahme gibt vergebene Nummern nicht zurück (Lücke wie bei einem Löschen). |
+| Plugin-API | Plugins sehen `RecordSaving`/`RecordSaved` wie beim Bearbeiten, auch in der Prüfphase (dort zurückgerollt; Wirkungen nach aussen über `afterCommit()`). `DataTable::updateMany()` und `DataAction::BULK` erst in S4. S1 ändert keine Klasse im `ApiManifest`. |
+| Arbeiten | Seite „Meine Arbeiten“ zeigt die Sammeländerung mit Fortschritt; Abbruch → Rücknahme |
+| KI (B-051 Stufe 3) | später: Filter und Dialog vorausgefüllt aus einem Satz; die Person bestätigt |
+| App-Definition (`saft-app/1`) | neuer optionaler Schlüssel `bulk_enabled` an der Tabelle |
+| Handbücher | Anwender, FAQ, Admin in vier Sprachen; Entwickler (Herkunft `bulk`, Arbeit) und Sysadmin (`APP_DATA_BULK_MAX`) in zwei |
 
 ## 10. Etappen
 
 | Etappe | Inhalt | Umfang |
 |---|---|---|
-| **S1 Sammeländerung** | Dialog „Ändern …“ mit *setzen* und *leeren*, Schnitt mit dem Filter, Vorschau mit Beispielen, Probelauf, Ausführung in einer Transaktion mit Sperre, Obergrenze, Schalter „Sammeländerung erlauben“, Protokoll-Kennung und `bulk_changes`; Löschen und Wiederherstellen in die Werkzeugleiste; Auswahl in Detailtabellen | mittel |
-| **S2 Rechnen und Formel** | Arten *rechnen* (Zahl, Datum) und *Formel* mit Vorschau | klein |
-| **S3 Rückgängig** | Liste „Letzte Sammeländerungen“, Rücknahme mit Überspringen später geänderter Datensätze | mittel |
-| **S4 Erweiterungen** | Auswahl exportieren, Sammelaktionen aus Plugins (`DataAction::BULK`), `DataTable::updateMany()` | klein |
+| **S1 Sammeländerung** | Arbeit `bulk_records` (Prüf- und Schreibphase, Journal, Rücknahme), Dialog „Ändern …“ mit *setzen* und *leeren*, Vorschau, Schalter `bulk_enabled`, Obergrenze, Kennung `bulk:<uuid>`; Löschen und Wiederherstellen in der Werkzeugleiste; Auswahl in Detailtabellen | mittel |
+| **S2 Rechnen, Ersetzen und Formel** | Arten *rechnen* (Zahl, Datum), *ersetzen* (Text, in PHP, kein SQL) und *Formel* mit Vorschau; eine Formelfunktion `replace()` erst bei Bedarf (FORMULA_SPEC.md, Konformität auf drei Datenbanken) | klein |
+| **S3 Rückgängig** | Liste „Letzte Sammeländerungen“, Rücknahme als Arbeit, später Geändertes überspringen | mittel |
+| **S4 Erweiterungen** | Auswahl exportieren, `DataAction::BULK`, `DataTable::updateMany()`, angebundene Tabellen | klein |
 
-S1 lässt sich vor dem gemeinsamen Baustein „Transaktion beim Speichern“ umsetzen, weil die Sammeländerung ihre
-Transaktion selbst öffnet. Der Baustein sollte aber spätestens dann entstehen, damit nicht zwei Varianten wachsen.
+**Stand S1 (27.11.2026):** S1a umgesetzt – `RecordWriter::trial()`/`savepoint()`, Herkunft `WriteOptions::BULK`,
+`App\DynamicData\Bulk\BulkChange` (änderbare Felder, Prüfung), `BulkPreview` (Beispiele, Hinweise zu Nummernkreisen),
+Arbeit `bulk_records` (`BulkRecordsWork`: Prüfphase im Probelauf, Schreibphase mit Version und Journal, Rücknahme),
+Migration 101 `custom_tables.bulk_enabled` (auch in der App-Definition), Grenze `APP_DATA_BULK_MAX`, Entscheidung
+Nr. 27 in ARCHITECTURE. Offen: S1b Oberfläche (Dialog, Werkzeugleiste, Detailtabellen, Schalter im Table-Designer),
+S1c Browser-Test, Handbücher für Anwender, FAQ und Admin, manuelle Testfälle.
 
-## 11. Offene Fragen zur Diskussion
+## 11. Entscheidungen zu den offenen Fragen (27.11.2026: alle Empfehlungen angenommen)
 
-1. **Obergrenze:** Reichen 500 synchron? Oder grössere Mengen gleich im Hintergrund (braucht Queue-Worker, vgl. B-117)?
-2. **Eigenes Recht** „Sammeländerung“ je Rolle zusätzlich zum Schalter in den Tabellen-Stammdaten? Vorschlag: nein,
-   Schalter + Recht *ändern* genügen.
-3. **Teilweise ausführen:** Sollen Datensätze, die die Prüfung nicht bestehen, übersprungen werden können („44 ändern,
-   3 überspringen“) statt alles oder nichts? Vorschlag: erst einmal nicht; der Probelauf zeigt die drei, man wählt sie
-   ab.
-4. **„Wert übernehmen aus“** bei geänderter Verknüpfung neu übernehmen (Häkchen im Dialog)? Das gälte dann auch fürs
-   Einzelbearbeiten und ist eher ein eigenes Thema.
-5. **Rückgängig für alle oder nur die eigenen** Sammeländerungen? Vorschlag: eigene für alle mit *ändern*, fremde nur
-   mit dem Recht auf das ganze Protokoll.
+1. **Obergrenze 500 synchron oder Arbeit?** *Empfehlung:* Arbeit von Anfang an, gestartet mit `startAndAdvance()`,
+   Grenze `APP_DATA_BULK_MAX` mit Vorgabe 5'000 (`0` = ohne). *Warum:* CLAUDE.md und Nr. 19 verlangen für alles, was
+   länger als ein Request dauern kann, eine Arbeit statt eines eigenen Mechanismus. Auf Strato kostet ein Speichern
+   mit Phasen grob 10 Abfragen à 2,2 ms; 500 Datensätze mit Prüfphase lägen bei 20–30 s und damit an der Grenze der
+   PHP-Laufzeit. Für die Person ändert sich bei kleinen Mengen nichts, weil `startAndAdvance()` sie im Request
+   erledigt.
+2. **Eigenes Recht je Rolle?** *Empfehlung:* nein; Recht *ändern* und Schalter `bulk_enabled` (Vorgabe an) genügen.
+3. **Alles oder nichts, oder Übersprungene zulassen?** *Empfehlung:* alles oder nichts für *Ändern*. Die Prüfphase
+   listet die Fehler; man wählt die Datensätze ab oder korrigiert sie. *Warum:* Wer „Lehrperson ersetzen“ sagt, will
+   keinen halb ersetzten Stundenplan, und die Rücknahme in S3 bleibt einfach. Anders als beim Nachnummerieren wählt
+   die Person hier den Wert. Ein Knopf „ohne die fehlerhaften ändern“ kann später kommen (S4), wenn es sich als
+   lästig erweist.
+4. **Nicht änderbare Felder:** *Empfehlung:* wie in §4: Nummernkreis, berechnet, Datei/Bild nicht; eindeutig nur
+   *leeren* (ohne Pflicht); Gruppen- und Datumsfelder eines Nummernkreises änderbar mit Warnung, weil das
+   Einzelbearbeiten es auch erlaubt (Grundsatz „dieselben Regeln“). Soll die Gruppe nach der Vergabe fest sein,
+   gehört das als Einstellung an den Nummernkreis, für beide Wege (Backlog-Vorschlag).
+5. **„Wert übernehmen aus“ neu übernehmen?** *Empfehlung:* nicht in S1, nur Hinweis; gälte auch fürs Einzelbearbeiten
+   und wird ein eigener Backlog-Eintrag.
+6. **Löschen in einer Sammelaktion: alles oder nichts?** *Empfehlung:* nein, gesperrte überspringen und melden wie
+   heute. *Warum:* Löschen landet im Papierkorb und ist rücknehmbar; die Sperre ist ein fachlicher Grund, kein Fehler
+   der Eingabe. Synchron bis zur Obergrenze, mit Kennung.
+7. **Rückgängig für alle oder nur die eigenen?** *Empfehlung:* eigene für alle mit *ändern*, fremde nur für
+   Administratoren der App; Entscheidung in S3.
+8. **Angebundene Tabellen?** *Empfehlung:* nicht in S1 (siehe §3), Prüfung in S4.

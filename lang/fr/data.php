@@ -117,4 +117,17 @@ return [
     'computed_placeholder' => 'calculé à l’enregistrement',
     'reset_view' => 'Réinitialiser la vue',
     'reset_view_help' => 'Rétablir les filtres, la recherche, le tri, les lignes par page et le choix des colonnes par défaut. Sinon, ils restent enregistrés pour vous, même après la déconnexion.',
+    'bulk' => [
+        'errors' => [
+            'no_changes' => 'Choisissez au moins un champ à modifier.',
+            'not_editable' => 'Le champ « :field » ne peut pas être modifié ainsi dans une modification groupée.',
+            'required' => '« :field » est obligatoire et doit avoir une valeur.',
+            'not_allowed' => 'Les modifications groupées ne sont pas autorisées dans cette table, ou vous n’avez pas le droit « modifier ».',
+            'too_many' => ':count enregistrements sélectionnés ; au maximum :max par modification groupée. Veuillez restreindre le filtre.',
+        ],
+        'hints' => [
+            'number_kept' => '{1} 1 enregistrement a déjà un numéro dans « :number » ; il reste même si :fields change.|[2,*] :count enregistrements ont déjà un numéro dans « :number » ; il reste même si :fields change.',
+            'number_assigned' => ':fields commande « Attribuer si » de la numérotation « :number » : l’enregistrement peut attribuer des numéros, dans l’ordre des clés.',
+        ],
+    ],
 ];

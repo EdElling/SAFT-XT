@@ -2,6 +2,7 @@
     "_comment": "Lesestellen (Fundament 2, F5; Architekturtest 4): jede Datei, die DynamicRecord::forTable()/forTableName() aufruft, mit höchstens erlaubter Anzahl, Begründung und 'scope'. scope 'person' = liest im Namen der angemeldeten Person, hier greift später der Zeilenrechte-Scope (ROW_ACCESS.md §7); 'system' = setzt SAFTs eigene Regeln um und liest alle Datensätze (withoutRowAccess()); 'none' = keine Abfrage, nur das Model (Schlüsseltyp, Verbindung, Felder) oder Anlegen über den Writer. Zu Hause ist der Aufruf in App\\Models\\DynamicRecord und den Seedern.",
     "app/Apps/Update/ChangePlanner.php": {"count": 3, "scope": "system", "reason": "Änderungsplan einer App prüft vorhandene Werte der ganzen Tabelle (Pflichtfeld, Typwechsel, Eindeutigkeit) für den Super-Admin."},
     "app/Documents/Templates/RecordContext.php": {"count": 2, "scope": "person", "reason": "Dokumente lesen verknüpfte und Kind-Datensätze für Platzhalter und Abschnitte; nur sichtbare Datensätze (ROW_ACCESS.md §7)."},
+    "app/DynamicData/Bulk/BulkPreview.php": {"count": 1, "scope": "person", "reason": "Vorschau der Sammeländerung (B-133): Beispiele und Anzahl mit Nummer aus den ausgewählten Datensätzen der Person."},
     "app/DynamicData/Cascade/CascadeResolver.php": {"count": 1, "scope": "person", "reason": "Kaskade abhängiger Auswahllisten zeigt Datensätze zur Auswahl."},
     "app/DynamicData/DeleteGuard.php": {"count": 1, "scope": "system", "reason": "Löschsperre zählt Kind-Datensätze, auch nicht sichtbare, sonst entstünden verwaiste Datensätze."},
     "app/DynamicData/Files/FilePruner.php": {"count": 1, "scope": "system", "reason": "Aufgabe „Dateien aufräumen“ sucht die Datensätze zu verwaisten Dateien, ohne Person."},
@@ -30,6 +31,7 @@
     "app/Services/DynamicSchemaService.php": {"count": 1, "scope": "system", "reason": "Tabellenregel gegen vorhandene Werte prüfen, bevor sie gespeichert wird."},
     "app/Work/Types/DocumentsWork.php": {"count": 1, "scope": "person", "reason": "Dokumente für die gewählten Datensätze; der Schritt läuft als die startende Person."},
     "app/Work/Types/ExportWork.php": {"count": 1, "scope": "person", "reason": "Export mit der Abfrage der Datenansicht; der Schritt läuft als die startende Person."},
+    "app/Work/Types/BulkRecordsWork.php": {"count": 3, "scope": "person", "reason": "Sammeländerung (B-133): liest die ausgewählten Datensätze im Namen der startenden Person (nur solche, die sie ändern darf, ROW_ACCESS.md §7); dazu ein leeres Model zum Vergleichen und die Rücknahme der eigenen Änderungen bei Fehler oder Abbruch."},
     "app/Work/Types/NumberBackfillWork.php": {"count": 2, "scope": "system", "reason": "Nachnummerieren (B-135, N2): alle Datensätze ohne Nummer, sonst entstünden Lücken in der Reihenfolge des Bezugsdatums."},
     "app/Work/Types/RecomputeWork.php": {"count": 1, "scope": "system", "reason": "Zählt alle Datensätze für den Fortschritt der Nachberechnung."},
     "app/Work/Types/RecordImportWork.php": {"count": 1, "scope": "system", "reason": "Rücknahme der eigenen angelegten Datensätze bei Fehler oder Abbruch."}

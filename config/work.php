@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Work\Types\AppDesignerCreateWork;
 use App\Work\Types\AppDesignerReportsWork;
 use App\Work\Types\AppDesignerTurnWork;
+use App\Work\Types\BulkRecordsWork;
 use App\Work\Types\DocumentsWork;
 use App\Work\Types\ExportWork;
 use App\Work\Types\NumberBackfillWork;
@@ -26,6 +27,7 @@ return [
         RecordImportWork::class,
         SnapshotRefreshWork::class,
         NumberBackfillWork::class,
+        BulkRecordsWork::class,
         AppDesignerTurnWork::class,
         AppDesignerCreateWork::class,
         AppDesignerReportsWork::class,

@@ -399,6 +399,7 @@ final readonly class DraftCompiler
             'is_active' => true,
             'export_enabled' => true,
             'import_enabled' => true,
+            'bulk_enabled' => true,
             'fields' => array_map(static fn (array $form): array => ['key' => $key(), ...FieldForm::toServiceData($form)], $forms[(string) $table['name']]),
             'rules' => $rules[(string) $table['name']] ?? [],
             'details' => $details[(string) $table['name']] ?? [],

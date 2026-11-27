@@ -114,6 +114,7 @@ final class DynamicSchemaService
                 'is_active' => (bool) ($data['is_active'] ?? true),
                 'export_enabled' => (bool) ($data['export_enabled'] ?? false),
                 'import_enabled' => (bool) ($data['import_enabled'] ?? false),
+                'bulk_enabled' => (bool) ($data['bulk_enabled'] ?? true),
             ]);
 
             $created = [];
@@ -191,7 +192,7 @@ final class DynamicSchemaService
         }
 
         return $this->mutate($table->name, function () use ($table, $data): CustomTable {
-            $table->fill(array_intersect_key($data, array_flip(['label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled', 'detail_field_ids', 'validation_rules'])))->save();
+            $table->fill(array_intersect_key($data, array_flip(['label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled', 'bulk_enabled', 'detail_field_ids', 'validation_rules'])))->save();
             $this->menu->sync($table);
 
             return $table;

@@ -22,6 +22,7 @@ return [
         'app_designer_create' => 'Create app',
         'app_designer_reports' => 'Create the app’s reports',
         'number_backfill' => 'Assign empty numbers',
+        'bulk_records' => 'Bulk edit',
     ],
     'export' => [
         'done' => '1 row exported.|:count rows exported.',
@@ -92,5 +93,18 @@ return [
     'widget' => [
         'stuck' => '1 job without progress for over :minutes minutes (is the scheduler running?)|:count jobs without progress for over :minutes minutes (is the scheduler running?)',
         'failed' => '1 job failed in the last 24 hours|:count jobs failed in the last 24 hours',
+    ],
+    'bulk' => [
+        'checking' => 'Checking: :done of :total records',
+        'writing' => 'Changing: :done of :total records',
+        'table_missing' => 'The table no longer exists.',
+        'record_missing' => ':record no longer exists (deleted).',
+        'database_error' => 'Database error (details in the system log).',
+        'check_failed' => '{1} Nothing changed: 1 record fails the checks.|[2,*] Nothing changed: :count records fail the checks.',
+        'check_passed' => '{0} Checked: no record would change.|{1} Checked: 1 record passes the checks and would change.|[2,*] Checked: all :count records pass the checks and would change.',
+        'changed_meanwhile' => ':record has been changed by someone else in the meantime. The bulk edit was fully reverted.',
+        'write_failed' => ':record: :message The bulk edit was fully reverted.',
+        'done' => '{0} No record changed.|{1} 1 record changed.|[2,*] :count records changed.',
+        'unchanged' => '{1} 1 already had that value (unchanged).|[2,*] :count already had that value (unchanged).',
     ],
 ];

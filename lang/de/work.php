@@ -22,6 +22,7 @@ return [
         'app_designer_create' => 'App erzeugen',
         'app_designer_reports' => 'Auswertungen der App anlegen',
         'number_backfill' => 'Leere Nummern vergeben',
+        'bulk_records' => 'Sammeländerung',
     ],
     'export' => [
         'done' => '1 Zeile exportiert.|:count Zeilen exportiert.',
@@ -92,5 +93,18 @@ return [
     'widget' => [
         'stuck' => '1 Arbeit ohne Fortschritt seit über :minutes Minuten (läuft der Scheduler?)|:count Arbeiten ohne Fortschritt seit über :minutes Minuten (läuft der Scheduler?)',
         'failed' => '1 Arbeit in den letzten 24 Stunden fehlgeschlagen|:count Arbeiten in den letzten 24 Stunden fehlgeschlagen',
+    ],
+    'bulk' => [
+        'checking' => 'Prüfen: :done von :total Datensätzen',
+        'writing' => 'Ändern: :done von :total Datensätzen',
+        'table_missing' => 'Die Tabelle gibt es nicht mehr.',
+        'record_missing' => ':record gibt es nicht mehr (gelöscht).',
+        'database_error' => 'Fehler der Datenbank (Details im Systemprotokoll).',
+        'check_failed' => '{1} Nichts geändert: 1 Datensatz besteht die Prüfungen nicht.|[2,*] Nichts geändert: :count Datensätze bestehen die Prüfungen nicht.',
+        'check_passed' => '{0} Geprüft: kein Datensatz würde geändert.|{1} Geprüft: 1 Datensatz besteht die Prüfungen und würde geändert.|[2,*] Geprüft: alle :count Datensätze bestehen die Prüfungen und würden geändert.',
+        'changed_meanwhile' => ':record wurde inzwischen von jemand anderem geändert. Die Sammeländerung wurde vollständig zurückgenommen.',
+        'write_failed' => ':record: :message Die Sammeländerung wurde vollständig zurückgenommen.',
+        'done' => '{0} Kein Datensatz geändert.|{1} 1 Datensatz geändert.|[2,*] :count Datensätze geändert.',
+        'unchanged' => '{1} 1 war schon so (unverändert).|[2,*] :count waren schon so (unverändert).',
     ],
 ];

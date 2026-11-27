@@ -54,6 +54,7 @@ final readonly class SchemaImporter
                 'icon' => $table['icon'] ?? null,
                 'export_enabled' => (bool) ($table['export_enabled'] ?? false),
                 'import_enabled' => (bool) ($table['import_enabled'] ?? false),
+                'bulk_enabled' => (bool) ($table['bulk_enabled'] ?? true),
             ], $simple);
         }
 

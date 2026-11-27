@@ -68,6 +68,7 @@ final class SchemaExporter
             ...$data,
             'export_enabled' => (bool) $table->export_enabled,
             'import_enabled' => (bool) $table->import_enabled,
+            'bulk_enabled' => (bool) $table->bulk_enabled,
             'permissions' => DataPermissions::names($table->name),
             'fields' => $fields->map(static fn (CustomField $f): array => [
                 'name' => $f->name,

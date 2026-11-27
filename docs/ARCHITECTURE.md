@@ -228,8 +228,8 @@ Additions to the contract: `WritesRecords` runs step and progress in one `Record
 and cursor are one unit), `LongSteps` allows exactly one indivisibly long step per call (AI requests), `CleansUp`
 tidies up on failure or cancellation (import takes back created records, snapshot discards the copy),
 `DescribesProgress` supplies the progress text. Results (files) are available for download for 24 h; the system task
-`work_prune` tidies hourly. Today export, data import, documents, snapshots, recomputation of computed fields and the
-AI app designer run as work items.
+`work_prune` tidies hourly. Today export, data import, documents, snapshots, recomputation of computed fields,
+number backfill, bulk edit and the AI app designer run as work items.
 
 ## 9. Portability and quality assurance
 
@@ -369,3 +369,14 @@ no. n".
     conversion, counters) thus yields the group from the number itself, choices with the same code deliberately share a
     counter, and duplicates are impossible. The group at the time of assignment applies; a later change leaves the
     number as it is. Codes of removed choices stay in the options.
+27. **Bulk edit: trial run instead of a lock, journal instead of one transaction** (27 November 2026, B-133). The job
+    `bulk_records` first checks all selected records by really saving them per block through `RecordWriter::trial()`
+    (all phases, plugin listeners, number sequences, change log) and rolling back on both connections (savepoints;
+    `afterCommit()` effects are discarded). Only when all pass does it write in blocks with their own transaction, each
+    record with the version from the check phase (optimistic lock, no. 13), and records the old values in a journal in
+    the job's folder before the commit; if a block fails or the person cancels, `CleansUp::abort()` writes the old
+    values of the finished blocks back without plugin events. Origin `bulk`, identifier `run` = `bulk:<uuid>`. *Why:*
+    "all or nothing" as in the import (no. 21), without one transaction over thousands of records with long locks on
+    MySQL; the trial run also checks plugin rules unknown to `RecordChecker`, and a bulk edit remains no way around the
+    rules. *Residual risk:* whoever changes a record between write and revert keeps their state (entry in the system
+    log); a number assigned in the write phase through "Assign when" stays (gap as with deletion).

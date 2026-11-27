@@ -232,7 +232,7 @@ Zusätze zum Vertrag: `WritesRecords` führt Schritt und Fortschritt in einer `R
 `CleansUp` räumt bei Fehlschlag oder Abbruch auf (Import nimmt angelegte Datensätze zurück, Datenstand verwirft die
 Kopie), `DescribesProgress` liefert den Fortschrittstext. Ergebnisse (Dateien) stehen 24 h zum Download; die
 System-Aufgabe `work_prune` räumt stündlich. Als Arbeiten laufen heute Export, Datenimport, Dokumente, Datenstände,
-Nachberechnung berechneter Felder und der KI-App-Designer.
+Nachberechnung berechneter Felder, Nachnummerieren, Sammeländerung und der KI-App-Designer.
 
 ## 9. Portabilität und Qualitätssicherung
 
@@ -376,3 +376,15 @@ durch Nr. n“ markiert.
     die Gruppe beim Zurücklesen aus der Nummer selbst (Import, Umstellen, Zählerstände), Wahlen mit gleichem Kurzzeichen
     teilen bewusst einen Zähler, und Doppel sind ausgeschlossen. Massgeblich ist die Gruppe zum Zeitpunkt der Vergabe;
     eine spätere Änderung lässt die Nummer stehen. Kurzzeichen entfernter Wahlen bleiben in den Optionen.
+27. **Sammeländerung: Probelauf statt Sperre, Journal statt einer Transaktion** (27.11.2026, B-133). Die Arbeit
+    `bulk_records` prüft zuerst alle ausgewählten Datensätze, indem sie sie je Block über `RecordWriter::trial()`
+    wirklich speichert (alle Phasen, Plugin-Listener, Nummernkreise, Protokoll) und auf beiden Verbindungen
+    zurückrollt (Sicherungspunkte; `afterCommit()`-Wirkungen verfallen). Erst wenn alle bestehen, schreibt sie in
+    Blöcken mit eigener Transaktion, je Datensatz mit der Version aus der Prüfphase (optimistische Sperre, Nr. 13), und
+    hält die alten Werte vor dem Commit im Journal im Ordner der Arbeit fest; scheitert ein Block oder bricht die
+    Person ab, schreibt `CleansUp::abort()` die alten Werte der fertigen Blöcke ohne Plugin-Ereignisse zurück.
+    Herkunft `bulk`, Kennung `run` = `bulk:<uuid>`. *Warum:* „alles oder nichts“ wie beim Import (Nr. 21), ohne eine
+    Transaktion über tausende Datensätze mit langen Sperren auf MySQL; der Probelauf prüft auch Plugin-Regeln, die
+    `RecordChecker` nicht kennt, und eine Sammeländerung bleibt kein Weg an den Regeln vorbei. *Restrisiko:* Wer
+    zwischen Schreiben und Rücknahme einen Datensatz ändert, behält seinen Stand (Eintrag im Systemprotokoll); eine in
+    der Schreibphase über „Vergeben, wenn“ vergebene Nummer bleibt (Lücke wie beim Löschen).

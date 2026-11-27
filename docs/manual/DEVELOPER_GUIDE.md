@@ -544,6 +544,12 @@ or changed).
 - **Reject** in `RecordSaving` or `RecordDeleting`: `throw new RecordRejected('Message for display');`. SAFT saves
   nothing and shows “Action not possible” with your message; in an import it appears as an error of the row and the
   whole import is not carried out.
+- **Bulk edit** (job `bulk_records`, origin `WriteOptions::BULK`, run identifier `run` = `bulk:<uuid>`): your listener
+  sees every selected record as on edit, and **twice**: first in the check phase, which really saves and then rolls back
+  (`RecordWriter::trial()`), then on the actual write. A `RecordRejected` in the check phase prevents the whole bulk
+  edit; nothing is changed. Register external effects (e-mail, webhook, files outside the database) with
+  `Saft::afterCommit()`; they are discarded in the check phase. If the write phase fails, SAFT writes the old values back
+  **without** plugin events. Whether a change comes from a bulk edit is recorded in the change log entry (`via: bulk`).
 - **Follow-up changes** in `RecordSaved` and `RecordDeleted` are written through `Saft::table(…)`. They always run in the
   same transaction as the triggering change (since API 1.10: record, totals, files and activity log): if a listener
   throws there, the triggering change is rolled back as well. If you trigger events yourself, beware of endless loops.

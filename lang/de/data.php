@@ -117,4 +117,17 @@ return [
     'computed_placeholder' => 'wird beim Speichern berechnet',
     'reset_view' => 'Ansicht zurücksetzen',
     'reset_view_help' => 'Filter, Suche, Sortierung, Zeilen pro Seite und Spaltenauswahl auf die Vorgabe zurücksetzen. Sonst bleiben sie für Sie gespeichert, auch nach dem Abmelden.',
+    'bulk' => [
+        'errors' => [
+            'no_changes' => 'Wählen Sie mindestens ein Feld, das geändert werden soll.',
+            'not_editable' => 'Das Feld „:field“ lässt sich in einer Sammeländerung so nicht ändern.',
+            'required' => '„:field“ ist ein Pflichtfeld und braucht einen Wert.',
+            'not_allowed' => 'Sammeländerungen sind in dieser Tabelle nicht erlaubt, oder Ihnen fehlt das Recht „ändern“.',
+            'too_many' => ':count Datensätze ausgewählt; höchstens :max sind je Sammeländerung möglich. Bitte den Filter eingrenzen.',
+        ],
+        'hints' => [
+            'number_kept' => '{1} Bei 1 Datensatz steht schon eine Nummer in „:number“; sie bleibt, auch wenn sich :fields ändert.|[2,*] Bei :count Datensätzen steht schon eine Nummer in „:number“; sie bleibt, auch wenn sich :fields ändert.',
+            'number_assigned' => ':fields steuert „Vergeben, wenn“ des Nummernkreises „:number“: Beim Speichern können Nummern vergeben werden, in der Reihenfolge der Schlüssel.',
+        ],
+    ],
 ];

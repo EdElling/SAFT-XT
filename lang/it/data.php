@@ -117,4 +117,17 @@ return [
     'computed_placeholder' => 'calcolato al salvataggio',
     'reset_view' => 'Reimposta vista',
     'reset_view_help' => 'Riportare filtri, ricerca, ordinamento, righe per pagina e scelta delle colonne ai valori predefiniti. Altrimenti restano salvati per voi, anche dopo la disconnessione.',
+    'bulk' => [
+        'errors' => [
+            'no_changes' => 'Scegliere almeno un campo da modificare.',
+            'not_editable' => 'Il campo «:field» non può essere modificato così in una modifica multipla.',
+            'required' => '«:field» è obbligatorio e richiede un valore.',
+            'not_allowed' => 'Le modifiche multiple non sono consentite in questa tabella, oppure manca il diritto «modificare».',
+            'too_many' => ':count record selezionati; al massimo :max per modifica multipla. Restringere il filtro.',
+        ],
+        'hints' => [
+            'number_kept' => '{1} 1 record ha già un numero in «:number»; resta anche se :fields cambia.|[2,*] :count record hanno già un numero in «:number»; resta anche se :fields cambia.',
+            'number_assigned' => ':fields controlla «Assegnare se» della numerazione «:number»: il salvataggio può assegnare numeri, nell’ordine delle chiavi.',
+        ],
+    ],
 ];

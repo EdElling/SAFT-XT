@@ -22,6 +22,7 @@ return [
         'app_designer_create' => 'Créer une app',
         'app_designer_reports' => 'Créer les rapports de l’app',
         'number_backfill' => 'Attribuer les numéros vides',
+        'bulk_records' => 'Modification groupée',
     ],
     'export' => [
         'done' => '1 ligne exportée.|:count lignes exportées.',
@@ -92,5 +93,18 @@ return [
     'widget' => [
         'stuck' => '1 travail sans progression depuis plus de :minutes minutes (le planificateur tourne-t-il ?)|:count travaux sans progression depuis plus de :minutes minutes (le planificateur tourne-t-il ?)',
         'failed' => '1 travail a échoué au cours des dernières 24 heures|:count travaux ont échoué au cours des dernières 24 heures',
+    ],
+    'bulk' => [
+        'checking' => 'Vérification : :done sur :total enregistrements',
+        'writing' => 'Modification : :done sur :total enregistrements',
+        'table_missing' => 'La table n’existe plus.',
+        'record_missing' => ':record n’existe plus (supprimé).',
+        'database_error' => 'Erreur de la base de données (détails dans le journal système).',
+        'check_failed' => '{1} Rien n’a été modifié : 1 enregistrement ne passe pas les contrôles.|[2,*] Rien n’a été modifié : :count enregistrements ne passent pas les contrôles.',
+        'check_passed' => '{0} Vérifié : aucun enregistrement ne serait modifié.|{1} Vérifié : 1 enregistrement passe les contrôles et serait modifié.|[2,*] Vérifié : les :count enregistrements passent les contrôles et seraient modifiés.',
+        'changed_meanwhile' => ':record a été modifié entre-temps par quelqu’un d’autre. La modification groupée a été entièrement annulée.',
+        'write_failed' => ':record : :message La modification groupée a été entièrement annulée.',
+        'done' => '{0} Aucun enregistrement modifié.|{1} 1 enregistrement modifié.|[2,*] :count enregistrements modifiés.',
+        'unchanged' => '{1} 1 avait déjà cette valeur (inchangé).|[2,*] :count avaient déjà cette valeur (inchangés).',
     ],
 ];

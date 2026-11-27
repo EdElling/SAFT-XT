@@ -117,4 +117,17 @@ return [
     'computed_placeholder' => 'calculated when saving',
     'reset_view' => 'Reset view',
     'reset_view_help' => 'Reset filters, search, sorting, rows per page and column selection to the default. Otherwise they stay saved for you, even after signing out.',
+    'bulk' => [
+        'errors' => [
+            'no_changes' => 'Choose at least one field to change.',
+            'not_editable' => 'The field “:field” cannot be changed this way in a bulk edit.',
+            'required' => '“:field” is required and needs a value.',
+            'not_allowed' => 'Bulk edits are not allowed in this table, or you lack the “edit” permission.',
+            'too_many' => ':count records selected; at most :max are possible per bulk edit. Please narrow the filter.',
+        ],
+        'hints' => [
+            'number_kept' => '{1} 1 record already has a number in “:number”; it stays even if :fields changes.|[2,*] :count records already have a number in “:number”; it stays even if :fields changes.',
+            'number_assigned' => ':fields controls “Assign when” of the number sequence “:number”: saving may assign numbers, in key order.',
+        ],
+    ],
 ];

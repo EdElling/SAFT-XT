@@ -50,6 +50,7 @@ class CustomTable extends BaseCustomTable
         'is_active' => true,
         'export_enabled' => false,
         'import_enabled' => false,
+        'bulk_enabled' => true,
         'allow_create' => false,
         'allow_update' => false,
         'allow_delete' => false,

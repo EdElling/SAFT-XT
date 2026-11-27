@@ -22,6 +22,7 @@ return [
         'app_designer_create' => 'Creare app',
         'app_designer_reports' => 'Creare i report dell’app',
         'number_backfill' => 'Assegnare i numeri vuoti',
+        'bulk_records' => 'Modifica multipla',
     ],
     'export' => [
         'done' => '1 riga esportata.|:count righe esportate.',
@@ -92,5 +93,18 @@ return [
     'widget' => [
         'stuck' => '1 lavoro senza avanzamento da oltre :minutes minuti (lo scheduler è attivo?)|:count lavori senza avanzamento da oltre :minutes minuti (lo scheduler è attivo?)',
         'failed' => '1 lavoro non riuscito nelle ultime 24 ore|:count lavori non riusciti nelle ultime 24 ore',
+    ],
+    'bulk' => [
+        'checking' => 'Verifica: :done di :total record',
+        'writing' => 'Modifica: :done di :total record',
+        'table_missing' => 'La tabella non esiste più.',
+        'record_missing' => ':record non esiste più (eliminato).',
+        'database_error' => 'Errore del database (dettagli nel registro di sistema).',
+        'check_failed' => '{1} Nulla modificato: 1 record non supera i controlli.|[2,*] Nulla modificato: :count record non superano i controlli.',
+        'check_passed' => '{0} Verificato: nessun record verrebbe modificato.|{1} Verificato: 1 record supera i controlli e verrebbe modificato.|[2,*] Verificato: tutti i :count record superano i controlli e verrebbero modificati.',
+        'changed_meanwhile' => ':record è stato modificato nel frattempo da un’altra persona. La modifica multipla è stata annullata completamente.',
+        'write_failed' => ':record: :message La modifica multipla è stata annullata completamente.',
+        'done' => '{0} Nessun record modificato.|{1} 1 record modificato.|[2,*] :count record modificati.',
+        'unchanged' => '{1} 1 aveva già quel valore (invariato).|[2,*] :count avevano già quel valore (invariati).',
     ],
 ];

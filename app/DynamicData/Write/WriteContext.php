@@ -136,6 +136,18 @@ final class WriteContext
         self::$afterCommit = [];
     }
 
+    /** @internal nur für den RecordWriter: Stand der wartenden Wirkungen vor einem Sicherungspunkt. */
+    public static function afterCommitMark(): int
+    {
+        return count(self::$afterCommit);
+    }
+
+    /** @internal nur für den RecordWriter: Wirkungen verwerfen, die seit dem Sicherungspunkt angemeldet wurden. */
+    public static function discardAfterCommitSince(int $mark): void
+    {
+        self::$afterCommit = array_slice(self::$afterCommit, 0, $mark);
+    }
+
     public static function pluginEventsEnabled(): bool
     {
         return ! self::$pluginEventsMuted && self::options()->pluginEvents;

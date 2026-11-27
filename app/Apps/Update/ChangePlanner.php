@@ -44,7 +44,7 @@ final class ChangePlanner
 {
     private const array APP_ATTRS = ['name', 'description', 'icon'];
 
-    private const array TABLE_ATTRS = ['label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled', 'rules', 'details', 'is_shared', 'shared_fields'];
+    private const array TABLE_ATTRS = ['label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled', 'bulk_enabled', 'rules', 'details', 'is_shared', 'shared_fields'];
 
     private const array FIELD_ATTRS = ['name', 'label', 'type', 'options', 'validation_rules', 'is_required', 'is_unique', 'is_searchable', 'is_sortable', 'show_in_table', 'show_in_form', 'is_active', 'sort_order'];
 
@@ -827,6 +827,7 @@ final class ChangePlanner
             'is_shared' => (bool) ($table['is_shared'] ?? false),
             'is_active' => (bool) ($table['is_active'] ?? true),
             'export_enabled', 'import_enabled' => (bool) ($table[$attr] ?? false),
+            'bulk_enabled' => (bool) ($table[$attr] ?? true),
             'shared_fields' => collect((array) ($table['fields'] ?? []))->filter(static fn (array $f): bool => ! empty($f['is_shared']))->pluck('name')->sort()->values()->all(),
             default => $table[$attr] ?? null,
         };

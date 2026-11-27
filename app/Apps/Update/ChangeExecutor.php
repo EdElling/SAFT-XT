@@ -152,7 +152,7 @@ final class ChangeExecutor
         foreach ($this->merged($of('table', ChangeStep::UPDATE)) as $step) {
             $table = $this->table($step->key);
             $values = self::values($step->changes);
-            $data = Arr::only($values, ['label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled']);
+            $data = Arr::only($values, ['label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled', 'bulk_enabled']);
 
             if (array_key_exists('rules', $values)) {
                 $data['validation_rules'] = (array) $values['rules'];

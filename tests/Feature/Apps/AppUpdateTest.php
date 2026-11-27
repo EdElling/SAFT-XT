@@ -196,6 +196,30 @@ class AppUpdateTest extends DynamicDataTestCase
         $this->assertSame([], array_map(static fn (ChangeStep $s): string => $s->id, $this->plan($package)->steps));
     }
 
+    public function test_bulk_switch_is_part_of_the_definition_and_defaults_to_on(): void
+    {
+        $customers = CustomTable::query()->where('name', 'vk_kunden')->sole();
+        $index = array_search('vk_kunden', array_column($this->definition()['tables'], 'name'), true);
+        $this->assertTrue($this->definition()['tables'][$index]['bulk_enabled']);
+
+        // Ältere Definition ohne den Schlüssel: nichts zu tun (Vorgabe an).
+        $old = $this->package(static function (array $d) use ($index): array {
+            unset($d['tables'][$index]['bulk_enabled']);
+
+            return $d;
+        });
+        $this->assertSame([], $this->plan($old)->steps);
+
+        // Paket schaltet die Sammeländerung aus.
+        $plan = $this->plan($this->package(static function (array $d) use ($index): array {
+            $d['tables'][$index]['bulk_enabled'] = false;
+
+            return $d;
+        }));
+        app(ChangeExecutor::class)->apply($this->sales, $plan, $plan->preselected(), false, $this->admin);
+        $this->assertFalse($customers->fresh()->bulk_enabled);
+    }
+
     public function test_grouped_number_sequence_is_created_after_its_select_and_changed_codes_are_risky(): void
     {
         $art = ['key' => (string) Str::uuid(), 'name' => 'art', 'label' => ['de' => 'Art'], 'type' => 'select', 'is_required' => true, 'sort_order' => 9,
