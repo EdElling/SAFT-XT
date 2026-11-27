@@ -73,6 +73,7 @@ class DynamicDataPage extends Page implements HasTable
         getTableRecordKey as private filamentTableRecordKey;
         resolveTableRecord as private filamentResolveTableRecord;
         removeTableFilters as private filamentRemoveTableFilters;
+        removeTableFilter as private filamentRemoveTableFilter;
         RemembersTableColumns::loadTableColumnsFromSession insteadof InteractsWithTable;
         RemembersTableColumns::persistTableColumns insteadof InteractsWithTable;
     }
@@ -171,6 +172,18 @@ class DynamicDataPage extends Page implements HasTable
         }
 
         $this->startTransientTableView(['filters' => BulkChangeFilter::state($head, $customTable)]);
+    }
+
+    /** Das ✕ am Kärtchen der Sammeländerung beendet die vorübergehende Ansicht, statt den Filter nur zu leeren. */
+    public function removeTableFilter(string $filterName, ?string $field = null, bool $isRemovingAllFilters = false): void
+    {
+        if ($this->transientTableView && $filterName === BulkChangeFilter::NAME) {
+            $this->endTransientTableView();
+
+            return;
+        }
+
+        $this->filamentRemoveTableFilter($filterName, $field, $isRemovingAllFilters);
     }
 
     /** „Alle Filter entfernen“ beendet eine vorübergehende Ansicht, statt ihren Filter nur zu leeren. */

@@ -18,8 +18,8 @@ use Illuminate\Database\Eloquent\Builder;
 /**
  * Filter „Datensätze einer Sammeländerung“ (B-170, BULK_EDIT.md §14 Frage 8): beschränkt die Datenansicht auf die
  * Schlüssel eines Kopfs (bulk_changes.record_ids). Gesetzt wird er nur als vorübergehende Ansicht über die Adresse
- * ?bulk=<Kopf> (DynamicDataPage::urlFor()); er wird nicht im gespeicherten Tabellenzustand abgelegt. Das Kärtchen
- * beendet die vorübergehende Ansicht und stellt den gespeicherten Stand wieder her.
+ * ?bulk=<Kopf> (DynamicDataPage::urlFor()); er wird nicht im gespeicherten Tabellenzustand abgelegt. Das ✕ am Kärtchen
+ * beendet die vorübergehende Ansicht und stellt den gespeicherten Stand wieder her (DynamicDataPage::removeTableFilter()).
  *
  * Rechte wie die Liste „Letzte Sammeländerungen“ (BulkChangeAccess::canSee()); ein fremder oder nicht mehr
  * vorhandener Kopf zeigt keine Datensätze.
@@ -28,9 +28,6 @@ final class BulkChangeFilter
 {
     /** Name des Filters; mit Unterstrich, damit er nie mit einem Feldnamen zusammenfällt. */
     public const string NAME = '_bulk_change';
-
-    /** Livewire-Methode der Seite, die die vorübergehende Ansicht beendet (RemembersTableState). */
-    public const string END_HANDLER = 'endTransientTableView';
 
     public static function make(CustomTable $table): Filter
     {
@@ -67,7 +64,7 @@ final class BulkChangeFilter
                         'when' => AppLocale::dateTime($found->created_at) ?? '—',
                         'what' => BulkUndoActions::describe($found, $table),
                         'count' => $found->count,
-                    ]))->removeLivewireClickHandler(self::END_HANDLER),
+                    ])),
                 ];
             });
     }

@@ -262,7 +262,10 @@ Migration, keine neuen Rechte. S4b: `DataAction::BULK` (Plugin-API 1.11, Schnapp
 `BulkAction` mit Plugin-Namen ins Fehlerprotokoll und rahmt sie ein (`guardBulk()`: im Papierkorb-Filter ausgeblendet,
 Grenze vor dem eigenen `before()` des Plugins mit der Meldung „je Sammelaktion“, Auswahl danach aufheben; eigene
 `hidden()`/`before()` bleiben). Pilot `musikschule-planung` 1.2.0: „Lektionen erzeugen“ für die ausgewählten Kurse
-(Zeitraum aus dem gemeinsamen Semester, sonst das laufende). Entscheidung Nr. 29 in ARCHITECTURE. Zurückgestellt: B-179 (`DataTable::updateMany()`), B-180
+(Zeitraum aus dem gemeinsamen Semester, sonst das laufende). Entscheidung Nr. 29 in ARCHITECTURE. S4d: Browser-Test SAE-17 bis
+SAE-19, manuelle Testfälle SAE-17 bis SAE-19. Dabei gefunden und behoben: Filament ersetzt den Klick-Handler eines
+Filter-Kärtchens durch `removeTableFilter()`; das ✕ leerte deshalb nur den Filter, statt die vorübergehende Ansicht zu
+beenden. Die Datenansicht fängt `removeTableFilter()` für `_bulk_change` jetzt ab. Zurückgestellt: B-179 (`DataTable::updateMany()`), B-180
 (angebundene Tabellen), B-181 („ohne die fehlerhaften ändern“), B-182 (`Saft::startWork()` mit kleinen Mengen im
 Request).
 

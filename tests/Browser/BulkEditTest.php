@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Browser;
 
+use App\Apps\Definition\AppInstaller;
 use App\DynamicData\DataMenu;
 use App\DynamicData\Rules\TableRuleNormalizer;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\User;
 use App\Services\DynamicSchemaService;
+use Database\Seeders\MusikschuleDemoSeeder;
 use Facebook\WebDriver\WebDriverBy;
 use Laravel\Dusk\Browser;
+use RuntimeException;
+use Saft\MusikschulePlanung\School;
 use Tests\DuskTestCase;
 
 /** Sammeländerung (Bereich SAE, B-133): Dialog „Ändern …“ mit allen Arten, Vorschau, Prüfen, Löschen und Wiederherstellen. */
@@ -24,11 +29,18 @@ class BulkEditTest extends DuskTestCase
 
     private CustomTable $enrolments;
 
+    private User $admin;
+
+    private string $downloads;
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->superAdmin();
+        $this->admin = $this->superAdmin();
+        $this->downloads = sys_get_temp_dir().'/saft-dusk-downloads-'.getmypid();
+        @mkdir($this->downloads);
+        array_map('unlink', glob($this->downloads.'/*') ?: []);
         $schema = app(DynamicSchemaService::class);
         $this->courses = $schema->createTable(['name' => 'kurse', 'label' => 'Kurse'], [
             ['name' => 'titel', 'label' => 'Titel', 'type' => 'string', 'is_required' => true],
@@ -51,6 +63,40 @@ class BulkEditTest extends DuskTestCase
 
         app(DataMenu::class)->ensure($this->courses);
         app(DataMenu::class)->ensure($this->enrolments);
+    }
+
+    protected function tearDown(): void
+    {
+        array_map('unlink', glob($this->downloads.'/*') ?: []);
+        @rmdir($this->downloads);
+
+        parent::tearDown();
+    }
+
+    /** Lädt in ein eigenes Verzeichnis (wie ExportTest). */
+    private function allowDownloads(Browser $browser): void
+    {
+        $browser->driver->executeCustomCommand('/session/:sessionId/chromium/send_command', 'POST', [
+            'cmd' => 'Browser.setDownloadBehavior',
+            'params' => ['behavior' => 'allow', 'downloadPath' => $this->downloads],
+        ]);
+    }
+
+    /** @return list<list<string>> Zeilen der heruntergeladenen CSV-Datei */
+    private function downloadedCsv(Browser $browser): array
+    {
+        $file = null;
+        $browser->waitUsing(20, 200, function () use (&$file): bool {
+            $file = glob($this->downloads.'/*.csv')[0] ?? null;
+
+            return $file !== null && filesize($file) > 0 && glob($this->downloads.'/*.crdownload') === [];
+        });
+        $content = (string) file_get_contents($file ?? throw new RuntimeException('Keine CSV-Datei heruntergeladen.'));
+
+        return array_values(array_map(
+            static fn (string $line): array => str_getcsv($line, ';', '"', ''),
+            array_filter(explode("\n", substr($content, 3)), filled(...)),
+        ));
     }
 
     /** @return list<DynamicRecord> */
@@ -414,5 +460,90 @@ class BulkEditTest extends DuskTestCase
         });
 
         $this->assertSame(['100.00', '250.00', '300.00'], $this->column('tarif'));
+    }
+
+    /** SAE-17 */
+    public function test_export_selection_contains_only_the_selected_records(): void
+    {
+        app(DynamicSchemaService::class)->updateTable($this->enrolments->fresh('fields'), ['export_enabled' => true]);
+        [$first, , $third] = $this->enrol(3);
+
+        $this->browse(function (Browser $browser) use ($first, $third): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/data/anmeldungen')->waitForText('Person 3', 15);
+            $this->allowDownloads($browser);
+            $this->select($browser, $first);
+            $this->select($browser, $third);
+            $this->clickVisibleText($browser, 'Auswahl exportieren');
+            $this->clickVisibleButton($browser, 'CSV (.csv)');
+
+            $rows = $this->downloadedCsv($browser);
+            $this->assertSame('Name', $rows[0][0]);
+            $this->assertEqualsCanonicalizing(['Person 1', 'Person 3'], array_column(array_slice($rows, 1), 0));
+        });
+    }
+
+    /** SAE-18 */
+    public function test_show_records_of_a_bulk_edit_keeps_the_saved_view(): void
+    {
+        $this->enrolWith([['tarif' => '100'], ['tarif' => '200']]);
+
+        $this->browse(function (Browser $browser): void {
+            $this->raiseTariffs($browser, 'Person 2', 2);
+            DynamicRecord::forTable($this->enrolments)->create(['name' => 'Nachzügler', 'status' => 'aktiv']);
+
+            // Gespeicherte Ansicht: Filter „Name enthält Nachz“.
+            $browser->visit('/admin/data/anmeldungen')->waitForText('Nachzügler', 15);
+            $this->applyFilters($browser, static function (Browser $b): void {
+                $b->waitFor('input[id="tableFiltersForm.name.value"]', 15)->type('input[id="tableFiltersForm.name.value"]', 'Nachz');
+            })->waitUntilMissingText('Person 1', 15);
+
+            $this->clickVisibleText($browser, 'Letzte Sammeländerungen')
+                ->waitFor('[data-bulk-records]', 15)
+                ->click('[data-bulk-records]')
+                ->waitForText('Sammeländerung vom', 20)
+                ->assertSee('Person 1')
+                ->assertSee('Person 2')
+                ->assertDontSee('Nachzügler');
+
+            // Kärtchen entfernen: zurück zur gespeicherten Ansicht mit dem Filter.
+            $browser->clickAtXPath("//button[contains(@class, 'fi-badge-delete-btn')][@*[contains(., '_bulk_change')]]")
+                ->waitUntilMissingText('Sammeländerung vom', 20)
+                ->waitForText('Nachzügler', 15)
+                ->assertDontSee('Person 1');
+        });
+    }
+
+    /** SAE-19: Sammelaktion aus dem Plugin „Musikschule: Planung“ (DataAction::BULK). */
+    public function test_plugin_bulk_action_generates_lessons_for_the_selected_courses(): void
+    {
+        app(AppInstaller::class)->install(app(MusikschuleDemoSeeder::class)->appDefinition(), null, $this->admin);
+        $insert = static fn (string $table, array $values): int => (int) DynamicRecord::forTableName('musikschule_'.$table)->create($values)->getKey();
+        $semester = $insert('semester', ['bezeichnung' => 'Laufend', 'beginn' => now()->subMonth()->toDateString(), 'ende' => now()->addMonths(2)->toDateString()]);
+        $base = [
+            'fach' => $insert('faecher', ['bezeichnung' => 'Klavier']),
+            'kursart' => $insert('kursarten', ['bezeichnung' => 'Einzel 45', 'form' => 'einzel', 'dauer_minuten' => 45, 'tarif_semester' => '760.00']),
+            'lehrperson' => $insert('lehrpersonen', ['vorname' => 'Luca', 'nachname' => 'Moretti']),
+            'raum' => $insert('raeume', ['bezeichnung' => 'Saal', 'plaetze' => 40]),
+            'semester' => $semester, 'max_teilnehmer' => 1, 'uhrzeit' => '16:00',
+        ];
+        $mia = DynamicRecord::forTableName(School::COURSES)->create(['bezeichnung' => 'Klavier Mia', 'wochentag' => 'mo', ...$base]);
+        $leo = DynamicRecord::forTableName(School::COURSES)->create(['bezeichnung' => 'Klavier Leo', 'wochentag' => 'di', ...$base]);
+        $other = DynamicRecord::forTableName(School::COURSES)->create(['bezeichnung' => 'Klavier Ohne', 'wochentag' => 'mi', ...$base]);
+
+        $this->browse(function (Browser $browser) use ($mia, $leo): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/data/'.School::COURSES)->waitForText('Klavier Ohne', 15);
+            $this->select($browser, $mia);
+            $this->select($browser, $leo);
+            // Die Sammelaktion, nicht „Lektionen erzeugen“ über der Tabelle (alle Kurse eines Semesters).
+            $browser->clickAtXPath("//button[@*[contains(., 'musikschuleLektionenSelected')]]")
+                ->waitForText('Lektionen in 2 Kursen', 15);
+            $this->clickVisibleButton($browser, 'Erzeugen')
+                ->waitForText('Lektionen in 2 Kursen erzeugt.', 20);
+        });
+
+        $lessons = DynamicRecord::forTableName(School::LESSONS)->newQuery();
+        $this->assertGreaterThan(0, (clone $lessons)->where('kurs', $mia->getKey())->count());
+        $this->assertGreaterThan(0, (clone $lessons)->where('kurs', $leo->getKey())->count());
+        $this->assertSame(0, (clone $lessons)->where('kurs', $other->getKey())->count(), 'Nicht ausgewählt');
     }
 }

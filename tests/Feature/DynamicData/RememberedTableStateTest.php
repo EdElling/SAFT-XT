@@ -238,6 +238,8 @@ class RememberedTableStateTest extends DynamicDataTestCase
         $open = fn () => Livewire::withQueryParams(['bulk' => $head->id])->test(DynamicDataPage::class, ['table' => 'projekte']);
 
         $open()->call('removeTableFilters')->assertRedirect(DynamicDataPage::urlFor('projekte'));
+        // Das ✕ am Kärtchen (Filament ruft removeTableFilter mit dem Namen des Filters).
+        $open()->call('removeTableFilter', '_bulk_change')->assertRedirect(DynamicDataPage::urlFor('projekte'));
         $open()->callTableAction('resetTableView')->assertRedirect(DynamicDataPage::urlFor('projekte'));
 
         $this->assertSame('Bet', UserTableState::stateFor($admin->id, $key)['search'] ?? null, '„Zurücksetzen“ beendet nur die vorübergehende Ansicht.');
