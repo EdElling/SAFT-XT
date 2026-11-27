@@ -241,10 +241,13 @@ abstract class DuskTestCase extends BaseTestCase
             ->waitFor(self::SELECTOR_EMAIL, 15);
     }
 
+    /** Zelle mit Daten (XPath-Bedingung), nicht die Spalte mit den Häkchen der Sammelaktionen (B-133). */
+    protected const string DATA_CELL = "contains(@class, 'fi-ta-cell') and not(contains(@class, 'fi-ta-selection-cell'))";
+
     protected function clickRow(Browser $browser, string $text): Browser
     {
         return $browser->waitForText($text, 15)
-            ->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., '{$text}')]//td[contains(@class, 'fi-ta-cell')][1]");
+            ->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., '{$text}')]//td[".self::DATA_CELL.'][1]');
     }
 
     protected function rowAction(Browser $browser, string $rowText, string $action): Browser
@@ -470,7 +473,8 @@ abstract class DuskTestCase extends BaseTestCase
         // In einem Schritt lesen: Livewire kann die Tabelle sonst zwischen zwei Abfragen ersetzen.
         return $browser->script(<<<'JS'
             return [...document.querySelectorAll('tr.fi-ta-row')]
-                .map(row => row.querySelector('td.fi-ta-cell').innerText.trim());
+                // Ohne die Spalte mit den Häkchen der Sammelaktionen (B-133).
+                .map(row => row.querySelector('td.fi-ta-cell:not(.fi-ta-selection-cell)').innerText.trim());
         JS)[0];
     }
 

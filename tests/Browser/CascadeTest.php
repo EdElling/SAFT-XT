@@ -328,7 +328,7 @@ class CascadeTest extends DuskTestCase
     /** Klick in einer bestimmten Tabelle, wenn derselbe Text auch weiter oben steht. */
     private function clickRowInTable(Browser $browser, int $table, string $text): Browser
     {
-        return $browser->clickAtXPath("(//table[contains(@class, 'fi-ta-table')])[{$table}]//tr[contains(@class, 'fi-ta-row')][contains(., '{$text}')]//td[contains(@class, 'fi-ta-cell')][1]");
+        return $browser->clickAtXPath("(//table[contains(@class, 'fi-ta-table')])[{$table}]//tr[contains(@class, 'fi-ta-row')][contains(., '{$text}')]//td[".self::DATA_CELL.'][1]');
     }
 
     /** KAS-14 */
