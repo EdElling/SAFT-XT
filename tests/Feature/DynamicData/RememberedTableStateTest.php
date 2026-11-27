@@ -9,6 +9,7 @@ use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\UserTableColumn;
 use App\Models\UserTableState;
+use Filament\Actions\Testing\TestAction;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 
@@ -154,5 +155,28 @@ class RememberedTableStateTest extends DynamicDataTestCase
         $this->page()->call('applyTableColumnManager', $state);
         $this->assertNull(UserTableColumn::orderFor($admin->id, $this->page()->instance()->tableColumnsPreferenceKey()));
         $this->assertSame($names, array_column($this->page()->get('tableColumns'), 'name'));
+    }
+
+    /**
+     * LIS-19 auf GitHub (27.11.2026): Eine gleichzeitige Anfrage (z. B. ein Widget des Dashboards nach der Anmeldung)
+     * schreibt ihren älteren Stand der Sitzung zurück und wirft dabei die Werte der Tabelle hinaus. Die Liste zeigt die
+     * Suche weiter; „Ansicht zurücksetzen“ muss bleiben, und die gemerkte Ansicht darf nicht gelöscht werden.
+     */
+    public function test_a_concurrent_request_that_drops_the_session_values_keeps_the_view(): void
+    {
+        $this->actingAs($admin = $this->superAdmin());
+        $this->page()->searchTable('alp');
+        $this->flushSession();
+
+        $page = $this->page()->assertSet('tableSearch', 'alp')->assertActionVisible(TestAction::make('resetTableView')->table());
+
+        $this->assertTrue(session()->has('filament.tables'));
+        session()->forget(['filament.tables', 'saft.table_state']);
+
+        $page->call('$refresh')
+            ->assertSet('tableSearch', 'alp')
+            ->assertActionVisible(TestAction::make('resetTableView')->table());
+
+        $this->assertSame('alp', UserTableState::stateFor($admin->id, $page->instance()->rememberedTableKey())['search'] ?? null, 'Gemerkte Ansicht bleibt gespeichert.');
     }
 }

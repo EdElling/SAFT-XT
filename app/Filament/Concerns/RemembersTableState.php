@@ -150,23 +150,32 @@ trait RemembersTableState
             });
     }
 
-    /** @return array<string, mixed> Stand der Sitzung ohne Vorgaben */
+    /**
+     * Stand der Tabelle ohne Vorgaben, aus den Eigenschaften der Komponente (in derselben Form, die Filament in die
+     * Sitzung legt). Nicht aus der Sitzung: Eine gleichzeitige Anfrage, z. B. ein Widget des Dashboards nach der
+     * Anmeldung, kann ihren älteren Stand der Sitzung zurückschreiben und die Werte der Tabelle hinauswerfen; die Liste
+     * zeigte dann die Suche weiter, aber ohne „Ansicht zurücksetzen“, und am Ende der Anfrage würde der leere Stand
+     * gespeichert (LIS-19 auf GitHub, 27.11.2026).
+     *
+     * @return array<string, mixed>
+     */
     private function currentRememberedState(): array
     {
+        $values = [
+            'filters' => $this->tableFilters,
+            'search' => $this->tableSearch,
+            'column_search' => $this->tableColumnSearches,
+            'sort' => $this->tableSort,
+            'per_page' => $this->tableRecordsPerPage,
+        ];
         $state = [];
 
         foreach (self::$rememberedParts as $part) {
-            $key = $this->rememberedSessionKey($part);
-
-            if (! session()->has($key)) {
-                continue;
-            }
-
-            $value = session()->get($key);
+            $value = $values[$part];
             $isDefault = match ($part) {
                 'filters', 'column_search' => self::isEmptyState($value),
                 'search', 'sort' => blank($value),
-                'per_page' => (string) $value === (string) $this->getTable()->getDefaultPaginationPageOption(),
+                'per_page' => $value === null || (string) $value === (string) $this->getTable()->getDefaultPaginationPageOption(),
             };
 
             if (! $isDefault) {
