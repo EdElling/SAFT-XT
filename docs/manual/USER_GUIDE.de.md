@@ -218,6 +218,11 @@ sich genauso.
 > Menüeintrag, auch nach dem Abmelden und auf einem anderen Rechner. Die **Reihenfolge** ändern Sie im selben Menü durch Ziehen am Griff einer Spalte; auch sie bleibt gespeichert.
 > „Zurücksetzen“ stellt die Vorgabe wieder her. Spalten-Symbol und Reihenfolge gibt es auch in den Detailtabellen der
 > Master-Detail-Ansicht, das Spalten-Symbol zudem in den Listen der Administration.
+>
+> **Angelegt und geändert:** Am Ende des Spaltenmenüs stehen in jeder Tabelle die Spalten **Angelegt am**,
+> **Geändert am**, **Angelegt von** und **Geändert von** – zunächst ausgeblendet. Nach den beiden Daten lässt sich
+> sortieren, die Personen erscheinen mit Namen (nicht sortierbar). Im Filter wählen Sie dafür einen Zeitraum bzw. eine
+> Person. Angebundene Tabellen haben diese Spalten nicht.
 
 **Filter, Suche, Sortierung und Zeilen pro Seite** merkt sich SAFT in den Datenansichten ebenfalls **dauerhaft für
 Sie persönlich** – je Tabelle und Menüeintrag, auch nach dem Abmelden. Öffnen Sie also eine Tabelle wieder, sehen
@@ -389,7 +394,8 @@ Die Datei enthält, was die Liste gerade zeigt:
 
 - **Datensätze:** alle Treffer über alle Seiten, mit aktuellem Filter, aktueller Suche und Sortierung. In einer
   Detailtabelle sind das nur die Datensätze zum ausgewählten Eintrag.
-- **Spalten:** die gerade sichtbaren Spalten, also auch Ihre eigene Spaltenauswahl.
+- **Spalten:** die gerade sichtbaren Spalten, also auch Ihre eigene Spaltenauswahl, samt eingeblendeten Spalten
+  „Angelegt am/von“ und „Geändert am/von“ (Personen mit Namen).
 - **Werte:** wie angezeigt, also z. B. die Bezeichnung einer Auswahlliste und „Ja“ oder „Nein“. Lange Texte stehen
   dagegen vollständig in der Datei.
 

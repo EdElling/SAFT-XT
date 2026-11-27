@@ -210,6 +210,11 @@ be scrolled horizontally. Summaries and detail tables in the master-detail view 
 > after signing out and on another computer. You change the **order** in the same menu by dragging the handle of a column; it is remembered as well.
 > "Reset" restores the default. The columns icon and the order are also available in the detail tables of the
 > master-detail view, the columns icon also in the lists of the administration.
+>
+> **Created and changed:** At the end of the column menu every table offers the columns **Created at**, **Changed
+> at**, **Created by** and **Changed by** – hidden at first. You can sort by the two dates; the people appear with
+> their names (not sortable). In the filter you choose a period or a person for them. Connected tables do not have
+> these columns.
 
 SAFT also remembers **filters, search, sorting and rows per page** in the data views **permanently for you
 personally** – per table and menu entry, even after signing out. When you open a table again, you see it as you
@@ -369,7 +374,8 @@ The file contains what the list currently shows:
 
 - **Records:** all hits across all pages, with the current filter, search and sorting. In a detail table these are
   only the records of the selected entry.
-- **Columns:** the columns currently visible, including your own column choice.
+- **Columns:** the columns currently visible, including your own column choice and shown columns “Created at/by”
+  and “Changed at/by” (people with their names).
 - **Values:** as displayed, e.g. the label of a selection list and "Yes" or "No". Long texts, however, are
   included in full.
 

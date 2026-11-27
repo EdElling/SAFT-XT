@@ -9,6 +9,7 @@ use App\DynamicData\DataPermissions;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\Menu;
+use App\Models\User;
 use App\Models\UserTableColumn;
 use App\Services\DynamicSchemaService;
 use Facebook\WebDriver\Exception\TimeoutException;
@@ -509,6 +510,38 @@ class ListTest extends DuskTestCase
             // Neu laden: die Auswahl bleibt (gespeichert je Benutzer, nicht nur in der Sitzung).
             $browser->visit($url)->waitFor('th.fi-ta-header-cell-menge', 15)->assertPresent('th.fi-ta-header-cell-datum');
             $this->assertSame(1, UserTableColumn::query()->count());
+        });
+    }
+
+    /** LIS-21 (B-159): Systemspalten angelegt/geändert am und von – eingeblendet, sortiert, mit Namen. */
+    public function test_system_columns_can_be_shown_sorted_and_show_the_person(): void
+    {
+        $admin = User::query()->where('email', self::ADMIN)->sole();
+        auth()->login($admin);
+        $this->travelTo('2026-01-10 08:00:00');
+        DynamicRecord::forTable($this->kunden)->create(['firma' => 'Früh AG', 'ort' => 'Bern']);
+        $this->travelTo('2026-05-20 08:00:00');
+        DynamicRecord::forTable($this->kunden)->create(['firma' => 'Spät GmbH', 'ort' => 'Basel']);
+        $this->travelBack();
+
+        auth()->logout();
+
+        $this->browse(function (Browser $browser) use ($admin): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/data/kunden')->waitForText('Spät GmbH', 15)
+                ->assertMissing('th.fi-ta-header-cell-created-at');
+
+            $browser->click('.fi-ta-col-manager-dropdown .fi-dropdown-trigger button')
+                ->waitFor('.fi-ta-col-manager-label', 10);
+            foreach (['Angelegt am', 'Angelegt von'] as $label) {
+                $browser->clickAtXPath("//label[contains(@class, 'fi-ta-col-manager-label')][contains(normalize-space(.), '{$label}')]")->pause(300);
+            }
+            $browser->clickAtXPath("//div[contains(@class, 'fi-ta-col-manager')]//button[contains(normalize-space(.), 'Spalten anwenden')]")
+                ->waitFor('th.fi-ta-header-cell-created-at', 15)
+                ->assertPresent('th.fi-ta-header-cell-created-by')
+                ->assertSeeIn('td.fi-ta-cell-created-by', $admin->name);
+
+            $this->sortBy($browser, 'created-at', ['Früh AG', 'Spät GmbH']);
+            $this->sortBy($browser, 'created-at', ['Spät GmbH', 'Früh AG']);
         });
     }
 }

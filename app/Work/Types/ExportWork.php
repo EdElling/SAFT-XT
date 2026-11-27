@@ -7,6 +7,7 @@ namespace App\Work\Types;
 use AnourValar\EloquentSerialize\Facades\EloquentSerializeFacade;
 use App\DynamicData\Export\ExportFormat;
 use App\DynamicData\Export\TableExporter;
+use App\DynamicData\Schema\SystemFields;
 use App\Exceptions\BusinessRuleException;
 use App\Models\CustomField;
 use App\Models\CustomTable;
@@ -129,14 +130,14 @@ final readonly class ExportWork implements WorkType
     }
 
     /**
-     * Felder in der Reihenfolge der Spalten; inzwischen entfernte Felder fallen weg.
+     * Felder in der Reihenfolge der Spalten, auch Systemspalten (B-159); inzwischen entfernte Felder fallen weg.
      *
      * @param  list<string>  $names
      * @return list<CustomField>
      */
     private function fields(CustomTable $table, array $names): array
     {
-        $byName = $table->fields->keyBy('name');
+        $byName = collect([...$table->fields->all(), ...SystemFields::for($table)])->keyBy('name');
 
         return array_values(array_filter(array_map(static fn (string $name): ?CustomField => $byName->get($name), $names)));
     }

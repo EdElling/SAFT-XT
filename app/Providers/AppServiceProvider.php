@@ -15,6 +15,7 @@ use App\Auth\Sso\PendingSsoLogout;
 use App\Auth\Sso\SsoDriverRegistry;
 use App\Database\Migrations\NumberedMigrationCreator;
 use App\DynamicData\CustomTableLookup;
+use App\DynamicData\UserNames;
 use App\Filament\Pages\DataModelPage;
 use App\Http\Responses\LogoutResponse;
 use App\Models\Activity as AppActivity;
@@ -94,6 +95,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ChatClient::class, AnthropicChatClient::class);
         $this->app->scoped(RoleSimulation::class);
         $this->app->scoped(CustomTableLookup::class);
+        // Namen für die Systemspalten angelegt/geändert von (B-159), einmal je Anfrage.
+        $this->app->scoped(UserNames::class);
         // Je Request einmal ermittelt (B-150): Navigation, Menüs und Tabellen fragen die aktuelle App vielfach ab.
         $this->app->scoped(CurrentApp::class);
         // Plugins melden sich in ihren ServiceProvidern an (die vor diesem laufen, daher singletonIf).

@@ -42,6 +42,7 @@
    - [Comment annuler une modification groupée ?](#comment-annuler-une-modification-groupée-)
    - [Comment exporter seulement certains enregistrements ?](#comment-exporter-seulement-certains-enregistrements-)
    - [Quels enregistrements une modification groupée a-t-elle modifiés ?](#quels-enregistrements-une-modification-groupée-a-t-elle-modifiés-)
+   - [Quand et par qui un enregistrement a-t-il été créé ?](#quand-et-par-qui-un-enregistrement-a-t-il-été-créé-)
 
 ---
 ## Questions fréquentes
@@ -266,3 +267,10 @@ Ouvrez **« Dernières modifications groupées »** au-dessus de la table et cli
 exactement ces enregistrements, avec une étiquette « Modification groupée du … » au-dessus du tableau. Votre vue
 enregistrée est conservée : le ✕ de l’étiquette ou « Réinitialiser la vue » rétablit vos filtres précédents. Voir
 [Manuel d’utilisation 4.11](USER_GUIDE.fr.md#411-modifier-plusieurs-enregistrements-modification-groupée).
+
+### Quand et par qui un enregistrement a-t-il été créé ?
+
+Dans le menu des colonnes (icône des colonnes à côté du filtre), affichez les colonnes **Créé le**, **Créé par**,
+**Modifié le** et **Modifié par** ; elles se trouvent à la fin de la liste. Vous pouvez trier selon les dates, choisir
+une période dans le filtre et filtrer par personne. Qui a modifié quoi exactement figure dans l’**historique** d’un
+enregistrement. Voir [Manuel d’utilisation 4.1](USER_GUIDE.fr.md#41-la-vue-tableau).

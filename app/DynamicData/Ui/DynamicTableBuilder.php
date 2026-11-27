@@ -6,6 +6,8 @@ namespace App\DynamicData\Ui;
 
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Schema\SystemFields;
+use App\DynamicData\UserNames;
 use App\ExternalData\TableConnectorService;
 use App\Models\CustomField;
 use App\Models\CustomTable;
@@ -102,11 +104,28 @@ final class DynamicTableBuilder
         // Pflichtfelder immer sichtbar.
         $shown = array_map(static fn (CustomField $f): string => $f->name, $this->tableFields($table, $visible, $except));
 
-        return array_map(function (CustomField $field) use ($shown): Column {
-            $column = $this->column($field);
+        return [
+            ...array_map(function (CustomField $field) use ($shown): Column {
+                $column = $this->column($field);
 
-            return $field->is_required ? $column : $column->toggleable(isToggledHiddenByDefault: ! in_array($field->name, $shown, true));
-        }, $this->availableFields($table, $except));
+                return $field->is_required ? $column : $column->toggleable(isToggledHiddenByDefault: ! in_array($field->name, $shown, true));
+            }, $this->availableFields($table, $except)),
+            // B-159: angelegt/geändert am und von, ausgeblendet.
+            ...array_map(fn (CustomField $field): Column => $this->systemColumn($field)->toggleable(isToggledHiddenByDefault: true), SystemFields::for($table)),
+        ];
+    }
+
+    /** Spalte einer Systemspalte: Datum wie ein Feld (sortierbar), Person mit Namen (nicht sortierbar, andere Datenbank). */
+    private function systemColumn(CustomField $field): Column
+    {
+        if (! SystemFields::isPerson($field)) {
+            return $this->column($field);
+        }
+
+        return TextColumn::make($field->name)
+            ->label($field->label)
+            ->formatStateUsing(static fn (mixed $state): ?string => app(UserNames::class)->name($state))
+            ->placeholder('—');
     }
 
     /**
@@ -192,6 +211,22 @@ final class DynamicTableBuilder
             if ($filter !== null) {
                 $filters[] = $filter->label($field->label);
             }
+        }
+
+        // B-159: Zeitraum für angelegt/geändert am, Person für angelegt/geändert von.
+        foreach (SystemFields::for($table) as $field) {
+            $filters[] = (SystemFields::isPerson($field)
+                ? SelectFilter::make($field->name)->options(static fn (): array => app(UserNames::class)->all())->searchable()
+                : Filter::make($field->name)
+                    ->schema([
+                        DatePicker::make('from')->label(__('data.filters.from', ['field' => $field->label])),
+                        DatePicker::make('until')->label(__('data.filters.until', ['field' => $field->label])),
+                    ])
+                    ->columns(2)
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['from'] ?? null, fn (Builder $q, string $d): Builder => $q->whereDate($q->getModel()->qualifyColumn($field->name), '>=', $d))
+                        ->when($data['until'] ?? null, fn (Builder $q, string $d): Builder => $q->whereDate($q->getModel()->qualifyColumn($field->name), '<=', $d)))
+            )->label($field->label);
         }
 
         return $filters;

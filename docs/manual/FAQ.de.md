@@ -42,6 +42,7 @@
    - [Wie mache ich eine Sammeländerung rückgängig?](#wie-mache-ich-eine-sammeländerung-rückgängig)
    - [Wie exportiere ich nur einige Datensätze?](#wie-exportiere-ich-nur-einige-datensätze)
    - [Welche Datensätze hat eine Sammeländerung geändert?](#welche-datensätze-hat-eine-sammeländerung-geändert)
+   - [Wann und von wem wurde ein Datensatz angelegt?](#wann-und-von-wem-wurde-ein-datensatz-angelegt)
 
 ---
 ## Häufige Fragen
@@ -259,3 +260,10 @@ anzeigen“** (den Link gibt es auch in der Bestätigung „Rückgängig“). Di
 einem Kärtchen „Sammeländerung vom …“ über der Tabelle. Ihre gespeicherte Ansicht bleibt erhalten: Das ✕ am Kärtchen
 oder „Ansicht zurücksetzen“ bringt Ihre bisherigen Filter zurück. Siehe
 [Anwenderhandbuch 4.11](USER_GUIDE.de.md#411-mehrere-datensätze-ändern-sammeländerung).
+
+### Wann und von wem wurde ein Datensatz angelegt?
+
+Blenden Sie im Spaltenmenü (Spalten-Symbol rechts neben dem Filter) die Spalten **Angelegt am**, **Angelegt von**,
+**Geändert am** und **Geändert von** ein; sie stehen am Ende der Liste. Nach den Daten können Sie sortieren und im
+Filter einen Zeitraum wählen, nach Personen filtern. Wer was genau geändert hat, zeigt der **Verlauf** eines
+Datensatzes. Siehe [Anwenderhandbuch 4.1](USER_GUIDE.de.md#41-die-tabellenansicht).

@@ -42,6 +42,7 @@
    - [Come annullo una modifica multipla?](#come-annullo-una-modifica-multipla)
    - [Come esporto solo alcuni record?](#come-esporto-solo-alcuni-record)
    - [Quali record ha modificato una modifica multipla?](#quali-record-ha-modificato-una-modifica-multipla)
+   - [Quando e da chi è stato creato un record?](#quando-e-da-chi-è-stato-creato-un-record)
 
 ---
 ## Domande frequenti
@@ -259,3 +260,10 @@ multipla (il link è anche nella conferma «Annulla»). L’elenco mostra allora
 «Modifica multipla del …» sopra la tabella. La vista salvata resta: la ✕ sull’etichetta o «Reimposta vista» riporta i
 filtri precedenti. Vedi
 [Manuale utente 4.11](USER_GUIDE.it.md#411-modificare-più-record-modifica-multipla).
+
+### Quando e da chi è stato creato un record?
+
+Nel menu delle colonne (icona delle colonne accanto al filtro) mostrate le colonne **Creato il**, **Creato da**,
+**Modificato il** e **Modificato da**; si trovano alla fine dell’elenco. Potete ordinare per le date, scegliere un
+periodo nel filtro e filtrare per persona. Chi ha modificato cosa esattamente lo mostra la **cronologia** di un record.
+Vedi [Manuale utente 4.1](USER_GUIDE.it.md#41-la-vista-tabella).

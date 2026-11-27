@@ -18,6 +18,7 @@ use App\DynamicData\Import\RecordImportAnalysis;
 use App\DynamicData\Import\RecordImporter;
 use App\DynamicData\RecordCopier;
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Schema\SystemFields;
 use App\DynamicData\Write\RecordVersion;
 use App\DynamicData\Write\RecordWriter;
 use App\DynamicData\Write\StaleRecordException;
@@ -147,7 +148,7 @@ final class DynamicRecordActions
             return $builder->tableFields($table, $visible, $except);
         }
 
-        $byName = collect($builder->availableFields($table, $except))->keyBy('name');
+        $byName = collect([...$builder->availableFields($table, $except), ...SystemFields::for($table)])->keyBy('name');
         $fields = [];
 
         foreach ($livewire->getTable()->getVisibleColumns() as $column) {

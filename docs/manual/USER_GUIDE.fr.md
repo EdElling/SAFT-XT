@@ -227,6 +227,11 @@ maître-détail se comportent de la même manière.
 > par entrée de menu, même après la déconnexion et sur un autre ordinateur. Vous modifiez l’**ordre** dans le même menu en tirant la poignée d’une colonne ; il est également mémorisé.
 > « Réinitialiser » rétablit la présélection. L’icône des colonnes et l’ordre existent aussi dans les tables de détail de
 > la vue maître-détail, l’icône des colonnes également dans les listes de l’administration.
+>
+> **Créé et modifié :** à la fin du menu des colonnes, chaque table propose les colonnes **Créé le**, **Modifié le**,
+> **Créé par** et **Modifié par** – masquées au départ. On peut trier selon les deux dates ; les personnes
+> apparaissent avec leur nom (non triable). Dans le filtre, vous choisissez pour elles une période ou une personne.
+> Les tables connectées n’ont pas ces colonnes.
 
 SAFT mémorise aussi les **filtres, la recherche, le tri et les lignes par page** des vues de données **durablement
 et pour vous personnellement** – par table et entrée de menu, même après la déconnexion. Lorsque vous rouvrez une
@@ -401,7 +406,8 @@ Le fichier contient ce que la liste affiche à ce moment :
 
 - **Enregistrements :** tous les résultats sur toutes les pages, avec le filtre, la recherche et le tri actuels. Dans
   une table de détail, il s’agit uniquement des enregistrements de l’entrée sélectionnée.
-- **Colonnes :** les colonnes actuellement visibles, y compris votre propre choix de colonnes.
+- **Colonnes :** les colonnes actuellement visibles, y compris votre propre choix de colonnes et les colonnes affichées
+  « Créé le/par » et « Modifié le/par » (personnes avec leur nom).
 - **Valeurs :** telles qu’affichées, p. ex. le libellé d’une liste de sélection et « Oui » ou « Non ». Les textes
   longs figurent en revanche intégralement dans le fichier.
 

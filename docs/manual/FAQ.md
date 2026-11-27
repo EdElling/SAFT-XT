@@ -42,6 +42,7 @@
    - [How do I undo a bulk edit?](#how-do-i-undo-a-bulk-edit)
    - [How do I export only some records?](#how-do-i-export-only-some-records)
    - [Which records did a bulk edit change?](#which-records-did-a-bulk-edit-change)
+   - [When and by whom was a record created?](#when-and-by-whom-was-a-record-created)
 
 ---
 ## Frequently asked questions
@@ -249,3 +250,10 @@ Open **“Recent bulk edits”** above the table and click **“Show records”*
 the “Undo” confirmation). The list then shows exactly those records, with a chip “Bulk edit of …” above the table.
 Your saved view is kept: the ✕ on the chip or “Reset view” brings your previous filters back. See
 [User guide 4.11](USER_GUIDE.md#411-changing-several-records-bulk-edit).
+
+### When and by whom was a record created?
+
+In the column menu (columns icon next to the filter), show the columns **Created at**, **Created by**, **Changed at**
+and **Changed by**; they are at the end of the list. You can sort by the dates and choose a period in the filter,
+and filter by people. Who changed what exactly is shown in a record's **history**. See
+[User guide 4.1](USER_GUIDE.md#41-the-table-view).

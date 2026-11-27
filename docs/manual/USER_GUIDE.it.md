@@ -218,6 +218,11 @@ master-detail si comportano allo stesso modo.
 > anche dopo l’uscita e su un altro computer. L’**ordine** si cambia nello stesso menu trascinando la maniglia di una colonna; anch’esso viene ricordato.
 > «Reimposta» ripristina la preimpostazione. Icona delle colonne e ordine esistono anche nelle tabelle di dettaglio della
 > vista master-detail, l’icona delle colonne anche negli elenchi dell’amministrazione.
+>
+> **Creato e modificato:** alla fine del menu delle colonne ogni tabella offre le colonne **Creato il**, **Modificato
+> il**, **Creato da** e **Modificato da** – inizialmente nascoste. Si può ordinare per le due date; le persone compaiono
+> con il nome (non ordinabile). Nel filtro scegliete per esse un periodo o una persona. Le tabelle collegate non hanno
+> queste colonne.
 
 SAFT memorizza anche **filtri, ricerca, ordinamento e righe per pagina** delle viste dati **in modo permanente e
 personale** – per tabella e voce di menu, anche dopo la disconnessione. Riaprendo una tabella la ritrovate come l’avete
@@ -386,7 +391,8 @@ Il file contiene ciò che l’elenco mostra in quel momento:
 
 - **Record:** tutti i risultati su tutte le pagine, con filtro, ricerca e ordinamento attuali. In una tabella di
   dettaglio sono solo i record della voce selezionata.
-- **Colonne:** le colonne attualmente visibili, quindi anche la vostra scelta personale di colonne.
+- **Colonne:** le colonne attualmente visibili, quindi anche la vostra scelta personale di colonne e le colonne
+  mostrate «Creato il/da» e «Modificato il/da» (persone con il nome).
 - **Valori:** come mostrati, ad es. l’etichetta di un elenco di selezione e «Sì» o «No». I testi lunghi compaiono
   invece per intero nel file.
 

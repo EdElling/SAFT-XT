@@ -83,6 +83,13 @@ return [
         'next' => 'Nächste Datei',
         'no_preview' => 'Für diese Datei gibt es keine Vorschau.',
     ],
+    // B-159: Systemspalten in Datenansicht und Export.
+    'system' => [
+        'created_at' => 'Angelegt am',
+        'updated_at' => 'Geändert am',
+        'created_by' => 'Angelegt von',
+        'updated_by' => 'Geändert von',
+    ],
     'filters' => [
         'with_files' => 'mit Dateien',
         'without_files' => 'ohne Dateien',
