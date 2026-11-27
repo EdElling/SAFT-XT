@@ -27,6 +27,7 @@
    - [4.8 Importare i dati](#48-importare-i-dati)
    - [4.9 Report](#49-report)
    - [4.10 Creare documenti](#410-creare-documenti)
+   - [4.11 Modificare più record (modifica multipla)](#411-modificare-più-record-modifica-multipla)
 - [Allegato A – Tipi di campo](#allegato-a--tipi-di-campo)
 - [Allegato B – Glossario](#allegato-b--glossario)
 
@@ -601,8 +602,7 @@ Se il campo file è pieno (numero massimo di file), il documento viene solo scar
 Il messaggio successivo indica quanti documenti sono stati creati e depositati e, per record, cosa non si è potuto
 depositare (p. es. campo pieno) – questi documenti sono comunque nel file. Un limite esiste solo se l’amministrazione ne
 fissa uno; con moltissimi documenti lo ZIP è l’uscita migliore, perché un unico PDF unisce tutte le pagine in una volta.
-Le caselle di spunta esistono solo nelle tabelle con modello di documento; i record eliminati non si possono
-selezionare.
+L’azione di gruppo ignora i record eliminati.
 
 **Inviare per e-mail:** Se il modello prevede un’e-mail e il vostro ruolo ha il diritto *Documenti: inviare*, il
 dialogo mostra l’interruttore **«Inviare per e-mail»**. **A**, **oggetto** e **testo** sono precompilati dal modello
@@ -623,6 +623,43 @@ rivolgetevi all’amministrazione.
 (.docx) serve per la rielaborazione, p. es. per adattare una lettera: ha intestazione, campo indirizzo e tabelle come il
 PDF, ma senza sfondo della carta intestata e senza fattura QR. Viene solo scaricato – depositato e inviato per e-mail è
 sempre il PDF. Più record in Word arrivano in uno ZIP.
+
+---
+
+### 4.11 Modificare più record (modifica multipla)
+
+Con la modifica multipla impostate un campo per molti record in una volta, senza aprirli uno per uno – per esempio tutte
+le iscrizioni da *lista d’attesa* ad *attivo*, oppure sostituire un docente in tutti i corsi di un semestre.
+
+1. **Selezionare:** restringete l’elenco con un filtro o una ricerca e spuntate le **caselle** all’inizio delle righe.
+   La casella nell’intestazione seleziona le righe della pagina; l’elenco offre poi **«Seleziona tutti N»** su tutte le
+   pagine. Vengono modificati solo i record che il filtro mostra.
+2. **«Modifica …»** nella barra sopra la tabella apre la finestra. Spuntate i campi da modificare e scegliete per ognuno
+   **impostare** (un valore per tutti, con il solito campo di inserimento) o **svuotare**. Tutti gli altri campi restano
+   invariati.
+3. L’**anteprima** sotto mostra fino a dieci record con *prima → dopo* e avvisi, p. es. sugli intervalli di numerazione.
+4. **«Solo verificare»** controlla tutti i record selezionati senza modificare nulla; la finestra resta aperta.
+   **«Modifica N record»** controlla e modifica.
+
+SAFT controlla ogni record come nella modifica manuale – campi obbligatori, regole di validazione, regole della tabella e
+plugin (p. es. un controllo dei conflitti). Vale **tutto o niente**: se un record non supera i controlli, nessuno viene
+modificato, e il messaggio indica i record con il motivo. Deselezionateli o correggeteli e riprovate. I record che hanno
+già il nuovo valore restano invariati. Con molti record la modifica multipla continua come **lavoro**; il progresso è
+visibile in *I miei lavori*. Se qualcuno modifica uno dei record durante la modifica multipla, questa viene annullata
+completamente.
+
+Non vengono proposti i campi il cui valore è stabilito da SAFT o che non possono avere lo stesso valore per tutti:
+intervalli di numerazione, campi calcolati, file e immagini; i campi univoci si possono solo svuotare, quelli
+obbligatori solo impostare. In una tabella di dettaglio (p. es. le iscrizioni di un corso) il collegamento alla tabella
+principale è fisso. La **cronologia** di un record indica «(modifica multipla)» per queste modifiche. Se modificate un
+campo che decide quando viene assegnato un numero, i record ricevono i loro numeri nell’ordine delle chiavi.
+
+**Eliminare e ripristinare:** **«Elimina selezionati»** elimina i record selezionati; quelli a cui fanno riferimento altri
+record restano e vengono contati nel messaggio. Con il filtro «Record eliminati», **«Ripristina selezionati»** recupera
+i record eliminati.
+
+Il pulsante «Modifica …» è visibile con il diritto *Modificare* se l’amministrazione consente la modifica multipla per
+la tabella. Al massimo 5’000 record per modifica multipla, salvo diversa impostazione dell’amministrazione.
 
 ---
 

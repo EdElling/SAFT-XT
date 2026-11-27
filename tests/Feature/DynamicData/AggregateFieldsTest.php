@@ -7,11 +7,17 @@ namespace Tests\Feature\DynamicData;
 use App\DynamicData\Formula\FormulaAnalyzer;
 use App\DynamicData\Formula\FormulaException;
 use App\DynamicData\Formula\Printer;
+use App\DynamicData\Write\RecordVersion;
+use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
 use App\Models\Activity;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\WorkItem;
+use App\Work\Types\BulkRecordsWork;
+use App\Work\WorkService;
 
 /** Berechnete Felder (Teilschritt 3b): Summen über Kind-Datensätze und Weitergabe nach oben. */
 class AggregateFieldsTest extends DynamicDataTestCase
@@ -221,5 +227,31 @@ class AggregateFieldsTest extends DynamicDataTestCase
                 $this->assertSame($message, $e->getMessage(), $formula);
             }
         }
+    }
+
+    /** Fehler aus der Sitzung zu B-133: Die Summe im Master erbte die erwartete Version des Kind-Datensatzes. */
+    public function test_editing_a_child_with_a_version_updates_the_sums_of_its_master(): void
+    {
+        $line = DynamicRecord::forTable($this->lines->fresh('fields'))->newQuery()->firstOrFail();
+
+        app(RecordWriter::class)->update($line, ['menge' => 3], WriteOptions::ui()->expecting(RecordVersion::of($line)));
+
+        $this->assertSame('30.00', (string) $this->first->fresh()->gesamtpreis);
+    }
+
+    public function test_bulk_edit_of_children_updates_the_sums_of_their_master(): void
+    {
+        $this->actingAs($this->superAdmin());
+        $this->line(['bestellung_id' => $this->first->id, 'menge' => 1, 'einzelpreis' => 5]);
+        $ids = DynamicRecord::forTable($this->lines->fresh('fields'))->newQuery()->pluck('id')->all();
+
+        $item = app(WorkService::class)->startAndDrive(BulkRecordsWork::KEY, [
+            'table_id' => $this->lines->id,
+            'changes' => ['menge' => ['op' => 'set', 'value' => 4]],
+            'record_ids' => $ids,
+        ], auth()->user());
+
+        $this->assertSame(WorkItem::DONE, $item->status, (string) $item->message);
+        $this->assertSame('60.00', (string) $this->first->fresh()->gesamtpreis);
     }
 }

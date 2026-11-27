@@ -247,6 +247,14 @@ records are removed again. The import runs as a [job](#jobs) in two phases (chec
 2,000 rows in the dialog already (`APP_DATA_IMPORT_CHECK_ROWS`). At most 100,000 rows per file
 (`APP_DATA_IMPORT_MAX_RECORD_ROWS`, `0` = no limit). Linked tables of the table connector cannot be imported into.
 
+**Allow bulk edit:** This switch allows bulk edits – changing several selected records at once (see
+[User guide 4.11](USER_GUIDE.md#411-changing-several-records-bulk-edit)). It is **on** by default; “Change …” appears
+for roles with the **Edit** permission. Switch it off for tables whose records should only be changed one at a time
+(e.g. sent invoices). A bulk edit checks every record like editing by hand, including validation rules and plugins, and
+it is all or nothing. It runs as a [job](#jobs), at most 5,000 records per bulk edit (`APP_DATA_BULK_MAX`, `0` = no
+limit); the history shows “(bulk edit)”. Number sequences, computed fields and files cannot be changed; unique fields
+can only be cleared. Linked tables have no bulk edit.
+
 **Editing fields** (area *Fields*, (2)): for every field you set:
 
 | Setting | Meaning |

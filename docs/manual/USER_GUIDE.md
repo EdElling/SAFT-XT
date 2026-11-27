@@ -27,6 +27,7 @@
    - [4.8 Importing data](#48-importing-data)
    - [4.9 Reports](#49-reports)
    - [4.10 Creating documents](#410-creating-documents)
+   - [4.11 Changing several records (bulk edit)](#411-changing-several-records-bulk-edit)
 - [Appendix A – Field types](#appendix-a--field-types)
 - [Appendix B – Glossary](#appendix-b--glossary)
 
@@ -570,8 +571,8 @@ If the file field is full (maximum number of files), the document is only downlo
 
 The message afterwards says how many documents were created and stored and, per record, what could not be stored
 (e.g. field full) – these documents are in the file anyway. There is a limit only if the administration sets one; with
-very many documents, ZIP is the better output, because a single PDF merges all pages at once. The checkboxes only exist
-in tables with a document template; deleted records cannot be selected.
+very many documents, ZIP is the better output, because a single PDF merges all pages at once. Deleted records are skipped
+by the bulk action.
 
 **Send by email:** If the template provides an email and your role has the permission *Documents: send*, the dialog
 shows the switch **“Send by email”**. **To**, **subject** and **text** are prefilled from the template (e.g. the
@@ -590,6 +591,40 @@ the amount is not a number, a message gives the reason and the document is not c
 (.docx) is meant for editing, e.g. to adjust a letter: it has header, address field and tables like the PDF, but without
 letterhead background and without QR bill. It is only downloaded – what is stored and sent by email is always the PDF.
 Several records as Word come as a ZIP.
+
+---
+
+### 4.11 Changing several records (bulk edit)
+
+With a bulk edit you set a field for many records at once without opening each one – for example all enrolments from
+*waiting list* to *active*, or replacing a teacher in all courses of a semester.
+
+1. **Select:** narrow the list with a filter or search and tick the **checkboxes** at the start of the rows. The
+   checkbox in the table header selects the rows of the page; the list then offers **“Select all N”** across all pages.
+   Only records the filter currently shows are changed.
+2. **“Change …”** in the bar above the table opens the dialog. Tick the fields to change and choose **set** (one value
+   for all, with the usual input field) or **clear** per field. All other fields stay as they are.
+3. The **preview** below shows up to ten records with *before → after* and hints, e.g. about number sequences.
+4. **“Check only”** checks all selected records without changing anything; the dialog stays open.
+   **“Change N records”** checks and changes.
+
+SAFT checks every record as when editing by hand – required fields, validation rules, table rules and plugins (e.g. a
+conflict check). It is **all or nothing**: if one record fails, none is changed, and the message names the records with
+the reason. Deselect or correct them and try again. Records that already have the new value stay unchanged. With many
+records the bulk edit continues as a **job**; you see the progress under *My jobs*. If someone changes one of the
+records during the bulk edit, it is fully reverted.
+
+Fields whose value SAFT determines or that cannot be set to the same value for all are not offered: number sequences,
+computed fields, files and images; unique fields can only be cleared, required fields only set. In a detail table (e.g.
+the enrolments of a course) the link to the main table is fixed. The **history** of a record shows “(bulk edit)” for
+such changes. If you change a field that decides when a number is assigned, the records get their numbers in the order
+of their keys.
+
+**Deleting and restoring:** **“Delete selected”** deletes the selected records; those referred to by other records stay
+and are counted in the message. With the filter “Deleted records”, **“Restore selected”** brings deleted records back.
+
+You see the button “Change …” with the *Edit* permission if the administration allows bulk edits for the table. At most
+5,000 records per bulk edit unless the administration sets something else.
 
 ---
 

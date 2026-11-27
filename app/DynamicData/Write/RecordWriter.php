@@ -152,7 +152,7 @@ final class RecordWriter
         $data = $connection ?? $this->namespace->connection();
         $main = DB::connection();
         $mark = WriteContext::afterCommitMark();
-        $options ??= WriteContext::options();
+        $options ??= WriteContext::options()->nested();
 
         try {
             return WriteContext::run($options, static fn (): mixed => $main->transaction(
@@ -175,7 +175,7 @@ final class RecordWriter
      */
     public function persist(DynamicRecord $record): void
     {
-        $this->transactional($record->getConnection(), WriteContext::options()->withoutLog(), function () use ($record): void {
+        $this->transactional($record->getConnection(), WriteContext::options()->nested()->withoutLog(), function () use ($record): void {
             $record->timestamps = false;
             WriteContext::perform($record, static fn (): bool => $record->saveQuietly());
         });
@@ -210,7 +210,8 @@ final class RecordWriter
     private function transactional(Connection $data, ?WriteOptions $options, Closure $work): mixed
     {
         if (WriteContext::active()) {
-            $options ??= WriteContext::options();
+            // Die erwartete Version gilt nur für den Datensatz, dem sie mitgegeben wurde (nicht für Summen im Master).
+            $options ??= WriteContext::options()->nested();
 
             return WriteContext::run($options, static fn (): mixed => $work($options));
         }

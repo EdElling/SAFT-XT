@@ -123,9 +123,10 @@ Dokument verschickt wurde. Ein korrigiertes Dokument erstellen Sie einfach neu �
 
 ### In einer Liste fehlen die Häkchen zum Auswählen.
 
-Häkchen zum Auswählen mehrerer Datensätze erscheinen nur, wenn es dafür eine Sammelaktion gibt, die Sie nutzen dürfen –
-heute **„Dokumente erstellen“**: Die Tabelle braucht eine aktive Dokumentvorlage, und Ihre Rolle das Recht *Dokumente:
-erzeugen* (Anwenderhandbuch, Abschnitt 4.10). Gelöschte Datensätze im Papierkorb lassen sich nicht auswählen.
+Häkchen zum Auswählen mehrerer Datensätze erscheinen nur, wenn es dafür eine Sammelaktion gibt, die Sie nutzen dürfen:
+**„Ändern …“** (Recht *Bearbeiten*, und die Administration erlaubt die Sammeländerung für die Tabelle; Anwenderhandbuch,
+Abschnitt 4.11), **„Ausgewählte löschen“** (Recht *Löschen*) oder **„Dokumente erstellen“** (aktive Dokumentvorlage und
+Recht *Dokumente: erzeugen*; Abschnitt 4.10). Angebundene Tabellen haben keine Sammeländerung.
 
 ### Ein Dokument liess sich nicht per E-Mail senden.
 
@@ -195,3 +196,18 @@ Wählen Sie beim Nummernkreis unter **Gruppe** das Auswahlfeld mit der Belegart 
 z. B. `{GROUP}-{YYYY}-{000}`. Je Wahl tragen Sie ein Kurzzeichen ein, z. B. `R` für Rechnung und `G` für Gutschrift;
 dann zählt jede Belegart für sich (`R-2026-001`, `G-2026-001`). Siehe
 [Administratorhandbuch, Eigener Zähler je Gruppe](ADMIN_GUIDE.de.md#eigener-zähler-je-gruppe).
+
+### Wie ändere ich viele Datensätze auf einmal?
+
+Filtern Sie die Liste, setzen Sie die Häkchen (oder „Alle N Datensätze auswählen“) und klicken Sie **„Ändern …“**. Haken Sie die
+Felder an, wählen Sie *setzen* oder *leeren* und prüfen Sie die Vorschau; **„Nur prüfen“** ändert noch nichts. Beispiel
+Musikschule: Filter Semester und Lehrperson, alle Kurse auswählen, *Lehrperson* auf die neue setzen. Siehe
+[Anwenderhandbuch 4.11](USER_GUIDE.de.md#411-mehrere-datensätze-ändern-sammeländerung).
+
+### Die Sammeländerung meldet „Nichts geändert“.
+
+Mindestens ein ausgewählter Datensatz besteht die Prüfungen nicht – dieselben wie beim Bearbeiten von Hand (Pflichtfeld,
+Prüfregel, Regel der Tabelle, Plugin). Die Meldung nennt die Datensätze mit Grund. Es gilt alles oder nichts: Wählen Sie
+diese Datensätze ab oder korrigieren Sie sie einzeln und starten Sie die Sammeländerung erneut. Steht „inzwischen von
+jemand anderem geändert“ da, hat jemand während der Sammeländerung gespeichert; sie wurde vollständig zurückgenommen und
+lässt sich einfach wiederholen.

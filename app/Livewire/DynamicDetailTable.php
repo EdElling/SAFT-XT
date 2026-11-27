@@ -8,6 +8,7 @@ use App\DynamicData\CustomTableLookup;
 use App\DynamicData\DataAccess;
 use App\DynamicData\DetailRelations;
 use App\DynamicData\DetailSource;
+use App\DynamicData\Ui\BulkRecordActions;
 use App\DynamicData\Ui\DynamicRecordActions;
 use App\DynamicData\Ui\DynamicTableBuilder;
 use App\DynamicData\Ui\KeylessRow;
@@ -157,6 +158,13 @@ class DynamicDetailTable extends Component implements HasActions, HasSchemas, Ha
             ])
             ->recordActions([
                 ...DynamicRecordActions::rowActions($child, [$fk], $child->hasKey() ? app(PluginRegistry::class)->dataActions($child, DataAction::RECORD) : []),
+            ])
+            // Sammelaktionen wie in der Datenansicht (B-133); die Verknüpfung zur Haupttabelle bleibt fest.
+            ->toolbarActions([
+                BulkRecordActions::edit($child, [$fk]),
+                DynamicRecordActions::documentBulk($child),
+                BulkRecordActions::delete($child),
+                BulkRecordActions::restore($child),
             ])
             ->emptyStateHeading(__('data.empty_details'));
     }

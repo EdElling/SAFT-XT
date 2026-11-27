@@ -123,9 +123,10 @@ utente, sezione 4.10). Se un documento deve davvero sparire, chiedete a qualcuno
 
 ### In un elenco mancano le caselle di spunta per selezionare.
 
-Le caselle di spunta per selezionare più record appaiono solo se esiste un’azione di gruppo che potete usare – oggi
-**«Crea documenti»**: la tabella deve avere un modello di documento attivo e il vostro ruolo il diritto *Documenti:
-generare* (manuale utente, sezione 4.10). I record eliminati nel cestino non si possono selezionare.
+Le caselle di spunta per selezionare più record appaiono solo se esiste un’azione di gruppo che potete usare:
+**«Modifica …»** (diritto *Modificare*, e l’amministrazione consente la modifica multipla per la tabella; manuale utente,
+sezione 4.11), **«Elimina selezionati»** (diritto *Eliminare*) o **«Crea documenti»** (modello di documento attivo e
+diritto *Documenti: generare*; sezione 4.10). Le tabelle collegate non hanno la modifica multipla.
 
 ### Non è stato possibile inviare un documento per e-mail.
 
@@ -195,3 +196,18 @@ In **Gruppo** dell’intervallo di numerazione scegliete il campo di selezione c
 `{GROUP}` nel modello, p. es. `{GROUP}-{YYYY}-{000}`. Per ogni scelta inserite un codice, p. es. `R` per fattura e `G`
 per nota di credito; ogni tipo conta allora per sé (`R-2026-001`, `G-2026-001`). Vedere
 [Manuale di amministrazione, Un contatore per gruppo](ADMIN_GUIDE.it.md#un-contatore-per-gruppo).
+
+### Come modifico molti record in una volta?
+
+Filtrate l’elenco, spuntate le caselle (o «Seleziona tutti N») e cliccate **«Modifica …»**. Spuntate i campi, scegliete
+*impostare* o *svuotare* e controllate l’anteprima; **«Solo verificare»** non modifica ancora nulla. Esempio della scuola
+di musica: filtrare semestre e docente, selezionare tutti i corsi, impostare *Docente* sul nuovo. Vedere
+[Manuale utente 4.11](USER_GUIDE.it.md#411-modificare-più-record-modifica-multipla).
+
+### La modifica multipla segnala «Nulla modificato».
+
+Almeno un record selezionato non supera i controlli – gli stessi della modifica manuale (campo obbligatorio, regola di
+validazione, regola della tabella, plugin). Il messaggio indica i record con il motivo. Vale tutto o niente:
+deselezionate questi record o correggeteli uno per uno e riavviate la modifica multipla. Se è scritto «modificato nel
+frattempo da un’altra persona», qualcuno ha salvato durante la modifica multipla; è stata annullata completamente e si
+può semplicemente ripetere.

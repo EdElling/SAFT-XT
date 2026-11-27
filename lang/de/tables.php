@@ -33,6 +33,8 @@ return [
         'export_enabled_help' => 'Zeigt „Exportieren“ in den Listen dieser Tabelle. Zusätzlich braucht die Rolle das Recht „Exportieren“.',
         'import_enabled' => 'Import erlauben',
         'import_enabled_help' => 'Zeigt „Importieren“ in der Liste dieser Tabelle: neue Datensätze aus Excel oder CSV anlegen. Zusätzlich braucht die Rolle die Rechte „Anlegen“ und „Importieren“.',
+        'bulk_enabled' => 'Sammeländerung erlauben',
+        'bulk_enabled_help' => 'Personen mit dem Recht „ändern“ können mehrere ausgewählte Datensätze auf einmal ändern.',
         'fields_help' => 'Weitere Felder lassen sich nach dem Anlegen jederzeit ergänzen.',
         'duplicate_column' => 'Jeder Spaltenname darf nur einmal vorkommen.',
         'details' => 'Details (Master-Detail)',

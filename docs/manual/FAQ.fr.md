@@ -126,9 +126,10 @@ le droit de suppression.
 ### Dans une liste, les cases à cocher pour sélectionner manquent.
 
 Les cases à cocher pour sélectionner plusieurs enregistrements n’apparaissent que s’il existe une action groupée que
-vous pouvez utiliser – actuellement **« Créer des documents »** : la table doit avoir un modèle de document actif, et
-votre rôle le droit *Documents: générer* (manuel de l’utilisateur, section 4.10). Les enregistrements supprimés dans la
-corbeille ne peuvent pas être sélectionnés.
+vous pouvez utiliser : **« Modifier … »** (droit *Modifier*, et l’administration autorise la modification groupée pour la
+table ; manuel de l’utilisateur, section 4.11), **« Supprimer la sélection »** (droit *Supprimer*) ou **« Créer des
+documents »** (modèle de document actif et droit *Documents: générer* ; section 4.10). Les tables liées n’ont pas de
+modification groupée.
 
 ### Un document n’a pas pu être envoyé par e-mail.
 
@@ -198,3 +199,18 @@ Sous **Groupe** dans la plage de numéros, choisissez le champ de sélection du 
 dans le modèle, p. ex. `{GROUP}-{YYYY}-{000}`. Saisissez un code pour chaque choix, p. ex. `R` pour facture et `G` pour
 note de crédit ; chaque type compte alors pour lui-même (`R-2026-001`, `G-2026-001`). Voir
 [Manuel d’administration, Un compteur par groupe](ADMIN_GUIDE.fr.md#un-compteur-par-groupe).
+
+### Comment modifier de nombreux enregistrements en une fois ?
+
+Filtrez la liste, cochez les cases (ou « Sélectionner tout (N) ») et cliquez sur **« Modifier … »**. Cochez les champs,
+choisissez *définir* ou *vider* et contrôlez l’aperçu ; **« Vérifier seulement »** ne modifie encore rien. Exemple de
+l’école de musique : filtrer semestre et enseignant, sélectionner tous les cours, définir *Enseignant* sur le nouveau.
+Voir [Manuel d’utilisation 4.11](USER_GUIDE.fr.md#411-modifier-plusieurs-enregistrements-modification-groupée).
+
+### La modification groupée indique « Rien n’a été modifié ».
+
+Au moins un enregistrement sélectionné ne passe pas les contrôles – les mêmes que lors d’une modification manuelle (champ
+obligatoire, règle de validation, règle de la table, plugin). Le message nomme les enregistrements avec la raison. C’est
+tout ou rien : désélectionnez ces enregistrements ou corrigez-les un par un et relancez la modification groupée. S’il est
+écrit « modifié entre-temps par quelqu’un d’autre », quelqu’un a enregistré pendant la modification groupée ; elle a été
+entièrement annulée et peut simplement être répétée.

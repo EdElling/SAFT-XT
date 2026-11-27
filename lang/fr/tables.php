@@ -33,6 +33,8 @@ return [
         'export_enabled_help' => 'Affiche « Exporter » dans les listes de cette table. Le rôle doit en outre disposer du droit « Exporter ».',
         'import_enabled' => 'Autoriser l’import',
         'import_enabled_help' => 'Affiche « Importer » dans la liste de cette table : créer de nouveaux enregistrements à partir d’Excel ou de CSV. Le rôle a en outre besoin des droits « Créer » et « Importer ».',
+        'bulk_enabled' => 'Autoriser la modification groupée',
+        'bulk_enabled_help' => 'Les personnes ayant le droit « modifier » peuvent modifier plusieurs enregistrements sélectionnés en une fois.',
         'fields_help' => 'D’autres champs peuvent être ajoutés à tout moment après la création.',
         'duplicate_column' => 'Chaque nom de colonne ne peut apparaître qu’une seule fois.',
         'details' => 'Détails (maître-détail)',

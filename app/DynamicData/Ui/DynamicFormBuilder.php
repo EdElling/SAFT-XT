@@ -79,6 +79,14 @@ final class DynamicFormBuilder
     }
 
     /**
+     * Eingabefeld eines einzelnen Felds wie im Formular, ohne Vorschläge und Übernahmen (Dialog der Sammeländerung).
+     */
+    public function single(CustomTable $table, CustomField $field): Field
+    {
+        return $this->field($table, $field);
+    }
+
+    /**
      * Dateifeld (B-021): SAFT legt jede hochgeladene Datei selbst ab (zufälliger Name, privat) und erfasst sie; im
      * Formular stehen Pfade, im Datensatz Kennung und Name. Geprüft wird der Typ am Inhalt (MIME), nicht an der Endung.
      */

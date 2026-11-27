@@ -27,6 +27,7 @@
    - [4.8 Importer des données](#48-importer-des-données)
    - [4.9 Rapports](#49-rapports)
    - [4.10 Créer des documents](#410-créer-des-documents)
+   - [4.11 Modifier plusieurs enregistrements (modification groupée)](#411-modifier-plusieurs-enregistrements-modification-groupée)
 - [Annexe A – Types de champs](#annexe-a--types-de-champs)
 - [Annexe B – Glossaire](#annexe-b--glossaire)
 
@@ -628,8 +629,8 @@ signale.
 Le message qui suit indique combien de documents ont été créés et déposés et, par enregistrement, ce qui n’a pas pu
 être déposé (p. ex. champ plein) – ces documents figurent tout de même dans le fichier. Il n’y a de limite que si
 l’administration en fixe une ; avec de très nombreux documents, le ZIP est la meilleure sortie, car un PDF unique
-fusionne toutes les pages d’un coup. Les cases à cocher n’existent que dans les tables avec modèle de document ; les
-enregistrements supprimés ne peuvent pas être sélectionnés.
+fusionne toutes les pages d’un coup. L’action groupée ignore les
+enregistrements supprimés.
 
 **Envoyer par e-mail :** Si le modèle prévoit un e-mail et que votre rôle a le droit *Documents : envoyer*, le dialogue
 affiche l’interrupteur **« Envoyer par e-mail »**. **À**, **objet** et **texte** sont préremplis à partir du modèle
@@ -651,6 +652,46 @@ fichier Word (.docx) est destiné à être retravaillé, p. ex. pour adapter une
 et les tableaux comme le PDF, mais sans arrière-plan du papier à lettres et sans QR-facture. Il est seulement
 téléchargé – c’est toujours le PDF qui est déposé et envoyé par e-mail. Plusieurs enregistrements en Word arrivent dans
 un ZIP.
+
+---
+
+### 4.11 Modifier plusieurs enregistrements (modification groupée)
+
+La modification groupée définit un champ pour de nombreux enregistrements en une fois, sans les ouvrir un par un – par
+exemple toutes les inscriptions de *liste d’attente* à *actif*, ou remplacer un enseignant dans tous les cours d’un
+semestre.
+
+1. **Sélectionner :** restreignez la liste par un filtre ou une recherche et cochez les **cases** en début de ligne. La
+   case dans l’en-tête du tableau sélectionne les lignes de la page ; la liste propose ensuite **« Sélectionner tout (N) »**
+   sur toutes les pages. Seuls les enregistrements que le filtre affiche sont modifiés.
+2. **« Modifier … »** dans la barre au-dessus du tableau ouvre la boîte de dialogue. Cochez les champs à modifier et
+   choisissez pour chacun **définir** (une valeur pour tous, avec le champ de saisie habituel) ou **vider**. Tous les
+   autres champs restent inchangés.
+3. L’**aperçu** en dessous montre jusqu’à dix enregistrements avec *avant → après* et des remarques, p. ex. sur les
+   plages de numéros.
+4. **« Vérifier seulement »** contrôle tous les enregistrements sélectionnés sans rien modifier ; la boîte de dialogue
+   reste ouverte. **« Modifier N enregistrements »** contrôle et modifie.
+
+SAFT contrôle chaque enregistrement comme lors d’une modification manuelle – champs obligatoires, règles de validation,
+règles de la table et plugins (p. ex. un contrôle de conflits). C’est **tout ou rien** : si un enregistrement échoue,
+aucun n’est modifié, et le message nomme les enregistrements avec la raison. Désélectionnez-les ou corrigez-les et
+réessayez. Les enregistrements qui ont déjà la nouvelle valeur restent inchangés. Avec beaucoup d’enregistrements, la
+modification groupée continue comme **travail** ; vous voyez la progression sous *Mes travaux*. Si quelqu’un modifie un
+des enregistrements pendant la modification groupée, elle est entièrement annulée.
+
+Ne sont pas proposés les champs dont SAFT détermine la valeur ou qui ne peuvent pas recevoir la même valeur pour tous :
+plages de numéros, champs calculés, fichiers et images ; les champs uniques ne peuvent qu’être vidés, les champs
+obligatoires seulement définis. Dans une table de détail (p. ex. les inscriptions d’un cours), le lien vers la table
+principale est fixe. L’**historique** d’un enregistrement indique « (modification groupée) » pour ces modifications. Si
+vous modifiez un champ qui décide quand un numéro est attribué, les enregistrements reçoivent leurs numéros dans l’ordre
+de leurs clés.
+
+**Supprimer et restaurer :** **« Supprimer la sélection »** supprime les enregistrements sélectionnés ; ceux auxquels
+d’autres enregistrements font référence restent et sont comptés dans le message. Avec le filtre « Enregistrements
+supprimés », **« Restaurer la sélection »** récupère les enregistrements supprimés.
+
+Vous voyez le bouton « Modifier … » avec le droit *Modifier* si l’administration autorise la modification groupée pour
+la table. Au maximum 5 000 enregistrements par modification groupée, sauf réglage contraire de l’administration.
 
 ---
 

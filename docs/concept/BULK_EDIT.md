@@ -1,6 +1,6 @@
 # Konzept: Datensätze auswählen und Sammeländerung in SAFT XT
 
-Stand: 27.11.2026 · Status: **entschieden (§11); S1a (Backend) umgesetzt 27.11.2026, S1b/S1c in Arbeit** · Backlog: B-133
+Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2–S4 offen** · Backlog: B-133
 (ersetzt B-024)
 
 > **Überarbeitung 27.11.2026:** Seit dem Entwurf vom 23.11.2026 gibt es Fundament 2 und die Nummernkreise. Der
@@ -205,12 +205,19 @@ Haupttabelle ist dort nicht änderbar.
 | **S3 Rückgängig** | Liste „Letzte Sammeländerungen“, Rücknahme als Arbeit, später Geändertes überspringen | mittel |
 | **S4 Erweiterungen** | Auswahl exportieren, `DataAction::BULK`, `DataTable::updateMany()`, angebundene Tabellen | klein |
 
-**Stand S1 (27.11.2026):** S1a umgesetzt – `RecordWriter::trial()`/`savepoint()`, Herkunft `WriteOptions::BULK`,
-`App\DynamicData\Bulk\BulkChange` (änderbare Felder, Prüfung), `BulkPreview` (Beispiele, Hinweise zu Nummernkreisen),
-Arbeit `bulk_records` (`BulkRecordsWork`: Prüfphase im Probelauf, Schreibphase mit Version und Journal, Rücknahme),
-Migration 101 `custom_tables.bulk_enabled` (auch in der App-Definition), Grenze `APP_DATA_BULK_MAX`, Entscheidung
-Nr. 27 in ARCHITECTURE. Offen: S1b Oberfläche (Dialog, Werkzeugleiste, Detailtabellen, Schalter im Table-Designer),
-S1c Browser-Test, Handbücher für Anwender, FAQ und Admin, manuelle Testfälle.
+**Stand S1 (27.11.2026): umgesetzt.** S1a Backend: `RecordWriter::trial()`/`savepoint()`, Herkunft
+`WriteOptions::BULK`, `App\DynamicData\Bulk\BulkChange` (änderbare Felder, Prüfung), `BulkPreview` (Beispiele, Hinweise
+zu Nummernkreisen), Arbeit `bulk_records` (`BulkRecordsWork`: Prüfphase im Probelauf, Schreibphase mit Version und
+Journal, Rücknahme), Migration 101 `custom_tables.bulk_enabled` (auch in der App-Definition), Grenze
+`APP_DATA_BULK_MAX`, Entscheidung Nr. 27 in ARCHITECTURE. S1b Oberfläche: `App\DynamicData\Ui\BulkRecordActions`
+(„Ändern …“, „Ausgewählte löschen“ mit Kennung und Grenze, „Ausgewählte wiederherstellen“) in Datenansicht und
+Detailtabellen, Schalter im Table-Designer, Vermerk „(Sammeländerung)“ im Verlauf. Abweichungen vom Plan: Der Dialog ist
+**eine Seite** mit Live-Vorschau statt zwei Schritte (ein Filament-Wizard kann keinen zweiten Knopf „Nur prüfen“ tragen);
+gelöschte Datensätze sind mit dem Papierkorb-Filter wieder auswählbar (sonst ginge Wiederherstellen nicht), jede Aktion
+nimmt nur die passenden; „Ändern …“ fehlt im Filter „nur gelöschte“. Bei der Prüfung in der Musikschule-Demo gefunden und
+behoben: Verschachtelte Schreibvorgänge (Summen im Master) erbten die erwartete Version des Kind-Datensatzes und meldeten
+„inzwischen geändert“ – betraf seit 0.6.0 auch das Einzelbearbeiten (`WriteOptions::nested()`). S1c: Browser-Test
+`BulkEditTest` (SAE-01 bis SAE-04), manuelle Testfälle SAE-01 bis SAE-07, Handbücher.
 
 ## 11. Entscheidungen zu den offenen Fragen (27.11.2026: alle Empfehlungen angenommen)
 

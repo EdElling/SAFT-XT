@@ -257,6 +257,15 @@ annullamento o errore a metà importazione i record creati vengono rimossi. L’
 (`APP_DATA_IMPORT_CHECK_ROWS`). Al massimo 100’000 righe per file (`APP_DATA_IMPORT_MAX_RECORD_ROWS`, `0` = senza
 limite). Per le tabelle collegate del Connettore di tabelle l’importazione non esiste.
 
+**Consenti modifica multipla:** questo interruttore consente la modifica multipla – modificare più record selezionati in
+una volta (vedi [Manuale utente 4.11](USER_GUIDE.it.md#411-modificare-più-record-modifica-multipla)). È **attivo** di
+default; «Modifica …» appare per i ruoli con il diritto **Modificare**. Disattivatelo per le tabelle i cui record vanno
+modificati solo uno alla volta (p. es. fatture inviate). Una modifica multipla controlla ogni record come la modifica
+manuale, regole di validazione e plugin compresi, e vale tutto o niente. Viene eseguita come [lavoro](#lavori), al
+massimo 5’000 record per modifica multipla (`APP_DATA_BULK_MAX`, `0` = senza limite); la cronologia indica «(modifica
+multipla)». Intervalli di numerazione, campi calcolati e file non sono modificabili; i campi univoci si possono solo
+svuotare. Le tabelle collegate non hanno la modifica multipla.
+
 **Modificare i campi** (area *Campi*, (2)): per ogni campo stabilite:
 
 | Impostazione | Significato |

@@ -88,7 +88,7 @@ class CreateCustomTable extends CreateRecord
     protected function handleRecordCreation(array $data): Model
     {
         $table = app(DynamicSchemaService::class)->createTable(
-            Arr::only($data, ['app_id', 'name', 'label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled']),
+            Arr::only($data, ['app_id', 'name', 'label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled', 'bulk_enabled']),
             array_map(FieldForm::toServiceData(...), array_values((array) ($data['fields'] ?? []))),
         );
 

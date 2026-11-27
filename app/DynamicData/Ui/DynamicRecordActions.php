@@ -42,7 +42,6 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\ViewAction;
@@ -1003,30 +1002,6 @@ final class DynamicRecordActions
         return $record !== null && method_exists($record, 'trashed') && $record->trashed();
     }
 
-    public static function deleteBulk(CustomTable $table): DeleteBulkAction
-    {
-        return DeleteBulkAction::make()
-            ->visible(! $table->isExternal())
-            ->authorize(fn (): bool => DataAccess::current($table, 'delete'))
-            // Je Datensatz ein Schreibvorgang wie bei Filament, aber über den Writer (Löschsperre, Summen, Ereignisse, Transaktion).
-            ->using(static function (DeleteBulkAction $action, EloquentCollection|Collection $records): void {
-                $reported = false;
-
-                foreach ($records as $record) {
-                    try {
-                        app(RecordWriter::class)->delete($record, WriteOptions::ui());
-                    } catch (\Throwable $exception) {
-                        $action->reportBulkProcessingFailure();
-
-                        if (! $reported) {
-                            report($exception);
-                            $reported = true;
-                        }
-                    }
-                }
-            });
-    }
-
     /** Verlauf nur, wo über SAFT geschrieben werden kann; sonst gibt es nichts zu zeigen. */
     public static function writable(CustomTable $table): bool
     {
@@ -1075,7 +1050,10 @@ final class DynamicRecordActions
             ->map(fn (Activity $a): array => [
                 'when' => AppLocale::dateTime($a->created_at) ?? '—',
                 'who' => ActivityChanges::causerLabel($a),
-                'what' => ActivityChanges::eventLabel($a->event).': '.ActivityChanges::summary($a, 200),
+                'what' => ActivityChanges::eventLabel($a->event)
+                    // Sammeländerung (B-133): Herkunft aus WriteOptions::$origin.
+                    .(($a->properties['via'] ?? null) === WriteOptions::BULK ? ' ('.__('data.bulk.history').')' : '')
+                    .': '.ActivityChanges::summary($a, 200),
             ])
             ->all();
     }
@@ -1097,7 +1075,10 @@ final class DynamicRecordActions
             ->map(fn (Activity $a): array => [
                 'when' => AppLocale::dateTime($a->created_at) ?? '—',
                 'who' => ActivityChanges::causerLabel($a),
-                'what' => ActivityChanges::eventLabel($a->event).': '.ActivityChanges::summary($a, 200),
+                'what' => ActivityChanges::eventLabel($a->event)
+                    // Sammeländerung (B-133): Herkunft aus WriteOptions::$origin.
+                    .(($a->properties['via'] ?? null) === WriteOptions::BULK ? ' ('.__('data.bulk.history').')' : '')
+                    .': '.ActivityChanges::summary($a, 200),
             ])
             ->all();
     }

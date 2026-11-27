@@ -13,6 +13,7 @@ use App\DynamicData\DataView;
 use App\DynamicData\DetailRelations;
 use App\DynamicData\DetailSource;
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Ui\BulkRecordActions;
 use App\DynamicData\Ui\DynamicRecordActions;
 use App\DynamicData\Ui\DynamicTableBuilder;
 use App\DynamicData\Ui\KeylessRow;
@@ -265,11 +266,15 @@ class DynamicDataPage extends Page implements HasTable
                 // Zusammengesetzter Schlüssel: Details und Bearbeiten ja, Auswahl (Master-Detail) nein.
                 ...DynamicRecordActions::rowActions($customTable, [], $customTable->hasKey() ? app(PluginRegistry::class)->dataActions($customTable, DataAction::RECORD) : []),
             ])
-            // Auswahl mehrerer Datensätze (B-133 Teil 1): Häkchen erscheinen nur, wenn eine Sammelaktion sichtbar ist.
+            // Auswahl mehrerer Datensätze (B-133): Häkchen erscheinen nur, wenn eine Sammelaktion sichtbar ist. Gelöschte
+            // Datensätze sind nur mit dem Papierkorb-Filter zu sehen; jede Aktion nimmt nur die passenden (Wiederherstellen
+            // die gelöschten, die übrigen die nicht gelöschten).
             ->toolbarActions([
+                BulkRecordActions::edit($customTable),
                 DynamicRecordActions::documentBulk($customTable),
+                BulkRecordActions::delete($customTable),
+                BulkRecordActions::restore($customTable),
             ])
-            ->checkIfRecordIsSelectableUsing(static fn (DynamicRecord $record): bool => ! $record->trashed())
             ->emptyStateHeading(__('data.empty'));
     }
 

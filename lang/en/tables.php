@@ -33,6 +33,8 @@ return [
         'export_enabled_help' => 'Shows “Export” in the lists of this table. The role also needs the “Export” permission.',
         'import_enabled' => 'Allow import',
         'import_enabled_help' => 'Shows “Import” in the list of this table: create new records from Excel or CSV. The role also needs the permissions “Create” and “Import”.',
+        'bulk_enabled' => 'Allow bulk edit',
+        'bulk_enabled_help' => 'People with the “edit” permission can change several selected records at once.',
         'fields_help' => 'More fields can be added at any time after creating the table.',
         'duplicate_column' => 'Each column name may only be used once.',
         'details' => 'Details (master-detail)',

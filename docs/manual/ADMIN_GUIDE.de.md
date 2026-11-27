@@ -254,6 +254,15 @@ als [Arbeit](#arbeiten) in zwei Phasen (prüfen, einspielen); der Assistent prü
 (`APP_DATA_IMPORT_CHECK_ROWS`). Höchstens 100'000 Zeilen je Datei (`APP_DATA_IMPORT_MAX_RECORD_ROWS`, `0` = ohne
 Grenze). Für angebundene Tabellen des Table-Connectors gibt es den Import nicht.
 
+**Sammeländerung erlauben:** Dieser Schalter gibt die Sammeländerung frei – mehrere ausgewählte Datensätze auf einmal
+ändern (siehe [Anwenderhandbuch 4.11](USER_GUIDE.de.md#411-mehrere-datensätze-ändern-sammeländerung)). Er ist zunächst
+**an**; „Ändern …“ erscheint für Rollen mit dem Recht **Bearbeiten**. Schalten Sie ihn bei Tabellen aus, deren Datensätze
+nur einzeln geändert werden sollen (z. B. versendete Rechnungen). Eine Sammeländerung prüft jeden Datensatz wie das
+Bearbeiten von Hand, samt Prüfregeln und Plugins, und es gilt alles oder nichts. Sie läuft als [Arbeit](#arbeiten),
+höchstens 5'000 Datensätze je Sammeländerung (`APP_DATA_BULK_MAX`, `0` = ohne Grenze); im Verlauf steht
+„(Sammeländerung)“. Nicht änderbar sind Nummernkreise, berechnete Felder und Dateien; eindeutige Felder lassen sich nur
+leeren. Für angebundene Tabellen gibt es die Sammeländerung nicht.
+
 **Felder bearbeiten** (Bereich *Felder*, (2)): Für jedes Feld legen Sie fest:
 
 | Einstellung | Bedeutung |

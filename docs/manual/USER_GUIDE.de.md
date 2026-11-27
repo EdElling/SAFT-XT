@@ -27,6 +27,7 @@
    - [4.8 Daten importieren](#48-daten-importieren)
    - [4.9 Auswertungen](#49-auswertungen)
    - [4.10 Dokumente erstellen](#410-dokumente-erstellen)
+   - [4.11 Mehrere Datensätze ändern (Sammeländerung)](#411-mehrere-datensätze-ändern-sammeländerung)
 - [Anhang A – Feldtypen](#anhang-a--feldtypen)
 - [Anhang B – Glossar](#anhang-b--glossar)
 
@@ -601,8 +602,7 @@ Ist das Dateifeld voll (Höchstzahl Dateien), wird das Dokument nur heruntergela
 Die Meldung danach nennt, wie viele Dokumente erstellt und abgelegt wurden, und je Datensatz, was nicht abgelegt werden
 konnte (z. B. Feld voll) – diese Dokumente sind trotzdem in der Datei. Eine Obergrenze gibt es nur, wenn die
 Administration eine setzt; bei sehr vielen Dokumenten ist ZIP die bessere Ausgabe, weil ein einziges PDF alle Seiten
-auf einmal zusammenführt. Die Häkchen gibt es nur in Tabellen mit Dokumentvorlage; gelöschte Datensätze lassen sich
-nicht wählen.
+auf einmal zusammenführt. Gelöschte Datensätze übergeht die Sammelaktion.
 
 **Per E-Mail senden:** Sieht die Vorlage eine E-Mail vor und hat Ihre Rolle das Recht *Dokumente: versenden*, steht
 im Dialog der Schalter **„Per E-Mail senden“**. **An**, **Betreff** und **Text** sind aus der Vorlage vorausgefüllt
@@ -623,6 +623,43 @@ Briefpapier) oder ist der Betrag keine Zahl, erscheint eine Meldung mit dem Grun
 (.docx) ist zum Nachbearbeiten gedacht, z. B. um einen Brief noch anzupassen: Sie hat Kopf, Adressfeld und Tabellen
 wie das PDF, aber ohne Briefpapier-Hintergrund und ohne QR-Rechnung. Sie wird nur heruntergeladen – abgelegt und per
 E-Mail versendet wird immer das PDF. Mehrere Datensätze als Word kommen als ZIP.
+
+---
+
+### 4.11 Mehrere Datensätze ändern (Sammeländerung)
+
+Mit der Sammeländerung setzen Sie ein Feld bei vielen Datensätzen auf einmal, ohne jeden einzeln zu öffnen – etwa alle
+Anmeldungen von *Warteliste* auf *aktiv* oder in allen Kursen eines Semesters eine Lehrperson durch eine andere.
+
+1. **Auswählen:** Grenzen Sie die Liste mit Filter oder Suche ein und setzen Sie die **Häkchen** am Zeilenanfang. Das
+   Häkchen im Tabellenkopf wählt die Zeilen der Seite; danach bietet die Liste **„Alle N Datensätze auswählen“** über alle Seiten an.
+   Geändert werden nur Datensätze, die der Filter gerade zeigt.
+2. **„Ändern …“** in der Leiste über der Tabelle öffnet den Dialog. Haken Sie die Felder an, die geändert werden
+   sollen, und wählen Sie je Feld **setzen** (ein Wert für alle, mit dem gewohnten Eingabefeld) oder **leeren**. Alle
+   anderen Felder bleiben, wie sie sind.
+3. Die **Vorschau** darunter zeigt bis zu zehn Datensätze mit *vorher → nachher* und Hinweise, z. B. zu Nummernkreisen.
+4. **„Nur prüfen“** prüft alle ausgewählten Datensätze, ohne etwas zu ändern; der Dialog bleibt offen.
+   **„N Datensätze ändern“** prüft und ändert.
+
+SAFT prüft jeden Datensatz wie beim Bearbeiten von Hand – Pflichtfelder, Prüfregeln, Regeln der Tabelle und Plugins
+(z. B. eine Konfliktprüfung). Es gilt **alles oder nichts**: Besteht ein Datensatz nicht, wird keiner geändert, und die
+Meldung nennt die Datensätze mit Grund. Wählen Sie diese ab oder korrigieren Sie sie und versuchen Sie es erneut.
+Datensätze, die schon den neuen Wert haben, bleiben unverändert. Bei vielen Datensätzen läuft die Sammeländerung als
+**Arbeit** weiter; Sie sehen den Fortschritt unter *Meine Arbeiten*. Hat jemand einen der Datensätze während der
+Sammeländerung geändert, wird sie vollständig zurückgenommen.
+
+Nicht angeboten werden Felder, deren Wert SAFT bestimmt oder die sich nicht für alle gleich setzen lassen:
+Nummernkreise, berechnete Felder, Dateien und Bilder; eindeutige Felder lassen sich nur leeren, Pflichtfelder nur
+setzen. In einer Detailtabelle (z. B. die Anmeldungen eines Kurses) ist die Verknüpfung zur Haupttabelle fest. Im
+**Verlauf** eines Datensatzes steht bei solchen Änderungen „(Sammeländerung)“. Ändern Sie ein Feld, das bestimmt, wann
+eine Nummer vergeben wird, bekommen die Datensätze ihre Nummern dabei in der Reihenfolge ihrer Schlüssel.
+
+**Löschen und Wiederherstellen:** **„Ausgewählte löschen“** löscht die ausgewählten Datensätze; solche, auf die andere
+Datensätze verweisen, bleiben und werden in der Meldung gezählt. Mit dem Filter „Gelöschte Datensätze“ holt
+**„Ausgewählte wiederherstellen“** gelöschte Datensätze zurück.
+
+Den Knopf „Ändern …“ sehen Sie mit dem Recht *Bearbeiten*, wenn die Administration die Sammeländerung für die Tabelle
+erlaubt. Höchstens 5'000 Datensätze je Sammeländerung, sofern die Administration nichts anderes einstellt.
 
 ---
 

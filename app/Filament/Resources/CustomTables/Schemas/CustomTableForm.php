@@ -128,6 +128,13 @@ class CustomTableForm
                             ->default(false)
                             ->inline(false)
                             ->helperText(__('tables.form.import_enabled_help')),
+                        // Sammeländerung (B-133): zusätzlich zum Recht „ändern“; angebundene Tabellen haben keine.
+                        Toggle::make('bulk_enabled')
+                            ->label(__('tables.form.bulk_enabled'))
+                            ->default(true)
+                            ->inline(false)
+                            ->visible(fn (?CustomTable $record): bool => ! ($record?->isExternal() ?? false))
+                            ->helperText(__('tables.form.bulk_enabled_help')),
                         MenuGroupSelect::make(app: fn (Get $get): mixed => $get('app_id'))
                             ->visibleOn('create'),
                     ]),

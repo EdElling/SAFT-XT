@@ -33,6 +33,8 @@ return [
         'export_enabled_help' => 'Mostra «Esporta» negli elenchi di questa tabella. Il ruolo necessita inoltre del diritto «Esportare».',
         'import_enabled' => 'Consenti importazione',
         'import_enabled_help' => 'Mostra «Importa» nell’elenco di questa tabella: creare nuovi record da Excel o CSV. Il ruolo ha inoltre bisogno dei diritti «Creare» e «Importare».',
+        'bulk_enabled' => 'Consenti modifica multipla',
+        'bulk_enabled_help' => 'Le persone con il diritto «modificare» possono modificare più record selezionati in una volta.',
         'fields_help' => 'Altri campi possono essere aggiunti in qualsiasi momento dopo la creazione.',
         'duplicate_column' => 'Ogni nome di colonna può comparire una sola volta.',
         'details' => 'Dettagli (master-detail)',

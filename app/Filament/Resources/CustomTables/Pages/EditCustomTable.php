@@ -197,7 +197,7 @@ class EditCustomTable extends EditRecord
         $fields = array_values(array_unique([...array_map('strval', (array) ($data['shared_fields'] ?? [])), ...$interfaces->usedFields($record)]));
         $service->updateInterface($record, (bool) ($data['is_shared'] ?? $record->is_shared), $fields);
 
-        return $service->updateTable($record->refresh(), Arr::only($data, ['label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled', 'detail_field_ids', 'validation_rules']));
+        return $service->updateTable($record->refresh(), Arr::only($data, ['label', 'description', 'icon', 'is_active', 'export_enabled', 'import_enabled', 'bulk_enabled', 'detail_field_ids', 'validation_rules']));
     }
 
     /** Hinweis, wenn vorhandene Datensätze eine Regel schon verletzen (gespeichert wird trotzdem). */

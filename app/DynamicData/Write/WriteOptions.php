@@ -105,6 +105,15 @@ final readonly class WriteOptions
         return new self($this->origin, $this->pluginEvents, $this->log, $version, $overwriting, $this->run);
     }
 
+    /**
+     * Für verschachtelte Schreibvorgänge ohne eigene Optionen (Summen im Master, Plugins in Ereignissen): Herkunft,
+     * Ereignisse, Protokoll und Kennung gelten weiter, die erwartete Version gehört aber nur zum äusseren Datensatz.
+     */
+    public function nested(): self
+    {
+        return new self($this->origin, $this->pluginEvents, $this->log, null, false, $this->run);
+    }
+
     /** Kennung zusammengehöriger Änderungen im Protokoll, z. B. „work:42“ (Sammeländerung „bulk:<uuid>“). */
     public function withRun(string $run): self
     {

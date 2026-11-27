@@ -120,9 +120,10 @@ really has to go, ask someone with the delete permission.
 
 ### Checkboxes for selecting are missing in a list.
 
-Checkboxes for selecting several records only appear if there is a bulk action you may use – currently **“Create
-documents”**: the table needs an active document template, and your role the permission *Documents: generate* (user
-guide, section 4.10). Deleted records in the recycle bin cannot be selected.
+Checkboxes for selecting several records only appear if there is a bulk action you may use: **“Change …”** (permission
+*Edit*, and the administration allows bulk edits for the table; user guide, section 4.11), **“Delete selected”**
+(permission *Delete*) or **“Create documents”** (active document template and permission *Documents: generate*; section
+4.10). Linked tables have no bulk edit.
 
 ### A document could not be sent by email.
 
@@ -188,3 +189,17 @@ Under **Group** in the number sequence, choose the select field with the documen
 pattern, e.g. `{GROUP}-{YYYY}-{000}`. Enter a code for each choice, e.g. `R` for invoice and `G` for credit note; each
 document type then counts on its own (`R-2026-001`, `G-2026-001`). See
 [Administrator guide, A counter per group](ADMIN_GUIDE.md#a-counter-per-group).
+
+### How do I change many records at once?
+
+Filter the list, tick the checkboxes (or “Select all N”) and click **“Change …”**. Tick the fields, choose *set* or *clear*
+and check the preview; **“Check only”** changes nothing yet. Music school example: filter semester and teacher, select
+all courses, set *Teacher* to the new one. See
+[User guide 4.11](USER_GUIDE.md#411-changing-several-records-bulk-edit).
+
+### The bulk edit reports “Nothing changed”.
+
+At least one selected record fails the checks – the same as when editing by hand (required field, validation rule, table
+rule, plugin). The message names the records with the reason. It is all or nothing: deselect these records or correct
+them one by one and start the bulk edit again. If it says “changed by someone else in the meantime”, someone saved
+during the bulk edit; it was fully reverted and can simply be repeated.

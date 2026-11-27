@@ -265,6 +265,16 @@ retirés. L’import s’exécute comme [travail](#travaux) en deux phases (vér
 (`APP_DATA_IMPORT_MAX_RECORD_ROWS`, `0` = sans limite). Les tables liées du Connecteur de tables ne peuvent pas être
 importées.
 
+**Autoriser la modification groupée :** ce commutateur autorise la modification groupée – modifier plusieurs
+enregistrements sélectionnés en une fois (voir [Manuel d’utilisation 4.11](USER_GUIDE.fr.md#411-modifier-plusieurs-enregistrements-modification-groupée)).
+Il est **activé** par défaut ; « Modifier … » apparaît pour les rôles ayant le droit **Modifier**. Désactivez-le pour les
+tables dont les enregistrements ne doivent être modifiés qu’un par un (p. ex. factures envoyées). Une modification
+groupée contrôle chaque enregistrement comme la modification manuelle, règles de validation et plugins compris, et c’est
+tout ou rien. Elle s’exécute comme [travail](#travaux), au maximum 5 000 enregistrements par modification groupée
+(`APP_DATA_BULK_MAX`, `0` = sans limite) ; l’historique indique « (modification groupée) ». Les plages de numéros, les
+champs calculés et les fichiers ne sont pas modifiables ; les champs uniques ne peuvent qu’être vidés. Les tables liées
+n’ont pas de modification groupée.
+
 **Modifier les champs** (zone *Champs*, (2)) : pour chaque champ, vous définissez :
 
 | Réglage | Signification |

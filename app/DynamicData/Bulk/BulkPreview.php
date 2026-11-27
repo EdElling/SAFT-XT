@@ -23,7 +23,7 @@ final readonly class BulkPreview
     public const int CHUNK = 1000;
 
     /**
-     * @param  list<array{record: DynamicRecord, before: array<string, mixed>, after: array<string, mixed>}>  $examples
+     * @param  list<array{record: DynamicRecord, original: DynamicRecord, before: array<string, mixed>, after: array<string, mixed>}>  $examples
      * @param  list<string>  $hints
      */
     public function __construct(
@@ -43,9 +43,10 @@ final readonly class BulkPreview
 
         foreach (self::query($change)->whereKey(array_slice($first, 0, self::EXAMPLES))->orderBy('id')->get() as $record) {
             $before = array_combine($fields, array_map(static fn (string $name): mixed => $record->getAttribute($name), $fields));
+            $original = clone $record;
             $change->apply($record);
             $after = array_combine($fields, array_map(static fn (string $name): mixed => $record->getAttribute($name), $fields));
-            $examples[] = ['record' => $record, 'before' => $before, 'after' => $after];
+            $examples[] = ['record' => $record, 'original' => $original, 'before' => $before, 'after' => $after];
         }
 
         return new self(count($ids), $examples, self::hints($change, $ids));
