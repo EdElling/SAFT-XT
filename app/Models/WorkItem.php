@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Models\Base\WorkItem as BaseWorkItem;
 use App\Models\Concerns\HasAuditLog;
 use App\Models\Concerns\HasStableKey;
+use App\Work\ReportsPhaseProgress;
 use App\Work\WorkRegistry;
 use App\Work\WorkType;
 use Spatie\Activitylog\Support\LogOptions;
@@ -91,13 +92,32 @@ class WorkItem extends BaseWorkItem
     }
 
     /** Fortschritt in Prozent; null, solange die Menge nicht bekannt ist. */
+    /**
+     * Fortschritt in Prozent; bei Arten mit Phasen (ReportsPhaseProgress, B-176) der laufenden Phase.
+     */
     public function percent(): ?int
     {
         if ($this->status === self::DONE) {
             return 100;
         }
 
-        return $this->total === null || $this->total === 0 ? null : (int) min(100, floor($this->done * 100 / $this->total));
+        [$done, $total] = $this->phaseCounts() ?? [$this->done, $this->total];
+
+        return $total === null || $total === 0 ? null : (int) max(0, min(100, floor($done * 100 / $total)));
+    }
+
+    /** @return array{0: int, 1: int}|null erledigt und Menge der laufenden Phase, wenn die Art sie meldet */
+    private function phaseCounts(): ?array
+    {
+        $registry = app(WorkRegistry::class);
+
+        if (! $this->isOpen() || ! $registry->has($this->type)) {
+            return null;
+        }
+
+        $type = $registry->get($this->type);
+
+        return $type instanceof ReportsPhaseProgress ? $type->phaseProgress((array) ($this->state ?? []), (int) $this->done, $this->total) : null;
     }
 
     /** Ordner für Ergebnisdateien auf der Platte „local“ (storage/app/private). */

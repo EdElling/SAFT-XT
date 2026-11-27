@@ -21,6 +21,7 @@ use App\Models\DynamicRecord;
 use App\Models\User;
 use App\Work\CleansUp;
 use App\Work\DescribesProgress;
+use App\Work\ReportsPhaseProgress;
 use App\Work\StepOutcome;
 use App\Work\WorkPlan;
 use App\Work\WorkStep;
@@ -52,7 +53,7 @@ use Illuminate\Support\Str;
  *
  * Parameter: table_id, changes (BulkChange::toArray()), locked (gesperrte Felder), record_ids, dry_run; undo_of.
  */
-final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, WorkType, WritesRecords
+final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, ReportsPhaseProgress, WorkType, WritesRecords
 {
     public const string KEY = 'bulk_records';
 
@@ -117,6 +118,12 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
             'done' => number_format((int) ($state['index'] ?? 0), 0, '.', "'"),
             'total' => number_format((int) ($state['count'] ?? 0), 0, '.', "'"),
         ]);
+    }
+
+    /** Prüfen und Schreiben zählen je für sich: Position / Anzahl (B-176), auch bei der Rücknahme. */
+    public function phaseProgress(array $state, int $done, ?int $total): ?array
+    {
+        return $state === [] ? null : [(int) ($state['index'] ?? 0), (int) ($state['count'] ?? 0)];
     }
 
     public function step(WorkStep $step): StepOutcome

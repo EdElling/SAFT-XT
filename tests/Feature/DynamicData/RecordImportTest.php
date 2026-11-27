@@ -7,9 +7,9 @@ namespace Tests\Feature\DynamicData;
 use App\DynamicData\DataAccess;
 use App\DynamicData\DataPermissions;
 use App\DynamicData\Import\RecordImporter;
+use App\Filament\Pages\DynamicDataPage;
 use App\Filament\Resources\WorkItems\Tables\WorkItemsTable;
 use App\Filament\Resources\WorkItems\WorkItemResource;
-use App\Filament\Pages\DynamicDataPage;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Models\WorkItem;
@@ -18,6 +18,7 @@ use App\Work\Types\RecordImportWork;
 use App\Work\WorkRunner;
 use App\Work\WorkService;
 use Filament\Actions\Testing\TestAction;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -69,7 +70,7 @@ class RecordImportTest extends DynamicDataTestCase
         return $this->importRecords($this->orders, $path, $fileName);
     }
 
-    private function orders(): \Illuminate\Database\Eloquent\Builder
+    private function orders(): Builder
     {
         return DynamicRecord::forTableName('bestellungen')->newQuery();
     }
@@ -258,7 +259,7 @@ class RecordImportTest extends DynamicDataTestCase
         $this->artisan('work:run')->assertSuccessful();
         $item->refresh();
         $this->assertSame([WorkItem::DONE, 3, 3], [$item->status, $item->done, (int) $item->result['records']]);
-        $this->assertSame("3 / 3 (100 %)", WorkItemsTable::progress($item), 'Fertig: die Zahlen wie üblich.');
+        $this->assertSame('3 / 3 (100 %)', WorkItemsTable::progress($item), 'Fertig: die Zahlen wie üblich.');
         $this->assertSame(['B-30', 'B-31', 'B-32'], $this->orders()->orderBy('nummer')->pluck('nummer')->all());
 
         // Fehler, die erst die Arbeit findet: fehlgeschlagen mit der Liste, nichts angelegt; der Dialog zeigt sie.
@@ -281,7 +282,7 @@ class RecordImportTest extends DynamicDataTestCase
     {
         $runner = app(WorkRunner::class);
         $service = app(WorkService::class);
-        $lines = ["Nummer;Kunde;Betrag"];
+        $lines = ['Nummer;Kunde;Betrag'];
 
         for ($i = 1; $i <= RecordImportWork::CHUNK + 5; $i++) {
             $lines[] = "S-$i;ACME AG;$i";
@@ -296,7 +297,7 @@ class RecordImportTest extends DynamicDataTestCase
         // Budget 0: je Aufruf ein Prüfblock (CHUNK Zeilen), die Werte eindeutiger Felder wandern über unique.json.
         $item = $runner->advance($start(), 0);
         $this->assertSame([RecordImportWork::CHECK, RecordImportWork::CHUNK, 0], [$item->state['phase'], $item->state['line'] - 1, $item->done], 'Prüfen zählt nicht als erledigt.');
-        $this->assertSame('Prüfen: 200 von 206 Zeilen (0 %)', WorkItemsTable::progress($item));
+        $this->assertSame('Prüfen: 200 von 206 Zeilen (97 %)', WorkItemsTable::progress($item));
         $this->assertTrue(Storage::disk('local')->exists($item->directory().'/unique.json'));
         $item = $runner->advance($item, 0);
         $this->assertSame(WorkItem::FAILED, $item->status, 'Das Duplikat im zweiten Block wird am Ende der Prüfung gemeldet.');

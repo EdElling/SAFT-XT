@@ -21,6 +21,7 @@ use App\Models\WorkItem;
 use App\Plugins\Api\Events\RecordSaving;
 use App\Plugins\Api\RecordRejected;
 use App\Work\Types\BulkRecordsWork;
+use App\Work\WorkRunner;
 use App\Work\WorkService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -80,6 +81,31 @@ class BulkEditTest extends DynamicDataTestCase
             'record_ids' => $ids,
             'dry_run' => $dryRun,
         ], auth()->user());
+    }
+
+    /** B-176: Prüfen und Schreiben zählen je für sich von 0 bis 100 %, auch der Balken (WorkItem::percent()). */
+    public function test_progress_counts_per_phase(): void
+    {
+        $table = $this->enrolments();
+        $ids = $this->seedRecords($table, 150);
+        $runner = app(WorkRunner::class);
+        $item = app(WorkService::class)->start(BulkRecordsWork::KEY, [
+            'table_id' => $table->id, 'changes' => ['status' => ['op' => 'set', 'value' => 'aktiv']], 'locked' => [], 'record_ids' => $ids, 'dry_run' => false,
+        ], auth()->user());
+
+        // Budget 0: je Aufruf ein Block zu 100.
+        $item = $runner->advance($item, 0);
+        $this->assertSame(['check', 66], [$item->state['phase'], $item->percent()], 'Prüfen: 100 von 150');
+        $this->assertSame(33, (int) floor($item->done * 100 / $item->total), 'Über beide Phasen wären es nur 33 %');
+
+        $item = $runner->advance($item, 0);
+        $this->assertSame(['write', 0], [$item->state['phase'], $item->percent()], 'Schreiben beginnt bei 0 %');
+
+        $item = $runner->advance($item, 0);
+        $this->assertSame(66, $item->percent(), 'Schreiben: 100 von 150');
+
+        $item = $runner->advance($item, 0);
+        $this->assertSame([WorkItem::DONE, 100], [$item->status, $item->percent()]);
     }
 
     /** @return array<int, mixed> */

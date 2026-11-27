@@ -166,7 +166,7 @@ Tabelle `work_items` (Base-Model-Muster, `LogsActivity` nur für Start, Abbruch,
 | `type` | Art, z. B. `export`, `record_import`, `documents`, `snapshot_refresh`, `app_designer`, `recompute`; Plugins können Arten beisteuern (wie `TaskType`) |
 | `app_id`, `user_id` | App, startende Person (null bei System) |
 | `status` | `queued`, `running`, `done`, `failed`, `cancelled` |
-| `total`, `done` | Fortschritt in Einheiten der Art (Zeilen, Datensätze, Seiten) |
+| `total`, `done` | Fortschritt in Einheiten der Art (Zeilen, Datensätze, Seiten); Arten mit Phasen melden den Fortschritt der laufenden Phase über `ReportsPhaseProgress` (B-176, 27.11.2026), dann zählt der Balken je Phase von 0 bis 100 % |
 | `state` | JSON: Cursor für die Wiederaufnahme (letzte ID, Blatt, Seite, Gesprächsstand) |
 | `result` | JSON: Ergebnis (Datei unter `storage/app/private/work/<uuid>/`, Zahlen, Meldung) |
 | `error`, `error_detail` | wie bei `task_runs` |

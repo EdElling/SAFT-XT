@@ -116,7 +116,8 @@ dall’account aziendale.
 - **I miei lavori:** SAFT esegue i lavori lunghi – esportazione, importazione, documenti per molti record, stati dei
   dati, progettista di app IA – a passi. Le piccole quantità sono pronte prima che ve ne accorgiate: il file arriva come
   sempre in download. Se dura di più, SAFT vi porta alla pagina del lavoro. Nel menu utente, **I miei lavori** mostra
-  ciò che avete avviato, con stato e avanzamento. Aprendo un lavoro vedete una barra di avanzamento; finché la pagina è
+  ciò che avete avviato, con stato e avanzamento. Aprendo un lavoro vedete una barra di avanzamento; per i lavori con due fasi (importazione e modifica
+  multipla: prima verificare, poi importare o scrivere) va da 0 a 100 % per ogni fase. Finché la pagina è
   aperta, SAFT procede a piena velocità. Potete anche chiudere la pagina: il lavoro continua in background e la
   campanella vi avvisa quando è terminato o non è riuscito. **Annulla** lo termina dopo il passo in corso. Se un lavoro
   produce un file, scaricatelo con **Scarica il risultato** – resta disponibile 24 ore, anche se l’avete già scaricato

@@ -14,6 +14,7 @@ use App\Models\DynamicRecord;
 use App\Plugins\Api\RecordRejected;
 use App\Work\CleansUp;
 use App\Work\DescribesProgress;
+use App\Work\ReportsPhaseProgress;
 use App\Work\StepOutcome;
 use App\Work\TimeLimit;
 use App\Work\WorkPlan;
@@ -39,7 +40,7 @@ use Illuminate\Support\Facades\Auth;
  * Assistent, für den Fortschritt). Menge und „erledigt“ zählen nur die eingespielten Datensätze; die Prüfphase nennt
  * ihren Stand in Worten (DescribesProgress), damit die Zahl nie doppelt erscheint.
  */
-final readonly class RecordImportWork implements CleansUp, DescribesProgress, WorkType, WritesRecords
+final readonly class RecordImportWork implements CleansUp, DescribesProgress, ReportsPhaseProgress, WorkType, WritesRecords
 {
     public const string KEY = 'record_import';
 
@@ -102,6 +103,16 @@ final readonly class RecordImportWork implements CleansUp, DescribesProgress, Wo
         return $total === null
             ? __('work.import.importing', ['done' => $number($done)])
             : __('work.import.importing_of', ['done' => $number($done), 'total' => $number($total)]);
+    }
+
+    /** Prüfen: geprüfte Zeilen / Zeilen; Einspielen: angelegte / Zeilen (B-176). */
+    public function phaseProgress(array $state, int $done, ?int $total): ?array
+    {
+        if ($total === null || $state === []) {
+            return null;
+        }
+
+        return ($state['phase'] ?? self::CHECK) === self::CHECK ? [(int) ($state['rows'] ?? 0), $total] : [$done, $total];
     }
 
     public function step(WorkStep $step): StepOutcome

@@ -113,7 +113,8 @@ company login.
 - **My jobs:** SAFT does long jobs – export, import, documents for many records, snapshots, the AI app designer – in
   steps. Small amounts are done before you notice: the file comes as a download as usual. If it takes longer, SAFT
   takes you to the job's page. In the user menu, **My jobs** shows what you have started, with status and progress. If
-  you open a job, you see a progress bar; as long as the page is open, SAFT keeps working at full speed. You may also
+  you open a job, you see a progress bar; for jobs with two phases (import and bulk edit: first check, then import or
+  write) it runs from 0 to 100 % per phase. As long as the page is open, SAFT keeps working at full speed. You may also
   close the page: the job continues in the background, and the bell tells you when it is done or has failed.
   **Cancel** ends it after the current step. If a job produces a file, download it with **Download result** – it stays
   available for 24 hours, even if you already downloaded it directly.

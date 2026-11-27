@@ -1021,7 +1021,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 | API | SAFT | Änderungen |
 |---|---|---|
-| **1.11** | 0.10.0 | `DataAction::BULK` – Sammelaktion für die ausgewählten Datensätze (Filament-`BulkAction`, Datensätze als `$records`); SAFT blendet sie im Papierkorb-Filter aus, prüft `APP_DATA_BULK_MAX` und hebt die Auswahl danach auf (Kapitel 11) |
+| **1.11** | 0.10.0 | `DataAction::BULK` – Sammelaktion für die ausgewählten Datensätze (Filament-`BulkAction`, Datensätze als `$records`); SAFT blendet sie im Papierkorb-Filter aus, prüft `APP_DATA_BULK_MAX` und hebt die Auswahl danach auf (Kapitel 11). `ReportsPhaseProgress` – Fortschritt je Phase einer Arbeit (Anhang A.8) |
 | **1.10** | 0.6.0 | Jede Änderung über `DataTable` (auch `$record->save()` auf einem Datensatz) läuft in einer eigenen Transaktion über Daten und Protokoll; `RecordSaved` und `RecordDeleted` laufen **innerhalb** dieser Transaktion – wirft ein Listener dort, wird die auslösende Änderung zurückgerollt (bisher nur in der Dokumentation so beschrieben). `Saft::transaction()` und `DataTable::transaction()` fassen mehrere Änderungen in einer Transaktion zusammen (unverändert). Optimistische Sperre: `DataTable::version()`, `update()` mit `$expectedVersion`, `StaleRecordException`. Arten von Arbeiten: `SaftPlugin::workTypes()`, `Saft::startWork()`, `WorkType`, `WorkPlan`, `WorkStep`, `StepOutcome`, `WritesRecords`, `CleansUp` (aufräumen bei Fehlschlag oder Abbruch), `LongSteps` (unteilbare lange Schritte, etwa KI-Anfragen). `Saft::afterCommit()` für Wirkungen nach aussen erst nach dem Commit. Neu: `DynamicRecord::definition()` (intern, kein Vertrag) |
 | **1.9** | 0.5.0 | `DataTable::url()` – Adresse der Datenansicht mit ausgewähltem Datensatz, z. B. für Links aus einem Stundenplan |
 | **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` und `detachFile()` sowie `StoredFile` – Dateien aus Feldern vom Typ „Datei“ lesen, anhängen (mit den Prüfungen des Formulars) und entfernen |
@@ -2077,7 +2077,10 @@ genau einen solchen Schritt aus und überlässt ihn dem Scheduler, wenn sich das
 Was ein Schritt nach aussen wirkt (E-Mail, Aufruf eines Dienstes), gehört in `Saft::afterCommit(fn () => …)`: Bei einer
 schreibenden Art (`WritesRecords`) läuft es erst, wenn der Block gespeichert ist – ein zurückgerollter Block verschickt
 nichts. Würde „erledigt / Menge“ allein in die Irre führen (zwei Phasen über dieselben Zeilen), setzt die Art
-`DescribesProgress` um und liefert den Text, der als Fortschritt erscheint, solange die Arbeit offen ist.
+`DescribesProgress` um und liefert den Text, der als Fortschritt erscheint, solange die Arbeit offen ist. Soll der
+Balken je Phase von 0 bis 100 % zählen, setzt sie zusätzlich `ReportsPhaseProgress` um (seit API 1.11):
+`phaseProgress($state, $done, $total)` liefert `[erledigt, Menge]` der laufenden Phase oder `null` für „erledigt /
+Menge“ über alles. SAFTs Import und Sammeländerung tun das.
 
 ### A.9 Handbuch mitliefern
 

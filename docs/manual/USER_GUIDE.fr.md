@@ -120,7 +120,8 @@ déconnecté du compte de l’entreprise.
   des données, concepteur d’app IA – par étapes. Les petites quantités sont terminées avant que vous ne le remarquiez :
   le fichier arrive comme d’habitude en téléchargement. Si cela dure plus longtemps, SAFT vous conduit à la page du
   travail. Dans le menu utilisateur, **Mes travaux** affiche ce que vous avez démarré, avec le statut et la progression.
-  En ouvrant un travail, vous voyez une barre de progression ; tant que la page est ouverte, SAFT avance à pleine
+  En ouvrant un travail, vous voyez une barre de progression ; pour les travaux à deux phases (import et modification
+  groupée : d’abord vérifier, puis importer ou écrire), elle va de 0 à 100 % pour chaque phase. Tant que la page est ouverte, SAFT avance à pleine
   vitesse. Vous pouvez aussi fermer la page : le travail se poursuit en arrière-plan, et la cloche vous indique quand il
   est terminé ou a échoué. **Annuler** l’arrête après l’étape en cours. Si un travail produit un fichier,
   téléchargez-le avec **Télécharger le résultat** – il reste disponible 24 heures, même si vous l’avez déjà téléchargé

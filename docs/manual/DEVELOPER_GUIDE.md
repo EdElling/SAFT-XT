@@ -1003,7 +1003,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 | API | SAFT | Changes |
 |---|---|---|
-| **1.11** | 0.10.0 | `DataAction::BULK` – bulk action for the selected records (Filament `BulkAction`, records as `$records`); SAFT hides it with the trash filter, checks `APP_DATA_BULK_MAX` and clears the selection afterwards (chapter 11) |
+| **1.11** | 0.10.0 | `DataAction::BULK` – bulk action for the selected records (Filament `BulkAction`, records as `$records`); SAFT hides it with the trash filter, checks `APP_DATA_BULK_MAX` and clears the selection afterwards (chapter 11). `ReportsPhaseProgress` – progress per phase of a job (appendix A.8) |
 | **1.10** | 0.6.0 | Every change through `DataTable` (also `$record->save()` on a record) runs in its own transaction across data and activity log; `RecordSaved` and `RecordDeleted` run **inside** that transaction – if a listener throws there, the triggering change is rolled back (previously only described that way in the documentation). `Saft::transaction()` and `DataTable::transaction()` combine several changes into one transaction (unchanged). Optimistic locking: `DataTable::version()`, `update()` with `$expectedVersion`, `StaleRecordException`. Kinds of jobs: `SaftPlugin::workTypes()`, `Saft::startWork()`, `WorkType`, `WorkPlan`, `WorkStep`, `StepOutcome`, `WritesRecords`, `CleansUp` (clean up on failure or cancellation), `LongSteps` (indivisible long steps such as AI requests). `Saft::afterCommit()` for outward effects only after the commit. New: `DynamicRecord::definition()` (internal, not part of the contract) |
 | **1.9** | 0.5.0 | `DataTable::url()` – address of the data view with a selected record, e.g. for links from a timetable |
 | **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` and `detachFile()` plus `StoredFile` – read, attach (with the form's checks) and remove files of fields of type “File” |
@@ -2046,7 +2046,10 @@ duration in `stepSeconds()`: SAFT raises PHP's time limit for it, runs exactly o
 scheduler when the time limit cannot be raised in the browser. Whatever a step does outwardly (e-mail, call to a
 service) belongs in `Saft::afterCommit(fn () => …)`: in a writing kind (`WritesRecords`) it runs only once the block has
 been saved – a rolled-back block sends nothing. If "done / total" alone would mislead (two phases over the same rows), the
-kind implements `DescribesProgress` and returns the text shown as progress while the job is open.
+kind implements `DescribesProgress` and returns the text shown as progress while the job is open. If the bar should
+count from 0 to 100 % per phase, it also implements `ReportsPhaseProgress` (since API 1.11): `phaseProgress($state,
+$done, $total)` returns `[done, total]` of the current phase, or `null` for "done / total" over everything. SAFT's
+import and bulk edit do so.
 
 ### A.9 Shipping a manual
 

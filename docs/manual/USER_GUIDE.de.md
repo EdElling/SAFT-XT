@@ -117,7 +117,8 @@ Firmen-Login abgemeldet.
   KI-App-Designer – erledigt SAFT in Schritten. Kleine Mengen sind fertig, bevor Sie es merken: Die Datei kommt wie
   gewohnt als Download. Dauert es länger, führt SAFT Sie auf die Seite der Arbeit. Im Benutzermenü zeigt **Meine
   Arbeiten**, was Sie gestartet haben, mit Status und Fortschritt. Öffnen Sie eine Arbeit, sehen Sie einen
-  Fortschrittsbalken; solange die Seite offen ist, arbeitet SAFT zügig weiter. Sie dürfen die Seite auch schliessen:
+  Fortschrittsbalken; bei Arbeiten mit zwei Phasen (Import und Sammeländerung: erst prüfen, dann einspielen bzw.
+  schreiben) läuft er je Phase von 0 bis 100 %. Solange die Seite offen ist, arbeitet SAFT zügig weiter. Sie dürfen die Seite auch schliessen:
   Die Arbeit läuft im Hintergrund weiter, und die Glocke meldet, wenn sie fertig oder fehlgeschlagen ist.
   **Abbrechen** beendet sie nach dem laufenden Schritt. Liefert eine Arbeit eine Datei, laden Sie sie mit **Ergebnis
   herunterladen** – sie bleibt 24 Stunden verfügbar, auch wenn Sie sie schon direkt heruntergeladen haben.

@@ -255,6 +255,10 @@
             "interface",
             "abstract function stepSeconds(): int"
         ],
+        "App\\Work\\ReportsPhaseProgress": [
+            "interface",
+            "abstract function phaseProgress(array $state, int $done, ?int $total): ?array"
+        ],
         "App\\Work\\StepOutcome": [
             "class",
             "property ?string $message",
