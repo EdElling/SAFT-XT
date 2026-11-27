@@ -13,7 +13,7 @@ use Facebook\WebDriver\WebDriverBy;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
-/** Sammeländerung (Bereich SAE, B-133): Dialog „Ändern …“, Vorschau, Prüfen, Löschen und Wiederherstellen. */
+/** Sammeländerung (Bereich SAE, B-133): Dialog „Ändern …“ mit allen Arten, Vorschau, Prüfen, Löschen und Wiederherstellen. */
 class BulkEditTest extends DuskTestCase
 {
     private const string ADMIN = 'admin@example.com';
@@ -41,6 +41,9 @@ class BulkEditTest extends DuskTestCase
             ['name' => 'von', 'label' => 'Von Woche', 'type' => 'integer'],
             ['name' => 'bis', 'label' => 'Bis Woche', 'type' => 'integer'],
             ['name' => 'kurs_id', 'label' => 'Kurs', 'type' => 'relation', 'options' => ['table' => 'kurse', 'display_field' => 'titel']],
+            ['name' => 'tarif', 'label' => 'Tarif', 'type' => 'decimal', 'options' => ['precision' => 10, 'scale' => 2]],
+            ['name' => 'faellig', 'label' => 'Fällig am', 'type' => 'date'],
+            ['name' => 'adresse', 'label' => 'Adresse', 'type' => 'string'],
         ]);
         $this->enrolments = $schema->updateTable($this->enrolments->fresh('fields'), ['validation_rules' => [
             ['left' => 'bis', 'operator' => '>=', 'right_kind' => TableRuleNormalizer::KIND_FIELD, 'right_field' => 'von', 'when_filled' => true],
@@ -96,6 +99,49 @@ class BulkEditTest extends DuskTestCase
     private function tick(Browser $browser, string $field): Browser
     {
         return $browser->click('input[id="'.self::MODAL."changes.{$field}.on\"]")->pause(800);
+    }
+
+    /** Art der Änderung wählen (Knopfgruppe „setzen | leeren | rechnen | …“). */
+    private function chooseOp(Browser $browser, string $field, string $op): Browser
+    {
+        $id = self::MODAL."changes.{$field}.op-{$op}";
+
+        return $browser->clickAtXPath("(//button[@id='{$id}'] | //label[@for='{$id}'])[1]")->pause(800);
+    }
+
+    private function fill(Browser $browser, string $id, string $value): Browser
+    {
+        $selector = 'input[id="'.self::MODAL.$id.'"]';
+
+        return $browser->clear($selector)->type($selector, $value)->keys($selector, '{tab}')->pause(1000);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<DynamicRecord>
+     */
+    private function enrolWith(array $rows): array
+    {
+        return array_map(fn (array $row, int $i): DynamicRecord => DynamicRecord::forTable($this->enrolments)->create([
+            'name' => 'Person '.($i + 1), 'status' => 'warteliste', ...$row,
+        ]), $rows, array_keys($rows));
+    }
+
+    /** @return array<int|string, mixed> */
+    private function column(string $field): array
+    {
+        DynamicRecord::forget('anmeldungen');
+
+        return DynamicRecord::forTableName('anmeldungen')->newQuery()->orderBy('id')->pluck($field)->all();
+    }
+
+    /** Alle Datensätze der Seite auswählen und den Dialog öffnen. */
+    private function selectAllAndOpen(Browser $browser, string $last): Browser
+    {
+        $this->login($browser, self::ADMIN)->visit('/admin/data/anmeldungen')->waitForText($last, 15);
+        $browser->clickAtXPath("(//input[contains(@class, 'fi-ta-page-checkbox')])[1]")->pause(500);
+
+        return $this->openDialog($browser);
     }
 
     /** @return array<int|string, mixed> */
@@ -212,5 +258,100 @@ class BulkEditTest extends DuskTestCase
 
         DynamicRecord::forget('kurse');
         $this->assertSame(['Belegt', 'Leer'], DynamicRecord::forTableName('kurse')->newQuery()->orderBy('titel')->pluck('titel')->all());
+    }
+
+    /** SAE-08 */
+    public function test_calc_raises_a_tariff_by_percent_rounded_to_a_multiple(): void
+    {
+        $this->enrolWith([['tarif' => '12.34'], ['tarif' => '100'], ['tarif' => null]]);
+
+        $this->browse(function (Browser $browser): void {
+            $this->selectAllAndOpen($browser, 'Person 3');
+            $this->tick($browser, 'tarif');
+            $this->chooseOp($browser, 'tarif', 'calc');
+            $browser->select('select[id="'.self::MODAL.'changes.tarif.operator"]', 'percent')->pause(800);
+            $this->fill($browser, 'changes.tarif.operand', '5');
+            $browser->select('select[id="'.self::MODAL.'changes.tarif.round_mode"]', 'multiple')->pause(800);
+            $this->fill($browser, 'changes.tarif.round_value', '0,05');
+
+            $browser->waitFor('[data-bulk-examples]', 15)
+                ->assertSee('2 Datensätze werden geändert')
+                ->assertSee('1 ohne Wert bzw. ohne Treffer bleibt unverändert.');
+            $this->clickVisibleButton($browser, '3 Datensätze ändern')
+                ->waitForText('2 Datensätze geändert. 1 ohne Wert bzw. ohne Treffer (unverändert).', 20);
+        });
+
+        $this->assertSame(['12.95', '105.00', null], $this->column('tarif'));
+    }
+
+    /** SAE-09 */
+    public function test_calc_moves_a_due_date_by_thirty_days(): void
+    {
+        $this->enrolWith([['faellig' => '2026-11-30'], ['faellig' => '2027-01-31']]);
+
+        $this->browse(function (Browser $browser): void {
+            $this->selectAllAndOpen($browser, 'Person 2');
+            $this->tick($browser, 'faellig');
+            $this->chooseOp($browser, 'faellig', 'calc');
+            $browser->select('select[id="'.self::MODAL.'changes.faellig.operator"]', 'add_days')->pause(800);
+            $this->fill($browser, 'changes.faellig.operand', '30');
+
+            $browser->waitFor('[data-bulk-examples]', 15)->assertSee('2 Datensätze werden geändert');
+            $this->clickVisibleButton($browser, '2 Datensätze ändern')->waitForText('2 Datensätze geändert.', 20);
+        });
+
+        $this->assertSame(['2026-12-30', '2027-03-02'], array_map(static fn (mixed $d): string => substr((string) $d, 0, 10), $this->column('faellig')));
+    }
+
+    /** SAE-10 */
+    public function test_replace_with_keep_case_changes_only_records_with_a_match(): void
+    {
+        $this->enrolWith([['adresse' => 'Bahnhofstr. 3'], ['adresse' => 'Str. des 1. Mai'], ['adresse' => 'Seeweg 7']]);
+
+        $this->browse(function (Browser $browser): void {
+            $this->selectAllAndOpen($browser, 'Person 3');
+            $this->tick($browser, 'adresse');
+            $this->chooseOp($browser, 'adresse', 'replace');
+            $this->fill($browser, 'changes.adresse.search', 'str.');
+            $this->fill($browser, 'changes.adresse.replace', 'strasse');
+            $browser->click('input[id="'.self::MODAL.'changes.adresse.keep"]')->pause(1000);
+
+            $browser->waitForTextIn('[data-bulk-examples]', 'Strasse des 1. Mai', 15)
+                ->assertSeeIn('[data-bulk-examples]', 'Bahnhofstrasse 3')
+                ->assertDontSeeIn('[data-bulk-examples]', 'Seeweg')
+                ->assertSee('1 ohne Wert bzw. ohne Treffer bleibt unverändert.');
+            $this->clickVisibleButton($browser, '3 Datensätze ändern')->waitForText('2 Datensätze geändert.', 20);
+        });
+
+        $this->assertSame(['Bahnhofstrasse 3', 'Strasse des 1. Mai', 'Seeweg 7'], $this->column('adresse'));
+    }
+
+    /** SAE-11 */
+    public function test_formula_shows_a_division_by_zero_and_the_check_fails_until_it_is_fixed(): void
+    {
+        $this->enrolWith([['tarif' => '10', 'von' => 2], ['tarif' => '20', 'von' => 0]]);
+
+        $this->browse(function (Browser $browser): void {
+            $this->selectAllAndOpen($browser, 'Person 2');
+            $this->tick($browser, 'tarif');
+            $this->chooseOp($browser, 'tarif', 'formula');
+            $this->fill($browser, 'changes.tarif.formula', 'tarif / von');
+
+            $browser->waitForText('Formel in Ordnung.', 15)
+                ->waitFor('[data-bulk-error]', 15)
+                ->assertSeeIn('[data-bulk-error]', 'Division durch 0.')
+                ->assertSee('Bei 1 Datensatz scheitert die Rechnung');
+            $this->clickVisibleButton($browser, 'Nur prüfen')
+                ->waitForText('Nichts geändert: 1 Datensatz besteht die Prüfungen nicht.', 20)
+                ->assertSee('Person 2');
+
+            $this->fill($browser, 'changes.tarif.formula', 'tarif / coalesce(von');
+            $browser->waitFor('[data-bulk-invalid]', 15);
+            $this->fill($browser, 'changes.tarif.formula', 'tarif * 2 + von');
+            $browser->waitFor('[data-bulk-examples]', 15)->assertMissing('[data-bulk-error]');
+            $this->clickVisibleButton($browser, '2 Datensätze ändern')->waitForText('2 Datensätze geändert.', 20);
+        });
+
+        $this->assertSame(['22.00', '40.00'], $this->column('tarif'));
     }
 }

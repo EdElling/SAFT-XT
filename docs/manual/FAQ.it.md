@@ -33,6 +33,12 @@
    - [Al posto del file compare una pagina «Lavoro» con barra di avanzamento.](#al-posto-del-file-compare-una-pagina-lavoro-con-barra-di-avanzamento)
    - [L’importazione di un file grande richiede molto tempo.](#limportazione-di-un-file-grande-richiede-molto-tempo)
    - [Come ricevono le fatture un numero progressivo?](#come-ricevono-le-fatture-un-numero-progressivo)
+   - [Come riprendo numeri di fattura esistenti in un intervallo di numerazione?](#come-riprendo-numeri-di-fattura-esistenti-in-un-intervallo-di-numerazione)
+   - [Come riceve una fattura il suo numero solo all’invio?](#come-riceve-una-fattura-il-suo-numero-solo-allinvio)
+   - [Come ricevono fatture e note di credito numeri propri?](#come-ricevono-fatture-e-note-di-credito-numeri-propri)
+   - [Come modifico molti record in una volta?](#come-modifico-molti-record-in-una-volta)
+   - [La modifica multipla segnala «Nulla modificato».](#la-modifica-multipla-segnala-nulla-modificato)
+   - [Nella modifica multipla alcuni record sono rimasti invariati.](#nella-modifica-multipla-alcuni-record-sono-rimasti-invariati)
 
 ---
 ## Domande frequenti
@@ -200,8 +206,10 @@ per nota di credito; ogni tipo conta allora per sé (`R-2026-001`, `G-2026-001`)
 ### Come modifico molti record in una volta?
 
 Filtrate l’elenco, spuntate le caselle (o «Seleziona tutti N») e cliccate **«Modifica …»**. Spuntate i campi, scegliete
-*impostare* o *svuotare* e controllate l’anteprima; **«Solo verificare»** non modifica ancora nulla. Esempio della scuola
-di musica: filtrare semestre e docente, selezionare tutti i corsi, impostare *Docente* sul nuovo. Vedere
+il modo (*impostare*, *svuotare*, *calcolare*, *sostituire*, *formula*) e controllate l’anteprima; **«Solo verificare»** non modifica ancora nulla. Esempio della scuola
+di musica: filtrare semestre e docente, selezionare tutti i corsi, impostare *Docente* sul nuovo. Allo stesso modo:
+*calcolare* la tariffa dei corsi di una materia «variare di %» 5, arrotondata al multiplo 0,05; *sostituire* «str.» con
+«strasse» negli indirizzi. Vedere
 [Manuale utente 4.11](USER_GUIDE.it.md#411-modificare-più-record-modifica-multipla).
 
 ### La modifica multipla segnala «Nulla modificato».
@@ -210,4 +218,14 @@ Almeno un record selezionato non supera i controlli – gli stessi della modific
 validazione, regola della tabella, plugin). Il messaggio indica i record con il motivo. Vale tutto o niente:
 deselezionate questi record o correggeteli uno per uno e riavviate la modifica multipla. Se è scritto «modificato nel
 frattempo da un’altra persona», qualcuno ha salvato durante la modifica multipla; è stata annullata completamente e si
-può semplicemente ripetere.
+può semplicemente ripetere. Con calcoli e formule si aggiungono due motivi: **«Divisione per 0»** (la formula divide per
+un valore 0 per questo record; `if(campo = 0, …, …)` lo evita) e **«Il numero è troppo grande per il campo»** (il
+risultato ha più cifre prima della virgola di quante il campo ne consenta). L’anteprima mostra già entrambi in rosso.
+
+### Nella modifica multipla alcuni record sono rimasti invariati.
+
+È voluto quando per loro non cambierebbe nulla: avevano già il nuovo valore («già così»), oppure nel calcolo il valore
+precedente era vuoto, nella sostituzione il testo cercato non compariva o la formula non dava risultato («senza valore o
+senza corrispondenza»). Anteprima e messaggio contano entrambi i casi. Per riempire valori vuoti filtrate per «vuoto» e
+scegliete *impostare*. Se *sostituire* trova meno del previsto, controllate le caselle «Maiuscole/minuscole» e «Solo
+parola intera»: «Str.» come parola intera non corrisponde in «Bahnhofstr.», perché è preceduto da una lettera.

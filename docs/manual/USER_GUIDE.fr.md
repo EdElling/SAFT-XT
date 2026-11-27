@@ -657,20 +657,44 @@ un ZIP.
 
 ### 4.11 Modifier plusieurs enregistrements (modification groupée)
 
-La modification groupée définit un champ pour de nombreux enregistrements en une fois, sans les ouvrir un par un – par
-exemple toutes les inscriptions de *liste d’attente* à *actif*, ou remplacer un enseignant dans tous les cours d’un
-semestre.
+La modification groupée change un champ pour de nombreux enregistrements en une fois, sans les ouvrir un par un – par
+exemple toutes les inscriptions de *liste d’attente* à *actif*, remplacer un enseignant dans tous les cours d’un
+semestre ou augmenter de 5 % le tarif de tous les cours d’une branche.
 
 1. **Sélectionner :** restreignez la liste par un filtre ou une recherche et cochez les **cases** en début de ligne. La
    case dans l’en-tête du tableau sélectionne les lignes de la page ; la liste propose ensuite **« Sélectionner tout (N) »**
    sur toutes les pages. Seuls les enregistrements que le filtre affiche sont modifiés.
 2. **« Modifier … »** dans la barre au-dessus du tableau ouvre la boîte de dialogue. Cochez les champs à modifier et
-   choisissez pour chacun **définir** (une valeur pour tous, avec le champ de saisie habituel) ou **vider**. Tous les
-   autres champs restent inchangés.
-3. L’**aperçu** en dessous montre jusqu’à dix enregistrements avec *avant → après* et des remarques, p. ex. sur les
-   plages de numéros.
+   choisissez pour chacun comment : **définir** (une valeur pour tous, avec le champ de saisie habituel), **vider**,
+   **calculer**, **remplacer** ou **formule** (voir ci-dessous). Tous les autres champs restent inchangés.
+3. L’**aperçu** en dessous montre jusqu’à dix enregistrements qui changent, avec *avant → après*, compte ceux qui
+   restent inchangés et donne des remarques, p. ex. sur les plages de numéros. Si un calcul échoue, la raison apparaît
+   en rouge dans l’exemple.
 4. **« Vérifier seulement »** contrôle tous les enregistrements sélectionnés sans rien modifier ; la boîte de dialogue
    reste ouverte. **« Modifier N enregistrements »** contrôle et modifie.
+
+**Calculer, remplacer, formule :** ces modes calculent la nouvelle valeur de chaque enregistrement à partir de sa valeur
+précédente.
+
+- **calculer** pour les nombres : + − × ÷ ou « modifier de % » (aussi négatif, −10 %). L’arrondi est commercial aux
+  décimales du champ, au choix à moins de décimales ou à un **multiple** (p. ex. 0,05). Exemple : tarif des cours d’une
+  branche plus 5 %, arrondi à 0,05 – 12.34 devient 12.95. Pour les dates : ± jours ou ± mois, p. ex. échéance des
+  factures ouvertes + 30 jours. En fin de mois, la date reste dans le mois (31.01 + 1 mois = 28.02) ; une heure reste
+  inchangée.
+- **remplacer** pour le texte : texte recherché → remplacement dans la valeur, toutes les occurrences. Au choix
+  **« Respecter la casse »**, **« Mot entier uniquement »** (ni lettre ni chiffre avant et après) et **« Reprendre la
+  casse »** (le remplacement s’écrit en majuscules ou minuscules comme l’occurrence). Exemple : « str. » → « strasse »
+  avec « Reprendre la casse » fait de « Bahnhofstr. 3 » « Bahnhofstrasse 3 » et de « Str. des 1. Mai » « Strasse des 1.
+  Mai ». C’est toujours un texte recherché par champ et par passage ; il n’y a ni jokers ni expressions régulières.
+- **formule** pour les nombres et oui/non : une formule comme pour les champs calculés, calculée pour chaque
+  enregistrement. Le nom du champ désigne sa valeur précédente ; les autres champs, les champs calculés et les sommes
+  sur les enregistrements de détail sont permis. Exemple : `round(tarif * 1.05 / 0.05, 0) * 0.05`. Sous la saisie
+  s’affiche si la formule est correcte. Une division par 0 est une erreur et empêche la modification groupée.
+
+Si la valeur précédente est vide, si un texte n’a pas d’occurrence ou si une formule ne donne rien, l’enregistrement
+reste inchangé ; l’aperçu et le message le comptent comme « sans valeur ou sans occurrence ». Tous les modes voient les
+valeurs d’avant la modification groupée, même si plusieurs champs sont modifiés à la fois. Si un résultat ne tient pas
+dans le champ (trop de chiffres, texte trop long), c’est une erreur ; rien n’est tronqué.
 
 SAFT contrôle chaque enregistrement comme lors d’une modification manuelle – champs obligatoires, règles de validation,
 règles de la table et plugins (p. ex. un contrôle de conflits). C’est **tout ou rien** : si un enregistrement échoue,
@@ -680,8 +704,9 @@ modification groupée continue comme **travail** ; vous voyez la progression sou
 des enregistrements pendant la modification groupée, elle est entièrement annulée.
 
 Ne sont pas proposés les champs dont SAFT détermine la valeur ou qui ne peuvent pas recevoir la même valeur pour tous :
-plages de numéros, champs calculés, fichiers et images ; les champs uniques ne peuvent qu’être vidés, les champs
-obligatoires seulement définis. Dans une table de détail (p. ex. les inscriptions d’un cours), le lien vers la table
+plages de numéros, champs calculés, fichiers et images. Les champs uniques ne peuvent pas être définis (une valeur pour
+tous), mais vidés, remplacés ou calculés ; si une valeur apparaissait alors deux fois, le contrôle le signale. Les
+champs obligatoires ne peuvent pas être vidés. Dans une table de détail (p. ex. les inscriptions d’un cours), le lien vers la table
 principale est fixe. L’**historique** d’un enregistrement indique « (modification groupée) » pour ces modifications. Si
 vous modifiez un champ qui décide quand un numéro est attribué, les enregistrements reçoivent leurs numéros dans l’ordre
 de leurs clés.

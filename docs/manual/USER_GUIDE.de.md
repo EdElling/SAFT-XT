@@ -628,18 +628,42 @@ E-Mail versendet wird immer das PDF. Mehrere Datensätze als Word kommen als ZIP
 
 ### 4.11 Mehrere Datensätze ändern (Sammeländerung)
 
-Mit der Sammeländerung setzen Sie ein Feld bei vielen Datensätzen auf einmal, ohne jeden einzeln zu öffnen – etwa alle
-Anmeldungen von *Warteliste* auf *aktiv* oder in allen Kursen eines Semesters eine Lehrperson durch eine andere.
+Mit der Sammeländerung ändern Sie ein Feld bei vielen Datensätzen auf einmal, ohne jeden einzeln zu öffnen – etwa alle
+Anmeldungen von *Warteliste* auf *aktiv*, in allen Kursen eines Semesters eine Lehrperson durch eine andere oder den
+Tarif aller Kurse eines Fachs um 5 %.
 
 1. **Auswählen:** Grenzen Sie die Liste mit Filter oder Suche ein und setzen Sie die **Häkchen** am Zeilenanfang. Das
    Häkchen im Tabellenkopf wählt die Zeilen der Seite; danach bietet die Liste **„Alle N Datensätze auswählen“** über alle Seiten an.
    Geändert werden nur Datensätze, die der Filter gerade zeigt.
 2. **„Ändern …“** in der Leiste über der Tabelle öffnet den Dialog. Haken Sie die Felder an, die geändert werden
-   sollen, und wählen Sie je Feld **setzen** (ein Wert für alle, mit dem gewohnten Eingabefeld) oder **leeren**. Alle
-   anderen Felder bleiben, wie sie sind.
-3. Die **Vorschau** darunter zeigt bis zu zehn Datensätze mit *vorher → nachher* und Hinweise, z. B. zu Nummernkreisen.
+   sollen, und wählen Sie je Feld die Art: **setzen** (ein Wert für alle, mit dem gewohnten Eingabefeld), **leeren**,
+   **rechnen**, **ersetzen** oder **Formel** (siehe unten). Alle anderen Felder bleiben, wie sie sind.
+3. Die **Vorschau** darunter zeigt bis zu zehn Datensätze, die sich ändern, mit *vorher → nachher*, zählt die
+   unveränderten und gibt Hinweise, z. B. zu Nummernkreisen. Scheitert eine Rechnung, steht der Grund rot im Beispiel.
 4. **„Nur prüfen“** prüft alle ausgewählten Datensätze, ohne etwas zu ändern; der Dialog bleibt offen.
    **„N Datensätze ändern“** prüft und ändert.
+
+**Rechnen, ersetzen, Formel:** Diese Arten rechnen den neuen Wert je Datensatz aus seinem bisherigen Wert.
+
+- **rechnen** bei Zahlen: + − × ÷ oder „um % ändern“ (auch negativ, −10 %). Gerundet wird kaufmännisch auf die
+  Nachkommastellen des Felds, auf Wunsch auf weniger Stellen oder auf ein **Vielfaches** (z. B. 0,05). Beispiel: Tarif
+  der Kurse eines Fachs um 5 %, gerundet auf 0,05 – aus 12.34 wird 12.95. Bei Datumsfeldern: ± Tage oder ± Monate, z. B.
+  Fälligkeit offener Rechnungen + 30 Tage. Am Monatsende bleibt das Datum im Monat (31.01. + 1 Monat = 28.02.), eine
+  Uhrzeit bleibt stehen.
+- **ersetzen** bei Text: Suchtext → Ersatz innerhalb des Werts, alle Treffer. Wahlweise **„Gross-/Kleinschreibung
+  beachten“**, **„nur ganzes Wort“** (davor und danach kein Buchstabe und keine Ziffer) und **„Schreibweise
+  übernehmen“** (der Ersatz wird gross oder klein geschrieben wie der Treffer). Beispiel: „str.“ → „strasse“ mit
+  „Schreibweise übernehmen“ macht aus „Bahnhofstr. 3“ „Bahnhofstrasse 3“ und aus „Str. des 1. Mai“ „Strasse des 1.
+  Mai“. Es ist immer ein Suchtext je Feld und Lauf; Platzhalter und reguläre Ausdrücke gibt es nicht.
+- **Formel** bei Zahlen und Ja/Nein: eine Formel wie bei berechneten Feldern, je Datensatz gerechnet. Der Name des Felds
+  steht für seinen bisherigen Wert, andere Felder, berechnete Felder und Summen über Detail-Datensätze sind erlaubt.
+  Beispiel: `round(tarif * 1.05 / 0.05, 0) * 0.05`. Unter dem Eingabefeld steht, ob die Formel in Ordnung ist. Eine
+  Division durch 0 ist ein Fehler und verhindert die Sammeländerung.
+
+Ist der bisherige Wert leer, hat ein Text keinen Treffer oder ergibt eine Formel nichts, bleibt der Datensatz
+unverändert; Vorschau und Meldung zählen ihn als „ohne Wert bzw. ohne Treffer“. Alle Arten sehen die Werte vor der
+Sammeländerung, auch wenn mehrere Felder zugleich geändert werden. Passt ein Ergebnis nicht ins Feld (zu viele Stellen,
+zu langer Text), ist das ein Fehler, nichts wird abgeschnitten.
 
 SAFT prüft jeden Datensatz wie beim Bearbeiten von Hand – Pflichtfelder, Prüfregeln, Regeln der Tabelle und Plugins
 (z. B. eine Konfliktprüfung). Es gilt **alles oder nichts**: Besteht ein Datensatz nicht, wird keiner geändert, und die
@@ -649,8 +673,9 @@ Datensätze, die schon den neuen Wert haben, bleiben unverändert. Bei vielen Da
 Sammeländerung geändert, wird sie vollständig zurückgenommen.
 
 Nicht angeboten werden Felder, deren Wert SAFT bestimmt oder die sich nicht für alle gleich setzen lassen:
-Nummernkreise, berechnete Felder, Dateien und Bilder; eindeutige Felder lassen sich nur leeren, Pflichtfelder nur
-setzen. In einer Detailtabelle (z. B. die Anmeldungen eines Kurses) ist die Verknüpfung zur Haupttabelle fest. Im
+Nummernkreise, berechnete Felder, Dateien und Bilder. Eindeutige Felder lassen sich nicht setzen (ein Wert für alle),
+wohl aber leeren, ersetzen oder rechnen; ergäbe sich dabei ein Wert doppelt, meldet die Prüfung das. Pflichtfelder
+lassen sich nicht leeren. In einer Detailtabelle (z. B. die Anmeldungen eines Kurses) ist die Verknüpfung zur Haupttabelle fest. Im
 **Verlauf** eines Datensatzes steht bei solchen Änderungen „(Sammeländerung)“. Ändern Sie ein Feld, das bestimmt, wann
 eine Nummer vergeben wird, bekommen die Datensätze ihre Nummern dabei in der Reihenfolge ihrer Schlüssel.
 

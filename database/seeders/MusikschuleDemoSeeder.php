@@ -268,7 +268,7 @@ class MusikschuleDemoSeeder extends Seeder
 
         foreach ([['Claudia', 'Meier'], ['Thomas', 'Meier'], ['Sandra', 'Huber'], ['Peter', 'Graf'], ['Nicole', 'Brunner'], ['Daniel', 'Weber'],
             ['Andrea', 'Schmid'], ['Marco', 'Rossi'], ['Fatma', 'Yilmaz'], ['Stefan', 'Baumann'], ['Ursula', 'Steiner'], ['Reto', 'Wyss']] as $i => [$first, $last]) {
-            $parents[$i + 1] = $insert('kontaktpersonen', ['vorname' => $first, 'nachname' => $last, 'strasse' => ['Bahnhofstrasse', 'Seeweg', 'Dorfstrasse', 'Hauptgasse'][$i % 4].' '.(3 + $i * 4),
+            $parents[$i + 1] = $insert('kontaktpersonen', ['vorname' => $first, 'nachname' => $last, 'strasse' => ['Bahnhofstr.', 'Seeweg', 'Dorfstrasse', 'Hauptstr.'][$i % 4].' '.(3 + $i * 4),
                 'plz' => (string) (8000 + $i * 13), 'ort' => ['Zürich', 'Winterthur', 'Uster', 'Dübendorf'][$i % 4], 'telefon' => '+41 79 555 '.(10 + $i).' '.(20 + $i),
                 'email' => strtolower($first).'.'.strtolower($last).'@example.ch']);
         }

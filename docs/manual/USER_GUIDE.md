@@ -596,17 +596,42 @@ Several records as Word come as a ZIP.
 
 ### 4.11 Changing several records (bulk edit)
 
-With a bulk edit you set a field for many records at once without opening each one – for example all enrolments from
-*waiting list* to *active*, or replacing a teacher in all courses of a semester.
+With a bulk edit you change a field for many records at once without opening each one – for example all enrolments
+from *waiting list* to *active*, replacing a teacher in all courses of a semester, or raising the fee of all courses of
+a subject by 5 %.
 
 1. **Select:** narrow the list with a filter or search and tick the **checkboxes** at the start of the rows. The
    checkbox in the table header selects the rows of the page; the list then offers **“Select all N”** across all pages.
    Only records the filter currently shows are changed.
-2. **“Change …”** in the bar above the table opens the dialog. Tick the fields to change and choose **set** (one value
-   for all, with the usual input field) or **clear** per field. All other fields stay as they are.
-3. The **preview** below shows up to ten records with *before → after* and hints, e.g. about number sequences.
+2. **“Change …”** in the bar above the table opens the dialog. Tick the fields to change and choose how per field:
+   **set** (one value for all, with the usual input field), **clear**, **calculate**, **replace** or **formula** (see
+   below). All other fields stay as they are.
+3. The **preview** below shows up to ten records that change, with *before → after*, counts the unchanged ones and
+   gives hints, e.g. about number sequences. If a calculation fails, the reason is shown in red in the example.
 4. **“Check only”** checks all selected records without changing anything; the dialog stays open.
    **“Change N records”** checks and changes.
+
+**Calculate, replace, formula:** these kinds compute the new value per record from its previous value.
+
+- **calculate** for numbers: + − × ÷ or “change by %” (also negative, −10 %). Rounding is commercial to the decimal
+  places of the field, optionally to fewer places or to a **multiple** (e.g. 0.05). Example: fee of the courses of a
+  subject plus 5 %, rounded to 0.05 – 12.34 becomes 12.95. For date fields: ± days or ± months, e.g. due date of open
+  invoices + 30 days. At the end of a month the date stays in the month (31 Jan + 1 month = 28 Feb); a time stays as it
+  is.
+- **replace** for text: search text → replacement within the value, all matches. Optionally **“Match case”**, **“Whole
+  word only”** (no letter or digit before and after) and **“Keep the case of the match”** (the replacement is written in
+  upper or lower case like the match). Example: “str.” → “strasse” with “Keep the case of the match” turns “Bahnhofstr.
+  3” into “Bahnhofstrasse 3” and “Str. des 1. Mai” into “Strasse des 1. Mai”. It is always one search text per field
+  and run; there are no wildcards or regular expressions.
+- **formula** for numbers and yes/no: a formula as for computed fields, calculated per record. The field's name stands
+  for its previous value; other fields, computed fields and sums over detail records are allowed. Example:
+  `round(tarif * 1.05 / 0.05, 0) * 0.05`. Below the input it says whether the formula is valid. A division by 0 is an
+  error and prevents the bulk edit.
+
+If the previous value is empty, a text has no match or a formula yields nothing, the record stays unchanged; preview
+and message count it as “without a value or match”. All kinds see the values before the bulk edit, even when several
+fields are changed at once. If a result does not fit the field (too many digits, text too long), that is an error;
+nothing is cut off.
 
 SAFT checks every record as when editing by hand – required fields, validation rules, table rules and plugins (e.g. a
 conflict check). It is **all or nothing**: if one record fails, none is changed, and the message names the records with
@@ -615,7 +640,8 @@ records the bulk edit continues as a **job**; you see the progress under *My job
 records during the bulk edit, it is fully reverted.
 
 Fields whose value SAFT determines or that cannot be set to the same value for all are not offered: number sequences,
-computed fields, files and images; unique fields can only be cleared, required fields only set. In a detail table (e.g.
+computed fields, files and images. Unique fields cannot be set (one value for all) but can be cleared, replaced or
+calculated; if a value would then occur twice, the check reports it. Required fields cannot be cleared. In a detail table (e.g.
 the enrolments of a course) the link to the main table is fixed. The **history** of a record shows “(bulk edit)” for
 such changes. If you change a field that decides when a number is assigned, the records get their numbers in the order
 of their keys.

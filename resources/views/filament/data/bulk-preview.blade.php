@@ -1,4 +1,4 @@
-{{-- Vorschau der Sammeländerung (B-133, App\DynamicData\Ui\BulkRecordActions::previewData): Anzahl, Beispiele vorher → nachher, Hinweise. --}}
+{{-- Vorschau der Sammeländerung (B-133, App\DynamicData\Ui\BulkRecordActions::previewData): Anzahl, Zählungen, Beispiele vorher → nachher, Fehler der Rechnung, Hinweise. --}}
 <div class="saft-bulk-preview" data-bulk-preview>
     <style>
         .saft-bulk-preview { display: grid; gap: .75rem; font-size: .875rem; }
@@ -23,9 +23,27 @@
         <p class="danger" data-bulk-too-many>{{ __('data.bulk.errors.too_many', ['count' => $count, 'max' => $max]) }}</p>
     @elseif ($empty)
         <p class="muted">{{ __('data.bulk.preview_empty') }}</p>
+    @elseif ($invalid !== null)
+        <p class="warn" data-bulk-invalid>{{ $invalid }}</p>
     @else
-        <p>{{ trans_choice('data.bulk.preview_count', $count, ['count' => $count]) }}</p>
+        @if ($partial)
+            <p class="muted" data-bulk-partial>{{ __('data.bulk.preview_partial', ['scan' => $scan, 'count' => $count]) }}</p>
+        @endif
+        @if ($counts['changing'] + $counts['failed'] === 0)
+            <p data-bulk-nothing>{{ __('data.bulk.preview_nothing') }}</p>
+        @else
+            <p>{{ trans_choice('data.bulk.preview_count', $counts['changing'], ['count' => $counts['changing']]) }}</p>
+        @endif
+        @if ($counts['unchanged'] + $counts['skipped'] > 0)
+            <p class="muted" data-bulk-counts>
+                {{ trim(($counts['unchanged'] > 0 ? trans_choice('data.bulk.preview_unchanged', $counts['unchanged'], ['count' => $counts['unchanged']]) : '').' '.($counts['skipped'] > 0 ? trans_choice('data.bulk.preview_skipped', $counts['skipped'], ['count' => $counts['skipped']]) : '')) }}
+            </p>
+        @endif
+        @if ($counts['failed'] > 0)
+            <p class="danger" data-bulk-failed>{{ trans_choice('data.bulk.preview_failed', $counts['failed'], ['count' => $counts['failed']]) }}</p>
+        @endif
 
+        @if ($rows !== [])
         <table data-bulk-examples>
             <thead>
                 <tr>
@@ -41,7 +59,9 @@
                         <td class="muted">{{ $row['key'] }}</td>
                         @foreach ($row['cells'] as $cell)
                             <td>
-                                @if ($cell['before'] === $cell['after'])
+                                @if ($cell['error'] !== null)
+                                    <span>{{ $cell['before'] }}</span> → <span class="danger" data-bulk-error>{{ $cell['error'] }}</span>
+                                @elseif ($cell['before'] === $cell['after'])
                                     <span class="same">{{ $cell['after'] }} ({{ __('data.bulk.unchanged') }})</span>
                                 @else
                                     <span class="before">{{ $cell['before'] }}</span> → <strong>{{ $cell['after'] }}</strong>
@@ -52,9 +72,10 @@
                 @endforeach
             </tbody>
         </table>
+        @endif
 
-        @if ($count > count($rows))
-            <p class="muted">{{ trans_choice('data.bulk.preview_more', $count - count($rows), ['count' => $count - count($rows)]) }}</p>
+        @if (! $partial && $counts['changing'] + $counts['failed'] > count($rows))
+            <p class="muted">{{ trans_choice('data.bulk.preview_more', $counts['changing'] + $counts['failed'] - count($rows), ['count' => $counts['changing'] + $counts['failed'] - count($rows)]) }}</p>
         @endif
 
         @if ($hints !== [] || $background)

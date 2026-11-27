@@ -23,7 +23,7 @@ use Filament\Actions\Testing\TestAction;
 use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
 
-/** Sammeländerung (B-133, S1b): Dialog „Ändern …“, Löschen und Wiederherstellen in Datenansicht und Detailtabelle. */
+/** Sammeländerung (B-133, S1b, S2): Dialog „Ändern …“ mit allen Arten, Löschen und Wiederherstellen in Datenansicht und Detailtabelle. */
 class BulkEditUiTest extends DynamicDataTestCase
 {
     private CustomTable $courses;
@@ -44,6 +44,7 @@ class BulkEditUiTest extends DynamicDataTestCase
             ]]],
             ['name' => 'bemerkung', 'label' => 'Bemerkung', 'type' => 'string'],
             ['name' => 'kurs_id', 'label' => 'Kurs', 'type' => 'relation', 'options' => ['table' => 'kurse', 'display_field' => 'titel']],
+            ['name' => 'tarif', 'label' => 'Tarif', 'type' => 'decimal', 'options' => ['precision' => 10, 'scale' => 2]],
         ]);
         $this->service()->updateTable($this->courses, ['detail_field_ids' => [$this->fieldId('anmeldungen', 'kurs_id')]]);
     }
@@ -255,5 +256,74 @@ class BulkEditUiTest extends DynamicDataTestCase
         config(['dynamic_data.bulk_max' => 5]);
         $tooMany = view('filament.data.bulk-preview', BulkRecordActions::previewData($this->enrolments, [], $state, $ids))->render();
         $this->assertStringContainsString('höchstens 5', $tooMany);
+    }
+
+    /** @return list<string> */
+    private function enrolWith(array $rows): array
+    {
+        $writer = app(RecordWriter::class);
+
+        return array_map(fn (array $row, int $i): string => (string) $writer->create($this->enrolments, [
+            'name' => "Person {$i}", 'status' => 'warteliste', ...$row,
+        ], WriteOptions::seed())->getKey(), $rows, array_keys($rows));
+    }
+
+    public function test_calculates_and_replaces_through_the_dialog(): void
+    {
+        $ids = $this->enrolWith([['tarif' => '12.34', 'bemerkung' => 'Hauptstr. 5'], ['tarif' => '100', 'bemerkung' => 'Str. des 1. Mai'], ['tarif' => null, 'bemerkung' => null]]);
+
+        Livewire::test(DynamicDataPage::class, ['table' => 'anmeldungen'])
+            ->selectTableRecords($ids)
+            ->mountAction($this->bulkEdit())
+            ->fillForm(['changes' => [
+                'tarif' => ['on' => true, 'op' => 'calc', 'operator' => 'percent', 'operand' => '5', 'round_mode' => 'multiple', 'round_value' => '0,05'],
+                'bemerkung' => ['on' => true, 'op' => 'replace', 'search' => 'str.', 'replace' => 'strasse', 'keep' => true],
+            ]])
+            ->callMountedAction()
+            ->assertHasNoActionErrors()
+            ->assertNotified('2 Datensätze geändert. 1 ohne Wert bzw. ohne Treffer (unverändert).');
+
+        $records = DynamicRecord::forTable($this->enrolments)->newQuery()->orderBy('id')->get();
+        $this->assertSame(['12.95', '105.00', null], $records->pluck('tarif')->all());
+        $this->assertSame(['Hauptstrasse 5', 'Strasse des 1. Mai', null], $records->pluck('bemerkung')->all(), 'Schreibweise übernommen.');
+    }
+
+    public function test_formula_through_the_dialog_and_an_invalid_formula_is_refused(): void
+    {
+        $ids = $this->enrolWith([['tarif' => '10'], ['tarif' => '20']]);
+
+        Livewire::test(DynamicDataPage::class, ['table' => 'anmeldungen'])
+            ->selectTableRecords($ids)
+            ->mountAction($this->bulkEdit())
+            ->fillForm(['changes' => ['tarif' => ['on' => true, 'op' => 'formula', 'formula' => 'tarif * name']]])
+            ->callMountedAction()
+            ->assertNotified()
+            ->fillForm(['changes' => ['tarif' => ['on' => true, 'op' => 'formula', 'formula' => 'tarif * 2 + 1']]])
+            ->callMountedAction()
+            ->assertNotified('2 Datensätze geändert.');
+
+        $this->assertSame(['21.00', '41.00'], DynamicRecord::forTable($this->enrolments)->newQuery()->orderBy('id')->pluck('tarif')->all());
+    }
+
+    public function test_preview_counts_unchanged_records_and_shows_errors_and_invalid_input(): void
+    {
+        $ids = $this->enrolWith([['bemerkung' => 'Hauptstr. 5'], ['bemerkung' => 'Weg'], ['bemerkung' => null], ['tarif' => '5']]);
+        $render = fn (array $state): string => view('filament.data.bulk-preview', BulkRecordActions::previewData($this->enrolments, [], $state, $ids))->render();
+
+        $html = $render(['bemerkung' => ['on' => true, 'op' => 'replace', 'search' => 'str.', 'replace' => 'strasse']]);
+        $this->assertStringContainsString('1 Datensatz wird geändert', $html);
+        $this->assertStringContainsString('3 ohne Wert bzw. ohne Treffer bleiben unverändert.', $html);
+        $this->assertStringContainsString('<span class="before">Hauptstr. 5</span> → <strong>Hauptstrasse 5</strong>', $html);
+        $this->assertStringNotContainsString('>Weg<', $html, 'Nur Beispiele, die sich ändern.');
+
+        $html = $render(['tarif' => ['on' => true, 'op' => 'formula', 'formula' => 'tarif / (tarif - 5)']]);
+        $this->assertStringContainsString('Bei 1 Datensatz scheitert die Rechnung', $html);
+        $this->assertStringContainsString('data-bulk-error>Division durch 0.', $html);
+
+        $html = $render(['tarif' => ['on' => true, 'op' => 'calc', 'operator' => 'add', 'operand' => '']]);
+        $this->assertStringContainsString('„Tarif“: Geben Sie eine Zahl ein.', $html);
+
+        $html = $render(['bemerkung' => ['on' => true, 'op' => 'replace', 'search' => 'xyz', 'replace' => 'abc']]);
+        $this->assertStringContainsString('Bei keinem Datensatz ändert sich etwas.', $html);
     }
 }

@@ -33,6 +33,12 @@
    - [Instead of the file, a page “Job” with a progress bar appears.](#instead-of-the-file-a-page-job-with-a-progress-bar-appears)
    - [Importing a large file takes long.](#importing-a-large-file-takes-long)
    - [How do invoices get a consecutive number?](#how-do-invoices-get-a-consecutive-number)
+   - [How do I take over existing invoice numbers into a number sequence?](#how-do-i-take-over-existing-invoice-numbers-into-a-number-sequence)
+   - [How does an invoice get its number only when it is sent?](#how-does-an-invoice-get-its-number-only-when-it-is-sent)
+   - [How do invoices and credit notes get numbers of their own?](#how-do-invoices-and-credit-notes-get-numbers-of-their-own)
+   - [How do I change many records at once?](#how-do-i-change-many-records-at-once)
+   - [The bulk edit reports “Nothing changed”.](#the-bulk-edit-reports-nothing-changed)
+   - [Some records stayed unchanged in the bulk edit.](#some-records-stayed-unchanged-in-the-bulk-edit)
 
 ---
 ## Frequently asked questions
@@ -192,9 +198,10 @@ document type then counts on its own (`R-2026-001`, `G-2026-001`). See
 
 ### How do I change many records at once?
 
-Filter the list, tick the checkboxes (or “Select all N”) and click **“Change …”**. Tick the fields, choose *set* or *clear*
-and check the preview; **“Check only”** changes nothing yet. Music school example: filter semester and teacher, select
-all courses, set *Teacher* to the new one. See
+Filter the list, tick the checkboxes (or “Select all N”) and click **“Change …”**. Tick the fields, choose the kind (*set*, *clear*, *calculate*,
+*replace*, *formula*) and check the preview; **“Check only”** changes nothing yet. Music school example: filter semester and teacher, select
+all courses, set *Teacher* to the new one. Likewise: *calculate* the fee of the courses of a subject “change by %” 5,
+rounded to a multiple of 0.05; *replace* “str.” with “strasse” in addresses. See
 [User guide 4.11](USER_GUIDE.md#411-changing-several-records-bulk-edit).
 
 ### The bulk edit reports “Nothing changed”.
@@ -202,4 +209,15 @@ all courses, set *Teacher* to the new one. See
 At least one selected record fails the checks – the same as when editing by hand (required field, validation rule, table
 rule, plugin). The message names the records with the reason. It is all or nothing: deselect these records or correct
 them one by one and start the bulk edit again. If it says “changed by someone else in the meantime”, someone saved
-during the bulk edit; it was fully reverted and can simply be repeated.
+during the bulk edit; it was fully reverted and can simply be repeated. With calculations and formulas there are two more
+reasons: **“Division by 0”** (the formula divides by a value of 0 for this record; `if(field = 0, …, …)` avoids it)
+and **“The number is too large for the field”** (the result has more digits before the decimal point than the field
+allows). The preview already shows both in red.
+
+### Some records stayed unchanged in the bulk edit.
+
+That is intended when nothing would change for them: they already had the new value (“already like that”), or when
+calculating the previous value was empty, when replacing the search text did not occur, or the formula yielded nothing
+(“without a value or match”). Preview and message count both. To fill empty values, filter for “empty” and choose
+*set*. If *replace* finds less than expected, check the boxes “Match case” and “Whole word only”: “Str.” as a whole word
+does not match in “Bahnhofstr.” because a letter comes before it.

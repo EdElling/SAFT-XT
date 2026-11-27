@@ -33,6 +33,12 @@
    - [À la place du fichier, une page « Travail » avec barre de progression s’affiche.](#à-la-place-du-fichier-une-page--travail--avec-barre-de-progression-saffiche)
    - [L’import d’un gros fichier prend du temps.](#limport-dun-gros-fichier-prend-du-temps)
    - [Comment les factures reçoivent-elles un numéro continu ?](#comment-les-factures-reçoivent-elles-un-numéro-continu-)
+   - [Comment reprendre des numéros de facture existants dans une plage de numéros ?](#comment-reprendre-des-numéros-de-facture-existants-dans-une-plage-de-numéros-)
+   - [Comment une facture reçoit-elle son numéro seulement à l’envoi ?](#comment-une-facture-reçoit-elle-son-numéro-seulement-à-lenvoi-)
+   - [Comment les factures et les notes de crédit reçoivent-elles leurs propres numéros ?](#comment-les-factures-et-les-notes-de-crédit-reçoivent-elles-leurs-propres-numéros-)
+   - [Comment modifier de nombreux enregistrements en une fois ?](#comment-modifier-de-nombreux-enregistrements-en-une-fois-)
+   - [La modification groupée indique « Rien n’a été modifié ».](#la-modification-groupée-indique--rien-na-été-modifié-)
+   - [Lors de la modification groupée, des enregistrements sont restés inchangés.](#lors-de-la-modification-groupée-des-enregistrements-sont-restés-inchangés)
 
 ---
 ## Questions fréquentes
@@ -203,8 +209,11 @@ note de crédit ; chaque type compte alors pour lui-même (`R-2026-001`, `G-2026
 ### Comment modifier de nombreux enregistrements en une fois ?
 
 Filtrez la liste, cochez les cases (ou « Sélectionner tout (N) ») et cliquez sur **« Modifier … »**. Cochez les champs,
-choisissez *définir* ou *vider* et contrôlez l’aperçu ; **« Vérifier seulement »** ne modifie encore rien. Exemple de
+choisissez le mode (*définir*, *vider*, *calculer*, *remplacer*,
+*formule*) et contrôlez l’aperçu ; **« Vérifier seulement »** ne modifie encore rien. Exemple de
 l’école de musique : filtrer semestre et enseignant, sélectionner tous les cours, définir *Enseignant* sur le nouveau.
+De même : *calculer* le tarif des cours d’une branche « modifier de % » 5, arrondi au multiple 0,05 ; *remplacer*
+« str. » par « strasse » dans les adresses.
 Voir [Manuel d’utilisation 4.11](USER_GUIDE.fr.md#411-modifier-plusieurs-enregistrements-modification-groupée).
 
 ### La modification groupée indique « Rien n’a été modifié ».
@@ -213,4 +222,16 @@ Au moins un enregistrement sélectionné ne passe pas les contrôles – les mê
 obligatoire, règle de validation, règle de la table, plugin). Le message nomme les enregistrements avec la raison. C’est
 tout ou rien : désélectionnez ces enregistrements ou corrigez-les un par un et relancez la modification groupée. S’il est
 écrit « modifié entre-temps par quelqu’un d’autre », quelqu’un a enregistré pendant la modification groupée ; elle a été
-entièrement annulée et peut simplement être répétée.
+entièrement annulée et peut simplement être répétée. Avec les calculs et les formules, deux raisons s’ajoutent :
+**« Division par 0 »** (la formule divise par une valeur 0 pour cet enregistrement ; `if(champ = 0, …, …)` l’évite) et
+**« Le nombre est trop grand pour le champ »** (le résultat a plus de chiffres avant la virgule que le champ ne le
+permet). L’aperçu affiche déjà les deux en rouge.
+
+### Lors de la modification groupée, des enregistrements sont restés inchangés.
+
+C’est voulu lorsque rien ne changerait pour eux : ils avaient déjà la nouvelle valeur (« déjà ainsi »), ou lors d’un
+calcul la valeur précédente était vide, lors d’un remplacement le texte recherché n’apparaissait pas, ou la formule ne
+donnait rien (« sans valeur ou sans occurrence »). L’aperçu et le message comptent les deux. Pour remplir des valeurs
+vides, filtrez sur « vide » et choisissez *définir*. Si *remplacer* trouve moins que prévu, vérifiez les cases
+« Respecter la casse » et « Mot entier uniquement » : « Str. » comme mot entier ne correspond pas dans « Bahnhofstr. »,
+car une lettre le précède.

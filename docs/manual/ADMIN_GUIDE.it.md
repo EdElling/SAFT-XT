@@ -263,8 +263,10 @@ default; «Modifica …» appare per i ruoli con il diritto **Modificare**. Disa
 modificati solo uno alla volta (p. es. fatture inviate). Una modifica multipla controlla ogni record come la modifica
 manuale, regole di validazione e plugin compresi, e vale tutto o niente. Viene eseguita come [lavoro](#lavori), al
 massimo 5’000 record per modifica multipla (`APP_DATA_BULK_MAX`, `0` = senza limite); la cronologia indica «(modifica
-multipla)». Intervalli di numerazione, campi calcolati e file non sono modificabili; i campi univoci si possono solo
-svuotare. Le tabelle collegate non hanno la modifica multipla.
+multipla)». Oltre a *impostare* e *svuotare* ci sono *calcolare* (numero, data), *sostituire* (testo) e *formula*
+(numero, sì/no, nel linguaggio delle formule dei campi calcolati; una divisione per 0 vi è un errore). Intervalli di
+numerazione, campi calcolati e file non sono modificabili; i campi univoci non si possono impostare, ma svuotare,
+sostituire o calcolare (il controllo segnala i risultati doppi). Le tabelle collegate non hanno la modifica multipla.
 
 **Modificare i campi** (area *Campi*, (2)): per ogni campo stabilite:
 

@@ -550,6 +550,9 @@ or changed).
   edit; nothing is changed. Register external effects (e-mail, webhook, files outside the database) with
   `Saft::afterCommit()`; they are discarded in the check phase. If the write phase fails, SAFT writes the old values back
   **without** plugin events. Whether a change comes from a bulk edit is recorded in the change log entry (`via: bulk`).
+  For the kinds *calculate*, *replace* and *formula*, SAFT computes the new value per record
+  (`App\DynamicData\Bulk\BulkChange::resolve()`) before your listener runs; it sees it like an entered value. Records
+  without a value or match are not saved at all, so your listener does not see them.
 - **Follow-up changes** in `RecordSaved` and `RecordDeleted` are written through `Saft::table(…)`. They always run in the
   same transaction as the triggering change (since API 1.10: record, totals, files and activity log): if a listener
   throws there, the triggering change is rolled back as well. If you trigger events yourself, beware of endless loops.
@@ -617,6 +620,9 @@ public function formulaFunctions(): array
   report designer's expressions (these become SQL); computed fields using it can be reported on normally, their value
   is stored.
 - If the function throws an exception, the result stays empty and the error is logged – saving does not fail.
+- The **formula** kind of the bulk edit knows the function as well (context “bulk edit” of the specification). There SAFT
+  calculates strictly (`Evaluator::evaluateStrict()`): a division by 0 is an error per record; the same rules as above
+  apply to your function.
 
 **Validation rules** for fields come from `fieldRules()`:
 

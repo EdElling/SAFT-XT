@@ -628,18 +628,42 @@ sempre il PDF. Più record in Word arrivano in uno ZIP.
 
 ### 4.11 Modificare più record (modifica multipla)
 
-Con la modifica multipla impostate un campo per molti record in una volta, senza aprirli uno per uno – per esempio tutte
-le iscrizioni da *lista d’attesa* ad *attivo*, oppure sostituire un docente in tutti i corsi di un semestre.
+Con la modifica multipla cambiate un campo per molti record in una volta, senza aprirli uno per uno – per esempio tutte
+le iscrizioni da *lista d’attesa* ad *attivo*, sostituire un docente in tutti i corsi di un semestre o aumentare del 5 %
+la tariffa di tutti i corsi di una materia.
 
 1. **Selezionare:** restringete l’elenco con un filtro o una ricerca e spuntate le **caselle** all’inizio delle righe.
    La casella nell’intestazione seleziona le righe della pagina; l’elenco offre poi **«Seleziona tutti N»** su tutte le
    pagine. Vengono modificati solo i record che il filtro mostra.
 2. **«Modifica …»** nella barra sopra la tabella apre la finestra. Spuntate i campi da modificare e scegliete per ognuno
-   **impostare** (un valore per tutti, con il solito campo di inserimento) o **svuotare**. Tutti gli altri campi restano
-   invariati.
-3. L’**anteprima** sotto mostra fino a dieci record con *prima → dopo* e avvisi, p. es. sugli intervalli di numerazione.
+   come: **impostare** (un valore per tutti, con il solito campo di inserimento), **svuotare**, **calcolare**,
+   **sostituire** o **formula** (vedi sotto). Tutti gli altri campi restano invariati.
+3. L’**anteprima** sotto mostra fino a dieci record che cambiano, con *prima → dopo*, conta quelli invariati e dà
+   avvisi, p. es. sugli intervalli di numerazione. Se un calcolo non riesce, il motivo appare in rosso nell’esempio.
 4. **«Solo verificare»** controlla tutti i record selezionati senza modificare nulla; la finestra resta aperta.
    **«Modifica N record»** controlla e modifica.
+
+**Calcolare, sostituire, formula:** questi modi calcolano il nuovo valore di ogni record dal suo valore precedente.
+
+- **calcolare** per i numeri: + − × ÷ o «variare di %» (anche negativo, −10 %). L’arrotondamento è commerciale ai
+  decimali del campo, a scelta a meno decimali o a un **multiplo** (p. es. 0,05). Esempio: tariffa dei corsi di una
+  materia più 5 %, arrotondata a 0,05 – 12.34 diventa 12.95. Per le date: ± giorni o ± mesi, p. es. scadenza delle
+  fatture aperte + 30 giorni. A fine mese la data resta nel mese (31.01 + 1 mese = 28.02); un’ora resta invariata.
+- **sostituire** per il testo: testo cercato → sostituzione nel valore, tutte le corrispondenze. A scelta
+  **«Maiuscole/minuscole»**, **«Solo parola intera»** (né lettera né cifra prima e dopo) e **«Mantenere
+  maiuscole/minuscole»** (la sostituzione si scrive in maiuscolo o minuscolo come la corrispondenza). Esempio: «str.» →
+  «strasse» con «Mantenere maiuscole/minuscole» trasforma «Bahnhofstr. 3» in «Bahnhofstrasse 3» e «Str. des 1. Mai» in
+  «Strasse des 1. Mai». È sempre un testo cercato per campo e per passaggio; non ci sono caratteri jolly né espressioni
+  regolari.
+- **formula** per numeri e sì/no: una formula come per i campi calcolati, calcolata per ogni record. Il nome del campo
+  indica il suo valore precedente; altri campi, campi calcolati e somme sui record di dettaglio sono ammessi. Esempio:
+  `round(tarif * 1.05 / 0.05, 0) * 0.05`. Sotto il campo si vede se la formula è corretta. Una divisione per 0 è un
+  errore e impedisce la modifica multipla.
+
+Se il valore precedente è vuoto, un testo non ha corrispondenze o una formula non dà risultato, il record resta
+invariato; anteprima e messaggio lo contano come «senza valore o senza corrispondenza». Tutti i modi vedono i valori di
+prima della modifica multipla, anche se si cambiano più campi insieme. Se un risultato non entra nel campo (troppe
+cifre, testo troppo lungo), è un errore; nulla viene troncato.
 
 SAFT controlla ogni record come nella modifica manuale – campi obbligatori, regole di validazione, regole della tabella e
 plugin (p. es. un controllo dei conflitti). Vale **tutto o niente**: se un record non supera i controlli, nessuno viene
@@ -649,8 +673,9 @@ visibile in *I miei lavori*. Se qualcuno modifica uno dei record durante la modi
 completamente.
 
 Non vengono proposti i campi il cui valore è stabilito da SAFT o che non possono avere lo stesso valore per tutti:
-intervalli di numerazione, campi calcolati, file e immagini; i campi univoci si possono solo svuotare, quelli
-obbligatori solo impostare. In una tabella di dettaglio (p. es. le iscrizioni di un corso) il collegamento alla tabella
+intervalli di numerazione, campi calcolati, file e immagini. I campi univoci non si possono impostare (un valore per
+tutti), ma svuotare, sostituire o calcolare; se un valore risultasse doppio, il controllo lo segnala. I campi
+obbligatori non si possono svuotare. In una tabella di dettaglio (p. es. le iscrizioni di un corso) il collegamento alla tabella
 principale è fisso. La **cronologia** di un record indica «(modifica multipla)» per queste modifiche. Se modificate un
 campo che decide quando viene assegnato un numero, i record ricevono i loro numeri nell’ordine delle chiavi.
 

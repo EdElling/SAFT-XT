@@ -33,6 +33,12 @@
    - [Statt der Datei erscheint eine Seite „Arbeit“ mit Fortschrittsbalken.](#statt-der-datei-erscheint-eine-seite-arbeit-mit-fortschrittsbalken)
    - [Der Import einer grossen Datei dauert lange.](#der-import-einer-grossen-datei-dauert-lange)
    - [Wie bekommen Rechnungen eine fortlaufende Nummer?](#wie-bekommen-rechnungen-eine-fortlaufende-nummer)
+   - [Wie übernehme ich vorhandene Rechnungsnummern in einen Nummernkreis?](#wie-übernehme-ich-vorhandene-rechnungsnummern-in-einen-nummernkreis)
+   - [Wie bekommt eine Rechnung erst beim Versand eine Nummer?](#wie-bekommt-eine-rechnung-erst-beim-versand-eine-nummer)
+   - [Wie bekommen Rechnungen und Gutschriften eigene Nummern?](#wie-bekommen-rechnungen-und-gutschriften-eigene-nummern)
+   - [Wie ändere ich viele Datensätze auf einmal?](#wie-ändere-ich-viele-datensätze-auf-einmal)
+   - [Die Sammeländerung meldet „Nichts geändert“.](#die-sammeländerung-meldet-nichts-geändert)
+   - [Bei der Sammeländerung blieben Datensätze unverändert.](#bei-der-sammeländerung-blieben-datensätze-unverändert)
 
 ---
 ## Häufige Fragen
@@ -200,8 +206,9 @@ dann zählt jede Belegart für sich (`R-2026-001`, `G-2026-001`). Siehe
 ### Wie ändere ich viele Datensätze auf einmal?
 
 Filtern Sie die Liste, setzen Sie die Häkchen (oder „Alle N Datensätze auswählen“) und klicken Sie **„Ändern …“**. Haken Sie die
-Felder an, wählen Sie *setzen* oder *leeren* und prüfen Sie die Vorschau; **„Nur prüfen“** ändert noch nichts. Beispiel
-Musikschule: Filter Semester und Lehrperson, alle Kurse auswählen, *Lehrperson* auf die neue setzen. Siehe
+Felder an, wählen Sie die Art (*setzen*, *leeren*, *rechnen*, *ersetzen*, *Formel*) und prüfen Sie die Vorschau; **„Nur prüfen“** ändert noch nichts. Beispiel
+Musikschule: Filter Semester und Lehrperson, alle Kurse auswählen, *Lehrperson* auf die neue setzen. Ebenso: Tarif der Kurse eines Fachs *rechnen* „um % ändern“ 5,
+gerundet auf ein Vielfaches 0,05; in Adressen „str.“ durch „strasse“ *ersetzen*. Siehe
 [Anwenderhandbuch 4.11](USER_GUIDE.de.md#411-mehrere-datensätze-ändern-sammeländerung).
 
 ### Die Sammeländerung meldet „Nichts geändert“.
@@ -210,4 +217,15 @@ Mindestens ein ausgewählter Datensatz besteht die Prüfungen nicht – dieselbe
 Prüfregel, Regel der Tabelle, Plugin). Die Meldung nennt die Datensätze mit Grund. Es gilt alles oder nichts: Wählen Sie
 diese Datensätze ab oder korrigieren Sie sie einzeln und starten Sie die Sammeländerung erneut. Steht „inzwischen von
 jemand anderem geändert“ da, hat jemand während der Sammeländerung gespeichert; sie wurde vollständig zurückgenommen und
-lässt sich einfach wiederholen.
+lässt sich einfach wiederholen. Beim Rechnen und bei Formeln kommen zwei Gründe dazu: **„Division durch 0“** (die Formel
+teilt bei diesem Datensatz durch einen Wert 0; mit `if(feld = 0, …, …)` lässt sich das abfangen) und **„Die Zahl ist zu
+gross für das Feld“** (das Ergebnis hat mehr Stellen vor dem Komma, als das Feld erlaubt). Beides zeigt schon die
+Vorschau rot an.
+
+### Bei der Sammeländerung blieben Datensätze unverändert.
+
+Das ist gewollt, wenn sich bei ihnen nichts ändern würde: Sie hatten schon den neuen Wert („schon so“), oder beim
+Rechnen war der bisherige Wert leer, beim Ersetzen kam der Suchtext nicht vor bzw. die Formel ergab nichts („ohne Wert
+bzw. ohne Treffer“). Vorschau und Meldung zählen beides. Sollen leere Werte gefüllt werden, filtern Sie nach „leer“ und
+wählen *setzen*. Findet *ersetzen* weniger als erwartet, prüfen Sie die Häkchen „Gross-/Kleinschreibung beachten“ und
+„nur ganzes Wort“: „Str.“ als ganzes Wort passt nicht in „Bahnhofstr.“, weil davor ein Buchstabe steht.

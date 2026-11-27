@@ -260,8 +260,10 @@ Grenze). Für angebundene Tabellen des Table-Connectors gibt es den Import nicht
 nur einzeln geändert werden sollen (z. B. versendete Rechnungen). Eine Sammeländerung prüft jeden Datensatz wie das
 Bearbeiten von Hand, samt Prüfregeln und Plugins, und es gilt alles oder nichts. Sie läuft als [Arbeit](#arbeiten),
 höchstens 5'000 Datensätze je Sammeländerung (`APP_DATA_BULK_MAX`, `0` = ohne Grenze); im Verlauf steht
-„(Sammeländerung)“. Nicht änderbar sind Nummernkreise, berechnete Felder und Dateien; eindeutige Felder lassen sich nur
-leeren. Für angebundene Tabellen gibt es die Sammeländerung nicht.
+„(Sammeländerung)“. Neben *setzen* und *leeren* gibt es *rechnen* (Zahl, Datum), *ersetzen* (Text) und *Formel* (Zahl,
+Ja/Nein, in der Formelsprache der berechneten Felder, eine Division durch 0 ist dort ein Fehler). Nicht änderbar sind
+Nummernkreise, berechnete Felder und Dateien; eindeutige Felder lassen sich nicht setzen, wohl aber leeren, ersetzen
+oder rechnen (doppelte Ergebnisse meldet die Prüfung). Für angebundene Tabellen gibt es die Sammeländerung nicht.
 
 **Felder bearbeiten** (Bereich *Felder*, (2)): Für jedes Feld legen Sie fest:
 

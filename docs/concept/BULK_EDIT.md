@@ -1,6 +1,6 @@
 # Konzept: Datensätze auswählen und Sammeländerung in SAFT XT
 
-Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2 entschieden (§12), in Arbeit, S3–S4 offen** · Backlog: B-133
+Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2 umgesetzt 27.11.2026, S3–S4 offen** · Backlog: B-133
 (ersetzt B-024)
 
 > **Überarbeitung 27.11.2026:** Seit dem Entwurf vom 23.11.2026 gibt es Fundament 2 und die Nummernkreise. Der
@@ -219,6 +219,18 @@ behoben: Verschachtelte Schreibvorgänge (Summen im Master) erbten die erwartete
 „inzwischen geändert“ – betraf seit 0.6.0 auch das Einzelbearbeiten (`WriteOptions::nested()`). S1c: Browser-Test
 `BulkEditTest` (SAE-01 bis SAE-04), manuelle Testfälle SAE-01 bis SAE-07, Handbücher.
 
+**Stand S2 (27.11.2026): umgesetzt** nach den Entscheidungen in §12. S2a Backend: `BulkChange` mit den Arten `calc`,
+`replace`, `formula` und `resolve()` je Datensatz (alle Arten sehen die Werte vor der Änderung), `BulkCalc`, `BulkReplace`,
+`BulkFormula`, `Evaluator::evaluateStrict()` (FORMULA_SPEC Kontext „Sammeländerung“, Konformitätsfälle `bulk`),
+`RecordChecker` mit Prüfung der Stellen (auch Import), Zählung „ohne Wert bzw. ohne Treffer“ in Arbeit und Vorschau,
+Doppelte eindeutiger Felder über alle Blöcke (`unique.json` im Ordner der Arbeit). S2b Oberfläche: Eingaben je Art im
+Dialog, Formel mit Prüfung beim Verlassen, Vorschau mit Beispielen, die sich ändern (aus den ersten 500), Zählungen,
+roten Rechenfehlern und der Meldung bei unvollständiger Eingabe. Bei der Prüfung in der Musikschule-Demo ergänzt: Häkchen
+„Schreibweise übernehmen“ beim Ersetzen (§12 Frage 10). Die Demo hat dafür Adressen „Bahnhofstr.“ und „Hauptstr.“.
+S2c: Browser-Test SAE-08 bis SAE-11, manuelle Testfälle SAE-08 bis SAE-12, Handbücher. Zurückgestellt: Felder
+verknüpfter Datensätze in Formeln (B-166), Text- und Datumsergebnisse (B-167), Auf- und Abrunden (B-168). Keine
+Migration, keine neuen Rechte, Plugin-API unverändert.
+
 ## 11. Entscheidungen zu den offenen Fragen (27.11.2026: alle Empfehlungen angenommen)
 
 1. **Obergrenze 500 synchron oder Arbeit?** *Empfehlung:* Arbeit von Anfang an, gestartet mit `startAndAdvance()`,
@@ -313,7 +325,12 @@ keine Adresse mit „Str.“.
     Vor und nach dem Treffer steht kein Buchstabe, keine Ziffer, kein `_`. So passt „Str.“ in „Str. des 1. Mai“, aber
     nicht in „Hauptstr. 5“; ein einfaches `\b` versagte am Punkt. Für „Hauptstr. 5“ → „Hauptstrasse 5“ sucht man
     ohne „ganzes Wort“ mit Gross-/Kleinschreibung „str.“ und ersetzt durch „strasse“. Intern darf das ein Muster mit `preg_quote()` sein.
-    Die Person gibt nie einen regulären Ausdruck ein. Ersetzt werden **alle** Treffer im Wert.
+    Die Person gibt nie einen regulären Ausdruck ein. Ersetzt werden **alle** Treffer im Wert. *Ergänzt nach der Prüfung
+    in der Demo (27.11.2026):* drittes Häkchen **„Schreibweise übernehmen“**. Ist der Treffer ganz gross (ab zwei
+    Buchstaben), wird auch der Ersatz ganz gross geschrieben; beginnt er gross, beginnt auch der Ersatz gross, sonst
+    klein. So erledigt „str.“ → „strasse“ „Bahnhofstr.“ und „Str. des 1. Mai“ in einem Lauf statt in zwei. Mehrere
+    Paare Suchen → Ersetzen je Feld gibt es bewusst nicht (Dialog und Vorschau würden schwer); je Feld und Lauf bleibt
+    es ein Suchtext.
 11. **Ersetzen bzw. Rechnen bei eindeutigen Feldern.** *Empfehlung:* *ersetzen*, *rechnen* und *Formel* sind auf
     eindeutigen Feldern **erlaubt** (heute nur *leeren*), weil die Werte je Datensatz verschieden bleiben können (z. B.
     Vertragsnummer „MV-“ → „MV-2026-“). *setzen* bleibt verboten. Doppelte erkennt die Prüfphase. Dazu führt die
@@ -333,6 +350,6 @@ keine Adresse mit „Str.“.
 14. **Ergebnis und Protokoll.** *Empfehlung:* Die Meldung der Arbeit nennt zusätzlich „ohne Wert“ bzw. „ohne Treffer“
     getrennt von „schon so“. Das Protokoll ist unverändert (alter und neuer Wert je Feld). In den Parametern der
     Arbeit stehen Art und Angaben (`op: calc`, `operator`, `operand`, `round`; `op: replace`, `search`, `replace`,
-    `case`, `word`; `op: formula`, `formula`), damit S3 sie anzeigen kann.
+    `case`, `word`, `keep`; `op: formula`, `formula`), damit S3 sie anzeigen kann.
 15. **Rechte, Plugin-API, Migrationen.** *Empfehlung:* keine neuen Rechte, keine Migration. Die Plugin-API ist nicht
     betroffen (`BulkChange`, `Evaluator`, `FormulaAnalyzer` und `RecordChecker` stehen nicht im `ApiManifest`, geprüft 27.11.2026).

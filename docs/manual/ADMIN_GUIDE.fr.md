@@ -272,8 +272,10 @@ tables dont les enregistrements ne doivent être modifiés qu’un par un (p. ex
 groupée contrôle chaque enregistrement comme la modification manuelle, règles de validation et plugins compris, et c’est
 tout ou rien. Elle s’exécute comme [travail](#travaux), au maximum 5 000 enregistrements par modification groupée
 (`APP_DATA_BULK_MAX`, `0` = sans limite) ; l’historique indique « (modification groupée) ». Les plages de numéros, les
-champs calculés et les fichiers ne sont pas modifiables ; les champs uniques ne peuvent qu’être vidés. Les tables liées
-n’ont pas de modification groupée.
+champs calculés et les fichiers ne sont pas modifiables ; les champs uniques ne peuvent pas être définis, mais vidés,
+remplacés ou calculés (le contrôle signale les résultats en double). Outre *définir* et *vider*, il y a *calculer*
+(nombre, date), *remplacer* (texte) et *formule* (nombre, oui/non, dans le langage de formules des champs calculés ; une
+division par 0 y est une erreur). Les tables liées n’ont pas de modification groupée.
 
 **Modifier les champs** (zone *Champs*, (2)) : pour chaque champ, vous définissez :
 

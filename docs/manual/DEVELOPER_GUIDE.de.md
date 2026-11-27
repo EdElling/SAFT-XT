@@ -560,7 +560,10 @@ angelegt oder geändert).
   `RecordRejected` in der Prüfphase verhindert die ganze Sammeländerung, nichts wird geändert. Wirkungen nach aussen
   (E-Mail, Webhook, Dateien ausserhalb der Datenbank) melden Sie deshalb mit `Saft::afterCommit()` an; in der
   Prüfphase verfallen sie. Scheitert die Schreibphase, schreibt SAFT die alten Werte **ohne** Plugin-Ereignisse
-  zurück. Ob eine Änderung aus einer Sammeländerung kommt, steht im Protokolleintrag (`via: bulk`).
+  zurück. Ob eine Änderung aus einer Sammeländerung kommt, steht im Protokolleintrag (`via: bulk`). Bei den Arten
+  *rechnen*, *ersetzen* und *Formel* rechnet SAFT den neuen Wert je Datensatz (`App\DynamicData\Bulk\BulkChange::resolve()`)
+  vor Ihrem Listener; er sieht ihn wie einen eingegebenen Wert. Datensätze ohne Wert bzw. ohne Treffer speichert SAFT
+  gar nicht, Ihr Listener sieht sie also nicht.
 - **Folgeänderungen** in `RecordSaved` und `RecordDeleted` schreiben Sie über `Saft::table(…)`. Sie laufen immer in
   derselben Transaktion wie die auslösende Änderung (seit API 1.10, Datensatz, Summen, Dateien und Protokoll): Wirft ein
   Listener dort eine Ausnahme, wird auch die auslösende Änderung zurückgerollt. Lösen Sie selbst Ereignisse aus, achten
@@ -629,6 +632,9 @@ public function formulaFunctions(): array
   Auswertungs-Designers gibt es sie nicht (diese werden zu SQL); berechnete Felder, die sie verwenden, lassen sich aber
   normal auswerten, ihr Wert ist gespeichert.
 - Wirft die Funktion eine Ausnahme, bleibt das Ergebnis leer und der Fehler steht im Log – das Speichern scheitert nicht.
+- Auch die Art **Formel** der Sammeländerung kennt die Funktion (Kontext „Sammeländerung“ der Spezifikation). Dort rechnet
+  SAFT streng (`Evaluator::evaluateStrict()`): Eine Division durch 0 ist ein Fehler je Datensatz; für Ihre Funktion
+  gelten dieselben Regeln wie oben.
 
 **Prüfregeln** für Felder liefert `fieldRules()`:
 

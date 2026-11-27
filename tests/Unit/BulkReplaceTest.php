@@ -42,4 +42,15 @@ class BulkReplaceTest extends TestCase
         $this->assertNull(BulkReplace::apply(' tmp ', 'tmp', '', false, false), 'nur Leerzeichen gilt als leer');
         $this->assertSame('Bahnhof', BulkReplace::apply('Bahnhof (alt)', ' (alt)', '', false, false));
     }
+
+    public function test_keep_case_follows_the_match(): void
+    {
+        $this->assertSame('Bahnhofstrasse 3, Strasse des 1. Mai, STRASSE 2', BulkReplace::apply('Bahnhofstr. 3, Str. des 1. Mai, STR. 2', 'str.', 'strasse', false, false, true));
+        $this->assertSame('Strasse des 1. Mai', BulkReplace::apply('Str. des 1. Mai', 'str.', 'strasse', false, true, true), 'mit ganzem Wort');
+        $this->assertSame('Ölweg', BulkReplace::apply('Ö-weg', 'ö-', 'öl', false, false, true), 'Unicode');
+        $this->assertSame('A Weg', BulkReplace::apply('A Str.', 'str.', 'Weg', false, false, true), 'grosser Anfang');
+        $this->assertSame('x weg', BulkReplace::apply('x str.', 'str.', 'Weg', false, false, true), 'kleiner Anfang macht den Ersatz klein');
+        $this->assertSame('Nr 5', BulkReplace::apply('# 5', '#', 'Nr', false, false, true), 'Treffer ohne Buchstaben: Ersatz wie eingegeben');
+        $this->assertSame('Preis $1', BulkReplace::apply('Preis ?', '?', '$1', false, false, true));
+    }
 }

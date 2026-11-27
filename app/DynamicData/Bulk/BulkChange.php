@@ -83,6 +83,7 @@ final class BulkChange
                     'replace' => is_scalar($change['replace'] ?? null) ? (string) $change['replace'] : '',
                     'case' => (bool) ($change['case'] ?? false),
                     'word' => (bool) ($change['word'] ?? false),
+                    'keep' => (bool) ($change['keep'] ?? false),
                 ],
                 self::FORMULA => ['op' => $op, 'formula' => trim(is_scalar($change['formula'] ?? null) ? (string) $change['formula'] : '')],
                 default => ['op' => $op, 'value' => null],
@@ -312,7 +313,7 @@ final class BulkChange
                     self::CALC => self::isDate($field)
                         ? BulkCalc::shift($current, $change['operator'], (int) $change['operand'], $field->type === FieldType::DateTime)
                         : BulkCalc::calculate($current, $change['operator'], (string) BulkCalc::number($change['operand']), self::scale($field), $change['round_mode'], $change['round_mode'] === BulkCalc::ROUND_MULTIPLE ? BulkCalc::number($change['round_value']) : $change['round_value']),
-                    self::REPLACE => BulkReplace::apply($current, $change['search'], $change['replace'], $change['case'], $change['word']),
+                    self::REPLACE => BulkReplace::apply($current, $change['search'], $change['replace'], $change['case'], $change['word'], $change['keep']),
                     self::FORMULA => $this->formulaValue($field, BulkFormula::evaluate($this->formula($field), $record)),
                     default => null,
                 };

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\DynamicData\Ui;
 
 use App\Apps\CurrentApp;
+use App\DynamicData\Bulk\BulkCalc;
 use App\DynamicData\Bulk\BulkChange;
+use App\DynamicData\Bulk\BulkFormula;
 use App\DynamicData\Bulk\BulkPreview;
 use App\DynamicData\DataAccess;
 use App\DynamicData\Schema\FieldType;
@@ -24,6 +26,8 @@ use Filament\Actions\BulkAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Group;
@@ -225,6 +229,9 @@ final class BulkRecordActions
     }
 
     /**
+     * Je änderbarem Feld eine Zeile: Häkchen, Art und die Eingaben der Art (setzen: Eingabefeld des Feldtyps; rechnen:
+     * Rechenart, Zahl bzw. Tage/Monate, Runden; ersetzen: Suchtext, Ersatz, zwei Häkchen; Formel: Formeltext).
+     *
      * @param  list<string>  $locked
      * @return list<Group>
      */
@@ -234,13 +241,11 @@ final class BulkRecordActions
         $rows = [];
 
         foreach (BulkChange::editableFields($table, $locked) as $name => $field) {
-            $ops = array_values(array_intersect(BulkChange::ops($field), [BulkChange::SET, BulkChange::CLEAR]));
-
-            if ($ops === []) {
-                continue;
-            }
+            $ops = BulkChange::ops($field);
             $isOn = static fn (Get $get): bool => (bool) $get('on');
             $op = static fn (Get $get): string => (string) ($get('op') ?? $ops[0]);
+            $shows = static fn (string $which): \Closure => static fn (Get $get): bool => $isOn($get) && $op($get) === $which;
+            $text = in_array($field->type, [FieldType::String, FieldType::Text, FieldType::Integer, FieldType::Decimal], true);
 
             $rows[] = Group::make([
                 Checkbox::make('on')->label($field->label)->live(),
@@ -252,17 +257,99 @@ final class BulkRecordActions
                     ->grouped()
                     ->live()
                     ->disabled(count($ops) === 1)
-                    ->visible($isOn),
+                    ->visible($isOn)
+                    ->columnSpan(['default' => 1, 'md' => 2]),
                 $builder->single($table, $field)
                     ->hiddenLabel()
                     // Vorschau: Auswahl, Datum, Ja/Nein sofort; Texteingaben beim Verlassen des Felds.
-                    ->live(onBlur: in_array($field->type, [FieldType::String, FieldType::Text, FieldType::Integer, FieldType::Decimal], true))
-                    ->visible(static fn (Get $get): bool => $isOn($get) && $op($get) === BulkChange::SET)
-                    ->columnSpan(['default' => 1, 'md' => 1]),
+                    ->live(onBlur: $text)
+                    ->visible($shows(BulkChange::SET))
+                    ->columnSpanFull(),
+                ...(BulkChange::canCalc($field) ? [self::calcInputs($field)->visible($shows(BulkChange::CALC))] : []),
+                ...(BulkChange::canReplace($field) ? [self::replaceInputs()->visible($shows(BulkChange::REPLACE))] : []),
+                ...(BulkChange::canFormula($field) ? [self::formulaInput($table, $field)->visible($shows(BulkChange::FORMULA))] : []),
             ])->statePath(self::STATE.'.'.$name)->columns(['default' => 1, 'md' => 3]);
         }
 
         return $rows;
+    }
+
+    /** Rechnen: Zahl + − × ÷ um % mit Runden; Datum ± Tage oder Monate. */
+    private static function calcInputs(CustomField $field): Group
+    {
+        $date = BulkChange::isDate($field);
+        $operators = $date ? BulkCalc::DATE_OPERATORS : BulkCalc::NUMBER_OPERATORS;
+        $scale = BulkChange::scale($field);
+
+        return Group::make([
+            Select::make('operator')
+                ->label(__('data.bulk.calc.operator'))
+                ->options(collect($operators)->mapWithKeys(static fn (string $o): array => [$o => __("data.bulk.calc.operators.{$o}")])->all())
+                ->default($operators[0])
+                ->selectablePlaceholder(false)
+                ->live(),
+            TextInput::make('operand')
+                ->label(static fn (Get $get): string => __($date ? 'data.bulk.calc.amount_'.(str_ends_with((string) $get('operator'), 'months') ? 'months' : 'days') : 'data.bulk.calc.operand'))
+                ->suffix(static fn (Get $get): ?string => $get('operator') === 'percent' ? '%' : null)
+                ->inputMode($date ? 'numeric' : 'decimal')
+                ->live(onBlur: true),
+            ...($date ? [] : [
+                Select::make('round_mode')
+                    ->label(__('data.bulk.calc.round'))
+                    ->options([
+                        '' => trans_choice('data.bulk.calc.round_field', $scale, ['count' => $scale]),
+                        BulkCalc::ROUND_DIGITS => __('data.bulk.calc.round_digits'),
+                        BulkCalc::ROUND_MULTIPLE => __('data.bulk.calc.round_multiple'),
+                    ])
+                    ->default('')
+                    ->selectablePlaceholder(false)
+                    ->live(),
+                TextInput::make('round_value')
+                    ->label(static fn (Get $get): string => __($get('round_mode') === BulkCalc::ROUND_MULTIPLE ? 'data.bulk.calc.multiple' : 'data.bulk.calc.digits'))
+                    ->placeholder(static fn (Get $get): string => $get('round_mode') === BulkCalc::ROUND_MULTIPLE ? '0.05' : (string) $scale)
+                    ->inputMode('decimal')
+                    ->visible(static fn (Get $get): bool => filled($get('round_mode')))
+                    ->live(onBlur: true),
+            ]),
+        ])->columns(['default' => 1, 'md' => 4])->columnSpanFull();
+    }
+
+    /** Ersetzen: Suchtext → Ersatz, „Gross-/Kleinschreibung beachten“, „nur ganzes Wort“, „Schreibweise übernehmen“. */
+    private static function replaceInputs(): Group
+    {
+        return Group::make([
+            TextInput::make('search')->label(__('data.bulk.replace.search'))->live(onBlur: true),
+            TextInput::make('replace')->label(__('data.bulk.replace.replace'))->live(onBlur: true),
+            Group::make([
+                Checkbox::make('case')->label(__('data.bulk.replace.case'))->live(),
+                Checkbox::make('word')->label(__('data.bulk.replace.word'))->live(),
+                Checkbox::make('keep')->label(__('data.bulk.replace.keep'))->helperText(__('data.bulk.replace.keep_help'))->live(),
+            ])->columnSpanFull()->columns(['default' => 1, 'md' => 3]),
+        ])->columns(['default' => 1, 'md' => 2])->columnSpanFull();
+    }
+
+    /** Formel: geprüft beim Verlassen des Felds, Fehler mit Stelle darunter. */
+    private static function formulaInput(CustomTable $table, CustomField $field): TextInput
+    {
+        return TextInput::make('formula')
+            ->label(__('data.bulk.formula.label'))
+            ->placeholder($field->name.' * 1.05')
+            ->helperText(static function (?string $state) use ($table, $field): string {
+                if (blank($state)) {
+                    return __('data.bulk.formula.help', ['field' => $field->name]);
+                }
+
+                try {
+                    BulkFormula::compile($table, $state);
+
+                    return __('data.bulk.formula.ok');
+                } catch (BusinessRuleException $e) {
+                    return $e->getMessage();
+                }
+            })
+            ->extraInputAttributes(['class' => 'font-mono', 'spellcheck' => 'false'])
+            ->live(onBlur: true)
+            ->columnSpanFull();
     }
 
     /**
@@ -270,7 +357,7 @@ final class BulkRecordActions
      *
      * @param  list<string>  $locked
      * @param  array<string, mixed>  $state
-     * @return array<string, array{op: string, value: mixed}>
+     * @return array<string, array<string, mixed>>
      */
     private static function changes(CustomTable $table, array $locked, array $state): array
     {
@@ -283,8 +370,15 @@ final class BulkRecordActions
                 continue;
             }
 
-            $op = (string) ($row['op'] ?? (BulkChange::canSet($field) ? BulkChange::SET : BulkChange::CLEAR));
-            $changes[$name] = ['op' => $op, 'value' => $op === BulkChange::SET ? ($row[$name] ?? null) : null];
+            $op = (string) ($row['op'] ?? BulkChange::ops($field)[0]);
+            $changes[$name] = match ($op) {
+                BulkChange::SET => ['op' => $op, 'value' => $row[$name] ?? null],
+                BulkChange::CALC => ['op' => $op, 'operator' => $row['operator'] ?? (BulkChange::isDate($field) ? BulkCalc::DATE_OPERATORS[0] : BulkCalc::NUMBER_OPERATORS[0]),
+                    'operand' => $row['operand'] ?? '', 'round_mode' => $row['round_mode'] ?? null, 'round_value' => $row['round_value'] ?? null],
+                BulkChange::REPLACE => ['op' => $op, 'search' => $row['search'] ?? '', 'replace' => $row['replace'] ?? '', 'case' => (bool) ($row['case'] ?? false), 'word' => (bool) ($row['word'] ?? false), 'keep' => (bool) ($row['keep'] ?? false)],
+                BulkChange::FORMULA => ['op' => $op, 'formula' => $row['formula'] ?? ''],
+                default => ['op' => $op, 'value' => null],
+            };
         }
 
         return $changes;
@@ -313,6 +407,10 @@ final class BulkRecordActions
             'rows' => [],
             'hints' => [],
             'empty' => $changes === [],
+            'invalid' => null,
+            'counts' => ['changing' => 0, 'unchanged' => 0, 'skipped' => 0, 'failed' => 0],
+            'partial' => false,
+            'scan' => BulkPreview::SCAN,
         ];
 
         if ($changes === [] || $data['tooMany']) {
@@ -320,10 +418,20 @@ final class BulkRecordActions
         }
 
         $change = BulkChange::fromArray($table, $changes, $locked);
+
+        // Noch unvollständig (Zahl fehlt, Formel fehlerhaft): die Meldung statt der Beispiele.
+        try {
+            $change->validate();
+        } catch (BusinessRuleException $e) {
+            return [...$data, 'invalid' => $e->getMessage()];
+        }
+
         $preview = BulkPreview::for($change, $ids);
         $fields = $table->fields->keyBy('name');
         $data['columns'] = array_map(static fn (string $name): string => (string) ($fields[$name]->label ?? $name), $change->fieldNames());
         $data['hints'] = $preview->hints;
+        $data['counts'] = $preview->counts;
+        $data['partial'] = $preview->partial;
 
         foreach ($preview->examples as $example) {
             $cells = [];
@@ -334,6 +442,7 @@ final class BulkRecordActions
                 $cells[] = [
                     'before' => DynamicValueFormatter::display($field, $example['original']) ?? '—',
                     'after' => DynamicValueFormatter::display($field, $example['record']) ?? '—',
+                    'error' => $example['errors'][$name] ?? null,
                 ];
             }
 

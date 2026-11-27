@@ -252,8 +252,10 @@ records are removed again. The import runs as a [job](#jobs) in two phases (chec
 for roles with the **Edit** permission. Switch it off for tables whose records should only be changed one at a time
 (e.g. sent invoices). A bulk edit checks every record like editing by hand, including validation rules and plugins, and
 it is all or nothing. It runs as a [job](#jobs), at most 5,000 records per bulk edit (`APP_DATA_BULK_MAX`, `0` = no
-limit); the history shows “(bulk edit)”. Number sequences, computed fields and files cannot be changed; unique fields
-can only be cleared. Linked tables have no bulk edit.
+limit); the history shows “(bulk edit)”. Besides *set* and *clear* there are *calculate* (number, date), *replace* (text)
+and *formula* (number, yes/no, in the formula language of computed fields; a division by 0 is an error there). Number
+sequences, computed fields and files cannot be changed; unique fields cannot be set but can be cleared, replaced or
+calculated (the check reports duplicate results). Linked tables have no bulk edit.
 
 **Editing fields** (area *Fields*, (2)): for every field you set:
 
