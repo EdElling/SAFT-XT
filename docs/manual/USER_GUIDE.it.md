@@ -709,6 +709,11 @@ esportare la selezione o modificarla di nuovo. Questa vista non viene salvata: l
 filtri»** o **«Reimposta vista»** riportano alla vista salvata con i filtri precedenti, così come la prossima apertura
 della tabella dal menu.
 
+**Azioni di gruppo dei plugin:** i plugin possono aggiungere altre azioni per i record selezionati nella barra sopra la
+tabella, p. es. «Generare le lezioni» per i corsi selezionati della scuola di musica; il tooltip indica il plugin. Cosa
+fanno è descritto nel manuale del plugin. Non compaiono in «Ultime modifiche multiple» e non vi si possono annullare.
+Vale anche per loro il limite per azione di gruppo; con il filtro del cestino non vengono offerte.
+
 Il pulsante «Modifica …» è visibile con il diritto *Modificare* se l’amministrazione consente la modifica multipla per
 la tabella. Al massimo 5’000 record per modifica multipla, salvo diversa impostazione dell’amministrazione.
 

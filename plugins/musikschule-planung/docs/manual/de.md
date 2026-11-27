@@ -75,11 +75,13 @@ von *Warteliste* auf *aktiv* setzen; wer nicht weitermacht, wird *abgemeldet*.
 ## Lektionen erzeugen
 
 Statt jede Lektion einzeln zu erfassen, legt SAFT sie für einen Zeitraum **wöchentlich** an – am Wochentag des Kurses,
-mit seiner Lehrperson und der Dauer der Kursart. Den Dialog **Lektionen erzeugen** gibt es an drei Stellen:
+mit seiner Lehrperson und der Dauer der Kursart. Den Dialog **Lektionen erzeugen** gibt es an vier Stellen:
 
 - in der Zeile eines **Kurses** (nur dieser Kurs),
 - in der Zeile eines **Semesters** (alle seine Kurse),
 - über der Tabelle **Kurse** (alle Kurse des gewählten Semesters, vorbelegt das laufende).
+- für die **ausgewählten Kurse**: Kurse in der Tabelle **Kurse** anhaken, dann **Lektionen erzeugen** in der Leiste
+  über der Tabelle (der Zeitraum richtet sich nach dem gemeinsamen Semester, bei mehreren Semestern nach dem laufenden).
 
 Im Dialog wählen Sie **Von** und **Bis** – vorbelegt ab heute, wenn das Semester läuft, sonst ab Semesterbeginn, bis
 Semesterende – und ob **Ferien und Feiertage übersprungen** werden. Die **Vorschau** nennt vorher, was geschieht, z. B.

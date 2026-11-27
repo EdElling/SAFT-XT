@@ -1,6 +1,6 @@
 # Konzept: Datensätze auswählen und Sammeländerung in SAFT XT
 
-Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2 umgesetzt 27.11.2026, S3 umgesetzt 27.11.2026 (§13), S4 entschieden (§14), S4a und S4c umgesetzt 27.11.2026, S4b offen** · Backlog: B-133
+Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2 umgesetzt 27.11.2026, S3 umgesetzt 27.11.2026 (§13), S4 umgesetzt 27.11.2026 (§14)** · Backlog: B-133
 (ersetzt B-024)
 
 > **Überarbeitung 27.11.2026:** Seit dem Entwurf vom 23.11.2026 gibt es Fundament 2 und die Nummernkreise. Der
@@ -246,7 +246,7 @@ Datensätzen bestehen kann. Zurückgestellt: Datensätze einer Sammeländerung i
 Browser-Test SAE-13 und SAE-14, manuelle Testfälle SAE-13 bis SAE-16, Handbücher. Keine neuen Rechte, Plugin-API
 unverändert.
 
-**Stand S4 (27.11.2026): S4a und S4c umgesetzt, S4b offen** nach den Entscheidungen in §14. S4a: Sammelaktion
+**Stand S4 (27.11.2026): umgesetzt** nach den Entscheidungen in §14. S4a: Sammelaktion
 „Auswahl exportieren“ (`DynamicRecordActions::exportSelected()`, Gruppe mit XLSX und CSV) in Datenansicht und
 Detailtabellen; Abfrage aus `getSelectedRecordsQuery()` (Auswahl über alle Seiten minus Abgewählte, Filter, Suche,
 Sortierung der Tabelle), Start der Arbeit `export` mit dem Kopf-Export geteilt (`startExport()`), Parameter `selected`
@@ -257,7 +257,12 @@ Rechte wie die Liste, mit Papierkorb für Personen mit *Löschen*), geöffnet ü
 `endTransientTableView()`, Merker in der Sitzung; nichts gespeichert, Beenden über das Kärtchen, „Alle Filter löschen“,
 „Ansicht zurücksetzen“ oder einen Aufruf ohne `?bulk=` lädt den gespeicherten Stand). Bei der Umsetzung gefunden: Ein
 Zurücksetzen des Merkers vor der Weiterleitung hätte am Ende der Anfrage den vorübergehenden Stand gespeichert. Keine
-Migration, keine neuen Rechte, Plugin-API unverändert. Zurückgestellt: B-179 (`DataTable::updateMany()`), B-180
+Migration, keine neuen Rechte. S4b: `DataAction::BULK` (Plugin-API 1.11, Schnappschuss nur um die Konstante erweitert);
+`PluginRegistry::dataActions()` gibt Sammelaktionen nur bei einfachem Schlüssel aus, meldet eine andere Aktion als
+`BulkAction` mit Plugin-Namen ins Fehlerprotokoll und rahmt sie ein (`guardBulk()`: im Papierkorb-Filter ausgeblendet,
+Grenze vor dem eigenen `before()` des Plugins mit der Meldung „je Sammelaktion“, Auswahl danach aufheben; eigene
+`hidden()`/`before()` bleiben). Pilot `musikschule-planung` 1.2.0: „Lektionen erzeugen“ für die ausgewählten Kurse
+(Zeitraum aus dem gemeinsamen Semester, sonst das laufende). Entscheidung Nr. 29 in ARCHITECTURE. Zurückgestellt: B-179 (`DataTable::updateMany()`), B-180
 (angebundene Tabellen), B-181 („ohne die fehlerhaften ändern“), B-182 (`Saft::startWork()` mit kleinen Mengen im
 Request).
 

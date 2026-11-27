@@ -709,6 +709,11 @@ weiter filtern, die Auswahl exportieren oder erneut ändern. Diese Ansicht wird 
 **„Alle Filter löschen“** oder **„Ansicht zurücksetzen“** führt zurück zu Ihrer gespeicherten Ansicht mit Ihren
 bisherigen Filtern, ebenso der nächste Aufruf der Tabelle über das Menü.
 
+**Sammelaktionen aus Plugins:** Plugins können weitere Aktionen für die ausgewählten Datensätze in die Leiste über der
+Tabelle bringen, z. B. „Lektionen erzeugen“ für die angehakten Kurse der Musikschule; der Tooltip nennt das Plugin. Was
+sie tun, beschreibt das Handbuch des Plugins. Sie erscheinen nicht unter „Letzte Sammeländerungen“ und lassen sich dort
+nicht zurücknehmen. Auch für sie gilt die Obergrenze je Sammelaktion; im Papierkorb-Filter werden sie nicht angeboten.
+
 Den Knopf „Ändern …“ sehen Sie mit dem Recht *Bearbeiten*, wenn die Administration die Sammeländerung für die Tabelle
 erlaubt. Höchstens 5'000 Datensätze je Sammeländerung, sofern die Administration nichts anderes einstellt.
 

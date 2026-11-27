@@ -74,11 +74,13 @@ list* to *active*; those who do not continue are set to *withdrawn*.
 ## Generating lessons
 
 Instead of recording each lesson individually, SAFT creates them **weekly** for a period – on the course's weekday,
-with its teacher and the duration of its course type. The dialog **Generate lessons** is available in three places:
+with its teacher and the duration of its course type. The dialog **Generate lessons** is available in four places:
 
 - in a **course's** row (this course only),
 - in a **semester's** row (all its courses),
 - above the table **Courses** (all courses of the chosen semester, default: the current one).
+- for the **selected courses**: tick courses in the table **Courses**, then **Generate lessons** in the bar above the
+  table (the period follows their common semester, or the current one if they belong to several).
 
 In the dialog, choose **From** and **To** – by default from today if the semester is running, otherwise from the start
 of the semester, until its end – and whether to **skip holidays**. The **preview** tells you beforehand what will

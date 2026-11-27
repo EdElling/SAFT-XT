@@ -336,6 +336,8 @@ class DynamicDataPage extends Page implements HasTable
                 DynamicRecordActions::documentBulk($customTable),
                 BulkRecordActions::delete($customTable),
                 BulkRecordActions::restore($customTable),
+                // Sammelaktionen aus Plugins (B-133 S4b, DataAction::BULK).
+                ...app(PluginRegistry::class)->dataActions($customTable, DataAction::BULK),
             ])
             ->emptyStateHeading(__('data.empty'));
     }

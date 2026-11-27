@@ -1,5 +1,5 @@
 {
-    "version": "1.10",
+    "version": "1.11",
     "surface": {
         "App\\DynamicData\\Write\\StaleRecordException": [
             "class extends App\\Exceptions\\BusinessRuleException",
@@ -29,6 +29,7 @@
         ],
         "App\\Plugins\\Api\\DataAction": [
             "class",
+            "const BULK = \"bulk\"",
             "const RECORD = \"record\"",
             "const TABLE = \"table\"",
             "function __construct(string $table, string $placement, Closure $make)",

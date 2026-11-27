@@ -80,6 +80,7 @@ final class MusikschulePlanungPlugin extends SaftPlugin
             new DataAction(School::SEMESTERS, DataAction::RECORD, static fn () => LessonAction::make(LessonAction::SEMESTER)),
             new DataAction(School::COURSES, DataAction::RECORD, static fn () => LessonAction::make(LessonAction::COURSE)),
             new DataAction(School::COURSES, DataAction::TABLE, static fn () => LessonAction::make(LessonAction::ALL)),
+            new DataAction(School::COURSES, DataAction::BULK, static fn () => LessonAction::make(LessonAction::SELECTED)),
             new DataAction(School::LESSONS, DataAction::RECORD, static fn () => Action::make('musikschulePraesenz')
                 ->label(__('musikschule-planung::planung.attendance.title'))
                 ->icon('heroicon-o-clipboard-document-check')

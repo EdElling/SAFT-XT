@@ -75,11 +75,13 @@ la cible), rien n’est repris et le message en donne la raison.
 ## Créer les leçons
 
 Au lieu de saisir chaque leçon séparément, SAFT les crée **chaque semaine** pour une période – le jour du cours, avec
-son enseignant et la durée de son type de cours. La boîte de dialogue **Créer les leçons** se trouve à trois endroits :
+son enseignant et la durée de son type de cours. La boîte de dialogue **Créer les leçons** se trouve à quatre endroits :
 
 - dans la ligne d’un **cours** (ce cours seulement),
 - dans la ligne d’un **semestre** (tous ses cours),
 - au-dessus de la table **Cours** (tous les cours du semestre choisi, par défaut : le semestre en cours).
+- pour les **cours sélectionnés** : cochez des cours dans la table **Cours**, puis **Créer les leçons** dans la barre
+  au-dessus du tableau (la période suit leur semestre commun, ou le semestre en cours s’ils en ont plusieurs).
 
 Dans la boîte de dialogue, choisissez **Du** et **Au** – par défaut à partir d’aujourd’hui si le semestre est en cours,
 sinon dès le début du semestre, jusqu’à sa fin – et s’il faut **sauter vacances et jours fériés**. L’**aperçu** indique à

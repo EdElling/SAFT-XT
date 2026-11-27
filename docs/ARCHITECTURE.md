@@ -184,7 +184,7 @@ the plugin. Core classes are created through the container.
 | Extension | Contract | Registration |
 |---|---|---|
 | **Plugin** | `App\Plugins\SaftPlugin` (permissions, menu suggestions, required tables, pages, resources, widgets, manuals) | Composer package under `plugins/` or from its own repository with a `PluginServiceProvider`; dormant when dependencies are missing |
-| **Plugin API** | `App\Plugins\Api\*` (`Saft`, `DataTable`, events, `RecordListener`, `DataAction`, `FormulaFunction`, `FieldRule`, `DashboardWidget`, `Manual`) and the contracts marked `@api` | `ApiManifest` lists the guaranteed classes; `PluginApiContractTest` compares signatures with `plugin-api.json`; own version number (1.10), plugins state the version they require |
+| **Plugin API** | `App\Plugins\Api\*` (`Saft`, `DataTable`, events, `RecordListener`, `DataAction`, `FormulaFunction`, `FieldRule`, `DashboardWidget`, `Manual`) and the contracts marked `@api` | `ApiManifest` lists the guaranteed classes; `PluginApiContractTest` compares signatures with `plugin-api.json`; own version number (1.11), plugins state the version they require |
 | **Scheduled task type** | `App\Tasks\TaskType` (`key`, parameter fields, `run()` without a person) | `config/tasks.php` or `SaftPlugin::taskTypes()` |
 | **Work type** | `App\Work\WorkType` (`prepare()`, `step()`), optionally `WritesRecords`, `CleansUp`, `LongSteps`, `DescribesProgress` | `config/work.php` or `SaftPlugin::workTypes()`; started with `WorkService` or `Saft::startWork()` |
 | **Formula function** | `App\Plugins\Api\FormulaFunction` (name, arguments, evaluation in PHP; blocked for SQL when not translatable) | `SaftPlugin::formulaFunctions()` |
@@ -393,3 +393,16 @@ no. n".
     an index and see failed runs; a copy of the old values would be a second truth. *Consequence:* without a change log
     (`ACTIVITYLOG_ENABLED=false`) there is no undo; entries from before 0.8.1 with UTC dates are converted to the
     application time zone by `LoggedValue` (requires an unchanged `APP_TIMEZONE`).
+
+29. **Bulk actions from plugins without a header, connected tables without bulk edit** (27 November 2026, B-133 S4).
+    `DataAction::BULK` (plugin API 1.11) is a Filament `BulkAction` receiving the selected records; SAFT only provides
+    the frame (single key, not with the trash filter, limit `APP_DATA_BULK_MAX`, clear the selection afterwards). It
+    writes with origin `plugin`, without a `run` identifier, without a header in `bulk_changes` and without “Undo”;
+    business processes over many records run as plugin jobs (`Saft::startWork()`). Connected tables get no bulk edit,
+    but they do get “Export selection”. *Why:* plugin runs write to other tables, create records and send messages;
+    `bulk_changes` belongs to one table and only reverts field values. The general header per identifier with undo is
+    designed by the run log of the rule engine (B-142 R3b, RULES.md §8.7, AI_AGENTS.md V7); a solution of its own would
+    be a second one. For connected tables the trial run (no. 27) does not roll back without transactions (MyISAM) or with
+    triggers that act outside, deleting is final, and triggers distort the comparison of the undo. *Consequence:* plugin
+    bulk actions cannot be undone via “Recent bulk edits” (manuals); `DataTable::updateMany()` (B-179) and connected
+    tables (B-180) stay in the backlog.

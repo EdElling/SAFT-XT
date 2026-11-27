@@ -184,6 +184,7 @@ return [
             'required' => '„:field“ ist ein Pflichtfeld und braucht einen Wert.',
             'not_allowed' => 'Sammeländerungen sind in dieser Tabelle nicht erlaubt, oder Ihnen fehlt das Recht „ändern“.',
             'too_many' => ':count Datensätze ausgewählt; höchstens :max sind je Sammeländerung möglich. Bitte den Filter eingrenzen.',
+            'too_many_action' => ':count Datensätze ausgewählt; höchstens :max sind je Sammelaktion möglich. Bitte den Filter eingrenzen.',
             'operator' => '„:field“: Wählen Sie, wie gerechnet wird.',
             'operand' => '„:field“: Geben Sie eine Zahl ein.',
             'days' => '„:field“: Geben Sie eine ganze Zahl von 0 bis :max ein.',

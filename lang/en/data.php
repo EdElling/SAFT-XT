@@ -184,6 +184,7 @@ return [
             'required' => '“:field” is required and needs a value.',
             'not_allowed' => 'Bulk edits are not allowed in this table, or you lack the “edit” permission.',
             'too_many' => ':count records selected; at most :max are possible per bulk edit. Please narrow the filter.',
+            'too_many_action' => ':count records selected; at most :max are possible per bulk action. Please narrow the filter.',
             'operator' => '“:field”: Choose how to calculate.',
             'operand' => '“:field”: Enter a number.',
             'days' => '“:field”: Enter a whole number from 0 to :max.',

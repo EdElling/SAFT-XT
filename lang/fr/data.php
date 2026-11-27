@@ -184,6 +184,7 @@ return [
             'required' => '« :field » est obligatoire et doit avoir une valeur.',
             'not_allowed' => 'Les modifications groupées ne sont pas autorisées dans cette table, ou vous n’avez pas le droit « modifier ».',
             'too_many' => ':count enregistrements sélectionnés ; au maximum :max par modification groupée. Veuillez restreindre le filtre.',
+            'too_many_action' => ':count enregistrements sélectionnés ; au maximum :max par action groupée. Veuillez restreindre le filtre.',
             'operator' => '« :field » : choisissez comment calculer.',
             'operand' => '« :field » : saisissez un nombre.',
             'days' => '« :field » : saisissez un nombre entier de 0 à :max.',

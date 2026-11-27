@@ -57,7 +57,7 @@ A plugin is an ordinary **Composer package** with a plugin class and a service p
 | Kinds of scheduled tasks | classes implementing `App\Tasks\TaskType` |
 
 **What is guaranteed:** the programming interface for plugins (plugin API) has its **own version number**,
-independent of SAFT – currently **1.10**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
+independent of SAFT – currently **1.11**. Guaranteed are the classes `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, all classes under `App\Plugins\Api` (except
 `ApiManifest`), the test base `App\Plugins\Testing\PluginTestCase`, for kinds of scheduled tasks
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` and `App\Tasks\TaskSkipped`, for kinds of jobs `App\Work\WorkType`,
@@ -597,6 +597,38 @@ public function dataActions(): array
 - Rows without a key of their own (e.g. views) get no row actions.
 - Step by step: [appendix A.4](#a4-action-in-an-existing-table-view).
 
+**Bulk actions** (since API 1.11): `DataAction::BULK` puts an action for the selected records into the bar above the
+table (next to “Change …”). It must be a `Filament\Actions\BulkAction`; its closures receive the selected records as
+`$records` (or via `$action->getSelectedRecords()`), intersected with filter and search. Example from “Music school:
+planning”:
+
+```php
+new DataAction(School::COURSES, DataAction::BULK, fn (DataTable $table): BulkAction => BulkAction::make('musikschuleLektionenSelected')
+    ->label('Generate lessons')
+    ->visible(fn (): bool => LessonAction::allowed())
+    ->schema([/* from, to, skip holidays, preview */])
+    ->action(function (Collection $records, array $data): void {
+        app(LessonGenerator::class)->run($records->modelKeys(), $data['von'], $data['bis']);
+    })),
+```
+
+- SAFT provides the frame: only for tables with a single key; hidden as soon as the trash filter is set (so deleted
+  records are never included); the limit `APP_DATA_BULK_MAX` is checked before running; the selection is cleared
+  afterwards. Your own `hidden()` and `before()` hooks are kept. An action other than `BulkAction` is written to the
+  error log with the plugin name and not shown.
+- The action checks permissions itself (`visible()`, e.g. a plugin permission of its own). The table switch “Allow bulk
+  edit” only applies to “Change …”, not to plugin actions.
+- **In the request or as a job:** small amounts (up to a few hundred records, without outward effects) are handled in
+  the request, preferably in `Saft::transaction()` (all or nothing). Business processes over many records – creating
+  invoices, generating documents, sending e-mails – are built as a **job** of their own (`SaftPlugin::workTypes()`, see
+  [appendix A.8](#a8-scheduled-tasks)) and started with `Saft::startWork()` and the keys as parameters; the action redirects to the
+  returned address. That way they can later also be started from runs of the rule engine. E-mails and webhooks always
+  via `Saft::afterCommit()`.
+- **No undo by SAFT:** plugin bulk actions write with origin `plugin`, without a `run` identifier, and do not appear
+  under “Recent bulk edits”. A general run log with undo (including created records) comes with the rule engine; until
+  then a plugin that needs it offers its own reverse action.
+- Bulk actions also appear in detail tables of the table.
+
 ## 12. Formula functions and validation rules
 
 Two building blocks extend the table designer without your plugin needing a page of its own.
@@ -943,7 +975,7 @@ other entry.
 
 ## 18. API versions and change log
 
-The plugin API has its own version number **major.minor** (currently **1.10**). It is set in `config/saft.php`
+The plugin API has its own version number **major.minor** (currently **1.11**). It is set in `config/saft.php`
 (`api_versions`) and shown under **Documentation › About SAFT XT** and on the **Plugins** page.
 
 | Change | Version | Effect on plugins |
@@ -971,6 +1003,7 @@ the guaranteed classes; `php artisan saft:plugins --check` checks this.
 
 | API | SAFT | Changes |
 |---|---|---|
+| **1.11** | 0.10.0 | `DataAction::BULK` – bulk action for the selected records (Filament `BulkAction`, records as `$records`); SAFT hides it with the trash filter, checks `APP_DATA_BULK_MAX` and clears the selection afterwards (chapter 11) |
 | **1.10** | 0.6.0 | Every change through `DataTable` (also `$record->save()` on a record) runs in its own transaction across data and activity log; `RecordSaved` and `RecordDeleted` run **inside** that transaction – if a listener throws there, the triggering change is rolled back (previously only described that way in the documentation). `Saft::transaction()` and `DataTable::transaction()` combine several changes into one transaction (unchanged). Optimistic locking: `DataTable::version()`, `update()` with `$expectedVersion`, `StaleRecordException`. Kinds of jobs: `SaftPlugin::workTypes()`, `Saft::startWork()`, `WorkType`, `WorkPlan`, `WorkStep`, `StepOutcome`, `WritesRecords`, `CleansUp` (clean up on failure or cancellation), `LongSteps` (indivisible long steps such as AI requests). `Saft::afterCommit()` for outward effects only after the commit. New: `DynamicRecord::definition()` (internal, not part of the contract) |
 | **1.9** | 0.5.0 | `DataTable::url()` – address of the data view with a selected record, e.g. for links from a timetable |
 | **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` and `detachFile()` plus `StoredFile` – read, attach (with the form's checks) and remove files of fields of type “File” |

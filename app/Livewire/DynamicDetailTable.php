@@ -166,6 +166,8 @@ class DynamicDetailTable extends Component implements HasActions, HasSchemas, Ha
                 DynamicRecordActions::documentBulk($child),
                 BulkRecordActions::delete($child),
                 BulkRecordActions::restore($child),
+                // Sammelaktionen aus Plugins (B-133 S4b, DataAction::BULK).
+                ...app(PluginRegistry::class)->dataActions($child, DataAction::BULK),
             ])
             ->emptyStateHeading(__('data.empty_details'));
     }

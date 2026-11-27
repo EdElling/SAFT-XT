@@ -12,8 +12,14 @@ use App\Plugins\Api\DataTable;
 use App\Plugins\Api\Events\RecordEvent;
 use App\Plugins\Api\FieldRule;
 use App\Plugins\Api\FormulaFunction;
+use App\Work\Types\BulkRecordsWork;
 use Closure;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Notifications\Notification;
+use Filament\Support\Exceptions\Halt;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
 
@@ -104,9 +110,10 @@ final class PluginRegistry
     }
 
     /**
-     * Aktionen der Plugins für die Datenansicht einer Tabelle.
+     * Aktionen der Plugins für die Datenansicht einer Tabelle. Sammelaktionen (BULK) nur bei Tabellen mit einfachem
+     * Schlüssel und nur, wenn das Plugin eine BulkAction liefert (sonst gemeldet und übergangen).
      *
-     * @param  DataAction::TABLE|DataAction::RECORD  $placement
+     * @param  DataAction::TABLE|DataAction::RECORD|DataAction::BULK  $placement
      * @return list<Action>
      */
     public function dataActions(CustomTable $table, string $placement): array
@@ -120,7 +127,21 @@ final class PluginRegistry
 
             foreach ($plugin->dataActions() as $action) {
                 if ($action->table === $table->name && $action->placement === $placement) {
+                    if ($placement === DataAction::BULK && ! $table->hasSingleKey()) {
+                        continue;
+                    }
+
                     $made = ($action->make)(new DataTable($table));
+
+                    if ($placement === DataAction::BULK) {
+                        if (! $made instanceof BulkAction) {
+                            report(new InvalidArgumentException("Plugin {$plugin->id()}: DataAction::BULK für die Tabelle {$table->name} muss eine ".BulkAction::class.' liefern, nicht '.$made::class.'.'));
+
+                            continue;
+                        }
+
+                        self::guardBulk($made);
+                    }
 
                     // Herkunft im Tooltip (B-063), an einen eigenen Tooltip des Plugins angehängt. Dessen Wert erst beim
                     // Anzeigen auswerten: Er kann vom Datensatz der Zeile abhängen.
@@ -227,5 +248,35 @@ final class PluginRegistry
     public function workTypes(): array
     {
         return array_merge([], ...array_values(array_map(static fn (SaftPlugin $p): array => $p->workTypes(), $this->all())));
+    }
+
+    /**
+     * Rahmen für Sammelaktionen aus Plugins (B-133 S4b): ausgeblendet, sobald der Papierkorb-Filter gesetzt ist (nie
+     * gelöschte Datensätze), Obergrenze APP_DATA_BULK_MAX vor der Ausführung, Auswahl danach aufheben. Eigene Hooks des
+     * Plugins (hidden, before) bleiben erhalten und laufen danach.
+     */
+    private static function guardBulk(BulkAction $action): void
+    {
+        $ownHidden = (fn (): mixed => $this->isHidden)->call($action);
+        $ownBefore = (fn (): ?Closure => $this->before)->call($action);
+
+        $action
+            ->hidden(static function (BulkAction $action, mixed $livewire) use ($ownHidden): bool {
+                $trashed = $livewire instanceof HasTable ? ($livewire->getTableFilterState(TrashedFilter::class) ?? []) : [];
+
+                return filled($trashed['value'] ?? null) || (bool) $action->evaluate($ownHidden);
+            })
+            ->before(static function (BulkAction $action) use ($ownBefore): mixed {
+                $count = $action->getSelectedRecordsQuery()->count();
+
+                if (BulkRecordsWork::max() > 0 && $count > BulkRecordsWork::max()) {
+                    Notification::make()->danger()->title(__('data.bulk.errors.too_many_action', ['count' => $count, 'max' => BulkRecordsWork::max()]))->send();
+
+                    throw new Halt;
+                }
+
+                return $ownBefore === null ? null : $action->evaluate($ownBefore);
+            })
+            ->deselectRecordsAfterCompletion();
     }
 }

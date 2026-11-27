@@ -670,6 +670,11 @@ above the table shows “Bulk edit of …”. You can sort, filter further, expo
 view is not saved: the ✕ on the chip, **“Remove all filters”** or **“Reset view”** take you back to your saved view with
 your previous filters, and so does the next time you open the table from the menu.
 
+**Bulk actions from plugins:** Plugins can add further actions for the selected records to the bar above the table,
+e.g. “Generate lessons” for the ticked courses of the music school; the tooltip names the plugin. What they do is
+described in the plugin's manual. They do not appear under “Recent bulk edits” and cannot be undone there. The limit per
+bulk action applies to them too; with the trash filter they are not offered.
+
 You see the button “Change …” with the *Edit* permission if the administration allows bulk edits for the table. At most
 5,000 records per bulk edit unless the administration sets something else.
 

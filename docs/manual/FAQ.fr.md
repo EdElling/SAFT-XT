@@ -247,7 +247,8 @@ au-dessus de la table. La confirmation indique au préalable combien d’enregis
 nomme. Si le bouton est désactivé (« Aucun enregistrement ne serait annulé »), tous les enregistrements ont été modifiés
 depuis, souvent par une modification groupée plus récente : annulez d’abord celle-ci. Les numéros attribués et les
 e-mails envoyés restent. Seules les personnes autorisées à voir le journal des modifications annulent les modifications
-groupées d’autres personnes. Voir
+groupées d’autres personnes. Les actions groupées des plugins (p. ex. « Créer les leçons ») ne figurent pas dans la
+liste et ne peuvent pas y être annulées. Voir
 [Manuel d’utilisation 4.11](USER_GUIDE.fr.md#411-modifier-plusieurs-enregistrements-modification-groupée).
 
 ### Comment exporter seulement certains enregistrements ?

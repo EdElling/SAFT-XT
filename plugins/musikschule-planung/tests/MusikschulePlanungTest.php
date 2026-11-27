@@ -254,6 +254,31 @@ class MusikschulePlanungTest extends PluginTestCase
         $this->assertSame(8, DynamicRecord::forTableName(School::LESSONS)->newQuery()->where('kurs', $course->getKey())->count());
     }
 
+    /** Sammelaktion „Lektionen erzeugen“ für die ausgewählten Kurse (DataAction::BULK, API 1.11). */
+    public function test_generate_lessons_for_the_selected_courses(): void
+    {
+        $this->travelTo('2026-12-01 10:00:00');
+        $this->school();
+        $mia = $this->course('Klavier Mia', 'mo', '16:00');
+        $leo = $this->course('Klavier Leo', 'di', '16:00', ['raum' => $this->ids['saal']]);
+        $other = $this->course('Gesang', 'mi', '16:00', ['raum' => $this->ids['saal'], 'lehrperson' => $this->ids['keller']]);
+
+        Livewire::test(DynamicDataPage::class, ['table' => School::COURSES])
+            ->selectTableRecords([(string) $mia->getKey(), (string) $leo->getKey()])
+            ->mountAction(TestAction::make('musikschuleLektionenSelected')->table()->bulk())
+            // Vorbelegt mit dem gemeinsamen Semester: ab heute bis Semesterende, Vorschau für die zwei Kurse.
+            ->assertSchemaStateSet(['von' => '2026-12-01', 'bis' => '2027-01-29'])
+            ->assertMountedActionModalSee('in 2 Kursen')
+            ->callMountedAction()
+            ->assertHasNoFormErrors()
+            ->assertNotified();
+
+        $lessons = DynamicRecord::forTableName(School::LESSONS)->newQuery();
+        $this->assertSame(8, (clone $lessons)->where('kurs', $mia->getKey())->count());
+        $this->assertSame(9, (clone $lessons)->where('kurs', $leo->getKey())->count());
+        $this->assertSame(0, (clone $lessons)->where('kurs', $other->getKey())->count(), 'Nicht ausgewählt');
+    }
+
     public function test_attendance_is_loaded_and_saved_without_duplicates(): void
     {
         $this->school();

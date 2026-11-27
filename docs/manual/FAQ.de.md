@@ -240,7 +240,8 @@ Die Bestätigung zeigt vorher, wie viele Datensätze zurückkommen, und Beispiel
 denen ein geändertes Feld seither einen anderen Wert hat, bleiben stehen und die Meldung nennt sie. Ist der Knopf
 gesperrt („Kein Datensatz würde zurückgenommen“), wurden alle Datensätze seither wieder geändert, oft von einer späteren
 Sammeländerung: Nehmen Sie zuerst diese zurück. Vergebene Nummern und versendete E-Mails bleiben. Fremde
-Sammeländerungen nimmt nur zurück, wer das Änderungsprotokoll sehen darf. Siehe
+Sammeländerungen nimmt nur zurück, wer das Änderungsprotokoll sehen darf. Sammelaktionen aus Plugins (z. B.
+„Lektionen erzeugen“) stehen nicht in der Liste und lassen sich dort nicht zurücknehmen. Siehe
 [Anwenderhandbuch 4.11](USER_GUIDE.de.md#411-mehrere-datensätze-ändern-sammeländerung).
 
 ### Wie exportiere ich nur einige Datensätze?

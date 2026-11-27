@@ -743,6 +743,12 @@ modifier à nouveau. Cette vue n’est pas enregistrée : le ✕ de l’étiquet
 **« Réinitialiser la vue »** vous ramènent à votre vue enregistrée avec vos filtres précédents, tout comme la prochaine
 ouverture du tableau depuis le menu.
 
+**Actions groupées des plugins :** des plugins peuvent ajouter d’autres actions pour les enregistrements sélectionnés
+dans la barre au-dessus du tableau, p. ex. « Créer les leçons » pour les cours cochés de l’école de musique ; l’infobulle
+indique le plugin. Ce qu’elles font est décrit dans le manuel du plugin. Elles n’apparaissent pas dans « Dernières
+modifications groupées » et ne peuvent pas y être annulées. La limite par action groupée s’applique aussi ; avec le
+filtre de la corbeille, elles ne sont pas proposées.
+
 Vous voyez le bouton « Modifier … » avec le droit *Modifier* si l’administration autorise la modification groupée pour
 la table. Au maximum 5 000 enregistrements par modification groupée, sauf réglage contraire de l’administration.
 

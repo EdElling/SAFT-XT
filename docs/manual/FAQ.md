@@ -231,7 +231,8 @@ Via the link **“Undo”** in the success message or later via **“Recent bulk
 shows beforehand how many records come back and examples with *now → after*. Records where a changed field has a
 different value since stay and the message names them. If the button is disabled (“No record would be undone”), all
 records were changed again since, often by a later bulk edit: undo that one first. Assigned numbers and sent e-mails
-stay. Only those who may view the activity log undo other people's bulk edits. See
+stay. Only those who may view the activity log undo other people's bulk edits. Bulk actions from plugins (e.g. “Generate
+lessons”) are not in the list and cannot be undone there. See
 [User guide 4.11](USER_GUIDE.md#411-changing-several-records-bulk-edit).
 
 ### How do I export only some records?

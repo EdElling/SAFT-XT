@@ -184,6 +184,7 @@ return [
             'required' => '«:field» è obbligatorio e richiede un valore.',
             'not_allowed' => 'Le modifiche multiple non sono consentite in questa tabella, oppure manca il diritto «modificare».',
             'too_many' => ':count record selezionati; al massimo :max per modifica multipla. Restringere il filtro.',
+            'too_many_action' => ':count record selezionati; al massimo :max per azione di gruppo. Restringere il filtro.',
             'operator' => '«:field»: scegliete come calcolare.',
             'operand' => '«:field»: inserite un numero.',
             'days' => '«:field»: inserite un numero intero da 0 a :max.',

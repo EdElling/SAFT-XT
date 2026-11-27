@@ -58,7 +58,7 @@ mitbringen:
 | Arten geplanter Aufgaben | Klassen, die `App\Tasks\TaskType` umsetzen |
 
 **Was zugesichert ist:** Die Programmierschnittstelle für Plugins (Plugin-API) hat eine **eigene Versionsnummer**,
-unabhängig von SAFT – derzeit **1.10**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
+unabhängig von SAFT – derzeit **1.11**. Zugesichert sind die Klassen `App\Plugins\SaftPlugin`,
 `App\Plugins\PluginServiceProvider`, `App\Plugins\MenuSuggestion`, alle Klassen unter `App\Plugins\Api` (ausser
 `ApiManifest`), die Test-Basis `App\Plugins\Testing\PluginTestCase`, für Arten geplanter Aufgaben
 `App\Tasks\TaskType`, `App\Tasks\TaskResult` und `App\Tasks\TaskSkipped`, für Arten von Arbeiten `App\Work\WorkType`,
@@ -609,6 +609,38 @@ public function dataActions(): array
 - Zeilen ohne eigenen Schlüssel (z. B. Views) erhalten keine Zeilenaktionen.
 - Schritt für Schritt: [Anhang A.4](#a4-aktion-in-einer-bestehenden-tabellensicht).
 
+**Sammelaktionen** (seit API 1.11): `DataAction::BULK` setzt eine Aktion für die ausgewählten Datensätze in die Leiste
+über der Tabelle (neben „Ändern …“). Sie muss eine `Filament\Actions\BulkAction` sein; ihre Closures erhalten die
+ausgewählten Datensätze als `$records` (bzw. über `$action->getSelectedRecords()`), geschnitten mit Filter und Suche.
+Beispiel aus „Musikschule: Planung“:
+
+```php
+new DataAction(School::COURSES, DataAction::BULK, fn (DataTable $table): BulkAction => BulkAction::make('musikschuleLektionenSelected')
+    ->label('Lektionen erzeugen')
+    ->visible(fn (): bool => LessonAction::allowed())
+    ->schema([/* Von, Bis, Ferien überspringen, Vorschau */])
+    ->action(function (Collection $records, array $data): void {
+        app(LessonGenerator::class)->run($records->modelKeys(), $data['von'], $data['bis']);
+    })),
+```
+
+- SAFT übernimmt den Rahmen: nur bei Tabellen mit einfachem Schlüssel; ausgeblendet, sobald der Papierkorb-Filter
+  gesetzt ist (es sind also nie gelöschte Datensätze dabei); die Obergrenze `APP_DATA_BULK_MAX` wird vor der Ausführung
+  geprüft; danach wird die Auswahl aufgehoben. Eigene `hidden()`- und `before()`-Hooks bleiben erhalten. Eine andere
+  Aktion als `BulkAction` wird mit Plugin-Namen ins Fehlerprotokoll geschrieben und nicht angezeigt.
+- Rechte prüft die Aktion selbst (`visible()`, z. B. ein eigenes Plugin-Recht). Der Schalter „Sammeländerung erlauben“
+  der Tabelle gilt nur für „Ändern …“, nicht für Plugin-Aktionen.
+- **Im Request oder als Arbeit:** Kleine Mengen (bis einige hundert Datensätze, ohne Wirkungen nach aussen) erledigt die
+  Aktion im Request, am besten in `Saft::transaction()` (ganz oder gar nicht). Fachvorgänge über viele Datensätze –
+  Rechnungen anlegen, Dokumente erzeugen, E-Mails senden – baut man als eigene **Arbeit** (`SaftPlugin::workTypes()`, siehe
+  [Anhang A.8](#a8-geplante-aufgaben)) und startet sie mit `Saft::startWork()` und den Schlüsseln als Parameter; die Aktion leitet auf
+  die zurückgegebene Adresse weiter. So lassen sie sich später auch aus Läufen der Regel-Engine starten. E-Mails und
+  Webhooks immer über `Saft::afterCommit()`.
+- **Keine Rücknahme durch SAFT:** Plugin-Sammelaktionen schreiben mit der Herkunft `plugin`, ohne Kennung `run`, und
+  erscheinen nicht unter „Letzte Sammeländerungen“. Ein allgemeines Laufprotokoll mit Rücknahme (auch angelegter
+  Datensätze) entsteht mit der Regel-Engine; bis dahin bietet ein Plugin, das es braucht, eine eigene Gegenaktion an.
+- Sammelaktionen erscheinen auch in Detailtabellen der Tabelle.
+
 ## 12. Formelfunktionen und Prüfregeln
 
 Zwei Bausteine erweitern den Table-Designer, ohne dass Ihr Plugin eine eigene Seite braucht.
@@ -960,7 +992,7 @@ wie bei jeder anderen Erfassung.
 
 ## 18. API-Versionen und Änderungsprotokoll
 
-Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.10**). Sie steht in `config/saft.php`
+Die Plugin-API hat eine eigene Versionsnummer **Major.Minor** (derzeit **1.11**). Sie steht in `config/saft.php`
 (`api_versions`) und erscheint unter **Dokumentation › Über SAFT XT** sowie auf der Seite **Plugins**.
 
 | Änderung | Version | Wirkung für Plugins |
@@ -989,6 +1021,7 @@ nicht bei jedem SAFT-Release. Verwenden Sie nur die zugesicherten Klassen; `php 
 
 | API | SAFT | Änderungen |
 |---|---|---|
+| **1.11** | 0.10.0 | `DataAction::BULK` – Sammelaktion für die ausgewählten Datensätze (Filament-`BulkAction`, Datensätze als `$records`); SAFT blendet sie im Papierkorb-Filter aus, prüft `APP_DATA_BULK_MAX` und hebt die Auswahl danach auf (Kapitel 11) |
 | **1.10** | 0.6.0 | Jede Änderung über `DataTable` (auch `$record->save()` auf einem Datensatz) läuft in einer eigenen Transaktion über Daten und Protokoll; `RecordSaved` und `RecordDeleted` laufen **innerhalb** dieser Transaktion – wirft ein Listener dort, wird die auslösende Änderung zurückgerollt (bisher nur in der Dokumentation so beschrieben). `Saft::transaction()` und `DataTable::transaction()` fassen mehrere Änderungen in einer Transaktion zusammen (unverändert). Optimistische Sperre: `DataTable::version()`, `update()` mit `$expectedVersion`, `StaleRecordException`. Arten von Arbeiten: `SaftPlugin::workTypes()`, `Saft::startWork()`, `WorkType`, `WorkPlan`, `WorkStep`, `StepOutcome`, `WritesRecords`, `CleansUp` (aufräumen bei Fehlschlag oder Abbruch), `LongSteps` (unteilbare lange Schritte, etwa KI-Anfragen). `Saft::afterCommit()` für Wirkungen nach aussen erst nach dem Commit. Neu: `DynamicRecord::definition()` (intern, kein Vertrag) |
 | **1.9** | 0.5.0 | `DataTable::url()` – Adresse der Datenansicht mit ausgewähltem Datensatz, z. B. für Links aus einem Stundenplan |
 | **1.8** | 0.3.0 | `DataTable::files()`, `attachFile()` und `detachFile()` sowie `StoredFile` – Dateien aus Feldern vom Typ „Datei“ lesen, anhängen (mit den Prüfungen des Formulars) und entfernen |

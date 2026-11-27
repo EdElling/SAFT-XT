@@ -187,7 +187,7 @@ Plugin angemeldet. Die Kernklassen werden über den Container erzeugt.
 | Erweiterung | Vertrag | Anmeldung |
 |---|---|---|
 | **Plugin** | `App\Plugins\SaftPlugin` (Rechte, Menüvorschläge, benötigte Tabellen, Seiten, Ressourcen, Widgets, Handbücher) | Composer-Paket unter `plugins/` oder aus eigenem Repository mit `PluginServiceProvider`; ruht, wenn Abhängigkeiten fehlen |
-| **Plugin-API** | `App\Plugins\Api\*` (`Saft`, `DataTable`, Ereignisse, `RecordListener`, `DataAction`, `FormulaFunction`, `FieldRule`, `DashboardWidget`, `Manual`) und die als `@api` markierten Verträge | `ApiManifest` listet die zugesicherten Klassen; `PluginApiContractTest` vergleicht Signaturen mit `plugin-api.json`; eigene Versionsnummer (1.10), Plugins nennen die verlangte Version |
+| **Plugin-API** | `App\Plugins\Api\*` (`Saft`, `DataTable`, Ereignisse, `RecordListener`, `DataAction`, `FormulaFunction`, `FieldRule`, `DashboardWidget`, `Manual`) und die als `@api` markierten Verträge | `ApiManifest` listet die zugesicherten Klassen; `PluginApiContractTest` vergleicht Signaturen mit `plugin-api.json`; eigene Versionsnummer (1.11), Plugins nennen die verlangte Version |
 | **Art einer geplanten Aufgabe** | `App\Tasks\TaskType` (`key`, Parameterfelder, `run()` ohne Person) | `config/tasks.php` oder `SaftPlugin::taskTypes()` |
 | **Art einer Arbeit** | `App\Work\WorkType` (`prepare()`, `step()`), optional `WritesRecords`, `CleansUp`, `LongSteps`, `DescribesProgress` | `config/work.php` oder `SaftPlugin::workTypes()`; gestartet mit `WorkService` bzw. `Saft::startWork()` |
 | **Formelfunktion** | `App\Plugins\Api\FormulaFunction` (Name, Argumente, Auswertung in PHP; für SQL gesperrt, wenn nicht übersetzbar) | `SaftPlugin::formulaFunctions()` |
@@ -402,3 +402,16 @@ durch Nr. n“ markiert.
     Index und sähe gescheiterte Läufe; eine Kopie der alten Werte wäre eine zweite Wahrheit. *Folge:* Ohne
     Änderungsprotokoll (`ACTIVITYLOG_ENABLED=false`) gibt es keine Rücknahme; Einträge von vor 0.8.1 mit UTC-Datum
     rechnet `LoggedValue` in die Zeitzone der Anwendung um (Voraussetzung: `APP_TIMEZONE` unverändert).
+
+29. **Sammelaktionen aus Plugins ohne Kopf, angebundene Tabellen ohne Sammeländerung** (27.11.2026, B-133 S4).
+    `DataAction::BULK` (Plugin-API 1.11) ist eine Filament-`BulkAction` mit den ausgewählten Datensätzen; SAFT gibt nur
+    den Rahmen vor (einfacher Schlüssel, nicht im Papierkorb-Filter, Obergrenze `APP_DATA_BULK_MAX`, Auswahl danach
+    aufheben). Sie schreibt mit Herkunft `plugin`, ohne Kennung `run`, ohne Kopf in `bulk_changes` und ohne
+    „Rückgängig“; Fachvorgänge über viele Datensätze laufen als Plugin-Arbeit (`Saft::startWork()`). Angebundene Tabellen
+    bekommen keine Sammeländerung, wohl aber „Auswahl exportieren“. *Warum:* Plugin-Läufe schreiben in andere Tabellen,
+    legen an und versenden; `bulk_changes` hängt an einer Tabelle und nimmt nur Feldwerte zurück. Den allgemeinen Kopf je
+    Kennung mit Rücknahme entwirft das Laufprotokoll der Regel-Engine (B-142 R3b, RULES.md §8.7, AI_AGENTS.md V7); eine
+    eigene Lösung wäre eine zweite. Bei angebundenen Tabellen rollt der Probelauf (Nr. 27) ohne Transaktionen (MyISAM)
+    oder bei Triggern mit Wirkung nach aussen nicht zurück, Löschen ist endgültig, und Trigger verfälschen den Vergleich
+    der Rücknahme. *Folge:* Plugin-Sammelaktionen sind nicht über „Letzte Sammeländerungen“ rücknehmbar (Handbücher);
+    `DataTable::updateMany()` (B-179) und angebundene Tabellen (B-180) bleiben im Backlog.

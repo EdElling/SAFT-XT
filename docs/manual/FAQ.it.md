@@ -240,7 +240,8 @@ La conferma mostra prima quanti record tornano indietro ed esempi con *ora → d
 ha nel frattempo un altro valore restano e il messaggio li indica. Se il pulsante è disattivato («Nessun record verrebbe
 annullato»), tutti i record sono stati modificati nel frattempo, spesso da una modifica multipla successiva: annullate
 prima quella. I numeri assegnati e le e-mail inviate restano. Solo chi può vedere il registro delle modifiche annulla le
-modifiche multiple di altre persone. Vedi
+modifiche multiple di altre persone. Le azioni di gruppo dei plugin (p. es. «Generare le lezioni») non sono nell’elenco
+e non vi si possono annullare. Vedi
 [Manuale utente 4.11](USER_GUIDE.it.md#411-modificare-più-record-modifica-multipla).
 
 ### Come esporto solo alcuni record?

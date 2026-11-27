@@ -75,11 +75,13 @@ ad *attivo*; chi non continua diventa *Disiscritto*.
 ## Generare le lezioni
 
 Invece di registrare ogni lezione singolarmente, SAFT le crea **settimanalmente** per un periodo – nel giorno del corso,
-con il suo docente e la durata del tipo di corso. La finestra **Generare le lezioni** si trova in tre punti:
+con il suo docente e la durata del tipo di corso. La finestra **Generare le lezioni** si trova in quattro punti:
 
 - nella riga di un **corso** (solo questo corso),
 - nella riga di un **semestre** (tutti i suoi corsi),
 - sopra la tabella **Corsi** (tutti i corsi del semestre scelto, predefinito quello in corso).
+- per i **corsi selezionati**: selezionate i corsi nella tabella **Corsi**, poi **Generare le lezioni** nella barra
+  sopra la tabella (il periodo segue il loro semestre comune, o quello in corso se appartengono a più semestri).
 
 Nella finestra scegliete **Dal** e **Al** – predefinito da oggi se il semestre è in corso, altrimenti dall’inizio del
 semestre, fino alla sua fine – e se **saltare vacanze e festivi**. L’**anteprima** indica in anticipo cosa succederà,
