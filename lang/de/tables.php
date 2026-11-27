@@ -290,6 +290,7 @@ return [
             'expected' => '„:token“ fehlt.',
             'field_expected' => 'Nach dem Punkt fehlt ein Feldname.',
             'self' => 'Ein Feld kann nicht mit sich selbst rechnen („:field“).',
+            'division_by_zero' => 'Division durch 0.',
             'unknown_field' => 'Unbekanntes Feld „:field“.',
             'not_number' => '„:field“ ist kein Zahlenfeld.',
             'path_outside_aggregate' => '„:path“ ist nur in sum(), count(), min(), max() oder avg() möglich.',

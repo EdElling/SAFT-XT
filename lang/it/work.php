@@ -106,5 +106,7 @@ return [
         'write_failed' => ':record: :message La modifica multipla è stata annullata completamente.',
         'done' => '{0} Nessun record modificato.|{1} 1 record modificato.|[2,*] :count record modificati.',
         'unchanged' => '{1} 1 aveva già quel valore (invariato).|[2,*] :count avevano già quel valore (invariati).',
+        'skipped' => '{1} 1 senza valore o senza corrispondenza (invariato).|[2,*] :count senza valore o senza corrispondenza (invariati).',
+        'duplicate_in_selection' => '«:value» risulterebbe anche per :record; il valore può comparire una sola volta.',
     ],
 ];

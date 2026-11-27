@@ -89,6 +89,8 @@ return [
         'invalid' => 'The file contains errors; nothing was imported.',
         'not_integer' => '“:value” is not a whole number.',
         'not_number' => '“:value” is not a number.',
+        'too_many_digits' => 'The number is too large for the field (at most :max digits before the decimal point).',
+        'integer_range' => 'The number is too large for the field.',
         'not_boolean' => '“:value” is neither yes nor no.',
         'not_date' => '“:value” is not a valid date (DD.MM.YYYY).',
         'not_choice' => '“:value” is not a value of this selection list.',

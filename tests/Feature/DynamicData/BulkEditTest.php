@@ -9,6 +9,7 @@ use App\DynamicData\Bulk\BulkPreview;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Numbering\NumberCondition;
 use App\DynamicData\Numbering\NumberPattern;
+use App\DynamicData\Validation\RecordChecker;
 use App\DynamicData\Write\RecordWriter;
 use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
@@ -25,7 +26,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
-/** Sammeländerung (B-133, S1): Arbeit „bulk_records“ mit Prüf- und Schreibphase, alles oder nichts. */
+/** Sammeländerung (B-133, S1 und S2): Arbeit „bulk_records“ mit Prüf- und Schreibphase, alles oder nichts; rechnen, ersetzen, Formel. */
 class BulkEditTest extends DynamicDataTestCase
 {
     private User $admin;
@@ -277,5 +278,220 @@ class BulkEditTest extends DynamicDataTestCase
         $this->assertSame('aktiv', DynamicRecord::forTable($table)->newQuery()->find($ids[0])->status, 'Die Vorschau schreibt nichts.');
         $this->assertCount(1, $preview->hints);
         $this->assertStringContainsString('„Vergeben, wenn“', $preview->hints[0]);
+    }
+
+    /** Kurse mit Teilnahmen (Summe über Kind-Datensätze) für S2. */
+    private function courses(): CustomTable
+    {
+        $table = $this->service()->createTable(['name' => 'kurse', 'label' => 'Kurse'], [
+            ['name' => 'bezeichnung', 'label' => 'Bezeichnung', 'type' => 'string', 'is_required' => true, 'show_in_table' => true, 'options' => ['length' => 20]],
+            ['name' => 'kuerzel', 'label' => 'Kürzel', 'type' => 'string', 'is_unique' => true, 'is_required' => true],
+            ['name' => 'tarif', 'label' => 'Tarif', 'type' => 'decimal', 'options' => ['precision' => 6, 'scale' => 2]],
+            ['name' => 'plaetze', 'label' => 'Plätze', 'type' => 'integer'],
+            ['name' => 'beginn', 'label' => 'Beginn', 'type' => 'date'],
+            ['name' => 'termin', 'label' => 'Termin', 'type' => 'datetime'],
+            ['name' => 'voll', 'label' => 'Voll', 'type' => 'boolean'],
+            ['name' => 'notiz', 'label' => 'Notiz', 'type' => 'text'],
+        ]);
+        $this->service()->createTable(['name' => 'teilnahmen', 'label' => 'Teilnahmen'], [
+            ['name' => 'kurs_id', 'label' => 'Kurs', 'type' => 'relation', 'options' => ['table' => 'kurse', 'display_field' => 'bezeichnung']],
+            ['name' => 'betrag', 'label' => 'Betrag', 'type' => 'decimal', 'options' => ['precision' => 10, 'scale' => 2]],
+        ]);
+
+        return $table->refresh();
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<int>
+     */
+    private function seedCourses(CustomTable $table, array $rows): array
+    {
+        $writer = app(RecordWriter::class);
+
+        return $writer->batch(fn (): array => array_map(
+            static fn (array $row, int $i): int => (int) $writer->create($table, ['bezeichnung' => "Kurs {$i}", 'kuerzel' => "K{$i}", ...$row], WriteOptions::seed())->getKey(),
+            $rows,
+            array_keys($rows),
+        ));
+    }
+
+    /** @return array<int, mixed> */
+    private function courseColumn(string $field): array
+    {
+        return DynamicRecord::forTableName('kurse')->newQuery()->orderBy('id')->pluck($field, 'id')->all();
+    }
+
+    public function test_calc_raises_by_percent_rounds_to_a_multiple_and_skips_empty_values(): void
+    {
+        $table = $this->courses();
+        $ids = $this->seedCourses($table, [['tarif' => '12.34', 'plaetze' => 8], ['tarif' => '100'], ['tarif' => null]]);
+
+        $item = $this->bulk($table, [
+            'tarif' => ['op' => 'calc', 'operator' => 'percent', 'operand' => '5', 'round_mode' => 'multiple', 'round_value' => '0.05'],
+            'plaetze' => ['op' => 'calc', 'operator' => 'mul', 'operand' => '1,5'],
+        ], $ids);
+
+        $this->assertSame(WorkItem::DONE, $item->status, (string) $item->message);
+        $this->assertSame(['12.95', '105.00', null], array_values($this->courseColumn('tarif')));
+        $this->assertSame([12, null, null], array_values(array_map(static fn (mixed $v): ?int => $v === null ? null : (int) $v, $this->courseColumn('plaetze'))));
+        $this->assertStringContainsString('2 Datensätze geändert', (string) $item->message);
+        $this->assertStringContainsString('1 ohne Wert bzw. ohne Treffer', (string) $item->message);
+        $this->assertSame(1, $item->result['skipped']);
+    }
+
+    public function test_calc_shifts_dates_by_days_and_months_and_keeps_the_time(): void
+    {
+        $table = $this->courses();
+        $ids = $this->seedCourses($table, [['beginn' => '2026-01-31', 'termin' => '2026-01-31 18:30:00'], ['beginn' => '2026-11-27']]);
+
+        $this->assertSame(WorkItem::DONE, $this->bulk($table, [
+            'beginn' => ['op' => 'calc', 'operator' => 'add_days', 'operand' => '30'],
+            'termin' => ['op' => 'calc', 'operator' => 'add_months', 'operand' => '1'],
+        ], $ids)->status);
+
+        $records = DynamicRecord::forTable($table)->newQuery()->orderBy('id')->get();
+        $this->assertSame(['2026-03-02', '2026-12-27'], $records->map(static fn (DynamicRecord $r): string => $r->beginn->format('Y-m-d'))->all());
+        $this->assertSame('2026-02-28 18:30:00', $records[0]->termin->format('Y-m-d H:i:s'));
+        $this->assertNull($records[1]->termin);
+    }
+
+    public function test_replace_changes_only_records_with_a_match_and_checks_the_length(): void
+    {
+        $table = $this->courses();
+        $ids = $this->seedCourses($table, [['bezeichnung' => 'Hauptstr. 5'], ['bezeichnung' => 'Str. des 1. Mai'], ['bezeichnung' => 'Bahnhofweg']]);
+
+        $item = $this->bulk($table, ['bezeichnung' => ['op' => 'replace', 'search' => 'Str.', 'replace' => 'Strasse', 'word' => true, 'case' => true]], $ids);
+
+        $this->assertSame(WorkItem::DONE, $item->status, (string) $item->message);
+        $this->assertSame(['Hauptstr. 5', 'Strasse des 1. Mai', 'Bahnhofweg'], array_values($this->courseColumn('bezeichnung')));
+        $this->assertSame(['changed' => 1, 'skipped' => 2], array_intersect_key($item->result, ['changed' => 0, 'skipped' => 0]));
+
+        $item = $this->bulk($table, ['bezeichnung' => ['op' => 'replace', 'search' => 'str.', 'replace' => 'strasse ganz lang']], $ids);
+        $this->assertSame(WorkItem::FAILED, $item->status);
+        $this->assertStringContainsString('Höchstens 20 Zeichen', (string) $item->message);
+        $this->assertSame('Hauptstr. 5', $this->courseColumn('bezeichnung')[$ids[0]], 'Alles oder nichts.');
+    }
+
+    public function test_formula_reads_the_old_value_computed_sums_and_reports_division_by_zero(): void
+    {
+        $table = $this->courses();
+        $ids = $this->seedCourses($table, [['tarif' => '10', 'plaetze' => 4], ['tarif' => '20', 'plaetze' => 0], ['tarif' => null, 'plaetze' => 2]]);
+        $children = CustomTable::query()->where('name', 'teilnahmen')->firstOrFail();
+        $writer = app(RecordWriter::class);
+        $writer->create($children, ['kurs_id' => $ids[0], 'betrag' => '7.5'], WriteOptions::seed());
+        $writer->create($children, ['kurs_id' => $ids[0], 'betrag' => '2.5'], WriteOptions::seed());
+
+        // Alle Formeln sehen die Werte vor der Änderung: plaetze nutzt den alten Tarif.
+        $item = $this->bulk($table, [
+            'tarif' => ['op' => 'formula', 'formula' => 'round(tarif * 1.05 / 0.05, 0) * 0.05 + sum(teilnahmen.betrag)'],
+            'plaetze' => ['op' => 'formula', 'formula' => 'coalesce(tarif, 0) + plaetze'],
+            'voll' => ['op' => 'formula', 'formula' => 'plaetze >= 4'],
+        ], $ids);
+
+        $this->assertSame(WorkItem::DONE, $item->status, (string) $item->message);
+        $this->assertSame(['20.50', '21.00', null], array_values($this->courseColumn('tarif')));
+        $this->assertSame([14, 20, 2], array_values(array_map('intval', $this->courseColumn('plaetze'))));
+        $this->assertSame([true, false, false], DynamicRecord::forTable($table)->newQuery()->orderBy('id')->get()->map(static fn (DynamicRecord $r): bool => (bool) $r->voll)->all());
+
+        // Kurs 1 hat jetzt 20 Plätze: Division durch 0.
+        $item = $this->bulk($table, ['tarif' => ['op' => 'formula', 'formula' => 'tarif / (plaetze - 20)']], $ids);
+        $this->assertSame(WorkItem::FAILED, $item->status);
+        $this->assertStringContainsString('Tarif: Division durch 0.', (string) $item->message);
+        $this->assertStringContainsString('„Kurs 1“', (string) $item->message);
+        $this->assertSame('20.50', $this->courseColumn('tarif')[$ids[0]], 'Nichts geändert.');
+    }
+
+    public function test_numbers_that_do_not_fit_the_field_fail_the_check(): void
+    {
+        $table = $this->courses();
+        $ids = $this->seedCourses($table, [['tarif' => '9000'], ['tarif' => '10']]);
+
+        $item = $this->bulk($table, ['tarif' => ['op' => 'calc', 'operator' => 'mul', 'operand' => '2']], $ids);
+
+        $this->assertSame(WorkItem::FAILED, $item->status);
+        $this->assertStringContainsString('höchstens 4 Stellen vor dem Komma', (string) $item->message);
+        $this->assertSame(['9000.00', '10.00'], array_values($this->courseColumn('tarif')));
+
+        $checker = app(RecordChecker::class);
+        $this->assertSame([], $checker->check($table, ['tarif' => '9999.99']));
+        $this->assertCount(1, $checker->check($table, ['tarif' => '9999.995']), 'Rundet auf 10000.00.');
+        $this->assertCount(1, $checker->check($table, ['plaetze' => '9223372036854775808']));
+        $this->assertSame([], $checker->check($table, ['plaetze' => '-9223372036854775808']));
+    }
+
+    public function test_unique_fields_can_be_replaced_but_duplicates_across_blocks_fail(): void
+    {
+        $table = $this->courses();
+        $rows = array_map(static fn (int $i): array => ['kuerzel' => "A-{$i}"], range(1, BulkRecordsWork::BLOCK + 1));
+        $rows[BulkRecordsWork::BLOCK]['kuerzel'] = 'A1-';
+        $rows[0]['kuerzel'] = 'A-1';
+        $ids = $this->seedCourses($table, $rows);
+
+        // „-“ entfernen: A-1 und A1- ergäben beide A1, im ersten und im zweiten Block.
+        $item = $this->bulk($table, ['kuerzel' => ['op' => 'replace', 'search' => '-', 'replace' => '']], $ids);
+        $this->assertSame(WorkItem::FAILED, $item->status);
+        $this->assertStringContainsString('„A1“ ergäbe sich auch bei #'.$ids[0], (string) $item->message);
+
+        $item = $this->bulk($table, ['kuerzel' => ['op' => 'replace', 'search' => 'A-', 'replace' => 'B-']], $ids);
+        $this->assertSame(WorkItem::DONE, $item->status, (string) $item->message);
+        $this->assertSame('B-2', $this->courseColumn('kuerzel')[$ids[1]]);
+        $this->assertSame(WorkItem::FAILED, $this->bulk($table, ['kuerzel' => ['op' => 'set', 'value' => 'X']], $ids)->status, 'Setzen bleibt verboten.');
+    }
+
+    public function test_ops_follow_the_field_type(): void
+    {
+        $fields = BulkChange::editableFields($this->courses());
+
+        $this->assertSame(['set', 'replace'], BulkChange::ops($fields['bezeichnung']));
+        $this->assertSame(['replace'], BulkChange::ops($fields['kuerzel']), 'eindeutig und Pflicht');
+        $this->assertSame(['set', 'clear', 'calc', 'formula'], BulkChange::ops($fields['tarif']));
+        $this->assertSame(['set', 'clear', 'calc'], BulkChange::ops($fields['beginn']));
+        $this->assertSame(['set', 'clear', 'formula'], BulkChange::ops($fields['voll']));
+        $this->assertSame(['set', 'clear', 'replace'], BulkChange::ops($fields['notiz']));
+    }
+
+    public function test_validation_messages_of_calc_replace_and_formula(): void
+    {
+        $table = $this->courses();
+
+        foreach ([
+            [['tarif' => ['op' => 'calc', 'operator' => 'div', 'operand' => '0']], 'bulk.division_by_zero'],
+            [['tarif' => ['op' => 'calc', 'operator' => 'add', 'operand' => 'x']], 'bulk.operand'],
+            [['tarif' => ['op' => 'calc', 'operator' => 'add_days', 'operand' => '1']], 'bulk.operator'],
+            [['tarif' => ['op' => 'calc', 'operator' => 'add', 'operand' => '1', 'round_mode' => 'multiple', 'round_value' => '0.005']], 'bulk.round_multiple'],
+            [['tarif' => ['op' => 'calc', 'operator' => 'add', 'operand' => '1', 'round_mode' => 'digits', 'round_value' => '3']], 'bulk.round_digits'],
+            [['beginn' => ['op' => 'calc', 'operator' => 'add_days', 'operand' => '1.5']], 'bulk.days'],
+            [['notiz' => ['op' => 'replace', 'search' => '']], 'bulk.search_empty'],
+            [['tarif' => ['op' => 'formula', 'formula' => 'tarif * bezeichnung']], 'bulk.formula'],
+            [['tarif' => ['op' => 'formula', 'formula' => '']], 'bulk.formula'],
+            [['notiz' => ['op' => 'formula', 'formula' => '1']], 'bulk.not_editable'],
+            [['beginn' => ['op' => 'replace', 'search' => '1']], 'bulk.not_editable'],
+        ] as [$changes, $code]) {
+            try {
+                BulkChange::fromArray($table, $changes)->validate();
+                $this->fail("{$code} erwartet.");
+            } catch (BusinessRuleException $e) {
+                $this->assertSame($code, $e->errorCode, json_encode($changes));
+            }
+        }
+    }
+
+    public function test_preview_shows_only_changing_examples_counts_and_errors(): void
+    {
+        $table = $this->courses();
+        $ids = $this->seedCourses($table, [['notiz' => 'Hauptstr. 1'], ['notiz' => 'Weg'], ['notiz' => null], ['notiz' => 'Dorfstr. 2']]);
+
+        $preview = BulkPreview::for(BulkChange::fromArray($table, ['notiz' => ['op' => 'replace', 'search' => 'str.', 'replace' => 'strasse']]), $ids);
+
+        $this->assertSame([$ids[0], $ids[3]], array_map(static fn (array $e): int => (int) $e['record']->getKey(), $preview->examples));
+        $this->assertSame(['notiz' => 'Hauptstrasse 1'], $preview->examples[0]['after']);
+        $this->assertSame(['changing' => 2, 'unchanged' => 0, 'skipped' => 2, 'failed' => 0], $preview->counts);
+        $this->assertFalse($preview->partial);
+
+        $ids = $this->seedCourses($table, [['tarif' => '5', 'plaetze' => 0, 'kuerzel' => 'Z']]);
+        $preview = BulkPreview::for(BulkChange::fromArray($table, ['tarif' => ['op' => 'formula', 'formula' => 'tarif / plaetze']]), $ids);
+        $this->assertSame(1, $preview->counts['failed']);
+        $this->assertSame(['tarif' => 'Division durch 0.'], $preview->examples[0]['errors']);
     }
 }

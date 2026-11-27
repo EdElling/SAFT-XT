@@ -20,6 +20,9 @@ final class Evaluator
     /** Nachkommastellen für Zwischenergebnisse; gerundet wird erst auf das Feld. */
     private const int SCALE = 12;
 
+    /** Strenge Auswertung (Sammeländerung): Division durch 0 ist ein Fehler statt leer. */
+    private bool $strict = false;
+
     /**
      * @param  array<string, mixed>  $node
      * @param  Closure(string): mixed  $field  Wert eines Felds desselben Datensatzes
@@ -38,6 +41,28 @@ final class Evaluator
             isset($node['call']) => $this->call($node, $field, $aggregate),
             default => null,
         };
+    }
+
+    /**
+     * Wie evaluate(), aber eine Division durch 0 wirft eine FormulaException statt leer zu ergeben (Kontext
+     * „Sammeländerung“, FORMULA_SPEC.md Abschnitt 1). Summen über Kind-Datensätze rechnen wie gewohnt.
+     *
+     * @param  array<string, mixed>  $node
+     * @param  Closure(string): mixed  $field
+     * @param  (Closure(array<string, mixed>): mixed)|null  $aggregate
+     *
+     * @throws FormulaException
+     */
+    public function evaluateStrict(array $node, Closure $field, ?Closure $aggregate = null): ?string
+    {
+        $previous = $this->strict;
+        $this->strict = true;
+
+        try {
+            return $this->evaluate($node, $field, $aggregate);
+        } finally {
+            $this->strict = $previous;
+        }
     }
 
     /** Ergebnis auf die Nachkommastellen des Felds runden (kaufmännisch, ab 5 weg von 0). */
@@ -91,7 +116,7 @@ final class Evaluator
             '+' => bcadd($left, $right, self::SCALE),
             '-' => bcsub($left, $right, self::SCALE),
             '*' => bcmul($left, $right, self::SCALE),
-            '/' => bccomp($right, '0', self::SCALE) === 0 ? null : bcdiv($left, $right, self::SCALE),
+            '/' => bccomp($right, '0', self::SCALE) !== 0 ? bcdiv($left, $right, self::SCALE) : ($this->strict ? throw FormulaException::divisionByZero() : null),
             default => null,
         };
     }

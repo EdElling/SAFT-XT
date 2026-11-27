@@ -290,6 +290,7 @@ return [
             'expected' => '« :token » manque.',
             'field_expected' => 'Un nom de champ manque après le point.',
             'self' => 'Un champ ne peut pas calculer avec lui-même (« :field »).',
+            'division_by_zero' => 'Division par 0.',
             'unknown_field' => 'Champ inconnu « :field ».',
             'not_number' => '« :field » n’est pas un champ numérique.',
             'path_outside_aggregate' => '« :path » n’est possible que dans sum(), count(), min(), max() ou avg().',

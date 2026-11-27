@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DynamicData\Validation;
 
 use App\DynamicData\DynamicDataNamespace;
+use App\DynamicData\Formula\Evaluator;
 use App\DynamicData\Rules\RuleEvaluator;
 use App\DynamicData\Rules\TableRuleValidator;
 use App\DynamicData\Schema\FieldType;
@@ -100,6 +101,12 @@ final class RecordChecker
                     continue;
                 }
 
+                if (($tooLarge = self::outOfRange($field, (string) $value, $options)) !== null) {
+                    $problems[] = [$field, $tooLarge];
+
+                    continue;
+                }
+
                 if (isset($rules['min']) && (float) $value < (float) $rules['min']) {
                     $problems[] = [$field, __('import.records.below_min', ['min' => $rules['min']])];
                 }
@@ -161,5 +168,38 @@ final class RecordChecker
         }
 
         return $problems;
+    }
+
+    /**
+     * Passt die Zahl in die Spalte? Dezimalzahl: höchstens precision − scale Stellen vor dem Komma (die Nachkommastellen
+     * rundet die Datenbank); Ganzzahl: Bereich von bigint. Sonst lehnte die Datenbank erst beim Speichern ab.
+     *
+     * @param  array<string, mixed>  $options
+     */
+    private static function outOfRange(CustomField $field, string $value, array $options): ?string
+    {
+        $number = Evaluator::decimal($value);
+
+        if ($number === null) {
+            return null;
+        }
+
+        $integer = ltrim(explode('.', ltrim($number, '-'))[0], '0');
+
+        if ($field->type === FieldType::Decimal) {
+            $digits = (int) ($options['precision'] ?? 12) - (int) ($options['scale'] ?? 2);
+            // Was beim Runden auf die Nachkommastellen eine Stelle dazubekommt (99.995 → 100.00), zählt mit.
+            $rounded = ltrim(explode('.', ltrim((string) Evaluator::round($number, (int) ($options['scale'] ?? 2)), '-'))[0], '0');
+
+            return max(strlen($integer), strlen($rounded)) > $digits
+                ? __('import.records.too_many_digits', ['max' => $digits])
+                : null;
+        }
+
+        $limit = str_starts_with($number, '-') ? '9223372036854775808' : '9223372036854775807';
+
+        return strlen($integer) > strlen($limit) || (strlen($integer) === strlen($limit) && strcmp($integer, $limit) > 0)
+            ? __('import.records.integer_range')
+            : null;
     }
 }

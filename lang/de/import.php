@@ -89,6 +89,8 @@ return [
         'invalid' => 'Die Datei enthält Fehler; es wurde nichts importiert.',
         'not_integer' => '„:value“ ist keine ganze Zahl.',
         'not_number' => '„:value“ ist keine Zahl.',
+        'too_many_digits' => 'Die Zahl ist zu gross für das Feld (höchstens :max Stellen vor dem Komma).',
+        'integer_range' => 'Die Zahl ist zu gross für das Feld.',
         'not_boolean' => '„:value“ ist weder Ja noch Nein.',
         'not_date' => '„:value“ ist kein gültiges Datum (TT.MM.JJJJ).',
         'not_choice' => '„:value“ ist kein Wert dieser Auswahlliste.',

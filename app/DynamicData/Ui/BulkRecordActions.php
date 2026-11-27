@@ -234,10 +234,11 @@ final class BulkRecordActions
         $rows = [];
 
         foreach (BulkChange::editableFields($table, $locked) as $name => $field) {
-            $ops = array_values(array_filter([
-                BulkChange::canSet($field) ? BulkChange::SET : null,
-                BulkChange::canClear($field) ? BulkChange::CLEAR : null,
-            ]));
+            $ops = array_values(array_intersect(BulkChange::ops($field), [BulkChange::SET, BulkChange::CLEAR]));
+
+            if ($ops === []) {
+                continue;
+            }
             $isOn = static fn (Get $get): bool => (bool) $get('on');
             $op = static fn (Get $get): string => (string) ($get('op') ?? $ops[0]);
 

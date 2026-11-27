@@ -983,5 +983,88 @@
     ],
     "note": "if in Rechnung",
     "scale": 2
+  },
+  {
+    "formula": "a / b",
+    "fields": {
+      "a": "1",
+      "b": "0"
+    },
+    "expected": null,
+    "error": "division_by_zero",
+    "scale": 2,
+    "contexts": [
+      "bulk"
+    ],
+    "note": "Sammeländerung: Division durch 0 ist ein Fehler"
+  },
+  {
+    "formula": "coalesce(a / b, 5)",
+    "fields": {
+      "a": "1",
+      "b": "0"
+    },
+    "expected": null,
+    "error": "division_by_zero",
+    "scale": 2,
+    "contexts": [
+      "bulk"
+    ],
+    "note": "Sammeländerung: auch coalesce fängt die Division durch 0 nicht ab"
+  },
+  {
+    "formula": "a / b",
+    "fields": {
+      "b": "0"
+    },
+    "expected": null,
+    "scale": 2,
+    "contexts": [
+      "field",
+      "bulk"
+    ],
+    "note": "leerer Operand: leer, auch in der Sammeländerung kein Fehler"
+  },
+  {
+    "formula": "if(b = 0, a, a / b)",
+    "fields": {
+      "a": "7",
+      "b": "0"
+    },
+    "expected": "7",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "bulk"
+    ],
+    "note": "nur der gewählte Zweig wird gerechnet"
+  },
+  {
+    "formula": "a > b and c / 0 = 1",
+    "fields": {
+      "a": "1",
+      "b": "2"
+    },
+    "expected": "0",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "bulk"
+    ],
+    "note": "kurzgeschlossen: rechte Seite nicht gerechnet"
+  },
+  {
+    "formula": "round(a * 1.05 / 0.05, 0) * 0.05",
+    "fields": {
+      "a": "12.34"
+    },
+    "expected": "12.95",
+    "scale": 2,
+    "contexts": [
+      "field",
+      "report",
+      "bulk"
+    ],
+    "note": "Tarif um 5 %, auf 0.05 gerundet"
   }
 ]

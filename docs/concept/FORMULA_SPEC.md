@@ -1,6 +1,6 @@
 # Spezifikation der Formelsprache
 
-Stand: 23.11.2026 · Status: **verbindlich für Feld- und Auswertungskontext** (Fundament 2, F4; Backlog B-143) · Prüfung: `tests/Fixtures/formula-conformance.json` mit `FormulaConformanceTest` auf PostgreSQL, MySQL und MariaDB; `tests/Unit/FormulaSpecTest.php` vergleicht die Funktionsmatrix (Abschnitt 2) mit dem Code.
+Stand: 27.11.2026 (Kontext Sammeländerung, B-133 S2) · Status: **verbindlich für Feld- und Auswertungskontext** (Fundament 2, F4; Backlog B-143) · Prüfung: `tests/Fixtures/formula-conformance.json` mit `FormulaConformanceTest` auf PostgreSQL, MySQL und MariaDB; `tests/Unit/FormulaSpecTest.php` vergleicht die Funktionsmatrix (Abschnitt 2) mit dem Code.
 
 ## 1. Zweck und Geltung
 
@@ -12,6 +12,7 @@ SAFT hat **eine** Formelsprache mit **einem** Parser (`App\DynamicData\Formula\P
 | **Auswertung** | berechnete Werte und Spalten in Auswertungen | SQL, die Datenbank rechnet je Zeile bzw. Gruppe | `Reports\ReportExpression` mit `Reports\Dialects` |
 | **Regel** (geplant, B-142) | Bedingungen und Werte von Regeln | PHP wie Feld, plus Datums- und Benutzerfunktionen | – |
 | **Zeilenrecht** (geplant, B-020) | Einschränkung je Rolle | SQL über den Query Builder (`RowFilterCompiler`) | – |
+| **Sammeländerung** (B-133 S2) | Art „Formel“ der Sammeländerung: je Datensatz ein neuer Wert für ein Ganzzahl-, Dezimal- oder Ja/Nein-Feld (`BULK_EDIT.md` §12). Wie Feld, aber **streng**: Division durch 0 ist ein Fehler je Datensatz statt leer (auch innerhalb von `coalesce`; nur gerechnete Zweige zählen). Das **eigene Feld ist erlaubt** und meint den bisherigen Wert; berechnete Felder und Aggregate lesen den gespeicherten Stand vor der Änderung. Ein leeres Ergebnis lässt den Datensatz unverändert | PHP wie Feld, `Evaluator::evaluateStrict()` | `Bulk\BulkFormula` |
 | **Nummernkreis** (B-135) | Bausteine einer Nummer: keine Formel, sondern ein Muster mit Platzhaltern (`NUMBERING.md` Abschnitt 5). Die Bedingung „Vergeben, wenn“ (N3) ist eine Formel wie Feld, ausgewertet als wahr/falsch (ungleich 0), **ohne berechnete Felder und Aggregate**, weil sie vor den Formeln läuft | PHP wie Feld | `Numbering\NumberPattern`, `Numbering\NumberCondition` |
 
 Wer dieselbe Formel als Feld und als Auswertungsspalte sieht, erwartet dasselbe Ergebnis. Diese Spezifikation legt die Bedeutung fest; die **PHP-Auswertung ist die Referenz**. Wo SQL abweicht, wird das SQL angepasst oder die Funktion für den Kontext gesperrt (Abschnitt 2). **Neue Funktionen und Operatoren werden zuerst hier eingetragen** – mit Kontext, Leer-Regel und Fällen in der Konformitätstabelle – und erst dann gebaut.
@@ -97,7 +98,7 @@ Das Ergebnis eines berechneten Felds ist leer, wenn die Formel leer ergibt; die 
 - Gerechnet wird **exakt dezimal** (bcmath), nicht mit Gleitkommazahlen. `0.1 + 0.2 = 0.3`.
 - **Zwischenergebnisse** haben 12 Nachkommastellen; weitere Stellen werden **abgeschnitten** (nicht gerundet). Die Division `10 / 3` ergibt intern `3.333333333333`.
 - **Rundung auf das Ziel** geschieht einmal am Ende: auf die Nachkommastellen des berechneten Felds bzw. der Spalte der Auswertung, kaufmännisch (Abschnitt 7). Ein Feld „Ganzzahl“ hat 0 Nachkommastellen.
-- **Division durch 0** ergibt leer, kein Fehler.
+- **Division durch 0** ergibt leer, kein Fehler – ausser im Kontext Sammeländerung (Abschnitt 1), dort ist sie ein Fehler je Datensatz.
 - **Grosse Zahlen:** PHP rechnet beliebig lang; die Datenbank mit `numeric` (PostgreSQL) bzw. `DECIMAL(65,10)` (MySQL, MariaDB). Ergebnisse, die nicht ins Zielfeld passen, lehnt die Datenbank beim Speichern ab.
 
 **Entscheidung 23.11.2026 (Fundament 2, F4):** In Auswertungen rechnet die Datenbank Zwischenergebnisse mit **mehr** Stellen als 12 (PostgreSQL `numeric` mit mindestens 16 Stellen, MySQL/MariaDB Dividend-Skala + 4). SQL wird nicht künstlich abgeschnitten. Abweichungen jenseits der zwölften Nachkommastelle sind hingenommen; sie werden nach der Rundung auf höchstens 10 Stellen nur sichtbar, wenn ein Zwischenergebnis genau auf einer Rundungsgrenze liegt und zugleich nicht abbrechend ist. Die Konformitätstabelle enthält solche Grenzfälle; wo einer sichtbar wird, entscheidet der Fall (SQL anpassen oder Fall als bekannte Abweichung markieren).
@@ -163,7 +164,8 @@ Wer eine davon baut, ergänzt zuerst die Matrix (Abschnitt 2), die Leer-Regel un
 
 - `fields`: Werte der Hilfstabelle `formel_konformitaet` (Spalten `a`, `b`, `c` Dezimal 18,6; `i` Ganzzahl; `t` Text; `s` Auswahl; `d` Datum; `j` Ja/Nein). Fehlende Felder sind leer.
 - `expected`: erwartetes Ergebnis nach Rundung auf `scale` Nachkommastellen (Vorgabe 2), `null` für leer.
-- `contexts`: `field` (PHP über `FormulaAnalyzer` und `Evaluator`), `report` (SQL über `ReportExpression::sql()` auf der Hilfstabelle, Rundung durch die Datenbank). Vorgabe: beide, wenn die Formel in Auswertungen erlaubt ist.
+- `contexts`: `field` (PHP über `FormulaAnalyzer` und `Evaluator`), `report` (SQL über `ReportExpression::sql()` auf der Hilfstabelle, Rundung durch die Datenbank), `bulk` (PHP streng über `Evaluator::evaluateStrict()`, Kontext Sammeländerung). Vorgabe: `field` und `report`, wenn die Formel in Auswertungen erlaubt ist.
+- `error`: nur im Kontext `bulk`, erwarteter Fehler statt eines Ergebnisses (`division_by_zero`); ein Fall mit `error` nennt nur diesen Kontext.
 - `FormulaConformanceTest` rechnet jeden Fall in jedem genannten Kontext und vergleicht exakt als Dezimalzahl. Er läuft in der CI auf PostgreSQL, MySQL und MariaDB.
 
 Regel: Jede Änderung an `Evaluator`, `ReportExpression` oder einem Dialekt, die ein Ergebnis verändert, braucht einen Fall, der sie zeigt.

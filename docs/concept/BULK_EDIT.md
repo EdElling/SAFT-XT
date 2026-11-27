@@ -1,6 +1,6 @@
 # Konzept: Datensätze auswählen und Sammeländerung in SAFT XT
 
-Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2–S4 offen** · Backlog: B-133
+Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2 entschieden (§12), in Arbeit, S3–S4 offen** · Backlog: B-133
 (ersetzt B-024)
 
 > **Überarbeitung 27.11.2026:** Seit dem Entwurf vom 23.11.2026 gibt es Fundament 2 und die Nummernkreise. Der
@@ -86,7 +86,7 @@ ausgewählt**“ und listet die änderbaren Felder. Je Feld:
 | **leeren** | Felder ohne Pflicht | Bemerkung ← leer |
 | **rechnen** (S2) | Zahl: `+ − × ÷` und „um %“, mit Runden auf Stellen; Datum: ± Tage, Monate | Tarif × 1,05, gerundet auf 0,05; Fälligkeit + 30 Tage |
 | **ersetzen** (S2) | Text: Suchtext → Ersatz innerhalb des Werts, wahlweise „Gross-/Kleinschreibung beachten“ und „nur ganzes Wort“, keine regulären Ausdrücke; je Feld, nie über alle Felder; Datensätze ohne Treffer bleiben unverändert | Adresse: „Str.“ → „Strasse“ |
-| **Formel** (S2) | alle; Formel in der vorhandenen Sprache (FORMULA_SPEC.md), je Datensatz mit dem bisherigen Wert und verknüpften Feldern | `round(tarif * 1.05 / 0.05, 0) * 0.05` |
+| **Formel** (S2) | Ganzzahl, Dezimalzahl, Ja/Nein (§12 Frage 5); Formel in der vorhandenen Sprache (FORMULA_SPEC.md), je Datensatz mit dem bisherigen Wert, berechneten Feldern und Summen über Kind-Datensätze | `round(tarif * 1.05 / 0.05, 0) * 0.05` |
 
 **Nicht änderbar** und deshalb nicht angeboten (Vorschlag, §11 Frage 3):
 
@@ -245,3 +245,94 @@ behoben: Verschachtelte Schreibvorgänge (Summen im Master) erbten die erwartete
 7. **Rückgängig für alle oder nur die eigenen?** *Empfehlung:* eigene für alle mit *ändern*, fremde nur für
    Administratoren der App; Entscheidung in S3.
 8. **Angebundene Tabellen?** *Empfehlung:* nicht in S1 (siehe §3), Prüfung in S4.
+
+## 12. Entscheidungen zu S2 „Rechnen, Ersetzen und Formel“ (27.11.2026: alle Empfehlungen angenommen)
+
+**Befund im Code (27.11.2026).** `BulkChange::apply()` arbeitet schon je Datensatz, aber mit einem Wert für alle
+(`values()`); die Prüfphase gibt diese Werte an `RecordChecker::check()`. Für S2 rechnet `BulkChange` den neuen Wert je
+Datensatz aus dem bisherigen (`valuesFor($record)`), Prüfung, Vorschau und Schreibphase nutzen dasselbe. Die
+Formelsprache liefert heute **nur Zahlen** (Text nur in Vergleichen, keine Datumsrechnung, `add_days` reserviert),
+liest **keine Felder verknüpfter Haupt-Datensätze** (nur Aggregate über Kind-Tabellen), verbietet das **eigene Feld**
+(`tables.formula.errors.self`) und ergibt bei `/ 0` **leer**. `RecordChecker` prüft die Länge von Text, nicht aber
+precision/scale von Dezimalzahlen; ein Überlauf fiele heute erst als Datenbankfehler auf. In der Musikschule-Demo gibt es
+keine Adresse mit „Str.“.
+
+1. **Rechnen mit leeren Werten: überspringen, als 0 oder Fehler?** *Empfehlung:* **überspringen**. Der Datensatz
+   bleibt unverändert und wird gesondert gezählt („3 ohne Wert, unverändert“), in Vorschau, „Nur prüfen“ und Ergebnis.
+   *Warum:* Das entspricht der Leer-Regel der Formelsprache (leer breitet sich aus, FORMULA_SPEC §5). „Als 0“ setzte
+   bei „Tarif × 1,05“ Kurse ohne Tarif auf 0,00. Ein Fehler machte jede Sammeländerung über einen Filter mit einzelnen
+   leeren Werten unmöglich (alles oder nichts). Wer leere Werte füllen will, filtert danach und *setzt*.
+2. **Runden.** *Empfehlung:* Gerundet wird **immer kaufmännisch** (ab 5 weg von 0, wie FORMULA_SPEC §7). Das Ziel ist
+   wählbar: **Nachkommastellen** (0 bis zur Skala des Felds, Vorgabe = Skala des Felds) oder **Vielfaches** (z. B.
+   0,05; 0,5; 10). Das Vielfache wird als `round(x / v) × v` gerechnet und muss > 0 sein und in die Skala des Felds
+   passen (0,005 bei 2 Stellen wird abgelehnt). Gerechnet wird **exakt mit bcmath** über `Evaluator::decimal()`/
+   `Evaluator::round()`, mit 12 Zwischenstellen wie in der Formelsprache. Ganzzahlfelder runden auf 0 Stellen.
+   Auf- und Abrunden kommen nicht in S2 (Backlog, falls gewünscht). „um %“ heisst `× (1 + p/100)`, auch negativ
+   (−10 %). „÷ 0“ lehnt schon der Dialog ab.
+3. **Überlauf von precision/scale.** *Empfehlung:* **Prüffehler je Datensatz**, keine Kappung. Dazu prüft
+   `RecordChecker` künftig die Zahl der Vorkommastellen eines Dezimalfelds (`precision − scale`) und den Bereich von
+   Ganzzahlen (bigint). Meldung: „Tarif: 123'456'789.00 passt nicht ins Feld (höchstens 8 Stellen vor dem Komma)“.
+   *Warum:* Das kommt auch Import und Plugin-API zugute (heute ein Datenbankfehler) und bleibt auf drei Datenbanken
+   gleich. Bestehende Min-/Max-Regeln greifen wie bisher.
+4. **Datum ± Monate am Monatsende, Datum/Zeit.** *Empfehlung:* **ohne Überlauf**: 31.01. + 1 Monat = 28.02. (bzw.
+   29.02.), 31.03. − 1 Monat = 28./29.02. (Carbon `addMonthsNoOverflow`), so wie es Tabellenkalkulationen tun (EDATE).
+   Tage zählen kalendarisch. Felder **Datum und Uhrzeit** bekommen dieselben Arten (± Tage, ± Monate); die Uhrzeit
+   bleibt stehen. Stunden und Minuten kommen nicht in S2. Werktage gibt es nicht (kein Kalender in SAFT).
+5. **Formel: Ergebnistyp und Feldtyp.** *Empfehlung:* Weil die Sprache nur Zahlen liefert, gibt es *Formel* in S2 für
+   **Ganzzahl, Dezimalzahl und Ja/Nein**. Zahlen werden auf die Skala des Felds gerundet (wie bei berechneten Feldern),
+   Ja/Nein ist ungleich 0 → ja, 0 → nein. Für Text, Auswahl, Datum und Verknüpfung gibt es keine Formel, bis die
+   Sprache Text- bzw. Datumsergebnisse kann (`add_days`, `replace()`, Verkettung; FORMULA_SPEC zuerst, Backlog). Das
+   eigene Feld ist erlaubt und bedeutet den **bisherigen Wert**. Das Beispiel aus §4 wird damit
+   `round(tarif * 1.05 / 0.05, 0) * 0.05`.
+6. **Formel: leeres Ergebnis und Division durch 0.** *Empfehlung:* Ein **leeres Ergebnis** (z. B. leerer Operand)
+   lässt den Datensatz **unverändert** wie bei Frage 1 und wird gezählt; leeren geht über die Art *leeren*. Eine
+   **Division durch 0** ist dagegen ein **Prüffehler je Datensatz** („#12 Gitarre A: Division durch 0“). Dazu bekommt
+   `Evaluator` eine strenge Auswertung (`evaluateStrict()` o. ä.), die bei `/ 0` eine `FormulaException` wirft; Feld
+   und Auswertung bleiben bei „leer“. Die Abweichung kommt als neuer Kontext **„Sammeländerung“** in FORMULA_SPEC §1,
+   mit Fällen in der Konformitätstabelle (nur `field`). *Warum:* Eine still übersprungene Division durch 0 fiele erst
+   viel später auf, ein leerer Operand ist dagegen ein bekannter, gewollter Fall.
+7. **Formel: berechnete Felder, Summen, verknüpfte Felder.** *Empfehlung:* **Berechnete Felder und Aggregate über
+   Kind-Tabellen erlaubt**. Sie lesen den gespeicherten Stand vor der Sammeländerung (Aggregat über
+   `Recalculator`-Weg je Datensatz; bei 5'000 Datensätzen vertretbar, weil die Arbeit in Blöcken läuft). **Felder
+   verknüpfter Haupt-Datensätze** (z. B. Tarif der Kursart im Kurs) kann die Sprache nicht. §4 („mit verknüpften
+   Feldern“) wird auf „Aggregate über Kind-Datensätze“ berichtigt; ein Pfad `kursart.tarif_semester` wäre neue Syntax
+   und kommt mit einem eigenen Backlog-Eintrag. Alle Formeln einer Sammeländerung sehen **die Werte vor der Änderung**,
+   auch wenn ein anderes Feld derselben Sammeländerung geändert wird (wie ein `UPDATE … SET a = b, b = a`).
+8. **Formel prüfen und speichern.** *Empfehlung:* Die Formel wird im Dialog beim Verlassen des Felds geprüft
+   (`FormulaAnalyzer::compile()` mit Feldern der Tabelle, Fehler mit Stelle unter dem Feld). In den Parametern der
+   Arbeit steht der **Text**. `BulkChange::validate()` übersetzt ihn in jedem Schritt neu, damit eine inzwischen
+   geänderte Struktur (Feld gelöscht) als Fehler auffällt. Das Vorbild ist `NumberCondition::compile()`, aber ohne
+   gespeicherten Baum.
+9. **Ersetzen: welche Feldtypen?** *Empfehlung:* nur **Text und mehrzeiliger Text**. **Auswahl** nicht, weil sie den
+   gespeicherten Wert hat, nicht die Bezeichnung; dafür gibt es *setzen*. **Verknüpfung** nicht, weil sie einen
+   Schlüssel hat (*setzen* mit Suche). Nummernkreise sind ohnehin ausgeschlossen. *Leeres Suchwort* lehnt der Dialog
+   ab, ein *leerer Ersatz* ist erlaubt (Text entfernen). Ein Ergebnis aus nur Leerzeichen oder leerem Text gilt als
+   leer, dann greift die Pflicht.
+10. **Ersetzen: „Gross-/Kleinschreibung“ und „nur ganzes Wort“.** *Empfehlung:* Ohne Häkchen wird unabhängig von
+    Gross-/Kleinschreibung gesucht (Unicode, `mb_`), der Ersatz wird eingefügt wie eingegeben. „Nur ganzes Wort“ heisst:
+    Vor und nach dem Treffer steht kein Buchstabe, keine Ziffer, kein `_`. So passt „Str.“ in „Str. des 1. Mai“, aber
+    nicht in „Hauptstr. 5“; ein einfaches `\b` versagte am Punkt. Für „Hauptstr. 5“ → „Hauptstrasse 5“ sucht man
+    ohne „ganzes Wort“ mit Gross-/Kleinschreibung „str.“ und ersetzt durch „strasse“. Intern darf das ein Muster mit `preg_quote()` sein.
+    Die Person gibt nie einen regulären Ausdruck ein. Ersetzt werden **alle** Treffer im Wert.
+11. **Ersetzen bzw. Rechnen bei eindeutigen Feldern.** *Empfehlung:* *ersetzen*, *rechnen* und *Formel* sind auf
+    eindeutigen Feldern **erlaubt** (heute nur *leeren*), weil die Werte je Datensatz verschieden bleiben können (z. B.
+    Vertragsnummer „MV-“ → „MV-2026-“). *setzen* bleibt verboten. Doppelte erkennt die Prüfphase. Dazu führt die
+    Arbeit die neuen Werte eindeutiger Felder über alle Blöcke in einer Datei im Ordner mit; `RecordChecker` prüft
+    gegen den Bestand. Ein Wert, den ein anderer ausgewählter Datensatz erst frei macht (Tausch), gilt als doppelt. Das
+    ist streng, aber einfach.
+12. **Ergebnis länger als die Feldlänge.** *Empfehlung:* **Prüffehler je Datensatz** (vorhandene Längenprüfung des
+    `RecordChecker`), nie abschneiden.
+13. **Vorschau bei Werten je Datensatz.** *Empfehlung:* Die Beispiele zeigen bis zu **10 Datensätze, die sich
+    ändern**, gesucht in Schlüsselreihenfolge unter den ersten **500** ausgewählten. So erscheinen beim Ersetzen mit
+    wenigen Treffern trotzdem Beispiele. Darüber stehen Zählungen: „ändern sich · unverändert · ohne Wert“. Bis 500
+    ausgewählte Datensätze sind sie exakt, darüber heisst es „unter den ersten 500: …; genaue Zahl mit ‚Nur prüfen‘“.
+    Ein Fehler, den die Rechnung selbst erkennt (Division durch 0, passt nicht ins Feld, zu lang), steht rot in der
+    Zelle des Beispiels. Pflicht-, Plugin- und Eindeutigkeitsfehler zeigt wie bisher erst die Prüfphase. *Warum:* Die
+    Vorschau bleibt synchron und schnell (500 Datensätze in PHP rechnen ist billig, auch mit Aggregaten noch unter
+    einer Sekunde), und die Arbeit liefert ohnehin die genauen Zahlen.
+14. **Ergebnis und Protokoll.** *Empfehlung:* Die Meldung der Arbeit nennt zusätzlich „ohne Wert“ bzw. „ohne Treffer“
+    getrennt von „schon so“. Das Protokoll ist unverändert (alter und neuer Wert je Feld). In den Parametern der
+    Arbeit stehen Art und Angaben (`op: calc`, `operator`, `operand`, `round`; `op: replace`, `search`, `replace`,
+    `case`, `word`; `op: formula`, `formula`), damit S3 sie anzeigen kann.
+15. **Rechte, Plugin-API, Migrationen.** *Empfehlung:* keine neuen Rechte, keine Migration. Die Plugin-API ist nicht
+    betroffen (`BulkChange`, `Evaluator`, `FormulaAnalyzer` und `RecordChecker` stehen nicht im `ApiManifest`, geprüft 27.11.2026).

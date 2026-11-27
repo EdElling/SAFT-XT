@@ -7,6 +7,7 @@ namespace Tests\Feature\DynamicData;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\Formula\Evaluator;
 use App\DynamicData\Formula\FormulaAnalyzer;
+use App\DynamicData\Formula\FormulaException;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Reports\Dialects\QueryDialectResolver;
@@ -16,7 +17,8 @@ use Illuminate\Support\Facades\DB;
 /**
  * Konformität der Formelsprache (docs/concept/FORMULA_SPEC.md, Abschnitt 12): jeder Fall aus
  * tests/Fixtures/formula-conformance.json wird im Feldkontext (PHP, Evaluator) und – wo erlaubt – im
- * Auswertungskontext (SQL, ReportExpression auf der Datenbank des Testlaufs) gerechnet und exakt verglichen.
+ * Auswertungskontext (SQL, ReportExpression auf der Datenbank des Testlaufs) gerechnet und exakt verglichen; der Kontext
+ * „bulk“ (Sammeländerung) rechnet streng: Division durch 0 ist ein Fehler (Schlüssel „error“).
  * Läuft in der CI auf PostgreSQL, MySQL und MariaDB.
  */
 class FormulaConformanceTest extends DynamicDataTestCase
@@ -92,6 +94,36 @@ class FormulaConformanceTest extends DynamicDataTestCase
         $this->assertSame([], $failures, "Feldkontext weicht von FORMULA_SPEC.md ab:\n- ".implode("\n- ", $failures));
     }
 
+    public function test_bulk_context_matches_the_specification(): void
+    {
+        $fields = $this->table->fields->keyBy('name')->all();
+        $analyzer = app(FormulaAnalyzer::class);
+        $failures = [];
+
+        foreach (self::cases() as $case) {
+            if (! in_array('bulk', $case['contexts'], true)) {
+                continue;
+            }
+
+            $record = $this->record($case);
+            $compiled = $analyzer->compile($case['formula'], $fields, '', $this->table->name);
+
+            try {
+                $actual = Evaluator::round((new Evaluator)->evaluateStrict($compiled['ast'], static fn (string $field): mixed => $record->getAttribute($field)), (int) $case['scale']);
+                $error = null;
+            } catch (FormulaException $e) {
+                $actual = null;
+                $error = $e->errorCode === 'dynamic.formula.division_by_zero' ? 'division_by_zero' : $e->errorCode;
+            }
+
+            if ($error !== ($case['error'] ?? null) || ! $this->same($case['expected'], $actual, (int) $case['scale'])) {
+                $failures[] = sprintf('%s mit %s: erwartet %s, PHP liefert %s (%s)', $case['formula'], json_encode($case['fields']), $case['error'] ?? $case['expected'] ?? 'leer', $error ?? $actual ?? 'leer', $case['note'] ?? '');
+            }
+        }
+
+        $this->assertSame([], $failures, "Kontext Sammeländerung weicht von FORMULA_SPEC.md ab:\n- ".implode("\n- ", $failures));
+    }
+
     public function test_report_context_matches_the_specification(): void
     {
         $connection = app(DynamicDataNamespace::class)->connection();
@@ -124,8 +156,9 @@ class FormulaConformanceTest extends DynamicDataTestCase
     public function test_every_case_names_only_known_contexts_and_fields(): void
     {
         foreach (self::cases() as $case) {
-            $this->assertSame([], array_diff($case['contexts'], ['field', 'report']), $case['formula']);
+            $this->assertSame([], array_diff($case['contexts'], ['field', 'report', 'bulk']), $case['formula']);
             $this->assertSame([], array_diff(array_keys($case['fields']), ['a', 'b', 'c', 'i', 't', 's', 'd', 'j']), $case['formula']);
+            $this->assertTrue(! isset($case['error']) || $case['contexts'] === ['bulk'], 'Fehler gibt es nur im Kontext Sammeländerung: '.$case['formula']);
 
             if (in_array('report', $case['contexts'], true)) {
                 $this->assertSame([], array_diff(array_keys($case['fields']), self::NUMERIC), 'Auswertungen kennen nur Zahlfelder: '.$case['formula']);

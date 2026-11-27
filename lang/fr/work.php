@@ -106,5 +106,7 @@ return [
         'write_failed' => ':record : :message La modification groupée a été entièrement annulée.',
         'done' => '{0} Aucun enregistrement modifié.|{1} 1 enregistrement modifié.|[2,*] :count enregistrements modifiés.',
         'unchanged' => '{1} 1 avait déjà cette valeur (inchangé).|[2,*] :count avaient déjà cette valeur (inchangés).',
+        'skipped' => '{1} 1 sans valeur ou sans occurrence (inchangé).|[2,*] :count sans valeur ou sans occurrence (inchangés).',
+        'duplicate_in_selection' => '« :value » résulterait aussi pour :record ; la valeur ne doit apparaître qu’une fois.',
     ],
 ];

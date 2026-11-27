@@ -12,44 +12,70 @@ use App\Models\DynamicRecord;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Vorschau einer Sammeländerung (BULK_EDIT.md §5), ohne zu schreiben: Anzahl, die ersten Beispiele vorher → nachher und
- * Hinweise zu Nummernkreisen. Ob ein Datensatz die Prüfungen besteht, zeigt erst die Prüfphase der Arbeit.
+ * Vorschau einer Sammeländerung (BULK_EDIT.md §5, §12 Frage 13), ohne zu schreiben: Anzahl, bis zu 10 Beispiele, die
+ * sich ändern, vorher → nachher, Zählungen und Hinweise zu Nummernkreisen. Gerechnet wird über die ersten SCAN
+ * ausgewählten Datensätze in Schlüsselreihenfolge; darüber sind die Zählungen ein Ausschnitt, die genauen Zahlen
+ * liefert „Nur prüfen“. Fehler der Rechnung (Division durch 0) stehen beim Beispiel; ob ein Datensatz die Prüfungen
+ * besteht (Pflicht, Länge, Plugins), zeigt erst die Prüfphase der Arbeit.
  */
 final readonly class BulkPreview
 {
     public const int EXAMPLES = 10;
 
+    /** So viele ausgewählte Datensätze rechnet die Vorschau durch. */
+    public const int SCAN = 500;
+
     /** Schlüssel je Abfrage (PostgreSQL erlaubt höchstens 65'535 Parameter). */
     public const int CHUNK = 1000;
 
     /**
-     * @param  list<array{record: DynamicRecord, original: DynamicRecord, before: array<string, mixed>, after: array<string, mixed>}>  $examples
+     * @param  list<array{record: DynamicRecord, original: DynamicRecord, before: array<string, mixed>, after: array<string, mixed>, errors: array<string, string>}>  $examples
      * @param  list<string>  $hints
+     * @param  array{changing: int, unchanged: int, skipped: int, failed: int}  $counts  über die ersten SCAN
      */
     public function __construct(
         public int $count,
         public array $examples,
         public array $hints,
+        public array $counts = ['changing' => 0, 'unchanged' => 0, 'skipped' => 0, 'failed' => 0],
+        public bool $partial = false,
     ) {}
 
-    /** @param  list<int|string>  $ids */
+    /**
+     * Setzt voraus, dass $change->validate() bestanden hat.
+     *
+     * @param  list<int|string>  $ids
+     */
     public static function for(BulkChange $change, array $ids): self
     {
         $examples = [];
+        $counts = ['changing' => 0, 'unchanged' => 0, 'skipped' => 0, 'failed' => 0];
         $fields = $change->fieldNames();
+        $values = static fn (DynamicRecord $record): array => array_combine($fields, array_map(static fn (string $name): mixed => $record->getAttribute($name), $fields));
 
         $first = $ids;
         sort($first);
 
-        foreach (self::query($change)->whereKey(array_slice($first, 0, self::EXAMPLES))->orderBy('id')->get() as $record) {
-            $before = array_combine($fields, array_map(static fn (string $name): mixed => $record->getAttribute($name), $fields));
+        foreach (self::query($change)->whereKey(array_slice($first, 0, self::SCAN))->orderBy('id')->get() as $record) {
             $original = clone $record;
-            $change->apply($record);
-            $after = array_combine($fields, array_map(static fn (string $name): mixed => $record->getAttribute($name), $fields));
-            $examples[] = ['record' => $record, 'original' => $original, 'before' => $before, 'after' => $after];
+            $resolved = $change->resolve($record);
+
+            if ($resolved['errors'] !== []) {
+                $counts['failed']++;
+            } elseif ($change->apply($record, $resolved['values'])) {
+                $counts['changing']++;
+            } else {
+                $counts[$resolved['skipped'] === [] ? 'unchanged' : 'skipped']++;
+
+                continue;
+            }
+
+            if (count($examples) < self::EXAMPLES) {
+                $examples[] = ['record' => $record, 'original' => $original, 'before' => $values($original), 'after' => $values($record), 'errors' => $resolved['errors']];
+            }
         }
 
-        return new self(count($ids), $examples, self::hints($change, $ids));
+        return new self(count($ids), $examples, self::hints($change, $ids), $counts, count($ids) > self::SCAN);
     }
 
     /**

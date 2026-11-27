@@ -14,6 +14,12 @@ final class FormulaException extends BusinessRuleException
         return new self(__('tables.formula.errors.at', ['position' => $position, 'message' => $message]), 'dynamic.formula');
     }
 
+    /** Division durch 0 in der strengen Auswertung (Sammeländerung). */
+    public static function divisionByZero(): self
+    {
+        return new self(__('tables.formula.errors.division_by_zero'), 'dynamic.formula.division_by_zero');
+    }
+
     public static function general(string $message): self
     {
         return new self($message, 'dynamic.formula');

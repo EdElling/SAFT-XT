@@ -57,6 +57,9 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
 
     private const string WRITE = 'write';
 
+    /** Neue Werte eindeutiger Felder über alle Blöcke der Prüfphase: Feld => Wert (klein) => Schlüssel. */
+    private const string UNIQUE_FILE = 'unique.json';
+
     public function __construct(private RecordWriter $writer, private RecordChecker $checker) {}
 
     /** Obergrenze je Sammeländerung (dynamic_data.bulk_max); 0 = ohne Grenze. */
@@ -88,7 +91,7 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
         $count = count(self::ids($parameters));
 
         return new WorkPlan(
-            ['run' => self::RUN_PREFIX.Str::uuid(), 'count' => $count, 'phase' => self::CHECK, 'index' => 0, 'unchanged' => 0, 'failed' => 0, 'errors' => [], 'changed' => 0],
+            ['run' => self::RUN_PREFIX.Str::uuid(), 'count' => $count, 'phase' => self::CHECK, 'index' => 0, 'unchanged' => 0, 'skipped' => 0, 'failed' => 0, 'errors' => [], 'changed' => 0],
             ($parameters['dry_run'] ?? false) ? $count : 2 * $count,
         );
     }
@@ -170,9 +173,11 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
         $errors = (array) $state['errors'];
         $failed = (int) $state['failed'];
         $unchanged = (int) $state['unchanged'];
+        $skipped = (int) ($state['skipped'] ?? 0);
         $versions = [];
         $options = WriteOptions::bulk((string) $state['run']);
-        $values = $change->values();
+        $unique = self::readJson($step, self::UNIQUE_FILE);
+        $uniqueFields = $change->table->fields->filter(static fn (CustomField $f): bool => $f->is_unique)->keyBy('name');
         $fail = static function (string $message) use (&$errors, &$failed): void {
             $failed++;
 
@@ -181,7 +186,7 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
             }
         };
 
-        $this->writer->trial(function () use ($chunk, $records, $change, $values, $options, $fail, &$versions, &$unchanged): void {
+        $this->writer->trial(function () use ($chunk, $records, $change, $options, $fail, $uniqueFields, &$versions, &$unchanged, &$skipped, &$unique): void {
             foreach ($chunk as $id) {
                 $record = $records->get($id);
 
@@ -192,7 +197,40 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
                 }
 
                 $version = RecordVersion::of($record);
+                $resolved = $change->resolve($record);
+
+                if ($resolved['errors'] !== []) {
+                    $fail(self::title($change->table, $record).': '.implode(' · ', $change->errorTexts($resolved['errors'])));
+
+                    continue;
+                }
+
+                $values = $resolved['values'];
+
+                // Nichts zu ändern (kein bisheriger Wert, kein Treffer): auch nicht prüfen.
+                if ($values === []) {
+                    $skipped++;
+
+                    continue;
+                }
+
                 $problems = $this->checker->check($change->table, $values, $record, references: true);
+
+                // Eindeutige Felder (ersetzen, rechnen, Formel): derselbe neue Wert bei zwei ausgewählten Datensätzen,
+                // über alle Blöcke (der Probelauf rollt je Block zurück, die Datenbank sähe das nicht).
+                foreach (array_intersect_key($values, $uniqueFields->all()) as $name => $value) {
+                    $key = mb_strtolower((string) $value);
+
+                    if ($value === null || $value === '' || (string) $record->getRawOriginal($name) === (string) $value) {
+                        continue;
+                    }
+
+                    if (isset($unique[$name][$key]) && $unique[$name][$key] !== (string) $record->getKey()) {
+                        $problems[] = [$uniqueFields[$name], __('work.bulk.duplicate_in_selection', ['value' => $value, 'record' => '#'.$unique[$name][$key]])];
+                    }
+
+                    $unique[$name][$key] ??= (string) $record->getKey();
+                }
 
                 if ($problems !== []) {
                     $fail(self::title($change->table, $record).': '.implode(' · ', array_map(
@@ -203,8 +241,8 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
                     continue;
                 }
 
-                if (! $change->apply($record)) {
-                    $unchanged++;
+                if (! $change->apply($record, $values)) {
+                    $resolved['skipped'] === [] ? $unchanged++ : $skipped++;
 
                     continue;
                 }
@@ -223,8 +261,13 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
         }, $options);
 
         self::writeJson($step, 'versions-'.intdiv((int) $state['index'], self::BLOCK).'.json', $versions);
+
+        if ($uniqueFields->isNotEmpty()) {
+            self::writeJson($step, self::UNIQUE_FILE, $unique);
+        }
+
         $index = (int) $state['index'] + count($chunk);
-        $state = [...$state, 'index' => $index, 'errors' => $errors, 'failed' => $failed, 'unchanged' => $unchanged];
+        $state = [...$state, 'index' => $index, 'errors' => $errors, 'failed' => $failed, 'unchanged' => $unchanged, 'skipped' => $skipped];
 
         if ($index < count($ids)) {
             return StepOutcome::continue($state, count($chunk));
@@ -237,17 +280,17 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
             );
         }
 
-        $changing = count($ids) - $unchanged;
+        $changing = count($ids) - $unchanged - $skipped;
 
         if ($step->parameters['dry_run'] ?? false) {
             return StepOutcome::finished(
-                trans_choice('work.bulk.check_passed', $changing, ['count' => $changing]).self::unchangedText($unchanged),
-                ['changing' => $changing, 'unchanged' => $unchanged, 'dry_run' => true],
+                trans_choice('work.bulk.check_passed', $changing, ['count' => $changing]).self::unchangedText($unchanged, $skipped),
+                ['changing' => $changing, 'unchanged' => $unchanged, 'skipped' => $skipped, 'dry_run' => true],
                 count($chunk),
             );
         }
 
-        return StepOutcome::continue([...$state, 'phase' => self::WRITE, 'index' => 0, 'unchanged' => 0], count($chunk));
+        return StepOutcome::continue([...$state, 'phase' => self::WRITE, 'index' => 0, 'unchanged' => 0, 'skipped' => 0], count($chunk));
     }
 
     private function write(WorkStep $step, BulkChange $change): StepOutcome
@@ -260,6 +303,7 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
         $versions = self::readJson($step, "versions-{$block}.json");
         $options = WriteOptions::bulk((string) $state['run']);
         $unchanged = (int) $state['unchanged'];
+        $skipped = (int) ($state['skipped'] ?? 0);
         $changed = (int) $state['changed'];
         $journal = [];
         $fields = $change->fieldNames();
@@ -268,9 +312,14 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
             $record = $records->get($id) ?? throw new BusinessRuleException(__('work.bulk.changed_meanwhile', ['record' => '#'.$id]), 'bulk.changed_meanwhile');
             $version = $versions[(string) $id] ?? null;
             $old = array_intersect_key($record->getAttributes(), array_flip($fields));
+            $resolved = $change->resolve($record);
 
-            if (! $change->apply($record)) {
-                $unchanged++;
+            if ($resolved['errors'] !== []) {
+                throw new BusinessRuleException(__('work.bulk.write_failed', ['record' => self::title($change->table, $record), 'message' => implode(' · ', $change->errorTexts($resolved['errors']))]), 'bulk.write_failed');
+            }
+
+            if (! $change->apply($record, $resolved['values'])) {
+                $resolved['skipped'] === [] ? $unchanged++ : $skipped++;
 
                 continue;
             }
@@ -295,15 +344,15 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
         // Vor dem Commit festhalten, was abort() zurücknehmen müsste; ein zurückgerollter Block wird nie gelesen.
         self::writeJson($step, "journal-{$block}.json", $journal);
         $index = (int) $state['index'] + count($chunk);
-        $state = [...$state, 'index' => $index, 'unchanged' => $unchanged, 'changed' => $changed];
+        $state = [...$state, 'index' => $index, 'unchanged' => $unchanged, 'skipped' => $skipped, 'changed' => $changed];
 
         if ($index < count($ids)) {
             return StepOutcome::continue($state, count($chunk));
         }
 
         return StepOutcome::finished(
-            trans_choice('work.bulk.done', $changed, ['count' => $changed]).self::unchangedText($unchanged),
-            ['changed' => $changed, 'unchanged' => $unchanged, 'run' => $state['run']],
+            trans_choice('work.bulk.done', $changed, ['count' => $changed]).self::unchangedText($unchanged, $skipped),
+            ['changed' => $changed, 'unchanged' => $unchanged, 'skipped' => $skipped, 'run' => $state['run']],
             count($chunk),
         );
     }
@@ -342,9 +391,10 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
         return '#'.$record->getKey().($text === '' ? '' : ' „'.Str::limit($text, 40).'“');
     }
 
-    private static function unchangedText(int $unchanged): string
+    private static function unchangedText(int $unchanged, int $skipped = 0): string
     {
-        return $unchanged > 0 ? ' '.trans_choice('work.bulk.unchanged', $unchanged, ['count' => $unchanged]) : '';
+        return ($unchanged > 0 ? ' '.trans_choice('work.bulk.unchanged', $unchanged, ['count' => $unchanged]) : '')
+            .($skipped > 0 ? ' '.trans_choice('work.bulk.skipped', $skipped, ['count' => $skipped]) : '');
     }
 
     /** Stehen im Datensatz noch die Werte, die die Sammeländerung geschrieben hat? */

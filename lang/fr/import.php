@@ -89,6 +89,8 @@ return [
         'invalid' => 'Le fichier contient des erreurs ; rien n’a été importé.',
         'not_integer' => '« :value » n’est pas un nombre entier.',
         'not_number' => '« :value » n’est pas un nombre.',
+        'too_many_digits' => 'Le nombre est trop grand pour le champ (au plus :max chiffres avant la virgule).',
+        'integer_range' => 'Le nombre est trop grand pour le champ.',
         'not_boolean' => '« :value » n’est ni oui ni non.',
         'not_date' => '« :value » n’est pas une date valide (JJ.MM.AAAA).',
         'not_choice' => '« :value » n’est pas une valeur de cette liste de sélection.',

@@ -106,5 +106,7 @@ return [
         'write_failed' => ':record: :message Die Sammeländerung wurde vollständig zurückgenommen.',
         'done' => '{0} Kein Datensatz geändert.|{1} 1 Datensatz geändert.|[2,*] :count Datensätze geändert.',
         'unchanged' => '{1} 1 war schon so (unverändert).|[2,*] :count waren schon so (unverändert).',
+        'skipped' => '{1} 1 ohne Wert bzw. ohne Treffer (unverändert).|[2,*] :count ohne Wert bzw. ohne Treffer (unverändert).',
+        'duplicate_in_selection' => '„:value“ ergäbe sich auch bei :record; der Wert darf nur einmal vorkommen.',
     ],
 ];

@@ -106,5 +106,7 @@ return [
         'write_failed' => ':record: :message The bulk edit was fully reverted.',
         'done' => '{0} No record changed.|{1} 1 record changed.|[2,*] :count records changed.',
         'unchanged' => '{1} 1 already had that value (unchanged).|[2,*] :count already had that value (unchanged).',
+        'skipped' => '{1} 1 without a value or match (unchanged).|[2,*] :count without a value or match (unchanged).',
+        'duplicate_in_selection' => '“:value” would also result for :record; the value may only occur once.',
     ],
 ];
