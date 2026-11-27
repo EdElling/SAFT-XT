@@ -8,13 +8,12 @@ erledigte bleiben mit Status und Bezug (Commit, Version) stehen.
 
 ## Als Nächstes (Prio 1)
 
-Stand 26.11.2026 (Nummernkreise N1–N3 released mit v0.7.1). Je Punkt eine eigene Sitzung.
+Stand 27.11.2026 (Nummernkreise N1–N4 released mit v0.7.2, B-135 abgeschlossen). Je Punkt eine eigene Sitzung.
 
-1. **B-135 N4** Nummernkreise: eigener Zähler je Wert eines Auswahlfelds, Platzhalter `{GROUP}` (Konzept docs/concept/NUMBERING.md) – schliesst B-135 ab.
-2. **B-142** Regel-Engine: Ereignisregeln über mehrere Tabellen, z. B. „Dokument versendet → Status versendet“, Rechnungs- und Mahnläufe; Voraussetzungen Fundament 2 (B-143) und Nummernkreise erfüllt (Konzept docs/concept/RULES.md).
-3. **B-133** Sammeländerung: Teil 1 (Auswahl per Häkchen) umgesetzt, offen die Sammeländerung selbst (Konzept docs/concept/BULK_EDIT.md, Entwurf).
-4. **B-158/B-159** Datenansicht: Filter „leer/gefüllt“ und Systemspalten Anlege-/Änderungsdatum (Anstoss Strato-Demo).
-5. **B-020** Rechte auf Zeilenebene: Einschränkung je Rolle über Bedingungen in der Formelsprache (SQL über den Query Builder), Lesestellen mit `scope` in tests/Fixtures/read-sites.json schon vorbereitet (Konzept docs/concept/ROW_ACCESS.md, Entwurf).
+1. **B-142** Regel-Engine: Ereignisregeln über mehrere Tabellen, z. B. „Dokument versendet → Status versendet“, Rechnungs- und Mahnläufe; Voraussetzungen Fundament 2 (B-143) und Nummernkreise erfüllt (Konzept docs/concept/RULES.md).
+2. **B-133** Sammeländerung: Teil 1 (Auswahl per Häkchen) umgesetzt, offen die Sammeländerung selbst (Konzept docs/concept/BULK_EDIT.md, Entwurf).
+3. **B-158/B-159** Datenansicht: Filter „leer/gefüllt“ und Systemspalten Anlege-/Änderungsdatum (Anstoss Strato-Demo).
+4. **B-020** Rechte auf Zeilenebene: Einschränkung je Rolle über Bedingungen in der Formelsprache (SQL über den Query Builder), Lesestellen mit `scope` in tests/Fixtures/read-sites.json schon vorbereitet (Konzept docs/concept/ROW_ACCESS.md, Entwurf).
 
 ## Apps (Fachanwendungen)
 
