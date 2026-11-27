@@ -108,5 +108,18 @@ return [
         'unchanged' => '{1} 1 war schon so (unverändert).|[2,*] :count waren schon so (unverändert).',
         'skipped' => '{1} 1 ohne Wert bzw. ohne Treffer (unverändert).|[2,*] :count ohne Wert bzw. ohne Treffer (unverändert).',
         'duplicate_in_selection' => '„:value“ ergäbe sich auch bei :record; der Wert darf nur einmal vorkommen.',
+        'undo' => [
+            'label' => 'Rückgängig',
+            'missing' => 'Diese Sammeländerung gibt es nicht mehr (Protokoll gekürzt oder Tabelle gelöscht).',
+            'not_allowed' => 'Diese Sammeländerung dürfen Sie nicht zurücknehmen.',
+            'done' => '{0} Kein Datensatz zurückgenommen.|{1} 1 Datensatz zurückgenommen.|[2,*] :count Datensätze zurückgenommen.',
+            'already' => '{1} 1 war schon zurück.|[2,*] :count waren schon zurück.',
+            'changed' => '{1} 1 seither geändert, bleibt.|[2,*] :count seither geändert, bleiben.',
+            'failed' => '{1} 1 besteht die Prüfung nicht, bleibt.|[2,*] :count bestehen die Prüfung nicht, bleiben.',
+            'not_logged' => '{1} 1 nicht im Protokoll, bleibt.|[2,*] :count nicht im Protokoll, bleiben.',
+            'gone' => '{1} 1 gibt es nicht mehr.|[2,*] :count gibt es nicht mehr.',
+            'dropped' => 'Nicht zurückgenommen, weil das Feld entfernt oder inaktiv ist: :fields.',
+            'changed_record' => ':record: seither geändert',
+        ],
     ],
 ];

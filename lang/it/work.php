@@ -108,5 +108,18 @@ return [
         'unchanged' => '{1} 1 aveva già quel valore (invariato).|[2,*] :count avevano già quel valore (invariati).',
         'skipped' => '{1} 1 senza valore o senza corrispondenza (invariato).|[2,*] :count senza valore o senza corrispondenza (invariati).',
         'duplicate_in_selection' => '«:value» risulterebbe anche per :record; il valore può comparire una sola volta.',
+        'undo' => [
+            'label' => 'Annulla',
+            'missing' => 'Questa modifica multipla non esiste più (registro ridotto o tabella eliminata).',
+            'not_allowed' => 'Non può annullare questa modifica multipla.',
+            'done' => '{0} Nessun record annullato.|{1} 1 record annullato.|[2,*] :count record annullati.',
+            'already' => '{1} 1 era già annullato.|[2,*] :count erano già annullati.',
+            'changed' => '{1} 1 modificato nel frattempo, resta.|[2,*] :count modificati nel frattempo, restano.',
+            'failed' => '{1} 1 non supera i controlli, resta.|[2,*] :count non superano i controlli, restano.',
+            'not_logged' => '{1} 1 non è nel registro, resta.|[2,*] :count non sono nel registro, restano.',
+            'gone' => '{1} 1 non esiste più.|[2,*] :count non esistono più.',
+            'dropped' => 'Non annullato perché il campo è stato rimosso o disattivato: :fields.',
+            'changed_record' => ':record: modificato nel frattempo',
+        ],
     ],
 ];

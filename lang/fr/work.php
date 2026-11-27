@@ -108,5 +108,18 @@ return [
         'unchanged' => '{1} 1 avait déjà cette valeur (inchangé).|[2,*] :count avaient déjà cette valeur (inchangés).',
         'skipped' => '{1} 1 sans valeur ou sans occurrence (inchangé).|[2,*] :count sans valeur ou sans occurrence (inchangés).',
         'duplicate_in_selection' => '« :value » résulterait aussi pour :record ; la valeur ne doit apparaître qu’une fois.',
+        'undo' => [
+            'label' => 'Annuler',
+            'missing' => 'Cette modification groupée n’existe plus (journal raccourci ou table supprimée).',
+            'not_allowed' => 'Vous n’êtes pas autorisé à annuler cette modification groupée.',
+            'done' => '{0} Aucun enregistrement annulé.|{1} 1 enregistrement annulé.|[2,*] :count enregistrements annulés.',
+            'already' => '{1} 1 était déjà annulé.|[2,*] :count étaient déjà annulés.',
+            'changed' => '{1} 1 modifié depuis, conservé.|[2,*] :count modifiés depuis, conservés.',
+            'failed' => '{1} 1 ne passe pas les contrôles, conservé.|[2,*] :count ne passent pas les contrôles, conservés.',
+            'not_logged' => '{1} 1 absent du journal, conservé.|[2,*] :count absents du journal, conservés.',
+            'gone' => '{1} 1 n’existe plus.|[2,*] :count n’existent plus.',
+            'dropped' => 'Non annulé, car le champ a été supprimé ou désactivé : :fields.',
+            'changed_record' => ':record : modifié depuis',
+        ],
     ],
 ];

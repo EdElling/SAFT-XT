@@ -15,6 +15,7 @@ use App\DynamicData\Write\RecordWriter;
 use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
 use App\Filament\Resources\WorkItems\WorkItemResource;
+use App\Models\BulkChange as BulkChangeHead;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
@@ -152,8 +153,9 @@ final class BulkRecordActions
             })
             // Je Datensatz ein Schreibvorgang über den Writer (Löschsperre, Summen, Ereignisse, Transaktion), alle mit
             // derselben Kennung im Protokoll.
-            ->using(static function (DeleteBulkAction $action, EloquentCollection|Collection $records): void {
-                $options = WriteOptions::bulk(BulkRecordsWork::RUN_PREFIX.Str::uuid());
+            ->using(static function (DeleteBulkAction $action, EloquentCollection|Collection $records) use ($table): void {
+                $options = WriteOptions::bulk($run = BulkRecordsWork::RUN_PREFIX.Str::uuid());
+                $done = [];
 
                 foreach ($records as $record) {
                     /** @var DynamicRecord $record */
@@ -163,12 +165,18 @@ final class BulkRecordActions
 
                     try {
                         app(RecordWriter::class)->delete($record, $options);
+                        $done[] = $record->getKey();
                     } catch (BusinessRuleException $e) {
                         $action->reportBulkProcessingFailure('blocked', static fn (int $failureCount): string => trans_choice('data.bulk.delete_blocked', $failureCount, ['count' => $failureCount]));
                     } catch (\Throwable $e) {
                         report($e);
                         $action->reportBulkProcessingFailure();
                     }
+                }
+
+                // Kopf für „Letzte Sammeländerungen“ und „Rückgängig“ (S3).
+                if ($done !== []) {
+                    BulkChangeHead::recordRun($run, $table, BulkChangeHead::DELETE, $done);
                 }
             });
     }
@@ -182,8 +190,9 @@ final class BulkRecordActions
             ->before(static function (EloquentCollection|Collection $records): void {
                 self::assertWithinLimit($records->count());
             })
-            ->using(static function (RestoreBulkAction $action, EloquentCollection|Collection $records): void {
-                $options = WriteOptions::bulk(BulkRecordsWork::RUN_PREFIX.Str::uuid());
+            ->using(static function (RestoreBulkAction $action, EloquentCollection|Collection $records) use ($table): void {
+                $options = WriteOptions::bulk($run = BulkRecordsWork::RUN_PREFIX.Str::uuid());
+                $done = [];
 
                 foreach ($records as $record) {
                     /** @var DynamicRecord $record */
@@ -193,12 +202,17 @@ final class BulkRecordActions
 
                     try {
                         app(RecordWriter::class)->restore($record, $options);
+                        $done[] = $record->getKey();
                     } catch (BusinessRuleException $e) {
                         $action->reportBulkProcessingFailure('rejected', $e->getMessage());
                     } catch (\Throwable $e) {
                         report($e);
                         $action->reportBulkProcessingFailure();
                     }
+                }
+
+                if ($done !== []) {
+                    BulkChangeHead::recordRun($run, $table, BulkChangeHead::RESTORE, $done);
                 }
             });
     }

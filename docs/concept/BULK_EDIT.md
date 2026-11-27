@@ -1,6 +1,6 @@
 # Konzept: Datensätze auswählen und Sammeländerung in SAFT XT
 
-Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2 umgesetzt 27.11.2026, S3–S4 offen** · Backlog: B-133
+Stand: 27.11.2026 · Status: **entschieden (§11); S1 umgesetzt 27.11.2026, S2 umgesetzt 27.11.2026, S3 entschieden 27.11.2026 (§13), S4 offen** · Backlog: B-133
 (ersetzt B-024)
 
 > **Überarbeitung 27.11.2026:** Seit dem Entwurf vom 23.11.2026 gibt es Fundament 2 und die Nummernkreise. Der
@@ -162,7 +162,7 @@ erscheint ebenfalls, mit derselben Kennung.
 
 **Rückgängig (S3):** „Letzte Sammeländerungen“ in der Datenansicht, die eigenen für alle mit *ändern*; dazu der Link
 in der Erfolgsmeldung. Die Rücknahme ist selbst eine Arbeit `bulk_records` mit eigener Kennung, liest die alten Werte
-aus dem Protokoll (`properties.old`) und überspringt Datensätze, die seither wieder geändert wurden (Meldung).
+aus dem Protokoll (`attribute_changes.old`, siehe §13) und überspringt Datensätze, die seither wieder geändert wurden (Meldung).
 Folgen über Regeln (B-142) und vergebene Nummern nimmt sie nicht zurück. Ob die Liste aus `activity_log` (gruppiert
 nach `run`) oder aus einer Tabelle `bulk_changes` kommt, entscheidet S3; `work_items` werden aufgeräumt und taugen
 nicht als Gedächtnis.
@@ -353,3 +353,143 @@ keine Adresse mit „Str.“.
     `case`, `word`, `keep`; `op: formula`, `formula`), damit S3 sie anzeigen kann.
 15. **Rechte, Plugin-API, Migrationen.** *Empfehlung:* keine neuen Rechte, keine Migration. Die Plugin-API ist nicht
     betroffen (`BulkChange`, `Evaluator`, `FormulaAnalyzer` und `RecordChecker` stehen nicht im `ApiManifest`, geprüft 27.11.2026).
+
+## 13. Entscheidungen zu S3 „Rückgängig“ (27.11.2026: alle Empfehlungen angenommen, Punkt 14 (a) gehört zu S3)
+
+**Befund im Code (27.11.2026).**
+
+- **Wo die alten Werte stehen.** Spatie Activitylog v5 schreibt alte und neue Werte in die Spalte
+  **`attribute_changes`** (`old`, `attributes`), nicht in `properties`. In `properties` stehen nur `via`, `run`,
+  `overwrote` und `key` (`DynamicRecord::beforeActivityLogged()`). Protokolliert werden alle Nicht-System-Spalten,
+  die sich ändern (`logAll`, `logOnlyDirty`), also auch berechnete Felder desselben Datensatzes. Protokollname ist
+  `dynamic.<tabelle>`, Subjekt `dynamic:<tabelle>` + Schlüssel.
+- **Indizes auf `activity_log`:** `log_name`, `(subject_type, subject_id)`, `(causer_type, causer_id)`,
+  `(causer_type, causer_id, created_at)`, `(event, created_at)`. Auf `properties->run` gibt es keinen Index. Spalten
+  vom Typ `json` sind auf MariaDB `longtext`, ein Index auf einen JSON-Pfad wäre je Datenbank anders (erzeugte
+  Spalte bzw. Ausdrucksindex) und gehört nicht in eine portable Migration.
+- **Kennung im Protokoll.** Verschachtelte Schreibvorgänge erben die Kennung (`WriteOptions::nested()`): Summen im
+  Master stehen mit demselben `run` im Protokoll der Master-Tabelle. Eine Rücknahme nach Fehler (`abort()`) schreibt
+  ebenfalls mit derselben Kennung. Unter einer Kennung stehen also auch Einträge anderer Tabellen und, bei einer
+  gescheiterten Sammeländerung, Hin- und Rückweg.
+- **Was nur die Arbeit kennt.** Art und Angaben je Feld (`op`, `operator`, `operand`, …), Person, App, Anzahl und
+  Ergebnis stehen in `work_items` und werden mit `work_prune` aufgeräumt. Das Journal im Ordner der Arbeit verschwindet
+  mit ihr.
+- **Sammel-Löschen und -Wiederherstellen** laufen synchron in `BulkRecordActions::delete()`/`restore()`, ohne Arbeit,
+  mit Kennung `bulk:<uuid>` und Ereignis `deleted` bzw. `restored`.
+- **Kürzen des Protokolls** (`activity_prune`, Nr. 18): ab Werk aus, sonst Vorgabe 365 Tage. Gekürzte Einträge sind
+  endgültig weg; eine Rücknahme danach fände keine alten Werte.
+- **„Administratoren der App“** gibt es im Code nicht. Rechte sind globale Spatie-Permissions; Rollen gehören einer
+  App. Das Handbuch Administrator gilt als sichtbar, wer eines der Verwaltungsrechte hat
+  (`Documentation::ADMIN_PERMISSIONS`, z. B. `activity_log.view`, `custom_tables.view`).
+
+**Fragen mit Empfehlung**
+
+1. **Quelle der Liste: `activity_log` gruppiert nach `run` oder eigene Tabelle?** *Empfehlung:* eigene Tabelle
+   **`bulk_changes`** (Migration 102) auf der Hauptverbindung als **Kopf** je Sammelaktion: Kennung (`run`, eindeutig),
+   App, Tabelle, Person, Art (`update`, `delete`, `restore`), Felder mit Art und Angaben (wie in den Parametern der
+   Arbeit), Anzahl geändert, `undo_of` (Kopf, den diese Rücknahme zurücknimmt), `undone_by` (letzte Rücknahme),
+   Zeitstempel. Die **alten Werte** liest die Rücknahme weiter aus dem Protokoll (eine Wahrheit, Nr. 12), nicht aus
+   einer Kopie. Der Kopf entsteht in der Transaktion des letzten Blocks der Schreibphase, also nur bei Erfolg;
+   gescheiterte und abgebrochene Sammeländerungen erscheinen nicht. *Warum:* Art und Angaben („Tarif: um 5 %“) stehen
+   nicht im Protokoll, und `work_items` werden aufgeräumt. Eine Gruppierung über `properties->run` ginge ohne Index über
+   alle Einträge der Tabelle (bei 100'000 Einträgen auf Strato spürbar), sähe auch gescheiterte Läufe und
+   Master-Einträge und müsste JSON in `GROUP BY` auf drei Datenbanken prüfen. Die Liste über den Kopf ist eine
+   einfache Abfrage mit Index `(custom_table_id, created_at)`. **Anzahl:** die letzten **20** je Tabelle. **Kürzen:**
+   `activity_prune` löscht Köpfe mit derselben Frist wie die Einträge, damit die Liste nichts anbietet, was nicht mehr
+   rücknehmbar ist; `work_prune` lässt sie stehen. `bulk_changes` selbst bekommt kein `LogsActivity` (es ist ein
+   Verzeichnis des Protokolls; die Änderungen stehen dort schon). Die Einträge eines Laufs liest die Rücknahme je Block
+   über den vorhandenen Index `(subject_type, subject_id)` mit `whereIn` der Schlüssel und filtert `run` dann in PHP.
+   Das bleibt schnell und portabel ohne JSON-Abfrage.
+2. **Was heisst „seither geändert“?** *Empfehlung:* **Vergleich der aktuellen Werte** mit den Werten, die die
+   Sammeländerung geschrieben hat (`attribute_changes.attributes`), nur für die **Felder der Sammeländerung** (aus dem
+   Kopf), wie `sameValues()` in `abort()`. Weicht ein Feld ab, bleibt der **ganze Datensatz** stehen und wird gemeldet
+   („#12 Gitarre A: seither geändert“). Stehen schon die alten Werte da, zählt er als „schon zurück“. *Warum:* Der
+   Wertvergleich erfasst auch Änderungen ohne Protokoll (Protokoll aus, `withoutLog()`), ein neuerer Eintrag allein wäre
+   zu streng: Wer nach der Tariferhöhung nur den Raum eines Kurses ändert, will die Tariferhöhung trotzdem zurücknehmen
+   können. Berechnete Felder und Summen im Master rechnet der Writer neu und zählen nicht. Eine **Rücknahme je Feld**
+   (Tarif zurück, Lehrperson nicht) gibt es nicht: Eine Sammeländerung über mehrere Felder ist eine Absicht, ein halb
+   zurückgenommener Datensatz wäre schwer zu erklären. *Für die Prüfung in der Demo heisst das:* Den Kurs von Hand im
+   **Tarif** ändern, dann bleibt er stehen und die Meldung nennt ihn.
+3. **Alles oder nichts oder Übersprungene zulassen?** *Empfehlung:* **Übersprungene zulassen** wie beim
+   Nachnummerieren und Sammel-Löschen. Die Arbeit prüft wie die Sammeländerung (Prüfphase im Probelauf, Schreibphase mit
+   Version) und meldet „45 zurückgenommen, 1 seither geändert, 1 besteht die Prüfung nicht: #7 …“. Wird ein Datensatz
+   zwischen Prüf- und Schreibphase geändert, wird er ebenfalls übersprungen statt die Rücknahme abzubrechen. Nur ein
+   Abbruch durch die Person oder ein Datenbankfehler nimmt die Rücknahme über `abort()` ganz zurück. *Warum:* Anders als
+   bei der Sammeländerung gibt es keine Auswahl, die man anpassen könnte; jeder Datensatz ist danach in sich stimmig
+   (ganz alt oder ganz neu). Eine teilweise Rücknahme bleibt in der Liste mit „teilweise zurückgenommen (2
+   übersprungen)“ und lässt sich nach dem Bereinigen **erneut** starten: Bereits zurückgenommene zählen dann als „schon
+   zurück“.
+4. **Mit Plugin-Ereignissen und allen Prüfungen?** *Empfehlung:* **ja**, Herkunft `bulk`, alle Phasen, Plugin-Listener
+   (Konfliktprüfung der Musikschule), `RecordChecker` mit Verknüpfungen, Nummernkreise, Protokoll. Die Rücknahme ist eine
+   gewöhnliche Änderung, kein Weg an den Regeln vorbei (§1). `abort()` bleibt die einzige Rücknahme ohne Ereignisse,
+   weil sie einen Zustand wiederherstellt, den es nie gültig gab. **Alter Wert heute ungültig** (Auswahlwert gelöscht,
+   verknüpfter Datensatz gelöscht, eindeutiger Wert inzwischen vergeben, Feld inzwischen Pflicht): Prüffehler, der
+   Datensatz wird übersprungen und mit Grund gemeldet (Frage 3). **Feld inzwischen gelöscht oder inaktiv:** Es fällt aus
+   der Rücknahme heraus, die übrigen Felder werden zurückgenommen, die Bestätigung sagt es vorher.
+5. **Rücknahme einer Rücknahme; mehrere Sammeländerungen nacheinander.** *Empfehlung:* Die Rücknahme ist selbst ein
+   Kopf in der Liste („Rücknahme vom 27.11., 14:02“) und lässt sich **zurücknehmen** (wieder herstellen), ohne
+   Sonderfall, nach derselben Regel. Jede Sammeländerung der Liste lässt sich anstossen; Datensätze, die eine spätere
+   Sammeländerung wieder geändert hat, fallen über Frage 2 heraus. Die Bestätigung warnt: „Danach gab es auf dieser
+   Tabelle 1 weitere Sammeländerung; ihre Datensätze bleiben. Zuerst die spätere zurücknehmen.“ Eine schon
+   zurückgenommene Sammeländerung zeigt „zurückgenommen am … von …“ statt des Links.
+6. **Sammel-Löschen und -Wiederherstellen rückgängig?** *Empfehlung:* **ja**, sie bekommen ebenfalls einen Kopf
+   (Art `delete` bzw. `restore`, Anzahl). Rückgängig heisst dann: die noch im Papierkorb liegenden wiederherstellen bzw.
+   die wiederhergestellten erneut löschen (Löschsperre → übersprungen), mit Recht *löschen* statt *ändern*. Endgültig
+   gelöschte bzw. inzwischen wiederhergestellte werden übersprungen. Es läuft als Arbeit `bulk_records` (Vorgang
+   `restore`/`delete`, §6 sah das vor). *Warum:* Das Sammel-Löschen ist die gefährlichste Sammelaktion; wer 300
+   Anmeldungen versehentlich löscht, soll sie nicht im Papierkorb einzeln heraussuchen. Der Aufwand ist klein, weil
+   Kennung und Weg schon bestehen.
+7. **Summen, berechnete Felder, Nummern, Regeln.** *Empfehlung:* Summen im Master und berechnete Felder rechnet der
+   Writer bei der Rücknahme neu wie bei jedem Ändern. **Nummern**, die die Sammeländerung über „Vergeben, wenn“
+   vergeben hat, bleiben (Nr. 26: eine vergebene Nummer ändert kein Schreibweg); die Bestätigung nennt das, wenn ein
+   Feld der Sammeländerung in einer Bedingung „Vergeben, wenn“ vorkommt. Folgen von Regeln (B-142) und Plugin-Wirkungen
+   nach aussen (E-Mails, Webhooks) nimmt sie nicht zurück; Hinweis in Bestätigung und Handbuch.
+8. **Zeilenrechte (B-020).** *Empfehlung:* Die Liste zeigt Köpfe ohne Zeilenfilter (sie enthalten keine Werte, nur
+   Anzahl und Felder). Die Rücknahme liest die Datensätze im Namen der startenden Person (`scope: person`, wie die
+   Sammeländerung). Wer einen Datensatz nicht ändern darf, dem wird er übersprungen und als „nicht berechtigt“ gezählt.
+   Die neue Lesestelle kommt mit `scope: person` in `read-sites.json`.
+9. **Rechte.** *Empfehlung:* Liste und Rücknahme der **eigenen** Sammelaktionen für alle mit *ändern* (bzw. *löschen*
+   bei Art `delete`/`restore`) und Schalter `bulk_enabled`. **Fremde** für Personen, die zusätzlich das Recht
+   **`activity_log.view`** haben (wer das ganze Protokoll lesen darf, gehört zur Verwaltung), der Super-Admin hat es
+   ohnehin. Kein neues Recht und keine neue Aktion in `DataPermissions::ACTIONS`. *Warum:* Ein „Administrator der App“
+   existiert nicht als Begriff. Ein eigenes Recht je Tabelle verlängerte die Rechte-Matrix, die App-Definition und die
+   Rollen-Oberfläche für einen seltenen Fall. Lässt sich später ändern, ohne Daten zu migrieren.
+10. **Ort in der Oberfläche.** *Empfehlung:* Knopf **„Letzte Sammeländerungen“** (Symbol Uhr) in der Kopfzeile der
+    Datenansicht, sichtbar, sobald es einen Kopf für die Person gibt. Er öffnet ein Seitenfenster mit der Liste: *Wann ·
+    Wer · Art und Felder („Tarif: um +5 %, gerundet auf 0.05“; „12 gelöscht“) · Anzahl · Stand* und dem Link
+    **„Rückgängig“**. Er öffnet eine Bestätigung mit Anzahl und Hinweisen (Fragen 5, 7). In Detailtabellen keine Liste;
+    die Köpfe der Kind-Tabelle stehen in deren eigener Datenansicht. Der Link **„Rückgängig“** steht zusätzlich in der
+    Erfolgsmeldung (Datenansicht und Detailtabellen) und auf der Seite einer fertigen Arbeit `bulk_records`.
+11. **Kennung und Verlauf.** *Empfehlung:* Die Rücknahme schreibt mit Herkunft `bulk` und eigener Kennung
+    `bulk:<uuid>`. Der Verlauf zeigt „(Sammeländerung)“ wie bisher. Ob es ein Eintrag der Rücknahme ist, sagt der Kopf
+    (`undo_of`), nicht das Protokoll. `WriteOptions` bleibt unverändert.
+12. **Frist.** *Empfehlung:* keine eigene Frist; rücknehmbar, solange Kopf und Protokolleinträge da sind (Frage 1).
+    Fehlt zu einem Datensatz der Eintrag (Protokoll war aus), wird er als „nicht im Protokoll“ übersprungen.
+13. **Plugin-API, Migration, Handbücher.** *Empfehlung:* Plugin-API nicht betroffen (`BulkChange`, `BulkRecordsWork`,
+    `WriteOptions` und `Activity` stehen nicht im `ApiManifest`; bei der Umsetzung geprüft). Eine Migration (102
+    `bulk_changes`), keine neue `.env`-Variable. Handbücher: Anwender 4.11, FAQ, Admin (Rechte, Kürzen des Protokolls
+    begrenzt Rückgängig) in vier Sprachen, Entwickler (Kopf `bulk_changes`, Rücknahme) in zwei; Sysadmin nicht betroffen.
+14. **Ist das Protokoll genau genug?** *Befund (27.11.2026, an Einträgen der Demo geprüft):*
+    - **Alte Werte** (`old`) sind die **Rohwerte aus der Datenbank** (`"120.00"`, `"2026-09-01"`, `"2026-11-23 23:01:39"`),
+      also exakt zurückschreibbar. Das ist allerdings Zufall: Spatie bildet sie über `new static` mit
+      `setRawAttributes()`, und ein leeres `DynamicRecord` kennt die Casts der Tabelle nicht.
+    - **Neue Werte** (`attributes`) laufen durch die Casts. Datum und Datum/Uhrzeit kommen dabei über `serializeDate()` in
+      **UTC** an: Datum 01.09.2026 → `"2026-08-31T22:00:00.000000Z"`, 23:01:39 → `"…T22:01:39.000000Z"`. So zurückgeschrieben
+      ergäbe das den 31.08. bzw. eine Stunde früher. Ein Vergleich wie in `sameValues()` meldete jedes Datumsfeld als
+      „seither geändert“.
+    - Weil `old` roh und `attributes` gecastet sind, hält Spatie Datums- und Dateifelder **bei jedem Ändern für geändert**:
+      Im Protokoll stehen dann auch unveränderte Felder (z. B. `datum: 2026-09-01 → 2026-08-31T22:00Z`). Ob der Verlauf
+      sie so anzeigt, ist zu prüfen. Das betrifft heute schon jedes Ändern, nicht nur die Sammeländerung.
+    - Dezimalzahlen (Text mit Skala), Ganzzahlen, Text und Verknüpfungen sind exakt. Ja/Nein steht roh als `0`/`1` bzw.
+      `true`/`false` und gecastet als `true`/`false`; beides lässt sich eindeutig vergleichen.
+    - Ein Datensatz kann in einem Lauf **mehrere Einträge** haben (ein Plugin speichert ihn in `RecordSaved` erneut, mit
+      derselben Kennung). Einträge können **fehlen**: Protokoll aus (`ACTIVITYLOG_ENABLED`), gekürzt, Restrisiko Nr. 10.
+
+    *Empfehlung:* (a) `DynamicRecord` protokolliert alle Felder **roh** (`LogOptions::useAttributeRawValues()` mit den
+    Feldnamen der Tabelle). Dann sind `old` und `attributes` Rohwerte in derselben Form, die Datumsfelder fallen als
+    Scheinänderung weg, und die Genauigkeit hängt nicht mehr an `new static`. (b) Für Einträge von vor dieser Änderung
+    liest die Rücknahme Werte mit `Z` als UTC und rechnet sie in `APP_TIMEZONE` um (UTC → Ortszeit ist immer eindeutig,
+    auch bei der Zeitumstellung). Voraussetzung: `APP_TIMEZONE` wurde seither nicht geändert. (c) Je Datensatz und Lauf
+    gilt `old` aus dem **ersten** und `attributes` aus dem **letzten** Eintrag, nur für die Felder aus dem Kopf. (d) Fehlt
+    der Eintrag, wird der Datensatz als „nicht im Protokoll“ übersprungen (Frage 12). Ein Test hält für jeden Feldtyp
+    fest, dass Ändern und Rücknahme denselben Rohwert ergeben, auf allen drei Datenbanken.

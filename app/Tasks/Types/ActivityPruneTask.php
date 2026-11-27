@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tasks\Types;
 
 use App\Models\Activity;
+use App\Models\BulkChange;
 use App\Tasks\TaskResult;
 use App\Tasks\TaskType;
 use Filament\Forms\Components\TextInput;
@@ -74,6 +75,9 @@ final readonly class ActivityPruneTask implements TaskType
             ->where('created_at', '<', now()->subDays(self::authDays($parameters)))->delete();
         $other = Activity::query()->where(fn ($query) => $query->whereNull('log_name')->orWhere('log_name', '!=', self::AUTH_LOG))
             ->where('created_at', '<', now()->subDays(self::days($parameters)))->delete();
+        // Köpfe der Sammelaktionen mit derselben Frist: Ohne Protokolleinträge ist eine Rücknahme nicht mehr möglich
+        // (B-133 S3, BULK_EDIT.md §13 Frage 1).
+        BulkChange::query()->where('created_at', '<', now()->subDays(self::days($parameters)))->delete();
 
         return new TaskResult(__('tasks.results.activity_prune', ['deleted' => $auth + $other, 'auth' => $auth]), ['deleted' => $auth + $other, 'auth' => $auth]);
     }

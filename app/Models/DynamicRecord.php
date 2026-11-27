@@ -11,6 +11,7 @@ use App\DynamicData\Formula\Recalculator;
 use App\DynamicData\Schema\IdentifierValidator;
 use App\DynamicData\TableDefinition;
 use App\DynamicData\Ui\KeylessRow;
+use App\DynamicData\Write\LoggedValue;
 use App\DynamicData\Write\RecordWriter;
 use App\DynamicData\Write\WriteContext;
 use App\DynamicData\Write\WritePhases;
@@ -193,6 +194,40 @@ class DynamicRecord extends Model
             if (WriteContext::options()->run !== null) {
                 $properties->put('run', WriteContext::options()->run);
             }
+        }
+
+        // Rohwerte wie in der Datenbank, alt und neu in derselben Form (B-133 S3, BULK_EDIT.md §13 Frage 14): Spatie
+        // gibt neue Werte gecastet weiter, Datumswerte dabei in UTC (serializeDate()), alte dagegen roh. Neue Werte
+        // deshalb aus dem gespeicherten Datensatz; gleicher Wert in anderer Schreibweise („2026-09-01“ und
+        // „2026-09-01 00:00:00“, „120“ und „120.00“) ist keine Änderung.
+        if ($activity->getAttribute('attribute_changes') !== null) {
+            $changes = collect($activity->getAttribute('attribute_changes'));
+            $raw = $this->getAttributes();
+            $rawValues = static fn (array $values): array => array_combine(
+                array_keys($values),
+                array_map(static fn (string|int $field, mixed $value): mixed => array_key_exists($field, $raw) ? $raw[$field] : $value, array_keys($values), $values),
+            );
+            $old = (array) $changes->get('old', []);
+            $new = $rawValues((array) $changes->get('attributes', []));
+
+            // Beim Löschen stehen die Werte unter „old“ und kommen ebenfalls gecastet.
+            if ($event === 'deleted') {
+                $old = $rawValues($old);
+            }
+
+            if ($event === 'updated') {
+                foreach (array_keys($new) as $field) {
+                    if (array_key_exists($field, $old) && LoggedValue::same($this, (string) $field, $old[$field], $new[$field])) {
+                        unset($old[$field], $new[$field]);
+                    }
+                }
+            }
+
+            $activity->setAttribute('attribute_changes', $changes->merge(array_filter(
+                ['old' => $old, 'attributes' => $new],
+                static fn (string $key): bool => $changes->has($key),
+                ARRAY_FILTER_USE_KEY,
+            )));
         }
 
         $key = $this->activityKey();

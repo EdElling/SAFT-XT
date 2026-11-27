@@ -221,7 +221,7 @@ class FileFieldTest extends DynamicDataTestCase
         $csv = (string) ($page->effects['download']['content'] ?? '');
         $this->assertStringContainsString('scan<1>.png', base64_decode($csv, true) ?: $csv);
 
-        $activity = Activity::query()->where('subject_id', $record->getKey())->where('event', 'created')->latest('id')->firstOrFail();
+        $activity = Activity::query()->where('subject_type', $record->getMorphClass())->where('subject_id', $record->getKey())->where('event', 'created')->latest('id')->firstOrFail();
         $this->assertStringContainsString('belege: scan<1>.png', ActivityChanges::summary($activity));
     }
 

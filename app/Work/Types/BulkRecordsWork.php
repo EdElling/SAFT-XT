@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Work\Types;
 
 use App\DynamicData\Bulk\BulkChange;
+use App\DynamicData\Bulk\BulkChangeAccess;
+use App\DynamicData\Bulk\BulkUndo;
 use App\DynamicData\Schema\FieldType;
 use App\DynamicData\Validation\RecordChecker;
 use App\DynamicData\Write\RecordVersion;
@@ -12,9 +14,11 @@ use App\DynamicData\Write\RecordWriter;
 use App\DynamicData\Write\StaleRecordException;
 use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
+use App\Models\BulkChange as BulkChangeHead;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
+use App\Models\User;
 use App\Work\CleansUp;
 use App\Work\DescribesProgress;
 use App\Work\StepOutcome;
@@ -40,7 +44,13 @@ use Illuminate\Support\Str;
  *    Prüfphase (optimistische Sperre); vorher die alten Werte ins Journal. Ein inzwischen geänderter Datensatz oder ein
  *    neuer Fehler beendet die Arbeit, abort() schreibt die alten Werte der fertigen Blöcke zurück.
  *
- * Parameter: table_id, changes (BulkChange::toArray()), locked (gesperrte Felder), record_ids, dry_run.
+ * Nach Erfolg hält ein Kopf (App\Models\BulkChange) Kennung, Person, Art und die geänderten Schlüssel fest, für
+ * „Letzte Sammeländerungen“ und „Rückgängig“ (S3, BULK_EDIT.md §13).
+ *
+ * Rücknahme (Parameter undo_of = Kopf): gleiche Phasen, aber Datensätze, die seither geändert wurden, schon zurück sind
+ * oder die Prüfung nicht bestehen, werden übersprungen und gemeldet statt die Arbeit scheitern zu lassen (BulkUndo).
+ *
+ * Parameter: table_id, changes (BulkChange::toArray()), locked (gesperrte Felder), record_ids, dry_run; undo_of.
  */
 final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, WorkType, WritesRecords
 {
@@ -82,8 +92,9 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
     {
         $table = CustomTable::query()->find((int) ($parameters['table_id'] ?? 0));
         $fields = implode(', ', array_keys((array) ($parameters['changes'] ?? [])));
+        $undo = isset($parameters['undo_of']) ? __('work.bulk.undo.label').' ' : '';
 
-        return ($table === null ? '–' : $table->name).($fields === '' ? '' : ': '.$fields);
+        return ($table === null ? '–' : $table->name).': '.$undo.($fields === '' ? '' : $fields);
     }
 
     public function prepare(array $parameters): WorkPlan
@@ -112,6 +123,19 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
     {
         $table = CustomTable::query()->with('fields')->find((int) ($step->parameters['table_id'] ?? 0))
             ?? throw new BusinessRuleException(__('work.bulk.table_missing'), 'bulk.table_missing');
+
+        if (isset($step->parameters['undo_of'])) {
+            $undo = BulkUndo::of((int) $step->parameters['undo_of'], $table);
+            $user = auth()->user();
+
+            if (! BulkChangeAccess::canUndo($user instanceof User ? $user : null, $undo->head)) {
+                throw new BusinessRuleException(__('work.bulk.undo.not_allowed'), 'bulk.undo_not_allowed');
+            }
+
+            return ($step->state['phase'] ?? self::CHECK) === self::WRITE
+                ? $this->undoWrite($step, $undo)
+                : $this->undoCheck($step, $undo);
+        }
 
         if (! BulkChange::allowed($table)) {
             throw new BusinessRuleException(__('data.bulk.errors.not_allowed'), 'bulk.not_allowed');
@@ -150,9 +174,20 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
 
             $this->writer->batch(function () use ($table, $entries, $options, $step): void {
                 foreach ($entries as $entry) {
-                    $record = DynamicRecord::forTable($table)->newQuery()->find($entry['id']);
+                    $record = DynamicRecord::forTable($table)->newQuery()->withTrashed()->find($entry['id']);
 
-                    if ($record === null || ! self::sameValues($table, $record, (array) $entry['new'])) {
+                    // Rücknahme einer gelöschten bzw. wiederhergestellten Sammelaktion: Gegenteil ausführen.
+                    if (isset($entry['op']) && $record !== null) {
+                        match (true) {
+                            $entry['op'] === BulkChangeHead::RESTORE && ! $record->trashed() => $this->writer->delete($record, $options),
+                            $entry['op'] === BulkChangeHead::DELETE && $record->trashed() => $this->writer->restore($record, $options),
+                            default => null,
+                        };
+
+                        continue;
+                    }
+
+                    if ($record === null || $record->trashed() || ! self::sameValues($table, $record, (array) $entry['new'])) {
                         Log::warning('Sammeländerung: Datensatz nicht zurückgenommen, inzwischen geändert', ['table' => $table->name, 'id' => $entry['id'], 'run' => $step->state['run'] ?? null]);
 
                         continue;
@@ -350,11 +385,222 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
             return StepOutcome::continue($state, count($chunk));
         }
 
+        if ($changed > 0) {
+            BulkChangeHead::recordRun((string) $state['run'], $change->table, BulkChangeHead::UPDATE, self::journalIds($step, $block), $change->toArray());
+        }
+
         return StepOutcome::finished(
             trans_choice('work.bulk.done', $changed, ['count' => $changed]).self::unchangedText($unchanged, $skipped),
             ['changed' => $changed, 'unchanged' => $unchanged, 'skipped' => $skipped, 'run' => $state['run']],
             count($chunk),
         );
+    }
+
+    /**
+     * Prüfphase der Rücknahme: je Datensatz einordnen (BulkUndo); zurückzunehmende im Probelauf speichern bzw. löschen
+     * oder wiederherstellen. Wer die Prüfung nicht besteht, wird mit Grund gemerkt und in der Schreibphase übersprungen.
+     */
+    private function undoCheck(WorkStep $step, BulkUndo $undo): StepOutcome
+    {
+        $state = $step->state;
+        $ids = self::ids($step->parameters);
+        $block = intdiv((int) $state['index'], self::BLOCK);
+        $chunk = array_slice($ids, (int) $state['index'], self::BLOCK);
+        $records = $this->load($undo->table, $chunk, trashed: true);
+        $logged = $undo->logged($chunk);
+        $options = WriteOptions::bulk((string) $state['run']);
+        $errors = (array) $state['errors'];
+        $failed = (int) $state['failed'];
+        $versions = [];
+
+        $this->writer->trial(function () use ($chunk, $records, $logged, $undo, $options, &$versions, &$errors, &$failed): void {
+            foreach ($chunk as $id) {
+                $record = $records->get($id);
+                [$status, $values] = $undo->classify($record, $logged[(string) $id] ?? null);
+
+                if ($status !== BulkUndo::REVERT || $record === null) {
+                    continue;
+                }
+
+                $problems = $undo->head->operation === BulkChangeHead::UPDATE ? $this->checker->check($undo->table, $values, $record, references: true) : [];
+                $message = $problems === [] ? null : implode(' · ', array_map(
+                    static fn (array $problem): string => ($problem[0] === null ? '' : $problem[0]->label.': ').$problem[1],
+                    $problems,
+                ));
+                $version = RecordVersion::of($record);
+
+                if ($message === null) {
+                    try {
+                        $this->writer->savepoint(fn () => $this->revert($undo, $record, $values, $options));
+                    } catch (BusinessRuleException $e) {
+                        $message = $e->getMessage();
+                    } catch (QueryException $e) {
+                        report($e);
+                        $message = __('work.bulk.database_error');
+                    }
+                }
+
+                if ($message !== null) {
+                    $failed++;
+                    $versions[(string) $id] = false;
+
+                    if (count($errors) < self::MAX_ERRORS) {
+                        $errors[] = self::title($undo->table, $record).': '.$message;
+                    }
+
+                    continue;
+                }
+
+                $versions[(string) $id] = $version;
+            }
+        }, $options);
+
+        self::writeJson($step, "versions-{$block}.json", $versions);
+        $index = (int) $state['index'] + count($chunk);
+        $state = [...$state, 'index' => $index, 'errors' => $errors, 'failed' => $failed];
+
+        return $index < count($ids)
+            ? StepOutcome::continue($state, count($chunk))
+            : StepOutcome::continue([...$state, 'phase' => self::WRITE, 'index' => 0, 'counts' => []], count($chunk));
+    }
+
+    /**
+     * Schreibphase der Rücknahme: erneut einordnen (inzwischen geändert?), dann mit der Version aus der Prüfphase
+     * zurückschreiben bzw. löschen oder wiederherstellen; je Datensatz ein Sicherungspunkt, damit ein Fehler nur ihn
+     * überspringt. Am Ende Kopf der Rücknahme anlegen und am zurückgenommenen Kopf vermerken.
+     */
+    private function undoWrite(WorkStep $step, BulkUndo $undo): StepOutcome
+    {
+        $state = $step->state;
+        $ids = self::ids($step->parameters);
+        $block = intdiv((int) $state['index'], self::BLOCK);
+        $chunk = array_slice($ids, (int) $state['index'], self::BLOCK);
+        $records = $this->load($undo->table, $chunk, trashed: true);
+        $logged = $undo->logged($chunk);
+        $versions = self::readJson($step, "versions-{$block}.json");
+        $options = WriteOptions::bulk((string) $state['run']);
+        $counts = (array) ($state['counts'] ?? []);
+        $errors = (array) $state['errors'];
+        $failed = (int) $state['failed'];
+        $journal = [];
+        $fields = $undo->fields();
+        $note = static function (string $message) use (&$errors): void {
+            if (count($errors) < self::MAX_ERRORS) {
+                $errors[] = $message;
+            }
+        };
+
+        foreach ($chunk as $id) {
+            $version = $versions[(string) $id] ?? null;
+
+            // In der Prüfphase gescheitert: dort schon gezählt und gemeldet.
+            if ($version === false) {
+                continue;
+            }
+
+            $record = $records->get($id);
+            [$status, $values] = $undo->classify($record, $logged[(string) $id] ?? null);
+
+            // Zwischen Prüfung und Schreiben zurückzunehmen geworden oder geblieben, aber ohne geprüfte Version.
+            if ($status === BulkUndo::REVERT && $version === null) {
+                $status = BulkUndo::CHANGED;
+            }
+
+            if ($status !== BulkUndo::REVERT || $record === null) {
+                $counts[$status] = (int) ($counts[$status] ?? 0) + 1;
+
+                if ($status === BulkUndo::CHANGED && $record !== null) {
+                    $note(__('work.bulk.undo.changed_record', ['record' => self::title($undo->table, $record)]));
+                }
+
+                continue;
+            }
+
+            $old = array_intersect_key($record->getAttributes(), array_flip($fields));
+
+            try {
+                $this->writer->savepoint(fn () => $this->revert($undo, $record, $values, $options->expecting((string) $version)));
+            } catch (StaleRecordException) {
+                $counts[BulkUndo::CHANGED] = (int) ($counts[BulkUndo::CHANGED] ?? 0) + 1;
+                $note(__('work.bulk.undo.changed_record', ['record' => self::title($undo->table, $record)]));
+
+                continue;
+            } catch (BusinessRuleException $e) {
+                $failed++;
+                $note(self::title($undo->table, $record).': '.$e->getMessage());
+
+                continue;
+            }
+
+            $journal[] = $undo->head->operation === BulkChangeHead::UPDATE
+                ? ['id' => $record->getKey(), 'old' => $old, 'new' => array_intersect_key($record->getAttributes(), array_flip($fields))]
+                : ['id' => $record->getKey(), 'op' => $undo->head->inverseOperation()];
+            $counts[BulkUndo::REVERT] = (int) ($counts[BulkUndo::REVERT] ?? 0) + 1;
+        }
+
+        self::writeJson($step, "journal-{$block}.json", $journal);
+        $index = (int) $state['index'] + count($chunk);
+        $state = [...$state, 'index' => $index, 'counts' => $counts, 'errors' => $errors, 'failed' => $failed];
+
+        if ($index < count($ids)) {
+            return StepOutcome::continue($state, count($chunk));
+        }
+
+        $reverted = (int) ($counts[BulkUndo::REVERT] ?? 0);
+        $skipped = (int) ($counts[BulkUndo::CHANGED] ?? 0) + $failed + (int) ($counts[BulkUndo::NOT_LOGGED] ?? 0) + (int) ($counts[BulkUndo::GONE] ?? 0);
+        $result = ['reverted' => $reverted, 'already' => (int) ($counts[BulkUndo::ALREADY] ?? 0), 'changed' => (int) ($counts[BulkUndo::CHANGED] ?? 0),
+            'failed' => $failed, 'not_logged' => (int) ($counts[BulkUndo::NOT_LOGGED] ?? 0), 'gone' => (int) ($counts[BulkUndo::GONE] ?? 0), 'skipped' => $skipped];
+
+        if ($reverted > 0) {
+            $head = BulkChangeHead::recordRun((string) $state['run'], $undo->table, $undo->head->inverseOperation(), self::journalIds($step, $block), (array) $undo->head->field_changes, $result, $undo->head);
+            $undo->head->forceFill(['undone_by_id' => $head->id])->save();
+        }
+
+        $message = trans_choice('work.bulk.undo.done', $reverted, ['count' => $reverted]);
+
+        foreach (['already', 'changed', 'failed', 'not_logged', 'gone'] as $key) {
+            if ($result[$key] > 0) {
+                $message .= ' '.trans_choice("work.bulk.undo.{$key}", $result[$key], ['count' => $result[$key]]);
+            }
+        }
+
+        if ($undo->droppedFields() !== [] && $undo->head->operation === BulkChangeHead::UPDATE) {
+            $message .= ' '.__('work.bulk.undo.dropped', ['fields' => implode(', ', $undo->droppedFields())]);
+        }
+
+        return StepOutcome::finished(
+            $message.($errors === [] ? '' : "\n".implode("\n", $errors).($failed + $result['changed'] > count($errors) ? "\n…" : '')),
+            [...$result, 'run' => $state['run'], 'undo_of' => $undo->head->id],
+            count($chunk),
+        );
+    }
+
+    /** @param  array<string, mixed>  $values  alte Werte (Ändern) */
+    private function revert(BulkUndo $undo, DynamicRecord $record, array $values, WriteOptions $options): void
+    {
+        match ($undo->head->operation) {
+            BulkChangeHead::DELETE => $this->writer->restore($record, $options),
+            BulkChangeHead::RESTORE => $this->writer->delete($record, $options),
+            default => $this->writer->update($record, $values, $options),
+        };
+    }
+
+    /**
+     * Schlüssel aller Datensätze, die die Schreibphase geändert hat (aus den Journalen der Blöcke 0 bis $last).
+     *
+     * @return list<int|string>
+     */
+    private static function journalIds(WorkStep $step, int $last): array
+    {
+        $ids = [];
+
+        for ($block = 0; $block <= $last; $block++) {
+            foreach (self::readJson($step, "journal-{$block}.json") as $entry) {
+                $ids[] = $entry['id'];
+            }
+        }
+
+        return $ids;
     }
 
     /**
@@ -377,9 +623,9 @@ final readonly class BulkRecordsWork implements CleansUp, DescribesProgress, Wor
      * @param  list<int|string>  $chunk
      * @return Collection<int|string, DynamicRecord>
      */
-    private function load(CustomTable $table, array $chunk): Collection
+    private function load(CustomTable $table, array $chunk, bool $trashed = false): Collection
     {
-        return DynamicRecord::forTable($table)->newQuery()->whereKey($chunk)->get()->keyBy(static fn (DynamicRecord $record): int|string => $record->getKey());
+        return DynamicRecord::forTable($table)->newQuery()->when($trashed, static fn ($query) => $query->withTrashed())->whereKey($chunk)->get()->keyBy(static fn (DynamicRecord $record): int|string => $record->getKey());
     }
 
     /** Kurzbezeichnung für Meldungen: Schlüssel und erstes Textfeld der Liste. */

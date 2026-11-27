@@ -113,6 +113,12 @@ final class ActivityChanges
 
     private static function format(mixed $value): string
     {
+        // Dateifelder stehen seit 0.8.1 roh im Protokoll, als JSON-Text wie in der Datenbank.
+        if (is_string($value) && str_starts_with(ltrim($value), '[') && is_array($decoded = json_decode($value, true))
+            && ($names = RecordFiles::names($decoded)) !== [] && count($names) === count($decoded)) {
+            return implode(', ', $names);
+        }
+
         return match (true) {
             $value === null => '∅',
             is_bool($value) => $value ? __('common.yes') : __('common.no'),

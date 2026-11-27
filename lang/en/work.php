@@ -108,5 +108,18 @@ return [
         'unchanged' => '{1} 1 already had that value (unchanged).|[2,*] :count already had that value (unchanged).',
         'skipped' => '{1} 1 without a value or match (unchanged).|[2,*] :count without a value or match (unchanged).',
         'duplicate_in_selection' => '“:value” would also result for :record; the value may only occur once.',
+        'undo' => [
+            'label' => 'Undo',
+            'missing' => 'This bulk edit no longer exists (change log pruned or table deleted).',
+            'not_allowed' => 'You may not undo this bulk edit.',
+            'done' => '{0} No record undone.|{1} 1 record undone.|[2,*] :count records undone.',
+            'already' => '{1} 1 was already undone.|[2,*] :count were already undone.',
+            'changed' => '{1} 1 changed since, kept.|[2,*] :count changed since, kept.',
+            'failed' => '{1} 1 fails the checks, kept.|[2,*] :count fail the checks, kept.',
+            'not_logged' => '{1} 1 not in the change log, kept.|[2,*] :count not in the change log, kept.',
+            'gone' => '{1} 1 no longer exists.|[2,*] :count no longer exist.',
+            'dropped' => 'Not undone because the field was removed or deactivated: :fields.',
+            'changed_record' => ':record: changed since',
+        ],
     ],
 ];
