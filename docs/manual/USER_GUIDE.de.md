@@ -194,7 +194,16 @@ einer anderen App, wechselt SAFT von selbst dorthin. Mit Zugang zu nur einer App
    - Text: „enthält …“
    - Zahl und Datum: „von … bis …“
    - Ja/Nein, Auswahllisten und Verknüpfungen: Auswahl aus einer Liste
+   - **Leer oder gefüllt:** bei Text, Zahl und Datum die Auswahl *alle · nur leere · nur gefüllte* neben der Eingabe;
+     bei Auswahllisten und Verknüpfungen die Einträge „(leer)“ und „(gefüllt)“ zuoberst in der Liste, bei Ja/Nein
+     „(leer)“. So finden Sie z. B. Rechnungen ohne Nummer. Leer ist ein Feld ohne Wert, bei Text auch ein leerer
+     Text; `0` gilt als gefüllt. Pflichtfelder sind nie leer und haben die Auswahl nicht.
    - „Gelöschte Datensätze“: nur für Benutzer mit Löschrecht
+
+   Der Filterdialog zeigt die Felder in zwei Spalten, die Bezeichnung links neben der Eingabe; am Ende steht
+   eingeklappt der Abschnitt **Angelegt und geändert**. Jeder gesetzte Filter erscheint als Kärtchen über der Tabelle
+   (z. B. „Nummer: leer“) und lässt sich dort einzeln entfernen.
+
 3. **Sortieren** – Klick auf einen Spaltenkopf sortiert auf- bzw. absteigend. Jede Spalte ist sortierbar.
    Auswahllisten sortieren nach dem gespeicherten Wert, nicht nach der angezeigten Bezeichnung.
 4. **Bearbeiten, Löschen, …** – am Ende der Zeile (siehe [4.2](#42-datensätze-ansehen-anlegen-bearbeiten-löschen)); auf
@@ -223,6 +232,10 @@ sich genauso.
 > **Geändert am**, **Angelegt von** und **Geändert von** – zunächst ausgeblendet. Nach den beiden Daten lässt sich
 > sortieren, die Personen erscheinen mit Namen (nicht sortierbar). Im Filter wählen Sie dafür einen Zeitraum bzw. eine
 > Person. Angebundene Tabellen haben diese Spalten nicht.
+>
+> Im Filterdialog stehen diese vier Filter im Abschnitt **Angelegt und geändert** am Ende; bei den Personen findet
+> „(leer)“ Datensätze ohne Person, z. B. aus einem Import. In Auswertungen gibt es dieselben Angaben als Felder
+> (Abschnitt 4.9).
 
 **Filter, Suche, Sortierung und Zeilen pro Seite** merkt sich SAFT in den Datenansichten ebenfalls **dauerhaft für
 Sie persönlich** – je Tabelle und Menüeintrag, auch nach dem Abmelden. Öffnen Sie also eine Tabelle wieder, sehen
@@ -472,6 +485,14 @@ Kreuztabelle, Balken-, Linien- oder Kreisdiagramm oder als einzelne Kennzahl. N�
 | Rechts: Werte | Berechnungen: Summe, Durchschnitt, Minimum, Maximum (Zahlen), Anzahl, Anzahl verschiedener; „Anzahl Datensätze“ ohne Feld; **＋ Berechneter Wert** mit eigener Formel und **＋ Kennzahl aus Werten** (siehe unten). |
 | Rechts: Filter | Bedingung und Wert im Dialog, passend zum Feldtyp; bei Datumsfeldern auch „dieses Jahr“, „letzter Monat“, „letzte N Tage“. |
 | Mitte: Vorschau | rechnet nach jeder Änderung neu (höchstens 100 Zeilen). Darüber die Darstellung (Tabelle, Kreuztabelle, Balken, Linie, Kreis, Kennzahl); nicht passende sind gesperrt, der Tooltip nennt den Grund. Ein Klick auf eine Spaltenüberschrift sortiert. |
+
+**Angelegt und geändert:** Am Ende der Feldliste jeder Tabelle stehen **Angelegt am**, **Geändert am**, **Angelegt
+von** und **Geändert von** (nicht bei angebundenen Tabellen und nicht bei Tabellen anderer Apps). Die beiden Daten
+verhalten sich wie Datumsfelder. Die Personen erscheinen mit Namen; sie lassen sich als Spalte, zum Gruppieren und als
+Anzahl verwenden, und eine gruppierte Auswertung ist nach dem Namen sortiert. In einer Liste lässt sich nach einer
+Person nicht sortieren. Als Filter gibt es bestimmte Personen, *ist leer*, *ist nicht leer* und **„bin ich“**: die
+Person, die die Auswertung gerade ausführt. So zeigt eine freigegebene Auswertung „Meine Aufträge“ jeder Person ihre
+eigenen.
 
 Felder **zieht** man aus der Liste in einen Bereich oder ordnet sie mit **＋** zu (auch per Tastatur); innerhalb und
 zwischen den Bereichen lassen sie sich verschieben, ✎ ändert Bezeichnung bzw. Filter, ✕ entfernt. Über der Vorschau

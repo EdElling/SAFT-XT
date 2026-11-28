@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Reports;
 
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Schema\SystemFields;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 
@@ -47,6 +48,12 @@ final readonly class ResolvedField
     public function type(): FieldType
     {
         return $this->field->valueType();
+    }
+
+    /** Angelegt bzw. geändert von (B-183): der Wert ist eine Benutzer-ID, angezeigt wird der Name. */
+    public function isPerson(): bool
+    {
+        return SystemFields::isPerson($this->field);
     }
 
     public function isNumeric(): bool

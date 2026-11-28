@@ -882,6 +882,13 @@ erzeugt (`App\Apps\Definition\AppDefinition`).
 | `documents` | Dokumentvorlagen (Teil `documents`): `key`, `name`, `table` (Grundtabelle), `recipient`, `body`, `file_name`, `language_field`, `file_field` (Feldnamen der Grundtabelle), `email_to`, `email_subject`, `email_body`, `email_reply_to` (E-Mail mit Platzhaltern), `qr_bill` (QR-Rechnung: `enabled`, `position` `page`/`bottom`, `amount`, `currency`, `reference`, `message`, `debtor_name`, `debtor_street`, `debtor_building_number`, `debtor_postal_code`, `debtor_city`, `debtor_country` – Texte mit Platzhaltern), `formats` (`pdf`, `docx` oder `both`; fehlt der Schlüssel, gilt `pdf`), `is_active`, `sort_order`. Abschnitte `{{#tabelle}}` nennen Kind-Tabellen beim Namen; eine Kopie mit neuem Präfix benennt sie um. Das Briefpapier gehört nicht dazu |
 | `parts` | die gewählten Teile: `reports`, `roles`, `tasks`, `documents`, `manual` (`AppDefinition::PARTS`) |
 
+**Auswertungen** (`reports[].definition`) nennen ihre Felder als `{key, path, field, bucket, label}` mit `field` =
+`tabelle.feld`. Eine **Systemspalte** (angelegt/geändert am und von) hat keine Feld-ID: `field` ist `null` und
+`system` nennt `created_at`, `updated_at`, `created_by` oder `updated_by`; die Tabelle ergibt sich aus `path`. In der
+gespeicherten Definition (`reports.definition`) ist `field` dann `0`. Filter auf eine Person kennen `eq`, `neq`, `in`
+(Benutzer-IDs), `is_me` (die ausführende Person), `is_empty` und `not_empty`; `eq`, `neq` und `in` lässt der Export
+weg, weil Benutzer-IDs nur in einer Installation gelten.
+
 Jedes Objekt trägt seinen **stabilen Schlüssel** (`key`, UUID), der sich beim Umbenennen nicht ändert. Verweise stehen
 als Namen („bestellungen.kunde_id“, Menüpfad), damit die Datei lesbar bleibt. Nicht enthalten sind Datensätze,
 Zugangsdaten, Briefpapier, Systemmenüs, Systemrollen und System-Aufgaben. `App\Apps\Definition\AppDefinitionValidator::errors()`

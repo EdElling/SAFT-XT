@@ -316,7 +316,11 @@ class DynamicDataPage extends Page implements HasTable
                 // B-170: Datensätze einer Sammelaktion, nur als vorübergehende Ansicht über ?bulk=<Kopf>.
                 ...($external ? [] : [BulkChangeFilter::make($customTable)]),
             ])
-            ->filtersFormColumns(3)
+            // Zwei Spalten, Bezeichnung neben der Eingabe, Systemspalten eingeklappt am Ende; breiter als Filaments
+            // grösste Stufe (86 statt 80 rem, Regel in PanelAppearance), damit auch zwei Datumsfelder nebeneinander passen.
+            ->filtersFormColumns(2)
+            ->filtersFormWidth('saft-filters-wide')
+            ->filtersFormSchema(static fn (array $filters): array => DynamicTableBuilder::filtersFormSchema($filters))
             // Designer-Tabellen: neueste zuerst; externe Tabellen in Schlüsselreihenfolge.
             ->defaultSort($sort, $external ? 'asc' : 'desc')
             // Vorgabe 10 Zeilen; eine andere Wahl bleibt je Person gespeichert (RemembersTableState, B-027).

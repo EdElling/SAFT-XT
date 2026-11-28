@@ -419,3 +419,19 @@ no. n".
     values; whoever may edit could enter them by hand. A separate write path or a header as for bulk edits would add
     nothing that the checks and the version do not already secure. *Consequence:* only the last 25 entries in the
     history can be undone; if someone saved in between, SAFT reports it without “Save anyway”.
+
+31. **System columns by name instead of field id; people as ids in the query, names afterwards; one meaning of
+    “empty”** (28 Nov 2026, B-158, B-183, EMPTY_FILTER_SYSTEM_FIELDS.md). Created/changed at and by are not fields of
+    the table designer. In a report definition a system column is `field: 0` with `system: "created_at"` (editor
+    reference `":created_at"`, app definition `field: null` with `system`); it exists on every designer table of the
+    report, not on connected tables and not behind an interface. For “by”, the query reads, groups and filters the
+    **user id**; `ReportResult` fills in the names afterwards via `UserNames` (once per request), into the same
+    key → display map that relation fields use. A complete grouped result is sorted by name in PHP; in a list the
+    column cannot be sorted. Filters of kind `person`: specific users, empty, not empty and `is_me` (the person
+    running the report); the app export omits filters with user ids. “Empty” means the same in the filters of the data
+    view (`EmptyFilter`) as `is_empty` in reports: NULL, and for text, number sequences and selects also the empty
+    string; required fields of designer tables do not have the filter. *Why:* users live on the main connection, data
+    in `app_data` (no. 1, different servers allowed); a join in the query would not be portable. An invented field id
+    would be a nameless special case wherever field ids are read. One meaning of “empty” makes the filter definition
+    for jump links (AI_AGENTS.md V5) a mere translator later. *Consequence:* user names are not sent to the report
+    assistant; no new read site (reports read with the query builder), no migration, plugin API unchanged.

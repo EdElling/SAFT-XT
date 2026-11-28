@@ -13,14 +13,19 @@ use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DynamicRecord;
 use App\Support\Translations;
+use Closure;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\FusedGroup;
+use Filament\Schemas\Components\Section;
 use Filament\Support\Enums\ArgumentValue;
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\BaseFilter;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Illuminate\Database\Eloquent\Builder;
@@ -163,47 +168,65 @@ final class DynamicTableBuilder
             $options = $field->optionsArray();
             $values = $table->isExternal() && $field->type !== FieldType::Relation ? ($options[TableConnectorService::DB_VALUES] ?? null) : null;
 
+            // Pflichtfelder einer Designer-Tabelle sind nie leer: dort ohne „leer/gefüllt“. Angebundene Tabellen halten
+            // sich nicht an SAFTs Pflicht.
+            $empty = $table->isExternal() || ! $field->is_required;
+
             // Werteliste aus einer CHECK-Regel der Datenbank: Auswahl statt Textsuche.
-            $filter = is_array($values) ? SelectFilter::make($field->name)
-                ->options(array_combine(array_map('strval', $values), array_map('strval', $values)))
-                ->multiple()
+            // B-158: Auswahllisten mit den Einträgen „(leer)“ und „(gefüllt)“, Eingaben mit der Auswahl „Inhalt“.
+            $filter = is_array($values) ? $this->entriesFilter($field, array_combine(array_map('strval', $values), array_map('strval', $values)), $empty)->multiple()
                 : match ($field->valueType()) {
-                    FieldType::Boolean => TernaryFilter::make($field->name),
+                    // Ja, Nein oder leer (NULL): „Nein“ bleibt = false wie is_false der Auswertungen.
+                    FieldType::Boolean => SelectFilter::make($field->name)
+                        ->options(['1' => __('common.yes'), '0' => __('common.no'), ...($empty ? [EmptyFilter::EMPTY => __('data.filters.empty_entry')] : [])])
+                        ->query(fn (Builder $query, array $data): Builder => EmptyFilter::entries(
+                            $query,
+                            $field,
+                            [$data['value'] ?? null],
+                            static fn (mixed $value): bool => filter_var($value, FILTER_VALIDATE_BOOLEAN),
+                        )),
                     // Dateien: mit oder ohne (leere Felder speichert SAFT als NULL).
                     FieldType::File => TernaryFilter::make($field->name)->nullable()
                         ->trueLabel(__('data.filters.with_files'))
                         ->falseLabel(__('data.filters.without_files')),
-                    FieldType::Select => SelectFilter::make($field->name)
-                        ->options(collect((array) ($options['options'] ?? []))->mapWithKeys(fn (array $o): array => [$o['value'] => Translations::pick($o['label'] ?? null, (string) $o['value'])])->all())
+                    FieldType::Select => $this->entriesFilter($field, collect((array) ($options['options'] ?? []))->mapWithKeys(fn (array $o): array => [$o['value'] => Translations::pick($o['label'] ?? null, (string) $o['value'])])->all(), $empty)
                         ->multiple(),
-                    FieldType::Relation => SelectFilter::make($field->name)
-                        ->options(fn (): array => $this->relationOptions($options))
+                    FieldType::Relation => $this->entriesFilter($field, fn (): array => $this->relationOptions($options), $empty)
                         ->searchable(),
                     FieldType::String, FieldType::Text => Filter::make($field->name)
-                        ->schema([TextInput::make('value')->label(__('data.filters.contains', ['field' => $field->label]))])
-                        ->query(fn (Builder $query, array $data): Builder => $query->when(
+                        // Eine Zeile je Feld (Bezeichnung links, Eingaben rechts verbunden): der Dialog bleibt kurz.
+                        ->schema([FusedGroup::make([
+                            TextInput::make('value')->label(__('data.filters.contains', ['field' => $field->label]))->placeholder(__('data.filters.contains_short')),
+                            ...($empty ? [EmptyFilter::select($field)] : []),
+                        ])->label($field->label)->columns($empty ? 2 : 1)])
+                        ->query(fn (Builder $query, array $data): Builder => EmptyFilter::content($query, $field, $data)->when(
                             filled($data['value'] ?? null),
                             fn (Builder $q): Builder => $q->whereLike($field->name, '%'.$data['value'].'%'),
                         ))
-                        ->indicateUsing(fn (array $data): ?string => filled($data['value'] ?? null) ? $field->label.': '.$data['value'] : null),
+                        ->indicateUsing(fn (array $data): array => array_values(array_filter([
+                            filled($data['value'] ?? null) ? Indicator::make($field->label.': '.$data['value'])->removeField('value') : null,
+                            EmptyFilter::indicator($field, $data),
+                        ]))),
                     FieldType::Integer, FieldType::Decimal => Filter::make($field->name)
-                        ->schema([
-                            TextInput::make('from')->label(__('data.filters.from', ['field' => $field->label]))->numeric(),
-                            TextInput::make('until')->label(__('data.filters.until', ['field' => $field->label]))->numeric(),
-                        ])
-                        ->columns(2)
-                        ->query(fn (Builder $query, array $data): Builder => $query
+                        ->schema([FusedGroup::make([
+                            TextInput::make('from')->label(__('data.filters.from', ['field' => $field->label]))->numeric()->prefix(__('data.filters.from_short')),
+                            TextInput::make('until')->label(__('data.filters.until', ['field' => $field->label]))->numeric()->prefix(__('data.filters.until_short')),
+                            ...($empty ? [EmptyFilter::select($field)->columnSpanFull()] : []),
+                        ])->label($field->label)->columns(2)])
+                        ->query(fn (Builder $query, array $data): Builder => EmptyFilter::content($query, $field, $data)
                             ->when(is_numeric($data['from'] ?? null), fn (Builder $q): Builder => $q->where($field->name, '>=', $field->valueType() === FieldType::Integer ? $this->integerBound($data['from'], lower: true) : $data['from']))
-                            ->when(is_numeric($data['until'] ?? null), fn (Builder $q): Builder => $q->where($field->name, '<=', $field->valueType() === FieldType::Integer ? $this->integerBound($data['until'], lower: false) : $data['until']))),
+                            ->when(is_numeric($data['until'] ?? null), fn (Builder $q): Builder => $q->where($field->name, '<=', $field->valueType() === FieldType::Integer ? $this->integerBound($data['until'], lower: false) : $data['until'])))
+                        ->indicateUsing(fn (array $data): array => array_values(array_filter([EmptyFilter::indicator($field, $data)]))),
                     FieldType::Date, FieldType::DateTime => Filter::make($field->name)
-                        ->schema([
-                            DatePicker::make('from')->label(__('data.filters.from', ['field' => $field->label])),
-                            DatePicker::make('until')->label(__('data.filters.until', ['field' => $field->label])),
-                        ])
-                        ->columns(2)
-                        ->query(fn (Builder $query, array $data): Builder => $query
+                        ->schema([FusedGroup::make([
+                            DatePicker::make('from')->label(__('data.filters.from', ['field' => $field->label]))->prefix(__('data.filters.from_short')),
+                            DatePicker::make('until')->label(__('data.filters.until', ['field' => $field->label]))->prefix(__('data.filters.until_short')),
+                            ...($empty ? [EmptyFilter::select($field)->columnSpanFull()] : []),
+                        ])->label($field->label)->columns(2)])
+                        ->query(fn (Builder $query, array $data): Builder => EmptyFilter::content($query, $field, $data)
                             ->when($data['from'] ?? null, fn (Builder $q, string $d): Builder => $q->whereDate($field->name, '>=', $d))
-                            ->when($data['until'] ?? null, fn (Builder $q, string $d): Builder => $q->whereDate($field->name, '<=', $d))),
+                            ->when($data['until'] ?? null, fn (Builder $q, string $d): Builder => $q->whereDate($field->name, '<=', $d)))
+                        ->indicateUsing(fn (array $data): array => array_values(array_filter([EmptyFilter::indicator($field, $data)]))),
                     // valueType(): berechnete Felder sind Zahlen, Nummernkreise Text – hier nie selbst.
                     FieldType::Computed, FieldType::Number => null,
                 };
@@ -213,16 +236,15 @@ final class DynamicTableBuilder
             }
         }
 
-        // B-159: Zeitraum für angelegt/geändert am, Person für angelegt/geändert von.
+        // B-159: Zeitraum für angelegt/geändert am, Person für angelegt/geändert von (B-158: auch ohne Person).
         foreach (SystemFields::for($table) as $field) {
             $filters[] = (SystemFields::isPerson($field)
-                ? SelectFilter::make($field->name)->options(static fn (): array => app(UserNames::class)->all())->searchable()
+                ? $this->entriesFilter($field, static fn (): array => app(UserNames::class)->all())->searchable()
                 : Filter::make($field->name)
-                    ->schema([
-                        DatePicker::make('from')->label(__('data.filters.from', ['field' => $field->label])),
-                        DatePicker::make('until')->label(__('data.filters.until', ['field' => $field->label])),
-                    ])
-                    ->columns(2)
+                    ->schema([FusedGroup::make([
+                        DatePicker::make('from')->label(__('data.filters.from', ['field' => $field->label]))->prefix(__('data.filters.from_short')),
+                        DatePicker::make('until')->label(__('data.filters.until', ['field' => $field->label]))->prefix(__('data.filters.until_short')),
+                    ])->label($field->label)->columns(2)])
                     ->query(fn (Builder $query, array $data): Builder => $query
                         ->when($data['from'] ?? null, fn (Builder $q, string $d): Builder => $q->whereDate($q->getModel()->qualifyColumn($field->name), '>=', $d))
                         ->when($data['until'] ?? null, fn (Builder $q, string $d): Builder => $q->whereDate($q->getModel()->qualifyColumn($field->name), '<=', $d)))
@@ -230,6 +252,49 @@ final class DynamicTableBuilder
         }
 
         return $filters;
+    }
+
+    /**
+     * Anordnung des Filterdialogs: zwei Spalten, Bezeichnung und Eingabe in einer Zeile (oben ausgerichtet); die vier
+     * Systemspalten (angelegt/geändert am und von) am Ende in einem eingeklappten Abschnitt, angeordnet wie die Felder.
+     *
+     * @param  array<string, Component>  $filters  Filter je Name, wie Filament sie für das Formular gruppiert
+     * @return list<Component>
+     */
+    public static function filtersFormSchema(array $filters): array
+    {
+        $system = array_intersect_key($filters, array_flip([...SystemFields::DATES, ...SystemFields::PERSONS]));
+        $inline = static fn (Component $filter): Component => $filter->inlineLabel();
+        $fields = array_map($inline, array_values(array_diff_key($filters, $system)));
+
+        return $system === [] ? $fields : [
+            ...$fields,
+            Section::make(__('data.filters.system_section'))
+                ->schema(array_map($inline, array_values($system)))
+                ->columns(2)
+                ->columnSpanFull()
+                ->compact()
+                ->collapsible()
+                ->collapsed(),
+        ];
+    }
+
+    /**
+     * Auswahlliste (einfach oder mehrfach) mit den Einträgen „(leer)“ und „(gefüllt)“ zuoberst (B-158).
+     *
+     * @param  array<int|string, string>|Closure(): array<int|string, string>  $options
+     */
+    private function entriesFilter(CustomField $field, array|Closure $options, bool $empty = true): SelectFilter
+    {
+        return SelectFilter::make($field->name)
+            ->options(static fn (): array => $empty
+                ? EmptyFilter::withEntries($options instanceof Closure ? $options() : $options)
+                : ($options instanceof Closure ? $options() : $options))
+            ->query(static fn (Builder $query, array $data): Builder => EmptyFilter::entries(
+                $query,
+                $field,
+                array_key_exists('values', $data) ? (array) $data['values'] : [$data['value'] ?? null],
+            ));
     }
 
     /**

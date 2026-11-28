@@ -60,7 +60,7 @@ final class DesignerState
 
             if (! isset($fields[$id])) {
                 $parsed = FieldCatalog::parse((string) $ref);
-                $fields[$id] = ['key' => 'f'.(count($fields) + 1), 'path' => $parsed['path'], 'field' => $parsed['field'], 'bucket' => $bucket, 'label' => $label];
+                $fields[$id] = ['key' => 'f'.(count($fields) + 1), 'path' => $parsed['path'], 'field' => $parsed['field'], 'bucket' => $bucket, 'label' => $label, 'system' => $parsed['system']];
             }
 
             return $fields[$id]['key'];
@@ -216,7 +216,7 @@ final class DesignerState
         $ref = function (?string $key) use ($definition): ?string {
             $field = $key === null ? null : $definition->field($key);
 
-            return $field === null ? null : FieldCatalog::ref($field['path'], $field['field']);
+            return $field === null ? null : FieldCatalog::ref($field['path'], $field['system'] ?? $field['field']);
         };
         $formula = fn (array $expr): array => ReportExpression::mapFields($expr, fn (string $key): string => (string) $ref($key));
         $grouped = $definition->isGrouped();

@@ -544,4 +544,44 @@ class ListTest extends DuskTestCase
             $this->sortBy($browser, 'created-at', ['Spät GmbH', 'Früh AG']);
         });
     }
+
+    /** LIS-22 */
+    public function test_filters_for_empty_and_filled_and_the_audit_section(): void
+    {
+        $this->seedOrders();
+        DynamicRecord::forTable($this->orders)->newQuery()->where('nummer', 'A-1')->firstOrFail()->update(['notiz' => 'Eilt']);
+        // Ein Auftrag ohne Kunde, Status und Notiz, als einziger von einer Person angelegt.
+        auth()->login(User::query()->where('email', self::ADMIN)->sole());
+        DynamicRecord::forTable($this->orders)->create(['nummer' => 'A-4']);
+        auth()->logout();
+
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/data/auftraege')->waitForText('A-1', 15);
+
+            $this->applyFilters($browser, function (Browser $b): void {
+                // Pflichtfeld: nie leer, also ohne die Auswahl. Der Dialog ist breit (zwei Spalten, Bezeichnung links).
+                $b->assertMissing('select[id="tableFiltersForm.nummer.content"]');
+                $this->assertGreaterThan(900, $b->script('return document.querySelector(".fi-dropdown-panel.saft-filters-wide").getBoundingClientRect().width;')[0]);
+                $b->select('select[id="tableFiltersForm.notiz.content"]', '__empty');
+            });
+            $browser->waitUntilMissingText('A-1', 15)->assertSee('Notiz: leer');
+            $this->assertEqualsCanonicalizing(['A-2', 'A-3', 'A-4'], $this->firstColumn($browser));
+
+            $this->applyFilters($browser, function (Browser $b): void {
+                $this->pickOption($b, 'tableFiltersForm.status.values', '(leer)');
+            });
+            $browser->waitUntilMissingText('A-2', 15)->assertSee('Status: (leer)');
+            $this->assertSame(['A-4'], $this->firstColumn($browser));
+
+            $this->resetFilters($browser)->waitForText('A-1', 15);
+
+            // Angelegt/geändert am und von: eingeklappt am Ende des Dialogs.
+            $this->applyFilters($browser, function (Browser $b): void {
+                $b->clickAtXPath("//*[contains(@class, 'fi-section-header')][contains(., 'Angelegt und geändert')]")->pause(500);
+                $this->pickOption($b, 'tableFiltersForm.created_by.value', '(leer)');
+            });
+            $browser->waitUntilMissingText('A-4', 15)->assertSee('Angelegt von: (leer)');
+            $this->assertEqualsCanonicalizing(['A-1', 'A-2', 'A-3'], $this->firstColumn($browser));
+        });
+    }
 }

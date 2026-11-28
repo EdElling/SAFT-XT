@@ -44,6 +44,7 @@
    - [Welche Datensätze hat eine Sammeländerung geändert?](#welche-datensätze-hat-eine-sammeländerung-geändert)
    - [Wann und von wem wurde ein Datensatz angelegt?](#wann-und-von-wem-wurde-ein-datensatz-angelegt)
    - [Wie mache ich eine einzelne Änderung rückgängig?](#wie-mache-ich-eine-einzelne-änderung-rückgängig)
+   - [Wie finde ich Datensätze, bei denen ein Feld leer ist?](#wie-finde-ich-datensätze-bei-denen-ein-feld-leer-ist)
 
 ---
 ## Häufige Fragen
@@ -277,4 +278,12 @@ die Häkchen der Felder, die bleiben sollen, und wählen Sie **Zurücknehmen**. 
 wurden, sind nicht angehakt – setzen Sie das Häkchen, wenn Sie sie trotzdem zurücknehmen wollen. Fehlt der Pfeil, ist
 der Eintrag kein Ändern (z. B. „angelegt“), alle Felder stehen schon auf dem alten Wert oder Ihnen fehlt das Recht
 zum Bearbeiten. Ganze Sammeländerungen nehmen Sie über „Letzte Sammeländerungen“ zurück. Siehe
+[Anwenderhandbuch 4.1](USER_GUIDE.de.md#41-die-tabellenansicht).
+
+### Wie finde ich Datensätze, bei denen ein Feld leer ist?
+
+Öffnen Sie den Filter der Tabelle. Bei Text-, Zahlen- und Datumsfeldern wählen Sie neben der Eingabe **nur leere**
+(oder **nur gefüllte**); bei Auswahllisten, Verknüpfungen und Ja/Nein den Eintrag **„(leer)“** in der Liste. Über der
+Tabelle erscheint ein Kärtchen wie „Rechnungsnummer: leer“. Mit der gefilterten Liste arbeiten Sie weiter: exportieren
+oder alle auswählen und gemeinsam ändern. Pflichtfelder haben die Auswahl nicht, weil sie nie leer sind. Siehe
 [Anwenderhandbuch 4.1](USER_GUIDE.de.md#41-die-tabellenansicht).

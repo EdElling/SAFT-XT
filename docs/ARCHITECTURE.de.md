@@ -429,3 +429,21 @@ durch Nr. n“ markiert.
     ein Kopf wie bei der Sammeländerung brächte nichts, was die Prüfungen und die Version nicht schon sichern. *Folge:*
     Zurücknehmen lassen sich nur die letzten 25 Einträge im Verlauf; hat jemand inzwischen gespeichert, meldet SAFT es
     ohne „Trotzdem speichern“.
+
+31. **Systemspalten mit Namen statt Feld-ID; Personen als ID in der Abfrage, Namen danach; ein Begriff von „leer“**
+    (28.11.2026, B-158, B-183, EMPTY_FILTER_SYSTEM_FIELDS.md). Angelegt/geändert am und von sind keine Felder des
+    Table-Designers. In der Definition einer Auswertung steht eine Systemspalte als `field: 0` mit `system:
+    "created_at"` (Editor-Referenz `":created_at"`, App-Definition `field: null` mit `system`); es gibt sie an jeder
+    Designer-Tabelle der Auswertung, nicht an angebundenen Tabellen und nicht hinter einer Schnittstelle. Die Abfrage
+    liest, gruppiert und filtert bei „von“ die **Benutzer-ID**; die Namen setzt `ReportResult` danach über `UserNames`
+    ein (einmal je Anfrage), in dieselbe Zuordnung Schlüssel → Anzeige wie bei Verknüpfungsfeldern. Gruppiert sortiert
+    PHP ein vollständiges Ergebnis nach dem Namen, in einer Liste ist die Spalte nicht sortierbar. Filter der Art
+    `person`: bestimmte Benutzer, leer, nicht leer und `is_me` (die ausführende Person); der App-Export lässt Filter mit
+    Benutzer-IDs weg. „Leer“ bedeutet in den Filtern der Datenansicht (`EmptyFilter`) dasselbe wie `is_empty` der
+    Auswertungen: NULL, bei Text, Nummernkreis und Auswahl auch Leertext; Pflichtfelder von Designer-Tabellen haben den
+    Filter nicht. *Warum:* Die Benutzer liegen auf der Hauptverbindung, die Daten in `app_data` (Nr. 1, verschiedene
+    Server erlaubt); eine Verknüpfung in der Abfrage wäre nicht portabel. Eine erfundene Feld-ID wäre an jeder Stelle,
+    die Feld-IDs liest, ein Sonderfall ohne Namen. Dieselbe Bedeutung von „leer“ macht aus der Filterdefinition für
+    Sprunglinks (AI_AGENTS.md V5) später einen reinen Übersetzer. *Folge:* Namen von Benutzern gehen nicht an den
+    KI-Assistenten der Auswertungen; keine neue Lesestelle (Auswertungen lesen mit dem Query Builder), keine Migration,
+    Plugin-API unverändert.

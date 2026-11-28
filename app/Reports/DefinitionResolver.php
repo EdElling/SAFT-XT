@@ -8,6 +8,7 @@ use App\Apps\AppInterfaces;
 use App\DynamicData\DynamicDataNamespace;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Schema\SystemFields;
 use App\ExternalData\Snapshots\SnapshotService;
 use App\ExternalData\TableConnectorService;
 use App\Models\CustomField;
@@ -51,6 +52,8 @@ final class DefinitionResolver
         'date' => ['eq', 'gt', 'gte', 'lt', 'lte', 'between', 'today', 'this_month', 'last_month', 'this_year', 'last_year', 'last_days'],
         'boolean' => ['is_true', 'is_false'],
         'relation' => ['eq', 'neq', 'in'],
+        // Angelegt/geändert von (B-183): bestimmte Benutzer oder die Person, die die Auswertung ausführt.
+        'person' => ['eq', 'neq', 'in', 'is_me'],
     ];
 
     public const array ANY_OPERATORS = ['is_empty', 'not_empty'];
@@ -129,7 +132,7 @@ final class DefinitionResolver
     }
 
     /**
-     * @param  array{key: string, path: list<int>, field: int, bucket: string|null, label: string|null}  $spec
+     * @param  array{key: string, path: list<int>, field: int, bucket: string|null, label: string|null, system?: string}  $spec
      * @param  array<string, array{alias: string, parent: string, relation: CustomField, table: CustomTable}>  $joins
      * @param  array<int, CustomTable>  $involved
      */
@@ -189,6 +192,10 @@ final class DefinitionResolver
             $involved[$target->id] = $target;
         }
 
+        if (isset($spec['system'])) {
+            return $this->resolveSystemField($spec, $table, $path, $alias, $labels, $crossed);
+        }
+
         $field = $table->fields->firstWhere('id', $spec['field']);
 
         // Dateien lassen sich nicht auswerten (B-021): wie ein fehlendes Feld behandeln.
@@ -206,6 +213,33 @@ final class DefinitionResolver
 
         if (isset($this->snapshots[$table->id]) && ! in_array($field->name, $this->snapshotColumns($table), true)) {
             $this->error('not_in_snapshot', ['label' => $field->label, 'table' => $table->label]);
+
+            return null;
+        }
+
+        $resolved = new ResolvedField($spec['key'], $field, $table, $path, $alias, $spec['bucket'], $spec['label'] ?? implode(' › ', [...$labels, $field->label]));
+
+        if ($spec['bucket'] !== null && (! in_array($spec['bucket'], ReportDefinition::BUCKETS, true) || ! $resolved->isTemporal())) {
+            $this->error('invalid_bucket', ['label' => $resolved->label]);
+        }
+
+        return $resolved;
+    }
+
+    /**
+     * Systemspalte (angelegt/geändert am und von, B-183): nur an Designer-Tabellen der eigenen App – angebundene
+     * Tabellen haben die Spalten nicht, hinter einer Schnittstelle gelten nur freigegebene Felder.
+     *
+     * @param  array{key: string, path: list<int>, field: int, bucket: string|null, label: string|null, system?: string}  $spec
+     * @param  list<CustomField>  $path
+     * @param  list<string>  $labels
+     */
+    private function resolveSystemField(array $spec, CustomTable $table, array $path, string $alias, array $labels, bool $crossed): ?ResolvedField
+    {
+        $field = $crossed ? null : SystemFields::find($table, (string) $spec['system']);
+
+        if ($field === null) {
+            $this->error('missing_field', ['label' => $spec['label'] ?? $spec['system'], 'table' => $table->label]);
 
             return null;
         }
@@ -468,6 +502,7 @@ final class DefinitionResolver
             }
 
             $fits = match ($measure['agg']) {
+                // Personen lassen sich nur zählen.
                 'sum', 'avg' => $field->isNumeric(),
                 'min', 'max' => $field->isNumeric() || $field->isTemporal(),
                 default => true,
@@ -597,14 +632,14 @@ final class DefinitionResolver
     private function validFilterValue(ResolvedField $field, string $op, mixed $value): bool
     {
         $scalar = fn (mixed $v): bool => match (self::kind($field)) {
-            'number' => is_numeric($v),
+            'number', 'person' => is_numeric($v),
             'relation' => TableConnectorService::baseType($field->field) === FieldType::Integer ? is_numeric($v) : is_scalar($v) && (string) $v !== '',
             'date' => is_string($v) && strtotime($v) !== false,
             default => is_scalar($v) && (string) $v !== '',
         };
 
         return match ($op) {
-            'is_empty', 'not_empty', 'is_true', 'is_false', 'today', 'this_month', 'last_month', 'this_year', 'last_year' => true,
+            'is_empty', 'not_empty', 'is_true', 'is_false', 'is_me', 'today', 'this_month', 'last_month', 'this_year', 'last_year' => true,
             'last_days' => is_numeric($value) && (int) $value >= 1 && (int) $value <= 3660,
             'between' => is_array($value) && count($value) === 2 && $scalar(array_values($value)[0]) && $scalar(array_values($value)[1]),
             'in' => is_array($value) && $value !== [] && count($value) <= 100 && array_filter($value, fn (mixed $v): bool => ! $scalar($v)) === [],
@@ -622,6 +657,9 @@ final class DefinitionResolver
         foreach ($definition->sort as $sort) {
             if (! in_array($sort['key'], $allowed, true)) {
                 $this->error('invalid_sort', ['key' => $sort['key']]);
+            } elseif (! $definition->isGrouped() && ($fields[$sort['key']] ?? null)?->isPerson()) {
+                // Die Datenbank kennt nur die Benutzer-ID; eine Liste kann abgeschnitten sein und wird nicht in PHP sortiert.
+                $this->error('person_sort', ['label' => $fields[$sort['key']]->label]);
             }
         }
     }
@@ -652,10 +690,16 @@ final class DefinitionResolver
         return $reason === null ? null : __('reports.visual_reasons.'.$reason);
     }
 
-    /** Art des Feldes für Filter: text, number, date, boolean, relation. */
+    /** Art des Feldes für Filter: text, number, date, boolean, relation, person. */
     public static function kind(ResolvedField $field): string
     {
-        return self::kindOf($field->type());
+        return self::kindOfField($field->field);
+    }
+
+    /** Art eines Feldes (auch einer Systemspalte) für Filter und Editor. */
+    public static function kindOfField(CustomField $field): string
+    {
+        return SystemFields::isPerson($field) ? 'person' : self::kindOf($field->valueType());
     }
 
     /** Art eines Wertetyps für Filter: text, number, date, boolean, relation. */

@@ -44,6 +44,7 @@
    - [Which records did a bulk edit change?](#which-records-did-a-bulk-edit-change)
    - [When and by whom was a record created?](#when-and-by-whom-was-a-record-created)
    - [How do I undo a single change?](#how-do-i-undo-a-single-change)
+   - [How do I find records in which a field is empty?](#how-do-i-find-records-in-which-a-field-is-empty)
 
 ---
 ## Frequently asked questions
@@ -266,4 +267,12 @@ to the entry “updated”. The confirmation shows *now → back to* for each fi
 choose **Undo**. Fields changed again since then are not ticked – tick them if you want to undo them anyway. If the
 arrow is missing, the entry is not an update (e.g. “created”), all fields already have the old value, or you lack the
 right to edit. Whole bulk edits are undone via “Recent bulk edits”. See
+[User guide 4.1](USER_GUIDE.md#41-the-table-view).
+
+### How do I find records in which a field is empty?
+
+Open the filter of the table. For text, number and date fields choose **empty only** (or **filled only**) next to the
+input; for selection lists, relations and Yes/No choose the entry **"(empty)"** in the list. A chip such as "Invoice
+number: empty" appears above the table. You can keep working with the filtered list: export it, or select all and
+change them together. Required fields do not have the choice because they are never empty. See
 [User guide 4.1](USER_GUIDE.md#41-the-table-view).

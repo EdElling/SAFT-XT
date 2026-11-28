@@ -7,6 +7,8 @@ namespace App\Filament\Resources\Reports\Pages;
 use App\Ai\AiConfig;
 use App\Apps\CurrentApp;
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Schema\SystemFields;
+use App\DynamicData\UserNames;
 use App\Exceptions\BusinessRuleException;
 use App\ExternalData\Snapshots\SnapshotService;
 use App\Filament\Resources\Reports\ReportResource;
@@ -387,7 +389,7 @@ class ReportDesigner extends Page
         $this->afterChange();
 
         // Ein Filter ohne Wert filtert nicht: gleich nach dem Wert fragen.
-        if ($zone === 'filters' && ! in_array($item['op'], ['is_true', 'is_empty', 'not_empty', 'this_year'], true)) {
+        if ($zone === 'filters' && ! in_array($item['op'], ['is_true', 'is_me', 'is_empty', 'not_empty', 'this_year'], true)) {
             $this->mountAction('filter', ['index' => $index ?? count($this->state['filters']) - 1]);
         }
     }
@@ -827,7 +829,7 @@ class ReportDesigner extends Page
     private function fieldKinds(): array
     {
         return collect($this->catalog()->entries($this->state['base'] ?? null, $this->user()))
-            ->mapWithKeys(fn (array $e): array => [$e['ref'] => $e['field']->type === FieldType::Relation ? 'relation' : DefinitionResolver::kindOf($e['field']->valueType())])
+            ->mapWithKeys(fn (array $e): array => [$e['ref'] => DefinitionResolver::kindOfField($e['field'])])
             ->all();
     }
 
@@ -857,7 +859,7 @@ class ReportDesigner extends Page
         }
 
         $kinds = collect($this->catalog()->entries($this->state['base'] ?? null, $this->user()))
-            ->mapWithKeys(fn (array $e): array => [$e['ref'] => $e['field']->type === FieldType::Relation ? 'relation' : DefinitionResolver::kindOf($e['field']->valueType())]);
+            ->mapWithKeys(fn (array $e): array => [$e['ref'] => DefinitionResolver::kindOfField($e['field'])]);
 
         return ReportExpression::problems(
             $tree,
@@ -870,7 +872,7 @@ class ReportDesigner extends Page
     private function numericFieldLabels(): array
     {
         return collect($this->catalog()->entries($this->state['base'] ?? null, $this->user()))
-            ->filter(fn (array $e): bool => $e['field']->type !== FieldType::Relation && DefinitionResolver::kindOf($e['field']->valueType()) === 'number')
+            ->filter(fn (array $e): bool => $e['field']->type !== FieldType::Relation && DefinitionResolver::kindOfField($e['field']) === 'number')
             ->map(fn (array $e): string => $e['label'])
             ->unique()
             ->values()
@@ -997,10 +999,15 @@ class ReportDesigner extends Page
             'reachable' => $state->base === null ? null : $this->catalog()->reachableFrom($state->base, $user),
             'catalog' => $this->catalogGroups(),
             'labels' => collect($this->catalog()->entries($state->base, $user))->mapWithKeys(fn (array $e): array => [$e['ref'] => $e['label']])->all(),
-            'kinds' => collect($this->catalog()->entries($state->base, $user))->mapWithKeys(fn (array $e): array => [$e['ref'] => DefinitionResolver::kindOf($e['field']->valueType())])->all(),
+            'kinds' => collect($this->catalog()->entries($state->base, $user))->mapWithKeys(fn (array $e): array => [$e['ref'] => DefinitionResolver::kindOfField($e['field'])])->all(),
             'visuals' => collect(ReportDefinition::VISUALS)->mapWithKeys(fn (string $t): array => [$t => DefinitionResolver::visualReason($definition, $t)])->all(),
             'sentence' => $view['result'] !== null ? app(ReportDescriber::class)->describe($view['result']->report) : null,
-            'sortTokens' => $tokens,
+            // Personenspalten einer Liste sind nicht sortierbar (die Datenbank kennt nur die Benutzer-ID, B-183).
+            'sortTokens' => $state->isGrouped() ? $tokens : array_filter(
+                $tokens,
+                static fn (string $key): bool => ! in_array($definition->field($key)['system'] ?? null, SystemFields::PERSONS, true),
+                ARRAY_FILTER_USE_KEY,
+            ),
             'hasContent' => $hasContent,
             'grouped' => $state->isGrouped(),
             'assistantAvailable' => $assistant = ReportAssistant::availableFor($user),
@@ -1030,7 +1037,7 @@ class ReportDesigner extends Page
                 'ref' => $entry['ref'],
                 'label' => $entry['label'],
                 'name' => $name,
-                'kind' => $entry['field']->type === FieldType::Relation ? 'relation' : DefinitionResolver::kindOf($entry['field']->valueType()),
+                'kind' => DefinitionResolver::kindOfField($entry['field']),
                 'depth' => count($entry['path']),
             ];
         }
@@ -1050,17 +1057,18 @@ class ReportDesigner extends Page
 
     private function defaultAggregate(CustomField $field): string
     {
-        return match (DefinitionResolver::kindOf($field->valueType())) {
+        return match (DefinitionResolver::kindOfField($field)) {
             'number' => 'sum',
-            'relation' => 'count_distinct',
+            'relation', 'person' => 'count_distinct',
             default => 'count',
         };
     }
 
     private function defaultOperator(CustomField $field): string
     {
-        return match (DefinitionResolver::kindOf($field->valueType())) {
+        return match (DefinitionResolver::kindOfField($field)) {
             'boolean' => 'is_true',
+            'person' => 'is_me',
             'date' => 'this_year',
             'text' => $field->type === FieldType::Select ? 'eq' : 'contains',
             default => 'eq',
@@ -1070,11 +1078,12 @@ class ReportDesigner extends Page
     /** @return list<Component|Field> */
     private function filterComponents(CustomField $field): array
     {
-        $kind = DefinitionResolver::kindOf($field->valueType());
-        $options = $field->type === FieldType::Select
+        $kind = DefinitionResolver::kindOfField($field);
+        // Personen (angelegt/geändert von): Auswahl der Benutzer wie im Filter der Datenansicht.
+        $options = $kind === 'person' ? app(UserNames::class)->all() : ($field->type === FieldType::Select
             ? collect((array) ($field->optionsArray()['options'] ?? []))->filter(fn ($o): bool => is_array($o) && isset($o['value']))
                 ->mapWithKeys(fn (array $o): array => [(string) $o['value'] => Translations::pick($o['label'] ?? null, (string) $o['value'])])->all()
-            : [];
+            : []);
         $needsValue = fn (Get $get): bool => in_array($get('op'), ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'between', 'contains', 'starts_with'], true);
         $date = $kind === 'date';
         $select = $options !== [];

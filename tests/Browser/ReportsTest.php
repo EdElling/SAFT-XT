@@ -88,6 +88,36 @@ class ReportsTest extends DuskTestCase
         $this->assertSame('bar', Report::query()->where('name', 'Umsatz je Kunde')->sole()->definition['visual']['type']);
     }
 
+    /** RPT-20 */
+    public function test_system_fields_group_by_person_with_names(): void
+    {
+        $admin = User::query()->where('email', self::ADMIN)->sole();
+        auth()->login($admin);
+        DynamicRecord::forTableName('bestellungen')->create(['nummer' => 'B-9', 'betrag' => '7.00']);
+        auth()->logout();
+
+        $this->browse(function (Browser $browser) use ($admin): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/reports/create')
+                ->waitFor('[data-report-designer]', 15)
+                ->click('[data-base-picker] > button')
+                ->waitFor('[data-base-filter]', 5)
+                ->click('[data-base-option="'.CustomTable::query()->where('name', 'bestellungen')->value('id').'"]')
+                ->waitFor('[data-zone="catalog"]', 15)
+                // Systemspalten stehen je Tabelle am Ende der Feldliste, auch bei der verknüpften Tabelle.
+                ->assertPresent('[data-zone="catalog"] [data-ref=":created_at"]')
+                ->assertPresent('[data-zone="catalog"] [data-ref="'.$this->fieldIdOf('bestellungen', 'kunde_id').':updated_by"]');
+
+            $browser->click('[data-zone="catalog"] [data-ref=":created_by"] button')->pause(400);
+            $this->clickVisibleButton($browser, 'Spalten der Liste')->waitForText('Liste: Angelegt von', 15);
+
+            $browser->drag('[data-zone="catalog"] [data-ref=":'.$this->fieldIdOf('bestellungen', 'betrag').'"]', '[data-zone="values"]')
+                ->waitForText('Summe Betrag je Angelegt von', 15)
+                ->assertSeeIn('[data-report-table]', $admin->name)
+                ->assertSeeIn('[data-report-table]', '7,00')
+                ->assertSeeIn('[data-report-table]', '1.350,50');
+        });
+    }
+
     /** RPT-15 */
     public function test_picker_greys_out_unlinked_tables_until_the_selection_is_cleared(): void
     {

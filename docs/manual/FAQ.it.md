@@ -44,6 +44,7 @@
    - [Quali record ha modificato una modifica multipla?](#quali-record-ha-modificato-una-modifica-multipla)
    - [Quando e da chi è stato creato un record?](#quando-e-da-chi-è-stato-creato-un-record)
    - [Come annullo una singola modifica?](#come-annullo-una-singola-modifica)
+   - [Come trovo i record in cui un campo è vuoto?](#come-trovo-i-record-in-cui-un-campo-è-vuoto)
 
 ---
 ## Domande frequenti
@@ -277,3 +278,11 @@ ai campi che devono restare e scegliete **Annulla la modifica**. I campi modific
 spuntateli se volete annullarli comunque. Se la freccia manca, la voce non è una modifica (ad es. «creato»), tutti i
 campi hanno già il valore precedente oppure vi manca il diritto di modifica. Le modifiche multiple intere si annullano
 tramite «Ultime modifiche multiple». Vedi [Manuale utente 4.1](USER_GUIDE.it.md#41-la-vista-tabella).
+
+### Come trovo i record in cui un campo è vuoto?
+
+Aprite il filtro della tabella. Per i campi di testo, numerici e data scegliete **solo vuoti** (oppure **solo
+compilati**) accanto all’immissione; per elenchi di selezione, collegamenti e sì/no la voce **«(vuoto)»** nell’elenco.
+Sopra la tabella compare un’etichetta come «Numero fattura: vuoto». Con l’elenco filtrato proseguite: esportare, oppure
+selezionare tutto e modificare insieme. I campi obbligatori non hanno questa scelta perché non sono mai vuoti. Vedi
+[Manuale utente 4.1](USER_GUIDE.it.md#41-la-vista-tabella).

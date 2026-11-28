@@ -9,6 +9,7 @@ use App\Apps\CurrentApp;
 use App\DynamicData\DataAccess;
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\Schema\SystemFields;
 use App\Models\CustomField;
 use App\Models\CustomTable;
 use App\Models\DataSnapshot;
@@ -26,7 +27,8 @@ use Illuminate\Support\Collection;
  * ihren freigegebenen Feldern – ohne eigenes Leserecht – und ohne weiterzugehen.
  *
  * Ein Feld wird als Text referenziert: "57/63:31" = Pfad über die Verknüpfungsfelder 57 und 63
- * zum Feld 31; ":31" = Feld der Grundtabelle.
+ * zum Feld 31; ":31" = Feld der Grundtabelle. Systemspalten (angelegt/geändert am und von, B-183) stehen mit ihrem
+ * Namen statt einer Nummer: ":created_at", "57:updated_by" – nur an Designer-Tabellen der eigenen App.
  */
 final class FieldCatalog
 {
@@ -248,6 +250,17 @@ final class FieldCatalog
                 }
             }
 
+            // Systemspalten am Ende der Felder; nicht hinter einer Schnittstelle (dort nur freigegebene Felder).
+            foreach ($interface ? [] : SystemFields::for($table) as $field) {
+                $entries[] = [
+                    'ref' => self::ref($path, $field->name),
+                    'path' => $path,
+                    'field' => $field,
+                    'group' => $group,
+                    'label' => $labels === [] ? (string) $field->label : $group.' › '.$field->label,
+                ];
+            }
+
             // Verknüpfungen für Auswertungen ab dieser Tabelle (im Pfad als negative Nummer).
             if (! $interface && count($path) < DefinitionResolver::MAX_DEPTH) {
                 foreach ($this->linksFrom($table) as $link) {
@@ -354,6 +367,11 @@ final class FieldCatalog
                 $fields[] = $entry;
             }
 
+            // Systemspalten (B-183) mit ihrem Namen als id; Namen von Benutzern gehen nicht an das Modell.
+            foreach ($interface ? [] : SystemFields::for($table) as $field) {
+                $fields[] = ['id' => $field->name, 'label' => (string) $field->label, 'type' => DefinitionResolver::kindOfField($field)];
+            }
+
             $links = ($interface ? new Collection : $this->linksFrom($table))
                 ->filter(fn (ReportLink $link): bool => $all->has($link->target_table_id))
                 ->map(fn (ReportLink $link): array => ['id' => -$link->id, 'label' => (string) $link->label, 'to' => $link->target_table_id])
@@ -372,18 +390,22 @@ final class FieldCatalog
         })->values()->all();
     }
 
-    /** @param  list<int>  $path */
-    public static function ref(array $path, int $field): string
+    /**
+     * @param  list<int>  $path
+     * @param  int|string  $field  Feld-ID oder Name einer Systemspalte
+     */
+    public static function ref(array $path, int|string $field): string
     {
         return implode('/', $path).':'.$field;
     }
 
-    /** @return array{path: list<int>, field: int} */
+    /** @return array{path: list<int>, field: int, system: string|null} system = Name einer Systemspalte (dann field 0) */
     public static function parse(string $ref): array
     {
         [$path, $field] = array_pad(explode(':', $ref, 2), 2, '0');
+        $system = in_array($field, [...SystemFields::DATES, ...SystemFields::PERSONS], true) ? $field : null;
 
-        return ['path' => $path === '' ? [] : array_map('intval', explode('/', $path)), 'field' => (int) $field];
+        return ['path' => $path === '' ? [] : array_map('intval', explode('/', $path)), 'field' => $system === null ? (int) $field : 0, 'system' => $system];
     }
 
     /** In der Auswahl: aktiv und lesbar. */

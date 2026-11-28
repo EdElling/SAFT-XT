@@ -27,7 +27,8 @@ final class ReportQuery
 {
     public function __construct(private readonly DynamicDataNamespace $namespace) {}
 
-    public function build(ResolvedReport $report, QueryDialect $dialect): Builder
+    /** @param  int|null  $userId  die Person, die die Auswertung ausführt (Filter „bin ich“) */
+    public function build(ResolvedReport $report, QueryDialect $dialect, ?int $userId = null): Builder
     {
         $connection = $this->namespace->connection();
         $query = $connection->table($this->source($report, $report->base).' as t0');
@@ -59,7 +60,7 @@ final class ReportQuery
         }
 
         foreach ($definition->filters as $filter) {
-            $this->filter($query, $report->field($filter['field']), $filter['op'], $filter['value'], $dialect);
+            $this->filter($query, $report->field($filter['field']), $filter['op'], $filter['value'], $dialect, $userId);
         }
 
         foreach ($definition->sort as $sort) {
@@ -189,7 +190,7 @@ final class ReportQuery
         return $query->getGrammar()->wrap($column);
     }
 
-    private function filter(Builder $query, ResolvedField $field, string $op, mixed $value, QueryDialect $dialect): void
+    private function filter(Builder $query, ResolvedField $field, string $op, mixed $value, QueryDialect $dialect, ?int $userId = null): void
     {
         $column = $field->column();
         $kind = DefinitionResolver::kind($field);
@@ -198,6 +199,8 @@ final class ReportQuery
         match ($op) {
             'is_empty' => $query->where(fn (Builder $q) => $kind === 'text' ? $q->whereNull($column)->orWhere($column, '') : $q->whereNull($column)),
             'not_empty' => $kind === 'text' ? $query->whereNotNull($column)->where($column, '<>', '') : $query->whereNotNull($column),
+            // Ohne Person (Aufruf im Hintergrund) trifft „bin ich“ nichts.
+            'is_me' => $userId === null ? $query->whereIn($column, []) : $query->where($column, $userId),
             'is_true' => $query->where($column, true),
             'is_false' => $query->where($column, false),
             'contains' => $dialect->whereLike($query, $column, '%'.$this->escapeLike((string) $value).'%'),
@@ -259,7 +262,7 @@ final class ReportQuery
     private function value(string $kind, mixed $value): mixed
     {
         return match ($kind) {
-            'number', 'relation' => is_numeric($value) ? $value + 0 : $value,
+            'number', 'relation', 'person' => is_numeric($value) ? $value + 0 : $value,
             default => (string) $value,
         };
     }

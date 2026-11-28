@@ -188,7 +188,16 @@ In the menu under **Data**, open a table, e.g. **Customers**.
    - Text: "… contains"
    - Number and date: "… from" and "… until"
    - Yes/No, selection lists and relations: choice from a list
+   - **Empty or filled:** for text, number and date the choice *all · empty only · filled only* next to the input;
+     for selection lists and relations the entries "(empty)" and "(filled)" at the top of the list, for Yes/No
+     "(empty)". This finds, for example, invoices without a number. A field without a value is empty, for text also
+     an empty text; `0` counts as filled. Required fields are never empty and do not have the choice.
    - "Deleted records": only for users with delete permission
+
+   The filter dialog shows the fields in two columns, with the label to the left of the input; at the end there is
+   the collapsed section **Created and changed**. Every filter you set appears as a chip above the table (e.g.
+   "Number: empty") and can be removed there individually.
+
 3. **Sort**: clicking a column header sorts in ascending or descending order. Every column can be sorted.
    Selection lists are sorted by the stored value, not by the displayed label.
 4. **Edit, Delete, …** at the end of the row (see [4.2](#42-viewing-creating-editing-and-deleting-records)); on the
@@ -215,6 +224,10 @@ be scrolled horizontally. Summaries and detail tables in the master-detail view 
 > at**, **Created by** and **Changed by** – hidden at first. You can sort by the two dates; the people appear with
 > their names (not sortable). In the filter you choose a period or a person for them. Connected tables do not have
 > these columns.
+>
+> In the filter dialog these four filters are in the section **Created and changed** at the end; for the people,
+> "(empty)" finds records without a person, e.g. from an import. Reports offer the same information as fields
+> (section 4.9).
 
 SAFT also remembers **filters, search, sorting and rows per page** in the data views **permanently for you
 personally** – per table and menu entry, even after signing out. When you open a table again, you see it as you
@@ -449,6 +462,13 @@ are required.
 | Right: values | Calculations: sum, average, minimum, maximum (numbers), count, count distinct; "number of records" without a field; **＋ Calculated value** with your own formula and **＋ Figure from values** (see below). |
 | Right: filters | Condition and value in a dialog matching the field type; for date fields also "this year", "last month", "last N days". |
 | Centre: preview | Recalculates after every change (at most 100 rows). Above it the display (table, cross table, bar, line, pie, key figure); unsuitable ones are locked, the tooltip names the reason. Clicking a column header sorts. |
+
+**Created and changed:** At the end of the field list of every table you find **Created at**, **Changed at**,
+**Created by** and **Changed by** (not for connected tables and not for tables of other apps). The two dates behave
+like date fields. The people appear with their names; you can use them as a column, for grouping and as a count, and
+a grouped report is sorted by name. A list cannot be sorted by a person. As filters there are specific people, *is
+empty*, *is not empty* and **"is me"**: the person who is running the report. A shared report "My orders" thus shows
+everyone their own.
 
 You **drag** fields from the list into an area or assign them with **＋** (also by keyboard); they can be moved within
 and between areas, ✎ changes the label or filter, ✕ removes. Above the preview a **sentence describes the report**,

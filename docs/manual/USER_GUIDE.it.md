@@ -192,7 +192,16 @@ Nel menu aprite una tabella sotto **Dati**, ad es. **Clienti**.
    - testo: «contiene …»
    - numero e data: «da … a …»
    - sì/no, elenchi di selezione e collegamenti: scelta da un elenco
+   - **Vuoto o compilato:** per testo, numeri e date la scelta *tutti · solo vuoti · solo compilati* accanto
+     all’immissione; per elenchi di selezione e collegamenti le voci «(vuoto)» e «(compilato)» in cima all’elenco, per
+     sì/no «(vuoto)». Così trovate ad es. le fatture senza numero. Un campo senza valore è vuoto, per il testo anche
+     un testo vuoto; `0` vale come compilato. I campi obbligatori non sono mai vuoti e non hanno questa scelta.
    - «Record eliminati»: solo per gli utenti con diritto di eliminazione
+
+   La finestra dei filtri mostra i campi su due colonne, con l’etichetta a sinistra dell’immissione; alla fine si
+   trova, chiusa, la sezione **Creazione e modifica**. Ogni filtro impostato compare come etichetta sopra la tabella
+   (ad es. «Numero: vuoto») e lì si può rimuovere singolarmente.
+
 3. **Ordinare**: un clic sull’intestazione di una colonna ordina in modo crescente o decrescente. Ogni colonna è
    ordinabile. Gli elenchi di selezione vengono ordinati secondo il valore salvato, non secondo l’etichetta mostrata.
 4. **Modifica, Elimina, …**: alla fine della riga (vedere [4.2](#42-visualizzare-creare-modificare-ed-eliminare-record));
@@ -223,6 +232,10 @@ master-detail si comportano allo stesso modo.
 > il**, **Creato da** e **Modificato da** – inizialmente nascoste. Si può ordinare per le due date; le persone compaiono
 > con il nome (non ordinabile). Nel filtro scegliete per esse un periodo o una persona. Le tabelle collegate non hanno
 > queste colonne.
+>
+> Nella finestra dei filtri questi quattro filtri si trovano alla fine, nella sezione **Creazione e modifica**; per
+> le persone, «(vuoto)» trova i record senza persona, ad es. da un’importazione. Le analisi offrono le stesse
+> informazioni come campi (sezione 4.9).
 
 SAFT memorizza anche **filtri, ricerca, ordinamento e righe per pagina** delle viste dati **in modo permanente e
 personale** – per tabella e voce di menu, anche dopo la disconnessione. Riaprendo una tabella la ritrovate come l’avete
@@ -469,6 +482,13 @@ visualizzare** (consultare) o **creare** (crearne di propri).
 | A destra: Valori | Calcoli: somma, media, minimo, massimo (numeri), numero, numero distinti; «Numero di record» senza campo; **＋ Valore calcolato** con una formula propria e **＋ Indicatore dai valori** (vedere sotto). |
 | A destra: Filtri | Condizione e valore in una finestra di dialogo, secondo il tipo di campo; per le date anche «quest’anno», «mese scorso», «ultimi N giorni». |
 | Al centro: Anteprima | ricalcola dopo ogni modifica (al massimo 100 righe). Sopra, la visualizzazione (tabella, tabella incrociata, barre, linee, torta, indicatore); quelle non adatte sono bloccate, il tooltip ne indica il motivo. Un clic sull’intestazione di una colonna ordina. |
+
+**Creato e modificato:** alla fine dell’elenco dei campi di ogni tabella si trovano **Creato il**, **Modificato
+il**, **Creato da** e **Modificato da** (non per le tabelle collegate né per le tabelle di altre app). Le due date si
+comportano come campi data. Le persone compaiono con il nome; si usano come colonna, per raggruppare e come conteggio,
+e un’analisi raggruppata è ordinata per nome. Un elenco non può essere ordinato per persona. Come filtri ci sono
+persone specifiche, *è vuoto*, *non è vuoto* e **«sono io»**: la persona che esegue l’analisi. Un’analisi condivisa
+«I miei ordini» mostra così a ciascuno i propri.
 
 I campi si **trascinano** dall’elenco in un’area o si assegnano con **＋** (anche da tastiera); si possono spostare
 all’interno di un’area e tra le aree, ✎ modifica l’etichetta o il filtro, ✕ rimuove. Sopra l’anteprima compare una

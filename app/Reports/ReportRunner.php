@@ -44,7 +44,7 @@ final class ReportRunner
             $records = $dialect->withTimeout(
                 $connection,
                 (int) config('reports.timeout', 30),
-                fn () => $this->query->build($resolved, $dialect)->limit($limit + 1)->get()->all(),
+                fn () => $this->query->build($resolved, $dialect, $user?->id)->limit($limit + 1)->get()->all(),
             );
         } catch (QueryException $e) {
             if ($dialect->isTimeout($e)) {

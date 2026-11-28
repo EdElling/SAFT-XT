@@ -207,6 +207,9 @@ final class PanelAppearance
             .'.saft-row-selected > td:first-child{box-shadow:inset 3px 0 0 var(--saft-highlight)}'
             // Verlauf eines Datensatzes: Zeitpunkt, Person und Änderung einer Zeile oben ausgerichtet (B-174).
             .'.saft-history td{vertical-align:top}'
+            // Filterdialog der Datenansicht: 86 rem (B-158). Filaments Breite des Dropdowns ist !important in der Ebene
+            // „components“; eine Regel ausserhalb der Ebene verlöre dagegen, deshalb in derselben Ebene und genauer.
+            .'@layer components{.fi-dropdown .fi-dropdown-panel.saft-filters-wide{max-width:86rem!important}}'
             // Seiten mit fester Breite, aber linksbündig (statt mittig), z. B. App-Einstellungen.
             .'body.saft-content-left .fi-main{margin-inline:0}'
             .'.fi-sidebar.fi-sidebar-open{min-width:14rem;max-width:calc(100vw - 3rem)}'

@@ -1568,7 +1568,7 @@ Tabellenverknüpfungen und die Menüs der App; wählbar sind Auswertungen (freig
 geplante Aufgaben, Dokumentvorlagen und das Handbuch. Nie enthalten sind Datensätze, das Briefpapier, Zugangsdaten von Datenbankverbindungen (angebundene
 Tabellen nur als Verweis), Systemmenüs, Systemrollen und System-Aufgaben. Jedes Objekt trägt seinen stabilen Schlüssel,
 damit sich eine installierte App später aktualisieren lässt. SAFT prüft die Datei vor dem Herunterladen auf
-Stimmigkeit; der Export steht im Änderungsprotokoll. **Schnittstellen:** Freigaben von Tabellen und Feldern und die
+Stimmigkeit; der Export steht im Änderungsprotokoll. In Auswertungen gehen die Angaben „Angelegt/Geändert am und von“ mit; Filter auf **bestimmte Personen** werden nicht exportiert (Benutzer gibt es nur in dieser Installation), „bin ich“, „ist leer“ und „ist nicht leer“ bleiben. **Schnittstellen:** Freigaben von Tabellen und Feldern und die
 Version der Schnittstelle gehen mit. Was die App von anderen Apps nutzt, steht unter `requires` (App, Version,
 Tabellen, genutzte Felder). Rollen nehmen von Tabellen anderer Apps nur das Leserecht auf freigegebene Tabellen mit;
 übrige Rechte ausserhalb der App gehören nicht zur Definition.

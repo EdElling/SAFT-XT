@@ -9,7 +9,8 @@ namespace App\Reports;
  *
  * - base: ID der Grundtabelle
  * - fields: verwendete Felder mit Schlüssel, Verknüpfungspfad (IDs der Verknüpfungsfelder
- *   ab der Grundtabelle) und Feld-ID; Datumsfelder optional mit Stufe (bucket)
+ *   ab der Grundtabelle) und Feld-ID; Datumsfelder optional mit Stufe (bucket). Systemspalten (angelegt/geändert am
+ *   und von, B-183) haben keine Feld-ID: field ist 0 und system nennt die Spalte, z. B. "created_at"
  * - groups / columns: Schlüssel der Gruppenfelder bzw. der Spalten einer Kreuztabelle
  * - measures: Werte (Aggregat über ein Feld oder Anzahl)
  * - filters, sort, limit, visual
@@ -33,7 +34,7 @@ final readonly class ReportDefinition
     public const array VISUALS = ['table', 'crosstab', 'bar', 'line', 'pie', 'kpi'];
 
     /**
-     * @param  list<array{key: string, path: list<int>, field: int, bucket: string|null, label: string|null}>  $fields
+     * @param  list<array{key: string, path: list<int>, field: int, bucket: string|null, label: string|null, system?: string}>  $fields
      * @param  list<string>  $groups
      * @param  list<string>  $columns
      * @param  list<array{key: string, field: string|null, agg: string, label: string|null, expr?: array<string, mixed>|null, calc?: array<string, mixed>|null, scale?: int|null}>  $measures  expr = Formel je Datensatz (statt field); agg calc mit calc = Formel über andere Werte
@@ -71,6 +72,8 @@ final readonly class ReportDefinition
                 'field' => (int) ($f['field'] ?? 0),
                 'bucket' => $text($f['bucket'] ?? null),
                 'label' => $text($f['label'] ?? null),
+                // Nur bei Systemspalten, damit bestehende Auswertungen unverändert gespeichert bleiben.
+                ...($text($f['system'] ?? null) === null ? [] : ['system' => $text($f['system'])]),
             ], array_filter((array) ($data['fields'] ?? []), 'is_array'))),
             groups: $strings($data['groups'] ?? []),
             columns: $strings($data['columns'] ?? []),
@@ -157,7 +160,7 @@ final readonly class ReportDefinition
         return $this->groups !== [] || $this->measures !== [];
     }
 
-    /** @return array{key: string, path: list<int>, field: int, bucket: string|null, label: string|null}|null */
+    /** @return array{key: string, path: list<int>, field: int, bucket: string|null, label: string|null, system?: string}|null */
     public function field(string $key): ?array
     {
         foreach ($this->fields as $field) {

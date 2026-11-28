@@ -1594,7 +1594,7 @@ tabelle e i menu dell’app; a scelta: report (condivisi e propri), ruoli con di
 inclusi: record, carta intestata, credenziali delle connessioni ai database (tabelle collegate solo come riferimento), menu, ruoli e
 attività di sistema. Ogni oggetto porta la sua chiave stabile, affinché un’app installata possa essere aggiornata in
 seguito. SAFT controlla la coerenza del file prima del download; l’esportazione è registrata nel registro delle modifiche.
-**Interfacce:** le condivisioni di tabelle e campi e la versione dell’interfaccia sono incluse. Ciò che l’app usa di
+Nelle analisi sono inclusi «creato/modificato il e da»; i filtri su **persone specifiche** non vengono esportati (gli utenti esistono solo in questa installazione), «sono io», «è vuoto» e «non è vuoto» restano. **Interfacce:** le condivisioni di tabelle e campi e la versione dell’interfaccia sono incluse. Ciò che l’app usa di
 altre app figura sotto `requires` (app, versione, tabelle, campi usati). I ruoli portano con sé delle tabelle di altre
 app solo il diritto di lettura sulle tabelle condivise; gli altri diritti fuori dall’app non appartengono alla
 definizione.

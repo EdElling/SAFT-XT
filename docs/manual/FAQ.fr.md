@@ -44,6 +44,7 @@
    - [Quels enregistrements une modification groupée a-t-elle modifiés ?](#quels-enregistrements-une-modification-groupée-a-t-elle-modifiés-)
    - [Quand et par qui un enregistrement a-t-il été créé ?](#quand-et-par-qui-un-enregistrement-a-t-il-été-créé-)
    - [Comment annuler une seule modification ?](#comment-annuler-une-seule-modification-)
+   - [Comment trouver les enregistrements dont un champ est vide ?](#comment-trouver-les-enregistrements-dont-un-champ-est-vide-)
 
 ---
 ## Questions fréquentes
@@ -285,3 +286,11 @@ sont pas cochés – cochez-les si vous voulez quand même les annuler. Si la fl
 modification (p. ex. « créé »), tous les champs ont déjà l’ancienne valeur ou vous n’avez pas le droit de modifier.
 Les modifications groupées entières s’annulent via « Dernières modifications groupées ». Voir
 [Manuel d’utilisation 4.1](USER_GUIDE.fr.md#41-la-vue-tableau).
+
+### Comment trouver les enregistrements dont un champ est vide ?
+
+Ouvrez le filtre de la table. Pour les champs texte, nombre et date, choisissez **vides uniquement** (ou **remplis
+uniquement**) à côté de la saisie ; pour les listes de sélection, les liaisons et oui/non, l’entrée **« (vide) »** dans
+la liste. Une étiquette telle que « Numéro de facture : vide » apparaît au-dessus du tableau. Vous continuez avec la
+liste filtrée : exporter, ou tout sélectionner et modifier ensemble. Les champs obligatoires n’ont pas ce choix, car
+ils ne sont jamais vides. Voir [Manuel d’utilisation 4.1](USER_GUIDE.fr.md#41-la-vue-tableau).

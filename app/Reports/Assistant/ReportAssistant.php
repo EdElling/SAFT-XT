@@ -47,6 +47,10 @@ final class ReportAssistant
         connections to another table, with negative ids. Select fields list their `choices`; in filters use the choice
         `value`, not the label. Tables marked `interface` belong to another app: they can only be reached through a
         relation or link, never be the base, and the path ends there (only their listed fields, no further steps).
+        Fields whose id is a name (created_at, updated_at: type date; created_by, updated_by: type person) tell when and
+        by whom a record was created and last changed; reference them by that name, e.g. `:created_at`, `12:updated_by`.
+        A person field shows the user's name; it can be a row, a column or counted (count, count_distinct), never
+        summed, never the sort of a plain list. You do not know the users: never filter a person field by eq, neq or in.
 
         Field references (`ref`) have the form `<path>:<field id>`. The path lists the relation field ids and link ids,
         separated by `/`, that lead from the base table to the table holding the field; it is empty for fields of the
@@ -61,7 +65,8 @@ final class ReportAssistant
         - values: count (ref null counts records), count_distinct, sum, avg, min, max. sum and avg only for numbers.
         - filters by field type: text eq, neq, contains, starts_with, in; number eq, neq, gt, gte, lt, lte, between,
           in; date eq, gt, gte, lt, lte, between, today, this_month, last_month, this_year, last_year, last_days
-          (value = number of days); boolean is_true, is_false; relation eq, neq, in; any type is_empty, not_empty.
+          (value = number of days); boolean is_true, is_false; relation eq, neq, in; person is_me (the user who runs the report, for "my records",
+          "created by me"); any type is_empty, not_empty.
           Values are strings, dates as YYYY-MM-DD; between uses value and value_to; in uses values. A calendar year:
           between YYYY-01-01 and YYYY-12-31.
         - sort: null, or target row/value with the index into rows/values and dir asc/desc. limit: null or the number

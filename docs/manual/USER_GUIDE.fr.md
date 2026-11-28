@@ -200,7 +200,17 @@ Dans le menu, ouvrez une table sous **Données**, p. ex. **Clients**.
    - texte : « contient … »
    - nombre et date : « de … à … »
    - oui/non, listes de sélection et liaisons : choix dans une liste
+   - **Vide ou rempli :** pour le texte, les nombres et les dates, le choix *tous · vides uniquement · remplis
+     uniquement* à côté de la saisie ; pour les listes de sélection et les liaisons, les entrées « (vide) » et
+     « (rempli) » en tête de liste, pour oui/non « (vide) ». Vous trouvez ainsi p. ex. les factures sans numéro. Un
+     champ sans valeur est vide, pour le texte aussi un texte vide ; `0` compte comme rempli. Les champs obligatoires
+     ne sont jamais vides et n’ont pas ce choix.
    - « Enregistrements supprimés » : uniquement pour les utilisateurs ayant le droit de suppression
+
+   La boîte de dialogue des filtres présente les champs sur deux colonnes, le libellé à gauche de la saisie ; à la fin
+   se trouve, repliée, la section **Création et modification**. Chaque filtre défini apparaît comme une étiquette
+   au-dessus du tableau (p. ex. « Numéro : vide ») et peut y être retiré séparément.
+
 3. **Trier** : un clic sur un en-tête de colonne trie par ordre croissant ou décroissant. Toutes les colonnes peuvent
    être triées. Les listes de sélection sont triées selon la valeur enregistrée, non selon le libellé affiché.
 4. **Modifier, Supprimer, …** : en fin de ligne (voir [4.2](#42-consulter-créer-modifier-et-supprimer-des-enregistrements)) ;
@@ -232,6 +242,10 @@ maître-détail se comportent de la même manière.
 > **Créé par** et **Modifié par** – masquées au départ. On peut trier selon les deux dates ; les personnes
 > apparaissent avec leur nom (non triable). Dans le filtre, vous choisissez pour elles une période ou une personne.
 > Les tables connectées n’ont pas ces colonnes.
+>
+> Dans la boîte de dialogue des filtres, ces quatre filtres se trouvent à la fin, dans la section **Création et
+> modification** ; pour les personnes, « (vide) » trouve les enregistrements sans personne, p. ex. issus d’une
+> importation. Les évaluations proposent les mêmes informations comme champs (section 4.9).
 
 SAFT mémorise aussi les **filtres, la recherche, le tri et les lignes par page** des vues de données **durablement
 et pour vous personnellement** – par table et entrée de menu, même après la déconnexion. Lorsque vous rouvrez une
@@ -487,6 +501,13 @@ diagramme à barres, linéaire ou circulaire, ou d’indicateur unique. Les droi
 | À droite : Valeurs | Calculs : somme, moyenne, minimum, maximum (nombres), nombre, nombre distinct ; « Nombre d’enregistrements » sans champ ; **＋ Valeur calculée** avec sa propre formule et **＋ Indicateur à partir des valeurs** (voir ci-dessous). |
 | À droite : Filtres | Condition et valeur dans une boîte de dialogue, selon le type de champ ; pour les dates aussi « cette année », « le mois dernier », « les N derniers jours ». |
 | Au centre : Aperçu | recalcule après chaque modification (au plus 100 lignes). Au-dessus, l’affichage (tableau, tableau croisé, barres, lignes, secteurs, indicateur) ; ceux qui ne conviennent pas sont bloqués, l’info-bulle en donne la raison. Un clic sur un en-tête de colonne trie. |
+
+**Créé et modifié :** à la fin de la liste des champs de chaque table se trouvent **Créé le**, **Modifié le**,
+**Créé par** et **Modifié par** (pas pour les tables connectées ni pour les tables d’autres apps). Les deux dates se
+comportent comme des champs de date. Les personnes apparaissent avec leur nom ; elles servent de colonne, de
+regroupement et de nombre, et une évaluation regroupée est triée par nom. Une liste ne peut pas être triée par
+personne. Comme filtres, il y a des personnes précises, *est vide*, *n’est pas vide* et **« c’est moi »** : la
+personne qui exécute l’évaluation. Une évaluation partagée « Mes commandes » montre ainsi à chacun les siennes.
 
 On **fait glisser** les champs de la liste vers une zone ou on les attribue avec **＋** (aussi au clavier) ; ils peuvent
 être déplacés à l’intérieur d’une zone et entre les zones, ✎ modifie le libellé ou le filtre, ✕ supprime. Au-dessus de

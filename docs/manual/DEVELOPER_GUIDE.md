@@ -866,6 +866,13 @@ tools; the database remains authoritative, the definition is generated anew with
 | `documents` | document templates (part `documents`): `key`, `name`, `table` (base table), `recipient`, `body`, `file_name`, `language_field`, `file_field` (field names of the base table), `email_to`, `email_subject`, `email_body`, `email_reply_to` (email with placeholders), `qr_bill` (QR bill: `enabled`, `position` `page`/`bottom`, `amount`, `currency`, `reference`, `message`, `debtor_name`, `debtor_street`, `debtor_building_number`, `debtor_postal_code`, `debtor_city`, `debtor_country` – texts with placeholders), `formats` (`pdf`, `docx` or `both`; if the key is missing, `pdf` applies), `is_active`, `sort_order`. Sections `{{#table}}` name child tables by name; a copy with a new prefix renames them. The letterhead is not included |
 | `parts` | the selected parts: `reports`, `roles`, `tasks`, `documents`, `manual` (`AppDefinition::PARTS`) |
 
+**Reports** (`reports[].definition`) list their fields as `{key, path, field, bucket, label}` with `field` =
+`table.field`. A **system column** (created/changed at and by) has no field id: `field` is `null` and `system` names
+`created_at`, `updated_at`, `created_by` or `updated_by`; the table follows from `path`. In the stored definition
+(`reports.definition`) `field` is then `0`. Filters on a person know `eq`, `neq`, `in` (user ids), `is_me` (the
+person running the report), `is_empty` and `not_empty`; the export omits `eq`, `neq` and `in` because user ids are
+valid in one installation only.
+
 Every object carries its **stable key** (`key`, UUID), which does not change on renaming. References are given as names
 (“bestellungen.kunde_id”, menu path) so that the file stays readable. Not included are records, credentials, the letterhead,
 system menus, system roles and system tasks. `App\Apps\Definition\AppDefinitionValidator::errors()` checks a definition

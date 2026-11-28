@@ -1638,7 +1638,7 @@ tables et les menus de l’app ; au choix : rapports (partagés et propres), rô
 documents et manuel. Jamais inclus : enregistrements, papier à lettres, identifiants des connexions de base de données (tables connectées seulement
 comme référence), menus, rôles et tâches système. Chaque objet porte sa clé stable afin qu’une app installée puisse être
 mise à jour plus tard. SAFT vérifie la cohérence du fichier avant le téléchargement ; l’export figure dans le journal des modifications.
-**Interfaces :** les partages de tables et de champs et la version de l’interface sont inclus. Ce que l’app utilise
+Dans les évaluations, « créé/modifié le et par » sont inclus ; les filtres sur des **personnes précises** ne sont pas exportés (les utilisateurs n’existent que dans cette installation), « c’est moi », « est vide » et « n’est pas vide » restent. **Interfaces :** les partages de tables et de champs et la version de l’interface sont inclus. Ce que l’app utilise
 d’autres apps figure sous `requires` (app, version, tables, champs utilisés). Les rôles n’emportent des tables d’autres
 apps que le droit de lecture sur les tables partagées ; les autres droits hors de l’app n’appartiennent pas à la
 définition.

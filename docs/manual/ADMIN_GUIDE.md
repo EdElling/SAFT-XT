@@ -1519,7 +1519,7 @@ permission *Apps: export*). Always included are the tables with fields, rules an
 menus of the app; optional are reports (shared and own), roles with permissions, scheduled tasks, document templates and the manual. Never
 included are records, the letterhead, credentials of database connections (connected tables only as a reference), system menus,
 system roles and system tasks. Every object carries its stable key so that an installed app can be updated later.
-SAFT checks the file for consistency before downloading; the export is recorded in the change log. **Interfaces:**
+SAFT checks the file for consistency before downloading; the export is recorded in the change log. In reports, “created/changed at and by” are included; filters on **specific people** are not exported (users exist only in this installation), “is me”, “is empty” and “is not empty” remain. **Interfaces:**
 shares of tables and fields and the version of the interface are included. What the app uses from other apps is listed
 under `requires` (app, version, tables, used fields). Roles only take the read permission on shared tables of other
 apps along; other permissions outside the app do not belong to the definition.

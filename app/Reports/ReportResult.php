@@ -6,6 +6,7 @@ namespace App\Reports;
 
 use App\DynamicData\RelationDisplay;
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\UserNames;
 use App\ExternalData\TableConnectorService;
 
 /**
@@ -46,19 +47,76 @@ final readonly class ReportResult
                         $column->field->display['separator'],
                     ) ?? (string) $row[$column->key];
                 }
+
+                // Angelegt/geändert von (B-183): Name zur Benutzer-ID. Die Benutzer liegen auf der Hauptverbindung,
+                // deshalb nach der Abfrage und nicht als Verknüpfung (einmal je Anfrage, UserNames).
+                if ($column->aggregate === null && $column->field?->isPerson() && $row[$column->key] !== null) {
+                    $displays[$column->key][(string) $row[$column->key]] ??= (string) app(UserNames::class)->name($row[$column->key]);
+                }
             }
 
             $rows[] = $row;
         }
 
         $columns = array_map(
-            fn (ReportColumn $column): ReportColumn => $column->aggregate === null && $column->field?->display !== null
+            fn (ReportColumn $column): ReportColumn => $column->aggregate === null && ($column->field?->display !== null || $column->field?->isPerson())
                 ? $column->withDisplay($displays[$column->key] ?? [])
                 : $column,
             $columns,
         );
 
-        return new self($report, $columns, $rows, $truncated);
+        return new self($report, $columns, $truncated ? $rows : self::sortByPersonNames($report, $rows, $displays), $truncated);
+    }
+
+    /**
+     * Gruppen nach Person: Die Datenbank sortiert nach der Benutzer-ID; ein vollständiges Ergebnis wird hier nach dem
+     * Namen geordnet. Je Sortierstufe mit einer Person werden die Zeilen, die in den Stufen davor übereinstimmen, stabil
+     * nach dem Namen sortiert – die Reihenfolge der übrigen Stufen bleibt die der Datenbank.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @param  array<string, array<string, string>>  $names
+     * @return list<array<string, mixed>>
+     */
+    private static function sortByPersonNames(ResolvedReport $report, array $rows, array $names): array
+    {
+        $definition = $report->definition;
+
+        if (! $definition->isGrouped()) {
+            return $rows;
+        }
+
+        $sort = $definition->sort !== []
+            ? $definition->sort
+            : array_map(static fn (string $key): array => ['key' => $key, 'dir' => 'asc'], [...$definition->groups, ...$definition->columns]);
+        $before = [];
+
+        foreach ($sort as $level) {
+            $key = $level['key'];
+
+            if (($report->fields[$key] ?? null)?->isPerson() && ! in_array($key, $before, true)) {
+                $name = static fn (array $row): string => mb_strtolower($names[$key][(string) ($row[$key] ?? '')] ?? '');
+                $compare = static fn (array $a, array $b): int => $level['dir'] === 'desc' ? $name($b) <=> $name($a) : $name($a) <=> $name($b);
+                $sorted = [];
+                $run = [];
+
+                foreach ($rows as $row) {
+                    if ($run !== [] && array_intersect_key($row, array_flip($before)) != array_intersect_key($run[0], array_flip($before))) {
+                        usort($run, $compare);
+                        $sorted = [...$sorted, ...$run];
+                        $run = [];
+                    }
+
+                    $run[] = $row;
+                }
+
+                usort($run, $compare);
+                $rows = [...$sorted, ...$run];
+            }
+
+            $before[] = $key;
+        }
+
+        return $rows;
     }
 
     public function column(string $key): ?ReportColumn

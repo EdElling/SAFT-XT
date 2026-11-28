@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Reports;
 
 use App\DynamicData\Schema\FieldType;
+use App\DynamicData\UserNames;
 use App\Support\AppLocale;
 use App\Support\Translations;
 use Carbon\CarbonImmutable;
@@ -119,7 +120,7 @@ final class ReportDescriber
         return match ($op) {
             'between' => __('reports.describe.between', ['field' => $field->label, 'from' => $this->value($field, $values[0] ?? null), 'to' => $this->value($field, $values[1] ?? null)]),
             'in' => __('reports.describe.in', ['field' => $field->label, 'values' => $this->join(array_map(fn (mixed $v): string => $this->value($field, $v), $values), 'or')]),
-            'is_empty', 'not_empty', 'is_true', 'is_false', 'today', 'this_month', 'last_month', 'this_year', 'last_year' => __('reports.describe.state', ['field' => $field->label, 'op' => __('reports.operators.'.$op)]),
+            'is_empty', 'not_empty', 'is_true', 'is_false', 'is_me', 'today', 'this_month', 'last_month', 'this_year', 'last_year' => __('reports.describe.state', ['field' => $field->label, 'op' => __('reports.operators.'.$op)]),
             'last_days' => __('reports.describe.last_days', ['field' => $field->label, 'days' => (int) $value]),
             default => __('reports.describe.compare', ['field' => $field->label, 'op' => __('reports.operators.'.$op), 'value' => $this->value($field, $value)]),
         };
@@ -128,7 +129,7 @@ final class ReportDescriber
     /** Filterwert lesbar und in Anführungszeichen der Sprache. */
     private function value(ResolvedField $field, mixed $value): string
     {
-        $text = match ($field->type()) {
+        $text = $field->isPerson() ? (string) app(UserNames::class)->name($value) : match ($field->type()) {
             FieldType::Date, FieldType::DateTime => filled($value) ? CarbonImmutable::parse((string) $value)->isoFormat('L') : '',
             FieldType::Integer, FieldType::Decimal => ! is_numeric($value) ? (string) $value
                 : (! $field->field->groupsDigits() ? (string) ($value + 0) : Number::format($value + 0, locale: AppLocale::numberLocale())),

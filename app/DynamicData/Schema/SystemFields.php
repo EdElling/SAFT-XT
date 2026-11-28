@@ -11,7 +11,7 @@ use App\Models\CustomTable;
  * Systemspalten einer Designer-Tabelle als Felder für Datenansicht und Export (B-159): angelegt/geändert am
  * (Datum/Uhrzeit) und angelegt/geändert von (Person, Benutzer-ID). Ungespeicherte Feldbeschreibungen ohne ID, damit
  * Spalten, Filter und Export denselben Weg gehen wie bei Feldern des Table-Designers. Angebundene Tabellen haben diese
- * Spalten nicht. In Auswertungen gibt es sie (noch) nicht: dort verweisen Felder über ihre ID.
+ * Spalten nicht. Auswertungen nennen sie beim Namen (`system` in der Definition, B-183), weil sie keine Feld-ID haben.
  */
 final class SystemFields
 {
@@ -43,6 +43,18 @@ final class SystemFields
 
             return $field;
         }, [...self::DATES, ...self::PERSONS]);
+    }
+
+    /** Systemspalte einer Designer-Tabelle zu ihrem Namen, sonst null. */
+    public static function find(CustomTable $table, string $name): ?CustomField
+    {
+        foreach (self::for($table) as $field) {
+            if ($field->name === $name) {
+                return $field;
+            }
+        }
+
+        return null;
     }
 
     /** Eine Systemspalte (ungespeichert, mit einem der vier Namen)? */

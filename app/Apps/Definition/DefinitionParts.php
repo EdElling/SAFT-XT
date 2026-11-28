@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Apps\Definition;
 
 use App\DynamicData\DataMenu;
+use App\DynamicData\Schema\SystemFields;
 use App\DynamicData\Validation\FieldRuleCheck;
 use App\Filament\Resources\Reports\ReportResource;
 use App\Models\Menu;
@@ -56,6 +57,17 @@ final class DefinitionParts
             'path' => array_map(fn (mixed $step): ?string => (int) $step < 0 ? 'link:'.$this->refs->link(-(int) $step) : $this->refs->field((int) $step), (array) ($f['path'] ?? [])),
             'field' => $this->refs->field((int) ($f['field'] ?? 0)),
         ] : $f, (array) ($definition['fields'] ?? []));
+
+        // Filter auf bestimmte Personen (B-183) gelten nur in dieser Installation: Benutzer-IDs gehören nicht ins Paket.
+        // „bin ich“, „leer“ und „nicht leer“ bleiben.
+        $persons = array_column(array_filter(
+            (array) $definition['fields'],
+            static fn (mixed $f): bool => is_array($f) && in_array($f['system'] ?? null, SystemFields::PERSONS, true),
+        ), 'key');
+        $definition['filters'] = array_values(array_filter(
+            (array) ($definition['filters'] ?? []),
+            static fn (mixed $f): bool => ! (is_array($f) && in_array($f['field'] ?? null, $persons, true) && in_array($f['op'] ?? null, ['eq', 'neq', 'in'], true)),
+        ));
 
         return [
             'name' => (string) $report->name,
