@@ -1,0 +1,167 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>SAFT XT Binnenstruktur</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Layout: wie die Vorlage – links Schichtenstapel (aussen → innen), rechts was eine Fachanwendung liefert */
+:root {
+  --bg: #fbfbfd; --panel: #ffffff; --line: #dfe1e8; --fg: #16181d; --muted: #5b6070;
+  --blue: #6aa8ec; --blue-ink: #0d2a4a;
+  --violet: #a99bf0; --violet-ink: #23185a;
+  --teal: #7fd1c1; --teal-ink: #0d3b33;
+  --grey: #d6d7dc; --grey-ink: #1f2228;
+  --arrow: #2b2e36;
+  --f-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121419; --panel: #1a1d24; --line: #2e323c; --fg: #eceef3; --muted: #a2a7b5;
+  --blue: #2f5f93; --blue-ink: #e3efff; --violet: #4f4592; --violet-ink: #ecE8ff;
+  --teal: #23675b; --teal-ink: #e1faf4; --grey: #3a3d46; --grey-ink: #eceef3; --arrow: #c9ccd6;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121419; --panel: #1a1d24; --line: #2e323c; --fg: #eceef3; --muted: #a2a7b5;
+  --blue: #2f5f93; --blue-ink: #e3efff; --violet: #4f4592; --violet-ink: #ece8ff;
+  --teal: #23675b; --teal-ink: #e1faf4; --grey: #3a3d46; --grey-ink: #eceef3; --arrow: #c9ccd6;
+  color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.4; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-block: 40px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(28px, 4.2vw, 52px); line-height: 1.08; margin: 0 0 12px; text-wrap: balance; letter-spacing: -0.01em; }
+.sub { font-family: var(--f-display); font-weight: 500; font-size: clamp(17px, 2vw, 24px); margin: 0 0 36px; text-wrap: balance; }
+.grid { display: grid; grid-template-columns: minmax(0, 1.25fr) 56px minmax(0, 1fr); gap: 0 12px; align-items: stretch; }
+.cap { font-size: 13px; color: var(--muted); margin: 0 0 8px 6px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 22px; display: flex; flex-direction: column; gap: 14px; height: 100%; box-sizing: border-box; }
+.row { display: grid; gap: 14px; grid-template-columns: repeat(var(--n, 1), minmax(0, 1fr)); }
+.b { border-radius: 8px; padding: 10px 12px; text-align: center; min-width: 0; }
+.b strong { display: block; font-weight: 700; }
+.b span { display: block; font-size: 13.5px; }
+.b code { font-family: var(--f-mono); font-size: 12px; opacity: .85; overflow-wrap: anywhere; }
+.blue { background: var(--blue); color: var(--blue-ink); }
+.violet { background: var(--violet); color: var(--violet-ink); }
+.teal { background: var(--teal); color: var(--teal-ink); }
+.grey { background: var(--grey); color: var(--grey-ink); }
+.tiles .b { padding: 8px 6px; }
+.tiles .b strong { font-size: 13.5px; }
+.tiles .b span { font-size: 12px; }
+.layer-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 2px 0 -8px 2px; }
+.cyl { position: relative; border-radius: 50% / 14px; padding-top: 22px; padding-bottom: 14px; }
+.cyl::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 22px; border-radius: 50%; background: var(--grey); filter: brightness(.88); }
+.arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; color: var(--fg); }
+.arrow svg { width: 56px; height: 180px; }
+.legend { margin-top: 22px; font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+.subhead { font-family: var(--f-display); font-weight: 500; font-size: 14px; color: var(--muted); margin: 0 0 -6px 2px; }
+.note { max-width: 70ch; color: var(--muted); font-size: 14px; margin-top: 10px; }
+@media (max-width: 860px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .arrow { padding: 10px 0; }
+  .arrow svg { transform: rotate(90deg); height: 80px; }
+  .tiles { --n: 2 !important; }
+}
+</style>
+
+<div class="wrap">
+  <h1>SAFT XT: was steckt in „Deine App“?</h1>
+  <p class="sub">Der Kern liefert die Mechanik, die Fachanwendung ist Konfiguration plus Plugins</p>
+
+  <div class="grid">
+    <div>
+      <p class="cap">Der SAFT-Kern (von aussen nach innen)</p>
+      <div class="panel">
+        <div class="layer-label">Oberfläche</div>
+        <div class="row" style="--n:3">
+          <div class="b violet" style="outline:2px dashed var(--arrow);outline-offset:2px"><strong>Portal je App (Vorschlag)</strong><span>Blade + Livewire, /p/&lt;präfix&gt; oder eigene Domain</span><code>app/Portal · routes/portal.php</code></div>
+          <div class="b violet"><strong>Filament-Panel /admin</strong><span>Systemressourcen, Seiten, Widgets, Aktionen</span><code>app/Filament</code></div>
+          <div class="b violet"><strong>Generische Datenansicht</strong><span>Formular-, Tabellen-, Aktionsbauer zur Laufzeit</span><code>DynamicData/Ui · app/Livewire</code></div>
+        </div>
+
+        <div class="layer-label">Fachlogik je Thema</div>
+        <div class="row tiles" style="--n:4">
+          <div class="b teal"><strong>DynamicData</strong><span>Designer, Formeln, Regeln, Import/Export</span></div>
+          <div class="b teal"><strong>Reports</strong><span>Auswertungen, Dialekte</span></div>
+          <div class="b teal"><strong>Documents</strong><span>PDF, DOCX, QR-Rechnung</span></div>
+          <div class="b teal"><strong>Apps</strong><span>Klammer, Schnittstellen, Designer</span></div>
+          <div class="b teal"><strong>ExternalData</strong><span>Table-Connector</span></div>
+          <div class="b teal"><strong>Auth</strong><span>Lokal, SSO, 2FA, Rollensimulation</span></div>
+          <div class="b teal"><strong>Navigation</strong><span>Menübaum aus <code>menus</code></span></div>
+          <div class="b teal"><strong>Ai · Help</strong><span>KI-Hilfe, Online-Handbuch</span></div>
+        </div>
+
+        <div class="layer-label">Ein Weg je Aufgabe</div>
+        <div class="row" style="--n:4">
+          <div class="b teal"><strong>Schreiben</strong><code>RecordWriter</code></div>
+          <div class="b teal"><strong>Struktur</strong><code>DynamicSchemaService</code></div>
+          <div class="b teal"><strong>Rechte</strong><code>DataAccess · Policies</code></div>
+          <div class="b teal"><strong>Hintergrund</strong><code>WorkRunner · TaskRunner</code></div>
+        </div>
+
+        <div class="row" style="--n:1">
+          <div class="b violet"><strong>Plugin-API (v1.11, Vertrag)</strong><span>Saft, DataTable, Ereignisse, RecordListener, DataAction, FormulaFunction, FieldRule</span><code>app/Plugins/Api · ApiManifest</code></div>
+        </div>
+
+        <div class="layer-label">Models</div>
+        <div class="row" style="--n:2">
+          <div class="b teal"><strong>Systemtabellen</strong><span>Base-Model-Muster: Reliese erzeugt, Logik erbt</span><code>Models/Base/* → Models/*</code></div>
+          <div class="b teal"><strong>Ein Model für alle Fachtabellen</strong><span>an Metadaten gebunden</span><code>DynamicRecord::forTable()</code></div>
+        </div>
+
+        <div class="layer-label">Verbindungen</div>
+        <div class="row" style="--n:3">
+          <div class="b grey cyl"><strong>Haupt</strong><span>Benutzer, Rechte, Metadaten, Protokoll</span></div>
+          <div class="b grey cyl"><strong>app_data</strong><span>physische Designer-Tabellen, Datenstände</span></div>
+          <div class="b grey cyl"><strong>ext_&lt;id&gt;</strong><span>angebundene Tabellen, nur lesen</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow" aria-hidden="true">
+      <svg viewBox="0 0 56 180" fill="none"><path d="M28 6 V170 M18 160 L28 172 L38 160" stroke="var(--arrow)" stroke-width="1.6"/></svg>
+      <span>trägt</span>
+    </div>
+
+    <div>
+      <p class="cap">Was eine Fachanwendung liefert</p>
+      <div class="panel">
+        <p class="subhead">Als Daten konfiguriert (ohne Code)</p>
+        <div class="row" style="--n:2">
+          <div class="b blue"><strong>Datenmodell</strong><span>Tabellen, Felder, Verknüpfungen, Nummernkreise</span></div>
+          <div class="b blue"><strong>Regeln</strong><span>Formeln, Feld- und Tabellenregeln, Löschsperre</span></div>
+          <div class="b blue"><strong>Rechte</strong><span>Rollen der App, <code>data.&lt;tabelle&gt;.&lt;aktion&gt;</code></span></div>
+          <div class="b blue"><strong>Navigation</strong><span>Menüs, Dashboard</span></div>
+          <div class="b blue"><strong>Ausgaben</strong><span>Auswertungen, Dokumentvorlagen</span></div>
+          <div class="b blue"><strong>Zeitplan</strong><span>geplante Aufgaben, Datenstände</span></div>
+        </div>
+        <div class="row" style="--n:1">
+          <div class="b blue" style="outline:2px dashed var(--arrow);outline-offset:2px"><strong>Portal (Vorschlag)</strong><span>Seiten, freigegebene Felder, öffentliche Formulare, Konten mit Zeilenrechten</span></div>
+        </div>
+        <div class="row" style="--n:1">
+          <div class="b blue"><strong>App-Definition</strong><span>Export, Installation, Änderungsplan</span><code>saft-app/1</code></div>
+        </div>
+
+        <p class="subhead">Als Plugin programmiert (nur was sich nicht konfigurieren lässt)</p>
+        <div class="row" style="--n:2">
+          <div class="b blue"><strong>Erweiterungen</strong><span>Formelfunktionen, Prüfregeln, Aktionen</span></div>
+          <div class="b blue"><strong>Reaktionen</strong><span>RecordListener in der Transaktion</span></div>
+          <div class="b blue"><strong>Eigene Oberfläche</strong><span>Seiten, Ressourcen, Widgets</span></div>
+          <div class="b blue"><strong>Hintergrund</strong><span>TaskType, WorkType</span></div>
+        </div>
+        <div class="row" style="--n:1">
+          <div class="b blue"><strong>Beispiele im Repo</strong><code>plugins/ch-pruefungen · lager-tafel · lager-umbuchung · musikschule-planung</code></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i class="sw" style="background:var(--blue)"></i>Blau: Fachanwendung (Daten + Plugins)</span>
+    <span><i class="sw" style="background:var(--teal)"></i>Grün: SAFT-Kern, Fachlogik</span>
+    <span><i class="sw" style="background:var(--violet)"></i>Lila: Oberfläche und API</span>
+    <span><i class="sw" style="background:var(--grey)"></i>Grau: Datenbanken</span>
+    <span><i class="sw" style="border:2px dashed var(--arrow)"></i>Gestrichelt: Vorschlag öffentliches Frontend</span>
+  </div>
+  <p class="note">Darunter liegt unverändert das Fundament aus der Vorlage: Laravel 13, Filament 5 / Livewire 4, Symfony, Composer, PHP 8.4. Stand des Repositorys: Release 0.6.0, Architektur vom 24.11.2026.</p>
+</div>
+
+</body></html>
