@@ -90,13 +90,13 @@ database and user as in [Appendix B, step 3](INSTALL_DEVELOPMENT.md#3-create-the
 
 ## 3. Bring SAFT to the server
 
-Sign in via SSH and fetch the desired version (here v0.9.0) into your home directory:
+Sign in via SSH and fetch the desired version (here v0.10.0) into your home directory:
 
 ```bash
 cd ~
 git clone https://github.com/EdElling/SAFT-XT.git saft
 cd saft
-git checkout v0.9.0                                   # a fixed version instead of the development state
+git checkout v0.10.0                                   # a fixed version instead of the development state
 composer install --no-dev --optimize-autoloader      # without development packages – important for security
 ```
 
