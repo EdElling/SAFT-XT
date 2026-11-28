@@ -78,6 +78,7 @@ return [
         'snapshot_prune' => 'Nettoyer les états des données',
         'task_runs_prune' => 'Nettoyer le journal des exécutions',
         'work_prune' => 'Nettoyer les travaux',
+        'sessions_prune' => 'Nettoyer les sessions',
         'activity_prune' => 'Raccourcir le journal des modifications',
     ],
     'describe_type' => [
@@ -88,6 +89,7 @@ return [
         'snapshot_prune' => 'Durées de conservation de tous les états, exécutions interrompues',
         'task_runs_prune' => 'Exécutions de plus de :days jours',
         'work_prune' => 'Résultats expirés, travaux de plus de :days jours',
+        'sessions_prune' => 'Sessions expirées (plus de :minutes minutes)',
         'activity_prune' => 'Entrées de plus de :days jours, connexions de plus de :auth_days jours',
     ],
     'results' => [
@@ -106,6 +108,7 @@ return [
         'failed_tables' => 'Échecs :',
         'task_runs_prune' => ':deleted exécutions supprimées.',
         'work_prune' => 'Travaux supprimés : :deleted, dossiers de résultat supprimés : :files.',
+        'sessions_prune' => 'Sessions supprimées : :deleted.',
         'activity_prune' => ':deleted entrées supprimées, dont :auth connexions.',
     ],
     'status' => [
@@ -155,6 +158,9 @@ return [
     'console' => [
         'not_found' => 'Aucune tâche avec l’ID :id.',
         'heartbeat' => 'Dernière exécution du planificateur : :time',
+    ],
+    'sessions_prune' => [
+        'self_expiring' => 'Le pilote de session « :driver » fait expirer les sessions lui-même.',
     ],
     'demo_reset' => [
         'demos' => [

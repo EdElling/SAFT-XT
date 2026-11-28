@@ -78,6 +78,7 @@ return [
         'snapshot_prune' => 'Datenstände bereinigen',
         'task_runs_prune' => 'Laufprotokoll bereinigen',
         'work_prune' => 'Arbeiten aufräumen',
+        'sessions_prune' => 'Sitzungen aufräumen',
         'activity_prune' => 'Änderungsprotokoll kürzen',
     ],
     'describe_type' => [
@@ -88,6 +89,7 @@ return [
         'snapshot_prune' => 'Aufbewahrungsfristen aller Datenstände, abgebrochene Läufe',
         'task_runs_prune' => 'Läufe älter als :days Tage',
         'work_prune' => 'Ergebnisse nach Ablauf, Arbeiten älter als :days Tage',
+        'sessions_prune' => 'Abgelaufene Sitzungen (älter als :minutes Minuten)',
         'activity_prune' => 'Einträge älter als :days Tage, Anmeldungen älter als :auth_days Tage',
     ],
     'results' => [
@@ -106,6 +108,7 @@ return [
         'failed_tables' => 'Fehlgeschlagen:',
         'task_runs_prune' => ':deleted Läufe gelöscht.',
         'work_prune' => 'Arbeiten gelöscht: :deleted, Ergebnisordner gelöscht: :files.',
+        'sessions_prune' => 'Sitzungen gelöscht: :deleted.',
         'activity_prune' => ':deleted Einträge gelöscht, davon :auth Anmeldungen.',
     ],
     'status' => [
@@ -155,6 +158,9 @@ return [
     'console' => [
         'not_found' => 'Keine Aufgabe mit der ID :id.',
         'heartbeat' => 'Scheduler zuletzt gelaufen: :time',
+    ],
+    'sessions_prune' => [
+        'self_expiring' => 'Der Sitzungstreiber „:driver“ lässt Sitzungen selbst ablaufen.',
     ],
     'demo_reset' => [
         'demos' => [

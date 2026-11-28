@@ -258,6 +258,14 @@ an entry, remove it or switch off the task, otherwise backups are made twice. *R
 delivered switched off and, even when switched on, only effective with `DEMO_RESET=true` in `.env` – set this only on
 public demo or training systems.
 
+**Sessions:** The system task *Clean up sessions* deletes expired login sessions hourly (minute 40), for
+`SESSION_DRIVER=database` and `file`; the limit is `SESSION_LIFETIME` (minutes, default 120). Laravel's own cleanup on
+the side in requests (the “lottery”) is deliberately switched off in `config/session.php`: on MySQL and MariaDB it
+occasionally ran into a deadlock with another request, which then ended with error 500. Without cron, expired sessions
+remain; that is harmless (they still count as expired), but the `sessions` table or the folder
+`storage/framework/sessions` grows until the next run. With `redis`, `memcached` or `cookie`, sessions expire on their
+own and the task reports “skipped”.
+
 ## 5. AI functions
 
 The AI assistants for reports, tables and document templates (see [Administrator guide, chapter 13](ADMIN_GUIDE.md#13-ai-functions)) are

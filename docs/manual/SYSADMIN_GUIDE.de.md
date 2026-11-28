@@ -264,6 +264,14 @@ Wer noch einen solchen Eintrag hat, entfernt ihn oder schaltet die Aufgabe aus, 
 *App-Daten zurücksetzen* ist zerstörerisch: ausgeliefert ausgeschaltet und auch eingeschaltet nur wirksam mit
 `DEMO_RESET=true` in `.env` – setzen Sie das nur auf öffentlichen Demo- oder Schulungssystemen.
 
+**Sitzungen:** Abgelaufene Anmeldesitzungen löscht die System-Aufgabe *Sitzungen aufräumen* stündlich (Minute 40), für
+`SESSION_DRIVER=database` und `file`; die Frist ist `SESSION_LIFETIME` (Minuten, Vorgabe 120). Laravels eigenes
+Aufräumen nebenbei in Anfragen („Lotterie“) ist in `config/session.php` bewusst ausgeschaltet: Auf MySQL und MariaDB
+geriet es gelegentlich mit einer anderen Anfrage in einen Deadlock, die dann mit Fehler 500 endete. Ohne Cron bleiben
+abgelaufene Sitzungen liegen; das ist harmlos (sie gelten trotzdem als abgelaufen), die Tabelle `sessions` bzw. der
+Ordner `storage/framework/sessions` wächst aber bis zum nächsten Lauf. Bei `redis`, `memcached` oder `cookie` laufen
+Sitzungen selbst ab, die Aufgabe meldet „übersprungen“.
+
 ## 5. KI-Funktionen
 
 Die KI-Assistenten für Auswertungen, Tabellen und Dokumentvorlagen (siehe [Administratorhandbuch, Kapitel 13](ADMIN_GUIDE.de.md#13-ki-funktionen))

@@ -78,6 +78,7 @@ return [
         'snapshot_prune' => 'Clean up snapshots',
         'task_runs_prune' => 'Clean up run log',
         'work_prune' => 'Clean up jobs',
+        'sessions_prune' => 'Clean up sessions',
         'activity_prune' => 'Trim activity log',
     ],
     'describe_type' => [
@@ -88,6 +89,7 @@ return [
         'snapshot_prune' => 'Retention periods of all snapshots, aborted runs',
         'task_runs_prune' => 'Runs older than :days days',
         'work_prune' => 'Expired results, jobs older than :days days',
+        'sessions_prune' => 'Expired sessions (older than :minutes minutes)',
         'activity_prune' => 'Entries older than :days days, sign-ins older than :auth_days days',
     ],
     'results' => [
@@ -106,6 +108,7 @@ return [
         'failed_tables' => 'Failed:',
         'task_runs_prune' => ':deleted runs deleted.',
         'work_prune' => 'Jobs deleted: :deleted, result folders deleted: :files.',
+        'sessions_prune' => 'Sessions deleted: :deleted.',
         'activity_prune' => ':deleted entries deleted, :auth of them sign-ins.',
     ],
     'status' => [
@@ -155,6 +158,9 @@ return [
     'console' => [
         'not_found' => 'No task with ID :id.',
         'heartbeat' => 'Scheduler last ran: :time',
+    ],
+    'sessions_prune' => [
+        'self_expiring' => 'The session driver “:driver” expires sessions on its own.',
     ],
     'demo_reset' => [
         'demos' => [

@@ -25,6 +25,8 @@ class SystemTasksSeeder extends Seeder
         // Zerstörerisch: ausgeschaltet, und auch eingeschaltet nur mit DEMO_RESET=true.
         // Arbeiten (Fundament 2, F3a): stündlich, damit Ergebnisdateien nicht lange über ihre Frist liegen bleiben.
         ['type' => 'work_prune', 'at_time' => '00:20', 'parameters' => ['days' => 30], 'frequency' => 'hourly'],
+        // Sitzungen (B-177): ersetzt Laravels Lotterie, stündlich.
+        ['type' => 'sessions_prune', 'at_time' => '00:40', 'parameters' => null, 'frequency' => 'hourly'],
         ['type' => 'demo_reset', 'at_time' => '04:00', 'parameters' => ['demos' => ['shop', 'lager', 'forschung'], 'backup' => true], 'is_active' => false],
     ];
 

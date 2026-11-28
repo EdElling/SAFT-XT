@@ -65,10 +65,11 @@ class ScheduledTasksTest extends TestCase
     public function test_system_tasks_come_with_the_migration_and_get_their_first_date_without_running(): void
     {
         $system = ScheduledTask::query()->where('is_system', true)->orderBy('id')->get();
-        $this->assertSame(['snapshot_prune', 'task_runs_prune', 'db_backup', 'backup_prune', 'demo_reset', 'files_prune', 'activity_prune', 'work_prune'], $system->pluck('type')->all());
+        $this->assertSame(['snapshot_prune', 'task_runs_prune', 'db_backup', 'backup_prune', 'demo_reset', 'files_prune', 'activity_prune', 'work_prune', 'sessions_prune'], $system->pluck('type')->all());
         $this->assertSame([90], [$system[1]->parameterValues()['days']]);
-        $this->assertSame([true, true, true, true, false, true, false, true], $system->pluck('is_active')->all(), 'Demo zurücksetzen und Änderungsprotokoll kürzen sind aus.');
+        $this->assertSame([true, true, true, true, false, true, false, true, true], $system->pluck('is_active')->all(), 'Demo zurücksetzen und Änderungsprotokoll kürzen sind aus.');
         $this->assertSame(['hourly', '00:20'], [$system[7]->frequency, $system[7]->at_time]);
+        $this->assertSame(['hourly', '00:40'], [$system[8]->frequency, $system[8]->at_time]);
 
         $this->runner()->runDue();
 
@@ -296,7 +297,7 @@ class ScheduledTasksTest extends TestCase
         $this->seed(SystemTasksSeeder::class);
         $this->seed(SystemTasksSeeder::class);
 
-        $this->assertSame(['activity_prune', 'backup_prune', 'db_backup', 'demo_reset', 'files_prune', 'snapshot_prune', 'task_runs_prune', 'work_prune'], ScheduledTask::query()->where('is_system', true)->orderBy('type')->pluck('type')->all());
+        $this->assertSame(['activity_prune', 'backup_prune', 'db_backup', 'demo_reset', 'files_prune', 'sessions_prune', 'snapshot_prune', 'task_runs_prune', 'work_prune'], ScheduledTask::query()->where('is_system', true)->orderBy('type')->pluck('type')->all());
         $this->assertSame(['04:00', 30], [$prune->fresh()->at_time, $prune->fresh()->parameterValues()['days']]);
     }
 

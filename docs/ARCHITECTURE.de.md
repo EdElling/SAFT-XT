@@ -211,8 +211,8 @@ SAFT kennt zwei Formen von Arbeit ausserhalb eines Requests, beide ohne Pflicht 
 
 **Geplante Aufgaben** (`ScheduledTask`, `TaskRunner`) laufen zu Zeitpunkten: `tasks:run-due` im Cron jede Minute
 führt fällige Aufgaben aus, protokolliert jeden Lauf, verhindert doppelte Läufe und benachrichtigt die Super-Admins bei
-Fehlschlag und Erholung. System-Aufgaben (Sicherung, Aufräumen von Dateien, Datenständen, Läufen, Arbeiten und
-Änderungsprotokoll, Demo-Reset) kommen ab Werk; Plugins steuern Arten bei.
+Fehlschlag und Erholung. System-Aufgaben (Sicherung, Aufräumen von Dateien, Datenständen, Läufen, Arbeiten, Sitzungen
+und Änderungsprotokoll, Demo-Reset) kommen ab Werk; Plugins steuern Arten bei.
 
 **Arbeiten** (`work_items`, Konzept [`FOUNDATION_2.md`](concept/FOUNDATION_2.md) §6) sind lange Vorgänge einer
 Person, zerlegt in **wiederaufnehmbare Schritte**: `prepare()` bestimmt im ersten Schritt Zustand und Menge, danach
@@ -447,3 +447,18 @@ durch Nr. n“ markiert.
     Sprunglinks (AI_AGENTS.md V5) später einen reinen Übersetzer. *Folge:* Namen von Benutzern gehen nicht an den
     KI-Assistenten der Auswertungen; keine neue Lesestelle (Auswertungen lesen mit dem Query Builder), keine Migration,
     Plugin-API unverändert.
+
+32. **Abgelaufene Sitzungen räumt eine System-Aufgabe auf, nicht Laravels Lotterie** (28.11.2026, B-177). Die
+    Lotterie in `config/session.php` steht auf `[0, 100]`; die System-Aufgabe `sessions_prune` (stündlich, ab Werk
+    eingeschaltet) löscht nach `SESSION_LIFETIME`. Beim Treiber `database` liest sie die IDs abgelaufener Sitzungen in
+    Blöcken zu 500 und löscht über den Primärschlüssel (`id IN … AND last_activity <= ?`); ein Block mit Deadlock
+    (`DatabaseErrorType::Concurrency`) wird bis zu dreimal wiederholt. Beim Treiber `file` ruft sie Laravels
+    Aufräumen der Dateien auf; Treiber, deren Sitzungen selbst ablaufen (redis, memcached, cookie, array), melden
+    „übersprungen“. *Warum:* Das Aufräumen der Lotterie (`DELETE … WHERE last_activity <= ?`) sperrt über den Index
+    `last_activity` erst einen Bereich, das Schreiben einer Sitzung erst die Zeile; mit dieser umgekehrten Reihenfolge
+    meldete MySQL/MariaDB gelegentlich einen Deadlock (SQLSTATE 40001), und eine beliebige Anfrage endete mit Fehler
+    500 – abfangen liesse sich das nur in der aufräumenden, nicht in der schreibenden Anfrage. Gelöscht über den
+    Primärschlüssel entsteht keine Bereichssperre, und abgelaufene Sitzungen schreibt niemand mehr. *Folge:* Ohne Cron
+    bleiben abgelaufene Sitzungen liegen (harmlos, Laravel liest sie nicht mehr); keine neue `.env`-Variable, keine
+    Lesestelle, Plugin-API unverändert. Ein Test mit parallelen Prozessen fehlt bewusst: Der Fehler trat zufällig auf,
+    ein solcher Test wäre auch mit dem alten Weg meist grün.

@@ -78,6 +78,7 @@ return [
         'snapshot_prune' => 'Pulire gli stati dei dati',
         'task_runs_prune' => 'Pulire il registro delle esecuzioni',
         'work_prune' => 'Pulire i lavori',
+        'sessions_prune' => 'Pulire le sessioni',
         'activity_prune' => 'Accorciare il registro modifiche',
     ],
     'describe_type' => [
@@ -88,6 +89,7 @@ return [
         'snapshot_prune' => 'Periodi di conservazione di tutti gli stati, esecuzioni interrotte',
         'task_runs_prune' => 'Esecuzioni più vecchie di :days giorni',
         'work_prune' => 'Risultati scaduti, lavori più vecchi di :days giorni',
+        'sessions_prune' => 'Sessioni scadute (più vecchie di :minutes minuti)',
         'activity_prune' => 'Voci più vecchie di :days giorni, accessi più vecchi di :auth_days giorni',
     ],
     'results' => [
@@ -106,6 +108,7 @@ return [
         'failed_tables' => 'Non riuscite:',
         'task_runs_prune' => ':deleted esecuzioni eliminate.',
         'work_prune' => 'Lavori eliminati: :deleted, cartelle di risultato eliminate: :files.',
+        'sessions_prune' => 'Sessioni eliminate: :deleted.',
         'activity_prune' => ':deleted voci eliminate, di cui :auth accessi.',
     ],
     'status' => [
@@ -155,6 +158,9 @@ return [
     'console' => [
         'not_found' => 'Nessuna attività con ID :id.',
         'heartbeat' => 'Ultima esecuzione dello scheduler: :time',
+    ],
+    'sessions_prune' => [
+        'self_expiring' => 'Il driver di sessione «:driver» fa scadere le sessioni da solo.',
     ],
     'demo_reset' => [
         'demos' => [

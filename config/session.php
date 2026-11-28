@@ -114,9 +114,13 @@ return [
     | rid of old sessions from storage. Here are the chances that it will
     | happen on a given request. By default, the odds are 2 out of 100.
     |
+    | SAFT: ausgeschaltet. Abgelaufene Sitzungen räumt die System-Aufgabe
+    | „Sitzungen aufräumen“ (sessions_prune, stündlich) auf; das Aufräumen in
+    | der Anfrage geriet auf MySQL/MariaDB in Deadlocks (B-177, Nr. 32).
+    |
     */
 
-    'lottery' => [2, 100],
+    'lottery' => [0, 100],
 
     /*
     |--------------------------------------------------------------------------

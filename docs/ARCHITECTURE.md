@@ -208,8 +208,8 @@ SAFT knows two forms of work outside a request, neither requiring a queue worker
 
 **Scheduled tasks** (`ScheduledTask`, `TaskRunner`) run at points in time: `tasks:run-due` in cron every minute
 executes due tasks, logs every run, prevents duplicate runs and notifies the super admins on failure and recovery.
-System tasks (backup, pruning of files, snapshots, runs, work items and activity log, demo reset) come out of the
-box; plugins contribute types.
+System tasks (backup, pruning of files, snapshots, runs, work items, sessions and activity log, demo reset) come
+out of the box; plugins contribute types.
 
 **Work items** (`work_items`, concept [`FOUNDATION_2.md`](concept/FOUNDATION_2.md) §6) are long operations of a
 person, split into **resumable steps**: `prepare()` determines state and quantity in the first step, after that a
@@ -435,3 +435,17 @@ no. n".
     would be a nameless special case wherever field ids are read. One meaning of “empty” makes the filter definition
     for jump links (AI_AGENTS.md V5) a mere translator later. *Consequence:* user names are not sent to the report
     assistant; no new read site (reports read with the query builder), no migration, plugin API unchanged.
+
+32. **Expired sessions are cleaned up by a system task, not Laravel's lottery** (28.11.2026, B-177). The lottery in
+    `config/session.php` is set to `[0, 100]`; the system task `sessions_prune` (hourly, switched on out of the box)
+    deletes according to `SESSION_LIFETIME`. With the `database` driver it reads the ids of expired sessions in chunks
+    of 500 and deletes by primary key (`id IN … AND last_activity <= ?`); a chunk that hits a deadlock
+    (`DatabaseErrorType::Concurrency`) is retried up to three times. With the `file` driver it calls Laravel's file
+    cleanup; drivers whose sessions expire on their own (redis, memcached, cookie, array) report “skipped”. *Why:* the
+    lottery's cleanup (`DELETE … WHERE last_activity <= ?`) first locks a range via the `last_activity` index, while
+    writing a session first locks the row; with this reversed order MySQL/MariaDB occasionally reported a deadlock
+    (SQLSTATE 40001) and an arbitrary request ended with error 500 – catching it would only help the cleaning request,
+    not the writing one. Deleting by primary key takes no range lock, and nobody writes expired sessions any more.
+    *Consequence:* without cron, expired sessions remain (harmless, Laravel no longer reads them); no new `.env`
+    variable, no read site, plugin API unchanged. A test with parallel processes is deliberately missing: the error
+    occurred at random, and such a test would mostly pass with the old way too.

@@ -41,6 +41,7 @@ class ScheduledTasksTest extends DuskTestCase
                 ->visit('/admin/scheduled-tasks?tab=system')
                 ->waitForText('Laufprotokoll bereinigen', 15)
                 ->assertSee('Datenstände bereinigen')
+                ->assertSee('Sitzungen aufräumen')
                 ->assertSee('täglich um 03:30')
                 ->assertPresent('[data-scheduler-missing]');
 
