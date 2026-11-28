@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Filament\Pages\Auth;
 
 use App\Auth\AuthConfiguration;
+use App\Auth\IdleTimeout;
 use App\Models\IdentityProvider;
 use App\Models\User;
 use Filament\Actions\Action;
+use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
@@ -16,7 +19,9 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\RenderHook;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
+use Filament\Support\Components\Attributes\Exposed;
 use Filament\View\PanelsRenderHook;
+use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Livewire\Attributes\Locked;
 use SensitiveParameter;
@@ -36,6 +41,18 @@ class Login extends BaseLogin
 
         $this->breakGlass = request()->boolean('local') && $this->auth()->breakGlassAvailable();
 
+        // Nach dem Abmelden wegen Inaktivität bzw. abgelaufenem „Angemeldet bleiben“ (B-162, LogoutWhenIdle).
+        $expired = request()->query(IdleTimeout::LOGIN_QUERY);
+
+        if ($expired === 'idle' || $expired === 'remember') {
+            Notification::make()
+                ->title(__('auth_admin.idle.'.$expired.'_title'))
+                ->body($expired === 'idle' ? __('auth_admin.idle.idle_body', ['duration' => $this->idle()->limitLabel()]) : null)
+                ->warning()
+                ->persistent()
+                ->send();
+        }
+
         if (session()->has('sso_info')) {
             Notification::make()->title((string) session('sso_info'))->success()->send();
         }
@@ -48,6 +65,22 @@ class Login extends BaseLogin
                 ->persistent()
                 ->send();
         }
+    }
+
+    /**
+     * „Angemeldet bleiben“ gilt höchstens die eingestellte Dauer (B-162): so lange lebt auch das Remember-Cookie.
+     * Massgeblich bleibt die Prüfung in LogoutWhenIdle.
+     */
+    #[Exposed]
+    public function authenticate(): ?LoginResponse
+    {
+        $guard = Filament::auth();
+
+        if ($guard instanceof SessionGuard) {
+            $guard->setRememberDuration($this->idle()->rememberMinutes());
+        }
+
+        return parent::authenticate();
     }
 
     /**
@@ -110,6 +143,12 @@ class Login extends BaseLogin
             ->required();
     }
 
+    protected function getRememberFormComponent(): Component
+    {
+        return parent::getRememberFormComponent()
+            ->visible(fn (): bool => $this->idle()->rememberEnabled());
+    }
+
     public function showsPasswordForm(): bool
     {
         return $this->auth()->allowsLocalLogin() || $this->breakGlass;
@@ -135,6 +174,11 @@ class Login extends BaseLogin
     private function ssoProviders(): array
     {
         return once(fn (): array => $this->auth()->loginProviders()->values()->all());
+    }
+
+    private function idle(): IdleTimeout
+    {
+        return app(IdleTimeout::class);
     }
 
     private function auth(): AuthConfiguration

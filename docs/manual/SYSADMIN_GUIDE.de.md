@@ -272,6 +272,16 @@ abgelaufene Sitzungen liegen; das ist harmlos (sie gelten trotzdem als abgelaufe
 Ordner `storage/framework/sessions` wächst aber bis zum nächsten Lauf. Bei `redis`, `memcached` oder `cookie` laufen
 Sitzungen selbst ab, die Aufgabe meldet „übersprungen“.
 
+**Abmelden nach Inaktivität:** Unabhängig von `SESSION_LIFETIME` meldet SAFT ab, wenn die letzte Bedienung länger als
+die Grenze in **Authentifizierung → Sitzung** zurückliegt (Vorgabe 4 Stunden, [Administratorhandbuch, Kapitel 5](ADMIN_GUIDE.de.md#5-authentifizierung)).
+Die Abfrage der Benachrichtigungen alle 30 Sekunden hält eine Sitzung zwar am Leben, zählt aber nicht als Bedienung.
+Es gilt die kürzere Frist: Ist der Tab geschlossen und „Angemeldet bleiben“ nicht gesetzt, endet die Sitzung schon
+nach `SESSION_LIFETIME`. Mit „Angemeldet bleiben“ meldet das Remember-Cookie nach abgelaufener Sitzung wieder an,
+höchstens so lange wie eingestellt (Vorgabe 12 Stunden ab der Anmeldung) und nur innerhalb der Inaktivitätsgrenze;
+dafür steht die letzte Bedienung zusätzlich im verschlüsselten Cookie `saft_activity`. Hinter einem Proxy oder einer
+Firewall müssen die Routen `session/idle` und `session/activity` erreichbar sein. Eine neue `.env`-Variable gibt es
+nicht.
+
 ## 5. KI-Funktionen
 
 Die KI-Assistenten für Auswertungen, Tabellen und Dokumentvorlagen (siehe [Administratorhandbuch, Kapitel 13](ADMIN_GUIDE.de.md#13-ki-funktionen))

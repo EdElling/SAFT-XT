@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Apps\CurrentApp;
+use App\Auth\IdleTimeout;
 use App\Auth\RoleSimulation;
 use App\Auth\SaftAppAuthentication;
 use App\Filament\Actions\ChangePasswordAction;
@@ -18,6 +19,7 @@ use App\Filament\Resources\WorkItems\Pages\ListWorkItems;
 use App\Filament\Resources\WorkItems\WorkItemResource;
 use App\Filament\Support\PanelAppearance;
 use App\Help\HelpAssistant;
+use App\Http\Middleware\LogoutWhenIdle;
 use App\Http\Middleware\RequireTwoFactor;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SimulateRole;
@@ -97,6 +99,8 @@ class AdminPanelProvider extends PanelProvider
             })
             // Vorschau von Bildern und PDF aus Dateifeldern (B-021).
             ->renderHook(PanelsRenderHook::BODY_END, fn (): string => view('filament.file-preview')->render())
+            // Warnung vor dem Abmelden nach Inaktivität (B-162), nur angemeldet und mit Leerlauf-Grenze.
+            ->renderHook(PanelsRenderHook::BODY_END, fn (): string => auth()->check() && app(IdleTimeout::class)->limitMinutes() !== null ? view('filament.idle-timeout')->render() : '')
             // Hilfe-Assistent (Knopf „?“), nur wenn eingerichtet, eingeschaltet und mit Recht.
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn (): string => app(HelpAssistant::class)->availableFor(($user = auth()->user()) instanceof User ? $user : null) ? view('filament.help-assistant-button')->render() : '')
             // Seiten aus Plugins: Hinweis „Plugin: …“ unter dem Titel (B-063).
@@ -154,6 +158,8 @@ class AdminPanelProvider extends PanelProvider
                 PreventRequestForgery::class,
                 SubstituteBindings::class,
                 SetLocale::class,
+                // Abmelden nach Inaktivität (B-162). Livewire-Anfragen laufen über „web“ und haben sie dort.
+                LogoutWhenIdle::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])

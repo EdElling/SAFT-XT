@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Auth\AuthConfiguration;
 use App\Auth\AuthMode;
+use App\Auth\IdleTimeout;
 use App\Auth\TwoFactorMode;
 use App\Filament\Concerns\LimitsFormWidth;
 use App\Models\Role;
@@ -80,6 +81,25 @@ class AuthSettingsPage extends SettingsPage
                             ->descriptions(collect(TwoFactorMode::cases())->mapWithKeys(fn (TwoFactorMode $m): array => [$m->value => $m->description()])->all())
                             ->required(),
                     ]),
+                Section::make(__('auth_admin.settings.session'))
+                    ->schema([
+                        Select::make('idle_timeout_minutes')
+                            ->label(__('auth_admin.settings.idle_timeout'))
+                            ->helperText(__('auth_admin.settings.idle_timeout_help'))
+                            ->options(collect(IdleTimeout::LIMIT_OPTIONS)->mapWithKeys(fn (int $m): array => [$m => IdleTimeout::durationLabel($m)])->all())
+                            ->placeholder(__('auth_admin.settings.idle_timeout_never')),
+                        Toggle::make('remember_me_enabled')
+                            ->label(__('auth_admin.settings.remember_me'))
+                            ->helperText(__('auth_admin.settings.remember_me_help'))
+                            ->live(),
+                        Select::make('remember_me_hours')
+                            ->label(__('auth_admin.settings.remember_me_hours'))
+                            ->helperText(__('auth_admin.settings.remember_me_hours_help'))
+                            ->options(collect(IdleTimeout::REMEMBER_OPTIONS)->mapWithKeys(fn (int $h): array => [$h => IdleTimeout::durationLabel($h * 60)])->all())
+                            ->selectablePlaceholder(false)
+                            ->required()
+                            ->visible(fn (Get $get): bool => (bool) $get('remember_me_enabled')),
+                    ]),
                 Section::make(__('auth_admin.settings.options'))
                     ->schema([
                         Toggle::make('break_glass_enabled')
@@ -125,6 +145,10 @@ class AuthSettingsPage extends SettingsPage
         $data['two_factor'] = TwoFactorMode::from((string) $data['two_factor']);
         $data['password_reset_enabled'] ??= false;
         $data['default_role'] = filled($data['default_role'] ?? null) ? (string) $data['default_role'] : null;
+        $data['idle_timeout_minutes'] = filled($data['idle_timeout_minutes'] ?? null) ? (int) $data['idle_timeout_minutes'] : null;
+        $data['remember_me_enabled'] = (bool) ($data['remember_me_enabled'] ?? false);
+        // Ausgeblendet, wenn „Angemeldet bleiben“ aus ist: dann bleibt der bisherige Wert.
+        $data['remember_me_hours'] = (int) ($data['remember_me_hours'] ?? app(AuthSettings::class)->remember_me_hours);
 
         return $data;
     }

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AppSwitchController;
+use App\Http\Controllers\Auth\IdleSessionController;
 use App\Http\Controllers\Auth\SsoController;
 use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\DocumentationImageController;
@@ -41,6 +42,10 @@ Route::middleware(['auth'])->get('work/{uuid}/download', WorkDownloadController:
 // Aktuelle App wechseln (B-107).
 Route::middleware(['auth', 'throttle:60,1'])->post('apps/{app}/switch', AppSwitchController::class)->whereNumber('app')->name('apps.switch');
 Route::middleware(['auth', 'throttle:30,1'])->post('my-theme', [ThemeController::class, 'store'])->name('my-theme');
+
+// Abmelden nach Inaktivität (B-162): Restzeit (zählt nicht als Bedienung) und Bedienung ohne eigene Anfrage melden.
+Route::middleware(['auth', 'throttle:30,1'])->get('session/idle', [IdleSessionController::class, 'status'])->name('session.idle');
+Route::middleware(['auth', 'throttle:30,1'])->post('session/activity', [IdleSessionController::class, 'activity'])->name('session.activity');
 
 // Single Sign-On. {identityProvider} wird über den Slug aufgelöst.
 Route::middleware(['guest', 'throttle:30,1'])->prefix('auth')->name('auth.')->group(function (): void {

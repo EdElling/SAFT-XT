@@ -70,6 +70,18 @@ pagina segue la lingua del browser. Dopo l’accesso vale la lingua salvata nel 
 **Uscire:** dal menu utente in alto a destra. A seconda delle impostazioni, uscite contemporaneamente anche
 dall’account aziendale.
 
+**Disconnessione dopo inattività:** se non usate l’applicazione per un certo tempo (predefinito: 4 ore, impostabile
+dall’amministrazione), venite disconnessi automaticamente, anche con il single sign-on. Contano come utilizzo clic,
+digitazione, scorrimento e cambi di pagina; una finestra aperta da sola non vi mantiene connessi. Cinque minuti prima
+appare l’avviso **Disconnessione per inattività** con un conto alla rovescia; con **Continua a lavorare** (o un clic
+qualsiasi) restate connessi. I dati non salvati in un modulo vanno persi con la disconnessione. Se lavorate in più
+schede, conta l’utilizzo in ciascuna di esse.
+
+**«Ricordami»:** con questa casella nella pagina di accesso, l’accesso sopravvive alla chiusura del browser, ma al
+massimo per 12 ore dall’accesso (impostabile) e solo se nel frattempo non avete lasciato l’applicazione inutilizzata
+più a lungo del limite di inattività. La casella manca se l’amministrazione l’ha disattivata. Non selezionatela su
+dispositivi altrui o condivisi.
+
 > **Buono a sapersi:** se l’accesso tramite single sign-on vi viene negato («Per il vostro account non è configurato
 > alcun accesso» o simile), rivolgetevi all’amministrazione: il vostro account non è ancora abilitato o non è
 > assegnato a nessun gruppo autorizzato.

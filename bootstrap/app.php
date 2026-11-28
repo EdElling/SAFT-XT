@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Exceptions\BusinessRuleException;
 use App\Exceptions\ErrorPresenter;
+use App\Http\Middleware\LogoutWhenIdle;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\ServerTiming;
 use App\Http\Middleware\SetLocale;
@@ -29,7 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Sicherheits-Header für alle Antworten (Seiten, Livewire, Downloads, Fehlerseiten).
         $middleware->append(SecurityHeaders::class);
         // Auch Livewire-Anfragen laufen über "web" und brauchen die Sprache des Benutzers.
-        $middleware->web(append: [SetLocale::class]);
+        // Abmelden nach Inaktivität (B-162): auch für Livewire-Anfragen und eigene Routen.
+        $middleware->web(append: [SetLocale::class, LogoutWhenIdle::class]);
         // Eigene Routen mit „auth“ (Bilder der Dokumentation, Theme, Rollen-Ansicht): Gäste zur Anmeldung von Filament.
         $middleware->redirectGuestsTo(fn (): string => route('filament.admin.auth.login'));
     })

@@ -682,6 +682,21 @@ löschen](#tabelle-oder-feld-endgültig-löschen)). Danach lässt sich die Datei
 | **„Passwort vergessen“ anbieten** | E-Mail zum Zurücksetzen des Passworts (nur bei Modus Lokal oder Hybrid; erfordert konfigurierten Mailversand) |
 | **Standardrolle für neue Benutzer** | wird beim Anlegen vorausgewählt und bei automatisch angelegten SSO-Benutzern vergeben |
 | **Zwei-Faktor-Anmeldung** | **Freiwillig**, **Pflicht für Administration** (Vorgabe) oder **Pflicht für alle**. Als Administration gilt: Super-Admin oder ein beliebiges Recht auf Benutzer, Rollen, Menüs, Identity Provider, Einstellungen, Table-Designer, Datenbankverbindungen, Table-Connector, Tabellenverknüpfungen, geplante Aufgaben, Plugins oder Apps. Wer unter die Pflicht fällt, wird nach der Anmeldung zur Einrichtung geführt. Ausgenommen sind Anmeldungen per SSO und Konten ohne Passwort (zweiter Faktor beim Identity Provider) sowie *Ansicht als Rolle*. |
+| **Abmelden nach Inaktivität** | Abschnitt **Sitzung**: Abmelden, wenn so lange niemand die Anwendung bedient hat – 15 Minuten bis 24 Stunden oder **Nie**; Vorgabe **4 Stunden**. Gilt für alle Anmeldearten, auch Single Sign-On |
+| **„Angemeldet bleiben“ anbieten** | Häkchen auf der Anmeldeseite; die Anmeldung übersteht dann das Schliessen des Browsers. Ausgeschaltet nimmt SAFT auch früher gesetzte Häkchen nicht mehr an. Vorgabe: an |
+| **„Angemeldet bleiben“ höchstens** | Wie lange das Häkchen ab der Anmeldung trägt: 1 bis 24 Stunden, Vorgabe **12 Stunden** |
+
+**Was als Bedienung zählt:** Seitenaufrufe sowie Klicks, Tastatureingaben, Scrollen und Berührungen im Browser. Die
+automatische Abfrage der Benachrichtigungen (alle 30 Sekunden) und andere selbsttätige Aktualisierungen, z. B. der
+Fortschritt einer Arbeit, zählen nicht – ein offener, unbedienter Tab hält die Sitzung also nicht am Leben. Fünf
+Minuten vor Ablauf warnt ein Dialog mit Countdown und **Weiterarbeiten**. Nach der Abmeldung steht auf der
+Anmeldeseite der Grund. Im Aktivitätsprotokoll erscheint die Abmeldung mit der Methode **Inaktivität** bzw.
+**„Angemeldet bleiben“ abgelaufen**. Bei Single Sign-On meldet SAFT nur bei sich selbst ab: Besteht die Sitzung beim
+Identity Provider noch, genügt danach ein Klick auf die Anmelde-Schaltfläche.
+
+**„Angemeldet bleiben“** trägt höchstens die eingestellte Dauer ab der Anmeldung, und auch innerhalb dieser Zeit nur,
+solange die letzte Bedienung nicht länger als die Inaktivitätsgrenze zurückliegt. Zusammenspiel mit der Lebensdauer
+der Sitzung (`SESSION_LIFETIME`) siehe [Systemadministration, Kapitel 4](SYSADMIN_GUIDE.de.md#4-geplante-aufgaben-und-cron).
 
 Schutz vor Aussperren: Der Modus **Single Sign-On** lässt sich nur speichern, wenn mindestens ein aktiver
 Identity Provider einen **erfolgreichen Verbindungstest** hat. Zusätzliche Notausgänge für den Betrieb siehe

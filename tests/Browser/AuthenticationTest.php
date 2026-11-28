@@ -291,4 +291,44 @@ class AuthenticationTest extends DuskTestCase
             $this->submitLogin($browser, self::ADMIN_EMAIL)->waitFor(self::SELECTOR_SIDEBAR, 15)->assertPathIs('/admin');
         });
     }
+
+    /**
+     * ANM-17: Warnung vor dem Abmelden nach Inaktivität. Die Restzeit des Servers wird im Browser verkürzt (die echte
+     * Grenze von mindestens 15 Minuten wäre zu lang); das Abmelden selbst prüfen die Feature-Tests. Ausserdem: Eine
+     * Livewire-Anfrage ohne Bedienung trägt das Kennzeichen nicht, nach einem Klick schon.
+     */
+    public function test_idle_warning_appears_and_continue_keeps_the_session(): void
+    {
+        $this->superAdmin();
+
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, self::ADMIN_EMAIL)->waitFor(self::SELECTOR_SIDEBAR, 15)->assertPresent('[data-saft-idle]');
+
+            // Auch verzögert geladene Widgets schicken Anfragen: ohne Bedienung trägt keine das Kennzeichen.
+            $browser->script(<<<'JS'
+                window.saftIdleHeaders = [];
+                Livewire.interceptRequest(({ request }) => window.saftIdleHeaders.push(request.options.headers['X-Saft-Activity'] ?? null));
+                Livewire.all()[0].$wire.$refresh();
+            JS);
+            $browser->waitUntil('window.saftIdleHeaders.length >= 1', 15)->pause(1000);
+            $this->assertSame([null], array_values(array_unique($browser->script('return window.saftIdleHeaders;')[0])));
+
+            $browser->click('.fi-header-heading')->script('window.saftIdleHeaders = []; Livewire.all()[0].$wire.$refresh();');
+            $browser->waitUntil('window.saftIdleHeaders.length >= 1', 15);
+            $this->assertSame('1', $browser->script('return window.saftIdleHeaders[0];')[0]);
+
+            $browser->script(<<<'JS'
+                const realFetch = window.fetch;
+                window.fetch = (url, options) => String(url).includes('/session/idle')
+                    ? Promise.resolve(new Response(JSON.stringify({ remaining: 120 }), { headers: { 'Content-Type': 'application/json' } }))
+                    : realFetch(url, options);
+                window.saftIdle.check();
+            JS);
+            $browser->waitForText(__('auth_admin.idle.warning_title'), 15);
+            $this->assertMatchesRegularExpression('/^(2:00|1:5\d)$/', $browser->text('[data-saft-idle-countdown]'));
+            $browser->press(__('auth_admin.idle.continue'))
+                ->waitUntilMissingText(__('auth_admin.idle.warning_title'), 15)
+                ->visit('/admin')->waitFor(self::SELECTOR_SIDEBAR, 15)->assertPathIs('/admin');
+        });
+    }
 }

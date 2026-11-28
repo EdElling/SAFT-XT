@@ -708,6 +708,22 @@ champ](#supprimer-définitivement-une-table-ou-un-champ)). Le fichier peut ensui
 | **Proposer « Mot de passe oublié »** | e-mail pour réinitialiser le mot de passe (uniquement en mode Local ou Hybride ; nécessite un envoi d’e-mails configuré) |
 | **Rôle par défaut des nouveaux utilisateurs** | présélectionné à la création et attribué aux utilisateurs SSO créés automatiquement |
 | **Authentification à deux facteurs** | **Facultative**, **Obligatoire pour l’administration** (par défaut) ou **Obligatoire pour tous**. Est considéré comme administration : super-admin ou tout droit sur les utilisateurs, rôles, menus, fournisseurs d’identité, paramètres, concepteur de tables, connexions aux bases de données, connecteur de tables, liaisons de tables, tâches planifiées, plugins ou apps. Les personnes concernées sont conduites à la configuration après la connexion. Sont exemptées les connexions par SSO et les comptes sans mot de passe (second facteur chez le fournisseur d’identité) ainsi que *Vue en tant que rôle*. |
+| **Déconnexion après inactivité** | Section **Session** : déconnecter lorsque personne n’a utilisé l’application pendant cette durée, de 15 minutes à 24 heures ou **Jamais** ; par défaut **4 heures**. S’applique à tous les modes de connexion, y compris l’authentification unique |
+| **Proposer « Se souvenir de moi »** | case à cocher sur la page de connexion ; la connexion survit alors à la fermeture du navigateur. Désactivé, SAFT n’accepte plus non plus les cases cochées auparavant. Par défaut : activé |
+| **« Se souvenir de moi » au plus** | durée de validité de la case à partir de la connexion : 1 à 24 heures, par défaut **12 heures** |
+
+**Ce qui compte comme utilisation :** les affichages de page ainsi que les clics, la saisie au clavier, le défilement
+et les touchers dans le navigateur. La vérification automatique des notifications (toutes les 30 secondes) et les
+autres mises à jour automatiques, p. ex. la progression d’un travail, ne comptent pas : un onglet ouvert que personne
+n’utilise ne maintient donc pas la session. Cinq minutes avant la limite, une boîte de dialogue avertit avec un compte
+à rebours et **Continuer à travailler**. Après la déconnexion, la page de connexion en indique la raison. Dans le
+journal d’activité, la déconnexion apparaît avec la méthode **Inactivité** ou **« Se souvenir de moi » expiré**. Avec
+l’authentification unique, SAFT ne se déconnecte que lui-même : si la session auprès du fournisseur d’identité existe
+encore, un clic sur le bouton de connexion suffit ensuite.
+
+**« Se souvenir de moi »** vaut au plus la durée réglée à partir de la connexion, et même pendant cette durée
+seulement tant que la dernière utilisation ne remonte pas plus loin que la limite d’inactivité. Pour l’interaction
+avec la durée de vie de la session (`SESSION_LIFETIME`), voir [Administration système, chapitre 4](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron).
 
 Protection contre le verrouillage : le mode **Authentification unique** ne peut être enregistré que si au moins un
 fournisseur d’identité actif a un **test de connexion réussi**. Pour d’autres issues de secours en exploitation, voir

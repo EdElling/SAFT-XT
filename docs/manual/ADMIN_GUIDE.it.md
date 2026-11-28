@@ -688,6 +688,21 @@ campo](#eliminare-definitivamente-una-tabella-o-un-campo)). In seguito il file s
 | **Offri «Password dimenticata»** | e-mail per reimpostare la password (solo in modalità Locale o Ibrido; richiede l’invio di e-mail configurato) |
 | **Ruolo predefinito per i nuovi utenti** | preselezionato alla creazione e assegnato agli utenti SSO creati automaticamente |
 | **Autenticazione a due fattori** | **Facoltativa**, **Obbligatoria per l’amministrazione** (predefinito) o **Obbligatoria per tutti**. Vale come amministrazione: super-admin o qualsiasi diritto su utenti, ruoli, menu, provider di identità, impostazioni, designer di tabelle, connessioni ai database, connettore di tabelle, collegamenti tra tabelle, attività pianificate, plugin o app. Chi vi rientra viene portato alla configurazione dopo l’accesso. Sono esclusi gli accessi tramite SSO e gli account senza password (secondo fattore presso il provider di identità) nonché *Vista come ruolo*. |
+| **Disconnessione dopo inattività** | Sezione **Sessione**: disconnettere quando nessuno ha usato l’applicazione per questo tempo, da 15 minuti a 24 ore oppure **Mai**; predefinito **4 ore**. Vale per tutte le modalità di accesso, anche il single sign-on |
+| **Offrire «Ricordami»** | casella nella pagina di accesso; l’accesso sopravvive allora alla chiusura del browser. Se disattivato, SAFT non accetta più nemmeno le caselle selezionate in precedenza. Predefinito: attivo |
+| **«Ricordami» al massimo** | per quanto tempo vale la casella dall’accesso: da 1 a 24 ore, predefinito **12 ore** |
+
+**Che cosa conta come utilizzo:** le visualizzazioni di pagina e i clic, la digitazione, lo scorrimento e i tocchi
+nel browser. Il controllo automatico delle notifiche (ogni 30 secondi) e altri aggiornamenti automatici, ad es. lo
+stato di avanzamento di un lavoro, non contano: una scheda aperta che nessuno usa non mantiene quindi viva la
+sessione. Cinque minuti prima del limite una finestra di dialogo avvisa con un conto alla rovescia e **Continua a
+lavorare**. Dopo la disconnessione, la pagina di accesso ne indica il motivo. Nel registro attività la disconnessione
+compare con il metodo **Inattività** o **«Ricordami» scaduto**. Con il single sign-on SAFT disconnette solo se stesso:
+se la sessione presso il provider di identità esiste ancora, dopo basta un clic sul pulsante di accesso.
+
+**«Ricordami»** vale al massimo la durata impostata dall’accesso, e anche entro questo tempo solo finché l’ultimo
+utilizzo non risale a più del limite di inattività. Per l’interazione con la durata della sessione
+(`SESSION_LIFETIME`) vedere [Amministrazione di sistema, capitolo 4](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron).
 
 Protezione contro il blocco: la modalità **Single sign-on** si può salvare solo se almeno un provider di identità attivo
 ha un **test di connessione riuscito**. Per altre vie d’uscita d’emergenza nell’esercizio vedere

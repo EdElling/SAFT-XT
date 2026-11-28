@@ -17,6 +17,7 @@
    - [Ich kann eine Spalte nicht auf einen anderen Typ umstellen.](#ich-kann-eine-spalte-nicht-auf-einen-anderen-typ-umstellen)
    - [Ich habe „Passwort vergessen“ benutzt, aber keine E-Mail erhalten.](#ich-habe-passwort-vergessen-benutzt-aber-keine-e-mail-erhalten)
    - [Ich habe mein Handy mit der Authenticator-App verloren.](#ich-habe-mein-handy-mit-der-authenticator-app-verloren)
+   - [Warum wurde ich abgemeldet?](#warum-wurde-ich-abgemeldet)
    - [In welcher Sprache erscheint die Anwendung?](#in-welcher-sprache-erscheint-die-anwendung)
    - [Ich habe Englisch gewählt, aber ein Menüeintrag oder eine Tabelle heisst weiterhin deutsch.](#ich-habe-englisch-gewählt-aber-ein-menüeintrag-oder-eine-tabelle-heisst-weiterhin-deutsch)
    - [Ich sehe keine Schaltfläche „Exportieren“.](#ich-sehe-keine-schaltfläche-exportieren)
@@ -81,6 +82,14 @@ Melden Sie sich mit einem Ihrer **Wiederherstellungscodes** an: nach dem Passwor
 Wiederherstellungscode verwenden“** klicken. Jeder Code gilt nur einmal. Richten Sie danach in *Meine Einstellungen*
 die App auf dem neuen Handy ein. Haben Sie auch die Codes nicht mehr, setzt die Administration den zweiten Faktor
 zurück; danach genügt das Passwort, bis Sie neu eingerichtet haben.
+
+### Warum wurde ich abgemeldet?
+
+Nach längerer Zeit ohne Bedienung meldet die Anwendung ab (Vorgabe: 4 Stunden, die Administration kann die Grenze
+ändern oder abschalten). Ein offenes Fenster allein zählt nicht als Bedienung, wohl aber Klicks, Tastatureingaben,
+Scrollen und Seitenwechsel. Fünf Minuten vorher erscheint eine Warnung mit **Weiterarbeiten**. Mit „Angemeldet
+bleiben“ übersteht die Anmeldung das Schliessen des Browsers, höchstens aber 12 Stunden ab der Anmeldung. Siehe
+[Anwenderhandbuch, Kapitel 2](USER_GUIDE.de.md#2-anmelden-und-abmelden).
 
 ### In welcher Sprache erscheint die Anwendung?
 

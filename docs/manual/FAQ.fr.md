@@ -17,6 +17,7 @@
    - [Je ne peux pas changer le type d’une colonne.](#je-ne-peux-pas-changer-le-type-dune-colonne)
    - [J’ai utilisé « Mot de passe oublié », mais je n’ai reçu aucun e-mail.](#jai-utilisé--mot-de-passe-oublié--mais-je-nai-reçu-aucun-e-mail)
    - [J’ai perdu mon téléphone avec l’application d’authentification.](#jai-perdu-mon-téléphone-avec-lapplication-dauthentification)
+   - [Pourquoi ai-je été déconnecté ?](#pourquoi-ai-je-été-déconnecté-)
    - [Dans quelle langue l’application s’affiche-t-elle ?](#dans-quelle-langue-lapplication-saffiche-t-elle-)
    - [J’ai choisi le français, mais une entrée de menu ou une table reste en allemand.](#jai-choisi-le-français-mais-une-entrée-de-menu-ou-une-table-reste-en-allemand)
    - [Je ne vois pas de bouton « Exporter ».](#je-ne-vois-pas-de-bouton--exporter-)
@@ -81,6 +82,14 @@ Connectez-vous avec l’un de vos **codes de récupération** : après le mot de
 récupération à la place »**. Chaque code ne vaut qu’une fois. Configurez ensuite l’application sur le nouveau
 téléphone dans *Mes paramètres*. Si vous n’avez plus les codes non plus, l’administration réinitialise le second
 facteur ; le mot de passe suffit alors jusqu’à la nouvelle configuration.
+
+### Pourquoi ai-je été déconnecté ?
+
+Après un certain temps sans utilisation, l’application vous déconnecte (par défaut : 4 heures ; l’administration peut
+modifier ou désactiver la limite). Une fenêtre ouverte seule ne compte pas comme utilisation, contrairement aux clics,
+à la saisie au clavier, au défilement et aux changements de page. Cinq minutes avant, un avertissement apparaît avec
+**Continuer à travailler**. Avec « Se souvenir de moi », la connexion survit à la fermeture du navigateur, mais au
+plus 12 heures à partir de la connexion. Voir [Guide utilisateur, chapitre 2](USER_GUIDE.fr.md#2-se-connecter-et-se-déconnecter).
 
 ### Dans quelle langue l’application s’affiche-t-elle ?
 

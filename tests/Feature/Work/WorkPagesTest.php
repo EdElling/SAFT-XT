@@ -14,9 +14,9 @@ use App\Plugins\Api\Saft;
 use App\Work\WorkRunner;
 use App\Work\WorkService;
 use Filament\Actions\Testing\TestAction;
+use Filament\Support\Facades\FilamentView;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
-use Filament\Support\Facades\FilamentView;
 use Livewire\Livewire;
 use Tests\Concerns\InteractsWithAdmin;
 use Tests\Fixtures\Work\CountingWork;
@@ -123,6 +123,8 @@ class WorkPagesTest extends TestCase
         $this->actingAs($this->userWithPermissions(['work.view_any']))->get(route('work.download', $item->uuid))->assertOk();
 
         $this->travel(25)->hours();
+        // Neue Sitzung: In der alten griffe nach 25 Stunden die Abmeldung nach Inaktivität (B-162).
+        $this->flushSession();
         $this->actingAs($anna)->get(route('work.download', $item->uuid))->assertStatus(410);
     }
 

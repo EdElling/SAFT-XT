@@ -317,6 +317,11 @@ Seiten, Ressourcen und Widgets sind gewöhnliche Filament-Klassen (Filament 5). 
 Für Formularseiten gibt es das Trait `App\Filament\Concerns\LimitsFormWidth` (1280 px, linksbündig, wie die
 Formulare von SAFT). Meldungen zeigen Sie mit `Filament\Notifications\Notification` an.
 
+**Abmelden nach Inaktivität:** Livewire-Anfragen zählen nur als Bedienung, wenn ihnen im Browser ein Klick, eine Taste,
+Scrollen oder eine Berührung vorausging (SAFT setzt dann den Header `X-Saft-Activity`). `wire:poll` und `->poll()` in
+einem Plugin halten eine Sitzung deshalb nicht am Leben, und es ist nichts weiter zu tun. Eigene `fetch`-Aufrufe ausserhalb
+von Livewire zählen dagegen immer als Bedienung; lösen Sie sie nicht selbsttätig in kurzen Abständen aus.
+
 Eigene Views gestalten Sie mit Filament-Komponenten und einem `<style>`-Block: Tailwind-Klassen aus Views eines Plugins
 sind im CSS von SAFT nicht enthalten. Schritt für Schritt: eigene Tabellensicht in
 [Anhang A.1](#a1-eigene-tabellensicht), eigenes Formular mit Drag and Drop in [Anhang A.2](#a2-eigenes-bearbeiten-formular).

@@ -659,6 +659,21 @@ Afterwards the file can be imported again.
 | **Offer "Forgot password"** | Email for resetting the password (only in Local or Hybrid mode; requires configured email delivery) |
 | **Default role for new users** | Preselected when creating users and assigned to SSO users created automatically |
 | **Two-factor authentication** | **Optional**, **Required for administration** (default) or **Required for everyone**. Administration means: super admin or any permission on users, roles, menus, identity providers, settings, table designer, database connections, table connector, table links, scheduled tasks, plugins or apps. Anyone covered is taken to the setup after signing in. Exempt are sign-ins via SSO and accounts without a password (second factor at the identity provider) as well as *View as role*. |
+| **Sign out after inactivity** | Section **Session**: sign out when nobody has used the application for this long, 15 minutes to 24 hours or **Never**; default **4 hours**. Applies to all sign-in methods, including single sign-on |
+| **Offer "Remember me"** | Checkbox on the sign-in page; the sign-in then survives closing the browser. When switched off, SAFT no longer accepts checkboxes ticked earlier either. Default: on |
+| **"Remember me" at most** | How long the checkbox lasts from sign-in: 1 to 24 hours, default **12 hours** |
+
+**What counts as use:** page views as well as clicks, typing, scrolling and touches in the browser. The automatic
+check for notifications (every 30 seconds) and other automatic updates, e.g. the progress of a work item, do not
+count, so an open tab that nobody uses does not keep the session alive. Five minutes before the limit, a dialog warns
+with a countdown and **Continue working**. After signing out, the sign-in page shows the reason. In the activity log,
+the sign-out appears with the method **Inactivity** or **"Remember me" expired**. With single sign-on, SAFT only signs
+out of itself: if the session at the identity provider still exists, one click on the sign-in button is enough
+afterwards.
+
+**"Remember me"** lasts at most the configured time from sign-in, and even within that time only while the last use
+lies no further back than the inactivity limit. For the interplay with the session lifetime (`SESSION_LIFETIME`) see
+[System administration, chapter 4](SYSADMIN_GUIDE.md#4-scheduled-tasks-and-cron).
 
 Protection against lock-out: the **Single sign-on** mode can only be saved if at least one active identity provider
 has a **successful connection test**. For additional emergency exits in operations see

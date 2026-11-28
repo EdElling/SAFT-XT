@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Auth;
 
 use App\Auth\AuthMode;
+use App\Auth\IdleTimeout;
 use App\Auth\Sso\IdentityProviderType;
 use App\Auth\Sso\SsoDriver;
 use App\Auth\Sso\SsoDriverRegistry;
@@ -156,11 +157,15 @@ class SsoLoginTest extends TestCase
 
     public function test_full_sso_flow_logs_in_and_audits_method(): void
     {
+        // Auch die SSO-Anmeldung startet die Uhr der Leerlauf-Grenze (B-162).
+        $this->freezeTime();
         $user = User::factory()->create(['email' => 'max@firma.de']);
         $this->fakeDriver(new SsoIdentity('oid-9', 'max@firma.de', 'Max', token: 'access-token'));
 
         $this->get(route('auth.sso.redirect', $this->provider))->assertRedirect('https://idp.test/authorize');
-        $this->get(route('auth.sso.callback', $this->provider))->assertRedirect('/admin');
+        $this->get(route('auth.sso.callback', $this->provider))
+            ->assertRedirect('/admin')
+            ->assertSessionHas(IdleTimeout::SESSION_KEY, now()->getTimestamp());
 
         $this->assertAuthenticatedAs($user);
         $account = SocialAccount::where('provider_user_id', 'oid-9')->firstOrFail();

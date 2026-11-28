@@ -70,6 +70,18 @@ sich die Seite nach der Sprache Ihres Browsers. Nach der Anmeldung gilt die in I
 **Abmelden:** über das Benutzermenü oben rechts. Je nach Einstellung werden Sie dabei zusätzlich beim
 Firmen-Login abgemeldet.
 
+**Abmeldung nach Inaktivität:** Bedienen Sie die Anwendung längere Zeit nicht (Vorgabe: 4 Stunden, einstellbar durch
+die Administration), werden Sie automatisch abgemeldet – auch bei Anmeldung über Single Sign-On. Als Bedienung
+zählen Klicks, Tastatureingaben, Scrollen und Seitenwechsel; ein offenes Fenster allein hält Sie nicht angemeldet.
+Fünf Minuten vorher erscheint die Warnung **Abmeldung wegen Inaktivität** mit einem Countdown; mit
+**Weiterarbeiten** (oder einem beliebigen Klick) bleiben Sie angemeldet. Nicht gespeicherte Eingaben in einem
+Formular gehen bei der Abmeldung verloren. Arbeiten Sie in mehreren Tabs, zählt die Bedienung in jedem davon.
+
+**„Angemeldet bleiben“:** Mit diesem Häkchen auf der Anmeldeseite übersteht die Anmeldung das Schliessen des
+Browsers, höchstens aber 12 Stunden ab der Anmeldung (einstellbar), und auch dann nur, wenn Sie die Anwendung
+zwischendurch nicht länger als die Inaktivitätsgrenze unbedient gelassen haben. Das Häkchen fehlt, wenn die
+Administration es abgeschaltet hat. Auf fremden oder gemeinsam genutzten Geräten nicht setzen.
+
 > **Gut zu wissen:** Wird Ihnen die Anmeldung über Single Sign-On verweigert („Für Ihr Konto ist kein Zugang
 > eingerichtet“ o. ä.), wenden Sie sich an die Administration – Ihr Konto ist dann noch nicht freigeschaltet
 > oder keiner berechtigten Gruppe zugeordnet.

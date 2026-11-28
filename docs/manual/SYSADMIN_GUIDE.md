@@ -266,6 +266,15 @@ remain; that is harmless (they still count as expired), but the `sessions` table
 `storage/framework/sessions` grows until the next run. With `redis`, `memcached` or `cookie`, sessions expire on their
 own and the task reports “skipped”.
 
+**Signing out after inactivity:** Independently of `SESSION_LIFETIME`, SAFT signs out when the last use lies further
+back than the limit in **Authentication → Session** (default 4 hours, [Administrator guide, chapter 5](ADMIN_GUIDE.md#5-authentication)).
+The check for notifications every 30 seconds keeps a session alive but does not count as use. The shorter limit
+applies: if the tab is closed and "Remember me" is not ticked, the session already ends after `SESSION_LIFETIME`. With
+"Remember me", the remember cookie signs in again after the session has expired, at most for the configured time
+(default 12 hours from sign-in) and only within the inactivity limit; for this, the last use is also stored in the
+encrypted cookie `saft_activity`. Behind a proxy or firewall, the routes `session/idle` and `session/activity` must be
+reachable. There is no new `.env` variable.
+
 ## 5. AI functions
 
 The AI assistants for reports, tables and document templates (see [Administrator guide, chapter 13](ADMIN_GUIDE.md#13-ai-functions)) are

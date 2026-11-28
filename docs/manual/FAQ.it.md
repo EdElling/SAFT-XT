@@ -17,6 +17,7 @@
    - [Non riesco a cambiare il tipo di una colonna.](#non-riesco-a-cambiare-il-tipo-di-una-colonna)
    - [Ho usato «Hai smarrito la password?», ma non ho ricevuto alcuna e-mail.](#ho-usato-hai-smarrito-la-password-ma-non-ho-ricevuto-alcuna-e-mail)
    - [Ho perso il telefono con l’app di autenticazione.](#ho-perso-il-telefono-con-lapp-di-autenticazione)
+   - [Perché sono stato disconnesso?](#perché-sono-stato-disconnesso)
    - [In quale lingua compare l’applicazione?](#in-quale-lingua-compare-lapplicazione)
    - [Ho scelto l’italiano, ma una voce di menu o una tabella resta in tedesco.](#ho-scelto-litaliano-ma-una-voce-di-menu-o-una-tabella-resta-in-tedesco)
    - [Non vedo il pulsante «Esporta».](#non-vedo-il-pulsante-esporta)
@@ -81,6 +82,14 @@ Accedete con uno dei vostri **codici di recupero**: dopo la password cliccate su
 recupero»**. Ogni codice vale una sola volta. Configurate poi l’app sul nuovo telefono in *Le mie impostazioni*. Se non
 avete più nemmeno i codici, l’amministrazione reimposta il secondo fattore; da quel momento basta la password finché
 non avrete configurato di nuovo.
+
+### Perché sono stato disconnesso?
+
+Dopo un certo tempo senza utilizzo l’applicazione vi disconnette (predefinito: 4 ore; l’amministrazione può
+modificare o disattivare il limite). Una finestra aperta da sola non conta come utilizzo, a differenza di clic,
+digitazione, scorrimento e cambi di pagina. Cinque minuti prima appare un avviso con **Continua a lavorare**. Con
+«Ricordami» l’accesso sopravvive alla chiusura del browser, ma al massimo per 12 ore dall’accesso. Vedere
+[Guida utente, capitolo 2](USER_GUIDE.it.md#2-accedere-e-uscire).
 
 ### In quale lingua compare l’applicazione?
 

@@ -70,6 +70,17 @@ follows the language of your browser. After signing in, the language stored in y
 **Signing out:** via the user menu at the top right. Depending on the settings, you are also signed out of the
 company login.
 
+**Signing out after inactivity:** If you do not use the application for a longer time (default: 4 hours, set by the
+administrator), you are signed out automatically, also with single sign-on. Clicks, typing, scrolling and changing
+pages count as use; an open window alone does not keep you signed in. Five minutes before, the warning **Signing out
+due to inactivity** appears with a countdown; **Continue working** (or any click) keeps you signed in. Unsaved input
+in a form is lost when you are signed out. If you work in several tabs, use in any of them counts.
+
+**"Remember me":** With this checkbox on the sign-in page, the sign-in survives closing the browser, but for at most
+12 hours from sign-in (configurable), and only if you have not left the application unused for longer than the
+inactivity limit in between. The checkbox is missing if the administrator has switched it off. Do not tick it on
+other people's or shared devices.
+
 > **Good to know:** If single sign-on is refused ("No access has been set up for your account" or similar), contact
 > your administrator. Your account has not been enabled yet or is not assigned to a permitted group.
 

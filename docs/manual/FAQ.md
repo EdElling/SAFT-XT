@@ -17,6 +17,7 @@
    - [I cannot change a column to another type.](#i-cannot-change-a-column-to-another-type)
    - [I used "Forgot password" but did not receive an email.](#i-used-forgot-password-but-did-not-receive-an-email)
    - [I lost my phone with the authenticator app.](#i-lost-my-phone-with-the-authenticator-app)
+   - [Why was I signed out?](#why-was-i-signed-out)
    - [In which language does the application appear?](#in-which-language-does-the-application-appear)
    - [I chose English, but a menu entry or a table still has a German name.](#i-chose-english-but-a-menu-entry-or-a-table-still-has-a-german-name)
    - [I do not see an "Export" button.](#i-do-not-see-an-export-button)
@@ -79,6 +80,13 @@ help, contact your administrator.
 Sign in with one of your **recovery codes**: after the password, click **"Use a recovery code instead"**. Each code
 works only once. Then set up the app on the new phone in *My settings*. If you no longer have the codes either, the
 administration resets the second factor; after that the password is enough until you have set it up again.
+
+### Why was I signed out?
+
+After a longer time without use, the application signs you out (default: 4 hours; the administrator can change or
+switch off the limit). An open window alone does not count as use, but clicks, typing, scrolling and changing pages
+do. Five minutes before, a warning appears with **Continue working**. With "Remember me", the sign-in survives closing
+the browser, but for at most 12 hours from sign-in. See [User guide, chapter 2](USER_GUIDE.md#2-signing-in-and-out).
 
 ### In which language does the application appear?
 

@@ -311,6 +311,11 @@ Pages, resources and widgets are ordinary Filament classes (Filament 5). Three r
 For form pages there is the trait `App\Filament\Concerns\LimitsFormWidth` (1280 px, left-aligned, like SAFT's forms).
 Show messages with `Filament\Notifications\Notification`.
 
+**Signing out after inactivity:** Livewire requests only count as use when a click, key press, scroll or touch
+preceded them in the browser (SAFT then sets the header `X-Saft-Activity`). `wire:poll` and `->poll()` in a plugin
+therefore do not keep a session alive, and there is nothing else to do. Your own `fetch` calls outside Livewire, on
+the other hand, always count as use; do not fire them automatically at short intervals.
+
 Style views of your own with Filament components and a `<style>` block: Tailwind classes from a plugin's views are not
 included in SAFT's CSS. Step by step: custom table view in [appendix A.1](#a1-custom-table-view), custom form with drag
 and drop in [appendix A.2](#a2-custom-edit-form).

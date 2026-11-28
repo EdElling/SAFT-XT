@@ -21,6 +21,8 @@ final class LoginMethod
             $method === null, $method === '' => '—',
             $method === 'password' => __('auth_admin.methods.password'),
             $method === 'local' => __('auth_admin.methods.local'),
+            $method === 'idle' => __('auth_admin.methods.idle'),
+            $method === 'remember_expired' => __('auth_admin.methods.remember_expired'),
             str_starts_with($method, 'sso:') => __('auth_admin.methods.sso', ['name' => self::providerName(Str::after($method, 'sso:'))]),
             str_starts_with($method, 'idp:') => __('auth_admin.methods.idp', ['name' => self::providerName(Str::after($method, 'idp:'))]),
             default => $method,

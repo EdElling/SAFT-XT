@@ -24,6 +24,15 @@ class AuthSettings extends Settings
     // läse daraus den Typ und wandelte das Enum dann nicht um.
     public TwoFactorMode $two_factor;
 
+    /** Abmelden nach so vielen Minuten ohne Bedienung; null = nie (B-162). */
+    public ?int $idle_timeout_minutes;
+
+    /** „Angemeldet bleiben“ auf der Anmeldeseite anbieten. */
+    public bool $remember_me_enabled;
+
+    /** „Angemeldet bleiben“ gilt höchstens so viele Stunden ab der Anmeldung. */
+    public int $remember_me_hours;
+
     public static function group(): string
     {
         return 'auth';

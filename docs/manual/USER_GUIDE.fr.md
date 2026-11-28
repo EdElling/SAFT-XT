@@ -71,6 +71,19 @@ langue de votre navigateur. Après la connexion, c’est la langue enregistrée 
 **Se déconnecter :** via le menu utilisateur en haut à droite. Selon le paramétrage, vous êtes en même temps
 déconnecté du compte de l’entreprise.
 
+**Déconnexion après inactivité :** si vous n’utilisez pas l’application pendant un certain temps (par défaut : 4 heures,
+réglable par l’administration), vous êtes déconnecté automatiquement, y compris avec l’authentification unique. Les
+clics, la saisie au clavier, le défilement et les changements de page comptent comme utilisation ; une fenêtre
+ouverte seule ne vous maintient pas connecté. Cinq minutes avant, l’avertissement **Déconnexion pour inactivité**
+apparaît avec un compte à rebours ; **Continuer à travailler** (ou un clic quelconque) vous maintient connecté. Les
+saisies non enregistrées dans un formulaire sont perdues lors de la déconnexion. Si vous travaillez dans plusieurs
+onglets, l’utilisation de chacun d’eux compte.
+
+**« Se souvenir de moi » :** avec cette case sur la page de connexion, la connexion survit à la fermeture du
+navigateur, mais au plus 12 heures à partir de la connexion (réglable), et seulement si vous n’avez pas laissé
+l’application inutilisée plus longtemps que la limite d’inactivité entre-temps. La case n’apparaît pas si
+l’administration l’a désactivée. Ne la cochez pas sur des appareils d’autrui ou partagés.
+
 > **Bon à savoir :** si la connexion par authentification unique vous est refusée (« Aucun accès n’est configuré
 > pour votre compte » ou similaire), adressez-vous à l’administration : votre compte n’est alors pas encore activé ou
 > n’appartient à aucun groupe autorisé.
