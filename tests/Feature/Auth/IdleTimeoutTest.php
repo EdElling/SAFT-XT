@@ -129,6 +129,7 @@ class IdleTimeoutTest extends TestCase
 
     public function test_page_contains_the_warning_with_the_remaining_time(): void
     {
+        $this->freezeTime();
         $this->actingAs(User::factory()->create());
 
         $this->get('/admin')->assertOk()
