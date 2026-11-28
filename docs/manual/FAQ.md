@@ -43,6 +43,7 @@
    - [How do I export only some records?](#how-do-i-export-only-some-records)
    - [Which records did a bulk edit change?](#which-records-did-a-bulk-edit-change)
    - [When and by whom was a record created?](#when-and-by-whom-was-a-record-created)
+   - [How do I undo a single change?](#how-do-i-undo-a-single-change)
 
 ---
 ## Frequently asked questions
@@ -256,4 +257,13 @@ Your saved view is kept: the ✕ on the chip or “Reset view” brings your pre
 In the column menu (columns icon next to the filter), show the columns **Created at**, **Created by**, **Changed at**
 and **Changed by**; they are at the end of the list. You can sort by the dates and choose a period in the filter,
 and filter by people. Who changed what exactly is shown in a record's **history**. See
+[User guide 4.1](USER_GUIDE.md#41-the-table-view).
+
+### How do I undo a single change?
+
+Open the record's **history** (clock icon in the row, on a smartphone under “Details”) and click the back arrow next
+to the entry “updated”. The confirmation shows *now → back to* for each field; untick the fields that should stay and
+choose **Undo**. Fields changed again since then are not ticked – tick them if you want to undo them anyway. If the
+arrow is missing, the entry is not an update (e.g. “created”), all fields already have the old value, or you lack the
+right to edit. Whole bulk edits are undone via “Recent bulk edits”. See
 [User guide 4.1](USER_GUIDE.md#41-the-table-view).

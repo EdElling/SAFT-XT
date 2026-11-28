@@ -13,6 +13,7 @@ namespace App\DynamicData\Write;
  * - expectedVersion: Stand (RecordVersion), den das Formular gelesen hat; weicht der aktuelle ab → StaleRecordException
  * - overwriting: bewusstes Überschreiben nach einer Meldung („Trotzdem speichern“), kommt ins Protokoll
  * - run: Kennung zusammengehöriger Änderungen (z. B. „work:42“ für einen Lauf), kommt als „run“ ins Protokoll
+ * - reverts: Protokolleintrag, den dieser Schreibvorgang zurücknimmt (B-173, Verlauf), kommt als „reverts“ ins Protokoll
  */
 final readonly class WriteOptions
 {
@@ -49,6 +50,7 @@ final readonly class WriteOptions
         public ?string $expectedVersion = null,
         public bool $overwriting = false,
         public ?string $run = null,
+        public ?int $reverts = null,
     ) {}
 
     public static function defaults(): self
@@ -86,28 +88,29 @@ final readonly class WriteOptions
 
     public function withOrigin(string $origin): self
     {
-        return new self($origin, $this->pluginEvents, $this->log, $this->expectedVersion, $this->overwriting, $this->run);
+        return new self($origin, $this->pluginEvents, $this->log, $this->expectedVersion, $this->overwriting, $this->run, $this->reverts);
     }
 
     public function withoutLog(): self
     {
-        return new self($this->origin, $this->pluginEvents, false, $this->expectedVersion, $this->overwriting, $this->run);
+        return new self($this->origin, $this->pluginEvents, false, $this->expectedVersion, $this->overwriting, $this->run, $this->reverts);
     }
 
     public function withoutPluginEvents(): self
     {
-        return new self($this->origin, false, $this->log, $this->expectedVersion, $this->overwriting, $this->run);
+        return new self($this->origin, false, $this->log, $this->expectedVersion, $this->overwriting, $this->run, $this->reverts);
     }
 
     /** @param  bool  $overwriting  die Version ist die nach einer Meldung „inzwischen geändert“ neu gelesene */
     public function expecting(?string $version, bool $overwriting = false): self
     {
-        return new self($this->origin, $this->pluginEvents, $this->log, $version, $overwriting, $this->run);
+        return new self($this->origin, $this->pluginEvents, $this->log, $version, $overwriting, $this->run, $this->reverts);
     }
 
     /**
      * Für verschachtelte Schreibvorgänge ohne eigene Optionen (Summen im Master, Plugins in Ereignissen): Herkunft,
-     * Ereignisse, Protokoll und Kennung gelten weiter, die erwartete Version gehört aber nur zum äusseren Datensatz.
+     * Ereignisse, Protokoll und Kennung gelten weiter, die erwartete Version und die Rücknahme gehören aber nur zum
+     * äusseren Datensatz.
      */
     public function nested(): self
     {
@@ -117,6 +120,12 @@ final readonly class WriteOptions
     /** Kennung zusammengehöriger Änderungen im Protokoll, z. B. „work:42“ (Sammeländerung „bulk:<uuid>“). */
     public function withRun(string $run): self
     {
-        return new self($this->origin, $this->pluginEvents, $this->log, $this->expectedVersion, $this->overwriting, $run);
+        return new self($this->origin, $this->pluginEvents, $this->log, $this->expectedVersion, $this->overwriting, $run, $this->reverts);
+    }
+
+    /** Rücknahme eines Eintrags im Verlauf (B-173): kommt als „reverts“ (Kennung des Eintrags) ins Protokoll. */
+    public function reverting(int $entry): self
+    {
+        return new self($this->origin, $this->pluginEvents, $this->log, $this->expectedVersion, $this->overwriting, $this->run, $entry);
     }
 }

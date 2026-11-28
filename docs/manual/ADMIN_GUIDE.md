@@ -761,7 +761,8 @@ switched on; it ships switched off, and the dashboard points out entries older t
   labels and values as in the application (“Subject: Piano → Drums”, “Weekday: Thursday”); linked records with their
   current name, deleted ones with “(deleted)”. Below, the detail view has a collapsed section **Technical values** with
   column names and the values as stored – for troubleshooting. The log itself stays technical. Entries of a bulk edit
-  carry the note “(bulk edit)”.
+  carry the note “(bulk edit)”, undos of a single change from the history “(undo)”; these are ordinary changes with
+  all checks and require the right *Edit*.
 - **Times** are shown in the time zone of the application (see [System administration, chapter 1](SYSADMIN_GUIDE.md#1-operations)).
 - In the dashboard widget **"My recent changes"**, clicking an entry leads directly to the changed record; for tables
   of the table designer into the data view with the record selected.

@@ -572,6 +572,11 @@ angelegt oder geändert).
   Änderungsprotokoll. Seit 0.8.1 stehen dort in `attribute_changes` **Rohwerte** wie in der Datenbank, alt und neu in
   derselben Form (Datum `2026-09-01`, Datum/Uhrzeit in der Zeitzone der Anwendung, Dezimalzahlen als Text); ältere
   Einträge haben neue Datumswerte in UTC (`…Z`). Werte vergleicht `App\DynamicData\Write\LoggedValue`.
+- **Rückgängig einer einzelnen Änderung** (B-173): Im Verlauf eines Datensatzes lässt sich ein Eintrag „geändert“ je
+  Feld zurücknehmen (`App\DynamicData\History\HistoryUndo`). Das ist ein gewöhnliches Bearbeiten mit Herkunft `ui`
+  und der Version beim Öffnen; Ihr Listener sieht es wie jedes Ändern, und `RecordRejected` verhindert es. Im
+  Protokolleintrag steht zusätzlich `reverts` mit der Kennung des zurückgenommenen Eintrags
+  (`WriteOptions::reverting()`, intern; nicht Teil der Plugin-API). Summen im Master übernehmen den Vermerk nicht.
 - **Folgeänderungen** in `RecordSaved` und `RecordDeleted` schreiben Sie über `Saft::table(…)`. Sie laufen immer in
   derselben Transaktion wie die auslösende Änderung (seit API 1.10, Datensatz, Summen, Dateien und Protokoll): Wirft ein
   Listener dort eine Ausnahme, wird auch die auslösende Änderung zurückgerollt. Lösen Sie selbst Ereignisse aus, achten

@@ -102,12 +102,16 @@ final class ActivityChanges
     }
 
     /**
-     * Ereignis eines Eintrags mit Herkunft, z. B. „geändert (Sammeländerung)“ – gleich in Verlauf, Widgets und
-     * Änderungsprotokoll (B-174).
+     * Ereignis eines Eintrags mit Herkunft, z. B. „geändert (Sammeländerung)“ oder „geändert (Rückgängig)“ – gleich in
+     * Verlauf, Widgets und Änderungsprotokoll (B-174, B-173).
      */
     public static function eventText(Activity $activity): string
     {
-        $origin = ($activity->properties['via'] ?? null) === WriteOptions::BULK ? ' ('.__('data.bulk.history').')' : '';
+        $origin = match (true) {
+            ($activity->properties['reverts'] ?? null) !== null => ' ('.__('data.history.undo.marker').')',
+            ($activity->properties['via'] ?? null) === WriteOptions::BULK => ' ('.__('data.bulk.history').')',
+            default => '',
+        };
 
         return self::eventLabel($activity->event).$origin;
     }

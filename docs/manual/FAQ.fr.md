@@ -43,6 +43,7 @@
    - [Comment exporter seulement certains enregistrements ?](#comment-exporter-seulement-certains-enregistrements-)
    - [Quels enregistrements une modification groupée a-t-elle modifiés ?](#quels-enregistrements-une-modification-groupée-a-t-elle-modifiés-)
    - [Quand et par qui un enregistrement a-t-il été créé ?](#quand-et-par-qui-un-enregistrement-a-t-il-été-créé-)
+   - [Comment annuler une seule modification ?](#comment-annuler-une-seule-modification-)
 
 ---
 ## Questions fréquentes
@@ -274,3 +275,13 @@ Dans le menu des colonnes (icône des colonnes à côté du filtre), affichez le
 **Modifié le** et **Modifié par** ; elles se trouvent à la fin de la liste. Vous pouvez trier selon les dates, choisir
 une période dans le filtre et filtrer par personne. Qui a modifié quoi exactement figure dans l’**historique** d’un
 enregistrement. Voir [Manuel d’utilisation 4.1](USER_GUIDE.fr.md#41-la-vue-tableau).
+
+### Comment annuler une seule modification ?
+
+Ouvrez l’**historique** de l’enregistrement (icône horloge dans la ligne, sur smartphone sous « Détails ») et cliquez
+sur la flèche de retour à côté de l’entrée « modifié ». La confirmation montre pour chaque champ *maintenant → revient
+à* ; décochez les champs qui doivent rester et choisissez **Annuler la modification**. Les champs modifiés depuis ne
+sont pas cochés – cochez-les si vous voulez quand même les annuler. Si la flèche manque, l’entrée n’est pas une
+modification (p. ex. « créé »), tous les champs ont déjà l’ancienne valeur ou vous n’avez pas le droit de modifier.
+Les modifications groupées entières s’annulent via « Dernières modifications groupées ». Voir
+[Manuel d’utilisation 4.1](USER_GUIDE.fr.md#41-la-vue-tableau).

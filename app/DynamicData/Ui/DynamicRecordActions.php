@@ -14,7 +14,9 @@ use App\Documents\Templates\TemplateException;
 use App\Documents\Templates\TemplateRenderer;
 use App\DynamicData\DataAccess;
 use App\DynamicData\Export\ExportFormat;
+use App\DynamicData\History\HistoryUndo;
 use App\DynamicData\History\LoggedChanges;
+use App\DynamicData\History\RecordHistory;
 use App\DynamicData\Import\RecordImportAnalysis;
 use App\DynamicData\Import\RecordImporter;
 use App\DynamicData\RecordCopier;
@@ -496,7 +498,7 @@ final class DynamicRecordActions
             $icon(self::edit($table, $locked, 'editRow'))->after($refresh),
             $icon(self::copy($table, $locked, 'copyRow')),
             $icon(self::document($table, 'documentRow')),
-            $icon(self::history('historyRow'))->visible(self::writable($table)),
+            $icon(self::history($table, 'historyRow'))->visible(self::writable($table)),
             $icon(self::delete($table, 'deleteRow'))->after(fn ($livewire, DynamicRecord $record) => $livewire->dispatch(
                 self::REFRESH_EVENT,
                 deletedFrom: $table->name,
@@ -566,7 +568,7 @@ final class DynamicRecordActions
                 self::edit($table, $locked)->record($record)->after(fn ($livewire) => $livewire->dispatch(self::REFRESH_EVENT)),
                 self::copy($table, $locked)->record($record)->cancelParentActions(),
                 self::document($table)->record($record),
-                self::history()->record($record)->visible(self::writable($table)),
+                self::history($table)->record($record)->visible(self::writable($table)),
                 self::delete($table)->record($record)->cancelParentActions()->after(fn ($livewire) => $livewire->dispatch(
                     self::REFRESH_EVENT,
                     deletedFrom: $table->name,
@@ -979,7 +981,11 @@ final class DynamicRecordActions
             });
     }
 
-    public static function history(string $name = 'history'): Action
+    /**
+     * Verlauf eines Datensatzes: die letzten Einträge, je Feld eine Zeile (B-174); bei „Geändert“ das Symbol
+     * „Rückgängig“ (B-173), dessen Bestätigung eine verschachtelte Aktion dieses Dialogs ist.
+     */
+    public static function history(CustomTable $table, string $name = 'history'): Action
     {
         return Action::make($name)
             ->label(__('data.history.label'))
@@ -991,7 +997,12 @@ final class DynamicRecordActions
             // Verlauf zum Knopf „Schliessen“ und die neuesten Einträge oben sind nicht mehr zu sehen.
             ->modalWidth(Width::SevenExtraLarge)
             ->modalAutofocus(false)
-            ->schema([self::historyEntry(fn (DynamicRecord $record): array => self::historyRows($record))]);
+            // Bei jeder Antwort neu: Nach „Rückgängig“ steht der neue Eintrag gleich oben.
+            ->modalContent(fn (DynamicRecord $record) => view('filament.data.record-history', [
+                'rows' => self::historyRows($record, $table),
+                'action' => HistoryUndoActions::UNDO,
+            ]))
+            ->registerModalActions([HistoryUndoActions::undo($table)]);
     }
 
     /**
@@ -1111,32 +1122,36 @@ final class DynamicRecordActions
             ->all();
     }
 
-    public static function historyRows(DynamicRecord $record): array
+    /**
+     * @param  CustomTable|null  $table  mit Tabelle: ob ein Eintrag „Rückgängig“ anbietet (B-173)
+     * @return list<array{id: int, when: string, who: string, what: string, undo: bool}> neueste zuerst
+     */
+    public static function historyRows(DynamicRecord $record, ?CustomTable $table = null): array
     {
-        $activities = Activity::query()
-            ->where('subject_type', $record->getMorphClass())
-            // Text- und UUID-Schlüssel angebundener Tabellen stehen in den Eigenschaften.
-            ->when(
-                is_int($key = $record->activityKey()) || ctype_digit((string) $key),
-                fn ($q) => $q->where('subject_id', $key),
-                fn ($q) => $q->whereNull('subject_id')->where('properties->key', (string) $key),
-            )
+        $activities = RecordHistory::query($record)
             ->with('causer')
             ->orderByDesc('id')
-            ->limit(25)
+            ->limit(RecordHistory::LIMIT)
             ->get();
 
         // B-174: verknüpfte Datensätze aller Einträge gesammelt nachschlagen, Werte lesbar und je Feld eine Zeile.
         app(LoggedChanges::class)->prime($activities);
 
+        // B-173: Rückgängig nur mit Recht „ändern“; eingeordnet wird am heutigen Stand des Datensatzes.
+        $current = $table !== null && HistoryUndo::allowed($table, $record) ? $record->newQuery()->withTrashed()->find($record->getKey()) : null;
+
         return $activities
             ->map(fn (Activity $a): array => [
+                'id' => (int) $a->getKey(),
                 'when' => AppLocale::dateTime($a->created_at) ?? '—',
                 'who' => ActivityChanges::causerLabel($a),
                 // Ereignis mit Herkunft, z. B. „(Sammeländerung)“ (B-133, B-174).
                 'what' => ActivityChanges::eventText($a)
                     ."\n".ActivityChanges::lines($a),
+                'undo' => $table !== null && $current instanceof DynamicRecord && $a->event === 'updated'
+                    && (new HistoryUndo($a, $table, $current))->offered(),
             ])
+            ->values()
             ->all();
     }
 }

@@ -43,6 +43,7 @@
    - [Wie exportiere ich nur einige Datensätze?](#wie-exportiere-ich-nur-einige-datensätze)
    - [Welche Datensätze hat eine Sammeländerung geändert?](#welche-datensätze-hat-eine-sammeländerung-geändert)
    - [Wann und von wem wurde ein Datensatz angelegt?](#wann-und-von-wem-wurde-ein-datensatz-angelegt)
+   - [Wie mache ich eine einzelne Änderung rückgängig?](#wie-mache-ich-eine-einzelne-änderung-rückgängig)
 
 ---
 ## Häufige Fragen
@@ -267,3 +268,13 @@ Blenden Sie im Spaltenmenü (Spalten-Symbol rechts neben dem Filter) die Spalten
 **Geändert am** und **Geändert von** ein; sie stehen am Ende der Liste. Nach den Daten können Sie sortieren und im
 Filter einen Zeitraum wählen, nach Personen filtern. Wer was genau geändert hat, zeigt der **Verlauf** eines
 Datensatzes. Siehe [Anwenderhandbuch 4.1](USER_GUIDE.de.md#41-die-tabellenansicht).
+
+### Wie mache ich eine einzelne Änderung rückgängig?
+
+Öffnen Sie den **Verlauf** des Datensatzes (Uhr-Symbol in der Zeile, auf dem Smartphone unter „Details“) und klicken
+Sie beim Eintrag „geändert“ auf den Pfeil zurück. Die Bestätigung zeigt je Feld *jetzt → zurück auf*; entfernen Sie
+die Häkchen der Felder, die bleiben sollen, und wählen Sie **Zurücknehmen**. Felder, die seither nochmals geändert
+wurden, sind nicht angehakt – setzen Sie das Häkchen, wenn Sie sie trotzdem zurücknehmen wollen. Fehlt der Pfeil, ist
+der Eintrag kein Ändern (z. B. „angelegt“), alle Felder stehen schon auf dem alten Wert oder Ihnen fehlt das Recht
+zum Bearbeiten. Ganze Sammeländerungen nehmen Sie über „Letzte Sammeländerungen“ zurück. Siehe
+[Anwenderhandbuch 4.1](USER_GUIDE.de.md#41-die-tabellenansicht).

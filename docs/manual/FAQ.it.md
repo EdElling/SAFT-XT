@@ -43,6 +43,7 @@
    - [Come esporto solo alcuni record?](#come-esporto-solo-alcuni-record)
    - [Quali record ha modificato una modifica multipla?](#quali-record-ha-modificato-una-modifica-multipla)
    - [Quando e da chi è stato creato un record?](#quando-e-da-chi-è-stato-creato-un-record)
+   - [Come annullo una singola modifica?](#come-annullo-una-singola-modifica)
 
 ---
 ## Domande frequenti
@@ -267,3 +268,12 @@ Nel menu delle colonne (icona delle colonne accanto al filtro) mostrate le colon
 **Modificato il** e **Modificato da**; si trovano alla fine dell’elenco. Potete ordinare per le date, scegliere un
 periodo nel filtro e filtrare per persona. Chi ha modificato cosa esattamente lo mostra la **cronologia** di un record.
 Vedi [Manuale utente 4.1](USER_GUIDE.it.md#41-la-vista-tabella).
+
+### Come annullo una singola modifica?
+
+Aprite la **cronologia** del record (icona orologio nella riga, sullo smartphone sotto «Dettagli») e cliccate sulla
+freccia indietro accanto alla voce «modificato». La conferma mostra per ogni campo *ora → torna a*; togliete la spunta
+ai campi che devono restare e scegliete **Annulla la modifica**. I campi modificati nel frattempo non sono spuntati –
+spuntateli se volete annullarli comunque. Se la freccia manca, la voce non è una modifica (ad es. «creato»), tutti i
+campi hanno già il valore precedente oppure vi manca il diritto di modifica. Le modifiche multiple intere si annullano
+tramite «Ultime modifiche multiple». Vedi [Manuale utente 4.1](USER_GUIDE.it.md#41-la-vista-tabella).

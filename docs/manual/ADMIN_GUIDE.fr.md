@@ -818,7 +818,9 @@ le délai configuré.
   Piano → Batterie », « Jour : jeudi ») ; les enregistrements liés avec leur nom actuel, les supprimés avec
   « (supprimé) ». En dessous, la vue détaillée contient, repliée, la section **Valeurs techniques** avec les noms de
   colonnes et les valeurs telles qu’enregistrées – pour le dépannage. Le journal lui-même reste technique. Les entrées
-  d’une modification groupée portent la mention « (modification groupée) ».
+  d’une modification groupée portent la mention « (modification groupée) », les annulations d’une seule modification
+  depuis l’historique « (annulation) » ; ce sont des modifications ordinaires avec tous les contrôles, qui demandent le
+  droit *Modifier*.
 - **Les heures** apparaissent dans le fuseau horaire de l’application (voir [Administration système, chapitre 1](SYSADMIN_GUIDE.md#1-operations)).
 - Dans le widget **« Mes dernières modifications »**, un clic sur une entrée mène directement à l’enregistrement
   modifié – pour les tables du Concepteur de tables dans la vue des données avec l’enregistrement sélectionné.

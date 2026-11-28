@@ -243,7 +243,7 @@ Bearbeitet wird über die Schaltflächen am Ende der Zeile – je nach Bildschir
 | **Ansehen** (Lupe) | Das Formular mit allen Feldern, gesperrt – auch berechnete Felder. |
 | **Bearbeiten** (Stift) | Öffnet das Eingabeformular als Fenster; **Speichern** bzw. **Abbrechen** führt direkt zurück zur Tabelle. |
 | **Kopieren** (zwei Blätter) | Öffnet „Neuer Datensatz“ mit allen Werten des Originals; eindeutige Felder (z. B. Artikelnummer) bleiben leer, berechnete werden neu gerechnet. Dateien und Bilder werden beim Speichern als eigene Kopien angelegt. Gehören Datensätze dazu (z. B. die Positionen einer Bestellung), stehen sie oben unter **Mitkopieren** als vorgewähltes Häkchen – zum Abwählen. Braucht das Recht zum Anlegen. |
-| **Verlauf** (Uhr) | Wer wann was geändert hat, je Feld eine Zeile (z. B. „Status: Neu → Versendet“). |
+| **Verlauf** (Uhr) | Wer wann was geändert hat, je Feld eine Zeile (z. B. „Status: Neu → Versendet“). Mit dem Pfeil zurück bei einem Eintrag „geändert“ machen Sie diese Änderung rückgängig (siehe unten). |
 | **Löschen** (Papierkorb) | Löscht nach einer Sicherheitsfrage. |
 | **Wiederherstellen** | Bei gelöschten Datensätzen statt „Bearbeiten“ und „Löschen“. |
 | Plugin-Symbole | Funktionen aus Plugins, z. B. *Lager-Tafel*; der Tooltip nennt auch das Plugin. |
@@ -262,7 +262,7 @@ Unten finden Sie (1):
 |---|---|
 | **Bearbeiten** | Öffnet das Eingabeformular. Änderungen werden nach dem Speichern sofort übernommen. Bei gelöschten Datensätzen nicht verfügbar. |
 | **Kopieren** | Legt einen neuen Datensatz mit den Werten dieses Datensatzes an (wie in der Tabelle). |
-| **Verlauf** | Zeigt, wer wann was geändert hat: die letzten 25 Einträge, neueste oben, je Feld eine Zeile mit der Bezeichnung des Felds und den Werten wie in der Anwendung (z. B. „Status: Neu → Versendet“, „Kunde: Müller AG → Meier GmbH“, „Betrag: 120,00 → 135,50“). Verknüpfte Datensätze erscheinen mit ihrem heutigen Namen, gelöschte mit „(gelöscht)“. Sammeländerungen tragen den Vermerk „(Sammeländerung)“. |
+| **Verlauf** | Zeigt, wer wann was geändert hat: die letzten 25 Einträge, neueste oben, je Feld eine Zeile mit der Bezeichnung des Felds und den Werten wie in der Anwendung (z. B. „Status: Neu → Versendet“, „Kunde: Müller AG → Meier GmbH“, „Betrag: 120,00 → 135,50“). Verknüpfte Datensätze erscheinen mit ihrem heutigen Namen, gelöschte mit „(gelöscht)“. Sammeländerungen tragen den Vermerk „(Sammeländerung)“. **Rückgängig:** Der Pfeil zurück rechts bei einem Eintrag „geändert“ öffnet eine Bestätigung mit einer Zeile je Feld: *Feld: jetzt → zurück auf alt*. Felder, die seither nochmals geändert wurden, sind mit „Seither geändert“ vermerkt und nicht angehakt; Felder, die schon den alten Wert haben, sowie berechnete Felder, Nummernkreise, Dateien und nur lesbare Felder sind grau. **Zurücknehmen** speichert die angehakten Felder wie beim Bearbeiten, mit allen Prüfungen; der Verlauf zeigt dann „geändert (Rückgängig)“, und auch diese Rücknahme lässt sich wieder zurücknehmen. Braucht das Recht zum Bearbeiten. |
 | **Löschen** | Markiert den Datensatz als gelöscht. Er verschwindet aus der Liste, bleibt aber wiederherstellbar. |
 | **Wiederherstellen** | Nur bei gelöschten Datensätzen sichtbar. |
 | **Schliessen** | Schliesst das Fenster ohne Änderung. |

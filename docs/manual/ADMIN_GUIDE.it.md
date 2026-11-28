@@ -792,7 +792,9 @@ periodo impostato.
   mostrano le etichette dei campi e i valori come nell’applicazione («Materia: Pianoforte → Batteria», «Giorno:
   giovedì»); i record collegati con il nome attuale, quelli eliminati con «(eliminato)». Sotto, la vista di dettaglio
   ha, chiusa, la sezione **Valori tecnici** con i nomi delle colonne e i valori come salvati – per la ricerca degli
-  errori. Il registro stesso resta tecnico. Le voci di una modifica multipla portano la nota «(modifica multipla)».
+  errori. Il registro stesso resta tecnico. Le voci di una modifica multipla portano la nota «(modifica multipla)»,
+  gli annullamenti di una singola modifica dalla cronologia «(annullamento)»; sono modifiche ordinarie con tutti i
+  controlli e richiedono il diritto *Modificare*.
 - **Gli orari** compaiono nel fuso orario dell’applicazione (vedere [Amministrazione di sistema, capitolo 1](SYSADMIN_GUIDE.md#1-operations)).
 - Nel widget **«Le mie ultime modifiche»** un clic su una voce porta direttamente al record modificato – per le
   tabelle del Designer di tabelle nella vista dei dati con il record selezionato.

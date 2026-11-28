@@ -7,6 +7,9 @@ namespace Tests\Feature\ExternalData;
 use App\DynamicData\DataAccess;
 use App\DynamicData\Ui\DynamicFormBuilder;
 use App\DynamicData\Ui\DynamicRecordActions;
+use App\DynamicData\Ui\HistoryUndoActions;
+use App\DynamicData\Write\RecordWriter;
+use App\DynamicData\Write\WriteOptions;
 use App\Exceptions\BusinessRuleException;
 use App\ExternalData\TableConnectorService;
 use App\Filament\Pages\DynamicDataPage;
@@ -17,6 +20,7 @@ use App\Models\DatabaseConnection;
 use App\Models\DynamicRecord;
 use App\Models\Role;
 use Database\Seeders\ExternalResearchDatabase;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -154,6 +158,30 @@ class TableConnectorWriteTest extends TestCase
         $history = DynamicRecordActions::historyRows($record);
         $this->assertCount(2, $history);
         $this->assertStringContainsString('überarbeitet', $history[0]['what']);
+    }
+
+    /** B-173: Rückgängig je Eintrag auch in angebundenen Tabellen, die Bearbeiten erlauben (Schlüssel als Text). */
+    public function test_an_entry_can_be_undone_in_a_connected_table(): void
+    {
+        $publications = $this->connect('publikationen');
+        $this->actingAs($this->superAdmin());
+        $writer = app(RecordWriter::class);
+
+        $record = $writer->create($publications, ['titel' => 'Studie', 'jahr' => 2026, 'typ' => 'artikel', 'open_access' => true], WriteOptions::ui());
+        $writer->update($record, ['titel' => 'Studie (überarbeitet)', 'jahr' => 2027], WriteOptions::ui());
+        $entry = Activity::query()->where('subject_type', 'dynamic:publikationen')->where('event', 'updated')->sole();
+
+        $this->assertTrue(DynamicRecordActions::historyRows($record, $publications)[0]['undo']);
+
+        Livewire::test(DynamicDataPage::class, ['table' => 'publikationen'])
+            ->mountAction(TestAction::make('historyRow')->table($record))
+            ->mountAction(TestAction::make(HistoryUndoActions::UNDO)->arguments(['entry' => $entry->getKey()]))
+            ->callMountedAction()
+            ->assertNotified();
+
+        $row = $this->external()->table('forschung.publikationen')->where('id', $record->getKey())->first();
+        $this->assertSame(['Studie', 2026], [$row->titel, (int) $row->jahr]);
+        $this->assertSame($entry->getKey(), Activity::query()->where('subject_type', 'dynamic:publikationen')->where('event', 'updated')->orderByDesc('id')->first()->properties['reverts']);
     }
 
     public function test_natural_key_is_entered_on_create_and_fixed_afterwards(): void

@@ -194,6 +194,11 @@ class DynamicRecord extends Model
             if (WriteContext::options()->run !== null) {
                 $properties->put('run', WriteContext::options()->run);
             }
+
+            // Rücknahme eines einzelnen Eintrags im Verlauf (B-173): Verweis auf den zurückgenommenen Eintrag.
+            if (WriteContext::options()->reverts !== null) {
+                $properties->put('reverts', WriteContext::options()->reverts);
+            }
         }
 
         // Rohwerte wie in der Datenbank, alt und neu in derselben Form (B-133 S3, BULK_EDIT.md §13 Frage 14): Spatie

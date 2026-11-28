@@ -446,4 +446,31 @@ class DataEntryTest extends DuskTestCase
                 ->assertDontSeeIn('.saft-history', 'kunde_id');
         });
     }
+
+    /** EIN-23 (B-173): eine Änderung im Verlauf rückgängig machen, je Feld mit Häkchen. */
+    public function test_history_entry_is_undone_field_by_field(): void
+    {
+        $record = app(RecordWriter::class)->create($this->daten, ['titel' => 'Rücknahme', 'status' => 'wip', 'aktiv' => false], WriteOptions::ui());
+        app(RecordWriter::class)->update($record->refresh(), ['status' => 'done', 'aktiv' => true], WriteOptions::ui());
+
+        $this->browse(function (Browser $browser): void {
+            $this->login($browser, self::ADMIN)->visit('/admin/data/daten')->waitForText('Rücknahme', 15);
+            $browser->clickAtXPath("//tr[contains(@class, 'fi-ta-row')][contains(., 'Rücknahme')]//button[@aria-label='Verlauf']")
+                ->waitFor('[data-history-undo]', 15)
+                ->click('[data-history-undo]')
+                ->waitForText('Änderung rückgängig machen?', 15)
+                ->assertSee('Status: Erledigt → zurück auf In Arbeit')
+                ->assertSee('Aktiv: Ja → zurück auf Nein')
+                // Nur den Status zurücknehmen.
+                ->clickAtXPath("//label[contains(., 'Aktiv: Ja → zurück auf Nein')]//input[@type='checkbox']")
+                ->pause(300);
+            $this->clickVisibleButton($browser, 'Zurücknehmen');
+            $browser->waitForText('1 Feld zurückgenommen', 15)
+                ->waitForTextIn('.saft-history', 'geändert (Rückgängig)', 15)
+                ->assertSeeIn('.saft-history', 'Status: Erledigt → In Arbeit');
+        });
+
+        $record->refresh();
+        $this->assertSame(['wip', true], [$record->status, (bool) $record->aktiv]);
+    }
 }

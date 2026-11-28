@@ -406,3 +406,16 @@ no. n".
     triggers that act outside, deleting is final, and triggers distort the comparison of the undo. *Consequence:* plugin
     bulk actions cannot be undone via “Recent bulk edits” (manuals); `DataTable::updateMany()` (B-179) and connected
     tables (B-180) stay in the backlog.
+
+30. **Readable history, technical log; undo per entry as an ordinary edit** (28 November 2026, B-174, B-173,
+    HISTORY.md). History, widgets and the activity log show entries of records with field labels and values as in the
+    application (`LoggedChanges`, linked records with their current name, one query per target table, read site
+    `scope: person`); raw values stay stored (no. 28). An entry “updated” can be undone per field (`HistoryUndo`):
+    selectable are active form fields except computed ones, number sequences, files, read-only fields and keys of
+    connected tables; fields changed since are not ticked, those already reverted are greyed out (compared with
+    `LoggedValue::same()`). Writing uses `RecordChecker`, `RecordWriter`, origin `ui`, the version at opening and
+    `WriteOptions::reverting()` → `properties.reverts`; without a `run` identifier and without a header. Right: *Edit*,
+    also for other people's entries, connected tables included. *Why:* an undo is functionally an edit with known
+    values; whoever may edit could enter them by hand. A separate write path or a header as for bulk edits would add
+    nothing that the checks and the version do not already secure. *Consequence:* only the last 25 entries in the
+    history can be undone; if someone saved in between, SAFT reports it without “Save anyway”.

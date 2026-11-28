@@ -561,6 +561,11 @@ or changed).
   `attribute_changes` holds **raw values** as stored in the database, old and new in the same form (date `2026-09-01`,
   date/time in the application time zone, decimals as text); older entries have new date values in UTC (`…Z`).
   `App\DynamicData\Write\LoggedValue` compares values.
+- **Undoing a single change** (B-173): in a record's history, an entry “updated” can be undone field by field
+  (`App\DynamicData\History\HistoryUndo`). This is an ordinary edit with origin `ui` and the version at opening; your
+  listener sees it like any update, and `RecordRejected` prevents it. The log entry additionally holds `reverts` with
+  the id of the undone entry (`WriteOptions::reverting()`, internal; not part of the plugin API). Totals in the master
+  record do not take over the note.
 - **Follow-up changes** in `RecordSaved` and `RecordDeleted` are written through `Saft::table(…)`. They always run in the
   same transaction as the triggering change (since API 1.10: record, totals, files and activity log): if a listener
   throws there, the triggering change is rolled back as well. If you trigger events yourself, beware of endless loops.

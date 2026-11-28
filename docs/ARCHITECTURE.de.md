@@ -415,3 +415,17 @@ durch Nr. n“ markiert.
     oder bei Triggern mit Wirkung nach aussen nicht zurück, Löschen ist endgültig, und Trigger verfälschen den Vergleich
     der Rücknahme. *Folge:* Plugin-Sammelaktionen sind nicht über „Letzte Sammeländerungen“ rücknehmbar (Handbücher);
     `DataTable::updateMany()` (B-179) und angebundene Tabellen (B-180) bleiben im Backlog.
+
+30. **Verlauf lesbar, Protokoll technisch; Rückgängig je Eintrag als gewöhnliches Bearbeiten** (28.11.2026, B-174,
+    B-173, HISTORY.md). Verlauf, Widgets und Änderungsprotokoll zeigen Einträge von Datensätzen mit Feldbezeichnungen und
+    Werten wie in der Anwendung (`LoggedChanges`, verknüpfte Datensätze mit heutigem Namen, eine Abfrage je Zieltabelle,
+    Lesestelle `scope: person`); gespeichert bleiben Rohwerte (Nr. 28). Ein Eintrag „geändert“ lässt sich je Feld
+    zurücknehmen (`HistoryUndo`): wählbar sind aktive Formularfelder ohne berechnete, Nummernkreise, Dateien, nur lesbare
+    und Schlüssel angebundener Tabellen; seither geänderte Felder sind nicht angehakt, schon zurückgesetzte grau
+    (Vergleich mit `LoggedValue::same()`). Geschrieben wird mit `RecordChecker`, `RecordWriter`, Herkunft `ui`, der
+    Version beim Öffnen und `WriteOptions::reverting()` → `properties.reverts`; ohne Kennung `run` und ohne Kopf. Recht:
+    *Bearbeiten*, auch für Einträge anderer, angebundene Tabellen eingeschlossen. *Warum:* Eine Rücknahme ist fachlich
+    ein Bearbeiten mit bekannten Werten; wer bearbeiten darf, könnte sie von Hand eintragen. Ein eigener Schreibweg oder
+    ein Kopf wie bei der Sammeländerung brächte nichts, was die Prüfungen und die Version nicht schon sichern. *Folge:*
+    Zurücknehmen lassen sich nur die letzten 25 Einträge im Verlauf; hat jemand inzwischen gespeichert, meldet SAFT es
+    ohne „Trotzdem speichern“.

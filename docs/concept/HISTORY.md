@@ -1,6 +1,6 @@
 # Konzept: Verlauf lesbar und einzelne Änderung rückgängig machen in SAFT XT
 
-Stand: 27.11.2026 · Status: **entschieden (§4, alle Empfehlungen angenommen 27.11.2026); H1 umgesetzt 28.11.2026, H2 offen** · Backlog: B-174 (Verlauf lesbar), B-173
+Stand: 28.11.2026 · Status: **entschieden (§4, alle Empfehlungen angenommen 27.11.2026); H1 und H2 umgesetzt 28.11.2026** · Backlog: B-174 (Verlauf lesbar), B-173
 (Rückgängig je Verlaufseintrag) · Bezug: B-133 S3 (BULK_EDIT.md §13), ARCHITECTURE Nr. 12, 24, 28
 
 ## 1. Ziel
@@ -159,3 +159,19 @@ Bei der Prüfung in der Demo ergänzt:
 
 Tests: `HistoryReadableTest` (drei Datenbanken), Browser EIN-22, manueller Testfall EIN-22.
 
+**H2 B-173 (28.11.2026): umgesetzt.**
+- `App\DynamicData\History\HistoryUndo`: Einordnung je Feld (wählbar, seither geändert, schon zurück, nicht wählbar
+  mit Grund), in der Reihenfolge des Formulars (MySQL ordnet JSON-Schlüssel selbst), alte Werte über `LoggedValue::raw()`.
+  `offered()` braucht keine Anzeigewerte, das Symbol kostet also keine Abfragen je Eintrag.
+- `App\DynamicData\History\RecordHistory`: Abfrage der Einträge eines Datensatzes (Verlauf und Rücknahme).
+- `App\DynamicData\Ui\HistoryUndoActions::undo()`: Bestätigung als verschachtelte Aktion des Verlaufs
+  (`registerModalActions()`), Häkchenliste von Filament (`CheckboxList` mit Vermerken, gesperrte Optionen), Prüfung mit
+  `RecordChecker`, Schreiben mit Version und `WriteOptions::reverting()`. Meldet „inzwischen geändert“ ohne
+  „Trotzdem speichern“ und schliesst die Bestätigung; der Verlauf darunter zeigt dann den neuen Stand.
+- Verlaufsdialog als eigene Vorlage (`filament/data/record-history`) mit dem Symbol je Eintrag; der Inhalt entsteht bei
+  jeder Antwort neu, nach dem Zurücknehmen steht der neue Eintrag sofort oben.
+- `eventText()` zeigt „(Rückgängig)“ bei `properties.reverts`. `WriteOptions::nested()` lässt `reverts` fallen.
+- ARCHITECTURE Nr. 30.
+
+Tests: `HistoryUndoTest` und `TableConnectorWriteTest` (angebundene Tabelle), auf drei Datenbanken; Browser EIN-23,
+manueller Testfall EIN-23.

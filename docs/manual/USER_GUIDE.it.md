@@ -243,7 +243,7 @@ Le tabelle servono alla **lettura**. Un clic su una riga seleziona il record (ve
 | **Visualizza** (lente) | Il modulo con tutti i campi, bloccato – anche i campi calcolati. |
 | **Modifica** (matita) | Apre il modulo di inserimento in una finestra; **Salva** o **Annulla** riporta direttamente alla tabella. |
 | **Copia** (due fogli) | Apre «Nuovo record» con tutti i valori dell’originale; i campi univoci (ad es. codice articolo) restano vuoti, quelli calcolati vengono ricalcolati. File e immagini vengono creati come copie proprie al salvataggio. Se ne fanno parte altri record (ad es. le righe di un ordine), compaiono in alto sotto **Copiare insieme** con una spunta preselezionata – toglierla per escluderli. Richiede il diritto di creare. |
-| **Cronologia** (orologio) | Chi ha modificato cosa e quando, una riga per campo (ad es. «Stato: Nuovo → Spedito»). |
+| **Cronologia** (orologio) | Chi ha modificato cosa e quando, una riga per campo (ad es. «Stato: Nuovo → Spedito»). La freccia indietro accanto a una voce «modificato» annulla quella modifica (vedi sotto). |
 | **Elimina** (cestino) | Elimina dopo una domanda di sicurezza. |
 | **Ripristina** | Per i record eliminati al posto di «Modifica» ed «Elimina». |
 | Icone dei plugin | Funzioni dei plugin; il tooltip nomina anche il plugin. |
@@ -261,7 +261,7 @@ per l’anteprima dei record collegati). «Ripristina» compare solo per i recor
 |---|---|
 | **Modifica** | Apre il modulo di inserimento. Le modifiche vengono applicate subito dopo il salvataggio. Non disponibile per i record eliminati. |
 | **Copia** | Crea un nuovo record con i valori di questo record (come nella tabella). |
-| **Cronologia** | Mostra chi ha modificato cosa e quando: le ultime 25 voci, le più recenti in alto, una riga per campo con l’etichetta del campo e i valori come nell’applicazione (ad es. «Stato: Nuovo → Spedito», «Cliente: Müller AG → Meier GmbH», «Importo: 120,00 → 135,50»). I record collegati compaiono con il nome attuale, quelli eliminati con «(eliminato)». Le modifiche multiple portano la nota «(modifica multipla)». |
+| **Cronologia** | Mostra chi ha modificato cosa e quando: le ultime 25 voci, le più recenti in alto, una riga per campo con l’etichetta del campo e i valori come nell’applicazione (ad es. «Stato: Nuovo → Spedito», «Cliente: Müller AG → Meier GmbH», «Importo: 120,00 → 135,50»). I record collegati compaiono con il nome attuale, quelli eliminati con «(eliminato)». Le modifiche multiple portano la nota «(modifica multipla)». **Annulla:** la freccia indietro a destra di una voce «modificato» apre una conferma con una riga per campo: *Campo: ora → torna al valore precedente*. I campi modificati nel frattempo portano la nota «Modificato nel frattempo» e non sono spuntati; quelli che hanno già il valore precedente, come pure i campi calcolati, le numerazioni, i file e i campi di sola lettura, sono in grigio. **Annulla la modifica** salva i campi spuntati come durante la modifica, con tutti i controlli; la cronologia mostra poi «modificato (annullamento)», e anche questo annullamento si può annullare. Richiede il diritto di modifica. |
 | **Elimina** | Contrassegna il record come eliminato. Scompare dall’elenco, ma resta ripristinabile. |
 | **Ripristina** | Visibile solo per i record eliminati. |
 | **Chiudi** | Chiude la finestra senza modifiche. |

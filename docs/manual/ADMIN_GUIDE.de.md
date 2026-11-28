@@ -786,7 +786,8 @@ Einträge hin, die älter als die eingestellte Frist sind.
   Feldbezeichnungen und Werte wie in der Anwendung („Fach: Klavier → Schlagzeug“, „Wochentag: Donnerstag“);
   verknüpfte Datensätze mit ihrem heutigen Namen, gelöschte mit „(gelöscht)“. Die Detailansicht hat darunter
   eingeklappt **Technische Werte** mit Spaltennamen und den Werten, wie sie gespeichert sind – für die Fehlersuche.
-  Gespeichert bleibt das Protokoll technisch. Einträge einer Sammeländerung tragen den Vermerk „(Sammeländerung)“.
+  Gespeichert bleibt das Protokoll technisch. Einträge einer Sammeländerung tragen den Vermerk „(Sammeländerung)“, Rücknahmen einer einzelnen Änderung aus dem
+  Verlauf „(Rückgängig)“; sie sind gewöhnliche Änderungen mit allen Prüfungen und brauchen das Recht *Bearbeiten*.
 - **Zeitangaben** erscheinen in der Zeitzone der Anwendung (siehe [Systemadministration, Kapitel 1](SYSADMIN_GUIDE.de.md#1-für-den-betrieb)).
 - Im Dashboard-Widget **„Meine letzten Änderungen“** führt ein Klick auf einen Eintrag direkt zum geänderten
   Datensatz – bei Tabellen des Table-Designers in die Datenansicht mit dem Datensatz ausgewählt.
