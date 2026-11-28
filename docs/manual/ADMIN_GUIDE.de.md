@@ -83,6 +83,10 @@ Super-Admins bearbeitet werden, und anderen Benutzern wird die Rolle `super-admi
 
 Eine Rolle bündelt Rechte. Benutzer erhalten Rechte ausschliesslich über Rollen.
 
+Beim Bearbeiten stehen oben **Name** und **App** der Rolle, darunter die Rechte in Reitern: **Berechtigungen**,
+**Datenrechte**, **Freigegebene Tabellen anderer Apps** und **Menüeinträge**, bei Bedarf als letzter Reiter **Rechte
+ausserhalb dieser App** (mit Warnzeichen). Reiter ohne Inhalt fehlen, Systemrollen haben nur „Berechtigungen“.
+
 - **Berechtigungen** – Rechte auf Funktionen der Anwendung, z. B. „Benutzer: bearbeiten“,
   „Table-Designer: anzeigen“ oder **Dashboard-Widgets**.
 - **Datenrechte** – eine Matrix mit allen Tabellen des Table-Designers und den Spalten **Anzeigen, Anlegen,
@@ -103,7 +107,10 @@ Eine Rolle bündelt Rechte. Benutzer erhalten Rechte ausschliesslich über Rolle
   Master-Detail-Ansicht und die Vorschau erreichbar. Bei mehreren Rollen genügt bei Datentabellen eine Rolle mit Leserecht, die den Eintrag zeigt, bei anderen Einträgen
   eine Rolle der App; `super-admin` sieht immer alle Einträge.
 
-Die Bereiche werden unabhängig gespeichert – eine Änderung im einen verändert nichts im anderen.
+**Speichern** unter den Reitern speichert alle Reiter zusammen; jeder Reiter ändert dabei nur seine eigenen Rechte.
+Der gewählte Reiter bleibt nach dem Speichern offen und steht in der Adresse (z. B. `…/edit?tab=data-rights`), so
+dass ein Link oder das Neuladen der Seite ihn wieder öffnet. Ist ein Eintrag fehlerhaft, öffnet sich der Reiter mit
+dem Fehler; Name und App stehen über den Reitern.
 
 Geänderte Rechte gelten sofort, auch für bereits angemeldete Benutzer. Wer ein Recht verloren hat, erhält beim
 nächsten Klick „Keine Berechtigung“; das Menü ist nach dem Neuladen der Seite aktuell.
@@ -127,11 +134,11 @@ als Verursacher.
 die Rechte von Plugins zeigt das Formular nur für diese App (die allgemeinen Rechte von SAFT immer). Ohne gewählte App
 erscheint statt der Datenrechte der Hinweis, zuerst die App zu wählen. Hat die Rolle noch Rechte **ausserhalb** ihrer
 App – auf Tabellen oder Plugins anderer Apps, etwa nach einem Wechsel der App oder aus der Zeit vor den Apps, oder auf
-gelöschte Tabellen –, stehen sie zuunterst im Abschnitt **„Rechte ausserhalb dieser App“**: Tabellen als Matrix nach
+gelöschte Tabellen –, stehen sie im letzten Reiter **„Rechte ausserhalb dieser App“**: Tabellen als Matrix nach
 App gegliedert, nur mit den vorhandenen Rechten (angehakt), Plugin-Rechte und gelöschte Tabellen als Liste. Dort lassen
 sie sich nur entfernen (Haken weg, speichern), nicht hinzufügen. Wechseln Sie die App einer Rolle, bleiben alle Rechte
 erhalten, bis Sie sie dort abwählen. Leserechte auf **freigegebene Tabellen anderer Apps** (Schnittstellen,
-[Kapitel 15](#15-apps-fachanwendungen)) vergeben Sie im eigenen Abschnitt „Freigegebene Tabellen anderer Apps“ – nur
+[Kapitel 15](#15-apps-fachanwendungen)) vergeben Sie im eigenen Reiter „Freigegebene Tabellen anderer Apps“ – nur
 *Anzeigen*, zum Öffnen der fremden Tabelle; die freigegebenen Felder in Verknüpfungen sehen alle auch ohne dieses Recht. Die Systemrollen *super-admin* und *benutzer* gehören zu keiner App und
 enthalten nur app-übergreifende Rechte (z. B. Dashboard, Hilfe); Datenrechte vergeben Sie über die Rollen der Apps.
 **Kopieren** (in der Liste und beim Bearbeiten) legt eine neue Rolle mit Namen und Ziel-App an – mit denselben Rechten

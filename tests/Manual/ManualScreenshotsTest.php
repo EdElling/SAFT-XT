@@ -197,7 +197,8 @@ final class ManualScreenshotsTest extends DuskTestCase
         $this->useLocale($locale);
         $this->demoData();
         $this->admin();
-        $role = Role::create(['name' => $this->text('sales', 'vertrieb', 'vente', 'vendite'), 'guard_name' => 'web']);
+        // Rolle der App der Demo-Tabellen (B-107), sonst zeigt der Reiter nur den Hinweis „Zuerst die App wählen“.
+        $role = Role::create(['name' => $this->text('sales', 'vertrieb', 'vente', 'vendite'), 'guard_name' => 'web', 'app_id' => CustomTable::query()->where('name', 'kunden')->value('app_id')]);
         $role->givePermissionTo([
             ...array_map(static fn (string $action): string => DataPermissions::name('kunden', $action), ['view', 'create', 'update', 'export']),
             ...array_map(static fn (string $action): string => DataPermissions::name('bestellungen', $action), ['view', 'create', 'update', 'delete']),
@@ -210,9 +211,9 @@ final class ManualScreenshotsTest extends DuskTestCase
 
         $this->browse(function (Browser $browser) use ($role): void {
             $this->viewport($browser, self::WIDTH, 1200);
-            $this->login($browser, self::ADMIN)->visit("/admin/roles/{$role->id}/edit")
+            // Reiter „Datenrechte“ (B-175) über die Adresse; Name und App bleiben oben im Bild.
+            $this->login($browser, self::ADMIN)->visit("/admin/roles/{$role->id}/edit?tab=data-rights")
                 ->waitFor('input[data-matrix-cell="kunden.view"]', 15)->pause(500);
-            $this->scrollTo($browser, $this->heading(__('roles.form.data_permissions')));
 
             $this->capture($browser, '07-roles-data-permissions');
         });

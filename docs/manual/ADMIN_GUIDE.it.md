@@ -85,6 +85,11 @@ solo da super-admin, e agli altri utenti il ruolo `super-admin` non viene nemmen
 
 Un ruolo raggruppa diritti. Gli utenti ricevono diritti esclusivamente tramite ruoli.
 
+In modifica, il **nome** e l’**app** del ruolo stanno in alto, i diritti sotto in schede: **Autorizzazioni**,
+**Diritti sui dati**, **Tabelle condivise di altre app** e **Voci di menu**, se necessario come ultima scheda
+**Diritti al di fuori di questa app** (con un segno di avvertimento). Le schede senza contenuto mancano; i ruoli di
+sistema hanno solo «Autorizzazioni».
+
 - **Autorizzazioni** – diritti sulle funzioni dell’applicazione, ad es. «Utenti: modificare», «Designer di tabelle:
   visualizzare» o i **widget della dashboard**.
 - **Diritti sui dati** – una matrice con tutte le tabelle del Designer di tabelle e le colonne **Visualizzare,
@@ -105,7 +110,10 @@ Un ruolo raggruppa diritti. Gli utenti ricevono diritti esclusivamente tramite r
   raggiungibile tramite link, la vista master-detail e l’anteprima. Con più ruoli basta, per le tabelle di dati, un ruolo con diritto di lettura che mostri la voce, per le altre voci un
   ruolo dell’app; `super-admin` vede sempre tutte le voci.
 
-Le aree vengono salvate indipendentemente – una modifica in una non cambia nulla nell’altra.
+**Salva** sotto le schede salva tutte le schede insieme; ogni scheda modifica solo i propri diritti. La scheda scelta
+resta aperta dopo il salvataggio e figura nell’indirizzo (ad es. `…/edit?tab=data-rights`), così un link o il
+ricaricamento della pagina la riapre. Se un dato è errato, si apre la scheda con l’errore; nome e app stanno sopra le
+schede.
 
 I diritti modificati valgono subito, anche per gli utenti già connessi. Chi ha perso un diritto riceve «Accesso
 negato» al clic successivo; il menu è aggiornato dopo aver ricaricato la pagina.
@@ -129,11 +137,11 @@ ruolo può fare viene davvero salvato durante la vista – con voi come autore.
 diritti sui dati, voci di menu e diritti dei plugin solo per quell’app (i diritti generali di SAFT sempre). Senza app
 scelta, al posto dei diritti sui dati compare l’indicazione di scegliere prima l’app. Se il ruolo ha ancora diritti
 **al di fuori** della sua app – su tabelle o plugin di altre app, ad es. dopo un cambio di app o da prima delle app, o
-su tabelle eliminate –, compaiono in fondo nella sezione **«Diritti al di fuori di questa app»**: le tabelle come
+su tabelle eliminate –, compaiono nell’ultima scheda **«Diritti al di fuori di questa app»**: le tabelle come
 matrice raggruppata per app, solo con i diritti esistenti (spuntati), i diritti dei plugin e le tabelle eliminate come
 elenco. Lì si possono solo rimuovere (togliere la spunta, salvare), non aggiungere. Se cambiate l’app di un ruolo, tutti
 i diritti restano finché non li togliete lì. I diritti di lettura sulle **tabelle condivise di altre app** (interfacce,
-[capitolo 15](#15-app-applicazioni-specialistiche)) si assegnano nella sezione «Tabelle condivise di altre app» – solo
+[capitolo 15](#15-app-applicazioni-specialistiche)) si assegnano nella scheda «Tabelle condivise di altre app» – solo
 *Visualizzare*, per aprire la tabella altrui; tutti vedono i campi condivisi nei collegamenti anche senza questo
 diritto. I ruoli di sistema *super-admin* e *benutzer* non
 appartengono ad alcuna app e contengono solo diritti comuni (ad es. dashboard, guida); i diritti sui dati si assegnano

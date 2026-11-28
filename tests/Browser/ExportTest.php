@@ -136,7 +136,7 @@ class ExportTest extends DuskTestCase
             $this->logout($browser);
 
             $checkbox = 'input[data-matrix-cell="kunden.export"]';
-            $this->login($browser, self::ADMIN)->visit("/admin/roles/{$role->id}/edit")
+            $this->login($browser, self::ADMIN)->visit("/admin/roles/{$role->id}/edit?tab=data-rights")
                 ->waitFor($checkbox, 15)
                 ->assertSee('Exportieren')
                 ->click($checkbox)

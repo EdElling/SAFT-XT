@@ -75,7 +75,8 @@ class RolesTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser): void {
             $this->login($browser, self::ADMIN)->visit('/admin/roles/create')->waitFor('input[id="form.name"]', 15)
-                ->type('input[id="form.name"]', 'vertrieb')
+                ->type('input[id="form.name"]', 'vertrieb');
+            $this->openTab($browser, 'Datenrechte')
                 ->click($this->dataRight('kunden', 'view'))
                 ->click($this->dataRight('kunden', 'create'));
             $this->clickVisibleButton($browser, 'Erstellen')
@@ -85,7 +86,7 @@ class RolesTest extends DuskTestCase
             $role = Role::query()->where('name', 'vertrieb')->firstOrFail();
             $this->assertSame(['data.kunden.create', 'data.kunden.view'], $this->rights($role, 'kunden'));
 
-            $browser->visit("/admin/roles/{$role->id}/edit")->waitFor($this->dataRight('kunden', 'view'), 15);
+            $browser->visit("/admin/roles/{$role->id}/edit?tab=data-rights")->waitFor($this->dataRight('kunden', 'view'), 15);
             $this->assertTrue($browser->element($this->dataRight('kunden', 'view'))->isSelected());
             $this->assertTrue($browser->element($this->dataRight('kunden', 'create'))->isSelected());
             $this->assertFalse($browser->element($this->dataRight('kunden', 'delete'))->isSelected());
@@ -99,7 +100,7 @@ class RolesTest extends DuskTestCase
         $role = $this->role('vertrieb', []);
 
         $this->browse(function (Browser $browser) use ($role): void {
-            $this->login($browser, self::ADMIN)->visit("/admin/roles/{$role->id}/edit")->waitFor($this->dataRight('kunden', 'view'), 15);
+            $this->login($browser, self::ADMIN)->visit("/admin/roles/{$role->id}/edit?tab=data-rights")->waitFor($this->dataRight('kunden', 'view'), 15);
 
             // Matrix: „Alle“ in der Zeile der Tabelle, Spaltenköpfe mit den Rechten.
             $this->assertStringContainsString('Anzeigen', $browser->text('[data-permission-matrix] thead'));
@@ -148,7 +149,7 @@ class RolesTest extends DuskTestCase
         $this->browse(function (Browser $admin, Browser $user) use ($role): void {
             $this->login($user, self::USER)->visit('/admin/data/kunden')->waitForText('Kunden Eins', 15);
 
-            $this->login($admin, self::ADMIN)->visit("/admin/roles/{$role->id}/edit")
+            $this->login($admin, self::ADMIN)->visit("/admin/roles/{$role->id}/edit?tab=data-rights")
                 ->waitFor($this->dataRight('kunden', 'view'), 15)
                 ->click($this->dataRight('kunden', 'view'))
                 ->press('Speichern')
@@ -254,6 +255,47 @@ class RolesTest extends DuskTestCase
         $this->assertSame(3, CustomTable::query()->count());
     }
 
+    /** Reiter der Seite „Rolle bearbeiten“ öffnen (B-175). */
+    private function openTab(Browser $browser, string $label): Browser
+    {
+        $browser->driver->findElement(WebDriverBy::xpath("//*[@role='tab'][normalize-space(.)='{$label}']"))->click();
+
+        return $browser->pause(300);
+    }
+
+    /** ROL-16 */
+    public function test_role_tabs_keep_the_active_tab_and_show_errors_above(): void
+    {
+        $role = $this->role('vertrieb', []);
+
+        $this->browse(function (Browser $browser) use ($role): void {
+            $this->login($browser, self::ADMIN)->visit("/admin/roles/{$role->id}/edit")->waitForText('Benutzer: anzeigen', 15)
+                ->assertMissing($this->dataRight('kunden', 'view'));
+
+            // Reiter wechseln: Inhalt sichtbar, Reiter in der Adresse.
+            $this->openTab($browser, 'Datenrechte')->waitFor($this->dataRight('kunden', 'view'), 15)
+                ->assertDontSee('Benutzer: anzeigen')
+                ->assertQueryStringHas('tab', 'data-rights');
+
+            // Speichern lässt den Reiter stehen.
+            $browser->click($this->dataRight('kunden', 'view'))
+                ->press('Speichern')
+                ->waitForText('Gespeichert', 15)
+                ->assertVisible($this->dataRight('kunden', 'view'));
+            $this->assertSame(['data.kunden.view'], $this->rights($role, 'kunden'));
+
+            // Neu laden: derselbe Reiter.
+            $browser->refresh()->waitFor($this->dataRight('kunden', 'view'), 15)->assertDontSee('Benutzer: anzeigen');
+
+            // Prüffehler beim Namen (nur Buchstaben, Ziffern, - und _) steht über den Reitern und ist sichtbar.
+            $browser->type('input[id="form.name"]', 'mit leerzeichen')
+                ->press('Speichern')
+                ->waitFor('[data-validation-error]', 15)
+                ->assertVisible('[data-validation-error]');
+            $this->assertSame('vertrieb', $role->fresh()->name);
+        });
+    }
+
     private function menuEntry(string $table): string
     {
         $id = (int) Menu::query()->where('route', DataMenu::ROUTE)->where('route_parameters->table', $table)->value('id');
@@ -268,7 +310,8 @@ class RolesTest extends DuskTestCase
         $this->userWith($role);
 
         $this->browse(function (Browser $admin, Browser $user) use ($role): void {
-            $this->login($admin, self::ADMIN)->visit("/admin/roles/{$role->id}/edit")->waitFor($this->menuEntry('artikel'), 15);
+            $this->login($admin, self::ADMIN)->visit("/admin/roles/{$role->id}/edit")->waitForText('Menüeinträge', 15);
+            $this->openTab($admin, 'Menüeinträge')->waitFor($this->menuEntry('artikel'), 15);
             // Vorgabe: alle Einträge sichtbar.
             $this->assertTrue($admin->element($this->menuEntry('artikel'))->isSelected());
             $this->assertTrue($admin->element($this->menuEntry('kunden'))->isSelected());
@@ -279,6 +322,7 @@ class RolesTest extends DuskTestCase
             // Nur ausgeblendet: Die Tabelle bleibt erreichbar.
             $user->visit('/admin/data/artikel')->waitForText('Artikel Eins', 15)->assertDontSee('Keine Berechtigung');
 
+            // Der Reiter steht in der Adresse und bleibt nach dem Neuladen.
             $admin->refresh()->waitFor($this->menuEntry('artikel'), 15);
             $this->assertFalse($admin->element($this->menuEntry('artikel'))->isSelected());
         });
@@ -302,7 +346,7 @@ class RolesTest extends DuskTestCase
         $role = $this->role('vertrieb', []);
 
         $this->browse(function (Browser $browser) use ($role): void {
-            $this->login($browser, self::ADMIN)->visit("/admin/roles/{$role->id}/edit")->waitFor($this->dataRight('kunden', 'view'), 15);
+            $this->login($browser, self::ADMIN)->visit("/admin/roles/{$role->id}/edit?tab=data-rights")->waitFor($this->dataRight('kunden', 'view'), 15);
 
             // Suche blendet Zeilen aus; „ganze Spalte“ wirkt nur auf die sichtbaren.
             $browser->type('[data-permission-matrix] input[type="search"]', 'kund')->pause(300)

@@ -19,6 +19,9 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
@@ -72,101 +75,119 @@ class RoleForm
                                 $set('visible_menus', array_values(array_map('strval', array_diff(array_keys(self::dataMenuOptions(self::appId($state))), $hidden))));
                             }),
                     ]),
-                Section::make(__('common.permissions'))
-                    ->description(__('roles.form.permissions_help'))
-                    ->schema([
-                        CheckboxList::make('permissions')
-                            ->hiddenLabel()
-                            ->relationship(
-                                'permissions',
-                                'name',
-                                // Ohne data.*: Filament entfernt beim Speichern nur Rechte dieser
-                                // Abfrage – die Datenrechte-Matrix bleibt so unberührt.
-                                // Ohne Rechte von Plugins anderer Apps: diese bleiben ebenso unberührt (eigener Abschnitt).
-                                modifyQueryUsing: fn (Builder $query, Get $get): Builder => $query
-                                    ->where('guard_name', 'web')
-                                    ->where('name', 'not like', DataPermissions::PREFIX.'%')
-                                    ->whereNotIn('name', self::otherAppPluginPermissions(self::appId($get('app_id'))))
-                                    ->orderBy('name'),
-                            )
-                            // Nach der angezeigten Bezeichnung sortiert (nicht nach dem technischen Namen):
-                            // die Rechte eines Bereichs stehen beieinander, spaltenweise von oben nach unten.
-                            ->options(fn (Get $get): array => self::permissionOptions(self::appId($get('app_id'))))
-                            ->columns(4)
-                            ->bulkToggleable()
-                            ->searchable(),
-                    ]),
-                Section::make(__('roles.form.data_permissions'))
-                    ->description(__('roles.form.data_permissions_help'))
-                    ->schema([
-                        Callout::make(__('roles.form.choose_app_first'))
-                            ->warning()
-                            ->visible(fn (Get $get): bool => blank($get('app_id'))),
-                        DataPermissionMatrix::make('data_permissions')->hiddenLabel()->app(fn (Get $get): mixed => $get('app_id'))
-                            ->visible(fn (Get $get): bool => filled($get('app_id'))),
-                    ])
-                    // Systemrollen enthalten nur app-übergreifende Rechte (B-107).
-                    ->visible(fn (?Role $record): bool => CustomTable::query()->exists() && ! SystemObjects::isSystemRole($record?->name)),
-                // Freigegebene Tabellen anderer Apps (B-107, Schnittstellen): nur „Anzeigen“ – zum Öffnen der fremden Tabelle;
-                // die freigegebenen Felder in Verknüpfungen sieht man auch ohne dieses Recht.
-                Section::make(__('roles.form.shared_permissions'))
-                    ->description(__('roles.form.shared_permissions_help'))
-                    ->schema([DataPermissionMatrix::make('shared_permissions')->hiddenLabel()->shared()->app(fn (Get $get): mixed => $get('app_id'))])
-                    ->visible(fn (Get $get, ?Role $record): bool => ! SystemObjects::isSystemRole($record?->name) && filled($get('app_id'))
-                        && CustomTable::query()->where('is_shared', true)->whereNotNull('app_id')->where('app_id', '!=', (int) $get('app_id'))->exists()),
                 Callout::make(__('roles.form.system_role_hint'))
                     ->info()
                     ->visible(fn (?Role $record): bool => SystemObjects::isSystemRole($record?->name)),
-                Section::make(__('roles.form.menu_entries'))
-                    ->description(__('roles.form.menu_entries_help'))
-                    ->schema([
-                        CheckboxList::make('visible_menus')
-                            ->hiddenLabel()
-                            ->options(fn (Get $get): array => self::dataMenuOptions(self::appId($get('app_id'))))
-                            ->columns(3)
-                            ->gridDirection('row')
-                            ->bulkToggleable()
-                            ->dehydrated(false)
-                            // Gespeichert wird nur das Ausblenden: Ohne Datensatz ist alles angehakt.
-                            ->default(fn (Get $get): array => array_map('strval', array_keys(self::dataMenuOptions(self::appId($get('app_id'))))))
-                            ->loadStateFromRelationshipsUsing(function (CheckboxList $component, ?Role $record): void {
-                                $hidden = $record?->hiddenMenus()->pluck('menus.id')->all() ?? [];
-                                $component->state(array_values(array_map('strval', array_diff(array_keys(self::dataMenuOptions($record?->app_id)), $hidden))));
-                            })
-                            ->saveRelationshipsUsing(function (CheckboxList $component, Role $record): void {
-                                // Nur Einträge der App der Rolle ändern; ausgeblendete anderer Apps bleiben.
-                                $offered = array_keys(self::dataMenuOptions($record->app_id));
-                                $visible = array_map('intval', (array) $component->getState());
-                                $others = $record->hiddenMenus()->pluck('menus.id')->map(static fn (mixed $id): int => (int) $id)->diff($offered)->all();
-                                $record->hiddenMenus()->sync(array_values([...$others, ...array_diff($offered, $visible)]));
-                            }),
-                    ])
-                    ->visible(fn (Get $get, ?Role $record): bool => ! SystemObjects::isSystemRole($record?->name) && self::dataMenuOptions(self::appId($get('app_id'))) !== []),
-                // Vorhandene Rechte ausserhalb der App der Rolle: Tabellen anderer Apps als Matrix (nur vorhandene Rechte,
-                // nur zum Entfernen), Plugins anderer Apps und gelöschte Tabellen als Liste – damit sich ältere Rollen
-                // bereinigen lassen. Steht zuletzt, damit es nach den übrigen Rechten gespeichert wird.
-                Section::make(__('roles.form.other_permissions'))
-                    ->description(__('roles.form.other_permissions_help'))
-                    ->schema([
-                        DataPermissionMatrix::make('other_data_permissions')->hiddenLabel()->outside()->app(fn (Get $get): mixed => $get('app_id'))
-                            ->visible(fn (DataPermissionMatrix $component): bool => $component->tables()->isNotEmpty()),
-                        CheckboxList::make('other_permissions')
-                            ->hiddenLabel()
-                            ->options(fn (Get $get, ?Role $record): array => self::otherPermissionOptions($record, self::appId($get('app_id'))))
-                            ->columns(2)
-                            ->bulkToggleable()
-                            ->dehydrated(false)
-                            ->afterStateHydrated(fn (CheckboxList $component, Get $get, ?Role $record): mixed => $component->state(array_map('strval', array_keys(self::otherPermissionOptions($record, self::appId($get('app_id')))))))
-                            ->saveRelationshipsUsing(function (CheckboxList $component, Get $get, Role $record): void {
-                                $offered = array_keys(self::otherPermissionOptions($record, self::appId($get('app_id'))));
-                                $removed = array_diff($offered, array_map('intval', (array) $component->getState()));
+                // Reiter statt Kacheln (B-175); der aktive Reiter steht in der Adresse (?tab=). Ein Speichern gilt für alle
+                // Reiter. Prüffehler gibt es nur oben (Name, App) – sonst wechselt Filament zum Reiter mit dem Fehler.
+                Tabs::make('role_tabs')
+                    ->persistTabInQueryString()
+                    ->tabs([
+                        Tab::make(__('common.permissions'))
+                            ->key('rights')
+                            ->icon('heroicon-o-key')
+                            ->schema([
+                                Text::make(__('roles.form.permissions_help'))->color('gray'),
+                                CheckboxList::make('permissions')
+                                    ->hiddenLabel()
+                                    ->relationship(
+                                        'permissions',
+                                        'name',
+                                        // Ohne data.*: Filament entfernt beim Speichern nur Rechte dieser
+                                        // Abfrage – die Datenrechte-Matrix bleibt so unberührt.
+                                        // Ohne Rechte von Plugins anderer Apps: diese bleiben ebenso unberührt (eigener Reiter).
+                                        modifyQueryUsing: fn (Builder $query, Get $get): Builder => $query
+                                            ->where('guard_name', 'web')
+                                            ->where('name', 'not like', DataPermissions::PREFIX.'%')
+                                            ->whereNotIn('name', self::otherAppPluginPermissions(self::appId($get('app_id'))))
+                                            ->orderBy('name'),
+                                    )
+                                    // Nach der angezeigten Bezeichnung sortiert (nicht nach dem technischen Namen):
+                                    // die Rechte eines Bereichs stehen beieinander, spaltenweise von oben nach unten.
+                                    ->options(fn (Get $get): array => self::permissionOptions(self::appId($get('app_id'))))
+                                    ->columns(4)
+                                    ->bulkToggleable()
+                                    ->searchable(),
+                            ]),
+                        Tab::make(__('roles.form.data_permissions'))
+                            ->key('data-rights')
+                            ->icon('heroicon-o-table-cells')
+                            ->schema([
+                                Text::make(__('roles.form.data_permissions_help'))->color('gray'),
+                                Callout::make(__('roles.form.choose_app_first'))
+                                    ->warning()
+                                    ->visible(fn (Get $get): bool => blank($get('app_id'))),
+                                DataPermissionMatrix::make('data_permissions')->hiddenLabel()->app(fn (Get $get): mixed => $get('app_id'))
+                                    ->visible(fn (Get $get): bool => filled($get('app_id'))),
+                            ])
+                            // Systemrollen enthalten nur app-übergreifende Rechte (B-107).
+                            ->visible(fn (?Role $record): bool => CustomTable::query()->exists() && ! SystemObjects::isSystemRole($record?->name)),
+                        // Freigegebene Tabellen anderer Apps (B-107, Schnittstellen): nur „Anzeigen“ – zum Öffnen der fremden
+                        // Tabelle; die freigegebenen Felder in Verknüpfungen sieht man auch ohne dieses Recht.
+                        Tab::make(__('roles.form.shared_permissions'))
+                            ->key('shared-tables')
+                            ->icon('heroicon-o-share')
+                            ->schema([
+                                Text::make(__('roles.form.shared_permissions_help'))->color('gray'),
+                                DataPermissionMatrix::make('shared_permissions')->hiddenLabel()->shared()->app(fn (Get $get): mixed => $get('app_id')),
+                            ])
+                            ->visible(fn (Get $get, ?Role $record): bool => ! SystemObjects::isSystemRole($record?->name) && filled($get('app_id'))
+                                && CustomTable::query()->where('is_shared', true)->whereNotNull('app_id')->where('app_id', '!=', (int) $get('app_id'))->exists()),
+                        Tab::make(__('roles.form.menu_entries'))
+                            ->key('menu-entries')
+                            ->icon('heroicon-o-bars-3')
+                            ->schema([
+                                Text::make(__('roles.form.menu_entries_help'))->color('gray'),
+                                CheckboxList::make('visible_menus')
+                                    ->hiddenLabel()
+                                    ->options(fn (Get $get): array => self::dataMenuOptions(self::appId($get('app_id'))))
+                                    ->columns(3)
+                                    ->gridDirection('row')
+                                    ->bulkToggleable()
+                                    ->dehydrated(false)
+                                    // Gespeichert wird nur das Ausblenden: Ohne Datensatz ist alles angehakt.
+                                    ->default(fn (Get $get): array => array_map('strval', array_keys(self::dataMenuOptions(self::appId($get('app_id'))))))
+                                    ->loadStateFromRelationshipsUsing(function (CheckboxList $component, ?Role $record): void {
+                                        $hidden = $record?->hiddenMenus()->pluck('menus.id')->all() ?? [];
+                                        $component->state(array_values(array_map('strval', array_diff(array_keys(self::dataMenuOptions($record?->app_id)), $hidden))));
+                                    })
+                                    ->saveRelationshipsUsing(function (CheckboxList $component, Role $record): void {
+                                        // Nur Einträge der App der Rolle ändern; ausgeblendete anderer Apps bleiben.
+                                        $offered = array_keys(self::dataMenuOptions($record->app_id));
+                                        $visible = array_map('intval', (array) $component->getState());
+                                        $others = $record->hiddenMenus()->pluck('menus.id')->map(static fn (mixed $id): int => (int) $id)->diff($offered)->all();
+                                        $record->hiddenMenus()->sync(array_values([...$others, ...array_diff($offered, $visible)]));
+                                    }),
+                            ])
+                            ->visible(fn (Get $get, ?Role $record): bool => ! SystemObjects::isSystemRole($record?->name) && self::dataMenuOptions(self::appId($get('app_id'))) !== []),
+                        // Vorhandene Rechte ausserhalb der App der Rolle: Tabellen anderer Apps als Matrix (nur vorhandene Rechte,
+                        // nur zum Entfernen), Plugins anderer Apps und gelöschte Tabellen als Liste – damit sich ältere Rollen
+                        // bereinigen lassen. Letzter Reiter, damit es nach den übrigen Rechten gespeichert wird.
+                        Tab::make(__('roles.form.other_permissions'))
+                            ->key('outside')
+                            ->icon('heroicon-o-exclamation-triangle')
+                            ->schema([
+                                Text::make(__('roles.form.other_permissions_help'))->color('gray'),
+                                DataPermissionMatrix::make('other_data_permissions')->hiddenLabel()->outside()->app(fn (Get $get): mixed => $get('app_id'))
+                                    ->visible(fn (DataPermissionMatrix $component): bool => $component->tables()->isNotEmpty()),
+                                CheckboxList::make('other_permissions')
+                                    ->hiddenLabel()
+                                    ->options(fn (Get $get, ?Role $record): array => self::otherPermissionOptions($record, self::appId($get('app_id'))))
+                                    ->columns(2)
+                                    ->bulkToggleable()
+                                    ->dehydrated(false)
+                                    ->afterStateHydrated(fn (CheckboxList $component, Get $get, ?Role $record): mixed => $component->state(array_map('strval', array_keys(self::otherPermissionOptions($record, self::appId($get('app_id')))))))
+                                    ->saveRelationshipsUsing(function (CheckboxList $component, Get $get, Role $record): void {
+                                        $offered = array_keys(self::otherPermissionOptions($record, self::appId($get('app_id'))));
+                                        $removed = array_diff($offered, array_map('intval', (array) $component->getState()));
 
-                                if ($removed !== []) {
-                                    $record->permissions()->detach($removed);
-                                }
-                            }),
-                    ])
-                    ->visible(fn (Get $get, ?Role $record): bool => self::hasOutside($record, self::appId($get('app_id')))),
+                                        if ($removed !== []) {
+                                            $record->permissions()->detach($removed);
+                                        }
+                                    }),
+                            ])
+                            ->visible(fn (Get $get, ?Role $record): bool => self::hasOutside($record, self::appId($get('app_id')))),
+                    ]),
             ]);
     }
 

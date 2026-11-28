@@ -86,6 +86,11 @@ Règles de protection : personne ne peut se supprimer ni se désactiver soi-mêm
 
 Un rôle regroupe des droits. Les utilisateurs reçoivent leurs droits exclusivement par des rôles.
 
+En modification, le **nom** et l’**app** du rôle figurent en haut, les droits en dessous dans des onglets :
+**Autorisations**, **Droits sur les données**, **Tables partagées d’autres apps** et **Entrées de menu**, si besoin en
+dernier l’onglet **Droits en dehors de cette app** (avec un signe d’avertissement). Les onglets sans contenu sont
+omis ; les rôles système n’ont que « Autorisations ».
+
 - **Autorisations** – droits sur les fonctions de l’application, p. ex. « Utilisateurs : modifier »,
   « Concepteur de tables : afficher » ou les **widgets du tableau de bord**.
 - **Droits sur les données** – une matrice avec toutes les tables du Concepteur de tables et les colonnes
@@ -106,7 +111,10 @@ Un rôle regroupe des droits. Les utilisateurs reçoivent leurs droits exclusive
   entrée masquée reste accessible via des liens, la vue maître-détail et l’aperçu. Avec plusieurs rôles, il suffit, pour les tables de données, d’un rôle disposant du droit de lecture qui affiche l’entrée, pour les autres
   entrées d’un rôle de l’app ; `super-admin` voit toujours toutes les entrées.
 
-Les domaines sont enregistrés indépendamment – une modification dans l’un ne change rien dans l’autre.
+**Sauvegarder les modifications** sous les onglets enregistre tous les onglets ensemble ; chaque onglet ne modifie que ses propres
+droits. L’onglet choisi reste ouvert après l’enregistrement et figure dans l’adresse (p. ex. `…/edit?tab=data-rights`),
+de sorte qu’un lien ou le rechargement de la page le rouvre. Si une saisie est erronée, l’onglet contenant l’erreur
+s’ouvre ; le nom et l’app se trouvent au-dessus des onglets.
 
 Les droits modifiés s’appliquent immédiatement, y compris aux utilisateurs déjà connectés. Qui a perdu un droit
 reçoit « Accès refusé » au prochain clic ; le menu est à jour après le rechargement de la page.
@@ -131,12 +139,12 @@ est réellement enregistré pendant la vue – avec vous comme auteur.
 les droits sur les données, les entrées de menu et les droits des plugins que pour cette app (les droits généraux de
 SAFT toujours). Sans app choisie, une indication invite à choisir d’abord l’app à la place des droits sur les données.
 Si le rôle a encore des droits **en dehors** de son app – sur des tables ou plugins d’autres apps, p. ex. après un
-changement d’app ou d’avant les apps, ou sur des tables supprimées –, ils figurent en bas dans la section **« Droits en
+changement d’app ou d’avant les apps, ou sur des tables supprimées –, ils figurent dans le dernier onglet **« Droits en
 dehors de cette app »** : les tables sous forme de matrice regroupée par app, uniquement avec les droits existants
 (cochés), les droits de plugins et les tables supprimées sous forme de liste. On peut seulement les y retirer (décocher,
 enregistrer), pas en ajouter. Si vous changez l’app d’un rôle, tous les droits sont conservés jusqu’à ce que vous les y
 décochiez. Les droits de lecture sur les **tables partagées d’autres apps**
-(interfaces, [chapitre 15](#15-apps-applications-métier)) s’attribuent dans la section « Tables partagées d’autres apps » –
+(interfaces, [chapitre 15](#15-apps-applications-métier)) s’attribuent dans l’onglet « Tables partagées d’autres apps » –
 seulement *Afficher*, pour ouvrir la table étrangère ; tous voient les champs partagés dans les liaisons même sans ce
 droit. Les rôles système *super-admin* et
 *benutzer* n’appartiennent à aucune app et ne contiennent que des droits communs (p. ex. tableau de bord, aide) ;

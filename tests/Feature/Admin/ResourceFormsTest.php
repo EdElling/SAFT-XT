@@ -128,7 +128,7 @@ class ResourceFormsTest extends TestCase
             app()->setLocale($locale);
 
             Livewire::test(EditRole::class, ['record' => $role->getRouteKey()])
-                ->assertFormFieldExists('permissions', function ($field) use ($locale): bool {
+                ->assertFormFieldExists('rights.permissions', function ($field) use ($locale): bool {
                     $labels = array_values($field->getOptions());
                     $sorted = $labels;
                     (new \Collator($locale))->sort($sorted);

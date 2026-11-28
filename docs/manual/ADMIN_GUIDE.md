@@ -82,6 +82,10 @@ admins, and other users are not even offered the `super-admin` role.
 
 A role bundles permissions. Users receive permissions exclusively through roles.
 
+When editing, the role's **Name** and **App** are at the top, the permissions below in tabs: **Permissions**,
+**Data permissions**, **Shared tables of other apps** and **Menu entries**, if needed as the last tab **Permissions
+outside this app** (with a warning sign). Tabs without content are left out; system roles only have “Permissions”.
+
 - **Permissions**: permissions for functions of the application, e.g. "Users: edit", "Table designer: view" or
   **dashboard widgets**.
 - **Data permissions**: a matrix with all tables of the table designer and the columns **View, Create, Edit,
@@ -101,7 +105,9 @@ A role bundles permissions. Users receive permissions exclusively through roles.
   master-detail view and the preview. With several roles, for data tables one role with read permission that shows the entry is enough, for other entries
   one role of the app; `super-admin` always sees all entries.
 
-The areas are saved independently; a change in one does not alter anything in the other.
+**Save** below the tabs saves all tabs together; each tab only changes its own permissions. The chosen tab stays
+open after saving and is part of the address (e.g. `…/edit?tab=data-rights`), so a link or reloading the page opens
+it again. If an entry is invalid, the tab with the error opens; name and app are above the tabs.
 
 Changed permissions apply immediately, also for users who are already signed in. Anyone who has lost a permission
 gets "Forbidden" on the next click; the menu is up to date after reloading the page.
@@ -124,11 +130,11 @@ activity log. Note: what the role is allowed to do is really saved during the vi
 permissions, menu entries and plugin permissions only for that app (the general SAFT permissions always). Without a
 chosen app, a hint to choose the app first appears instead of the data permissions. If the role still has permissions
 **outside** its app – on tables or plugins of other apps, e.g. after changing the app or from before apps existed, or on
-deleted tables – they are listed at the bottom in the section **“Permissions outside this app”**: tables as a matrix
+deleted tables – they are listed in the last tab **“Permissions outside this app”**: tables as a matrix
 grouped by app, with only the existing permissions (ticked), plugin permissions and deleted tables as a list. There they
 can only be removed (untick, save), not added. If you change the app of a role, all permissions are kept until you
 untick them there. Read permissions on **shared tables of other apps** (interfaces,
-[chapter 15](#15-apps-business-applications)) are granted in the separate section “Shared tables of other apps” – only
+[chapter 15](#15-apps-business-applications)) are granted in the separate tab “Shared tables of other apps” – only
 *View*, for opening the other table; everyone sees the shared fields in relations even without this permission. The system roles *super-admin* and *benutzer* belong to no
 app and contain only app-wide permissions (e.g. dashboard, help); grant data permissions through the roles of the apps.
 **Copy** (in the list and when editing) creates a new role with a name and target app – with the same permissions (data

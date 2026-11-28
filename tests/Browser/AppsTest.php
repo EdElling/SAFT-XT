@@ -16,6 +16,7 @@ use App\Models\Report;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\DynamicSchemaService;
+use Facebook\WebDriver\WebDriverBy;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Laravel\Dusk\Browser;
@@ -115,7 +116,7 @@ class AppsTest extends DuskTestCase
         $role->givePermissionTo(['data.kunden.view', 'reports.view']);
 
         $this->browse(function (Browser $browser) use ($role): void {
-            $this->login($browser, self::ADMIN)->visit('/admin/roles/'.$role->id.'/edit')->waitForText('Datenrechte', 15)
+            $this->login($browser, self::ADMIN)->visit('/admin/roles/'.$role->id.'/edit?tab=data-rights')->waitForText('Datenrechte', 15)
                 ->assertSee('Kunden')
                 ->assertDontSee('Mitarbeitende');
 
@@ -126,7 +127,10 @@ class AppsTest extends DuskTestCase
                 ->select('.fi-modal-window select[id$="app_id"]', (string) $this->second->id)->pause(500);
             $this->clickVisibleButton($browser, 'Absenden');
             $browser->waitForText('Rolle „personal-lesen“ angelegt.', 15)
-                ->waitForText('Datenrechte', 15)
+                ->waitForText('Datenrechte', 15);
+            // Die Kopie öffnet mit dem ersten Reiter (B-175).
+            $browser->driver->findElement(WebDriverBy::xpath("//*[@role='tab'][normalize-space(.)='Datenrechte']"))->click();
+            $browser->pause(300)
                 ->assertSee('Mitarbeitende')
                 ->assertDontSee('Kunden');
 
@@ -313,7 +317,7 @@ class AppsTest extends DuskTestCase
         $role->givePermissionTo(['data.kunden.view', 'data.hr_mitarbeitende.view', 'data.hr_mitarbeitende.update']);
 
         $this->browse(function (Browser $browser) use ($role): void {
-            $this->login($browser, self::ADMIN)->visit('/admin/roles/'.$role->id.'/edit')->waitForText('Rechte ausserhalb dieser App', 15)
+            $this->login($browser, self::ADMIN)->visit('/admin/roles/'.$role->id.'/edit?tab=outside')->waitForText('Rechte ausserhalb dieser App', 15)
                 ->assertPresent('[data-matrix-cell="hr_mitarbeitende.view"]')
                 ->assertPresent('[data-matrix-cell="hr_mitarbeitende.update"]')
                 ->assertMissing('[data-matrix-cell="hr_mitarbeitende.create"]')
